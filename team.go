@@ -1,0 +1,46 @@
+// Copyright 2014 Team 254. All Rights Reserved.
+// Author: pat@patfairbank.com (Patrick Fairbank)
+//
+// Model and datastore CRUD methods for a team at an event.
+
+package main
+
+import ()
+
+type Team struct {
+	Id         int
+	Name       string
+	Nickname   string
+	City       string
+	StateProv  string
+	Country    string
+	RookieYear int
+	RobotName  string
+}
+
+func (database *Database) CreateTeam(team *Team) error {
+	return database.teamMap.Insert(team)
+}
+
+func (database *Database) GetTeamById(id int) (*Team, error) {
+	team := new(Team)
+	err := database.teamMap.Get(team, id)
+	if err != nil {
+		team = nil
+	}
+	return team, err
+}
+
+func (database *Database) SaveTeam(team *Team) error {
+	_, err := database.teamMap.Update(team)
+	return err
+}
+
+func (database *Database) DeleteTeam(team *Team) error {
+	_, err := database.teamMap.Delete(team)
+	return err
+}
+
+func (database *Database) TruncateTeams() error {
+	return database.teamMap.TruncateTables()
+}

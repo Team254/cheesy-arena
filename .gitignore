@@ -2,6 +2,7 @@
 *.o
 *.a
 *.so
+cheesy-arena
 
 # Folders
 _obj
@@ -21,3 +22,4 @@ _testmain.go
 
 *.exe
 *.test
+*.db
