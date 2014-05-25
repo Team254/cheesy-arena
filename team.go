@@ -23,8 +23,9 @@ func (database *Database) CreateTeam(team *Team) error {
 func (database *Database) GetTeamById(id int) (*Team, error) {
 	team := new(Team)
 	err := database.teamMap.Get(team, id)
-	if err != nil {
+	if err != nil && err.Error() == "sql: no rows in result set" {
 		team = nil
+		err = nil
 	}
 	return team, err
 }

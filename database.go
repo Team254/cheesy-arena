@@ -18,6 +18,7 @@ type Database struct {
 	path             string
 	db               *sql.DB
 	eventSettingsMap *modl.DbMap
+	matchMap         *modl.DbMap
 	teamMap          *modl.DbMap
 }
 
@@ -54,9 +55,12 @@ func (database *Database) Close() {
 func (database *Database) mapTables() {
 	dialect := new(modl.SqliteDialect)
 
-	database.teamMap = modl.NewDbMap(database.db, dialect)
-	database.teamMap.AddTableWithName(Team{}, "teams").SetKeys(false, "Id")
-
 	database.eventSettingsMap = modl.NewDbMap(database.db, dialect)
 	database.eventSettingsMap.AddTableWithName(EventSettings{}, "event_settings").SetKeys(false, "Id")
+
+	database.matchMap = modl.NewDbMap(database.db, dialect)
+	database.matchMap.AddTableWithName(Match{}, "matches").SetKeys(false, "Id")
+
+	database.teamMap = modl.NewDbMap(database.db, dialect)
+	database.teamMap.AddTableWithName(Team{}, "teams").SetKeys(false, "Id")
 }
