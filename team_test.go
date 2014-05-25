@@ -4,15 +4,8 @@
 package main
 
 import (
-	"os"
 	"testing"
 )
-
-const testDbPath = "test.db"
-
-func clearDb() {
-	os.Remove(testDbPath)
-}
 
 func TestGetNonexistentTeam(t *testing.T) {
 	clearDb()

@@ -1,0 +1,4 @@
+# This file must exist to be able to create migration boilerplate with `goose create MigrationName sql`.
+development:
+  driver: sqlite3
+  open: placeholder.db  # Doesn't matter what this value is; the file won't be created.

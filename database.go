@@ -15,9 +15,10 @@ import (
 const migrationsDir = "db/migrations"
 
 type Database struct {
-	path    string
-	db      *sql.DB
-	teamMap *modl.DbMap
+	path             string
+	db               *sql.DB
+	eventSettingsMap *modl.DbMap
+	teamMap          *modl.DbMap
 }
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
@@ -55,4 +56,7 @@ func (database *Database) mapTables() {
 
 	database.teamMap = modl.NewDbMap(database.db, dialect)
 	database.teamMap.AddTableWithName(Team{}, "teams").SetKeys(false, "Id")
+
+	database.eventSettingsMap = modl.NewDbMap(database.db, dialect)
+	database.eventSettingsMap.AddTableWithName(EventSettings{}, "event_settings").SetKeys(false, "Id")
 }

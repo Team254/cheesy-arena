@@ -4,8 +4,15 @@
 package main
 
 import (
+	"os"
 	"testing"
 )
+
+const testDbPath = "test.db"
+
+func clearDb() {
+	os.Remove(testDbPath)
+}
 
 func TestOpenUnreachableDatabase(t *testing.T) {
 	_, err := OpenDatabase("nonexistentdir/test.db")

@@ -5,8 +5,6 @@
 
 package main
 
-import ()
-
 type Team struct {
 	Id         int
 	Name       string
