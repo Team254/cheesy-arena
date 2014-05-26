@@ -4,6 +4,7 @@
 package main
 
 import (
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )
@@ -16,7 +17,5 @@ func clearDb() {
 
 func TestOpenUnreachableDatabase(t *testing.T) {
 	_, err := OpenDatabase("nonexistentdir/test.db")
-	if err == nil {
-		t.Errorf("Expected error not raised")
-	}
+	assert.NotNil(t, err)
 }

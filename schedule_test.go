@@ -4,6 +4,7 @@
 package main
 
 import (
+	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"os"
 	"testing"
@@ -15,8 +16,8 @@ func TestNonExistentSchedule(t *testing.T) {
 	scheduleBlocks := []ScheduleBlock{{time.Unix(0, 0).UTC(), 2, 60}}
 	_, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	expectedErr := "No schedule exists for 6 teams and 2 matches"
-	if err == nil || err.Error() != expectedErr {
-		t.Errorf("Expected '%s', got '%v'", expectedErr, err)
+	if assert.NotNil(t, err) {
+		assert.Equal(t, expectedErr, err.Error())
 	}
 }
 
@@ -29,8 +30,8 @@ func TestMalformedSchedule(t *testing.T) {
 	scheduleBlocks := []ScheduleBlock{{time.Unix(0, 0).UTC(), 1, 60}}
 	_, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	expectedErr := "Schedule file contains 2 matches, expected 1"
-	if err == nil || err.Error() != expectedErr {
-		t.Errorf("Expected '%s', got '%v'", expectedErr, err)
+	if assert.NotNil(t, err) {
+		assert.Equal(t, expectedErr, err.Error())
 	}
 
 	os.Remove("schedules/6_1.csv")
@@ -38,8 +39,8 @@ func TestMalformedSchedule(t *testing.T) {
 	scheduleFile.WriteString("1,0,asdf,0,3,0,4,0,5,0,6,0\n")
 	scheduleFile.Close()
 	_, err = BuildRandomSchedule(teams, scheduleBlocks, "test")
-	if err == nil {
-		t.Errorf("Expected string parsing error")
+	if assert.NotNil(t, err) {
+		assert.Contains(t, err.Error(), "strconv.ParseInt")
 	}
 }
 
@@ -53,20 +54,18 @@ func TestScheduleTeams(t *testing.T) {
 	}
 	scheduleBlocks := []ScheduleBlock{{time.Unix(0, 0).UTC(), 6, 60}}
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
-	if err != nil {
-		t.Error("Error:", err)
-	}
-	assertMatchEqual(t, Match{1, "test", "1", time.Unix(0, 0).UTC(), 107, false, 102, false, 117, false, 115,
+	assert.Nil(t, err)
+	assert.Equal(t, Match{1, "test", "1", time.Unix(0, 0).UTC(), 107, false, 102, false, 117, false, 115,
 		false, 106, false, 116, false, "", time.Unix(0, 0).UTC()}, matches[0])
-	assertMatchEqual(t, Match{2, "test", "2", time.Unix(60, 0).UTC(), 109, false, 113, false, 104, false, 108,
+	assert.Equal(t, Match{2, "test", "2", time.Unix(60, 0).UTC(), 109, false, 113, false, 104, false, 108,
 		false, 112, false, 118, false, "", time.Unix(0, 0).UTC()}, matches[1])
-	assertMatchEqual(t, Match{3, "test", "3", time.Unix(120, 0).UTC(), 103, false, 111, false, 105, false, 114,
+	assert.Equal(t, Match{3, "test", "3", time.Unix(120, 0).UTC(), 103, false, 111, false, 105, false, 114,
 		false, 101, false, 110, false, "", time.Unix(0, 0).UTC()}, matches[2])
-	assertMatchEqual(t, Match{4, "test", "4", time.Unix(180, 0).UTC(), 102, false, 104, false, 115, false, 117,
+	assert.Equal(t, Match{4, "test", "4", time.Unix(180, 0).UTC(), 102, false, 104, false, 115, false, 117,
 		false, 118, false, 113, false, "", time.Unix(0, 0).UTC()}, matches[3])
-	assertMatchEqual(t, Match{5, "test", "5", time.Unix(240, 0).UTC(), 108, false, 114, false, 106, false, 103,
+	assert.Equal(t, Match{5, "test", "5", time.Unix(240, 0).UTC(), 108, false, 114, false, 106, false, 103,
 		false, 101, false, 116, false, "", time.Unix(0, 0).UTC()}, matches[4])
-	assertMatchEqual(t, Match{6, "test", "6", time.Unix(300, 0).UTC(), 109, false, 112, false, 111, false, 110,
+	assert.Equal(t, Match{6, "test", "6", time.Unix(300, 0).UTC(), 109, false, 112, false, 111, false, 110,
 		false, 107, false, 105, false, "", time.Unix(0, 0).UTC()}, matches[5])
 }
 
@@ -76,15 +75,13 @@ func TestScheduleTiming(t *testing.T) {
 		{time.Unix(20000, 0).UTC(), 5, 1000},
 		{time.Unix(100000, 0).UTC(), 15, 29}}
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
-	if err != nil {
-		t.Error("Error:", err)
-	}
-	assertMatchTime(t, time.Unix(100, 0).UTC(), matches[0])
-	assertMatchTime(t, time.Unix(775, 0).UTC(), matches[9])
-	assertMatchTime(t, time.Unix(20000, 0).UTC(), matches[10])
-	assertMatchTime(t, time.Unix(24000, 0).UTC(), matches[14])
-	assertMatchTime(t, time.Unix(100000, 0).UTC(), matches[15])
-	assertMatchTime(t, time.Unix(100406, 0).UTC(), matches[29])
+	assert.Nil(t, err)
+	assert.Equal(t, time.Unix(100, 0).UTC(), matches[0].Time)
+	assert.Equal(t, time.Unix(775, 0).UTC(), matches[9].Time)
+	assert.Equal(t, time.Unix(20000, 0).UTC(), matches[10].Time)
+	assert.Equal(t, time.Unix(24000, 0).UTC(), matches[14].Time)
+	assert.Equal(t, time.Unix(100000, 0).UTC(), matches[15].Time)
+	assert.Equal(t, time.Unix(100406, 0).UTC(), matches[29].Time)
 }
 
 func TestScheduleSurrogates(t *testing.T) {
@@ -109,17 +106,5 @@ func TestScheduleSurrogates(t *testing.T) {
 				t.Errorf("Expected match %d to be free of surrogates", i+1)
 			}
 		}
-	}
-}
-
-func assertMatchEqual(t *testing.T, expectedMatch Match, actualMatch Match) {
-	if actualMatch != expectedMatch {
-		t.Errorf("Expected '%v', got '%v'", expectedMatch, actualMatch)
-	}
-}
-
-func assertMatchTime(t *testing.T, expectedTime time.Time, match Match) {
-	if match.Time != expectedTime {
-		t.Errorf("Expected '%v', got '%v'", expectedTime, match)
 	}
 }

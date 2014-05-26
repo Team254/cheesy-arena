@@ -4,6 +4,7 @@
 package main
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -11,30 +12,18 @@ func TestEventSettingsReadWrite(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, err := OpenDatabase(testDbPath)
-	if err != nil {
-		t.Error("Error:", err)
-	}
+	assert.Nil(t, err)
 	defer db.Close()
 
 	eventSettings, err := db.GetEventSettings()
-	if err != nil {
-		t.Error("Error:", err)
-	}
-	if *eventSettings != *new(EventSettings) {
-		t.Errorf("Expected blank event settings, got %v", eventSettings)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, *new(EventSettings), *eventSettings)
 
 	eventSettings.Name = "Chezy Champs"
 	eventSettings.Code = "cc"
 	err = db.SaveEventSettings(eventSettings)
-	if err != nil {
-		t.Error("Error:", err)
-	}
+	assert.Nil(t, err)
 	eventSettings2, err := db.GetEventSettings()
-	if err != nil {
-		t.Error("Error:", err)
-	}
-	if *eventSettings2 != *eventSettings {
-		t.Errorf("Expected '%v', got '%v'", eventSettings, eventSettings2)
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, *eventSettings, *eventSettings2)
 }
