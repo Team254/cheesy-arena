@@ -10,9 +10,12 @@ import (
 func TestEventSettingsReadWrite(t *testing.T) {
 	clearDb()
 	defer clearDb()
-
-	db, _ := OpenDatabase(testDbPath)
+	db, err := OpenDatabase(testDbPath)
+	if err != nil {
+		t.Error("Error:", err)
+	}
 	defer db.Close()
+
 	eventSettings, err := db.GetEventSettings()
 	if err != nil {
 		t.Error("Error:", err)
