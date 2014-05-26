@@ -57,3 +57,9 @@ func (database *Database) DeleteMatch(match *Match) error {
 func (database *Database) TruncateMatches() error {
 	return database.matchMap.TruncateTables()
 }
+
+func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
+	var matches []Match
+	err := database.teamMap.Select(&matches, "SELECT * FROM matches WHERE type = ? ORDER BY id", matchType)
+	return matches, err
+}

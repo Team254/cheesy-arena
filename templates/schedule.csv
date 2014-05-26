@@ -1,0 +1,3 @@
+Match,Type,Time,Red1,Red1IsSurrogate,Red2,Red2IsSurrogate,Red3,Red3IsSurrogate,Blue1,Blue1IsSurrogate,Blue2,Blue2IsSurrogate,Blue3,Blue3IsSurrogate
+{{range $match := .}}{{$match.DisplayName}},{{$match.Type}},{{$match.Time.Local}},{{$match.Red1}},{{$match.Red1IsSurrogate}},{{$match.Red2}},{{$match.Red2IsSurrogate}},{{$match.Red3}},{{$match.Red3IsSurrogate}},{{$match.Blue1}},{{$match.Blue1IsSurrogate}},{{$match.Blue2}},{{$match.Blue2IsSurrogate}},{{$match.Blue3}},{{$match.Blue3IsSurrogate}}
+{{end}}
