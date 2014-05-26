@@ -4,15 +4,17 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 	"time"
 )
 
+var db *Database
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	fmt.Println("Cheesy Arena")
+	db, _ = OpenDatabase("test.db")
+	ServeWebInterface()
 }
 
 func checkErr(err error) {
