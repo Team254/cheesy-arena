@@ -10,12 +10,12 @@ import (
 func TestGetNonexistentTeam(t *testing.T) {
 	clearDb()
 	defer clearDb()
-
 	db, err := OpenDatabase(testDbPath)
 	if err != nil {
 		t.Error("Error:", err)
 	}
 	defer db.Close()
+
 	team, err := db.GetTeamById(1114)
 	if err != nil {
 		t.Error("Error:", err)
@@ -28,12 +28,12 @@ func TestGetNonexistentTeam(t *testing.T) {
 func TestTeamCrud(t *testing.T) {
 	clearDb()
 	defer clearDb()
-
 	db, err := OpenDatabase(testDbPath)
 	if err != nil {
 		t.Error("Error:", err)
 	}
 	defer db.Close()
+
 	team := Team{254, "NASA Ames Research Center", "The Cheesy Poofs", "San Jose", "CA", "USA", 1999, "Barrage"}
 	db.CreateTeam(&team)
 	team2, err := db.GetTeamById(254)
@@ -67,12 +67,12 @@ func TestTeamCrud(t *testing.T) {
 func TestTruncateTeams(t *testing.T) {
 	clearDb()
 	defer clearDb()
-
 	db, err := OpenDatabase(testDbPath)
 	if err != nil {
 		t.Error("Error:", err)
 	}
 	defer db.Close()
+
 	team := Team{254, "NASA Ames Research Center", "The Cheesy Poofs", "San Jose", "CA", "USA", 1999, "Barrage"}
 	db.CreateTeam(&team)
 	db.TruncateTeams()
@@ -82,5 +82,40 @@ func TestTruncateTeams(t *testing.T) {
 	}
 	if team2 != nil {
 		t.Errorf("Expected '%v' to be nil", team2)
+	}
+}
+
+func TestGetAllTeams(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	db, err := OpenDatabase(testDbPath)
+	if err != nil {
+		t.Error("Error:", err)
+	}
+	defer db.Close()
+
+	teams, err := db.GetAllTeams()
+	if err != nil {
+		t.Error("Error:", err)
+	}
+	if len(teams) != 0 {
+		t.Errorf("Expected %d teams, got %d", 0, len(teams))
+	}
+
+	numTeams := 20
+	for i := 1; i <= numTeams; i++ {
+		db.CreateTeam(&Team{i, "", "", "", "", "", 2014, ""})
+	}
+	teams, err = db.GetAllTeams()
+	if err != nil {
+		t.Error("Error:", err)
+	}
+	if len(teams) != numTeams {
+		t.Errorf("Expected %d teams, got %d", numTeams, len(teams))
+	}
+	for i := 0; i < numTeams; i++ {
+		if teams[i].Id != i+1 {
+			t.Errorf("Expected team %d, got %d", i+1, teams[i].Id)
+		}
 	}
 }

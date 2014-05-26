@@ -43,3 +43,9 @@ func (database *Database) DeleteTeam(team *Team) error {
 func (database *Database) TruncateTeams() error {
 	return database.teamMap.TruncateTables()
 }
+
+func (database *Database) GetAllTeams() ([]Team, error) {
+	var teams []Team
+	err := database.teamMap.Select(&teams, "SELECT * FROM teams ORDER BY id")
+	return teams, err
+}
