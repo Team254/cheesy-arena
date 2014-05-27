@@ -28,21 +28,21 @@ func TestMatchCrud(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 
-	match := Match{254, "qualification", "254", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
+	match := Match{0, "qualification", "254", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
 		false, 6, false, "", time.Now().UTC()}
 	db.CreateMatch(&match)
-	match2, err := db.GetMatchById(254)
+	match2, err := db.GetMatchById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, match, *match2)
 
 	match.Status = "started"
 	db.SaveMatch(&match)
-	match2, err = db.GetMatchById(254)
+	match2, err = db.GetMatchById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, match.Status, match2.Status)
 
 	db.DeleteMatch(&match)
-	match2, err = db.GetMatchById(254)
+	match2, err = db.GetMatchById(1)
 	assert.Nil(t, err)
 	assert.Nil(t, match2)
 }
@@ -54,11 +54,11 @@ func TestTruncateMatches(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 
-	match := Match{254, "qualification", "254", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
+	match := Match{0, "qualification", "254", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
 		false, 6, false, "", time.Now().UTC()}
 	db.CreateMatch(&match)
 	db.TruncateMatches()
-	match2, err := db.GetMatchById(254)
+	match2, err := db.GetMatchById(1)
 	assert.Nil(t, err)
 	assert.Nil(t, match2)
 }
@@ -70,13 +70,13 @@ func TestGetMatchesByType(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 
-	match := Match{1, "qualification", "1", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
+	match := Match{0, "qualification", "1", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
 		false, 6, false, "", time.Now().UTC()}
 	db.CreateMatch(&match)
-	match2 := Match{2, "practice", "1", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
+	match2 := Match{0, "practice", "1", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
 		false, 6, false, "", time.Now().UTC()}
 	db.CreateMatch(&match2)
-	match3 := Match{3, "practice", "2", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
+	match3 := Match{0, "practice", "2", time.Now().UTC(), 1, false, 2, false, 3, false, 4, false, 5,
 		false, 6, false, "", time.Now().UTC()}
 	db.CreateMatch(&match3)
 

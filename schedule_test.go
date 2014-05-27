@@ -55,17 +55,17 @@ func TestScheduleTeams(t *testing.T) {
 	scheduleBlocks := []ScheduleBlock{{time.Unix(0, 0).UTC(), 6, 60}}
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	assert.Nil(t, err)
-	assert.Equal(t, Match{1, "test", "1", time.Unix(0, 0).UTC(), 107, false, 102, false, 117, false, 115,
+	assert.Equal(t, Match{0, "test", "1", time.Unix(0, 0).UTC(), 107, false, 102, false, 117, false, 115,
 		false, 106, false, 116, false, "", time.Unix(0, 0).UTC()}, matches[0])
-	assert.Equal(t, Match{2, "test", "2", time.Unix(60, 0).UTC(), 109, false, 113, false, 104, false, 108,
+	assert.Equal(t, Match{0, "test", "2", time.Unix(60, 0).UTC(), 109, false, 113, false, 104, false, 108,
 		false, 112, false, 118, false, "", time.Unix(0, 0).UTC()}, matches[1])
-	assert.Equal(t, Match{3, "test", "3", time.Unix(120, 0).UTC(), 103, false, 111, false, 105, false, 114,
+	assert.Equal(t, Match{0, "test", "3", time.Unix(120, 0).UTC(), 103, false, 111, false, 105, false, 114,
 		false, 101, false, 110, false, "", time.Unix(0, 0).UTC()}, matches[2])
-	assert.Equal(t, Match{4, "test", "4", time.Unix(180, 0).UTC(), 102, false, 104, false, 115, false, 117,
+	assert.Equal(t, Match{0, "test", "4", time.Unix(180, 0).UTC(), 102, false, 104, false, 115, false, 117,
 		false, 118, false, 113, false, "", time.Unix(0, 0).UTC()}, matches[3])
-	assert.Equal(t, Match{5, "test", "5", time.Unix(240, 0).UTC(), 108, false, 114, false, 106, false, 103,
+	assert.Equal(t, Match{0, "test", "5", time.Unix(240, 0).UTC(), 108, false, 114, false, 106, false, 103,
 		false, 101, false, 116, false, "", time.Unix(0, 0).UTC()}, matches[4])
-	assert.Equal(t, Match{6, "test", "6", time.Unix(300, 0).UTC(), 109, false, 112, false, 111, false, 110,
+	assert.Equal(t, Match{0, "test", "6", time.Unix(300, 0).UTC(), 109, false, 112, false, 111, false, 110,
 		false, 107, false, 105, false, "", time.Unix(0, 0).UTC()}, matches[5])
 }
 

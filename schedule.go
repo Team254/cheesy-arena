@@ -57,7 +57,6 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 	teamShuffle := rand.Perm(numTeams)
 	matches := make([]Match, numMatches)
 	for i, anonMatch := range anonSchedule {
-		matches[i].Id = i + 1
 		matches[i].Type = matchType
 		matches[i].DisplayName = strconv.Itoa(i + 1)
 		matches[i].Red1 = teams[teamShuffle[anonMatch[0]-1]].Id
