@@ -21,4 +21,4 @@ CREATE TABLE matches (
 );
 
 -- +goose Down
-DROP TABLE event_settings;
+DROP TABLE matches;
