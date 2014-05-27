@@ -67,6 +67,16 @@ type Cards struct {
 	RedCardTeamIds    []int
 }
 
+type ScoreSummary struct {
+	AutoPoints       int
+	AssistPoints     int
+	TrussCatchPoints int
+	GoalPoints       int
+	TeleopPoints     int
+	FoulPoints       int
+	Score            int
+}
+
 func (database *Database) CreateMatchResult(matchResult *MatchResult) error {
 	matchResultDb, err := matchResult.serialize()
 	if err != nil {
@@ -117,6 +127,57 @@ func (database *Database) DeleteMatchResult(matchResult *MatchResult) error {
 
 func (database *Database) TruncateMatchResults() error {
 	return database.matchResultMap.TruncateTables()
+}
+
+// Calculates and returns the summary fields used for ranking and display for the red alliance.
+func (matchResult *MatchResult) RedScoreSummary() *ScoreSummary {
+	return scoreSummary(&matchResult.RedScore, &matchResult.BlueFouls)
+}
+
+// Calculates and returns the summary fields used for ranking and display for the blue alliance.
+func (matchResult *MatchResult) BlueScoreSummary() *ScoreSummary {
+	return scoreSummary(&matchResult.BlueScore, &matchResult.RedFouls)
+}
+
+// Calculates and returns the summary fields used for ranking and display.
+func scoreSummary(score *Score, opponentFouls *Fouls) *ScoreSummary {
+	summary := new(ScoreSummary)
+
+	// Calculate autonomous score.
+	summary.AutoPoints = 5*score.AutoMobilityBonuses + 20*score.AutoHighHot + 15*score.AutoHigh +
+		11*score.AutoLowHot + 6*score.AutoLow
+
+	// Calculate teleop score.
+	summary.GoalPoints = 10*score.AutoClearHigh + 1*score.AutoClearLow
+	for _, cycle := range score.Cycles {
+		if cycle.Truss {
+			summary.TrussCatchPoints += 10
+			if cycle.Catch {
+				summary.TrussCatchPoints += 10
+			}
+		}
+		if cycle.ScoredHigh {
+			summary.GoalPoints += 10
+		} else if cycle.ScoredLow {
+			summary.GoalPoints += 1
+		}
+		if cycle.ScoredHigh || cycle.ScoredLow {
+			if cycle.Assists == 2 {
+				summary.AssistPoints += 10
+			} else if cycle.Assists == 3 {
+				summary.AssistPoints += 30
+			}
+		}
+	}
+
+	// Calculate foul score.
+	summary.FoulPoints = 20*len(opponentFouls.Fouls) + 50*len(opponentFouls.TechFouls)
+
+	// Fill in summed values.
+	summary.TeleopPoints = summary.AssistPoints + summary.TrussCatchPoints + summary.GoalPoints
+	summary.Score = summary.AutoPoints + summary.TeleopPoints + summary.FoulPoints
+
+	return summary
 }
 
 // Converts the nested struct MatchResult to the DB version that has JSON fields.
