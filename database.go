@@ -20,6 +20,7 @@ type Database struct {
 	eventSettingsMap *modl.DbMap
 	matchMap         *modl.DbMap
 	matchResultMap   *modl.DbMap
+	rankingMap       *modl.DbMap
 	teamMap          *modl.DbMap
 }
 
@@ -64,6 +65,9 @@ func (database *Database) mapTables() {
 
 	database.matchResultMap = modl.NewDbMap(database.db, dialect)
 	database.matchResultMap.AddTableWithName(MatchResultDb{}, "match_results").SetKeys(true, "Id")
+
+	database.rankingMap = modl.NewDbMap(database.db, dialect)
+	database.rankingMap.AddTableWithName(Ranking{}, "rankings").SetKeys(false, "TeamId")
 
 	database.teamMap = modl.NewDbMap(database.db, dialect)
 	database.teamMap.AddTableWithName(Team{}, "teams").SetKeys(false, "Id")
