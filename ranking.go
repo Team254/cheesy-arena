@@ -7,6 +7,7 @@ package main
 
 type Ranking struct {
 	TeamId             int
+	Rank               int
 	QualificationScore int
 	AssistPoints       int
 	AutoPoints         int
@@ -50,6 +51,6 @@ func (database *Database) TruncateRankings() error {
 
 func (database *Database) GetAllRankings() ([]Ranking, error) {
 	var rankings []Ranking
-	err := database.rankingMap.Select(&rankings, "SELECT * FROM rankings ORDER BY id")
+	err := database.rankingMap.Select(&rankings, "SELECT * FROM rankings ORDER BY rank")
 	return rankings, err
 }

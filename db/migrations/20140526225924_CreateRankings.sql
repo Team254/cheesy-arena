@@ -1,6 +1,7 @@
 -- +goose Up
 CREATE TABLE rankings (
   teamid INTEGER PRIMARY KEY,
+  rank int,
   qualificationscore int,
   assistpoints int,
   autopoints int,
