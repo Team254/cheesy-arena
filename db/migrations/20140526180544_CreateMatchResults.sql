@@ -9,6 +9,7 @@ CREATE TABLE match_results (
   bluefoulsjson text,
   cardsjson text
 );
+CREATE UNIQUE INDEX matchid_playnumber ON match_results(matchid, playnumber);
 
 -- +goose Down
 DROP TABLE match_results;
