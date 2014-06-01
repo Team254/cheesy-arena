@@ -22,6 +22,8 @@ func ServeWebInterface() {
 
 func newHandler() http.Handler {
 	router := mux.NewRouter()
+	router.HandleFunc("/reports/csv/rankings", RankingsCsvReportHandler)
+	router.HandleFunc("/reports/pdf/rankings", RankingsPdfReportHandler)
 	router.HandleFunc("/reports/csv/schedule/{type}", ScheduleCsvReportHandler)
 	router.HandleFunc("/reports/pdf/schedule/{type}", SchedulePdfReportHandler)
 	router.HandleFunc("/reports/csv/teams", TeamsCsvReportHandler)
