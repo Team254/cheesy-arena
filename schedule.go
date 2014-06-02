@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Functions for creating practice, qualification and elimination match schedules.
+// Functions for creating practice and qualification match schedules.
 
 package main
 
@@ -23,6 +23,7 @@ type ScheduleBlock struct {
 	matchSpacingSec int
 }
 
+// Creates a random schedule for the given parameters and returns it as a list of matches.
 func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType string) ([]Match, error) {
 	// Load the anonymized, pre-randomized match schedule for the given number of teams and matches per team.
 	numTeams := len(teams)
@@ -71,8 +72,6 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 		matches[i].Blue2IsSurrogate = (anonMatch[9] == 1)
 		matches[i].Blue3 = teams[teamShuffle[anonMatch[10]-1]].Id
 		matches[i].Blue3IsSurrogate = (anonMatch[11] == 1)
-		matches[i].Status = ""
-		matches[i].StartedAt = time.Unix(0, 0).UTC()
 	}
 
 	// Fill in the match times.

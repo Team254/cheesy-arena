@@ -48,12 +48,12 @@ func TestScheduleCsvReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
-	match1 := Match{1, "qualification", "1", time.Unix(0, 0), 1, false, 2, false, 3, false, 4, true, 5, true, 6,
-		true, "", time.Now()}
-	match2 := Match{2, "qualification", "2", time.Unix(600, 0), 7, true, 8, true, 9, true, 10, false, 11, false,
-		12, false, "", time.Now()}
-	match3 := Match{3, "practice", "1", time.Now(), 6, false, 5, false, 4, false, 3, false, 2, false, 1, false,
-		"", time.Now()}
+	match1 := Match{Type: "qualification", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
+		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
+	match2 := Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
+		Blue1: 10, Blue2: 11, Blue3: 12, Red1IsSurrogate: true, Red2IsSurrogate: true, Red3IsSurrogate: true}
+	match3 := Match{Type: "practice", DisplayName: "1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
+		Blue1: 3, Blue2: 2, Blue3: 1}
 	db.CreateMatch(&match1)
 	db.CreateMatch(&match2)
 	db.CreateMatch(&match3)
@@ -72,8 +72,8 @@ func TestSchedulePdfReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
-	match := Match{1, "practice", "1", time.Unix(0, 0), 1, false, 2, false, 3, false, 4, true, 5,
-		true, 6, true, "", time.Now().UTC()}
+	match := Match{Type: "practice", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
+		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
 	db.CreateMatch(&match)
 	team := Team{254, "NASA", "The Cheesy Poofs", "San Jose", "CA", "USA", 1999, "Barrage"}
 	db.CreateTeam(&team)

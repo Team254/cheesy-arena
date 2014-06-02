@@ -14,6 +14,9 @@ type Match struct {
 	Type             string
 	DisplayName      string
 	Time             time.Time
+	ElimRound        int
+	ElimGroup        int
+	ElimInstance     int
 	Red1             int
 	Red1IsSurrogate  bool
 	Red2             int
@@ -28,6 +31,7 @@ type Match struct {
 	Blue3IsSurrogate bool
 	Status           string
 	StartedAt        time.Time
+	Winner           string
 }
 
 func (database *Database) CreateMatch(match *Match) error {
@@ -58,8 +62,29 @@ func (database *Database) TruncateMatches() error {
 	return database.matchMap.TruncateTables()
 }
 
+func (database *Database) GetMatchByName(matchType string, displayName string) (*Match, error) {
+	var matches []Match
+	err := database.teamMap.Select(&matches, "SELECT * FROM matches WHERE type = ? AND displayname = ?",
+		matchType, displayName)
+	if err != nil {
+		return nil, err
+	}
+	if len(matches) == 0 {
+		return nil, nil
+	}
+	return &matches[0], err
+}
+
+func (database *Database) GetMatchesByElimRoundGroup(round int, group int) ([]Match, error) {
+	var matches []Match
+	err := database.teamMap.Select(&matches, "SELECT * FROM matches WHERE type = 'elimination' AND "+
+		"elimround = ? AND elimgroup = ? ORDER BY eliminstance", round, group)
+	return matches, err
+}
+
 func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
 	var matches []Match
-	err := database.teamMap.Select(&matches, "SELECT * FROM matches WHERE type = ? ORDER BY id", matchType)
+	err := database.teamMap.Select(&matches,
+		"SELECT * FROM matches WHERE type = ? ORDER BY elimround desc, eliminstance, elimgroup, id", matchType)
 	return matches, err
 }
