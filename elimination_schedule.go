@@ -9,16 +9,37 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"time"
 )
 
 // Incrementally creates any elimination matches that can be created, based on the results of alliance
 // selection or prior elimination rounds. Returns the winning alliance once it has been determined.
-func (database *Database) UpdateEliminationSchedule() ([]AllianceTeam, error) {
+func (database *Database) UpdateEliminationSchedule(startTime time.Time, matchSpacingSec int) ([]AllianceTeam, error) {
 	alliances, err := database.GetAllAlliances()
 	if err != nil {
 		return []AllianceTeam{}, err
 	}
-	return database.buildEliminationMatchSet(1, 1, len(alliances))
+	winner, err := database.buildEliminationMatchSet(1, 1, len(alliances))
+	if err != nil {
+		return []AllianceTeam{}, err
+	}
+
+	// Update the scheduled time for all matches that have yet to be run.
+	matches, err := database.GetMatchesByType("elimination")
+	if err != nil {
+		return []AllianceTeam{}, err
+	}
+	matchIndex := 0
+	for _, match := range matches {
+		if match.Status == "complete" {
+			continue
+		}
+		match.Time = startTime.Add(time.Duration(matchIndex*matchSpacingSec) * time.Second)
+		database.SaveMatch(&match)
+		matchIndex++
+	}
+
+	return winner, err
 }
 
 // Recursively traverses the elimination bracket downwards, creating matches as necessary. Returns the winner
@@ -118,7 +139,6 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 
 	if len(matches) == 0 {
 		// Create the initial set of matches, filling in zeroes if only one alliance is known.
-		// TODO(pat): Figure out timing.
 		if len(redAlliance) == 0 {
 			redAlliance = []AllianceTeam{AllianceTeam{}, AllianceTeam{}, AllianceTeam{}}
 		} else if len(blueAlliance) == 0 {
