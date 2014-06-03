@@ -1,0 +1,84 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{template "title" .}}</title>
+    <link rel="shortcut icon" href="/static/img/favicon32.png">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/">Cheesy Arena</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Setup</a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Event Wizard</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Team List</a></li>
+                <li><a href="#">Match Scheduling</a></li>
+                <li><a href="#">Alliance Selection</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Test</a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Field Test</a></li>
+                <li><a href="#">Match Test</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Run</a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Match Play</a></li>
+                <li><a href="#">Match Review</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Report</a>
+              <ul class="dropdown-menu">
+                <li class="dropdown-header">PDF Reports</li>
+                <li><a target="_blank" href="/reports/pdf/teams">Team List</a></li>
+                <li><a target="_blank" href="/reports/pdf/schedule/practice">Practice Schedule</a></li>
+                <li><a target="_blank" href="/reports/pdf/schedule/qualification">Qualification Schedule</a></li>
+                <li><a target="_blank" href="/reports/pdf/schedule/elimination">Elimination Schedule</a></li>
+                <li><a target="_blank" href="/reports/pdf/rankings">Standings</a></li>
+                <li class="divider"></li>
+                <li class="dropdown-header">CSV Data Export</li>
+                <li><a target="_blank" href="/reports/csv/teams">Team List</a></li>
+                <li><a target="_blank" href="/reports/csv/schedule/practice">Practice Schedule</a></li>
+                <li><a target="_blank" href="/reports/csv/schedule/qualification">Qualification Schedule</a></li>
+                <li><a target="_blank" href="/reports/csv/schedule/elimination">Elimination Schedule</a></li>
+                <li><a target="_blank" href="/reports/csv/rankings">Standings</a></li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Display</a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Audience</a></li>
+                <li><a href="#">Pit</a></li>
+                <li><a href="#">Announcer</a></li>
+                <li><a href="#">Referee</a></li>
+                <li><a href="#">Scoring</a></li>
+                <li><a href="#">Field Monitor</a></li>
+              </ul>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">About</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+    {{template "body" .}}
+    </div>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+  </body>
+</html>
+{{end}}

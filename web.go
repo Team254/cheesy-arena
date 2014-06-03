@@ -8,13 +8,28 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"html/template"
 	"log"
 	"net/http"
 )
 
 const httpPort = 8080
 
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	template, err := template.ParseFiles("templates/index.html", "templates/base.html")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	err = template.ExecuteTemplate(w, "base", nil)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
+
 func ServeWebInterface() {
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 	http.Handle("/", newHandler())
 	log.Printf("Serving HTTP requests on port %d", httpPort)
 	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
@@ -28,6 +43,7 @@ func newHandler() http.Handler {
 	router.HandleFunc("/reports/pdf/schedule/{type}", SchedulePdfReportHandler)
 	router.HandleFunc("/reports/csv/teams", TeamsCsvReportHandler)
 	router.HandleFunc("/reports/pdf/teams", TeamsPdfReportHandler)
+	router.HandleFunc("/", IndexHandler)
 	return router
 }
 

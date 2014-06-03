@@ -205,8 +205,10 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Render some summary info at the bottom.
-	pdf.CellFormat(195, 10, fmt.Sprintf("Matches Per Team: %d", matchesPerTeam), "", 1, "L", false, 0, "")
+	if vars["type"] != "elimination" {
+		// Render some summary info at the bottom.
+		pdf.CellFormat(195, 10, fmt.Sprintf("Matches Per Team: %d", matchesPerTeam), "", 1, "L", false, 0, "")
+	}
 
 	// Write out the PDF file as the HTTP response.
 	w.Header().Set("Content-Type", "application/pdf")
