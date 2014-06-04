@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="cheesyArenaRankings" class="no-js">
+<head>
+
+  <!-- 
+  Copyright 2014 Team 254. All Rights Reserved.
+  Author: nick@team254.com (Nick Eyre) 
+  -->
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Cheesy Arena - Rankings</title>
+  <meta name="generator" content="Cheesy Arena" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/rankings.css"/>
+  <link rel="stylesheet" href="css/fonts/roboto-regular/stylesheet.css" type="text/css" charset="utf-8" />
+</head>
+<body ng-controller="RankingsController">
+
+  <table>
+    <tr ng-repeat="team in rankingsOld" class='old'>
+      <td>{{team.Rank}}</td>
+      <td>{{team.TeamId}}</td>
+    </tr>
+    <tr ng-repeat="team in rankingsNew" class='new'>
+      <td>{{team.Rank}}</td>
+      <td>{{team.TeamId}}</td>
+    </tr>
+  </table>
+
+  <script src="/static/lib/jquery.min.js"></script>
+  <script src="/static/lib/angular.min.js"></script>
+  <script src="/static/js/rankings.js"></script>
+</body>
+</html>

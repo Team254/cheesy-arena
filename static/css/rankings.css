@@ -1,0 +1,23 @@
+/*
+Copyright 2014 Team 254. All Rights Reserved.
+Author: nick@team254.com (Nick Eyre)
+*/
+
+.container {
+	font-family: 'robotoregular';
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: 0;
+}
+.container.black {
+	background: black;
+	color: white;
+}
+.jumbo {
+	line-height: 0;
+	width: 100%;
+	height: 100%;
+}
