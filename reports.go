@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"strconv"
 	"text/template"
+	"io"
+	"encoding/json"
 )
 
 // Generates a CSV-formatted report of the qualification rankings.
@@ -30,6 +32,28 @@ func RankingsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = template.Execute(w, rankings)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
+
+// Generates a JSON-formatted report of the qualification rankings.
+func RankingsJSONReportHandler(w http.ResponseWriter, r *http.Request) {
+	rankings, err := db.GetAllRankings()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/plain")
+	data, err := json.MarshalIndent(rankings, "", "  ")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	_, err = io.WriteString(w, string(data))
 	if err != nil {
 		handleWebErr(w, err)
 		return
