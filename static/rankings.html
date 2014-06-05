@@ -12,21 +12,64 @@
   <title>Cheesy Arena - Rankings</title>
   <meta name="generator" content="Cheesy Arena" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/rankings.css"/>
-  <link rel="stylesheet" href="css/fonts/roboto-regular/stylesheet.css" type="text/css" charset="utf-8" />
+  <link rel="stylesheet" href="/static/css/fonts/roboto-regular/stylesheet.css" type="text/css" charset="utf-8" />
+  <link rel="stylesheet" href="/static/css/rankings.css"/>
 </head>
 <body ng-controller="RankingsController">
 
+  <div id='titlebar'>
+    Event Rankings
+    <img src='/static/img/eventlogo-flat.png'>
+  </div>
+
   <table>
-    <tr ng-repeat="team in rankingsOld" class='old'>
-      <td>{{team.Rank}}</td>
-      <td>{{team.TeamId}}</td>
-    </tr>
-    <tr ng-repeat="team in rankingsNew" class='new'>
-      <td>{{team.Rank}}</td>
-      <td>{{team.TeamId}}</td>
+    <tr id='header'>
+      <td class='rank'>Rank</td>
+      <td class='team'></td>
+      <td class='team'>Team</td>
+      <td class='qs'>Record</td>
+      <td class='qs'>QS</td>
+      <td class='assist'>Assist</td>
+      <td class='tc'>Auto</td>
+      <td class='tc'>T/C</td>
+      <td class='tc'>G Foul</td>
     </tr>
   </table>
+
+  <div id='container'>
+    <table>
+      <tr ng-repeat="team in rankingsOld" class='old'>
+        <td>{{team.Rank}}</td>
+        <td>{{team.TeamId}}</td>
+        <td class='left'>The Cheesy Poofs</td>
+        <td>{{team.Wins}} - {{team.Losses}} - {{team.Ties}} ({{team.Played}})</td>
+        <td>{{team.QualificationScore}}</td>
+        <td>{{team.AssistPoints}}</td>
+        <td>{{team.AutoPoints}}</td>
+        <td>{{team.TrussCatchPoints}}</td>
+        <td>{{team.GoalFoulPoints}}</td>
+      </tr>
+      </table>
+      <br /><hr>
+    <table>
+      <tr ng-repeat="team in rankingsNew" class='new'>
+        <td>{{team.Rank}}</td>
+        <td>{{team.TeamId}}</td>
+        <td class='left'>The Cheesy Poofs</td>
+        <td>{{team.Wins}} - {{team.Losses}} - {{team.Ties}} ({{team.Played}})</td>
+        <td>{{team.QualificationScore}}</td>
+        <td>{{team.AssistPoints}}</td>
+        <td>{{team.AutoPoints}}</td>
+        <td>{{team.TrussCatchPoints}}</td>
+        <td>{{team.GoalFoulPoints}}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div id='footer'>
+    <span class='right'>As of Match 32</span>
+  </div>
+
 
   <script src="/static/lib/jquery.min.js"></script>
   <script src="/static/lib/angular.min.js"></script>
