@@ -7,13 +7,13 @@ package main
 
 import (
 	"code.google.com/p/gofpdf"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"io"
 	"net/http"
 	"strconv"
 	"text/template"
-	"io"
-	"encoding/json"
 )
 
 // Generates a CSV-formatted report of the qualification rankings.

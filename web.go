@@ -38,21 +38,21 @@ func ServeWebInterface() {
 
 	// Open in Default Web Browser
 	// Necessary to Authenticate
-	url := "http://localhost:"+strconv.Itoa(httpPort)
+	url := "http://localhost:" + strconv.Itoa(httpPort)
 	var err error
 	switch runtime.GOOS {
-		case "linux":
-		    err = exec.Command("xdg-open", url).Start()
-		case "darwin":
-		    err = exec.Command("open", url).Start()
-		case "windows":
-		    err = exec.Command(`rundll32.exe`, "url.dll,FileProtocolHandler", url).Start()
-		default:
-		    err = fmt.Errorf("unsupported platform")
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+	case "darwin":
+		err = exec.Command("open", url).Start()
+	case "windows":
+		err = exec.Command(`rundll32.exe`, "url.dll,FileProtocolHandler", url).Start()
+	default:
+		err = fmt.Errorf("unsupported platform")
 	}
-    if err != nil {
-        println(err.Error())
-    }
+	if err != nil {
+		println(err.Error())
+	}
 
 	// Start Server
 	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
@@ -60,6 +60,12 @@ func ServeWebInterface() {
 
 func newHandler() http.Handler {
 	router := mux.NewRouter()
+	router.HandleFunc("/setup/teams", TeamsGetHandler).Methods("GET")
+	router.HandleFunc("/setup/teams", TeamsPostHandler).Methods("POST")
+	router.HandleFunc("/setup/teams/clear", TeamsClearHandler).Methods("POST")
+	router.HandleFunc("/setup/teams/{id}/edit", TeamEditGetHandler).Methods("GET")
+	router.HandleFunc("/setup/teams/{id}/edit", TeamEditPostHandler).Methods("POST")
+	router.HandleFunc("/setup/teams/{id}/delete", TeamDeletePostHandler).Methods("POST")
 	router.HandleFunc("/reports/csv/rankings", RankingsCsvReportHandler)
 	router.HandleFunc("/reports/pdf/rankings", RankingsPdfReportHandler)
 	router.HandleFunc("/reports/json/rankings", RankingsJSONReportHandler)
