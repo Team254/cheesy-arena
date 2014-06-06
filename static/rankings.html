@@ -32,37 +32,14 @@
       <td class='assist'>Assist</td>
       <td class='tc'>Auto</td>
       <td class='tc'>T/C</td>
-      <td class='tc'>G Foul</td>
+      <td class='tc'>GF</td>
     </tr>
   </table>
 
   <div id='container'>
-    <table>
-      <tr ng-repeat="team in rankingsOld" class='old'>
-        <td>{{team.Rank}}</td>
-        <td>{{team.TeamId}}</td>
-        <td class='left'>The Cheesy Poofs</td>
-        <td>{{team.Wins}} - {{team.Losses}} - {{team.Ties}} ({{team.Played}})</td>
-        <td>{{team.QualificationScore}}</td>
-        <td>{{team.AssistPoints}}</td>
-        <td>{{team.AutoPoints}}</td>
-        <td>{{team.TrussCatchPoints}}</td>
-        <td>{{team.GoalFoulPoints}}</td>
-      </tr>
-      </table>
-      <br /><hr>
-    <table>
-      <tr ng-repeat="team in rankingsNew" class='new'>
-        <td>{{team.Rank}}</td>
-        <td>{{team.TeamId}}</td>
-        <td class='left'>The Cheesy Poofs</td>
-        <td>{{team.Wins}} - {{team.Losses}} - {{team.Ties}} ({{team.Played}})</td>
-        <td>{{team.QualificationScore}}</td>
-        <td>{{team.AssistPoints}}</td>
-        <td>{{team.AutoPoints}}</td>
-        <td>{{team.TrussCatchPoints}}</td>
-        <td>{{team.GoalFoulPoints}}</td>
-      </tr>
+    <table id='old'>
+    </table>
+    <table id='new'>
     </table>
   </div>
 
@@ -70,9 +47,25 @@
     <span class='right'>As of Match 32</span>
   </div>
 
+  <script id="row-template" type="text/x-handlebars-template">
+    {{#each teams}}
+      <tr>
+        <td>{{this.Rank}}</td>
+        <td>{{this.TeamId}}</td>
+        <td class='left'>The Cheesy Poofs</td>
+        <td>{{this.Wins}} - {{this.Losses}} - {{this.Ties}} ({{this.Played}})</td>
+        <td>{{this.QualificationScore}}</td>
+        <td>{{this.AssistPoints}}</td>
+        <td>{{this.AutoPoints}}</td>
+        <td>{{this.TrussCatchPoints}}</td>
+        <td>{{this.GoalFoulPoints}}</td>
+      </tr>
+    {{/each}}
+  </script>
+
 
   <script src="/static/lib/jquery.min.js"></script>
-  <script src="/static/lib/angular.min.js"></script>
+  <script src="/static/lib/handlebars-1.3.0.js"></script>
   <script src="/static/js/rankings.js"></script>
 </body>
 </html>
