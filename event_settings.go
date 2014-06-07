@@ -6,9 +6,14 @@
 package main
 
 type EventSettings struct {
-	Id   int
-	Name string
-	Code string
+	Id                     int
+	Name                   string
+	Code                   string
+	DisplayBackgroundColor string
+	NumElimAlliances       int
+	SelectionRound1Order   string
+	SelectionRound2Order   string
+	SelectionRound3Order   string
 }
 
 const eventSettingsId = 0
@@ -18,11 +23,17 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 	err := database.eventSettingsMap.Get(eventSettings, eventSettingsId)
 	if err != nil {
 		// Database record doesn't exist yet; create it now.
+		eventSettings.Name = "Untitled Event"
+		eventSettings.Code = "UE"
+		eventSettings.DisplayBackgroundColor = "#00ff00"
+		eventSettings.NumElimAlliances = 8
+		eventSettings.SelectionRound1Order = "F"
+		eventSettings.SelectionRound2Order = "L"
+		eventSettings.SelectionRound3Order = ""
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {
 			return nil, err
 		}
-		return new(EventSettings), nil
 	}
 	return eventSettings, nil
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -19,6 +18,7 @@ func TestSetupTeams(t *testing.T) {
 	db, err = OpenDatabase(testDbPath)
 	assert.Nil(t, err)
 	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 
 	// Check that there are no teams to start.
 	recorder := getHttpResponse("/setup/teams")
@@ -74,6 +74,7 @@ func TestSetupTeamsDisallowModification(t *testing.T) {
 	db, err = OpenDatabase(testDbPath)
 	assert.Nil(t, err)
 	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 	db.CreateTeam(&Team{Id: 254, Nickname: "The Cheesy Poofs"})
 	db.CreateMatch(&Match{Type: "qualification"})
 
@@ -119,12 +120,4 @@ func TestSetupTeamsBadReqest(t *testing.T) {
 	recorder = postHttpResponse("/setup/teams/254/delete", "")
 	assert.Equal(t, 400, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "No such team")
-}
-
-func postHttpResponse(path string, body string) *httptest.ResponseRecorder {
-	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", path, strings.NewReader(body))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
-	newHandler().ServeHTTP(recorder, req)
-	return recorder
 }

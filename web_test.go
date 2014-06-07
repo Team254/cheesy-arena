@@ -1,0 +1,41 @@
+// Copyright 2014 Team 254. All Rights Reserved.
+// Author: pat@patfairbank.com (Patrick Fairbank)
+
+package main
+
+import (
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+)
+
+func TestIndex(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+
+	recorder := getHttpResponse("/")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Cheesy Arena - Untitled Event")
+}
+
+func getHttpResponse(path string) *httptest.ResponseRecorder {
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", path, nil)
+	newHandler().ServeHTTP(recorder, req)
+	return recorder
+}
+
+func postHttpResponse(path string, body string) *httptest.ResponseRecorder {
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", path, strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+	newHandler().ServeHTTP(recorder, req)
+	return recorder
+}

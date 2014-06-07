@@ -10,10 +10,16 @@ import (
 )
 
 var db *Database
+var eventSettings *EventSettings
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	db, _ = OpenDatabase("test.db")
+	var err error
+	db, err = OpenDatabase("test.db")
+	checkErr(err)
+	eventSettings, err = db.GetEventSettings()
+	checkErr(err)
+
 	ServeWebInterface()
 }
 

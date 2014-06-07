@@ -1,51 +1,51 @@
-{{define "title"}}Cheesy Arena{{end}}
+{{define "title"}}Edit Team{{end}}
 {{define "body"}}
 <div class="row">
   <div class="col-lg-6 col-lg-offset-3">
     <div class="well">
-      <form class="form-horizontal" action="/setup/teams/{{.Id}}/edit" method="POST">
+      <form class="form-horizontal" action="/setup/teams/{{.Team.Id}}/edit" method="POST">
         <fieldset>
-          <legend>Edit Team {{.Id}}</legend>
+          <legend>Edit Team {{.Team.Id}}</legend>
           <div class="form-group">
             <label for="textArea" class="col-lg-3 control-label">Name</label>
             <div class="col-lg-9">
-              <textarea class="form-control" rows="5" name="name">{{.Name}}</textarea>
+              <textarea class="form-control" rows="5" name="name">{{.Team.Name}}</textarea>
             </div>
           </div>
           <div class="form-group">
             <label for="inputEmail" class="col-lg-3 control-label">Nickname</label>
             <div class="col-lg-9">
-              <input type="text" class="form-control" name="nickname" value="{{.Nickname}}">
+              <input type="text" class="form-control" name="nickname" value="{{.Team.Nickname}}">
             </div>
           </div>
           <div class="form-group">
             <label for="inputEmail" class="col-lg-3 control-label">City</label>
             <div class="col-lg-9">
-              <input type="text" class="form-control" name="city" value="{{.City}}">
+              <input type="text" class="form-control" name="city" value="{{.Team.City}}">
             </div>
           </div>
           <div class="form-group">
             <label for="inputEmail" class="col-lg-3 control-label">State/Province</label>
             <div class="col-lg-9">
-              <input type="text" class="form-control" name="stateProv" value="{{.StateProv}}">
+              <input type="text" class="form-control" name="stateProv" value="{{.Team.StateProv}}">
             </div>
           </div>
           <div class="form-group">
             <label for="inputEmail" class="col-lg-3 control-label">Country</label>
             <div class="col-lg-9">
-              <input type="text" class="form-control" name="country" value="{{.Country}}">
+              <input type="text" class="form-control" name="country" value="{{.Team.Country}}">
             </div>
           </div>
           <div class="form-group">
             <label for="inputEmail" class="col-lg-3 control-label">Rookie Year</label>
             <div class="col-lg-9">
-              <input type="text" class="form-control" name="rookieYear" value="{{.RookieYear}}">
+              <input type="text" class="form-control" name="rookieYear" value="{{.Team.RookieYear}}">
             </div>
           </div>
           <div class="form-group">
             <label for="inputEmail" class="col-lg-3 control-label">Robot Name</label>
             <div class="col-lg-9">
-              <input type="text" class="form-control" name="robotName" value="{{.RobotName}}">
+              <input type="text" class="form-control" name="robotName" value="{{.Team.RobotName}}">
             </div>
           </div>
           <div class="form-group">
@@ -60,3 +60,4 @@
   </div>
 </div>
 {{end}}
+{{define "script"}}{{end}}

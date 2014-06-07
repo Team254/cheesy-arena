@@ -1,0 +1,124 @@
+{{define "title"}}Settings{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-6 col-lg-offset-3">
+    <div class="well">
+      <form class="form-horizontal" action="/setup/settings" method="POST">
+        <fieldset>
+          <legend>Event Settings</legend>
+          {{if .ErrorMessage}}
+          <div class="alert alert-dismissable alert-danger">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{.ErrorMessage}}
+          </div>
+          {{end}}
+          <div class="form-group">
+            <label for="textArea" class="col-lg-5 control-label">Name</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="name" value="{{.Name}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail" class="col-lg-5 control-label">Code</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="code" value="{{.Code}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail" class="col-lg-5 control-label">Display Background Color</label>
+            <div class="col-lg-7">
+              <div class="input-group" id="displayBackgroundColor">
+                <input type="text" class="form-control" name="displayBackgroundColor"
+                    value="{{.DisplayBackgroundColor}}">
+                <span class="input-group-addon"><i></i></span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail" class="col-lg-5 control-label">Number of Alliances</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="numElimAlliances" value="{{.NumElimAlliances}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail" class="col-lg-5 control-label">Round 1 Selection Order</label>
+            <div class="col-lg-7">
+              <div class="radio">
+                <label>
+                  <input type="radio" name="selectionRound1Order" value="F"
+                      {{if eq .SelectionRound1Order "F"}}checked{{end}}>
+                  First to Last
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" name="selectionRound1Order" value="L"
+                      {{if eq .SelectionRound1Order "L"}}checked{{end}}>
+                  Last to First
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail" class="col-lg-5 control-label">Round 2 Selection Order</label>
+            <div class="col-lg-7">
+              <div class="radio">
+                <label>
+                  <input type="radio" name="selectionRound2Order" value="F"
+                      {{if eq .SelectionRound2Order "F"}}checked{{end}}>
+                  First to Last
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" name="selectionRound2Order" value="L"
+                      {{if eq .SelectionRound2Order "L"}}checked{{end}}>
+                  Last to First
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail" class="col-lg-5 control-label">Round 3 Selection Order</label>
+            <div class="col-lg-7">
+              <div class="radio">
+                <label>
+                  <input type="radio" name="selectionRound3Order" value="F"
+                      {{if eq .SelectionRound3Order "F"}}checked{{end}}>
+                  First to Last
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" name="selectionRound3Order" value="L"
+                      {{if eq .SelectionRound3Order "L"}}checked{{end}}>
+                  Last to First
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" name="selectionRound3Order" value=""
+                      {{if eq .SelectionRound3Order ""}}checked{{end}}>
+                  None
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-lg-7 col-lg-offset-5">
+              <button type="submit" class="btn btn-info">Save</button>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+<script>
+  $(function() {
+    $("#displayBackgroundColor").colorpicker();
+  });
+</script>
+{{end}}

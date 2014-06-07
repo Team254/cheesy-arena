@@ -5,8 +5,6 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -33,6 +31,7 @@ func TestRankingsPdfReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
+	eventSettings, _ = db.GetEventSettings()
 	ranking1 := Ranking{1114, 2, 18, 1100, 625, 90, 554, 0.254, 9, 1, 0, 0, 10}
 	ranking2 := Ranking{254, 1, 20, 1100, 625, 90, 554, 0.254, 10, 0, 0, 0, 10}
 	db.CreateRanking(&ranking1)
@@ -72,6 +71,7 @@ func TestSchedulePdfReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
+	eventSettings, _ = db.GetEventSettings()
 	match := Match{Type: "practice", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
 	db.CreateMatch(&match)
@@ -106,6 +106,7 @@ func TestTeamsPdfReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
+	eventSettings, _ = db.GetEventSettings()
 	team := Team{254, "NASA", "The Cheesy Poofs", "San Jose", "CA", "USA", 1999, "Barrage"}
 	db.CreateTeam(&team)
 
@@ -113,11 +114,4 @@ func TestTeamsPdfReport(t *testing.T) {
 	recorder := getHttpResponse("/reports/pdf/teams")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "application/pdf", recorder.HeaderMap["Content-Type"][0])
-}
-
-func getHttpResponse(path string) *httptest.ResponseRecorder {
-	recorder := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", path, nil)
-	newHandler().ServeHTTP(recorder, req)
-	return recorder
 }

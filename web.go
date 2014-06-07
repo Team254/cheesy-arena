@@ -24,7 +24,10 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	err = template.ExecuteTemplate(w, "base", nil)
+	data := struct {
+		*EventSettings
+	}{eventSettings}
+	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -60,6 +63,8 @@ func ServeWebInterface() {
 
 func newHandler() http.Handler {
 	router := mux.NewRouter()
+	router.HandleFunc("/setup/settings", SettingsGetHandler).Methods("GET")
+	router.HandleFunc("/setup/settings", SettingsPostHandler).Methods("POST")
 	router.HandleFunc("/setup/teams", TeamsGetHandler).Methods("GET")
 	router.HandleFunc("/setup/teams", TeamsPostHandler).Methods("POST")
 	router.HandleFunc("/setup/teams/clear", TeamsClearHandler).Methods("POST")

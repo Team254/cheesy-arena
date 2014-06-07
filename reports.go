@@ -67,11 +67,6 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	eventSettings, err := db.GetEventSettings()
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
 	colWidths := map[string]float64{"Rank": 13, "Team": 23, "QS": 20, "Assist": 20, "Auto": 20,
@@ -160,11 +155,6 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	matchesPerTeam := 0
 	if len(teams) > 0 {
 		matchesPerTeam = len(matches) * teamsPerMatch / len(teams)
-	}
-	eventSettings, err := db.GetEventSettings()
-	if err != nil {
-		handleWebErr(w, err)
-		return
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
@@ -268,11 +258,6 @@ func TeamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 // Generates a PDF-formatted report of the team list.
 func TeamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	teams, err := db.GetAllTeams()
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	eventSettings, err := db.GetEventSettings()
 	if err != nil {
 		handleWebErr(w, err)
 		return

@@ -96,7 +96,11 @@ func TeamEditGetHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	err = template.ExecuteTemplate(w, "base", team)
+	data := struct {
+		*EventSettings
+		*Team
+	}{eventSettings, team}
+	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -127,8 +131,7 @@ func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	team.City = r.PostFormValue("city")
 	team.StateProv = r.PostFormValue("stateProv")
 	team.Country = r.PostFormValue("country")
-	rookieYear, _ := strconv.Atoi(r.PostFormValue("rookieYear"))
-	team.RookieYear = rookieYear
+	team.RookieYear, _ = strconv.Atoi(r.PostFormValue("rookieYear"))
 	team.RobotName = r.PostFormValue("robotName")
 	err = db.SaveTeam(team)
 	if err != nil {
@@ -177,9 +180,10 @@ func renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) 
 		return
 	}
 	data := struct {
+		*EventSettings
 		Teams            []Team
 		ShowErrorMessage bool
-	}{teams, showErrorMessage}
+	}{eventSettings, teams, showErrorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
