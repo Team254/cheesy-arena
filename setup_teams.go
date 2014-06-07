@@ -34,11 +34,6 @@ func TeamsPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
 	var teamNumbers []int
 	for _, teamNumberString := range strings.Split(r.PostFormValue("teamNumbers"), "\r\n") {
 		teamNumber, err := strconv.Atoi(teamNumberString)
@@ -59,7 +54,7 @@ func TeamsPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	renderTeams(w, r, false)
+	http.Redirect(w, r, "/setup/teams", 302)
 }
 
 // Clears the team list.
@@ -74,7 +69,7 @@ func TeamsClearHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	renderTeams(w, r, false)
+	http.Redirect(w, r, "/setup/teams", 302)
 }
 
 // Shows the page to edit a team's fields.
@@ -121,11 +116,6 @@ func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = r.ParseForm()
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
 	team.Name = r.PostFormValue("name")
 	team.Nickname = r.PostFormValue("nickname")
 	team.City = r.PostFormValue("city")
@@ -138,7 +128,7 @@ func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	renderTeams(w, r, false)
+	http.Redirect(w, r, "/setup/teams", 302)
 }
 
 // Removes a team from the team list.
@@ -164,7 +154,7 @@ func TeamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	renderTeams(w, r, false)
+	http.Redirect(w, r, "/setup/teams", 302)
 }
 
 func renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) {

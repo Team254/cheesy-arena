@@ -9,18 +9,24 @@ import (
 	"time"
 )
 
+const eventDbPath = "./event.db"
+
 var db *Database
 var eventSettings *EventSettings
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
+	initDb()
+
+	ServeWebInterface()
+}
+
+func initDb() {
 	var err error
-	db, err = OpenDatabase("test.db")
+	db, err = OpenDatabase(eventDbPath)
 	checkErr(err)
 	eventSettings, err = db.GetEventSettings()
 	checkErr(err)
-
-	ServeWebInterface()
 }
 
 func checkErr(err error) {

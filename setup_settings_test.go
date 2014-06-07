@@ -4,7 +4,12 @@
 package main
 
 import (
+	"bytes"
 	"github.com/stretchr/testify/assert"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -28,7 +33,8 @@ func TestSetupSettings(t *testing.T) {
 	// Change the settings and check the response.
 	recorder = postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&displayBackgroundColor=#ff00ff&"+
 		"numElimAlliances=16")
-	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, 302, recorder.Code)
+	recorder = getHttpResponse("/setup/settings")
 	assert.Contains(t, recorder.Body.String(), "Chezy Champs")
 	assert.Contains(t, recorder.Body.String(), "CC")
 	assert.Contains(t, recorder.Body.String(), "#ff00ff")
@@ -51,4 +57,89 @@ func TestSetupSettingsInvalidValues(t *testing.T) {
 	// Invalid number of alliances.
 	recorder = postHttpResponse("/setup/settings", "numAlliances=1&displayBackgroundColor=#000")
 	assert.Contains(t, recorder.Body.String(), "must be between 2 and 16")
+}
+
+func TestSetupSettingsClearDb(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+
+	db.CreateTeam(new(Team))
+	db.CreateMatch(&Match{Type: "qualification"})
+	db.CreateMatchResult(new(MatchResult))
+	db.CreateRanking(new(Ranking))
+	db.CreateAllianceTeam(new(AllianceTeam))
+	recorder := postHttpResponse("/setup/db/clear", "")
+	assert.Equal(t, 302, recorder.Code)
+
+	teams, _ := db.GetAllTeams()
+	assert.NotEmpty(t, teams)
+	matches, _ := db.GetMatchesByType("qualification")
+	assert.Empty(t, matches)
+	rankings, _ := db.GetAllRankings()
+	assert.Empty(t, rankings)
+	db.CalculateRankings()
+	assert.Empty(t, rankings)
+	alliances, _ := db.GetAllAlliances()
+	assert.Empty(t, alliances)
+}
+
+func TestSetupSettingsBackupRestoreDb(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+
+	// Modify a parameter so that we know when the database has been restored.
+	eventSettings.Name = "Chezy Champs"
+	db.SaveEventSettings(eventSettings)
+
+	// Back up the database.
+	recorder := getHttpResponse("/setup/db/save")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "application/octet-stream", recorder.HeaderMap["Content-Type"][0])
+	backupBody := recorder.Body
+
+	// Wipe the database to reset the defaults.
+	clearDb()
+	defer clearDb()
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+	assert.NotEqual(t, "Chezy Champs", eventSettings.Name)
+
+	// Check restoring with a missing file.
+	recorder = postHttpResponse("/setup/db/restore", "")
+	assert.Contains(t, recorder.Body.String(), "No database backup file was specified")
+	assert.NotEqual(t, "Chezy Champs", eventSettings.Name)
+
+	// Check restoring with a corrupt file.
+	recorder = postFileHttpResponse("/setup/db/restore", "databaseFile", bytes.NewBufferString("invalid"))
+	assert.Contains(t, recorder.Body.String(), "Could not read uploaded database backup file")
+	assert.NotEqual(t, "Chezy Champs", eventSettings.Name)
+
+	// Check restoring with the backup retrieved before.
+	recorder = postFileHttpResponse("/setup/db/restore", "databaseFile", backupBody)
+	assert.Equal(t, "Chezy Champs", eventSettings.Name)
+}
+
+func postFileHttpResponse(path string, paramName string, file *bytes.Buffer) *httptest.ResponseRecorder {
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile(paramName, "file.ext")
+	io.Copy(part, file)
+	writer.Close()
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", path, body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	newHandler().ServeHTTP(recorder, req)
+	return recorder
 }

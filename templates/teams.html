@@ -1,11 +1,11 @@
 {{define "title"}}Team List{{end}}
 {{define "body"}}
 {{if .ShowErrorMessage}}
-<div class="alert alert-dismissable alert-danger">
-  <button type="button" class="close" data-dismiss="alert">×</button>
-  You can't modify the team list once the qualification schedule has been generated. If you need to change the
-  team list, clear all other data first on the Settings page.
-</div>
+  <div class="alert alert-dismissable alert-danger">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    You can't modify the team list once the qualification schedule has been generated. If you need to change
+    the team list, clear all other data first on the Settings page.
+  </div>
 {{end}}
 <div class="row">
   <div class="col-lg-2">
@@ -67,24 +67,25 @@
     </table>
     <b>{{len .Teams}} teams</b>
   </div>
-  <div id="confirmClearTeams" class="modal" style="top: 20%;">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h4 class="modal-title">Confirm</h4>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure you want to clear the team list?</p>
-        </div>
-        <div class="modal-footer">
-          <form class="form-horizontal" action="/setup/teams/clear" method="POST">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Clear Team List</button>
-          </form>
-        </div>
+</div>
+<div id="confirmClearTeams" class="modal" style="top: 20%;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title">Confirm</h4>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to clear the team list?</p>
+      </div>
+      <div class="modal-footer">
+        <form class="form-horizontal" action="/setup/teams/clear" method="POST">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Clear Team List</button>
+        </form>
       </div>
     </div>
   </div>
+</div>
 {{end}}
 {{define "script"}}{{end}}
