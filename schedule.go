@@ -18,9 +18,9 @@ const schedulesDir = "schedules"
 const teamsPerMatch = 6
 
 type ScheduleBlock struct {
-	startTime       time.Time
-	numMatches      int
-	matchSpacingSec int
+	StartTime       time.Time
+	NumMatches      int
+	MatchSpacingSec int
 }
 
 // Creates a random schedule for the given parameters and returns it as a list of matches.
@@ -31,7 +31,7 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 	matchesPerTeam := int(float32(numMatches*teamsPerMatch) / float32(numTeams))
 	file, err := os.Open(fmt.Sprintf("%s/%d_%d.csv", schedulesDir, numTeams, matchesPerTeam))
 	if err != nil {
-		return nil, fmt.Errorf("No schedule exists for %d teams and %d matches", numTeams, matchesPerTeam)
+		return nil, fmt.Errorf("No schedule template exists for %d teams and %d matches", numTeams, matchesPerTeam)
 	}
 	defer file.Close()
 	reader := csv.NewReader(file)
@@ -77,8 +77,8 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 	// Fill in the match times.
 	matchIndex := 0
 	for _, block := range scheduleBlocks {
-		for i := 0; i < block.numMatches; i++ {
-			matches[matchIndex].Time = block.startTime.Add(time.Duration(i*block.matchSpacingSec) * time.Second)
+		for i := 0; i < block.NumMatches; i++ {
+			matches[matchIndex].Time = block.StartTime.Add(time.Duration(i*block.MatchSpacingSec) * time.Second)
 			matchIndex++
 		}
 	}
@@ -89,7 +89,7 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 func countMatches(scheduleBlocks []ScheduleBlock) int {
 	numMatches := 0
 	for _, block := range scheduleBlocks {
-		numMatches += block.numMatches
+		numMatches += block.NumMatches
 	}
 	return numMatches
 }
