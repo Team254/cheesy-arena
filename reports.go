@@ -192,9 +192,17 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 			surrogate = true
 		}
 
+		// Capitalize match types.
+		matchType := match.Type
+		if matchType == "qualification" {
+			matchType = "Qualification"
+		} else if matchType == "practice" {
+			matchType = "Practice"
+		}
+
 		// Render match info row.
 		pdf.CellFormat(colWidths["Time"], height, match.Time.Local().Format("Mon 1/02 03:04 PM"), borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Type"], height, match.Type, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Type"], height, matchType, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Match"], height, match.DisplayName, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Team"], height, strconv.Itoa(match.Red1), borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Team"], height, strconv.Itoa(match.Red2), borderStr, 0, alignStr, false, 0, "")
