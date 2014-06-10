@@ -25,14 +25,12 @@
   <table>
     <tr id='header'>
       <td class='rank'>Rank</td>
-      <td class='team'></td>
       <td class='team'>Team</td>
-      <td class='qs'>Record</td>
+      <td class='team'>Name</td>
       <td class='qs'>QS</td>
       <td class='assist'>Assist</td>
       <td class='tc'>Auto</td>
-      <td class='tc'>T/C</td>
-      <td class='tc'>GF</td>
+      <td class='qs'>W-L-T</td>
     </tr>
   </table>
 
@@ -53,12 +51,10 @@
         <td>{{this.Rank}}</td>
         <td>{{this.TeamId}}</td>
         <td class='left'>The Cheesy Poofs</td>
-        <td>{{this.Wins}} - {{this.Losses}} - {{this.Ties}} ({{this.Played}})</td>
         <td>{{this.QualificationScore}}</td>
         <td>{{this.AssistPoints}}</td>
         <td>{{this.AutoPoints}}</td>
-        <td>{{this.TrussCatchPoints}}</td>
-        <td>{{this.GoalFoulPoints}}</td>
+        <td>{{this.Wins}} - {{this.Losses}} - {{this.Ties}}</td>
       </tr>
     {{/each}}
   </script>

@@ -24,7 +24,7 @@ function getData(callback){
 function populateView(){
   $('#container table').html(template(rankings));
   equalize(true);
-  scroll();
+  setTimeout(scroll, PAUSE_TIME);
 }
 
 // Balance Column Widths
@@ -48,7 +48,7 @@ function equalize(all){
   });
 }
 
-var SCROLL_SPEED = 1000;
+var SCROLL_SPEED = 1000;  // Smaller is Faster
 function scroll(){
   $('#container').scrollTop(0);
 
@@ -62,9 +62,10 @@ function scroll(){
   interval = setInterval(pollForUpdate, POLL_INTERVAL);
 }
 
+var PAUSE_TIME = 5000;
 function reset(){
   $('#container table#old').html($('#container table#new').html());
-  scroll();
+  setTimeout(scroll, PAUSE_TIME);
 }
 
 var POLL_INTERVAL = 1000;
