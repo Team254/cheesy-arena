@@ -3,6 +3,16 @@ Copyright 2014 Team 254. All Rights Reserved.
 Author: nick@team254.com (Nick Eyre)
 */
 
+.controlpanel {
+	position: fixed;
+	right: 20px;
+	top: 20px;
+	z-index: 99;
+	background-color: white;
+	padding: 20px;
+	border: 1px solid black;
+}
+
 html,body {
 	height: 100%;
 	margin: 0;
@@ -38,13 +48,13 @@ html,body {
 	background-size: 100%;
 }
 
-#fillerscreen .blinds.background {
+#logoScreen .blinds.background {
 	background-image: url('/static/img/endofmatch-bg.png');
 }
-#fillerscreen .blinds.center {
+#logoScreen .blinds.center {
 	background-image: url('/static/img/endofmatch-center.png');
   	-webkit-backface-visibility: hidden;
 }
-#fillerscreen .blinds.center.blank {
+#logoScreen .blinds.center.blank {
 	background-image: url('/static/img/endofmatch-center-blank.png');
 }
