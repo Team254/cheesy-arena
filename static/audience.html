@@ -17,13 +17,7 @@
 </head>
 <body>
 
-  <div class='container' id='logoScreen'>
-    <div class='blinds right background'>&nbsp;</div>
-    <div class='blinds right center blank'>&nbsp;</div>
-    <div class='blinds left background'>&nbsp;</div>
-    <div class='blinds left center'>&nbsp;</div>
-    <div class='blinds left center blank'>&nbsp;</div>
-  </div>
+  <div id='container'></div>
 
   <div class='controlpanel'>
     <h3>Control Panel</h3>
@@ -34,6 +28,16 @@
   <script src="/static/lib/jquery.min.js"></script>
   <script src="/static/lib/jquery.transit.min.js"></script>
   <script src="/static/js/audience.js"></script>
+
+  <script type='text/x-template' class='template' id='logoScreen'>
+    <div id='logoScreen'>
+      <div class='blinds right background'>&nbsp;</div>
+      <div class='blinds right center blank'>&nbsp;</div>
+      <div class='blinds left background'>&nbsp;</div>
+      <div class='blinds left center'>&nbsp;</div>
+      <div class='blinds left center blank'>&nbsp;</div>
+    </div>
+  </script>
 
 </body>
 </html>
