@@ -3,6 +3,7 @@ Copyright 2014 Team 254. All Rights Reserved.
 Author: nick@team254.com (Nick Eyre)
 */
 
+/* Control Panel (Temporary) */
 .controlpanel {
 	position: fixed;
 	right: 20px;
@@ -13,12 +14,13 @@ Author: nick@team254.com (Nick Eyre)
 	border: 1px solid black;
 }
 
+/* Top Level Container */
 html,body {
 	height: 100%;
 	margin: 0;
 	width: 100%;
 }
-.container {
+#topcontainer {
 	position: fixed;
 	top: 0;
 	bottom: 0;
@@ -26,7 +28,7 @@ html,body {
 	right: 0;
 }
 
-
+/* Design Element: Blinds */
 .blinds {
 	position: fixed;
 	top: 0;
@@ -48,13 +50,14 @@ html,body {
 	background-size: 100%;
 }
 
-#logoScreen .blinds.background {
+/* Screen: Logo */
+#logo .blinds.background {
 	background-image: url('/static/img/endofmatch-bg.png');
 }
-#logoScreen .blinds.center {
+#logo .blinds.center {
 	background-image: url('/static/img/endofmatch-center.png');
   	-webkit-backface-visibility: hidden;
 }
-#logoScreen .blinds.center.blank {
+#logo .blinds.center.blank {
 	background-image: url('/static/img/endofmatch-center-blank.png');
 }

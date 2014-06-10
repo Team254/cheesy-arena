@@ -9,7 +9,7 @@
 
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Cheesy Arena - A/V Overlay</title>
+  <title>Cheesy Arena - Audience Screen</title>
   <meta name="generator" content="Cheesy Arena" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/static/css/fonts/roboto-regular/stylesheet.css" type="text/css" charset="utf-8" />
@@ -17,26 +17,25 @@
 </head>
 <body>
 
-  <div id='container'></div>
+  <div id='topcontainer'></div>
 
   <div class='controlpanel'>
     <h3>Control Panel</h3>
-    <button onclick="handle = logoScreen();">Logo</button><br />
-    <button onclick="handle();">None</button><br />
+    <button onclick="openScreen('logo');">Logo</button><br />
+    <button onclick="openScreen('blank');">None</button><br />
   </button>
 
   <script src="/static/lib/jquery.min.js"></script>
   <script src="/static/lib/jquery.transit.min.js"></script>
   <script src="/static/js/audience.js"></script>
 
-  <script type='text/x-template' class='template' id='logoScreen'>
-    <div id='logoScreen'>
-      <div class='blinds right background'>&nbsp;</div>
-      <div class='blinds right center blank'>&nbsp;</div>
-      <div class='blinds left background'>&nbsp;</div>
-      <div class='blinds left center'>&nbsp;</div>
-      <div class='blinds left center blank'>&nbsp;</div>
-    </div>
+  <script type='text/x-template' class='template' id='blank'></script>
+  <script type='text/x-template' class='template' id='logo'>
+    <div class='blinds right background'>&nbsp;</div>
+    <div class='blinds right center blank'>&nbsp;</div>
+    <div class='blinds left background'>&nbsp;</div>
+    <div class='blinds left center'>&nbsp;</div>
+    <div class='blinds left center blank'>&nbsp;</div>
   </script>
 
 </body>
