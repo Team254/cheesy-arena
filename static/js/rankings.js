@@ -23,27 +23,18 @@ function getData(callback){
 
 function populateView(){
   $('#container table').html(template(rankings));
-  equalize(true);
+  equalize();
   setTimeout(scroll, PAUSE_TIME);
 }
 
 // Balance Column Widths
 var widths = [];
-function equalize(all){
-  if(all){
-    var width = $('#container table').width();
-    var count = $('#container tr').first().children('td').length;
-    var offset = ($(window).width() - width) / (count + 1);
-    $('#container tr').first().children('td').each(function(){
-      var width = $(this).width()+offset;
-      $(this).width(width);
-      widths.push(width);
-    });
-    $('#header').children('td').each(function(index){
-      $(this).width(widths[index]);
-    });
-  }
-  $('#container table#new tr').first().children('td').each(function(index){
+function equalize(){
+  $('#container #new tr').first().children('td').each(function(){
+    var width = $(this).width();
+    widths.push(width);
+  });
+  $('#header').children('td').each(function(index){
     $(this).width(widths[index]);
   });
 }

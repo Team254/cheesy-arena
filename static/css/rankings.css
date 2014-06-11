@@ -7,7 +7,7 @@ body {
 	font-family: 'robotoregular';
 	position: fixed;
 	font-size: 2em;
-	cursor: none;
+	/*cursor: none;*/
 }
 
 #titlebar {
@@ -32,7 +32,6 @@ body {
 	width: 100%;
 	background-color: #0070ff;
 	color: white;
-	text-align: center;
 }
 #container {
 	position: fixed;
@@ -45,6 +44,10 @@ body {
 }
 ::-webkit-scrollbar { 
     display: none; 
+}
+table {
+	width: 100%;
+	text-align: right;
 }
 td {
 	padding: 0.2em 1em;
