@@ -11,7 +11,6 @@ type EventSettings struct {
 	Code                   string
 	DisplayBackgroundColor string
 	NumElimAlliances       int
-	SelectionRound1Order   string
 	SelectionRound2Order   string
 	SelectionRound3Order   string
 }
@@ -27,7 +26,6 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.Code = "UE"
 		eventSettings.DisplayBackgroundColor = "#00ff00"
 		eventSettings.NumElimAlliances = 8
-		eventSettings.SelectionRound1Order = "F"
 		eventSettings.SelectionRound2Order = "L"
 		eventSettings.SelectionRound3Order = ""
 		err = database.eventSettingsMap.Insert(eventSettings)

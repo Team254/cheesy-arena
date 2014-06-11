@@ -39,7 +39,6 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	eventSettings.NumElimAlliances = numAlliances
-	eventSettings.SelectionRound1Order = r.PostFormValue("selectionRound1Order")
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
 	err := db.SaveEventSettings(eventSettings)
