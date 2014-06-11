@@ -198,6 +198,8 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 			matchType = "Qualification"
 		} else if matchType == "practice" {
 			matchType = "Practice"
+		} else if matchType == "elimination" {
+			matchType = "Elimination"
 		}
 
 		// Render match info row.

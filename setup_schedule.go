@@ -28,7 +28,7 @@ func ScheduleGetHandler(w http.ResponseWriter, r *http.Request) {
 		cachedScheduleBlocks = append(cachedScheduleBlocks, ScheduleBlock{startTime, 10, 360})
 		cachedMatchType = "practice"
 	}
-	renderSchedule(w, r, cachedMatchType, cachedScheduleBlocks, cachedMatches, cachedTeamFirstMatches, "")
+	renderSchedule(w, r, "")
 }
 
 // Generates the schedule and presents it for review without saving it to the database.
@@ -36,8 +36,7 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	scheduleBlocks, err := getScheduleBlocks(r)
 	if err != nil {
-		renderSchedule(w, r, cachedMatchType, cachedScheduleBlocks, cachedMatches, cachedTeamFirstMatches,
-			"Incomplete or invalid schedule block parameters specified.")
+		renderSchedule(w, r, "Incomplete or invalid schedule block parameters specified.")
 		return
 	}
 
@@ -48,19 +47,18 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(teams) == 0 {
-		renderSchedule(w, r, cachedMatchType, cachedScheduleBlocks, cachedMatches, cachedTeamFirstMatches,
-			"No team list is configured. Set up the list of teams at the event before generating the schedule.")
+		renderSchedule(w, r, "No team list is configured. Set up the list of teams at the event before "+
+			"generating the schedule.")
 		return
 	}
 	if len(teams) < 18 {
-		renderSchedule(w, r, cachedMatchType, cachedScheduleBlocks, cachedMatches, cachedTeamFirstMatches,
-			fmt.Sprintf("There are only %d teams. There must be at least 18 teams to generate a schedule.", len(teams)))
+		renderSchedule(w, r, fmt.Sprintf("There are only %d teams. There must be at least 18 teams to generate "+
+			"a schedule.", len(teams)))
 		return
 	}
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, r.PostFormValue("matchType"))
 	if err != nil {
-		renderSchedule(w, r, cachedMatchType, cachedScheduleBlocks, cachedMatches, cachedTeamFirstMatches,
-			fmt.Sprintf("Error generating schedule: %s.", err.Error()))
+		renderSchedule(w, r, fmt.Sprintf("Error generating schedule: %s.", err.Error()))
 		return
 	}
 
@@ -96,9 +94,8 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(existingMatches) > 0 {
-		renderSchedule(w, r, cachedMatchType, cachedScheduleBlocks, cachedMatches, cachedTeamFirstMatches,
-			fmt.Sprintf("Can't save schedule because a schedule of %d %s matches already exists. Clear it first "+
-				" on the Settings page.", len(existingMatches), cachedMatchType))
+		renderSchedule(w, r, fmt.Sprintf("Can't save schedule because a schedule of %d %s matches already "+
+			"exists. Clear it first on the Settings page.", len(existingMatches), cachedMatchType))
 		return
 	}
 
@@ -112,8 +109,7 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/setup/schedule", 302)
 }
 
-func renderSchedule(w http.ResponseWriter, r *http.Request, matchType string, scheduleBlocks []ScheduleBlock,
-	matches []Match, teamFirstMatches map[int]string, errorMessage string) {
+func renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string) {
 	teams, err := db.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
@@ -132,7 +128,8 @@ func renderSchedule(w http.ResponseWriter, r *http.Request, matchType string, sc
 		Matches          []Match
 		TeamFirstMatches map[int]string
 		ErrorMessage     string
-	}{eventSettings, matchType, scheduleBlocks, len(teams), matches, teamFirstMatches, errorMessage}
+	}{eventSettings, cachedMatchType, cachedScheduleBlocks, len(teams), cachedMatches, cachedTeamFirstMatches,
+		errorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
