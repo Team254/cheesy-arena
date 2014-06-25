@@ -55,18 +55,18 @@ func TestScheduleTeams(t *testing.T) {
 	scheduleBlocks := []ScheduleBlock{{time.Unix(0, 0).UTC(), 6, 60}}
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	assert.Nil(t, err)
-	assert.Equal(t, Match{Type: "test", DisplayName: "1", Time: time.Unix(0, 0).UTC(), Red1: 107, Red2: 102,
-		Red3: 117, Blue1: 115, Blue2: 106, Blue3: 116}, matches[0])
-	assert.Equal(t, Match{Type: "test", DisplayName: "2", Time: time.Unix(60, 0).UTC(), Red1: 109, Red2: 113,
-		Red3: 104, Blue1: 108, Blue2: 112, Blue3: 118}, matches[1])
-	assert.Equal(t, Match{Type: "test", DisplayName: "3", Time: time.Unix(120, 0).UTC(), Red1: 103, Red2: 111,
-		Red3: 105, Blue1: 114, Blue2: 101, Blue3: 110}, matches[2])
-	assert.Equal(t, Match{Type: "test", DisplayName: "4", Time: time.Unix(180, 0).UTC(), Red1: 102, Red2: 104,
-		Red3: 115, Blue1: 117, Blue2: 118, Blue3: 113}, matches[3])
-	assert.Equal(t, Match{Type: "test", DisplayName: "5", Time: time.Unix(240, 0).UTC(), Red1: 108, Red2: 114,
-		Red3: 106, Blue1: 103, Blue2: 101, Blue3: 116}, matches[4])
-	assert.Equal(t, Match{Type: "test", DisplayName: "6", Time: time.Unix(300, 0).UTC(), Red1: 109, Red2: 112,
-		Red3: 111, Blue1: 110, Blue2: 107, Blue3: 105}, matches[5])
+	assert.Equal(t, Match{Type: "test", DisplayName: "1", Time: time.Unix(0, 0).UTC(), Red1: 115, Red2: 111,
+		Red3: 108, Blue1: 109, Blue2: 116, Blue3: 117}, matches[0])
+	assert.Equal(t, Match{Type: "test", DisplayName: "2", Time: time.Unix(60, 0).UTC(), Red1: 114, Red2: 112,
+		Red3: 103, Blue1: 101, Blue2: 104, Blue3: 118}, matches[1])
+	assert.Equal(t, Match{Type: "test", DisplayName: "3", Time: time.Unix(120, 0).UTC(), Red1: 110, Red2: 107,
+		Red3: 105, Blue1: 106, Blue2: 113, Blue3: 102}, matches[2])
+	assert.Equal(t, Match{Type: "test", DisplayName: "4", Time: time.Unix(180, 0).UTC(), Red1: 112, Red2: 108,
+		Red3: 109, Blue1: 101, Blue2: 111, Blue3: 103}, matches[3])
+	assert.Equal(t, Match{Type: "test", DisplayName: "5", Time: time.Unix(240, 0).UTC(), Red1: 113, Red2: 117,
+		Red3: 115, Blue1: 110, Blue2: 114, Blue3: 102}, matches[4])
+	assert.Equal(t, Match{Type: "test", DisplayName: "6", Time: time.Unix(300, 0).UTC(), Red1: 118, Red2: 105,
+		Red3: 106, Blue1: 107, Blue2: 104, Blue3: 116}, matches[5])
 }
 
 func TestScheduleTiming(t *testing.T) {
