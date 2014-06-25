@@ -82,6 +82,8 @@ func newHandler() http.Handler {
 	router.HandleFunc("/setup/alliance_selection/start", AllianceSelectionStartHandler).Methods("POST")
 	router.HandleFunc("/setup/alliance_selection/reset", AllianceSelectionResetHandler).Methods("POST")
 	router.HandleFunc("/setup/alliance_selection/finalize", AllianceSelectionFinalizeHandler).Methods("POST")
+	router.HandleFunc("/match_play", MatchPlayHandler).Methods("GET")
+	router.HandleFunc("/match_play/{matchId}/generate_fake_result", MatchPlayFakeResultHandler).Methods("GET")
 	router.HandleFunc("/reports/csv/rankings", RankingsCsvReportHandler)
 	router.HandleFunc("/reports/pdf/rankings", RankingsPdfReportHandler)
 	router.HandleFunc("/reports/json/rankings", RankingsJSONReportHandler)

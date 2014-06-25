@@ -1,0 +1,54 @@
+{{define "title"}}Match Play{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-4">
+    <ul class="nav nav-tabs" style="margin-bottom: 15px;">
+      <li{{if eq .CurrentMatchType "practice" }} class="active"{{end}}>
+        <a href="#practice" data-toggle="tab">Practice</a>
+      </li>
+      <li{{if eq .CurrentMatchType "qualification" }} class="active"{{end}}>
+        <a href="#qualification" data-toggle="tab">Qualification</a>
+      </li>
+      <li{{if eq .CurrentMatchType "elimination" }} class="active"{{end}}>
+        <a href="#elimination" data-toggle="tab">Elimination</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      {{range $type, $matches := .MatchesByType}}
+        <div class="tab-pane {{if eq $.CurrentMatchType $type }} active{{end}}" id="{{$type}}">
+          <table class="table table-striped table-hover ">
+            <thead>
+              <tr>
+                <th>Match</th>
+                <th>Time</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range $match := $matches}}
+                <tr class="{{$match.ColorClass}}">
+                  <td>{{$match.DisplayName}}</td>
+                  <td>{{$match.Time}}</td>
+                  <td class="text-center" style="white-space: nowrap;">
+                    <a href="/match_play/{{$match.Id}}/generate_fake_result">
+                      <b class="btn btn-info btn-xs">Generate Fake Result</b>
+                    </a>
+                  </td>
+                </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      {{end}}
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="jumbotron">
+      <h2>Placeholder for the match play interface.</h2>
+      <p>For now, use the "Generate Fake Result" buttons to simulate matches being played and scored.</p>
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+{{end}}
