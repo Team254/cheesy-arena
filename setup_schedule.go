@@ -34,11 +34,13 @@ func ScheduleGetHandler(w http.ResponseWriter, r *http.Request) {
 // Generates the schedule and presents it for review without saving it to the database.
 func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
+	cachedMatchType = r.PostFormValue("matchType")
 	scheduleBlocks, err := getScheduleBlocks(r)
 	if err != nil {
 		renderSchedule(w, r, "Incomplete or invalid schedule block parameters specified.")
 		return
 	}
+	cachedScheduleBlocks = scheduleBlocks
 
 	// Build the schedule.
 	teams, err := db.GetAllTeams()
@@ -61,6 +63,7 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 		renderSchedule(w, r, fmt.Sprintf("Error generating schedule: %s.", err.Error()))
 		return
 	}
+	cachedMatches = matches
 
 	// Determine each team's first match.
 	teamFirstMatches := make(map[int]string)
@@ -78,11 +81,8 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 		checkTeam(match.Blue2)
 		checkTeam(match.Blue3)
 	}
-
-	cachedMatchType = r.PostFormValue("matchType")
-	cachedScheduleBlocks = scheduleBlocks
-	cachedMatches = matches
 	cachedTeamFirstMatches = teamFirstMatches
+
 	http.Redirect(w, r, "/setup/schedule", 302)
 }
 

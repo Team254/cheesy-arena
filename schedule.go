@@ -8,6 +8,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -29,6 +30,10 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 	numTeams := len(teams)
 	numMatches := countMatches(scheduleBlocks)
 	matchesPerTeam := int(float32(numMatches*teamsPerMatch) / float32(numTeams))
+
+	// Adjust the number of matches to remove any excess from non-perfect block scheduling.
+	numMatches = int(math.Ceil(float64(numTeams) * float64(matchesPerTeam) / teamsPerMatch))
+
 	file, err := os.Open(fmt.Sprintf("%s/%d_%d.csv", schedulesDir, numTeams, matchesPerTeam))
 	if err != nil {
 		return nil, fmt.Errorf("No schedule template exists for %d teams and %d matches", numTeams, matchesPerTeam)
@@ -77,7 +82,7 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 	// Fill in the match times.
 	matchIndex := 0
 	for _, block := range scheduleBlocks {
-		for i := 0; i < block.NumMatches; i++ {
+		for i := 0; i < block.NumMatches && matchIndex < numMatches; i++ {
 			matches[matchIndex].Time = block.StartTime.Add(time.Duration(i*block.MatchSpacingSec) * time.Second)
 			matchIndex++
 		}

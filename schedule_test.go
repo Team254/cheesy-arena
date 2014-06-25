@@ -67,6 +67,11 @@ func TestScheduleTeams(t *testing.T) {
 		Red3: 115, Blue1: 110, Blue2: 114, Blue3: 102}, matches[4])
 	assert.Equal(t, Match{Type: "test", DisplayName: "6", Time: time.Unix(300, 0).UTC(), Red1: 118, Red2: 105,
 		Red3: 106, Blue1: 107, Blue2: 104, Blue3: 116}, matches[5])
+
+	// Check with excess room for matches in the schedule.
+	scheduleBlocks = []ScheduleBlock{{time.Unix(0, 0).UTC(), 7, 60}}
+	matches, err = BuildRandomSchedule(teams, scheduleBlocks, "test")
+	assert.Nil(t, err)
 }
 
 func TestScheduleTiming(t *testing.T) {
