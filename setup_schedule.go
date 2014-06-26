@@ -36,11 +36,11 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	cachedMatchType = r.PostFormValue("matchType")
 	scheduleBlocks, err := getScheduleBlocks(r)
+	cachedScheduleBlocks = scheduleBlocks // Show the same blocks even if there is an error.
 	if err != nil {
 		renderSchedule(w, r, "Incomplete or invalid schedule block parameters specified.")
 		return
 	}
-	cachedScheduleBlocks = scheduleBlocks
 
 	// Build the schedule.
 	teams, err := db.GetAllTeams()
@@ -143,22 +143,23 @@ func getScheduleBlocks(r *http.Request) ([]ScheduleBlock, error) {
 	if err != nil {
 		return []ScheduleBlock{}, err
 	}
+	var returnErr error
 	scheduleBlocks := make([]ScheduleBlock, numScheduleBlocks)
 	location, _ := time.LoadLocation("Local")
 	for i := 0; i < numScheduleBlocks; i++ {
 		scheduleBlocks[i].StartTime, err = time.ParseInLocation("2006-01-02 03:04:05 PM",
 			r.PostFormValue(fmt.Sprintf("startTime%d", i)), location)
 		if err != nil {
-			return []ScheduleBlock{}, err
+			returnErr = err
 		}
 		scheduleBlocks[i].NumMatches, err = strconv.Atoi(r.PostFormValue(fmt.Sprintf("numMatches%d", i)))
 		if err != nil {
-			return []ScheduleBlock{}, err
+			returnErr = err
 		}
 		scheduleBlocks[i].MatchSpacingSec, err = strconv.Atoi(r.PostFormValue(fmt.Sprintf("matchSpacingSec%d", i)))
 		if err != nil {
-			return []ScheduleBlock{}, err
+			returnErr = err
 		}
 	}
-	return scheduleBlocks, nil
+	return scheduleBlocks, returnErr
 }
