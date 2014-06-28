@@ -15,8 +15,8 @@ type MatchResult struct {
 	PlayNumber int
 	RedScore   Score
 	BlueScore  Score
-	RedFouls   Fouls
-	BlueFouls  Fouls
+	RedFouls   []Foul
+	BlueFouls  []Foul
 	Cards      Cards
 }
 
@@ -51,15 +51,11 @@ type Cycle struct {
 	DeadBall   bool
 }
 
-type Fouls struct {
-	Fouls     []Foul
-	TechFouls []Foul
-}
-
 type Foul struct {
 	TeamId         int
 	Rule           string
 	TimeInMatchSec float32
+	IsTechnical    bool
 }
 
 type Cards struct {
@@ -131,16 +127,16 @@ func (database *Database) TruncateMatchResults() error {
 
 // Calculates and returns the summary fields used for ranking and display for the red alliance.
 func (matchResult *MatchResult) RedScoreSummary() *ScoreSummary {
-	return scoreSummary(&matchResult.RedScore, &matchResult.BlueFouls)
+	return scoreSummary(&matchResult.RedScore, matchResult.BlueFouls)
 }
 
 // Calculates and returns the summary fields used for ranking and display for the blue alliance.
 func (matchResult *MatchResult) BlueScoreSummary() *ScoreSummary {
-	return scoreSummary(&matchResult.BlueScore, &matchResult.RedFouls)
+	return scoreSummary(&matchResult.BlueScore, matchResult.RedFouls)
 }
 
 // Calculates and returns the summary fields used for ranking and display.
-func scoreSummary(score *Score, opponentFouls *Fouls) *ScoreSummary {
+func scoreSummary(score *Score, opponentFouls []Foul) *ScoreSummary {
 	summary := new(ScoreSummary)
 
 	// Calculate autonomous score.
@@ -171,7 +167,14 @@ func scoreSummary(score *Score, opponentFouls *Fouls) *ScoreSummary {
 	}
 
 	// Calculate foul score.
-	summary.FoulPoints = 20*len(opponentFouls.Fouls) + 50*len(opponentFouls.TechFouls)
+	summary.FoulPoints = 0
+	for _, foul := range opponentFouls {
+		if foul.IsTechnical {
+			summary.FoulPoints += 50
+		} else {
+			summary.FoulPoints += 20
+		}
+	}
 
 	// Fill in summed values.
 	summary.TeleopPoints = summary.AssistPoints + summary.TrussCatchPoints + summary.GoalPoints

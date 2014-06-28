@@ -151,12 +151,12 @@ func buildTestMatchResult(matchId int, playNumber int) MatchResult {
 	cycle1 := Cycle{3, true, true, true, false, false}
 	cycle2 := Cycle{2, false, false, false, true, false}
 	cycle3 := Cycle{1, true, false, false, false, true}
-	fouls := Fouls{[]Foul{Foul{25, "G22", 25.2}, Foul{25, "G18", 150}}, []Foul{Foul{1868, "G20", 0}}}
+	fouls := []Foul{Foul{25, "G22", 25.2, false}, Foul{25, "G18", 150, false}, Foul{1868, "G20", 0, true}}
 	matchResult := MatchResult{MatchId: matchId, PlayNumber: playNumber}
 	matchResult.RedScore = Score{1, 2, 3, 4, 5, 6, 7, []Cycle{cycle1, cycle2, cycle3}}
 	matchResult.BlueScore = Score{7, 6, 5, 4, 3, 2, 1, []Cycle{cycle3, cycle1, cycle1, cycle1}}
 	matchResult.RedFouls = fouls
-	matchResult.BlueFouls = Fouls{}
+	matchResult.BlueFouls = []Foul{}
 	matchResult.Cards = Cards{[]int{1868}, []int{}}
 	return matchResult
 }
