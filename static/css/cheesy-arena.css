@@ -16,3 +16,22 @@
 .well-darkblue {
   background-color: #c4e3f3;
 }
+.col-no-padding {
+  padding-left: 0;
+  padding-right: 0;
+}
+.ds-status, .robot-status, .battery-status, .bypass-button {
+  background-color: #aaa;
+  color: #000;
+  border: 1px solid #999;
+  border-radius: 4px;
+  padding: 5px;
+  width: 40px;
+  height: 27px;
+  margin: 2px;
+  font-family: Arial;
+  margin: 0 auto;
+}
+.bypass-button {
+  background-color: #0e8;
+}

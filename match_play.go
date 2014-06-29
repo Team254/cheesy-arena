@@ -19,6 +19,7 @@ type MatchPlayListItem struct {
 	Id          int
 	DisplayName string
 	Time        string
+	Status      string
 	ColorClass  string
 }
 
@@ -26,6 +27,8 @@ type MatchPlayList []MatchPlayListItem
 
 // Global var to hold the current active tournament so that its matches are displayed by default.
 var currentMatchType string
+
+var currentMatch *Match
 
 // Shows the match play control interface.
 func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
@@ -55,16 +58,40 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	if currentMatchType == "" {
 		currentMatchType = "practice"
 	}
+	if currentMatch == nil {
+		currentMatch = new(Match)
+	}
 	data := struct {
 		*EventSettings
 		MatchesByType    map[string]MatchPlayList
 		CurrentMatchType string
-	}{eventSettings, matchesByType, currentMatchType}
+		Match            *Match
+	}{eventSettings, matchesByType, currentMatchType, currentMatch}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+}
+
+func MatchPlayQueueHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	matchId, _ := strconv.Atoi(vars["matchId"])
+	match, err := db.GetMatchById(matchId)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	if match == nil {
+		handleWebErr(w, fmt.Errorf("Invalid match ID %d.", matchId))
+		return
+	}
+
+	// TODO(pat): Disallow if there is a match currently being played or there are uncommitted results.
+	currentMatch = match
+	currentMatchType = match.Type
+
+	http.Redirect(w, r, "/match_play", 302)
 }
 
 func MatchPlayFakeResultHandler(w http.ResponseWriter, r *http.Request) {
@@ -149,7 +176,7 @@ func (list MatchPlayList) Len() int {
 }
 
 func (list MatchPlayList) Less(i, j int) bool {
-	return list[i].ColorClass == "" && list[j].ColorClass != ""
+	return list[i].Status != "complete" && list[j].Status == "complete"
 }
 
 func (list MatchPlayList) Swap(i, j int) {
@@ -173,6 +200,7 @@ func buildMatchPlayList(matchType string) (MatchPlayList, error) {
 		matchPlayList[i].Id = match.Id
 		matchPlayList[i].DisplayName = prefix + match.DisplayName
 		matchPlayList[i].Time = match.Time.Format("3:04 PM")
+		matchPlayList[i].Status = match.Status
 		switch match.Winner {
 		case "R":
 			matchPlayList[i].ColorClass = "danger"
@@ -182,6 +210,9 @@ func buildMatchPlayList(matchType string) (MatchPlayList, error) {
 			matchPlayList[i].ColorClass = "warning"
 		default:
 			matchPlayList[i].ColorClass = ""
+		}
+		if currentMatch != nil && matchPlayList[i].Id == currentMatch.Id {
+			matchPlayList[i].ColorClass = "success"
 		}
 	}
 

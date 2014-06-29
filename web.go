@@ -11,9 +11,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os/exec"
-	"runtime"
-	"strconv"
 )
 
 const httpPort = 8080
@@ -38,24 +35,6 @@ func ServeWebInterface() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 	http.Handle("/", newHandler())
 	log.Printf("Serving HTTP requests on port %d", httpPort)
-
-	// Open in Default Web Browser
-	// Necessary to Authenticate
-	url := "http://localhost:" + strconv.Itoa(httpPort)
-	var err error
-	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	case "windows":
-		err = exec.Command(`rundll32.exe`, "url.dll,FileProtocolHandler", url).Start()
-	default:
-		err = fmt.Errorf("unsupported platform")
-	}
-	if err != nil {
-		println(err.Error())
-	}
 
 	// Start Server
 	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
@@ -83,6 +62,7 @@ func newHandler() http.Handler {
 	router.HandleFunc("/setup/alliance_selection/reset", AllianceSelectionResetHandler).Methods("POST")
 	router.HandleFunc("/setup/alliance_selection/finalize", AllianceSelectionFinalizeHandler).Methods("POST")
 	router.HandleFunc("/match_play", MatchPlayHandler).Methods("GET")
+	router.HandleFunc("/match_play/{matchId}/queue", MatchPlayQueueHandler).Methods("GET")
 	router.HandleFunc("/match_play/{matchId}/generate_fake_result", MatchPlayFakeResultHandler).Methods("GET")
 	router.HandleFunc("/match_review", MatchReviewHandler).Methods("GET")
 	router.HandleFunc("/match_review/{matchId}/edit", MatchReviewEditGetHandler).Methods("GET")
