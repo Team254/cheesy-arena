@@ -1,0 +1,294 @@
+{{define "title"}}Edit Match Results{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="well">
+    <form class="form-horizontal" action="/match_review/{{.Match.Id}}/edit" method="POST">
+      <fieldset>
+        <legend>Edit Match {{.Match.DisplayName}} Results</legend>
+        <div class="col-lg-6" id="redScore"></div>
+        <div class="col-lg-6" id="blueScore"></div>
+        <div class="row form-group">
+          <div class="text-center col-lg-12">
+            <a href="/match_review"><button type="button" class="btn btn-default">Cancel</button></a>
+            <button type="submit" class="btn btn-info">Save</button>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</div>
+<div id="scoreTemplate" style="display: none;">
+  <div class="well well-{{"{{alliance}}"}}">
+    <legend>Autonomous</legend>
+    <div class="form-group">
+      <label class="col-lg-4 control-label">Moving Bonus</label>
+      <div class="col-lg-2">
+        <select class="form-control input-sm" name="{{"{{alliance}}"}}AutoMobilityBonuses">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-lg-4 control-label">Scored High Hot</label>
+      <div class="col-lg-2"><input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoHighHot"></div>
+      <label class="col-lg-4 control-label">Scored High Not Hot</label>
+      <div class="col-lg-2"><input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoHigh"></div>
+    </div>
+    <div class="form-group">
+      <label class="col-lg-4 control-label">Scored Low Hot</label>
+      <div class="col-lg-2"><input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoLowHot"></div>
+      <label class="col-lg-4 control-label">Scored Low Not Hot</label>
+      <div class="col-lg-2"><input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoLow"></div>
+    </div>
+    <div class="form-group">
+      <label class="col-lg-4 control-label">Cleared High Teleop</label>
+      <div class="col-lg-2"><input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoClearHigh"></div>
+      <label class="col-lg-4 control-label">Cleared Low Teleop</label>
+      <div class="col-lg-2"><input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoClearLow"></div>
+    </div>
+    <legend>Teleoperated</legend>
+    {{"{{#each score.Cycles}}"}}
+      <div class="well well-sm well-dark{{"{{../alliance}}"}}">
+        <b id="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}Title">Cycle</b>
+        <button type="button" class="close" onclick="deleteCycle('{{"{{../alliance}}"}}', {{"{{@index}}"}});">×</button>
+        <br />
+        <div class="form-group">
+          <label class="col-lg-4 control-label">Number of Assists</label>
+          <div class="col-lg-8">
+            <div class="radio col-lg-3">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}Assists" value="1">1
+              </label>
+            </div>
+            <div class="radio col-lg-3">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}Assists"value="2">2
+              </label>
+            </div>
+            <div class="radio col-lg-6">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}Assists" value="3">3
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-4 control-label">Truss/Catch</label>
+          <div class="col-lg-8">
+            <div class="radio col-lg-3">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}TrussCatch" value="N">
+                None
+              </label>
+            </div>
+            <div class="radio col-lg-3">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}TrussCatch" value="T">
+                Truss
+              </label>
+            </div>
+            <div class="radio col-lg-6">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}TrussCatch" value="TC">
+                Truss + Catch
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div>
+            <label class="col-lg-4 control-label">Cycle End</label>
+            <div class="col-lg-8">
+              <div class="radio col-lg-6">
+                <label>
+                  <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}End" value="DE">
+                  Didn't End
+                </label>
+              </div>
+              <div class="radio col-lg-6">
+                <label>
+                  <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}End" value="SH">
+                  Scored High
+                </label>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="col-lg-8 col-lg-offset-4">
+              <div class="radio col-lg-6">
+                <label>
+                  <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}End" value="SL">
+                  Scored Low
+                </label>
+              </div>
+              <div class="radio col-lg-6">
+                <label>
+                  <input type="radio" name="{{"{{../alliance}}"}}Cycle{{"{{@index}}"}}End" value="DB">
+                  Dead Ball
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {{"{{/each}}"}}
+    <button type="button" class="btn btn-default btn-sm" onclick="addCycle('{{"{{alliance}}"}}');">
+      Add Cycle
+    </button>
+    <br /><br />
+    <legend>Fouls</legend>
+    {{"{{#each fouls}}"}}
+      <div class="well well-sm well-dark{{"{{../alliance}}"}}">
+        <button type="button" class="close" onclick="deleteFoul('{{"{{../alliance}}"}}', {{"{{@index}}"}});">×</button>
+        <br />
+        <div class="form-group">
+          <label class="col-lg-4 control-label">Team</label>
+          <div class="col-lg-8">
+            <div class="radio col-lg-3">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team1}}"}}">
+                {{"{{../team1}}"}}
+               </label>
+            </div>
+            <div class="radio col-lg-3">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team2}}"}}">
+                {{"{{../team2}}"}}
+              </label>
+            </div>
+            <div class="radio col-lg-3">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team3}}"}}">
+                {{"{{../team3}}"}}
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-4 control-label">Type</label>
+          <div class="col-lg-8">
+            <div class="radio col-lg-6">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Tech" value="false">
+                Regular
+              </label>
+            </div>
+            <div class="radio col-lg-6">
+              <label>
+                <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Tech" value="true">
+                Technical
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-4 control-label">Rule Violated</label>
+          <div class="col-lg-3">
+            <input type="text" class="form-control input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Rule">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-4 control-label">Seconds Into Match</label>
+          <div class="col-lg-3">
+            <input type="text" class="form-control input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Time">
+          </div>
+        </div>
+      </div>
+    {{"{{/each}}"}}
+    <button type="button" class="btn btn-default btn-sm" onclick="addFoul('{{"{{alliance}}"}}');">
+      Add Foul
+    </button>
+    <br /><br />
+    <legend>Cards</legend>
+    <div class="form-group">
+      <label class="col-lg-4 control-label">Team {{"{{team1}}"}}</label>
+      <div class="col-lg-8">
+        <div class="radio col-lg-3">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team1}}"}}Card" value="N" checked>
+            None
+          </label>
+        </div>
+        <div class="radio col-lg-3">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team1}}"}}Card" value="Y">
+            Yellow
+          </label>
+        </div>
+        <div class="radio col-lg-6">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team1}}"}}Card" value="R">
+            Red
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-lg-4 control-label">Team {{"{{team2}}"}}</label>
+      <div class="col-lg-8">
+        <div class="radio col-lg-3">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team2}}"}}Card" value="N" checked>
+            None
+          </label>
+        </div>
+        <div class="radio col-lg-3">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team2}}"}}Card" value="Y">
+            Yellow
+          </label>
+        </div>
+        <div class="radio col-lg-6">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team2}}"}}Card" value="R">
+            Red
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="col-lg-4 control-label">Team {{"{{team3}}"}}</label>
+      <div class="col-lg-8">
+        <div class="radio col-lg-3">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team3}}"}}Card" value="N" checked>
+            None
+          </label>
+        </div>
+        <div class="radio col-lg-3">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team3}}"}}Card" value="Y">
+            Yellow
+          </label>
+        </div>
+        <div class="radio col-lg-6">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team3}}"}}Card" value="R">
+            Red
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+<script src="/static/js/match_review.js"></script>
+<script>
+  var matchId = {{.Match.Id}}
+  var allianceResults = {};
+  allianceResults["red"] = {alliance: "red", team1: {{.Match.Red1}}, team2: {{.Match.Red2}},
+      team3: {{.Match.Red3}}, score: jQuery.parseJSON('{{.MatchResultJson.RedScoreJson}}'),
+      fouls: jQuery.parseJSON('{{.MatchResultJson.RedFoulsJson}}'),
+      cards: jQuery.parseJSON('{{.MatchResultJson.CardsJson}}')};
+  allianceResults["blue"] = {alliance: "blue", team1: {{.Match.Blue1}}, team2: {{.Match.Blue2}},
+      team3: {{.Match.Blue3}}, score: jQuery.parseJSON('{{.MatchResultJson.BlueScoreJson}}'),
+      fouls: jQuery.parseJSON('{{.MatchResultJson.BlueFoulsJson}}'),
+      cards: jQuery.parseJSON('{{.MatchResultJson.CardsJson}}')};
+  renderResults("red");
+  renderResults("blue");
+</script>
+{{end}}

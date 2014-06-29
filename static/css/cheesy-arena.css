@@ -1,0 +1,18 @@
+.red-text {
+  color: #f00;
+}
+.blue-text {
+  color: #00f;
+}
+.well-red {
+  background-color: #f2dede;
+}
+.well-darkred {
+  background-color: #ebcccc;
+}
+.well-blue {
+  background-color: #d9edf7;
+}
+.well-darkblue {
+  background-color: #c4e3f3;
+}

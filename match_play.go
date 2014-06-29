@@ -79,7 +79,8 @@ func MatchPlayFakeResultHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, fmt.Errorf("Invalid match ID %d.", matchId))
 		return
 	}
-	matchResult := MatchResult{MatchId: match.Id}
+	matchResult := MatchResult{MatchId: match.Id, RedFouls: []Foul{}, BlueFouls: []Foul{Foul{17, "G22", 23.5, true}},
+		Cards: Cards{[]int{17}, []int{8}}}
 	matchResult.RedScore = randomScore()
 	matchResult.BlueScore = randomScore()
 	err = CommitMatchScore(match, &matchResult)
@@ -93,21 +94,29 @@ func MatchPlayFakeResultHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func CommitMatchScore(match *Match, matchResult *MatchResult) error {
-	// Determine the play number for this match.
-	prevMatchResult, err := db.GetMatchResultForMatch(match.Id)
-	if err != nil {
-		return err
-	}
-	if prevMatchResult != nil {
-		matchResult.PlayNumber = prevMatchResult.PlayNumber + 1
-	} else {
-		matchResult.PlayNumber = 1
-	}
+	if matchResult.PlayNumber == 0 {
+		// Determine the play number for this new match result.
+		prevMatchResult, err := db.GetMatchResultForMatch(match.Id)
+		if err != nil {
+			return err
+		}
+		if prevMatchResult != nil {
+			matchResult.PlayNumber = prevMatchResult.PlayNumber + 1
+		} else {
+			matchResult.PlayNumber = 1
+		}
 
-	// Save the match result record to the database.
-	err = db.CreateMatchResult(matchResult)
-	if err != nil {
-		return err
+		// Save the match result record to the database.
+		err = db.CreateMatchResult(matchResult)
+		if err != nil {
+			return err
+		}
+	} else {
+		// We are updating a match result record that already exists.
+		err := db.SaveMatchResult(matchResult)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Update and save the match record to the database.
@@ -121,7 +130,7 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 	} else {
 		match.Winner = "T"
 	}
-	err = db.SaveMatch(match)
+	err := db.SaveMatch(match)
 	if err != nil {
 		return err
 	}
