@@ -173,7 +173,7 @@ func decodeStatusPacket(data [50]byte) *DriverStationStatus {
 	dsStatus.PacketCount = int(data[28])*256 + int(data[29])
 
 	// Average DS-robot trip time in milliseconds, stored in two big-endian bytes.
-	dsStatus.DsRobotTripTimeMs = int(data[29])*256 + int(data[30])
+	dsStatus.DsRobotTripTimeMs = int(data[30])*256 + int(data[31])
 
 	// Robot battery voltage, stored (bizarrely) what it looks like in decimal but as two hexadecimal numbers.
 	dsStatus.BatteryVoltage, _ = strconv.ParseFloat(fmt.Sprintf("%x.%x", data[40], data[41]), 32)

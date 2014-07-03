@@ -98,7 +98,7 @@ func TestSendControlPacket(t *testing.T) {
 func TestDecodeStatusPacket(t *testing.T) {
 	// Check with no linked robot.
 	data := [50]byte{0, 0, 64, 1, 2, 54, 0, 0, 0, 0, 82, 49, 0, 0, 0, 0, 0, 0, 48, 50, 49, 50, 49, 51, 48, 48,
-		152, 160, 152, 160, 255, 255, 255, 255, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 7, 189, 111}
+		98, 200, 63, 43, 0, 11, 0, 240, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 7, 189, 111}
 	dsStatus := decodeStatusPacket(data)
 	assert.Equal(t, 254, dsStatus.TeamId)
 	assert.Equal(t, "R1", dsStatus.AllianceStation)
@@ -108,9 +108,9 @@ func TestDecodeStatusPacket(t *testing.T) {
 	assert.Equal(t, false, dsStatus.EmergencyStop)
 	assert.Equal(t, 0, dsStatus.BatteryVoltage)
 	assert.Equal(t, "02121300", dsStatus.DsVersion)
-	assert.Equal(t, 39072, dsStatus.PacketCount)
-	assert.Equal(t, 39072, dsStatus.MissedPacketCount)
-	assert.Equal(t, 41215, dsStatus.DsRobotTripTimeMs)
+	assert.Equal(t, 16171, dsStatus.PacketCount)
+	assert.Equal(t, 25288, dsStatus.MissedPacketCount)
+	assert.Equal(t, 11, dsStatus.DsRobotTripTimeMs)
 
 	// Check different team numbers.
 	data = [50]byte{0, 0, 64, 1, 7, 66, 0, 0, 0, 0, 82, 49, 0, 0, 0, 0, 0, 0, 48, 50, 49, 50, 49, 51, 48, 48,
@@ -151,8 +151,6 @@ func TestDecodeStatusPacket(t *testing.T) {
 		152, 160, 152, 160, 255, 255, 255, 255, 82, 0, 0, 0, 0, 0, 25, 117, 0, 0, 0, 0, 42, 7, 189, 111}
 	dsStatus = decodeStatusPacket(data)
 	assert.Equal(t, 19.75, dsStatus.BatteryVoltage)
-
-	// TODO(patrick): Check packet counts and trip time.
 }
 
 func TestListenForDsPackets(t *testing.T) {
