@@ -18,7 +18,12 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	initDb()
 
-	ServeWebInterface()
+	go ServeWebInterface()
+	listener, err := DsPacketListener()
+	checkErr(err)
+	go ListenForDsPackets(listener)
+	mainArena.Setup()
+	mainArena.Run()
 }
 
 func initDb() {

@@ -17,10 +17,12 @@ import (
 const driverStationSendPort = 1120
 const driverStationReceivePort = 1160
 const driverStationProtocolVersion = "11191100"
+const driverStationLinkTimeoutMs = 500
 
 type DriverStationStatus struct {
 	TeamId            int
 	AllianceStation   string
+	DsLinked          bool
 	RobotLinked       bool
 	Auto              bool
 	Enabled           bool
@@ -51,15 +53,21 @@ func NewDriverStationConnection(teamId int, station string) (*DriverStationConne
 	if err != nil {
 		return nil, err
 	}
-	return &DriverStationConnection{TeamId: teamId, AllianceStation: station, conn: conn}, nil
+	return &DriverStationConnection{TeamId: teamId, AllianceStation: station,
+		DriverStationStatus: new(DriverStationStatus), conn: conn}, nil
 }
 
-// Builds and sends the next control packet to the Driver Station.
-func (dsConn *DriverStationConnection) SendControlPacket() error {
-	packet := dsConn.encodeControlPacket()
-	_, err := dsConn.conn.Write(packet[:])
+// Sends a control packet to the Driver Station and checks for timeout conditions.
+func (dsConn *DriverStationConnection) Update() error {
+	err := dsConn.sendControlPacket()
 	if err != nil {
 		return err
+	}
+
+	if time.Since(dsConn.LastPacketTime).Seconds()*1000 > driverStationLinkTimeoutMs {
+		dsConn.DriverStationStatus.DsLinked = false
+		dsConn.DriverStationStatus.RobotLinked = false
+		dsConn.DriverStationStatus.BatteryVoltage = 0
 	}
 
 	return nil
@@ -90,7 +98,7 @@ func ListenForDsPackets(listener *net.UDPConn) {
 		dsStatus := decodeStatusPacket(data)
 
 		// Update the status and last packet times for this alliance/team in the global struct.
-		dsConn := arena.DriverStationConnections[dsStatus.AllianceStation]
+		dsConn := mainArena.allianceStations[dsStatus.AllianceStation].driverStationConnection
 		if dsConn != nil && dsConn.TeamId == dsStatus.TeamId {
 			dsConn.DriverStationStatus = dsStatus
 			dsConn.LastPacketTime = time.Now()
@@ -147,9 +155,21 @@ func (dsConn *DriverStationConnection) encodeControlPacket() [74]byte {
 	return packet
 }
 
+// Builds and sends the next control packet to the Driver Station.
+func (dsConn *DriverStationConnection) sendControlPacket() error {
+	packet := dsConn.encodeControlPacket()
+	_, err := dsConn.conn.Write(packet[:])
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Deserializes a packet from the DS into a structure representing the DS/robot status.
 func decodeStatusPacket(data [50]byte) *DriverStationStatus {
 	dsStatus := new(DriverStationStatus)
+	dsStatus.DsLinked = true
 
 	// Robot status byte.
 	dsStatus.RobotLinked = (data[2] & 0x02) != 0

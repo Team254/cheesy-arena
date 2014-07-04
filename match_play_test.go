@@ -47,7 +47,14 @@ func TestMatchPlayQueue(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 	eventSettings, _ = db.GetEventSettings()
+	mainArena.Setup()
 
+	db.CreateTeam(&Team{Id: 101})
+	db.CreateTeam(&Team{Id: 102})
+	db.CreateTeam(&Team{Id: 103})
+	db.CreateTeam(&Team{Id: 104})
+	db.CreateTeam(&Team{Id: 105})
+	db.CreateTeam(&Team{Id: 106})
 	match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 101,
 		Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	db.CreateMatch(&match)

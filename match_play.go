@@ -28,8 +28,6 @@ type MatchPlayList []MatchPlayListItem
 // Global var to hold the current active tournament so that its matches are displayed by default.
 var currentMatchType string
 
-var currentMatch *Match
-
 // Shows the match play control interface.
 func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	practiceMatches, err := buildMatchPlayList("practice")
@@ -58,15 +56,12 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	if currentMatchType == "" {
 		currentMatchType = "practice"
 	}
-	if currentMatch == nil {
-		currentMatch = new(Match)
-	}
 	data := struct {
 		*EventSettings
 		MatchesByType    map[string]MatchPlayList
 		CurrentMatchType string
 		Match            *Match
-	}{eventSettings, matchesByType, currentMatchType, currentMatch}
+	}{eventSettings, matchesByType, currentMatchType, mainArena.currentMatch}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -87,8 +82,11 @@ func MatchPlayQueueHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO(pat): Disallow if there is a match currently being played or there are uncommitted results.
-	currentMatch = match
+	err = mainArena.LoadMatch(match)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
 	currentMatchType = match.Type
 
 	http.Redirect(w, r, "/match_play", 302)
@@ -211,7 +209,7 @@ func buildMatchPlayList(matchType string) (MatchPlayList, error) {
 		default:
 			matchPlayList[i].ColorClass = ""
 		}
-		if currentMatch != nil && matchPlayList[i].Id == currentMatch.Id {
+		if mainArena.currentMatch != nil && matchPlayList[i].Id == mainArena.currentMatch.Id {
 			matchPlayList[i].ColorClass = "success"
 		}
 	}

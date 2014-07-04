@@ -91,7 +91,7 @@ func TestSendControlPacket(t *testing.T) {
 	defer dsConn.Close()
 
 	// No real way of checking this since the destination IP is remote, so settle for there being no errors.
-	err = dsConn.SendControlPacket()
+	err = dsConn.sendControlPacket()
 	assert.Nil(t, err)
 }
 
@@ -154,19 +154,21 @@ func TestDecodeStatusPacket(t *testing.T) {
 }
 
 func TestListenForDsPackets(t *testing.T) {
+	db, _ = OpenDatabase(testDbPath)
+
 	listener, err := DsPacketListener()
 	assert.Nil(t, err)
 	go ListenForDsPackets(listener)
+	mainArena.Setup()
 
-	arena.DriverStationConnections = make(map[string]*DriverStationConnection)
 	dsConn, err := NewDriverStationConnection(254, "B1")
 	defer dsConn.Close()
 	assert.Nil(t, err)
-	arena.DriverStationConnections["B1"] = dsConn
+	mainArena.allianceStations["B1"].driverStationConnection = dsConn
 	dsConn, err = NewDriverStationConnection(1114, "R3")
 	defer dsConn.Close()
 	assert.Nil(t, err)
-	arena.DriverStationConnections["R3"] = dsConn
+	mainArena.allianceStations["R3"].driverStationConnection = dsConn
 
 	// Create a socket to send fake DS packets to localhost.
 	conn, err := net.Dial("udp4", fmt.Sprintf("127.0.0.1:%d", driverStationReceivePort))
@@ -174,14 +176,15 @@ func TestListenForDsPackets(t *testing.T) {
 
 	// Check receiving a packet from an expected team.
 	packet := [50]byte{0, 0, 48, 1, 2, 54, 0, 0, 0, 0, 66, 49, 0, 0, 0, 0, 0, 0, 48, 50, 49, 50, 49, 51, 48, 48,
-		152, 160, 152, 160, 255, 255, 255, 255, 82, 0, 0, 0, 0, 0, 25, 117, 0, 0, 0, 0, 42, 7, 189, 111}
+		152, 160, 152, 160, 1, 0, 255, 255, 82, 0, 0, 0, 0, 0, 25, 117, 0, 0, 0, 0, 42, 7, 189, 111}
 	_, err = conn.Write(packet[:])
 	assert.Nil(t, err)
 	time.Sleep(time.Millisecond * 10) // Allow some time for the goroutine to process the incoming packet.
-	dsStatus := arena.DriverStationConnections["B1"].DriverStationStatus
+	dsStatus := mainArena.allianceStations["B1"].driverStationConnection.DriverStationStatus
 	if assert.NotNil(t, dsStatus) {
 		assert.Equal(t, 254, dsStatus.TeamId)
 		assert.Equal(t, "B1", dsStatus.AllianceStation)
+		assert.Equal(t, true, dsStatus.DsLinked)
 		assert.Equal(t, false, dsStatus.RobotLinked)
 		assert.Equal(t, true, dsStatus.Auto)
 		assert.Equal(t, true, dsStatus.Enabled)
@@ -190,33 +193,34 @@ func TestListenForDsPackets(t *testing.T) {
 		assert.Equal(t, "02121300", dsStatus.DsVersion)
 		assert.Equal(t, 39072, dsStatus.PacketCount)
 		assert.Equal(t, 39072, dsStatus.MissedPacketCount)
-		assert.Equal(t, 41215, dsStatus.DsRobotTripTimeMs)
+		assert.Equal(t, 256, dsStatus.DsRobotTripTimeMs)
 	}
-	assert.True(t, time.Since(arena.DriverStationConnections["B1"].LastPacketTime).Seconds() < 0.1)
-	assert.True(t, time.Since(arena.DriverStationConnections["B1"].LastRobotLinkedTime).Seconds() > 100)
+	assert.True(t, time.Since(mainArena.allianceStations["B1"].driverStationConnection.LastPacketTime).Seconds() < 0.1)
+	assert.True(t, time.Since(mainArena.allianceStations["B1"].driverStationConnection.LastRobotLinkedTime).Seconds() > 100)
 	packet[2] = byte(98)
 	_, err = conn.Write(packet[:])
 	assert.Nil(t, err)
 	time.Sleep(time.Millisecond * 10)
-	dsStatus2 := arena.DriverStationConnections["B1"].DriverStationStatus
+	dsStatus2 := mainArena.allianceStations["B1"].driverStationConnection.DriverStationStatus
 	if assert.NotNil(t, dsStatus2) {
 		assert.Equal(t, true, dsStatus2.RobotLinked)
 		assert.Equal(t, false, dsStatus2.Auto)
 		assert.Equal(t, true, dsStatus2.Enabled)
 		assert.Equal(t, false, dsStatus2.EmergencyStop)
 	}
-	assert.True(t, time.Since(arena.DriverStationConnections["B1"].LastPacketTime).Seconds() < 0.1)
-	assert.True(t, time.Since(arena.DriverStationConnections["B1"].LastRobotLinkedTime).Seconds() < 0.1)
+	assert.True(t, time.Since(mainArena.allianceStations["B1"].driverStationConnection.LastPacketTime).Seconds() < 0.1)
+	assert.True(t, time.Since(mainArena.allianceStations["B1"].driverStationConnection.LastRobotLinkedTime).Seconds() < 0.1)
 
 	// Should ignore a packet coming from an expected team in the wrong position.
+	statusBefore := mainArena.allianceStations["R3"].driverStationConnection.DriverStationStatus
 	packet[10] = 'R'
 	packet[11] = '3'
 	packet[2] = 48
 	_, err = conn.Write(packet[:])
 	assert.Nil(t, err)
 	time.Sleep(time.Millisecond * 10)
-	assert.Nil(t, arena.DriverStationConnections["R3"].DriverStationStatus)
-	assert.Equal(t, true, arena.DriverStationConnections["B1"].DriverStationStatus.RobotLinked)
+	assert.Equal(t, statusBefore, mainArena.allianceStations["R3"].driverStationConnection.DriverStationStatus)
+	assert.Equal(t, true, mainArena.allianceStations["B1"].driverStationConnection.DriverStationStatus.RobotLinked)
 
 	// Should ignore a packet coming from an unexpected team.
 	packet[4] = byte(15)
@@ -227,5 +231,17 @@ func TestListenForDsPackets(t *testing.T) {
 	_, err = conn.Write(packet[:])
 	assert.Nil(t, err)
 	time.Sleep(time.Millisecond * 10)
-	assert.Equal(t, true, arena.DriverStationConnections["B1"].DriverStationStatus.RobotLinked)
+	assert.Equal(t, true, mainArena.allianceStations["B1"].driverStationConnection.DriverStationStatus.RobotLinked)
+
+	// Should indicate that the connection has dropped if a response isn't received before the timeout.
+	dsConn = mainArena.allianceStations["B1"].driverStationConnection
+	dsConn.Update()
+	assert.Equal(t, true, dsConn.DriverStationStatus.DsLinked)
+	assert.Equal(t, true, dsConn.DriverStationStatus.RobotLinked)
+	assert.NotEqual(t, 0, dsConn.DriverStationStatus.BatteryVoltage)
+	dsConn.LastPacketTime = dsConn.LastPacketTime.Add(-1 * time.Second)
+	dsConn.Update()
+	assert.Equal(t, false, dsConn.DriverStationStatus.DsLinked)
+	assert.Equal(t, false, dsConn.DriverStationStatus.RobotLinked)
+	assert.Equal(t, 0, dsConn.DriverStationStatus.BatteryVoltage)
 }
