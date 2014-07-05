@@ -67,6 +67,7 @@ func (arena *Arena) AssignTeam(teamId int, station string) error {
 	if _, ok := arena.allianceStations[station]; !ok {
 		return fmt.Errorf("Invalid alliance station '%s'.", station)
 	}
+
 	// Do nothing if the station is already assigned to the requested team.
 	dsConn := arena.allianceStations[station].driverStationConnection
 	if dsConn != nil && dsConn.TeamId == teamId {
@@ -145,6 +146,18 @@ func (arena *Arena) StartMatch() error {
 	if arena.currentMatch == nil {
 		return fmt.Errorf("Cannot start match when no match is loaded.")
 	}
+	for _, allianceStation := range arena.allianceStations {
+		if allianceStation.emergencyStop {
+			return fmt.Errorf("Cannot start match while an emergency stop is active.")
+		}
+		if !allianceStation.bypass {
+			dsConn := allianceStation.driverStationConnection
+			if dsConn == nil || !dsConn.DriverStationStatus.RobotLinked {
+				return fmt.Errorf("Cannot start match until all robots are connected or bypassed.")
+			}
+		}
+	}
+
 	arena.matchState = START_MATCH
 	return nil
 }
