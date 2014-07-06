@@ -2,6 +2,7 @@
 {{define "body"}}
 <div class="row">
   <div class="col-lg-4">
+    <a href="/match_play/0/load"><b class="btn btn-info">Load Test Match</b></a><br /><br />
     <ul class="nav nav-tabs" style="margin-bottom: 15px;">
       <li{{if eq .CurrentMatchType "practice" }} class="active"{{end}}>
         <a href="#practice" data-toggle="tab">Practice</a>
@@ -33,8 +34,8 @@
                     <a href="/match_play/{{$match.Id}}/generate_fake_result">
                       <b class="btn btn-info btn-xs">Generate Fake Result</b>
                     </a>
-                    <a href="/match_play/{{$match.Id}}/queue">
-                      <b class="btn btn-info btn-xs">Queue</b>
+                    <a href="/match_play/{{$match.Id}}/load">
+                      <b class="btn btn-info btn-xs">Load</b>
                     </a>
                   </td>
                 </tr>
@@ -55,18 +56,9 @@
           <div class="col-lg-2" data-toggle="tooltip" title="Battery">B</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
-        <div class="row form-group">
-          <div class="col-lg-1">1 </div>
-          {{template "matchPlayTeam" .Match.Blue1}}
-        </div>
-        <div class="row form-group">
-          <div class="col-lg-1">2 </div>
-          {{template "matchPlayTeam" .Match.Blue2}}
-        </div>
-        <div class="row form-group">
-          <div class="col-lg-1">3 </div>
-          {{template "matchPlayTeam" .Match.Blue3}}
-        </div>
+        {{template "matchPlayTeam" dict "team" .Match.Blue1 "color" "B" "position" 1 "data" .}}
+        {{template "matchPlayTeam" dict "team" .Match.Blue2 "color" "B" "position" 2 "data" .}}
+        {{template "matchPlayTeam" dict "team" .Match.Blue3 "color" "B" "position" 3 "data" .}}
       </div>
       <div class="col-lg-6 well well-darkred">
         <div class="row form-group">
@@ -76,34 +68,48 @@
           <div class="col-lg-2" data-toggle="tooltip" title="Battery">B</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
-        <div class="row form-group">
-          <div class="col-lg-1">3 </div>
-          {{template "matchPlayTeam" .Match.Red3}}
-        </div>
-        <div class="row form-group">
-          <div class="col-lg-1">2 </div>
-          {{template "matchPlayTeam" .Match.Red2}}
-        </div>
-        <div class="row form-group">
-          <div class="col-lg-1">1 </div>
-          {{template "matchPlayTeam" .Match.Red1}}
-        </div>
+        {{template "matchPlayTeam" dict "team" .Match.Red3 "color" "R" "position" 3 "data" .}}
+        {{template "matchPlayTeam" dict "team" .Match.Red2 "color" "R" "position" 2 "data" .}}
+        {{template "matchPlayTeam" dict "team" .Match.Red1 "color" "R" "position" 1 "data" .}}
       </div>
+    </div>
+    <div>
+      <button type="button" id="startMatch" class="btn btn-success btn-lg btn-match-play"
+          onclick="startMatch();" disabled>
+        Start Match
+      </button>
+      <button type="button" id="abortMatch" class="btn btn-primary btn-lg btn-match-play"
+          onclick="abortMatch();" disabled>
+        Abort Match
+      </button>
+      <button type="button" id="commitResults" class="btn btn-info btn-lg btn-match-play"
+          onclick="commitResults();" disabled>
+        Commit Results
+      </button>
+      <button type="button" id="discardResults" class="btn btn-danger btn-lg btn-match-play"
+          onclick="discardResults();" disabled>
+        Discard Results
+      </button>
     </div>
   </div>
 </div>
 {{end}}
 {{define "script"}}
-<script>
-  $("[data-toggle=tooltip]").tooltip({"placement": "top"});
-</script>
+<script src="/static/js/match_play.js"></script>
 {{end}}
 {{define "matchPlayTeam"}}
-<div class="col-lg-3">
-  <input type="text" class="form-control input-sm" value="{{.}}">
+<div class="row form-group" id="status{{.color}}{{.position}}">
+  <div class="col-lg-1">{{.position}} </div>
+  <div class="col-lg-3">
+    <input type="text" class="form-control input-sm" value="{{if ne 0 .team}}{{.team}}{{end}}"
+        onblur="substituteTeam($(this).val(), '{{.color}}{{.position}}');"
+        {{if not .data.AllowSubstitution}}disabled{{end}}>
+  </div>
+  <div class="col-lg-2 col-no-padding"><div class="ds-status"></div></div>
+  <div class="col-lg-2 col-no-padding"><div class="robot-status"></div></div>
+  <div class="col-lg-2 col-no-padding"><div class="battery-status"></div></div>
+  <div class="col-lg-2 col-no-padding">
+    <div class="bypass-status" onclick="toggleBypass('{{.color}}{{.position}}');"></div>
+  </div>
 </div>
-<div class="col-lg-2 col-no-padding"><div class="ds-status" id="team{{.}}Ds"></div></div>
-<div class="col-lg-2 col-no-padding"><div class="robot-status" id="team{{.}}Robot"></div></div>
-<div class="col-lg-2 col-no-padding"><div class="battery-status" id="team{{.}}Battery"></div></div>
-<div class="col-lg-2 col-no-padding"><div class="bypass-button" id="team{{.}}Bypass"></div></div>
 {{end}}

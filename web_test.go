@@ -39,3 +39,9 @@ func postHttpResponse(path string, body string) *httptest.ResponseRecorder {
 	newHandler().ServeHTTP(recorder, req)
 	return recorder
 }
+
+// Starts a real local HTTP server that can be used by more sophisticated tests.
+func startTestServer() (*httptest.Server, string) {
+	server := httptest.NewServer(newHandler())
+	return server, "ws" + server.URL[len("http"):]
+}

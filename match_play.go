@@ -8,11 +8,15 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/mitchellh/mapstructure"
 	"html/template"
+	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"sort"
 	"strconv"
+	"time"
 )
 
 type MatchPlayListItem struct {
@@ -46,7 +50,8 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	template, err := template.ParseFiles("templates/match_play.html", "templates/base.html")
+	template := template.New("").Funcs(templateHelpers)
+	_, err = template.ParseFiles("templates/match_play.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -56,12 +61,14 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	if currentMatchType == "" {
 		currentMatchType = "practice"
 	}
+	allowSubstitution := mainArena.currentMatch.Type == "test" || mainArena.currentMatch.Type == "practice"
 	data := struct {
 		*EventSettings
-		MatchesByType    map[string]MatchPlayList
-		CurrentMatchType string
-		Match            *Match
-	}{eventSettings, matchesByType, currentMatchType, mainArena.currentMatch}
+		MatchesByType     map[string]MatchPlayList
+		CurrentMatchType  string
+		Match             *Match
+		AllowSubstitution bool
+	}{eventSettings, matchesByType, currentMatchType, mainArena.currentMatch, allowSubstitution}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -69,25 +76,30 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func MatchPlayQueueHandler(w http.ResponseWriter, r *http.Request) {
+func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	matchId, _ := strconv.Atoi(vars["matchId"])
-	match, err := db.GetMatchById(matchId)
+	var match *Match
+	var err error
+	if matchId == 0 {
+		err = mainArena.LoadTestMatch()
+	} else {
+		match, err = db.GetMatchById(matchId)
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+		if match == nil {
+			handleWebErr(w, fmt.Errorf("Invalid match ID %d.", matchId))
+			return
+		}
+		err = mainArena.LoadMatch(match)
+	}
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	if match == nil {
-		handleWebErr(w, fmt.Errorf("Invalid match ID %d.", matchId))
-		return
-	}
-
-	err = mainArena.LoadMatch(match)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	currentMatchType = match.Type
+	currentMatchType = mainArena.currentMatch.Type
 
 	http.Redirect(w, r, "/match_play", 302)
 }
@@ -118,7 +130,150 @@ func MatchPlayFakeResultHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/match_play", 302)
 }
 
+// The websocket endpoint for the match play client to send control commands and receive status updates.
+func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	// Allow disabling of period updates, for easier testing.
+	_, disableUpdates := r.URL.Query()["test"]
+
+	websocket, err := NewWebsocket(w, r)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	defer websocket.Close()
+
+	// Send the arena status immediately upon connection.
+	err = websocket.Write("status", mainArena)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+
+	if !disableUpdates {
+		// Spin off a goroutine to periodically send a status update.
+		go func() {
+			for {
+				err = websocket.Write("status", mainArena)
+				if err != nil {
+					// The client has probably closed the connection; nothing to do here.
+					break
+				}
+				time.Sleep(500 * time.Millisecond)
+			}
+		}()
+	}
+
+	// Loop, waiting for commands and responding to them, until the client closes the connection.
+	for {
+		messageType, data, err := websocket.Read()
+		if err != nil {
+			if err == io.EOF {
+				// Client has closed the connection; nothing to do here.
+				return
+			}
+			log.Printf("Websocket error: %s", err)
+			return
+		}
+
+		switch messageType {
+		case "substituteTeam":
+			args := struct {
+				Team     int
+				Position string
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+			err = mainArena.SubstituteTeam(args.Team, args.Position)
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+		case "toggleBypass":
+			station, ok := data.(string)
+			if !ok {
+				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			if _, ok := mainArena.AllianceStations[station]; !ok {
+				websocket.WriteError(fmt.Sprintf("Invalid alliance station '%s'.", station))
+				continue
+			}
+			mainArena.AllianceStations[station].Bypass = !mainArena.AllianceStations[station].Bypass
+		case "startMatch":
+			err = mainArena.StartMatch()
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+		case "abortMatch":
+			err = mainArena.AbortMatch()
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+		case "commitResults":
+			// TODO(pat): Deal with scoring here. For now, use an empty match result set for a 0-0 tie.
+			err = CommitMatchScore(mainArena.currentMatch, &MatchResult{MatchId: mainArena.currentMatch.Id})
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+			err = mainArena.ResetMatch()
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+			err = mainArena.LoadNextMatch()
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+			err = websocket.Write("reload", nil)
+			if err != nil {
+				log.Printf("Websocket error: %s", err)
+				return
+			}
+			continue // Skip sending the status update, as the client is about to terminate and reload.
+		case "discardResults":
+			err = mainArena.ResetMatch()
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+			err = mainArena.LoadNextMatch()
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+			err = websocket.Write("reload", nil)
+			if err != nil {
+				log.Printf("Websocket error: %s", err)
+				return
+			}
+			continue // Skip sending the status update, as the client is about to terminate and reload.
+		default:
+			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			continue
+		}
+
+		// Send out the status again after handling the command, as it most likely changed as a result.
+		err = websocket.Write("status", mainArena)
+		if err != nil {
+			log.Printf("Websocket error: %s", err)
+			return
+		}
+	}
+}
+
 func CommitMatchScore(match *Match, matchResult *MatchResult) error {
+	if match.Type == "test" {
+		// Do nothing since this is a test match and doesn't exist in the database.
+		return nil
+	}
+
 	if matchResult.PlayNumber == 0 {
 		// Determine the play number for this new match result.
 		prevMatchResult, err := db.GetMatchResultForMatch(match.Id)

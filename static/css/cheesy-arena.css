@@ -1,3 +1,13 @@
+// Bootstrap overrides.
+.form-control[disabled] {
+  cursor: default;
+}
+.btn[disabled] {
+  color: #000;
+  opacity: 0.2;
+}
+
+// New styles.
 .red-text {
   color: #f00;
 }
@@ -20,18 +30,27 @@
   padding-left: 0;
   padding-right: 0;
 }
-.ds-status, .robot-status, .battery-status, .bypass-button {
+.ds-status, .robot-status, .battery-status, .bypass-status {
   background-color: #aaa;
   color: #000;
   border: 1px solid #999;
   border-radius: 4px;
-  padding: 5px;
+  padding: 0px;
   width: 40px;
   height: 27px;
-  margin: 2px;
-  font-family: Arial;
+  line-height: 25px;
+  font-size: 14px;
   margin: 0 auto;
 }
-.bypass-button {
+.bypass-status {
+  cursor: pointer;
+}
+[data-status-ok="true"] {
   background-color: #0e8;
+}
+[data-status-ok="false"] {
+  background-color: #e66;
+}
+.btn-match-play {
+  width: 165px;
 }

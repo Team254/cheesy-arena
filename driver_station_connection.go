@@ -98,7 +98,7 @@ func ListenForDsPackets(listener *net.UDPConn) {
 		dsStatus := decodeStatusPacket(data)
 
 		// Update the status and last packet times for this alliance/team in the global struct.
-		dsConn := mainArena.allianceStations[dsStatus.AllianceStation].driverStationConnection
+		dsConn := mainArena.AllianceStations[dsStatus.AllianceStation].DsConn
 		if dsConn != nil && dsConn.TeamId == dsStatus.TeamId {
 			dsConn.DriverStationStatus = dsStatus
 			dsConn.LastPacketTime = time.Now()
