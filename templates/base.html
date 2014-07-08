@@ -65,13 +65,34 @@
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">About</a></li>
+            <li><a href="#" onclick="$('#aboutPage').modal('show');">About</a></li>
           </ul>
         </div>
       </div>
     </div>
     <div class="container">
     {{template "body" .}}
+    </div>
+    <div id="aboutPage" class="modal" style="top: 20%;">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h4 class="modal-title">About Cheesy Arena</h4>
+          </div>
+          <div class="modal-body">
+            <p>A field management system that just works.</p>
+            <p>Copyright &copy; 2014 Team 254. All Rights Reserved.</p>
+            <p>The following individuals contributed to make Cheesy Arena possible:</p>
+            <p style="padding-left: 30px;">Tom Bottiglieri, James Cerar, Nick Eyre, Patrick Fairbank,
+                Eugene Fang, Karthik Kanagasabapathy, Ken Mitchell, Andrew Nabors, Jared Russell,
+                Austin Schuh</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="/static/lib/jquery.min.js"></script>
     <script src="/static/lib/jquery.json-2.4.min.js"></script>
