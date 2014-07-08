@@ -12,7 +12,6 @@ import (
 	"html/template"
 	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"sort"
 	"strconv"
@@ -100,32 +99,6 @@ func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	currentMatchType = mainArena.currentMatch.Type
-
-	http.Redirect(w, r, "/match_play", 302)
-}
-
-func MatchPlayFakeResultHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchId, _ := strconv.Atoi(vars["matchId"])
-	match, err := db.GetMatchById(matchId)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	if match == nil {
-		handleWebErr(w, fmt.Errorf("Invalid match ID %d.", matchId))
-		return
-	}
-	matchResult := MatchResult{MatchId: match.Id, RedFouls: []Foul{}, BlueFouls: []Foul{Foul{17, "G22", 23.5, true}},
-		Cards: Cards{[]int{17}, []int{8}}}
-	matchResult.RedScore = randomScore()
-	matchResult.BlueScore = randomScore()
-	err = CommitMatchScore(match, &matchResult)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	currentMatchType = match.Type
 
 	http.Redirect(w, r, "/match_play", 302)
 }
@@ -373,10 +346,4 @@ func buildMatchPlayList(matchType string) (MatchPlayList, error) {
 	sort.Stable(matchPlayList)
 
 	return matchPlayList, nil
-}
-
-func randomScore() Score {
-	cycle := Cycle{rand.Intn(3) + 1, rand.Intn(2) == 1, rand.Intn(2) == 1, rand.Intn(2) == 1, rand.Intn(2) == 1,
-		rand.Intn(2) == 1}
-	return Score{rand.Intn(4), rand.Intn(4), rand.Intn(4), rand.Intn(4), rand.Intn(4), 0, 0, []Cycle{cycle}}
 }
