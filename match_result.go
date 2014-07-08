@@ -73,6 +73,18 @@ type ScoreSummary struct {
 	Score            int
 }
 
+// Returns a new match result object with empty slices instead of nil.
+func NewMatchResult() *MatchResult {
+	matchResult := new(MatchResult)
+	matchResult.RedScore.Cycles = []Cycle{}
+	matchResult.BlueScore.Cycles = []Cycle{}
+	matchResult.RedFouls = []Foul{}
+	matchResult.BlueFouls = []Foul{}
+	matchResult.Cards.YellowCardTeamIds = []int{}
+	matchResult.Cards.RedCardTeamIds = []int{}
+	return matchResult
+}
+
 func (database *Database) CreateMatchResult(matchResult *MatchResult) error {
 	matchResultDb, err := matchResult.serialize()
 	if err != nil {

@@ -1,4 +1,4 @@
-// Bootstrap overrides.
+/* Bootstrap overrides. */
 .form-control[disabled] {
   cursor: default;
 }
@@ -7,7 +7,7 @@
   opacity: 0.2;
 }
 
-// New styles.
+/* New styles. */
 .red-text {
   color: #f00;
 }

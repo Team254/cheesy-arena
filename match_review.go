@@ -140,7 +140,7 @@ func getMatchResultFromRequest(r *http.Request) (*Match, *MatchResult, error) {
 	}
 	if matchResult == nil {
 		// We're scoring a match that hasn't been played yet, but that's okay.
-		matchResult = new(MatchResult)
+		matchResult = NewMatchResult()
 	}
 
 	return match, matchResult, nil
