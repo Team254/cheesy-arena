@@ -6,8 +6,10 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/websocket"
+	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestMatchPlay(t *testing.T) {
@@ -149,7 +151,7 @@ func TestCommitMatch(t *testing.T) {
 	assert.Equal(t, "T", match.Winner)
 }
 
-func TestMatchPlayWebsocket(t *testing.T) {
+func TestMatchPlayWebsocketCommands(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	var err error
@@ -161,15 +163,15 @@ func TestMatchPlayWebsocket(t *testing.T) {
 
 	server, wsUrl := startTestServer()
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket?test", nil)
+	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
 	ws := &Websocket{conn}
 
-	// Should get a status update right after connection.
-	messageType, _, err := ws.Read()
-	assert.Nil(t, err)
-	assert.Equal(t, "status", messageType)
+	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "status")
+	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "matchTime")
 
 	// Test that a server-side error is communicated to the client.
 	ws.Write("nonexistenttype", nil)
@@ -226,6 +228,68 @@ func TestMatchPlayWebsocket(t *testing.T) {
 	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
 }
 
+func TestMatchPlayWebsocketNotifications(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	db.CreateTeam(&Team{Id: 254})
+	mainArena.Setup()
+
+	server, wsUrl := startTestServer()
+	defer server.Close()
+	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
+	assert.Nil(t, err)
+	defer conn.Close()
+	ws := &Websocket{conn}
+
+	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "status")
+	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "matchTime")
+
+	mainArena.AllianceStations["R1"].Bypass = true
+	mainArena.AllianceStations["R2"].Bypass = true
+	mainArena.AllianceStations["R3"].Bypass = true
+	mainArena.AllianceStations["B1"].Bypass = true
+	mainArena.AllianceStations["B2"].Bypass = true
+	mainArena.AllianceStations["B3"].Bypass = true
+	mainArena.StartMatch()
+	mainArena.Update()
+	statusReceived, matchTime := readWebsocketStatusMatchTime(t, ws)
+	assert.Equal(t, true, statusReceived)
+	assert.Equal(t, 2, matchTime.MatchState)
+	assert.Equal(t, 0, matchTime.MatchTimeSec)
+
+	// Should get a tick notification when an integer second threshold is crossed.
+	mainArena.matchStartTime = time.Now().Add(-time.Second + 10*time.Millisecond) // Not crossed yet
+	mainArena.Update()
+	mainArena.matchStartTime = time.Now().Add(-time.Second - 10*time.Millisecond) // Crossed
+	mainArena.Update()
+	mainArena.matchStartTime = time.Now().Add(-2*time.Second + 10*time.Millisecond) // Not crossed yet
+	mainArena.Update()
+	mainArena.matchStartTime = time.Now().Add(-2*time.Second - 10*time.Millisecond) // Crossed
+	mainArena.Update()
+	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
+	assert.Nil(t, err)
+	assert.Equal(t, 2, matchTime.MatchState)
+	assert.Equal(t, 1, matchTime.MatchTimeSec)
+	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
+	assert.Nil(t, err)
+	assert.Equal(t, 2, matchTime.MatchState)
+	assert.Equal(t, 2, matchTime.MatchTimeSec)
+
+	// Check across a match state boundary.
+	mainArena.matchStartTime = time.Now().Add(-time.Duration(mainArena.matchTiming.AutoDurationSec) * time.Second)
+	mainArena.Update()
+	statusReceived, matchTime = readWebsocketStatusMatchTime(t, ws)
+	assert.Equal(t, true, statusReceived)
+	assert.Equal(t, 3, matchTime.MatchState)
+	assert.Equal(t, mainArena.matchTiming.AutoDurationSec, matchTime.MatchTimeSec)
+}
+
 func readWebsocketError(t *testing.T, ws *Websocket) string {
 	messageType, data, err := ws.Read()
 	if assert.Nil(t, err) && assert.Equal(t, "error", messageType) {
@@ -234,9 +298,30 @@ func readWebsocketError(t *testing.T, ws *Websocket) string {
 	return "error"
 }
 
-func readWebsocketType(t *testing.T, ws *Websocket, expectedMessageType string) {
-	messageType, _, err := ws.Read()
+func readWebsocketType(t *testing.T, ws *Websocket, expectedMessageType string) interface{} {
+	messageType, message, err := ws.Read()
 	if assert.Nil(t, err) {
 		assert.Equal(t, expectedMessageType, messageType)
 	}
+	return message
+}
+
+// Handles the status and matchTime messaegs arriving in either order.
+func readWebsocketStatusMatchTime(t *testing.T, ws *Websocket) (bool, MatchTimeMessage) {
+	statusReceived := false
+	var matchTime MatchTimeMessage
+	for i := 0; i < 2; i++ {
+		messageType, message, err := ws.Read()
+		if assert.Nil(t, err) {
+			if messageType == "status" {
+				statusReceived = true
+			} else {
+				if assert.Equal(t, "matchTime", messageType) {
+					err = mapstructure.Decode(message, &matchTime)
+					assert.Nil(t, err)
+				}
+			}
+		}
+	}
+	return statusReceived, matchTime
 }

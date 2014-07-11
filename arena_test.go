@@ -106,7 +106,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, AUTO_PERIOD, mainArena.MatchState)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Enabled)
-	mainArena.matchStartTime = time.Now().Add(-autoDurationSec * time.Second)
+	mainArena.matchStartTime = time.Now().Add(-time.Duration(mainArena.matchTiming.AutoDurationSec) * time.Second)
 	mainArena.Update()
 	assert.Equal(t, PAUSE_PERIOD, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
@@ -115,7 +115,8 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, PAUSE_PERIOD, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
-	mainArena.matchStartTime = time.Now().Add(-(autoDurationSec + pauseDurationSec) * time.Second)
+	mainArena.matchStartTime = time.Now().Add(-time.Duration(mainArena.matchTiming.AutoDurationSec+
+		mainArena.matchTiming.PauseDurationSec) * time.Second)
 	mainArena.Update()
 	assert.Equal(t, TELEOP_PERIOD, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
@@ -153,7 +154,8 @@ func TestArenaMatchFlow(t *testing.T) {
 
 	// Check endgame and match end.
 	mainArena.matchStartTime = time.Now().
-		Add(-(autoDurationSec + pauseDurationSec + teleopDurationSec - endgameTimeLeftSec) * time.Second)
+		Add(-time.Duration(mainArena.matchTiming.AutoDurationSec+mainArena.matchTiming.PauseDurationSec+
+		mainArena.matchTiming.TeleopDurationSec-mainArena.matchTiming.EndgameTimeLeftSec) * time.Second)
 	mainArena.Update()
 	assert.Equal(t, ENDGAME_PERIOD, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
@@ -162,7 +164,8 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, ENDGAME_PERIOD, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Enabled)
-	mainArena.matchStartTime = time.Now().Add(-(autoDurationSec + pauseDurationSec + teleopDurationSec) * time.Second)
+	mainArena.matchStartTime = time.Now().Add(-time.Duration(mainArena.matchTiming.AutoDurationSec+
+		mainArena.matchTiming.PauseDurationSec+mainArena.matchTiming.TeleopDurationSec) * time.Second)
 	mainArena.Update()
 	assert.Equal(t, POST_MATCH, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)

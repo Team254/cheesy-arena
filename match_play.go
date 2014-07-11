@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
-	"time"
 )
 
 type MatchPlayListItem struct {
@@ -27,6 +26,11 @@ type MatchPlayListItem struct {
 }
 
 type MatchPlayList []MatchPlayListItem
+
+type MatchTimeMessage struct {
+	MatchState   int
+	MatchTimeSec int
+}
 
 // Global var to hold the current active tournament so that its matches are displayed by default.
 var currentMatchType string
@@ -61,13 +65,20 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		currentMatchType = "practice"
 	}
 	allowSubstitution := mainArena.currentMatch.Type == "test" || mainArena.currentMatch.Type == "practice"
+	matchResult, err := db.GetMatchResultForMatch(mainArena.currentMatch.Id)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	isReplay := matchResult != nil
 	data := struct {
 		*EventSettings
 		MatchesByType     map[string]MatchPlayList
 		CurrentMatchType  string
 		Match             *Match
 		AllowSubstitution bool
-	}{eventSettings, matchesByType, currentMatchType, mainArena.currentMatch, allowSubstitution}
+		IsReplay          bool
+	}{eventSettings, matchesByType, currentMatchType, mainArena.currentMatch, allowSubstitution, isReplay}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -105,9 +116,6 @@ func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the match play client to send control commands and receive status updates.
 func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	// Allow disabling of period updates, for easier testing.
-	_, disableUpdates := r.URL.Query()["test"]
-
 	websocket, err := NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
@@ -115,26 +123,55 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer websocket.Close()
 
-	// Send the arena status immediately upon connection.
+	matchTimeListener := mainArena.matchTimeNotifier.Listen()
+	defer close(matchTimeListener)
+	robotStatusListener := mainArena.robotStatusNotifier.Listen()
+	defer close(robotStatusListener)
+
+	// Send the various notifications immediately upon connection.
 	err = websocket.Write("status", mainArena)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-
-	if !disableUpdates {
-		// Spin off a goroutine to periodically send a status update.
-		go func() {
-			for {
-				err = websocket.Write("status", mainArena)
-				if err != nil {
-					// The client has probably closed the connection; nothing to do here.
-					break
-				}
-				time.Sleep(500 * time.Millisecond)
-			}
-		}()
+	err = websocket.Write("matchTiming", mainArena.matchTiming)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
 	}
+	data := MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)}
+	err = websocket.Write("matchTime", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+
+	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
+	go func() {
+		for {
+			var messageType string
+			var message interface{}
+			select {
+			case matchTimeSec, ok := <-matchTimeListener:
+				if !ok {
+					return
+				}
+				messageType = "matchTime"
+				message = MatchTimeMessage{mainArena.MatchState, matchTimeSec.(int)}
+			case _, ok := <-robotStatusListener:
+				if !ok {
+					return
+				}
+				messageType = "status"
+				message = mainArena
+			}
+			err = websocket.Write(messageType, message)
+			if err != nil {
+				// The client has probably closed the connection; nothing to do here.
+				return
+			}
+		}
+	}()
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {

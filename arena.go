@@ -7,17 +7,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
 
-// Loop and match timing constants.
 const (
-	arenaLoopPeriodMs  = 10
-	dsPacketPeriodMs   = 250
-	autoDurationSec    = 10
-	pauseDurationSec   = 1
-	teleopDurationSec  = 140
-	endgameTimeLeftSec = 30
+	arenaLoopPeriodMs = 10
+	dsPacketPeriodMs  = 250
 )
 
 // Progression of match states.
@@ -38,19 +34,38 @@ type AllianceStation struct {
 	team          *Team
 }
 
+// Match period timings.
+type MatchTiming struct {
+	AutoDurationSec    int
+	PauseDurationSec   int
+	TeleopDurationSec  int
+	EndgameTimeLeftSec int
+}
+
 type Arena struct {
-	AllianceStations map[string]*AllianceStation
-	MatchState       int
-	CanStartMatch    bool
-	currentMatch     *Match
-	matchStartTime   time.Time
-	lastDsPacketTime time.Time
+	AllianceStations    map[string]*AllianceStation
+	MatchState          int
+	CanStartMatch       bool
+	matchTiming         MatchTiming
+	currentMatch        *Match
+	matchStartTime      time.Time
+	lastDsPacketTime    time.Time
+	matchStateNotifier  *Notifier
+	matchTimeNotifier   *Notifier
+	robotStatusNotifier *Notifier
+	lastMatchState      int
+	lastMatchTimeSec    float64
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
 
 // Sets the arena to its initial state.
 func (arena *Arena) Setup() {
+	arena.matchTiming.AutoDurationSec = 10
+	arena.matchTiming.PauseDurationSec = 1
+	arena.matchTiming.TeleopDurationSec = 140
+	arena.matchTiming.EndgameTimeLeftSec = 30
+
 	arena.AllianceStations = make(map[string]*AllianceStation)
 	arena.AllianceStations["R1"] = new(AllianceStation)
 	arena.AllianceStations["R2"] = new(AllianceStation)
@@ -62,6 +77,12 @@ func (arena *Arena) Setup() {
 	// Load empty match as current.
 	arena.MatchState = PRE_MATCH
 	arena.LoadTestMatch()
+	arena.lastMatchState = -1
+	arena.lastMatchTimeSec = 0
+
+	arena.matchStateNotifier = NewNotifier()
+	arena.matchTimeNotifier = NewNotifier()
+	arena.robotStatusNotifier = NewNotifier()
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -245,6 +266,15 @@ func (arena *Arena) ResetMatch() error {
 	return nil
 }
 
+// Returns the fractional number of seconds since the start of the match.
+func (arena *Arena) MatchTimeSec() float64 {
+	if arena.MatchState == PRE_MATCH || arena.MatchState == START_MATCH || arena.MatchState == POST_MATCH {
+		return 0
+	} else {
+		return time.Since(arena.matchStartTime).Seconds()
+	}
+}
+
 // Performs a single iteration of checking inputs and timers and setting outputs accordingly to control the
 // flow of a match.
 func (arena *Arena) Update() {
@@ -262,13 +292,14 @@ func (arena *Arena) Update() {
 	case START_MATCH:
 		arena.MatchState = AUTO_PERIOD
 		arena.matchStartTime = time.Now()
+		arena.lastMatchTimeSec = -1
 		auto = true
 		enabled = true
 		sendDsPacket = true
 	case AUTO_PERIOD:
 		auto = true
 		enabled = true
-		if matchTimeSec >= autoDurationSec {
+		if matchTimeSec >= float64(arena.matchTiming.AutoDurationSec) {
 			arena.MatchState = PAUSE_PERIOD
 			auto = false
 			enabled = false
@@ -277,7 +308,7 @@ func (arena *Arena) Update() {
 	case PAUSE_PERIOD:
 		auto = false
 		enabled = false
-		if matchTimeSec >= autoDurationSec+pauseDurationSec {
+		if matchTimeSec >= float64(arena.matchTiming.AutoDurationSec+arena.matchTiming.PauseDurationSec) {
 			arena.MatchState = TELEOP_PERIOD
 			auto = false
 			enabled = true
@@ -286,14 +317,16 @@ func (arena *Arena) Update() {
 	case TELEOP_PERIOD:
 		auto = false
 		enabled = true
-		if matchTimeSec >= autoDurationSec+pauseDurationSec+teleopDurationSec-endgameTimeLeftSec {
+		if matchTimeSec >= float64(arena.matchTiming.AutoDurationSec+arena.matchTiming.PauseDurationSec+
+			arena.matchTiming.TeleopDurationSec-arena.matchTiming.EndgameTimeLeftSec) {
 			arena.MatchState = ENDGAME_PERIOD
 			sendDsPacket = false
 		}
 	case ENDGAME_PERIOD:
 		auto = false
 		enabled = true
-		if matchTimeSec >= autoDurationSec+pauseDurationSec+teleopDurationSec {
+		if matchTimeSec >= float64(arena.matchTiming.AutoDurationSec+arena.matchTiming.PauseDurationSec+
+			arena.matchTiming.TeleopDurationSec) {
 			arena.MatchState = POST_MATCH
 			auto = false
 			enabled = false
@@ -301,9 +334,24 @@ func (arena *Arena) Update() {
 		}
 	}
 
+	// Send a notification if the match state has changed.
+	if arena.MatchState != arena.lastMatchState {
+		arena.matchStateNotifier.Notify(arena.MatchState)
+	}
+	arena.lastMatchState = arena.MatchState
+
+	// Send a match tick notification if passing an integer second threshold.
+	if int(matchTimeSec) != int(arena.lastMatchTimeSec) {
+		arena.matchTimeNotifier.Notify(int(matchTimeSec))
+	}
+	arena.lastMatchTimeSec = matchTimeSec
+
 	// Send a packet if at a period transition point or if it's been long enough since the last one.
 	if sendDsPacket || time.Since(arena.lastDsPacketTime).Seconds()*1000 >= dsPacketPeriodMs {
 		arena.sendDsPacket(auto, enabled)
+
+		// TODO(pat): Come up with better criteria for sending robot status updates.
+		arena.robotStatusNotifier.Notify(nil)
 	}
 }
 
@@ -322,18 +370,9 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 			allianceStation.DsConn.Enabled = enabled && !allianceStation.EmergencyStop && !allianceStation.Bypass
 			err := allianceStation.DsConn.Update()
 			if err != nil {
-				// TODO(pat): Handle errors.
+				log.Printf("Unable to send driver station packet for team %d.", allianceStation.team.Id)
 			}
 		}
 	}
 	arena.lastDsPacketTime = time.Now()
-}
-
-// Returns the fractional number of seconds since the start of the match.
-func (arena *Arena) MatchTimeSec() float64 {
-	if arena.MatchState == PRE_MATCH || arena.MatchState == POST_MATCH {
-		return 0
-	} else {
-		return time.Since(arena.matchStartTime).Seconds()
-	}
 }

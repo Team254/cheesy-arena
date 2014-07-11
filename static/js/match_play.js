@@ -13,6 +13,7 @@ var matchStates = {
   5: "ENDGAME_PERIOD",
   6: "POST_MATCH"
 };
+var matchTiming;
 
 var substituteTeam = function(team, position) {
   websocket.send("substituteTeam", { team: parseInt(team), position: position })
@@ -93,12 +94,59 @@ var handleStatus = function(data) {
   }
 };
 
+var handleMatchTiming = function(data) {
+  matchTiming = data;
+};
+
+var handleMatchTime = function(data) {
+  var matchStateText;
+  switch (matchStates[data.MatchState]) {
+    case "PRE_MATCH":
+      matchStateText = "PRE-MATCH";
+      break;
+    case "START_MATCH":
+    case "AUTO_PERIOD":
+      matchStateText = "AUTONOMOUS";
+      break;
+    case "PAUSE_PERIOD":
+      matchStateText = "PAUSE";
+      break;
+    case "TELEOP_PERIOD":
+    case "ENDGAME_PERIOD":
+      matchStateText = "TELEOPERATED";
+      break;
+    case "POST_MATCH":
+      matchStateText = "POST-MATCH";
+      break;
+  }
+  $("#matchState").text(matchStateText);
+  $("#matchTime").text(getCountdown(data.MatchState, data.MatchTimeSec));
+};
+
+var getCountdown = function(matchState, matchTimeSec) {
+  switch (matchStates[matchState]) {
+    case "PRE_MATCH":
+      return matchTiming.AutoDurationSec;
+    case "START_MATCH":
+    case "AUTO_PERIOD":
+      return matchTiming.AutoDurationSec - matchTimeSec;
+    case "TELEOP_PERIOD":
+    case "ENDGAME_PERIOD":
+      return matchTiming.TeleopDurationSec + matchTiming.AutoDurationSec + matchTiming.PauseDurationSec -
+          matchTimeSec;
+    default:
+      return 0;
+  }
+};
+
 $(function() {
   // Activate tooltips above the status headers.
   $("[data-toggle=tooltip]").tooltip({"placement": "top"});
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/match_play/websocket", {
-    status: function(event) { handleStatus(event.data); }
+    status: function(event) { handleStatus(event.data); },
+    matchTiming: function(event) { handleMatchTiming(event.data); },
+    matchTime: function(event) { handleMatchTime(event.data); }
   });
 });

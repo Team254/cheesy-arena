@@ -45,6 +45,10 @@
   </div>
   <div class="col-lg-8 text-center">
     <div class="row">
+      <div id="matchState" class="col-lg-2 col-lg-offset-4 well well-sm">&nbsp;</div>
+      <div id="matchTime" class="col-lg-2 well well-sm">&nbsp;</div>
+    </div>
+    <div class="row">
       <div class="col-lg-6 well well-darkblue">
         <div class="row form-group">
           <div class="col-lg-4">Blue Teams</div>
@@ -80,13 +84,53 @@
         Abort Match
       </button>
       <button type="button" id="commitResults" class="btn btn-info btn-lg btn-match-play"
-          onclick="commitResults();" disabled>
+          onclick="{{if .IsReplay}}$('#confirmCommitResults').modal('show');{{else}}commitResults();{{end}}"
+          disabled>
         Commit Results
       </button>
       <button type="button" id="discardResults" class="btn btn-danger btn-lg btn-match-play"
-          onclick="discardResults();" disabled>
+          onclick="$('#confirmDiscardResults').modal('show');" disabled>
         Discard Results
       </button>
+    </div>
+  </div>
+</div>
+<div id="confirmCommitResults" class="modal" style="top: 20%;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title">Confirm</h4>
+      </div>
+      <div class="modal-body">
+        <p>This is a replay of Match {{.Match.DisplayName}}. Are you sure you want to overwrite the previous
+            results?</p>
+      </div>
+      <div class="modal-footer">
+        <form class="form-horizontal" action="/setup/teams/clear" method="POST">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="discardResults();">Overwrite Results</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="confirmDiscardResults" class="modal" style="top: 20%;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title">Confirm</h4>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to discard the results for this match?</p>
+      </div>
+      <div class="modal-footer">
+        <form class="form-horizontal" action="/setup/teams/clear" method="POST">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="discardResults();">Discard Results</button>
+        </form>
+      </div>
     </div>
   </div>
 </div>
