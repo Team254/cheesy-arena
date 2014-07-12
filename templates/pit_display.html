@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!--
+    Copyright 2014 Team 254. All Rights Reserved.
+    Author: nick@team254.com (Nick Eyre)
+    Author: pat@patfairbank.com (Patrick Fairbank)
+    -->
+    <title>Cheesy Arena - {{.EventSettings.Name}} - Pit Display</title>
+    <link rel="shortcut icon" href="/static/img/favicon32.png">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/pit_display.css" />
+  </head>
+  <body>
+    <div id="column">
+      <div id="titlebar">
+        <div class="pull-left">TEAM STANDINGS</div>
+        <div class="pull-right"><img id="logo" src="/static/img/logo.png"></div>
+        <div>&nbsp</div>
+      </div>
+      <div id="standings">
+        <table id="header">
+          <tr>
+            <td style="width: 7%;">Rank</td>
+            <td style="width: 7%;">Team</td>
+            <td style="width: 30%;" class="align-left">Name</td>
+            <td style="width: 7%;">W-L-T</td>
+            <td style="width: 7%;">QS</td>
+            <td style="width: 7%;">Assist</td>
+            <td style="width: 7%;">Auto</td>
+            <td style="width: 7%;">T&C</td>
+            <td style="width: 7%;">G&F</td>
+            <td style="width: 7%;">DQ</td>
+            <td style="width: 7%;">Played</td>
+          </tr>
+        </table>
+        <div id="container">
+          <div id="scroller">
+            <table id="rankings1" class="table table-striped rankings-table"></table>
+            <table id="rankings2" class="table table-striped rankings-table"></table>
+          </div>
+        </div>
+        <div id="footer">
+          <span id="highestPlayedMatch"></span>
+        </div>
+      </div>
+    </div>
+    <script id="standingsTemplate" type="text/x-handlebars-template">
+      <tbody>
+        {{"{{#each Rankings}}"}}
+          <tr>
+            <td style="width: 7%;">{{"{{../Iteration}}"}} {{"{{this.Rank}}"}}</td>
+            <td style="width: 7%;">{{"{{this.TeamId}}"}}</td>
+            <td style="width: 30%;" class="align-left">Teh Chezy Pofs</td>
+            <td style="width: 7%;">{{"{{this.Wins}}"}}-{{"{{this.Losses}}"}}-{{"{{this.Ties}}"}}</td>
+            <td style="width: 7%;">{{"{{this.QualificationScore}}"}}</td>
+            <td style="width: 7%;">{{"{{this.AssistPoints}}"}}</td>
+            <td style="width: 7%;">{{"{{this.AutoPoints}}"}}</td>
+            <td style="width: 7%;">{{"{{this.TrussCatchPoints}}"}}</td>
+            <td style="width: 7%;">{{"{{this.GoalFoulPoints}}"}}</td>
+            <td style="width: 7%;">{{"{{this.Disqualifications}}"}}</td>
+            <td style="width: 7%;">{{"{{this.Played}}"}}</td>
+          </tr>
+        {{"{{/each}}"}}
+      </tbody>
+    </script>
+    <script src="/static/lib/jquery.min.js"></script>
+    <script src="/static/lib/handlebars-1.3.0.js"></script>
+    <script src="/static/js/jquery.transit.min.js"></script>
+    <script src="/static/js/pit_display.js"></script>
+  </body>
+</html>

@@ -131,6 +131,7 @@ func newHandler() http.Handler {
 	router.HandleFunc("/reports/pdf/schedule/{type}", SchedulePdfReportHandler).Methods("GET")
 	router.HandleFunc("/reports/csv/teams", TeamsCsvReportHandler).Methods("GET")
 	router.HandleFunc("/reports/pdf/teams", TeamsPdfReportHandler).Methods("GET")
+	router.HandleFunc("/displays/pit", PitDisplayHandler).Methods("GET")
 	router.HandleFunc("/api/rankings", RankingsApiHandler).Methods("GET")
 	router.HandleFunc("/", IndexHandler).Methods("GET")
 	return router

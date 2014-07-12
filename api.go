@@ -7,7 +7,6 @@ package main
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 )
 
@@ -23,14 +22,31 @@ func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 		rankings = make([]Ranking, 0)
 	}
 
-	data, err := json.MarshalIndent(rankings, "", "  ")
+	// Get the last match scored so we can report that on the display.
+	matches, err := db.GetMatchesByType("qualification")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	highestPlayedMatch := ""
+	for _, match := range matches {
+		if match.Status == "complete" {
+			highestPlayedMatch = match.DisplayName
+		}
+	}
+
+	data := struct {
+		Rankings           []Ranking
+		HighestPlayedMatch string
+	}{rankings, highestPlayedMatch}
+	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_, err = io.WriteString(w, string(data))
+	_, err = w.Write(jsonData)
 	if err != nil {
 		handleWebErr(w, err)
 		return

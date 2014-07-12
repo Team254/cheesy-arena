@@ -1,0 +1,72 @@
+/*
+Copyright 2014 Team 254. All Rights Reserved.
+Author: nick@team254.com (Nick Eyre)
+*/
+
+html {
+  height: 100%;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+body {
+  height: 100%;
+  background: -moz-linear-gradient(top, #003375 1%, #3C679D 100%); /* FF3.6+ */
+  background: -webkit-linear-gradient(top, #003375 1%, #3C679D 100%); /* Chrome10+,Safari5.1+ */
+  background: -webkit-linear-gradient(top, #003375 1%, #3C679D 100%); /* Chrome10+,Safari5.1+ */
+  background-repeat: no-repeat;
+  font-family: sans-serif;
+}
+#column {
+  width: 80%;
+  height: 100%;
+  margin: 0 auto;
+}
+#titlebar {
+  padding: 20px 0px;
+  line-height: 50px;
+  font-size: 40px;
+  font-weight: bold;
+  color: #fff;
+}
+#logo {
+  height: 50px;
+}
+#standings {
+  border-radius: 10px;
+  background-color: #fff;
+  padding: 10px;
+  height: 85%;
+}
+#header {
+  width: 100%;
+  text-align: center;
+  font-size: 15px;
+  font-weight: bold;
+  color: #000;
+  border-bottom: 1px solid #000;
+}
+#container {
+  height: 93%;
+  overflow-y: hidden;
+}
+#footer {
+  text-align: right;
+  font-size: 15px;
+  color: #000;
+  border-top: 1px solid #000;
+}
+.rankings-table {
+  text-align: center;
+  font-size: 17px;
+  color: #000;
+  border-bottom: 3px solid #666;
+  margin: 0;
+}
+.rankings-table > tbody > tr > td {
+  padding-left: 0;
+  padding-right: 0;
+}
+.align-left {
+  text-align: left;
+}
