@@ -125,14 +125,14 @@ func newHandler() http.Handler {
 	router.HandleFunc("/match_review", MatchReviewHandler).Methods("GET")
 	router.HandleFunc("/match_review/{matchId}/edit", MatchReviewEditGetHandler).Methods("GET")
 	router.HandleFunc("/match_review/{matchId}/edit", MatchReviewEditPostHandler).Methods("POST")
-	router.HandleFunc("/reports/csv/rankings", RankingsCsvReportHandler)
-	router.HandleFunc("/reports/pdf/rankings", RankingsPdfReportHandler)
-	router.HandleFunc("/reports/json/rankings", RankingsJSONReportHandler)
-	router.HandleFunc("/reports/csv/schedule/{type}", ScheduleCsvReportHandler)
-	router.HandleFunc("/reports/pdf/schedule/{type}", SchedulePdfReportHandler)
-	router.HandleFunc("/reports/csv/teams", TeamsCsvReportHandler)
-	router.HandleFunc("/reports/pdf/teams", TeamsPdfReportHandler)
-	router.HandleFunc("/", IndexHandler)
+	router.HandleFunc("/reports/csv/rankings", RankingsCsvReportHandler).Methods("GET")
+	router.HandleFunc("/reports/pdf/rankings", RankingsPdfReportHandler).Methods("GET")
+	router.HandleFunc("/reports/csv/schedule/{type}", ScheduleCsvReportHandler).Methods("GET")
+	router.HandleFunc("/reports/pdf/schedule/{type}", SchedulePdfReportHandler).Methods("GET")
+	router.HandleFunc("/reports/csv/teams", TeamsCsvReportHandler).Methods("GET")
+	router.HandleFunc("/reports/pdf/teams", TeamsPdfReportHandler).Methods("GET")
+	router.HandleFunc("/api/rankings", RankingsApiHandler).Methods("GET")
+	router.HandleFunc("/", IndexHandler).Methods("GET")
 	return router
 }
 
