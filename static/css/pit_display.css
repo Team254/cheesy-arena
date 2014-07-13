@@ -57,16 +57,23 @@ body {
   border-top: 1px solid #000;
 }
 .rankings-table {
+  table-layout: fixed;
   text-align: center;
   font-size: 17px;
   color: #000;
   border-bottom: 3px solid #666;
   margin: 0;
 }
+.team-field {
+  width: 7%;
+}
+.team-nickname {
+  width: 30%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: left;
+}
 .rankings-table > tbody > tr > td {
   padding-left: 0;
   padding-right: 0;
-}
-.align-left {
-  text-align: left;
 }

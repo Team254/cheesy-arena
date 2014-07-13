@@ -10,6 +10,11 @@ import (
 	"net/http"
 )
 
+type RankingWithNickname struct {
+	Ranking
+	Nickname string
+}
+
 // Generates a JSON dump of the qualification rankings.
 func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	rankings, err := db.GetAllRankings()
@@ -17,9 +22,26 @@ func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+	var rankingsWithNicknames []RankingWithNickname
 	if rankings == nil {
 		// Go marshals an empty slice to null, so explicitly create it so that it appears as an empty JSON array.
-		rankings = make([]Ranking, 0)
+		rankingsWithNicknames = make([]RankingWithNickname, 0)
+	} else {
+		rankingsWithNicknames = make([]RankingWithNickname, len(rankings))
+	}
+
+	// Get team info so that nicknames can be displayed.
+	teams, err := db.GetAllTeams()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	teamNicknames := make(map[int]string)
+	for _, team := range teams {
+		teamNicknames[team.Id] = team.Nickname
+	}
+	for i, ranking := range rankings {
+		rankingsWithNicknames[i] = RankingWithNickname{ranking, teamNicknames[ranking.TeamId]}
 	}
 
 	// Get the last match scored so we can report that on the display.
@@ -36,9 +58,9 @@ func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		Rankings           []Ranking
+		Rankings           []RankingWithNickname
 		HighestPlayedMatch string
-	}{rankings, highestPlayedMatch}
+	}{rankingsWithNicknames, highestPlayedMatch}
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		handleWebErr(w, err)

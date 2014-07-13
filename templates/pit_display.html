@@ -21,17 +21,17 @@
       <div id="standings">
         <table id="header">
           <tr>
-            <td style="width: 7%;">Rank</td>
-            <td style="width: 7%;">Team</td>
-            <td style="width: 30%;" class="align-left">Name</td>
-            <td style="width: 7%;">W-L-T</td>
-            <td style="width: 7%;">QS</td>
-            <td style="width: 7%;">Assist</td>
-            <td style="width: 7%;">Auto</td>
-            <td style="width: 7%;">T&C</td>
-            <td style="width: 7%;">G&F</td>
-            <td style="width: 7%;">DQ</td>
-            <td style="width: 7%;">Played</td>
+            <td class="team-field">Rank</td>
+            <td class="team-field">Team</td>
+            <td style="team-nickname">Name</td>
+            <td class="team-field">W-L-T</td>
+            <td class="team-field">QS</td>
+            <td class="team-field">Assist</td>
+            <td class="team-field">Auto</td>
+            <td class="team-field">T&C</td>
+            <td class="team-field">G&F</td>
+            <td class="team-field">DQ</td>
+            <td class="team-field">Played</td>
           </tr>
         </table>
         <div id="container">
@@ -49,17 +49,17 @@
       <tbody>
         {{"{{#each Rankings}}"}}
           <tr>
-            <td style="width: 7%;">{{"{{../Iteration}}"}} {{"{{this.Rank}}"}}</td>
-            <td style="width: 7%;">{{"{{this.TeamId}}"}}</td>
-            <td style="width: 30%;" class="align-left">Teh Chezy Pofs</td>
-            <td style="width: 7%;">{{"{{this.Wins}}"}}-{{"{{this.Losses}}"}}-{{"{{this.Ties}}"}}</td>
-            <td style="width: 7%;">{{"{{this.QualificationScore}}"}}</td>
-            <td style="width: 7%;">{{"{{this.AssistPoints}}"}}</td>
-            <td style="width: 7%;">{{"{{this.AutoPoints}}"}}</td>
-            <td style="width: 7%;">{{"{{this.TrussCatchPoints}}"}}</td>
-            <td style="width: 7%;">{{"{{this.GoalFoulPoints}}"}}</td>
-            <td style="width: 7%;">{{"{{this.Disqualifications}}"}}</td>
-            <td style="width: 7%;">{{"{{this.Played}}"}}</td>
+            <td class="team-field">{{"{{../Iteration}}"}} {{"{{this.Rank}}"}}</td>
+            <td class="team-field">{{"{{this.TeamId}}"}}</td>
+            <td class="team-nickname">{{"{{this.Nickname}}"}}</td>
+            <td class="team-field">{{"{{this.Wins}}"}}-{{"{{this.Losses}}"}}-{{"{{this.Ties}}"}}</td>
+            <td class="team-field">{{"{{this.QualificationScore}}"}}</td>
+            <td class="team-field">{{"{{this.AssistPoints}}"}}</td>
+            <td class="team-field">{{"{{this.AutoPoints}}"}}</td>
+            <td class="team-field">{{"{{this.TrussCatchPoints}}"}}</td>
+            <td class="team-field">{{"{{this.GoalFoulPoints}}"}}</td>
+            <td class="team-field">{{"{{this.Disqualifications}}"}}</td>
+            <td class="team-field">{{"{{this.Played}}"}}</td>
           </tr>
         {{"{{/each}}"}}
       </tbody>
