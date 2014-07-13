@@ -19,5 +19,5 @@ func TestPitDisplay(t *testing.T) {
 
 	recorder := getHttpResponse("/displays/pit")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Cheesy Arena - Untitled Event - Pit Display")
+	assert.Contains(t, recorder.Body.String(), "Pit Display - Untitled Event - Cheesy Arena")
 }

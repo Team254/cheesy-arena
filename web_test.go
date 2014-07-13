@@ -22,7 +22,7 @@ func TestIndex(t *testing.T) {
 
 	recorder := getHttpResponse("/")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Cheesy Arena - Untitled Event")
+	assert.Contains(t, recorder.Body.String(), "Home - Untitled Event - Cheesy Arena")
 }
 
 func getHttpResponse(path string) *httptest.ResponseRecorder {
