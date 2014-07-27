@@ -30,9 +30,12 @@
                 <tr class="{{$match.ColorClass}}">
                   <td>{{$match.DisplayName}}</td>
                   <td>{{$match.Time}}</td>
-                  <td style="white-space: nowrap;">
+                  <td class="nowrap">
                     <a href="/match_play/{{$match.Id}}/load">
                       <b class="btn btn-info btn-xs">Load</b>
+                    </a>
+                    <a href="/match_play/{{$match.Id}}/show_result">
+                      <b class="btn btn-info btn-xs">Show Result</b>
                     </a>
                   </td>
                 </tr>
@@ -136,6 +139,7 @@
 </div>
 {{end}}
 {{define "script"}}
+<script src="/static/js/match_timing.js"></script>
 <script src="/static/js/match_play.js"></script>
 {{end}}
 {{define "matchPlayTeam"}}

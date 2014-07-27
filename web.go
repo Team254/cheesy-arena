@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	"html/template"
 	"log"
 	"net/http"
+	"text/template"
 )
 
 const httpPort = 8080
@@ -121,6 +121,7 @@ func newHandler() http.Handler {
 	router.HandleFunc("/setup/alliance_selection/finalize", AllianceSelectionFinalizeHandler).Methods("POST")
 	router.HandleFunc("/match_play", MatchPlayHandler).Methods("GET")
 	router.HandleFunc("/match_play/{matchId}/load", MatchPlayLoadHandler).Methods("GET")
+	router.HandleFunc("/match_play/{matchId}/show_result", MatchPlayShowResultHandler).Methods("GET")
 	router.HandleFunc("/match_play/websocket", MatchPlayWebsocketHandler).Methods("GET")
 	router.HandleFunc("/match_review", MatchReviewHandler).Methods("GET")
 	router.HandleFunc("/match_review/{matchId}/edit", MatchReviewEditGetHandler).Methods("GET")
@@ -132,6 +133,8 @@ func newHandler() http.Handler {
 	router.HandleFunc("/reports/csv/teams", TeamsCsvReportHandler).Methods("GET")
 	router.HandleFunc("/reports/pdf/teams", TeamsPdfReportHandler).Methods("GET")
 	router.HandleFunc("/displays/pit", PitDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/announcer", AnnouncerDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/announcer/websocket", AnnouncerDisplayWebsocketHandler).Methods("GET")
 	router.HandleFunc("/api/rankings", RankingsApiHandler).Methods("GET")
 	router.HandleFunc("/", IndexHandler).Methods("GET")
 	return router

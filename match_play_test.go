@@ -290,22 +290,6 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	assert.Equal(t, mainArena.matchTiming.AutoDurationSec, matchTime.MatchTimeSec)
 }
 
-func readWebsocketError(t *testing.T, ws *Websocket) string {
-	messageType, data, err := ws.Read()
-	if assert.Nil(t, err) && assert.Equal(t, "error", messageType) {
-		return data.(string)
-	}
-	return "error"
-}
-
-func readWebsocketType(t *testing.T, ws *Websocket, expectedMessageType string) interface{} {
-	messageType, message, err := ws.Read()
-	if assert.Nil(t, err) {
-		assert.Equal(t, expectedMessageType, messageType)
-	}
-	return message
-}
-
 // Handles the status and matchTime messaegs arriving in either order.
 func readWebsocketStatusMatchTime(t *testing.T, ws *Websocket) (bool, MatchTimeMessage) {
 	statusReceived := false

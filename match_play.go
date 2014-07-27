@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
-	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"sort"
 	"strconv"
+	"text/template"
 )
 
 type MatchPlayListItem struct {
@@ -110,6 +110,25 @@ func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	currentMatchType = mainArena.currentMatch.Type
+
+	http.Redirect(w, r, "/match_play", 302)
+}
+
+// Loads the results for the given match into the display buffer.
+func MatchPlayShowResultHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	matchId, _ := strconv.Atoi(vars["matchId"])
+	matchResult, err := db.GetMatchResultForMatch(matchId)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	if matchResult == nil {
+		handleWebErr(w, fmt.Errorf("No result found for match ID %d.", matchId))
+		return
+	}
+	mainArena.savedMatchResult = matchResult
+	mainArena.scorePostedNotifier.Notify(nil)
 
 	http.Redirect(w, r, "/match_play", 302)
 }

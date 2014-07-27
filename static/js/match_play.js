@@ -4,16 +4,6 @@
 // Client-side logic for the match play page.
 
 var websocket;
-var matchStates = {
-  0: "PRE_MATCH",
-  1: "START_MATCH",
-  2: "AUTO_PERIOD",
-  3: "PAUSE_PERIOD",
-  4: "TELEOP_PERIOD",
-  5: "ENDGAME_PERIOD",
-  6: "POST_MATCH"
-};
-var matchTiming;
 
 var substituteTeam = function(team, position) {
   websocket.send("substituteTeam", { team: parseInt(team), position: position })
@@ -94,49 +84,11 @@ var handleStatus = function(data) {
   }
 };
 
-var handleMatchTiming = function(data) {
-  matchTiming = data;
-};
-
 var handleMatchTime = function(data) {
-  var matchStateText;
-  switch (matchStates[data.MatchState]) {
-    case "PRE_MATCH":
-      matchStateText = "PRE-MATCH";
-      break;
-    case "START_MATCH":
-    case "AUTO_PERIOD":
-      matchStateText = "AUTONOMOUS";
-      break;
-    case "PAUSE_PERIOD":
-      matchStateText = "PAUSE";
-      break;
-    case "TELEOP_PERIOD":
-    case "ENDGAME_PERIOD":
-      matchStateText = "TELEOPERATED";
-      break;
-    case "POST_MATCH":
-      matchStateText = "POST-MATCH";
-      break;
-  }
-  $("#matchState").text(matchStateText);
-  $("#matchTime").text(getCountdown(data.MatchState, data.MatchTimeSec));
-};
-
-var getCountdown = function(matchState, matchTimeSec) {
-  switch (matchStates[matchState]) {
-    case "PRE_MATCH":
-      return matchTiming.AutoDurationSec;
-    case "START_MATCH":
-    case "AUTO_PERIOD":
-      return matchTiming.AutoDurationSec - matchTimeSec;
-    case "TELEOP_PERIOD":
-    case "ENDGAME_PERIOD":
-      return matchTiming.TeleopDurationSec + matchTiming.AutoDurationSec + matchTiming.PauseDurationSec -
-          matchTimeSec;
-    default:
-      return 0;
-  }
+  translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
+    $("#matchState").text(matchStateText);
+    $("#matchTime").text(countdownSec);
+  });
 };
 
 $(function() {

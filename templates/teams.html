@@ -49,7 +49,7 @@
             <td>{{$team.City}}, {{$team.StateProv}}, {{$team.Country}}</td>
             <td>{{$team.RookieYear}}</td>
             <td>{{$team.RobotName}}</td>
-            <td class="text-center" style="white-space: nowrap;">
+            <td class="text-center nowrap">
               <form action="/setup/teams/{{$team.Id}}/delete" method="POST">
                 <a href="/setup/teams/{{$team.Id}}/edit">
                   <button type="button" class="btn btn-info btn-xs">

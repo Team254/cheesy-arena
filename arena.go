@@ -43,18 +43,21 @@ type MatchTiming struct {
 }
 
 type Arena struct {
-	AllianceStations    map[string]*AllianceStation
-	MatchState          int
-	CanStartMatch       bool
-	matchTiming         MatchTiming
-	currentMatch        *Match
-	matchStartTime      time.Time
-	lastDsPacketTime    time.Time
-	matchStateNotifier  *Notifier
-	matchTimeNotifier   *Notifier
-	robotStatusNotifier *Notifier
-	lastMatchState      int
-	lastMatchTimeSec    float64
+	AllianceStations       map[string]*AllianceStation
+	MatchState             int
+	CanStartMatch          bool
+	matchTiming            MatchTiming
+	currentMatch           *Match
+	matchStartTime         time.Time
+	lastDsPacketTime       time.Time
+	matchStateNotifier     *Notifier
+	matchTimeNotifier      *Notifier
+	robotStatusNotifier    *Notifier
+	matchLoadTeamsNotifier *Notifier
+	scorePostedNotifier    *Notifier
+	lastMatchState         int
+	lastMatchTimeSec       float64
+	savedMatchResult       *MatchResult
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
@@ -74,15 +77,17 @@ func (arena *Arena) Setup() {
 	arena.AllianceStations["B2"] = new(AllianceStation)
 	arena.AllianceStations["B3"] = new(AllianceStation)
 
+	arena.matchStateNotifier = NewNotifier()
+	arena.matchTimeNotifier = NewNotifier()
+	arena.robotStatusNotifier = NewNotifier()
+	arena.matchLoadTeamsNotifier = NewNotifier()
+	arena.scorePostedNotifier = NewNotifier()
+
 	// Load empty match as current.
 	arena.MatchState = PRE_MATCH
 	arena.LoadTestMatch()
 	arena.lastMatchState = -1
 	arena.lastMatchTimeSec = 0
-
-	arena.matchStateNotifier = NewNotifier()
-	arena.matchTimeNotifier = NewNotifier()
-	arena.robotStatusNotifier = NewNotifier()
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -159,6 +164,7 @@ func (arena *Arena) LoadMatch(match *Match) error {
 	if err != nil {
 		return err
 	}
+	arena.matchLoadTeamsNotifier.Notify(nil)
 	return nil
 }
 
@@ -212,6 +218,7 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 	case "B3":
 		arena.currentMatch.Blue3 = teamId
 	}
+	arena.matchLoadTeamsNotifier.Notify(nil)
 	return nil
 }
 

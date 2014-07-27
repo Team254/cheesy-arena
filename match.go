@@ -6,6 +6,7 @@
 package main
 
 import (
+	"strings"
 	"time"
 )
 
@@ -87,4 +88,11 @@ func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
 	err := database.teamMap.Select(&matches,
 		"SELECT * FROM matches WHERE type = ? ORDER BY elimround desc, eliminstance, elimgroup, id", matchType)
 	return matches, err
+}
+
+func (match *Match) CapitalizedType() string {
+	if match.Type == "" {
+		return ""
+	}
+	return strings.ToUpper(match.Type[0:1]) + match.Type[1:]
 }

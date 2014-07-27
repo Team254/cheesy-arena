@@ -169,14 +169,7 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Capitalize match types.
-		matchType := match.Type
-		if matchType == "qualification" {
-			matchType = "Qualification"
-		} else if matchType == "practice" {
-			matchType = "Practice"
-		} else if matchType == "elimination" {
-			matchType = "Elimination"
-		}
+		matchType := match.CapitalizedType()
 
 		// Render match info row.
 		pdf.CellFormat(colWidths["Time"], height, match.Time.Local().Format("Mon 1/02 03:04 PM"), borderStr, 0, alignStr, false, 0, "")

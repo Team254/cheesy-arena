@@ -1,0 +1,109 @@
+{{define "title"}}Announcer Display{{end}}
+{{define "body"}}
+<h3>{{.MatchType}} Match {{.MatchDisplayName}}</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Team</th>
+      <th>Nickname</th>
+      <th>Location</th>
+      <th>Name</th>
+      <th class="nowrap">Robot Name</th>
+      <th class="nowrap">Rookie Year</th>
+      <th class="nowrap">Recent Accomplishments</th>
+    </tr>
+    <tr class="well-darkred">{{template "announcerDisplayTeam" .Red1}}</tr>
+    <tr class="well-darkred">{{template "announcerDisplayTeam" .Red2}}</tr>
+    <tr class="well-darkred">{{template "announcerDisplayTeam" .Red3}}</tr>
+    <tr class="well-darkblue">{{template "announcerDisplayTeam" .Blue1}}</tr>
+    <tr class="well-darkblue">{{template "announcerDisplayTeam" .Blue2}}</tr>
+    <tr class="well-darkblue">{{template "announcerDisplayTeam" .Blue3}}</tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+<div class="row">
+  <div id="matchState" class="col-lg-2 col-lg-offset-2 well well-sm text-center">&nbsp;</div>
+  <div id="matchTime" class="col-lg-2 well well-sm text-center">&nbsp;</div>
+  <div id="redScore" class="col-lg-2 well well-sm well-red text-center">&nbsp;</div>
+  <div id="blueScore" class="col-lg-2 well well-sm well-blue text-center">&nbsp;</div>
+</div>
+<div class="row">
+</div>
+{{if .SavedMatchResult}}
+<div class="col-lg-8 col-lg-offset-2 well well-sm" id="savedMatchResult" style="display: none;" data-blink="off">
+  <div class="col-lg-8">
+    <h3>Final Results &ndash; {{.SavedMatchType}} Match {{.SavedMatchDisplayName}}</h3>
+  </div>
+  <div class="col-lg-6">
+    <div class="well well-darkred">
+      {{template "announcerDisplayResult" dict "fouls" .SavedMatchResult.RedFouls "summary" .RedScoreSummary}}
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="well well-darkblue">
+      {{template "announcerDisplayResult" dict "fouls" .SavedMatchResult.BlueFouls "summary" .BlueScoreSummary}}
+    </div>
+  </div>
+  <div class="text-center col-lg-12">
+    <button type="button" class="btn btn-info" onclick="postMatchResult();">Post Score to Audience Display</button>
+  </div>
+</div>
+{{end}}
+{{end}}
+{{define "script"}}
+<script src="/static/js/match_timing.js"></script>
+<script src="/static/js/announcer_display.js"></script>
+{{end}}
+{{define "announcerDisplayTeam"}}
+{{if .}}
+  <td><b>{{.Id}}</b></td>
+  <td class="nowrap">{{.Nickname}}</td>
+  <td class="nowrap">{{.City}}, {{.StateProv}}, {{.Country}}</td>
+  <td>{{.Name}}</td>
+  <td class="nowrap">{{.RobotName}}</td>
+  <td>{{.RookieYear}}</td>
+  <td class="nowrap">2014 Central Valley Regional - Gracious Professionalism<br />Placeholder</td>
+{{else}}
+  <td colspan="100">No team present</td>
+{{end}}
+{{end}}
+{{define "announcerDisplayResult"}}
+<h4>Score</h4>
+<div class="row">
+  <div class="col-lg-7 col-lg-offset-1 control-label">Auto Points</div>
+  <div class="col-lg-2">{{.summary.AutoPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-lg-7 col-lg-offset-1 control-label">Teleop Points</div>
+  <div class="col-lg-2">{{.summary.TeleopPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-lg-6 col-lg-offset-2 control-label">Assist Points</div>
+  <div class="col-lg-2">{{.summary.AssistPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-lg-6 col-lg-offset-2 control-label">Truss/Catch Points</div>
+  <div class="col-lg-2">{{.summary.TrussCatchPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-lg-6 col-lg-offset-2 control-label">Goal Points</div>
+  <div class="col-lg-2">{{.summary.GoalPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-lg-7 col-lg-offset-1 control-label">Foul Points</div>
+  <div class="col-lg-2">{{.summary.FoulPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-lg-7 col-lg-offset-1 control-label"><b>Final Score</b></div>
+  <div class="col-lg-2"><b>{{.summary.Score}}</b></div>
+</div>
+<h4>Fouls</h4>
+{{range $foul := .fouls}}
+  <div class="row">
+    <div class="col-lg-4 col-lg-offset-1">{{if $foul.IsTechnical}}Tech {{end}}Foul</div>
+    <div class="col-lg-3">{{$foul.TeamId}}</div>
+    <div class="col-lg-3">{{$foul.Rule}}</div>
+  </div>
+{{end}}
+{{end}}

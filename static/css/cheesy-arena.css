@@ -51,6 +51,12 @@
 [data-status-ok="false"] {
   background-color: #e66;
 }
+[data-blink="true"] {
+  background-color: #fc0;
+}
 .btn-match-play {
   width: 165px;
+}
+.nowrap {
+  white-space: nowrap;
 }

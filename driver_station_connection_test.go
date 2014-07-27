@@ -157,8 +157,9 @@ func TestListenForDsPackets(t *testing.T) {
 	db, _ = OpenDatabase(testDbPath)
 
 	listener, err := DsPacketListener()
-	assert.Nil(t, err)
-	go ListenForDsPackets(listener)
+	if assert.Nil(t, err) {
+		go ListenForDsPackets(listener)
+	}
 	mainArena.Setup()
 
 	dsConn, err := NewDriverStationConnection(254, "B1")

@@ -45,3 +45,21 @@ func startTestServer() (*httptest.Server, string) {
 	server := httptest.NewServer(newHandler())
 	return server, "ws" + server.URL[len("http"):]
 }
+
+// Receives the next websocket message and asserts that it is an error.
+func readWebsocketError(t *testing.T, ws *Websocket) string {
+	messageType, data, err := ws.Read()
+	if assert.Nil(t, err) && assert.Equal(t, "error", messageType) {
+		return data.(string)
+	}
+	return "error"
+}
+
+// Receives the next websocket message and asserts that it is of the given type.
+func readWebsocketType(t *testing.T, ws *Websocket, expectedMessageType string) interface{} {
+	messageType, message, err := ws.Read()
+	if assert.Nil(t, err) {
+		assert.Equal(t, expectedMessageType, messageType)
+	}
+	return message
+}
