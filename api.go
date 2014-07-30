@@ -7,12 +7,52 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"net/http"
 )
+
+type MatchWithResult struct {
+	Match
+	Result *MatchResult
+}
 
 type RankingWithNickname struct {
 	Ranking
 	Nickname string
+}
+
+// Generates a JSON dump of the matches and results.
+func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	matches, err := db.GetMatchesByType(vars["type"])
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	matchesWithResults := make([]MatchWithResult, len(matches))
+	for i, match := range matches {
+		matchesWithResults[i].Match = match
+		matchResult, err := db.GetMatchResultForMatch(match.Id)
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+		matchesWithResults[i].Result = matchResult
+	}
+
+	jsonData, err := json.MarshalIndent(matchesWithResults, "", "  ")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(jsonData)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }
 
 // Generates a JSON dump of the qualification rankings.
