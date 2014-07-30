@@ -6,7 +6,11 @@ CREATE TABLE event_settings (
   displaybackgroundcolor VARCHAR(16),
   numelimalliances int,
   selectionround2order VARCHAR(1),
-  selectionround3order VARCHAR(1)
+  selectionround3order VARCHAR(1),
+  tbapublishingenabled bool,
+  tbaeventcode VARCHAR(16),
+  tbasecretid VARCHAR(255),
+  tbasecret VARCHAR(255)
 );
 
 -- +goose Down

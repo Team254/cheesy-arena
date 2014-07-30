@@ -85,12 +85,39 @@
               </div>
             </div>
           </div>
+        </fieldset>
+        <fieldset>
+          <legend>Publishing</legend>
           <div class="form-group">
-            <div class="col-lg-7 col-lg-offset-5">
-              <button type="submit" class="btn btn-info">Save</button>
+            <label class="col-lg-7 control-label">Enable The Blue Alliance publishing</label>
+            <div class="col-lg-1 checkbox">
+              <input type="checkbox" name="tbaPublishingEnabled"{{if .TbaPublishingEnabled}} checked{{end}}>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">TBA Event Code</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="tbaEventCode" value="{{.TbaEventCode}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">TBA Secret ID</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="tbaSecretId" value="{{.TbaSecretId}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">TBA Secret</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="tbaSecret" value="{{.TbaSecret}}">
             </div>
           </div>
         </fieldset>
+        <div class="form-group">
+          <div class="col-lg-7 col-lg-offset-5">
+            <button type="submit" class="btn btn-info">Save</button>
+          </div>
+        </div>
       </form>
     </div>
   </div>

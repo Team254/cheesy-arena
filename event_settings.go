@@ -13,6 +13,10 @@ type EventSettings struct {
 	NumElimAlliances       int
 	SelectionRound2Order   string
 	SelectionRound3Order   string
+	TbaPublishingEnabled   bool
+	TbaEventCode           string
+	TbaSecretId            string
+	TbaSecret              string
 }
 
 const eventSettingsId = 0

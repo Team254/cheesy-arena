@@ -29,16 +29,21 @@ func TestSetupSettings(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "UE")
 	assert.Contains(t, recorder.Body.String(), "#00ff00")
 	assert.Contains(t, recorder.Body.String(), "8")
+	assert.NotContains(t, recorder.Body.String(), "tbaPublishingEnabled\" checked")
 
 	// Change the settings and check the response.
 	recorder = postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&displayBackgroundColor=#ff00ff&"+
-		"numElimAlliances=16")
+		"numElimAlliances=16&tbaPublishingEnabled=on&tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec")
 	assert.Equal(t, 302, recorder.Code)
 	recorder = getHttpResponse("/setup/settings")
 	assert.Contains(t, recorder.Body.String(), "Chezy Champs")
 	assert.Contains(t, recorder.Body.String(), "CC")
 	assert.Contains(t, recorder.Body.String(), "#ff00ff")
 	assert.Contains(t, recorder.Body.String(), "16")
+	assert.Contains(t, recorder.Body.String(), "tbaPublishingEnabled\" checked")
+	assert.Contains(t, recorder.Body.String(), "2014cc")
+	assert.Contains(t, recorder.Body.String(), "secretId")
+	assert.Contains(t, recorder.Body.String(), "tbasec")
 }
 
 func TestSetupSettingsInvalidValues(t *testing.T) {

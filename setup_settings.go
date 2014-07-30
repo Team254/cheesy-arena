@@ -41,6 +41,10 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.NumElimAlliances = numAlliances
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
+	eventSettings.TbaPublishingEnabled = r.PostFormValue("tbaPublishingEnabled") == "on"
+	eventSettings.TbaEventCode = r.PostFormValue("tbaEventCode")
+	eventSettings.TbaSecretId = r.PostFormValue("tbaSecretId")
+	eventSettings.TbaSecret = r.PostFormValue("tbaSecret")
 	err := db.SaveEventSettings(eventSettings)
 	if err != nil {
 		handleWebErr(w, err)
