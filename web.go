@@ -135,6 +135,8 @@ func newHandler() http.Handler {
 	router.HandleFunc("/displays/pit", PitDisplayHandler).Methods("GET")
 	router.HandleFunc("/displays/announcer", AnnouncerDisplayHandler).Methods("GET")
 	router.HandleFunc("/displays/announcer/websocket", AnnouncerDisplayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/displays/scoring/{alliance}", ScoringDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/scoring/{alliance}/websocket", ScoringDisplayWebsocketHandler).Methods("GET")
 	router.HandleFunc("/api/rankings", RankingsApiHandler).Methods("GET")
 	router.HandleFunc("/", IndexHandler).Methods("GET")
 	return router

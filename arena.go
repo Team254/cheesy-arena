@@ -42,12 +42,24 @@ type MatchTiming struct {
 	EndgameTimeLeftSec int
 }
 
+type RealtimeScore struct {
+	CurrentScore       Score
+	CurrentCycle       Cycle
+	AutoPreloadedBalls int
+	AutoCommitted      bool
+	TeleopCommitted    bool
+	undoAutoScores     []Score
+	undoCycles         []Cycle
+}
+
 type Arena struct {
 	AllianceStations       map[string]*AllianceStation
 	MatchState             int
 	CanStartMatch          bool
 	matchTiming            MatchTiming
 	currentMatch           *Match
+	redRealtimeScore       *RealtimeScore
+	blueRealtimeScore      *RealtimeScore
 	matchStartTime         time.Time
 	lastDsPacketTime       time.Time
 	matchStateNotifier     *Notifier
@@ -164,6 +176,11 @@ func (arena *Arena) LoadMatch(match *Match) error {
 	if err != nil {
 		return err
 	}
+
+	// Reset the realtime scores.
+	arena.redRealtimeScore = new(RealtimeScore)
+	arena.blueRealtimeScore = new(RealtimeScore)
+
 	arena.matchLoadTeamsNotifier.Notify(nil)
 	return nil
 }

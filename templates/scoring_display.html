@@ -1,0 +1,156 @@
+{{define "title"}}Scoring{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-12 well well-{{.Alliance}}">
+    <div class="text-center" id="waitingMessage" style="display: none;">
+      <h3>Waiting for the next match...</h3>
+    </div>
+    <div class="col-lg-6">
+      <div id="autoCommands" style="display: none;">
+        <h2>Autonomous Period</h2>
+        <p>Use the following keyboard shortcuts:</p>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">0-9</div>
+          <div class="col-lg-8 scoring-comment">Set the number of pre-loaded balls</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">m</div>
+          <div class="col-lg-8 scoring-comment">Add mobility bonus</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">H</div>
+          <div class="col-lg-8 scoring-comment">High hot goal</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">h</div>
+          <div class="col-lg-8 scoring-comment">High non-hot goal</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">L</div>
+          <div class="col-lg-8 scoring-comment">Low hot goal</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">l</div>
+          <div class="col-lg-8 scoring-comment">Low non-hot goal</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">Enter</div>
+          <div class="col-lg-8 scoring-comment">Commit autonomous score</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">u</div>
+          <div class="col-lg-8 scoring-comment">Undo last scoring action</div>
+        </div>
+      </div>
+      <div id="teleopCommands" style="display: none;">
+        <h2>Teleoperated Period</h2>
+        <p>Use the following keyboard shortcuts:</p>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">a</div>
+          <div class="col-lg-8 scoring-comment">Add assist</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">t</div>
+          <div class="col-lg-8 scoring-comment">Truss</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">c</div>
+          <div class="col-lg-8 scoring-comment">Catch</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">h</div>
+          <div class="col-lg-8 scoring-comment">High goal</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">l</div>
+          <div class="col-lg-8 scoring-comment">Low goal</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">d</div>
+          <div class="col-lg-8 scoring-comment">Dead ball</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">Enter</div>
+          <div class="col-lg-8 scoring-comment">Commit cycle</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">u</div>
+          <div class="col-lg-8 scoring-comment">Undo last scoring action</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div id="autoScore" style="display: none;">
+        <h2>Autonomous Score</h2>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Preloads</div>
+          <div class="col-lg-2 scoring-comment" id="autoPreloadedBalls">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Mobility</div>
+          <div class="col-lg-2 scoring-comment" id="autoMobilityBonuses">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">High hot</div>
+          <div class="col-lg-2 scoring-comment" id="autoHighHot">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">High non-hot</div>
+          <div class="col-lg-2 scoring-comment" id="autoHigh">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Low hot</div>
+          <div class="col-lg-2 scoring-comment" id="autoLowHot">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Low non-hot</div>
+          <div class="col-lg-2 scoring-comment" id="autoLow">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Unscored balls</div>
+          <div class="col-lg-2 scoring-comment" id="autoUnscoredBalls">0</div>
+        </div>
+        <h3 class="text-center scoring-message">Press Enter to commit autonomous score.<br />This cannot be undone.</h3>
+      </div>
+      <div id="teleopScore" style="display: none;">
+        <h2>Current Cycle</h2>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Assists</div>
+          <div class="col-lg-2 scoring-comment" id="assists">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Truss</div>
+          <div class="col-lg-2 scoring-comment" id="truss">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Catch</div>
+          <div class="col-lg-2 scoring-comment" id="catch">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Scored high</div>
+          <div class="col-lg-2 scoring-comment" id="scoredHigh">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Scored low</div>
+          <div class="col-lg-2 scoring-comment" id="scoredLow">0</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Dead ball</div>
+          <div class="col-lg-2 scoring-comment" id="deadBall">0</div>
+        </div>
+        <h3 class="text-center scoring-message" id="teleopMessage">Hit Enter to commit cycle</h3>
+      </div>
+    </div>
+  </div>
+  <div class="text-center col-lg-12">
+    <button type="button" class="btn btn-info" id="commitMatchScore" onclick="commitMatchScore();"
+        style="display: none;">Commit Final Match Score</button>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+<script>
+  var alliance = "{{.Alliance}}";
+</script>
+<script src="/static/js/scoring_display.js"></script>
+{{end}}
