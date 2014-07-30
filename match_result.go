@@ -39,6 +39,7 @@ type Score struct {
 	AutoLow             int
 	AutoClearHigh       int
 	AutoClearLow        int
+	AutoClearDead       int
 	Cycles              []Cycle
 }
 

@@ -335,9 +335,23 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			if !(*score).AutoCommitted {
 				(*score).AutoCommitted = true
 			} else if !(*score).TeleopCommitted {
-				if (*score).CurrentCycle.ScoredLow || (*score).CurrentCycle.ScoredHigh ||
+				if (*score).CurrentCycle.ScoredHigh || (*score).CurrentCycle.ScoredLow ||
 					(*score).CurrentCycle.DeadBall {
-					(*score).CurrentScore.Cycles = append((*score).CurrentScore.Cycles, (*score).CurrentCycle)
+					// Check whether this is a leftover ball from autonomous.
+					if ((*score).AutoPreloadedBalls - (*score).CurrentScore.AutoHighHot -
+						(*score).CurrentScore.AutoHigh - (*score).CurrentScore.AutoLowHot -
+						(*score).CurrentScore.AutoLow - (*score).CurrentScore.AutoClearHigh -
+						(*score).CurrentScore.AutoClearLow - (*score).CurrentScore.AutoClearDead) > 0 {
+						if (*score).CurrentCycle.ScoredHigh {
+							(*score).CurrentScore.AutoClearHigh += 1
+						} else if (*score).CurrentCycle.ScoredLow {
+							(*score).CurrentScore.AutoClearLow += 1
+						} else {
+							(*score).CurrentScore.AutoClearDead += 1
+						}
+					} else {
+						(*score).CurrentScore.Cycles = append((*score).CurrentScore.Cycles, (*score).CurrentCycle)
+					}
 					(*score).CurrentCycle = Cycle{}
 					(*score).undoCycles = []Cycle{}
 				}
