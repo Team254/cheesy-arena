@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strconv"
 	"text/template"
+	"time"
 )
 
 type MatchPlayListItem struct {
@@ -344,10 +345,36 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 		return err
 	}
 
-	// Recalculate all the rankings.
-	err = db.CalculateRankings()
-	if err != nil {
-		return err
+	if match.Type == "qualification" {
+		// Recalculate all the rankings.
+		err = db.CalculateRankings()
+		if err != nil {
+			return err
+		}
+	}
+
+	if match.Type == "elimination" {
+		// Generate any subsequent elimination matches.
+		_, err = db.UpdateEliminationSchedule(time.Now().Add(time.Second * elimMatchSpacingSec))
+		if err != nil {
+			return err
+		}
+	}
+
+	if eventSettings.TbaPublishingEnabled && match.Type != "practice" {
+		// Publish asynchronously to The Blue Alliance.
+		go func() {
+			err = PublishMatches()
+			if err != nil {
+				log.Println(err)
+			}
+			if match.Type == "qualification" {
+				err = PublishRankings()
+				if err != nil {
+					log.Println(err)
+				}
+			}
+		}()
 	}
 
 	return nil

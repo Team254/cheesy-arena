@@ -137,11 +137,6 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 		renderAllianceSelection(w, r, "Must specify a valid start time for the elimination rounds.")
 		return
 	}
-	matchSpacingSec, err := strconv.Atoi(r.PostFormValue("matchSpacingSec"))
-	if err != nil || matchSpacingSec <= 0 {
-		renderAllianceSelection(w, r, "Must specify a valid match spacing for the elimination rounds.")
-		return
-	}
 
 	// Check that all spots are filled.
 	for _, alliance := range cachedAlliances {
@@ -165,10 +160,24 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate the first round of elimination matches.
-	_, err = db.UpdateEliminationSchedule(startTime, matchSpacingSec)
+	_, err = db.UpdateEliminationSchedule(startTime)
 	if err != nil {
 		handleWebErr(w, err)
 		return
+	}
+
+	if eventSettings.TbaPublishingEnabled {
+		// Publish alliances and schedule to The Blue Alliance.
+		err = PublishAlliances()
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+		err = PublishMatches()
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
 	}
 
 	http.Redirect(w, r, "/setup/alliance_selection", 302)

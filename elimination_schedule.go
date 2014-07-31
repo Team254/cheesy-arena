@@ -12,9 +12,11 @@ import (
 	"time"
 )
 
+const elimMatchSpacingSec = 600
+
 // Incrementally creates any elimination matches that can be created, based on the results of alliance
 // selection or prior elimination rounds. Returns the winning alliance once it has been determined.
-func (database *Database) UpdateEliminationSchedule(startTime time.Time, matchSpacingSec int) ([]AllianceTeam, error) {
+func (database *Database) UpdateEliminationSchedule(startTime time.Time) ([]AllianceTeam, error) {
 	alliances, err := database.GetAllAlliances()
 	if err != nil {
 		return []AllianceTeam{}, err
@@ -34,7 +36,7 @@ func (database *Database) UpdateEliminationSchedule(startTime time.Time, matchSp
 		if match.Status == "complete" {
 			continue
 		}
-		match.Time = startTime.Add(time.Duration(matchIndex*matchSpacingSec) * time.Second)
+		match.Time = startTime.Add(time.Duration(matchIndex*elimMatchSpacingSec) * time.Second)
 		database.SaveMatch(&match)
 		matchIndex++
 	}

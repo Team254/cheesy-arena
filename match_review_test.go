@@ -53,6 +53,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	db.CreateMatch(&match)
 	matchResult := buildTestMatchResult(match.Id, 1)
 	db.CreateMatchResult(&matchResult)
+	createTestAlliances(db, 2)
 
 	recorder := getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
@@ -96,6 +97,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 101,
 		Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	db.CreateMatch(&match)
+	createTestAlliances(db, 2)
 
 	recorder := getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)

@@ -106,6 +106,16 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	if eventSettings.TbaPublishingEnabled && cachedMatchType != "practice" {
+		// Publish schedule to The Blue Alliance.
+		err = PublishMatches()
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+	}
+
 	http.Redirect(w, r, "/setup/schedule", 302)
 }
 

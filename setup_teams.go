@@ -157,6 +157,16 @@ func TeamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/setup/teams", 302)
 }
 
+// Publishes the team list to the web.
+func TeamsPublishHandler(w http.ResponseWriter, r *http.Request) {
+	err := PublishTeams()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	http.Redirect(w, r, "/setup/teams", 302)
+}
+
 func renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) {
 	teams, err := db.GetAllTeams()
 	if err != nil {

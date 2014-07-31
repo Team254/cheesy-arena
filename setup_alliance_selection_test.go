@@ -79,8 +79,7 @@ func TestSetupAllianceSelection(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), ">110<")
 
 	// Finalize alliance selection.
-	recorder = postHttpResponse("/setup/alliance_selection/finalize",
-		"startTime=2014-01-01 01:00:00 PM&matchSpacingSec=360")
+	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
 	assert.Equal(t, 302, recorder.Code)
 	alliances, err := db.GetAllAlliances()
 	assert.Nil(t, err)
@@ -135,19 +134,15 @@ func TestSetupAllianceSelectionErrors(t *testing.T) {
 	recorder = postHttpResponse("/setup/alliance_selection", "selection0_0=101&selection0_1=102&"+
 		"selection0_2=103&selection1_0=104&selection1_1=105&selection1_2=106")
 	assert.Equal(t, 302, recorder.Code)
-	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=asdf&matchSpacingSec=100")
+	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=asdf")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "valid start time")
-	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
-	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "valid match spacing")
 	recorder = postHttpResponse("/setup/alliance_selection/finalize",
-		"startTime=2014-01-01 01:00:00 PM&matchSpacingSec=360")
+		"startTime=2014-01-01 01:00:00 PM")
 	assert.Equal(t, 302, recorder.Code)
 
 	// Do other things after finalization.
-	recorder = postHttpResponse("/setup/alliance_selection/finalize",
-		"startTime=2014-01-01 01:00:00 PM&matchSpacingSec=360")
+	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
 	recorder = postHttpResponse("/setup/alliance_selection/reset", "")

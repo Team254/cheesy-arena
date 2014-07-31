@@ -16,6 +16,7 @@ func TestAssignTeam(t *testing.T) {
 	db, err = OpenDatabase(testDbPath)
 	assert.Nil(t, err)
 	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 	team := Team{Id: 254}
 	err = db.CreateTeam(&team)
 	assert.Nil(t, err)
