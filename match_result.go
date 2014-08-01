@@ -55,7 +55,7 @@ type Cycle struct {
 type Foul struct {
 	TeamId         int
 	Rule           string
-	TimeInMatchSec float32
+	TimeInMatchSec float64
 	IsTechnical    bool
 }
 

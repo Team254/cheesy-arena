@@ -1,0 +1,41 @@
+html {
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+body {
+  background-color: #333;
+  padding: 50px;
+  color: #fff;
+}
+h3, h4 {
+  color: #fff;
+}
+.btn-referee {
+  width: 120px;
+  margin: 5px 5px;
+  font-size: 30px;
+  cursor: default;
+}
+.btn-referee-wide {
+  width: 254px;
+  margin: 5px 5px;
+  font-size: 30px;
+}
+.btn {
+  cursor: default;
+}
+.btn-referee[data-selected="true"] {
+  border: 5px solid #fc0;
+  margin: 0px 5px;
+  background-color: #fc0;
+}
+tr {
+  font-size: 15px;
+}
+.row-red {
+  background-color: #cb210e;
+}
+.row-blue {
+  background-color: #028fc0;
+}

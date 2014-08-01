@@ -46,8 +46,10 @@ type RealtimeScore struct {
 	CurrentScore       Score
 	CurrentCycle       Cycle
 	AutoPreloadedBalls int
+	Fouls              []Foul
 	AutoCommitted      bool
 	TeleopCommitted    bool
+	FoulsCommitted     bool
 	undoAutoScores     []Score
 	undoCycles         []Cycle
 }

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Referee Display - {{.EventSettings.Name}} - Cheesy Arena</title>
+    <link rel="shortcut icon" href="/static/img/favicon32.png">
+    <link href="/static/css/lib/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/lib/bootstrap-colorpicker.min.css" rel="stylesheet">
+    <link href="/static/css/lib/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="/static/css/cheesy-arena.css" rel="stylesheet">
+    <link href="/static/css/referee_display.css" rel="stylesheet">
+  </head>
+  <body>
+    {{if .EntryEnabled}}
+      <h3 style="margin-top: 0">{{.MatchType}} Match {{.MatchDisplayName}}</h3>
+      <div class="row">
+        <div class="col-lg-3">
+          <h4>Fouls</h4>
+          <table class="table">
+            {{range $foul := .RedFouls}}
+              {{template "foul" dict "foul" $foul "color" "red"}}
+            {{end}}
+            {{range $foul := .BlueFouls}}
+              {{template "foul" dict "foul" $foul "color" "blue"}}
+            {{end}}
+          </table>
+        </div>
+        <div class="col-lg-9">
+          <h4>Add/Edit Foul</h4>
+          <div class="row">
+            <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red1}}"
+                onclick="setFoulTeam(this);">{{.Red1}}</a>
+            <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red2}}"
+                onclick="setFoulTeam(this);">{{.Red2}}</a>
+            <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red3}}"
+                onclick="setFoulTeam(this);">{{.Red3}}</a>
+            <a class="btn btn-lg btn-info btn-referee" data-alliance="blue" data-team="{{.Blue1}}"
+                onclick="setFoulTeam(this);">{{.Blue1}}</a>
+            <a class="btn btn-lg btn-info btn-referee" data-alliance="blue" data-team="{{.Blue2}}"
+                onclick="setFoulTeam(this);">{{.Blue2}}</a>
+            <a class="btn btn-lg btn-info btn-referee" data-alliance="blue" data-team="{{.Blue3}}"
+                onclick="setFoulTeam(this);">{{.Blue3}}</a>
+          </div>
+          <div class="row">
+            <a class="btn btn-lg btn-default btn-referee btn-referee-wide" id="foul"
+                onclick="setFoulIsTech(false);">Foul</a>
+            <a class="btn btn-lg btn-default btn-referee btn-referee-wide" id="techFoul"
+                onclick="setFoulIsTech(true);">Tech Foul</a>
+          </div>
+          <div class="row">
+            {{range $rule := .Rules}}
+              <a class="btn btn-lg btn-warning btn-referee" data-rule="{{$rule}}"
+                  onclick="setFoulRule(this);">{{$rule}}</a>
+            {{end}}
+          </div>
+          <div class="row text-center">
+            <a class="btn btn-lg btn-default btn-referee btn-referee-wide" onclick="clearFoul();">Clear</a>
+            <button type="button" class="btn btn-lg btn-success btn-referee btn-referee-wide" id="commit"
+                onclick="commitFoul();">Add Foul</button>
+          </div>
+          <div class="row text-center">
+            <a class="btn btn-lg btn-info btn-referee btn-referee-wide"
+                onclick="commitMatch();">Commit Match</a>
+          </div>
+        </div>
+    </div>
+    {{else}}
+      <div class="text-center">
+        <h3>Waiting for the next match...</h3>
+      </div>
+    {{end}}
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/lib/bootstrap.min.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/referee_display.js"></script>
+  </body>
+</html>
+{{define "foul"}}
+  <tr class="row-{{.color}}">
+    <td>{{.foul.TeamId}}</td>
+    <td>{{if .foul.IsTechnical}}Technical {{end}}Foul</td>
+    <td>{{.foul.Rule}}</td>
+    <td><a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.Rule}}',
+          {{.foul.TimeInMatchSec}}, {{.foul.IsTechnical}});">Delete</a></td>
+  </tr>
+{{end}}

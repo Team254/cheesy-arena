@@ -8,12 +8,17 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"text/template"
 )
+
+var rules = []string{"G3", "G5", "G10", "G11", "G12", "G14", "G15", "G16", "G17", "G18", "G19", "G21", "G22",
+	"G23", "G24", "G25", "G26", "G26-1", "G27", "G28", "G29", "G30", "G31", "G32", "G34", "G35", "G36", "G37",
+	"G38", "G39", "G40", "G41", "G42"}
 
 // Renders the pit display which shows scrolling rankings.
 func PitDisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -102,6 +107,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	matchTimeListener := mainArena.matchTimeNotifier.Listen()
 	defer close(matchTimeListener)
 	scorePostedListener := mainArena.scorePostedNotifier.Listen()
+	defer close(scorePostedListener)
 
 	// Send the various notifications immediately upon connection.
 	err = websocket.Write("matchTiming", mainArena.matchTiming)
@@ -378,6 +384,154 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Send out the score again after handling the command, as it most likely changed as a result.
 		err = websocket.Write("score", *score)
+		if err != nil {
+			log.Printf("Websocket error: %s", err)
+			return
+		}
+	}
+}
+
+// Renders the referee interface for assigning fouls.
+func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	template := template.New("").Funcs(templateHelpers)
+	_, err := template.ParseFiles("templates/referee_display.html")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	match := mainArena.currentMatch
+	matchType := match.CapitalizedType()
+	data := struct {
+		*EventSettings
+		MatchType        string
+		MatchDisplayName string
+		Red1             int
+		Red2             int
+		Red3             int
+		Blue1            int
+		Blue2            int
+		Blue3            int
+		RedFouls         []Foul
+		BlueFouls        []Foul
+		Rules            []string
+		EntryEnabled     bool
+	}{eventSettings, matchType, match.DisplayName, match.Red1, match.Red2, match.Red3, match.Blue1, match.Blue2,
+		match.Blue3, mainArena.redRealtimeScore.Fouls, mainArena.blueRealtimeScore.Fouls, rules,
+		!(mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted)}
+	err = template.ExecuteTemplate(w, "referee_display.html", data)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
+
+// The websocket endpoint for the refereee interface client to send control commands and receive status updates.
+func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	websocket, err := NewWebsocket(w, r)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	defer websocket.Close()
+
+	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
+	defer close(matchLoadTeamsListener)
+
+	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
+	go func() {
+		for {
+			var messageType string
+			var message interface{}
+			select {
+			case _, ok := <-matchLoadTeamsListener:
+				if !ok {
+					return
+				}
+				messageType = "reload"
+				message = nil
+			}
+			err = websocket.Write(messageType, message)
+			if err != nil {
+				// The client has probably closed the connection; nothing to do here.
+				return
+			}
+		}
+	}()
+
+	// Loop, waiting for commands and responding to them, until the client closes the connection.
+	for {
+		messageType, data, err := websocket.Read()
+		if err != nil {
+			if err == io.EOF {
+				// Client has closed the connection; nothing to do here.
+				return
+			}
+			log.Printf("Websocket error: %s", err)
+			return
+		}
+
+		switch messageType {
+		case "addFoul":
+			args := struct {
+				Alliance    string
+				TeamId      int
+				Rule        string
+				IsTechnical bool
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+
+			// Add the foul to the correct alliance's list.
+			foul := Foul{TeamId: args.TeamId, Rule: args.Rule, IsTechnical: args.IsTechnical,
+				TimeInMatchSec: mainArena.MatchTimeSec()}
+			if args.Alliance == "red" {
+				mainArena.redRealtimeScore.Fouls = append(mainArena.redRealtimeScore.Fouls, foul)
+			} else {
+				mainArena.blueRealtimeScore.Fouls = append(mainArena.blueRealtimeScore.Fouls, foul)
+			}
+		case "deleteFoul":
+			args := struct {
+				Alliance       string
+				TeamId         int
+				Rule           string
+				TimeInMatchSec float64
+				IsTechnical    bool
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+
+			// Remove the foul from the correct alliance's list.
+			deleteFoul := Foul{TeamId: args.TeamId, Rule: args.Rule, IsTechnical: args.IsTechnical,
+				TimeInMatchSec: args.TimeInMatchSec}
+			var fouls *[]Foul
+			if args.Alliance == "red" {
+				fouls = &mainArena.redRealtimeScore.Fouls
+			} else {
+				fouls = &mainArena.blueRealtimeScore.Fouls
+			}
+			for i, foul := range *fouls {
+				if foul == deleteFoul {
+					*fouls = append((*fouls)[:i], (*fouls)[i+1:]...)
+					break
+				}
+			}
+		case "commitMatch":
+			mainArena.redRealtimeScore.FoulsCommitted = true
+			mainArena.blueRealtimeScore.FoulsCommitted = true
+		default:
+			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			continue
+		}
+
+		// Force a reload of the client to render the updated foul list.
+		err = websocket.Write("reload", nil)
 		if err != nil {
 			log.Printf("Websocket error: %s", err)
 			return
