@@ -77,6 +77,15 @@ var handleSetFinalScore = function(data) {
   $("#finalMatchName").text(data.MatchName + " " + data.Match.DisplayName);
 };
 
+var handlePlaySound = function(sound) {
+  $("audio").each(function(k, v) {
+    // Stop and reset any sounds that are still playing.
+    v.pause();
+    v.currentTime = 0;
+  });
+  $("#" + sound)[0].play();
+};
+
 var transitionBlankToIntro = function(callback) {
   $("#centering").transition({queue: false, bottom: "0px"}, 500, "ease", function() {
     $(".teams").transition({queue: false, width: "75px"}, 100, "linear", function() {
@@ -207,7 +216,8 @@ $(function() {
     matchTiming: function(event) { handleMatchTiming(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    setFinalScore: function(event) { handleSetFinalScore(event.data); }
+    setFinalScore: function(event) { handleSetFinalScore(event.data); },
+    playSound: function(event) { handlePlaySound(event.data); }
   });
 
   // Map how to transition from one screen to another. Missing links between screens indicate that first we

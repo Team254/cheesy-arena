@@ -58,6 +58,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(realtimeScoreListener)
 	scorePostedListener := mainArena.scorePostedNotifier.Listen()
 	defer close(scorePostedListener)
+	playSoundListener := mainArena.playSoundNotifier.Listen()
+	defer close(playSoundListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
@@ -161,6 +163,12 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					BlueScore *ScoreSummary
 				}{mainArena.savedMatch, mainArena.savedMatch.CapitalizedType(),
 					mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary()}
+			case sound, ok := <-playSoundListener:
+				if !ok {
+					return
+				}
+				messageType = "playSound"
+				message = sound
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {

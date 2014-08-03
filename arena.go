@@ -72,6 +72,7 @@ type Arena struct {
 	realtimeScoreNotifier   *Notifier
 	scorePostedNotifier     *Notifier
 	audienceDisplayNotifier *Notifier
+	playSoundNotifier       *Notifier
 	audienceDisplayScreen   string
 	lastMatchState          int
 	lastMatchTimeSec        float64
@@ -103,6 +104,7 @@ func (arena *Arena) Setup() {
 	arena.realtimeScoreNotifier = NewNotifier()
 	arena.scorePostedNotifier = NewNotifier()
 	arena.audienceDisplayNotifier = NewNotifier()
+	arena.playSoundNotifier = NewNotifier()
 
 	// Load empty match as current.
 	arena.MatchState = PRE_MATCH
@@ -289,6 +291,7 @@ func (arena *Arena) AbortMatch() error {
 	arena.MatchState = POST_MATCH
 	arena.audienceDisplayScreen = "blank"
 	arena.audienceDisplayNotifier.Notify(nil)
+	arena.playSoundNotifier.Notify("match-abort")
 	return nil
 }
 
@@ -339,6 +342,7 @@ func (arena *Arena) Update() {
 		sendDsPacket = true
 		arena.audienceDisplayScreen = "match"
 		arena.audienceDisplayNotifier.Notify(nil)
+		arena.playSoundNotifier.Notify("match-start")
 	case AUTO_PERIOD:
 		auto = true
 		enabled = true
@@ -347,6 +351,7 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = false
 			sendDsPacket = true
+			arena.playSoundNotifier.Notify("match-end")
 		}
 	case PAUSE_PERIOD:
 		auto = false
@@ -356,6 +361,7 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = true
 			sendDsPacket = true
+			arena.playSoundNotifier.Notify("match-resume")
 		}
 	case TELEOP_PERIOD:
 		auto = false
@@ -364,6 +370,7 @@ func (arena *Arena) Update() {
 			arena.matchTiming.TeleopDurationSec-arena.matchTiming.EndgameTimeLeftSec) {
 			arena.MatchState = ENDGAME_PERIOD
 			sendDsPacket = false
+			arena.playSoundNotifier.Notify("match-endgame")
 		}
 	case ENDGAME_PERIOD:
 		auto = false
@@ -376,6 +383,7 @@ func (arena *Arena) Update() {
 			sendDsPacket = true
 			arena.audienceDisplayScreen = "blank"
 			arena.audienceDisplayNotifier.Notify(nil)
+			arena.playSoundNotifier.Notify("match-end")
 		}
 	}
 
