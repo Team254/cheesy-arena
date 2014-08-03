@@ -38,6 +38,9 @@
   padding-left: 0;
   padding-right: 0;
 }
+.modal-large {
+  width: 60%;
+}
 .ds-status, .robot-status, .battery-status, .bypass-status {
   background-color: #aaa;
   color: #000;

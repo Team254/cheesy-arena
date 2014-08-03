@@ -123,11 +123,13 @@ func TestAnnouncerDisplayWebsocket(t *testing.T) {
 	ws := &Websocket{conn}
 
 	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "setMatch")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchTime")
+	readWebsocketType(t, ws, "realtimeScore")
 
 	mainArena.matchLoadTeamsNotifier.Notify(nil)
-	readWebsocketType(t, ws, "reload")
+	readWebsocketType(t, ws, "setMatch")
 	mainArena.AllianceStations["R1"].Bypass = true
 	mainArena.AllianceStations["R2"].Bypass = true
 	mainArena.AllianceStations["R3"].Bypass = true
@@ -136,9 +138,15 @@ func TestAnnouncerDisplayWebsocket(t *testing.T) {
 	mainArena.AllianceStations["B3"].Bypass = true
 	mainArena.StartMatch()
 	mainArena.Update()
-	readWebsocketType(t, ws, "matchTime")
+	messages := readWebsocketMultiple(t, ws, 2)
+	_, ok := messages["setAudienceDisplay"]
+	assert.True(t, ok)
+	_, ok = messages["matchTime"]
+	assert.True(t, ok)
+	mainArena.realtimeScoreNotifier.Notify(nil)
+	readWebsocketType(t, ws, "realtimeScore")
 	mainArena.scorePostedNotifier.Notify(nil)
-	readWebsocketType(t, ws, "reload")
+	readWebsocketType(t, ws, "setFinalScore")
 
 	// Test triggering the final score screen.
 	ws.Write("setAudienceDisplay", "score")

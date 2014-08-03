@@ -24,3 +24,4 @@ _testmain.go
 *.test
 *.db
 *.out
+.DS_Store
