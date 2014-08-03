@@ -169,6 +169,19 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}()
+
+	// Loop, waiting for commands and responding to them, until the client closes the connection.
+	for {
+		_, _, err := websocket.Read()
+		if err != nil {
+			if err == io.EOF {
+				// Client has closed the connection; nothing to do here.
+				return
+			}
+			log.Printf("Websocket error: %s", err)
+			return
+		}
+	}
 }
 
 // Renders the pit display which shows scrolling rankings.

@@ -228,6 +228,11 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	ws.Write("discardResults", nil)
 	readWebsocketType(t, ws, "reload")
 	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
+
+	// Test changing the audience display.
+	ws.Write("setAudienceDisplay", "logo")
+	readWebsocketType(t, ws, "setAudienceDisplay")
+	assert.Equal(t, "logo", mainArena.audienceDisplayScreen)
 }
 
 func TestMatchPlayWebsocketNotifications(t *testing.T) {
