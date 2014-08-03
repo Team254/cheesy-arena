@@ -27,7 +27,8 @@ func TestTeamCrud(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 
-	team := Team{254, "NASA Ames Research Center", "The Cheesy Poofs", "San Jose", "CA", "USA", 1999, "Barrage"}
+	team := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
+		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
 	db.CreateTeam(&team)
 	team2, err := db.GetTeamById(254)
 	assert.Nil(t, err)
@@ -52,7 +53,8 @@ func TestTruncateTeams(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 
-	team := Team{254, "NASA Ames Research Center", "The Cheesy Poofs", "San Jose", "CA", "USA", 1999, "Barrage"}
+	team := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
+		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
 	db.CreateTeam(&team)
 	db.TruncateTeams()
 	team2, err := db.GetTeamById(254)
@@ -73,7 +75,7 @@ func TestGetAllTeams(t *testing.T) {
 
 	numTeams := 20
 	for i := 1; i <= numTeams; i++ {
-		db.CreateTeam(&Team{i, "", "", "", "", "", 2014, ""})
+		db.CreateTeam(&Team{Id: i, RookieYear: 2014})
 	}
 	teams, err = db.GetAllTeams()
 	assert.Nil(t, err)

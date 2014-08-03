@@ -75,7 +75,8 @@ func TestSchedulePdfReport(t *testing.T) {
 	match := Match{Type: "practice", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
 	db.CreateMatch(&match)
-	team := Team{254, "NASA", "The Cheesy Poofs", "San Jose", "CA", "USA", 1999, "Barrage"}
+	team := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
+		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
 	db.CreateTeam(&team)
 
 	// Can't really parse the PDF content and check it, so just check that what's sent back is a PDF.
@@ -88,8 +89,10 @@ func TestTeamsCsvReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
-	team1 := Team{254, "NASA", "The Cheesy Poofs", "San Jose", "CA", "USA", 1999, "Barrage"}
-	team2 := Team{1114, "GM", "Simbotics", "St. Catharines", "ON", "Canada", 2003, "Simbot Evolution"}
+	team1 := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
+		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
+	team2 := Team{Id: 1114, Name: "GM", Nickname: "Simbotics", City: "St. Catharines", StateProv: "ON",
+		Country: "Canada", RookieYear: 2003, RobotName: "Simbot Evolution"}
 	db.CreateTeam(&team1)
 	db.CreateTeam(&team2)
 
@@ -107,7 +110,8 @@ func TestTeamsPdfReport(t *testing.T) {
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
 	eventSettings, _ = db.GetEventSettings()
-	team := Team{254, "NASA", "The Cheesy Poofs", "San Jose", "CA", "USA", 1999, "Barrage"}
+	team := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
+		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
 	db.CreateTeam(&team)
 
 	// Can't really parse the PDF content and check it, so just check that what's sent back is a PDF.

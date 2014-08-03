@@ -123,6 +123,7 @@ func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	team.Country = r.PostFormValue("country")
 	team.RookieYear, _ = strconv.Atoi(r.PostFormValue("rookieYear"))
 	team.RobotName = r.PostFormValue("robotName")
+	team.Accomplishments = r.PostFormValue("accomplishments")
 	err = db.SaveTeam(team)
 	if err != nil {
 		handleWebErr(w, err)
@@ -240,9 +241,10 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 	var team Team
 	if ok {
 		rookieYear, _ := strconv.Atoi(teamData[8])
-		team = Team{teamId, html.UnescapeString(teamData[2]), html.UnescapeString(teamData[7]),
-			html.UnescapeString(teamData[4]), html.UnescapeString(teamData[5]), html.UnescapeString(teamData[6]),
-			rookieYear, html.UnescapeString(teamData[9])}
+		team = Team{Id: teamId, Name: html.UnescapeString(teamData[2]), Nickname: html.UnescapeString(teamData[7]),
+			City: html.UnescapeString(teamData[4]), StateProv: html.UnescapeString(teamData[5]),
+			Country: html.UnescapeString(teamData[6]), RookieYear: rookieYear,
+			RobotName: html.UnescapeString(teamData[9])}
 	} else {
 		// If no team data exists, just fill in the team number.
 		team = Team{Id: teamId}

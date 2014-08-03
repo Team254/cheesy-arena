@@ -6,14 +6,15 @@
 package main
 
 type Team struct {
-	Id         int
-	Name       string
-	Nickname   string
-	City       string
-	StateProv  string
-	Country    string
-	RookieYear int
-	RobotName  string
+	Id              int
+	Name            string
+	Nickname        string
+	City            string
+	StateProv       string
+	Country         string
+	RookieYear      int
+	RobotName       string
+	Accomplishments string
 }
 
 func (database *Database) CreateTeam(team *Team) error {

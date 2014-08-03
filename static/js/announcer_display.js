@@ -16,12 +16,12 @@ var handleSetAudienceDisplay = function(targetScreen) {
 
 var handleSetMatch = function(data) {
   $("#matchName").text(data.MatchType + " Match " + data.MatchDisplayName);
-  $("#red1").html(teamTemplate(data.Red1));
-  $("#red2").html(teamTemplate(data.Red2));
-  $("#red3").html(teamTemplate(data.Red3));
-  $("#blue1").html(teamTemplate(data.Blue1));
-  $("#blue2").html(teamTemplate(data.Blue2));
-  $("#blue3").html(teamTemplate(data.Blue3));
+  $("#red1").html(teamTemplate(formatTeam(data.Red1)));
+  $("#red2").html(teamTemplate(formatTeam(data.Red2)));
+  $("#red3").html(teamTemplate(formatTeam(data.Red3)));
+  $("#blue1").html(teamTemplate(formatTeam(data.Blue1)));
+  $("#blue2").html(teamTemplate(formatTeam(data.Blue2)));
+  $("#blue3").html(teamTemplate(formatTeam(data.Blue3)));
 };
 
 var handleMatchTime = function(data) {
@@ -48,6 +48,12 @@ var postMatchResult = function(data) {
   $("#savedMatchResult").attr("data-blink", false);
   websocket.send("setAudienceDisplay", "score");
 }
+
+// Replaces newlines in team fields with HTML line breaks.
+var formatTeam = function(team) {
+  team.Accomplishments = team.Accomplishments.replace(/[\r\n]+/g, "<br />");
+  return team;
+};
 
 $(function() {
   // Set up the websocket back to the server.
