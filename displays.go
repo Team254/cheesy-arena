@@ -20,6 +20,157 @@ var rules = []string{"G3", "G5", "G10", "G11", "G12", "G14", "G15", "G16", "G17"
 	"G23", "G24", "G25", "G26", "G26-1", "G27", "G28", "G29", "G30", "G31", "G32", "G34", "G35", "G36", "G37",
 	"G38", "G39", "G40", "G41", "G42"}
 
+// Renders the audience display to be chroma keyed over the video feed.
+func AudienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	template := template.New("").Funcs(templateHelpers)
+	_, err := template.ParseFiles("templates/audience_display.html")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	data := struct {
+		*EventSettings
+	}{eventSettings}
+	err = template.ExecuteTemplate(w, "audience_display.html", data)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
+
+// The websocket endpoint for the audience display client to receive status updates.
+func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	websocket, err := NewWebsocket(w, r)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	defer websocket.Close()
+
+	audienceDisplayListener := mainArena.audienceDisplayNotifier.Listen()
+	defer close(audienceDisplayListener)
+	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
+	defer close(matchLoadTeamsListener)
+	matchTimeListener := mainArena.matchTimeNotifier.Listen()
+	defer close(matchTimeListener)
+	realtimeScoreListener := mainArena.realtimeScoreNotifier.Listen()
+	defer close(realtimeScoreListener)
+	scorePostedListener := mainArena.scorePostedNotifier.Listen()
+	defer close(scorePostedListener)
+
+	// Send the various notifications immediately upon connection.
+	var data interface{}
+	err = websocket.Write("matchTiming", mainArena.matchTiming)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	err = websocket.Write("matchTime", MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)})
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	err = websocket.Write("setAudienceDisplay", mainArena.audienceDisplayScreen)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	data = struct {
+		Match     *Match
+		MatchName string
+	}{mainArena.currentMatch, mainArena.currentMatch.CapitalizedType()}
+	err = websocket.Write("setMatch", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	data = struct {
+		RedScore  int
+		RedCycle  Cycle
+		BlueScore int
+		BlueCycle Cycle
+	}{mainArena.redRealtimeScore.Score(), mainArena.redRealtimeScore.CurrentCycle,
+		mainArena.blueRealtimeScore.Score(), mainArena.blueRealtimeScore.CurrentCycle}
+	err = websocket.Write("realtimeScore", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	data = struct {
+		Match     *Match
+		MatchName string
+		RedScore  *ScoreSummary
+		BlueScore *ScoreSummary
+	}{mainArena.savedMatch, mainArena.savedMatch.CapitalizedType(),
+		mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary()}
+	err = websocket.Write("setFinalScore", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+
+	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
+	go func() {
+		for {
+			var messageType string
+			var message interface{}
+			select {
+			case _, ok := <-audienceDisplayListener:
+				if !ok {
+					return
+				}
+				messageType = "setAudienceDisplay"
+				message = mainArena.audienceDisplayScreen
+			case _, ok := <-matchLoadTeamsListener:
+				if !ok {
+					return
+				}
+				messageType = "setMatch"
+				message = struct {
+					Match     *Match
+					MatchName string
+				}{mainArena.currentMatch, mainArena.currentMatch.CapitalizedType()}
+			case matchTimeSec, ok := <-matchTimeListener:
+				if !ok {
+					return
+				}
+				messageType = "matchTime"
+				message = MatchTimeMessage{mainArena.MatchState, matchTimeSec.(int)}
+			case _, ok := <-realtimeScoreListener:
+				if !ok {
+					return
+				}
+				messageType = "realtimeScore"
+				message = struct {
+					RedScore  int
+					RedCycle  Cycle
+					BlueScore int
+					BlueCycle Cycle
+				}{mainArena.redRealtimeScore.Score(), mainArena.redRealtimeScore.CurrentCycle,
+					mainArena.blueRealtimeScore.Score(), mainArena.blueRealtimeScore.CurrentCycle}
+			case _, ok := <-scorePostedListener:
+				if !ok {
+					return
+				}
+				messageType = "setFinalScore"
+				message = struct {
+					Match     *Match
+					MatchName string
+					RedScore  *ScoreSummary
+					BlueScore *ScoreSummary
+				}{mainArena.savedMatch, mainArena.savedMatch.CapitalizedType(),
+					mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary()}
+			}
+			err = websocket.Write(messageType, message)
+			if err != nil {
+				// The client has probably closed the connection; nothing to do here.
+				return
+			}
+		}
+	}()
+}
+
 // Renders the pit display which shows scrolling rankings.
 func PitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	template, err := template.ParseFiles("templates/pit_display.html")
@@ -58,17 +209,10 @@ func AnnouncerDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	// Assemble info about the saved match result.
 	var redScoreSummary, blueScoreSummary *ScoreSummary
 	var savedMatchType, savedMatchDisplayName string
-	if mainArena.savedMatchResult != nil {
-		redScoreSummary = mainArena.savedMatchResult.RedScoreSummary()
-		blueScoreSummary = mainArena.savedMatchResult.BlueScoreSummary()
-		match, err := db.GetMatchById(mainArena.savedMatchResult.MatchId)
-		if err != nil {
-			handleWebErr(w, err)
-			return
-		}
-		savedMatchType = match.CapitalizedType()
-		savedMatchDisplayName = match.DisplayName
-	}
+	savedMatchType = mainArena.savedMatch.CapitalizedType()
+	savedMatchDisplayName = mainArena.savedMatch.DisplayName
+	redScoreSummary = mainArena.savedMatchResult.RedScoreSummary()
+	blueScoreSummary = mainArena.savedMatchResult.BlueScoreSummary()
 	data := struct {
 		*EventSettings
 		MatchType             string
@@ -115,8 +259,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	data := MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)}
-	err = websocket.Write("matchTime", data)
+	err = websocket.Write("matchTime", MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)})
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -157,7 +300,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		messageType, _, err := websocket.Read()
+		messageType, data, err := websocket.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
@@ -168,9 +311,16 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch messageType {
+		case "setAudienceDisplay":
+			screen, ok := data.(string)
+			if !ok {
+				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			mainArena.audienceDisplayScreen = screen
+			mainArena.audienceDisplayNotifier.Notify(nil)
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
-			continue
 		}
 	}
 }
@@ -316,17 +466,20 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				(*score).CurrentCycle.DeadBall = false
 			}
 		case "assist":
-			if !(*score).TeleopCommitted && (*score).CurrentCycle.Assists < 3 {
+			if (*score).AutoCommitted && !(*score).TeleopCommitted && (*score).AutoLeftoverBalls == 0 &&
+				(*score).CurrentCycle.Assists < 3 {
 				(*score).undoCycles = append((*score).undoCycles, (*score).CurrentCycle)
 				(*score).CurrentCycle.Assists += 1
 			}
 		case "truss":
-			if !(*score).TeleopCommitted && !(*score).CurrentCycle.Truss {
+			if (*score).AutoCommitted && !(*score).TeleopCommitted && (*score).AutoLeftoverBalls == 0 &&
+				!(*score).CurrentCycle.Truss {
 				(*score).undoCycles = append((*score).undoCycles, (*score).CurrentCycle)
 				(*score).CurrentCycle.Truss = true
 			}
 		case "catch":
-			if !(*score).TeleopCommitted && !(*score).CurrentCycle.Catch && (*score).CurrentCycle.Truss {
+			if (*score).AutoCommitted && !(*score).TeleopCommitted && (*score).AutoLeftoverBalls == 0 &&
+				!(*score).CurrentCycle.Catch && (*score).CurrentCycle.Truss {
 				(*score).undoCycles = append((*score).undoCycles, (*score).CurrentCycle)
 				(*score).CurrentCycle.Catch = true
 			}
@@ -339,15 +492,15 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		case "commit":
 			if !(*score).AutoCommitted {
+				(*score).AutoLeftoverBalls = (*score).AutoPreloadedBalls - (*score).CurrentScore.AutoHighHot -
+					(*score).CurrentScore.AutoHigh - (*score).CurrentScore.AutoLowHot -
+					(*score).CurrentScore.AutoLow
 				(*score).AutoCommitted = true
 			} else if !(*score).TeleopCommitted {
 				if (*score).CurrentCycle.ScoredHigh || (*score).CurrentCycle.ScoredLow ||
 					(*score).CurrentCycle.DeadBall {
 					// Check whether this is a leftover ball from autonomous.
-					if ((*score).AutoPreloadedBalls - (*score).CurrentScore.AutoHighHot -
-						(*score).CurrentScore.AutoHigh - (*score).CurrentScore.AutoLowHot -
-						(*score).CurrentScore.AutoLow - (*score).CurrentScore.AutoClearHigh -
-						(*score).CurrentScore.AutoClearLow - (*score).CurrentScore.AutoClearDead) > 0 {
+					if (*score).AutoLeftoverBalls > 0 {
 						if (*score).CurrentCycle.ScoredHigh {
 							(*score).CurrentScore.AutoClearHigh += 1
 						} else if (*score).CurrentCycle.ScoredLow {
@@ -355,6 +508,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 						} else {
 							(*score).CurrentScore.AutoClearDead += 1
 						}
+						(*score).AutoLeftoverBalls -= 1
 					} else {
 						(*score).CurrentScore.Cycles = append((*score).CurrentScore.Cycles, (*score).CurrentCycle)
 					}
@@ -381,6 +535,8 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue
 		}
+
+		mainArena.realtimeScoreNotifier.Notify(nil)
 
 		// Send out the score again after handling the command, as it most likely changed as a result.
 		err = websocket.Write("score", *score)

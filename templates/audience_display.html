@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Audience Display - {{.EventSettings.Name}} - Cheesy Arena </title>
+    <link rel="shortcut icon" href="/static/img/favicon32.png">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/audience_display.css" />
+  </head>
+  <body style="background-color: {{.EventSettings.DisplayBackgroundColor}};">
+    <div id="centering">
+      <div id="matchOverlay">
+        <div class="teams" id="redTeams">
+          <span class="valign-cell">
+            <span id="redTeam1"></span><br />
+            <span id="redTeam2"></span><br />
+            <span id="redTeam3"></span>
+          </span>
+        </div>
+        <div class="score" id="redScore">
+          <div class="score-number" id="redScoreNumber">&nbsp;</div>
+          <div class="score-fields">
+            <div class="assist" id="redAssist1"></div>
+            <div class="assist" id="redAssist2"></div>
+            <div class="assist" id="redAssist3"></div>
+            <div class="trussCatch" id="redTruss">T</div>
+            <div class="trussCatch" id="redCatch">C</div>
+          </div>
+        </div>
+        <div class="score" id="blueScore">
+          <div class="score-number pull-right" id="blueScoreNumber">&nbsp;</div>
+          <div class="score-fields pull-right">
+            <div class="trussCatch" id="blueTruss">T</div>
+            <div class="trussCatch" id="blueCatch">C</div>
+            <div class="assist" id="blueAssist3"></div>
+            <div class="assist" id="blueAssist2"></div>
+            <div class="assist" id="blueAssist1"></div>
+          </div>
+        </div>
+        <div class="teams" id="blueTeams">
+          <span class="valign-cell">
+            <span id="blueTeam1"></span><br />
+            <span id="blueTeam2"></span><br />
+            <span id="blueTeam3"></span>
+          </span>
+        </div>
+        <div id="eventMatchInfo">
+          <span>{{.EventSettings.Name}} 2014</span>
+          <span class="pull-right" id="matchName"></span>
+        </div>
+      </div>
+      <div class="text-center" id="matchCircle">
+        <img id="logo" src="/static/img/logo-min.svg"</img>
+        <div id="matchTime"></div>
+      </div>
+    </div>
+    <div id="blindsContainer">
+      <div class="blinds right background"></div>
+      <div class="blinds right center-blank"></div>
+      <div class="blinds left background"></div>
+      <div id="blindsCenter">
+        <img id="blindsLogo" src="/static/img/logo-min.svg"</img>
+      </div>
+      <div class="blinds left center-blank"></div>
+      <div id="finalScore">
+        <div class="final-score" id="redFinalScore"></div>
+        <div class="final-score" id="blueFinalScore"></div>
+        <div class="final-teams" id="redFinalTeams">
+          <span id="redFinalTeam1"></span>
+          <span id="redFinalTeam2"></span>
+          <span id="redFinalTeam3"></span>
+        </div>
+        <div class="final-teams" id="blueFinalTeams">
+          <span id="blueFinalTeam1"></span>
+          <span id="blueFinalTeam2"></span>
+          <span id="blueFinalTeam3"></span>
+        </div>
+        <div class="final-breakdown" id="redFinalBreakdown">
+          <span class="valign-cell">
+            <span id="redFinalAuto"></span><br />
+            <span id="redFinalTeleop"></span><br />
+            <span id="redFinalFoul"></span>
+          </span>
+        </div>
+        <div class="final-breakdown" id="centerFinalBreakdown">
+          <span class="valign-cell">Autonomous</br>Teleoperated</br>Foul</span>
+        </div>
+        <div class="final-breakdown" id="blueFinalBreakdown">
+          <span class="valign-cell">
+            <span id="blueFinalAuto"></span><br />
+            <span id="blueFinalTeleop"></span><br />
+            <span id="blueFinalFoul"></span>
+          </span>
+        </div>
+        <div id="finalEventMatchInfo">
+          <span>{{.EventSettings.Name}} 2014</span>
+          <span class="pull-right" id="finalMatchName"></span>
+        </div>
+      </div>
+    </div>
+    <script src="/static/js/lib/handlebars-1.3.0.js"></script>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/lib/jquery.transit.min.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/match_timing.js"></script>
+    <script src="/static/js/audience_display.js"></script>
+  </body>
+</html>

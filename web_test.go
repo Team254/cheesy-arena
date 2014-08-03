@@ -63,3 +63,14 @@ func readWebsocketType(t *testing.T, ws *Websocket, expectedMessageType string) 
 	}
 	return message
 }
+
+func readWebsocketMultiple(t *testing.T, ws *Websocket, count int) map[string]interface{} {
+	messages := make(map[string]interface{})
+	for i := 0; i < count; i++ {
+		messageType, message, err := ws.Read()
+		if assert.Nil(t, err) {
+			messages[messageType] = message
+		}
+	}
+	return messages
+}

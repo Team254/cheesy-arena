@@ -8,6 +8,14 @@
 }
 
 /* New styles. */
+@font-face {
+  font-family: "FuturaLTBold";
+  src: url("fonts/futura-lt-bold.otf") format("opentype");
+}
+@font-face {
+  font-family: "FuturaLT";
+  src: url("fonts/futura-lt.otf") format("opentype");
+}
 .red-text {
   color: #f00;
 }

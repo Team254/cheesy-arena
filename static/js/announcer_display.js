@@ -8,9 +8,6 @@ var blinkTimeout;
 
 var handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
-    console.log(matchState);
-    console.log(matchStateText);
-    console.log(countdownSec);
     $("#matchState").text(matchStateText);
     $("#matchTime").text(getCountdown(data.MatchState, data.MatchTimeSec));
     if (matchState == "PRE_MATCH" || matchState == "POST_MATCH") {
@@ -22,8 +19,7 @@ var handleMatchTime = function(data) {
 var postMatchResult = function(data) {
   clearTimeout(blinkTimeout);
   $("#savedMatchResult").attr("data-blink", false);
-
-  // TODO(patrick): Signal audience display.
+  websocket.send("setAudienceDisplay", "score");
 }
 
 $(function() {

@@ -46,12 +46,12 @@
       {{end}}
     </div>
   </div>
-  <div class="col-lg-8 text-center">
-    <div class="row">
+  <div class="col-lg-8">
+    <div class="row text-center">
       <div id="matchState" class="col-lg-2 col-lg-offset-4 well well-sm">&nbsp;</div>
       <div id="matchTime" class="col-lg-2 well well-sm">&nbsp;</div>
     </div>
-    <div class="row">
+    <div class="row text-center">
       <div class="col-lg-6 well well-darkblue">
         <div class="row form-group">
           <div class="col-lg-4">Blue Teams</div>
@@ -77,7 +77,7 @@
         {{template "matchPlayTeam" dict "team" .Match.Red1 "color" "R" "position" 1 "data" .}}
       </div>
     </div>
-    <div>
+    <div class="row text-center">
       <button type="button" id="startMatch" class="btn btn-success btn-lg btn-match-play"
           onclick="startMatch();" disabled>
         Start Match
@@ -95,6 +95,39 @@
           onclick="$('#confirmDiscardResults').modal('show');" disabled>
         Discard Results
       </button>
+    </div>
+    <br />
+    <div class="row">
+      <div class="col-lg-3 well">
+        Audience Display
+        <div class="form-group">
+          <div class="radio">
+            <label>
+              <input type="radio" name="audienceDisplay" value="blank" onclick="setAudienceDisplay();">Blank
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="audienceDisplay" value="intro" onclick="setAudienceDisplay();">Intro
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="audienceDisplay" value="match" onclick="setAudienceDisplay();">Match
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="audienceDisplay" value="score" onclick="setAudienceDisplay();">Final Score
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="audienceDisplay" value="logo" onclick="setAudienceDisplay();">Logo
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -172,6 +172,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchTime")
+	readWebsocketType(t, ws, "setAudienceDisplay")
 
 	// Test that a server-side error is communicated to the client.
 	ws.Write("nonexistenttype", nil)
@@ -219,6 +220,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	assert.Contains(t, readWebsocketError(t, ws), "Cannot reset match")
 	ws.Write("abortMatch", nil)
 	readWebsocketType(t, ws, "status")
+	readWebsocketType(t, ws, "setAudienceDisplay")
 	assert.Equal(t, POST_MATCH, mainArena.MatchState)
 	ws.Write("commitResults", nil)
 	readWebsocketType(t, ws, "reload")
@@ -249,6 +251,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchTime")
+	readWebsocketType(t, ws, "setAudienceDisplay")
 
 	mainArena.AllianceStations["R1"].Bypass = true
 	mainArena.AllianceStations["R2"].Bypass = true
@@ -258,10 +261,13 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	mainArena.AllianceStations["B3"].Bypass = true
 	mainArena.StartMatch()
 	mainArena.Update()
-	statusReceived, matchTime := readWebsocketStatusMatchTime(t, ws)
+	messages := readWebsocketMultiple(t, ws, 3)
+	statusReceived, matchTime := getStatusMatchTime(t, messages)
 	assert.Equal(t, true, statusReceived)
 	assert.Equal(t, 2, matchTime.MatchState)
 	assert.Equal(t, 0, matchTime.MatchTimeSec)
+	_, ok := messages["setAudienceDisplay"]
+	assert.True(t, ok)
 
 	// Should get a tick notification when an integer second threshold is crossed.
 	mainArena.matchStartTime = time.Now().Add(-time.Second + 10*time.Millisecond) // Not crossed yet
@@ -290,22 +296,18 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	assert.Equal(t, mainArena.matchTiming.AutoDurationSec, matchTime.MatchTimeSec)
 }
 
-// Handles the status and matchTime messaegs arriving in either order.
+// Handles the status and matchTime messages arriving in either order.
 func readWebsocketStatusMatchTime(t *testing.T, ws *Websocket) (bool, MatchTimeMessage) {
-	statusReceived := false
+	return getStatusMatchTime(t, readWebsocketMultiple(t, ws, 2))
+}
+
+func getStatusMatchTime(t *testing.T, messages map[string]interface{}) (bool, MatchTimeMessage) {
+	_, statusReceived := messages["status"]
+	message, ok := messages["matchTime"]
 	var matchTime MatchTimeMessage
-	for i := 0; i < 2; i++ {
-		messageType, message, err := ws.Read()
-		if assert.Nil(t, err) {
-			if messageType == "status" {
-				statusReceived = true
-			} else {
-				if assert.Equal(t, "matchTime", messageType) {
-					err = mapstructure.Decode(message, &matchTime)
-					assert.Nil(t, err)
-				}
-			}
-		}
+	if assert.True(t, ok) {
+		err := mapstructure.Decode(message, &matchTime)
+		assert.Nil(t, err)
 	}
 	return statusReceived, matchTime
 }

@@ -133,6 +133,8 @@ func newHandler() http.Handler {
 	router.HandleFunc("/reports/pdf/schedule/{type}", SchedulePdfReportHandler).Methods("GET")
 	router.HandleFunc("/reports/csv/teams", TeamsCsvReportHandler).Methods("GET")
 	router.HandleFunc("/reports/pdf/teams", TeamsPdfReportHandler).Methods("GET")
+	router.HandleFunc("/displays/audience", AudienceDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/audience/websocket", AudienceDisplayWebsocketHandler).Methods("GET")
 	router.HandleFunc("/displays/pit", PitDisplayHandler).Methods("GET")
 	router.HandleFunc("/displays/announcer", AnnouncerDisplayHandler).Methods("GET")
 	router.HandleFunc("/displays/announcer/websocket", AnnouncerDisplayWebsocketHandler).Methods("GET")

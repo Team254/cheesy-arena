@@ -1,0 +1,277 @@
+html {
+  cursor: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  overflow: hidden;
+}
+#centering {
+  position: absolute; left: 50%;
+  bottom: -340px;
+}
+#matchOverlay {
+  position: relative;
+  left: -50%;
+  bottom: 70px;
+  margin: 0 auto;
+  height: 104px;
+  background-color: #fff;
+  border: 1px solid #000;
+  color: #000;
+  font-size: 22px;
+}
+.teams {
+  width: 40px;
+  height: 100%;
+  line-height: 26px;
+  text-align: center;
+  display: table;
+  font-family: "FuturaLT";
+}
+.valign-cell {
+  display: table-cell;
+  vertical-align: middle;
+}
+#redTeams {
+  float: left;
+  border-right: 1px solid #000;
+}
+#blueTeams {
+  float: right;
+  border-left: 1px solid #000;
+}
+.score {
+  width: 0px;
+  height: 100%;
+  float: left;
+}
+#redScore {
+  float: left;
+  background-color: #ff4444;
+}
+#blueScore {
+  float: left;
+  background-color: #2080ff;
+}
+#eventMatchInfo {
+  display: none;
+  position: absolute;
+  width: 100%;
+  height: 30px;
+  bottom: 0px;
+  line-height: 30px;
+  background-color: #444;
+  border: 1px solid #000;
+  padding: 0px 5px;
+  font-family: "FuturaLT";
+  font-size: 15px;
+  color: #fff;
+  z-index: -1;
+}
+#matchCircle {
+  position: absolute;
+  left: -75px;
+  bottom: 50px;
+  margin: 0 auto;
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+  background-color: #fff;
+  border: 1px solid #000;
+}
+.score-number {
+  width: 60%;
+  margin: 0px 5px;
+  text-align: center;
+  font-family: "FuturaLTBold";
+  font-size: 55px;
+  line-height: 80px;
+  color: #fff;
+  opacity: 0;
+}
+.score-fields {
+  padding: 0px 15px;
+  margin: -10px 0px;
+  opacity: 0;
+}
+.assist {
+  float: left;
+  width: 22px;
+  height: 12px;
+  margin: 10px 4px;
+  background-color: #fff;
+  opacity: 0.3;
+}
+.trussCatch {
+  float: left;
+  font-family: "FuturaLTBold";
+  margin: 0px 5px;
+  color: #fff;
+  opacity: 0.3;
+}
+[data-on=true] {
+  opacity: 1;
+}
+#logo {
+  position: relative;
+  top: 45px;
+  height: 60px;
+}
+#matchTime {
+  position: relative;
+  top: 30px;
+  height: 60px;
+  color: #000;
+  font-family: "FuturaLTBold";
+  font-size: 32px;
+  opacity: 0;
+}
+#blindsContainer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.blinds {
+  position: fixed;
+  top: 0;
+  background-size: 200%;
+  height: 100%;
+  width: 50%;
+}
+.blinds.left {
+  background-position: left;
+  left: -50%;
+}
+.blinds.right {
+  background-position: right;
+  right: -50%;
+}
+.blinds.full {
+  width: 100%;
+  background-position: center;
+  background-size: 100%;
+}
+.blinds.background {
+  background-image: url("/static/img/endofmatch-bg.png");
+}
+.blinds.center {
+  position: fixed;
+  background-image: url("/static/img/endofmatch-center.png");
+}
+.blinds.center-blank {
+  background-image: url("/static/img/endofmatch-center-blank.png");
+  -webkit-backface-visibility: hidden;
+  z-index: 3;
+}
+#blindsCenter {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto auto;
+  border-radius: 50%;
+  width: 310px;
+  height: 310px;
+  background-color: #fff;
+  border: 1px solid #333;
+  box-shadow: 0 0 5px #666;
+  text-align: center;
+  -webkit-backface-visibility: hidden;
+  z-index: 2;
+  transform: rotateY(-180deg);
+}
+#blindsLogo {
+  position: relative;
+  top: 85px;
+  height: 140px;
+}
+#finalScore {
+  position: fixed;
+  width: 800px;
+  height: 450px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto auto;
+  border: 2px solid #333;
+  z-index: 0;
+  opacity: 0;
+  background-color: #444;
+}
+.final-score {
+  float: left;
+  width: 50%;
+  height: 44%;
+  line-height: 200px;
+  border-bottom: 2px solid #333;
+  color: #fff;
+  font-family: "FuturaLTBold";
+  font-size: 100px;
+  text-align: center;
+  text-shadow: 0 0 3px #333;
+}
+#redFinalScore {
+  background-color: #ff4444;
+  padding-right: 150px;
+}
+#blueFinalScore {
+  clear: right;
+  background-color: #2080ff;
+  padding-left: 150px;
+}
+.final-teams {
+  float: left;
+  width: 50%;
+  height: 11%;
+  line-height: 50px;
+  text-align: center;
+  color: #fff;
+  font-family: "FuturaLT";
+  font-size: 35px;
+}
+.final-teams span {
+  margin: 0px 20px;
+}
+#redFinalTeams {
+  clear: left;
+  border-right: 2px solid #333;
+}
+#blueFinalTeam {
+}
+.final-breakdown {
+  float: left;
+  width: 33%;
+  height: 34%;
+  padding: 0px 20px;
+  display: table;
+  text-align: center;
+  background-color: #fff;
+  color: #000;
+  font-family: "FuturaLT";
+  font-size: 30px;
+}
+#redFinalBreakdown {
+  clear: left;
+  text-align: right;
+}
+#blueFinalBreakdown {
+  text-align: left;
+}
+#centerFinalBreakdown {
+  width: 34%;
+  border-left: 2px solid #333;
+  border-right: 2px solid #333;
+}
+#finalEventMatchInfo {
+  clear: both;
+  width: 100%;
+  height: 11%;
+  line-height: 50px;
+  padding: 0px 25px;
+  font-family: "FuturaLT";
+  font-size: 28px;
+  color: #fff;
+}

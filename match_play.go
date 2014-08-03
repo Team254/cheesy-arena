@@ -119,7 +119,16 @@ func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 func MatchPlayShowResultHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	matchId, _ := strconv.Atoi(vars["matchId"])
-	matchResult, err := db.GetMatchResultForMatch(matchId)
+	match, err := db.GetMatchById(matchId)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	if match == nil {
+		handleWebErr(w, fmt.Errorf("Invalid match ID %d.", matchId))
+		return
+	}
+	matchResult, err := db.GetMatchResultForMatch(match.Id)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -128,6 +137,7 @@ func MatchPlayShowResultHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, fmt.Errorf("No result found for match ID %d.", matchId))
 		return
 	}
+	mainArena.savedMatch = match
 	mainArena.savedMatchResult = matchResult
 	mainArena.scorePostedNotifier.Notify(nil)
 
@@ -147,6 +157,8 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(matchTimeListener)
 	robotStatusListener := mainArena.robotStatusNotifier.Listen()
 	defer close(robotStatusListener)
+	audienceDisplayListener := mainArena.audienceDisplayNotifier.Listen()
+	defer close(audienceDisplayListener)
 
 	// Send the various notifications immediately upon connection.
 	err = websocket.Write("status", mainArena)
@@ -161,6 +173,11 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)}
 	err = websocket.Write("matchTime", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	err = websocket.Write("setAudienceDisplay", mainArena.audienceDisplayScreen)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -184,6 +201,12 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "status"
 				message = mainArena
+			case _, ok := <-audienceDisplayListener:
+				if !ok {
+					return
+				}
+				messageType = "setAudienceDisplay"
+				message = mainArena.audienceDisplayScreen
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {
@@ -284,6 +307,15 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			continue // Skip sending the status update, as the client is about to terminate and reload.
+		case "setAudienceDisplay":
+			screen, ok := data.(string)
+			if !ok {
+				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			mainArena.audienceDisplayScreen = screen
+			mainArena.audienceDisplayNotifier.Notify(nil)
+			continue
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue

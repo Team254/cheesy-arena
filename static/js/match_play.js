@@ -29,6 +29,10 @@ var discardResults = function() {
   websocket.send("discardResults");
 };
 
+var setAudienceDisplay = function() {
+  websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
+};
+
 var handleStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
@@ -91,6 +95,10 @@ var handleMatchTime = function(data) {
   });
 };
 
+var handleSetAudienceDisplay = function(data) {
+  $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
+};
+
 $(function() {
   // Activate tooltips above the status headers.
   $("[data-toggle=tooltip]").tooltip({"placement": "top"});
@@ -99,6 +107,7 @@ $(function() {
   websocket = new CheesyWebsocket("/match_play/websocket", {
     status: function(event) { handleStatus(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); }
+    matchTime: function(event) { handleMatchTime(event.data); },
+    setAudienceDisplay: function(event) { handleSetAudienceDisplay(event.data); }
   });
 });

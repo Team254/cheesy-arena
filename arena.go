@@ -46,6 +46,7 @@ type RealtimeScore struct {
 	CurrentScore       Score
 	CurrentCycle       Cycle
 	AutoPreloadedBalls int
+	AutoLeftoverBalls  int
 	Fouls              []Foul
 	AutoCommitted      bool
 	TeleopCommitted    bool
@@ -55,23 +56,27 @@ type RealtimeScore struct {
 }
 
 type Arena struct {
-	AllianceStations       map[string]*AllianceStation
-	MatchState             int
-	CanStartMatch          bool
-	matchTiming            MatchTiming
-	currentMatch           *Match
-	redRealtimeScore       *RealtimeScore
-	blueRealtimeScore      *RealtimeScore
-	matchStartTime         time.Time
-	lastDsPacketTime       time.Time
-	matchStateNotifier     *Notifier
-	matchTimeNotifier      *Notifier
-	robotStatusNotifier    *Notifier
-	matchLoadTeamsNotifier *Notifier
-	scorePostedNotifier    *Notifier
-	lastMatchState         int
-	lastMatchTimeSec       float64
-	savedMatchResult       *MatchResult
+	AllianceStations        map[string]*AllianceStation
+	MatchState              int
+	CanStartMatch           bool
+	matchTiming             MatchTiming
+	currentMatch            *Match
+	redRealtimeScore        *RealtimeScore
+	blueRealtimeScore       *RealtimeScore
+	matchStartTime          time.Time
+	lastDsPacketTime        time.Time
+	matchStateNotifier      *Notifier
+	matchTimeNotifier       *Notifier
+	robotStatusNotifier     *Notifier
+	matchLoadTeamsNotifier  *Notifier
+	realtimeScoreNotifier   *Notifier
+	scorePostedNotifier     *Notifier
+	audienceDisplayNotifier *Notifier
+	audienceDisplayScreen   string
+	lastMatchState          int
+	lastMatchTimeSec        float64
+	savedMatch              *Match
+	savedMatchResult        *MatchResult
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
@@ -95,13 +100,20 @@ func (arena *Arena) Setup() {
 	arena.matchTimeNotifier = NewNotifier()
 	arena.robotStatusNotifier = NewNotifier()
 	arena.matchLoadTeamsNotifier = NewNotifier()
+	arena.realtimeScoreNotifier = NewNotifier()
 	arena.scorePostedNotifier = NewNotifier()
+	arena.audienceDisplayNotifier = NewNotifier()
 
 	// Load empty match as current.
 	arena.MatchState = PRE_MATCH
 	arena.LoadTestMatch()
 	arena.lastMatchState = -1
 	arena.lastMatchTimeSec = 0
+
+	// Initialize display parameters.
+	arena.audienceDisplayScreen = "blank"
+	arena.savedMatch = &Match{}
+	arena.savedMatchResult = &MatchResult{}
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -184,6 +196,7 @@ func (arena *Arena) LoadMatch(match *Match) error {
 	arena.blueRealtimeScore = new(RealtimeScore)
 
 	arena.matchLoadTeamsNotifier.Notify(nil)
+	arena.realtimeScoreNotifier.Notify(nil)
 	return nil
 }
 
@@ -274,6 +287,8 @@ func (arena *Arena) AbortMatch() error {
 		return fmt.Errorf("Cannot abort match when it is not in progress.")
 	}
 	arena.MatchState = POST_MATCH
+	arena.audienceDisplayScreen = "blank"
+	arena.audienceDisplayNotifier.Notify(nil)
 	return nil
 }
 
@@ -322,6 +337,8 @@ func (arena *Arena) Update() {
 		auto = true
 		enabled = true
 		sendDsPacket = true
+		arena.audienceDisplayScreen = "match"
+		arena.audienceDisplayNotifier.Notify(nil)
 	case AUTO_PERIOD:
 		auto = true
 		enabled = true
@@ -357,6 +374,8 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = false
 			sendDsPacket = true
+			arena.audienceDisplayScreen = "blank"
+			arena.audienceDisplayNotifier.Notify(nil)
 		}
 	}
 
@@ -401,4 +420,15 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 		}
 	}
 	arena.lastDsPacketTime = time.Now()
+}
+
+func (realtimeScore *RealtimeScore) Score() int {
+	score := scoreSummary(&realtimeScore.CurrentScore, []Foul{}).Score
+	if realtimeScore.CurrentCycle.Truss {
+		score += 10
+		if realtimeScore.CurrentCycle.Catch {
+			score += 10
+		}
+	}
+	return score
 }
