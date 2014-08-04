@@ -293,8 +293,7 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 		case "commitResults":
-			// TODO(pat): Deal with scoring here. For now, use an empty match result set for a 0-0 tie.
-			err = CommitMatchScore(mainArena.currentMatch, &MatchResult{MatchId: mainArena.currentMatch.Id})
+			err = CommitCurrentMatchScore()
 			if err != nil {
 				websocket.WriteError(err.Error())
 				continue
@@ -355,7 +354,13 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Saves the given match and result to the database, supplanting any previous result for the match.
 func CommitMatchScore(match *Match, matchResult *MatchResult) error {
+	// Store the result in the buffer to be shown in the audience display.
+	mainArena.savedMatch = match
+	mainArena.savedMatchResult = matchResult
+	mainArena.scorePostedNotifier.Notify(nil)
+
 	if match.Type == "test" {
 		// Do nothing since this is a test match and doesn't exist in the database.
 		return nil
@@ -435,6 +440,15 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 	}
 
 	return nil
+}
+
+// Saves the realtime result as the final score for the match currently loaded into the arena.
+func CommitCurrentMatchScore() error {
+	// TODO(patrick): Set the red/yellow cards.
+	matchResult := MatchResult{MatchId: mainArena.currentMatch.Id,
+		RedScore: mainArena.redRealtimeScore.CurrentScore, BlueScore: mainArena.blueRealtimeScore.CurrentScore,
+		RedFouls: mainArena.redRealtimeScore.Fouls, BlueFouls: mainArena.blueRealtimeScore.Fouls}
+	return CommitMatchScore(mainArena.currentMatch, &matchResult)
 }
 
 func (list MatchPlayList) Len() int {

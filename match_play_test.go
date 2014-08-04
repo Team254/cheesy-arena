@@ -248,8 +248,12 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "setAudienceDisplay")
 	assert.Equal(t, POST_MATCH, mainArena.MatchState)
+	mainArena.redRealtimeScore.CurrentScore.AutoHighHot = 29
+	mainArena.blueRealtimeScore.CurrentScore.AutoHighHot = 37
 	ws.Write("commitResults", nil)
 	readWebsocketType(t, ws, "reload")
+	assert.Equal(t, 29, mainArena.savedMatchResult.RedScore.AutoHighHot)
+	assert.Equal(t, 37, mainArena.savedMatchResult.BlueScore.AutoHighHot)
 	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
 	ws.Write("discardResults", nil)
 	readWebsocketType(t, ws, "reload")
