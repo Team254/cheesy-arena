@@ -159,8 +159,11 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(robotStatusListener)
 	audienceDisplayListener := mainArena.audienceDisplayNotifier.Listen()
 	defer close(audienceDisplayListener)
+	scoringStatusListener := mainArena.scoringStatusNotifier.Listen()
+	defer close(scoringStatusListener)
 
 	// Send the various notifications immediately upon connection.
+	var data interface{}
 	err = websocket.Write("status", mainArena)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -171,13 +174,24 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	data := MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)}
+	data = MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)}
 	err = websocket.Write("matchTime", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
 	}
 	err = websocket.Write("setAudienceDisplay", mainArena.audienceDisplayScreen)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	data = struct {
+		RefereeScoreReady bool
+		RedScoreReady     bool
+		BlueScoreReady    bool
+	}{mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted,
+		mainArena.redRealtimeScore.TeleopCommitted, mainArena.blueRealtimeScore.TeleopCommitted}
+	err = websocket.Write("scoringStatus", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -207,6 +221,17 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "setAudienceDisplay"
 				message = mainArena.audienceDisplayScreen
+			case _, ok := <-scoringStatusListener:
+				if !ok {
+					return
+				}
+				messageType = "scoringStatus"
+				message = struct {
+					RefereeScoreReady bool
+					RedScoreReady     bool
+					BlueScoreReady    bool
+				}{mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted,
+					mainArena.redRealtimeScore.TeleopCommitted, mainArena.blueRealtimeScore.TeleopCommitted}
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {

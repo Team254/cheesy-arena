@@ -173,6 +173,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "setAudienceDisplay")
+	readWebsocketType(t, ws, "scoringStatus")
 
 	// Test that a server-side error is communicated to the client.
 	ws.Write("nonexistenttype", nil)
@@ -257,6 +258,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "setAudienceDisplay")
+	readWebsocketType(t, ws, "scoringStatus")
 
 	mainArena.AllianceStations["R1"].Bypass = true
 	mainArena.AllianceStations["R2"].Bypass = true
@@ -273,6 +275,8 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	assert.Equal(t, 0, matchTime.MatchTimeSec)
 	_, ok := messages["setAudienceDisplay"]
 	assert.True(t, ok)
+	mainArena.scoringStatusNotifier.Notify(nil)
+	readWebsocketType(t, ws, "scoringStatus")
 
 	// Should get a tick notification when an integer second threshold is crossed.
 	mainArena.matchStartTime = time.Now().Add(-time.Second + 10*time.Millisecond) // Not crossed yet

@@ -69,6 +69,7 @@ type Arena struct {
 	matchTimeNotifier       *Notifier
 	robotStatusNotifier     *Notifier
 	matchLoadTeamsNotifier  *Notifier
+	scoringStatusNotifier   *Notifier
 	realtimeScoreNotifier   *Notifier
 	scorePostedNotifier     *Notifier
 	audienceDisplayNotifier *Notifier
@@ -101,6 +102,7 @@ func (arena *Arena) Setup() {
 	arena.matchTimeNotifier = NewNotifier()
 	arena.robotStatusNotifier = NewNotifier()
 	arena.matchLoadTeamsNotifier = NewNotifier()
+	arena.scoringStatusNotifier = NewNotifier()
 	arena.realtimeScoreNotifier = NewNotifier()
 	arena.scorePostedNotifier = NewNotifier()
 	arena.audienceDisplayNotifier = NewNotifier()

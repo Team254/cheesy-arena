@@ -4,6 +4,7 @@
 // Client-side logic for the match play page.
 
 var websocket;
+var scoreIsReady;
 
 var substituteTeam = function(team, position) {
   websocket.send("substituteTeam", { team: parseInt(team), position: position })
@@ -31,6 +32,17 @@ var discardResults = function() {
 
 var setAudienceDisplay = function() {
   websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
+};
+
+var confirmCommit = function(isReplay) {
+  if (isReplay || !scoreIsReady) {
+    // Show the appropriate message(s) in the confirmation dialog.
+    $("#confirmCommitReplay").css("display", isReplay ? "block" : "none");
+    $("#confirmCommitNotReady").css("display", scoreIsReady ? "none" : "block");
+    $("#confirmCommitResults").modal("show");
+  } else {
+    commitResults();
+  }
 };
 
 var handleStatus = function(data) {
@@ -99,6 +111,13 @@ var handleSetAudienceDisplay = function(data) {
   $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
 };
 
+var handleScoringStatus = function(data) {
+  scoreIsReady = data.RefereeScoreReady && data.RedScoreReady && data.BlueScoreReady;
+  $("#refereeScoreStatus").attr("data-ready", data.RefereeScoreReady);
+  $("#redScoreStatus").attr("data-ready", data.RedScoreReady);
+  $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
+};
+
 $(function() {
   // Activate tooltips above the status headers.
   $("[data-toggle=tooltip]").tooltip({"placement": "top"});
@@ -108,6 +127,7 @@ $(function() {
     status: function(event) { handleStatus(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
-    setAudienceDisplay: function(event) { handleSetAudienceDisplay(event.data); }
+    setAudienceDisplay: function(event) { handleSetAudienceDisplay(event.data); },
+    scoringStatus: function(event) { handleScoringStatus(event.data); }
   });
 });

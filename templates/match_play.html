@@ -87,8 +87,7 @@
         Abort Match
       </button>
       <button type="button" id="commitResults" class="btn btn-info btn-lg btn-match-play"
-          onclick="{{if .IsReplay}}$('#confirmCommitResults').modal('show');{{else}}commitResults();{{end}}"
-          disabled>
+          onclick="confirmCommit({{.IsReplay}});" disabled>
         Commit Results
       </button>
       <button type="button" id="discardResults" class="btn btn-danger btn-lg btn-match-play"
@@ -98,34 +97,42 @@
     </div>
     <br />
     <div class="row">
-      <div class="col-lg-3 well">
-        Audience Display
-        <div class="form-group">
-          <div class="radio">
-            <label>
-              <input type="radio" name="audienceDisplay" value="blank" onclick="setAudienceDisplay();">Blank
-            </label>
+      <div class="col-lg-6 well">
+        <div class="col-lg-6">
+          Audience Display
+          <div class="form-group">
+            <div class="radio">
+              <label>
+                <input type="radio" name="audienceDisplay" value="blank" onclick="setAudienceDisplay();">Blank
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="audienceDisplay" value="intro" onclick="setAudienceDisplay();">Intro
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="audienceDisplay" value="match" onclick="setAudienceDisplay();">Match
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="audienceDisplay" value="score" onclick="setAudienceDisplay();">Final Score
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="audienceDisplay" value="logo" onclick="setAudienceDisplay();">Logo
+              </label>
+            </div>
           </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="audienceDisplay" value="intro" onclick="setAudienceDisplay();">Intro
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="audienceDisplay" value="match" onclick="setAudienceDisplay();">Match
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="audienceDisplay" value="score" onclick="setAudienceDisplay();">Final Score
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="audienceDisplay" value="logo" onclick="setAudienceDisplay();">Logo
-            </label>
-          </div>
+        </div>
+        <div class="col-lg-6">
+          <p>Scoring Status</p>
+          <p><span class="label label-scoring" id="refereeScoreStatus">Referee</span><br />
+          <span class="label label-scoring" id="redScoreStatus">Red Scoring</span><br />
+          <span class="label label-scoring" id="blueScoreStatus">Blue Scoring</span></p>
         </div>
       </div>
     </div>
@@ -139,13 +146,15 @@
         <h4 class="modal-title">Confirm</h4>
       </div>
       <div class="modal-body">
-        <p>This is a replay of Match {{.Match.DisplayName}}. Are you sure you want to overwrite the previous
-            results?</p>
+        <p id="confirmCommitReplay">This is a replay of Match {{.Match.DisplayName}}. Are you sure you want to
+            overwrite the previous results?</p>
+        <p id="confirmCommitNotReady">Not all scoring sources are ready yet. Are you sure you want to
+            commit the results?</p>
       </div>
       <div class="modal-footer">
         <form class="form-horizontal" action="/setup/teams/clear" method="POST">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" onclick="discardResults();">Overwrite Results</button>
+          <button type="button" class="btn btn-primary" onclick="commitResults();">Commit Results</button>
         </form>
       </div>
     </div>

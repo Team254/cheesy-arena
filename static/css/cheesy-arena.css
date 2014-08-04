@@ -68,6 +68,12 @@
 .btn-match-play {
   width: 165px;
 }
+.label-scoring {
+  background-color: #e66;
+}
+.label-scoring[data-ready=true] {
+  background-color: #0c6;
+}
 .nowrap {
   white-space: nowrap;
 }

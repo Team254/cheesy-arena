@@ -581,6 +581,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				// Commit last cycle.
 				(*score).CurrentScore.Cycles = append((*score).CurrentScore.Cycles, (*score).CurrentCycle)
 			}
+			mainArena.scoringStatusNotifier.Notify(nil)
 		case "undo":
 			if !(*score).AutoCommitted && len((*score).undoAutoScores) > 0 {
 				(*score).CurrentScore = (*score).undoAutoScores[len((*score).undoAutoScores)-1]
@@ -739,6 +740,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		case "commitMatch":
 			mainArena.redRealtimeScore.FoulsCommitted = true
 			mainArena.blueRealtimeScore.FoulsCommitted = true
+			mainArena.scoringStatusNotifier.Notify(nil)
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue
