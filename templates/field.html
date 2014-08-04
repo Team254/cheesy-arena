@@ -1,0 +1,31 @@
+{{define "title"}}Field Configuration{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-4 col-lg-offset-4">
+    <div class="well">
+      <legend>Alliance Station Displays</legend>
+      {{range $displayId, $station := .AllianceStationDisplays}}
+        <form class="form-horizontal" action="/setup/field" method="POST">
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Display {{$displayId}}</label>
+            <div class="col-lg-7">
+              <input type="hidden" name="displayId" value="{{$displayId}}" />
+              <select class="form-control" name="allianceStation" onchange="this.form.submit();">
+                <option value=""></option>
+                <option value="R1"{{if eq $station "R1"}} selected{{end}}>Red 1</option>
+                <option value="R2"{{if eq $station "R2"}} selected{{end}}>Red 2</option>
+                <option value="R3"{{if eq $station "R3"}} selected{{end}}>Red 3</option>
+                <option value="B1"{{if eq $station "B1"}} selected{{end}}>Blue 1</option>
+                <option value="B2"{{if eq $station "B2"}} selected{{end}}>Blue 2</option>
+                <option value="B3"{{if eq $station "B3"}} selected{{end}}>Blue 3</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+{{end}}

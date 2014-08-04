@@ -75,6 +75,7 @@ type Arena struct {
 	audienceDisplayNotifier *Notifier
 	playSoundNotifier       *Notifier
 	audienceDisplayScreen   string
+	allianceStationDisplays map[string]string
 	lastMatchState          int
 	lastMatchTimeSec        float64
 	savedMatch              *Match
@@ -118,6 +119,7 @@ func (arena *Arena) Setup() {
 	arena.audienceDisplayScreen = "blank"
 	arena.savedMatch = &Match{}
 	arena.savedMatchResult = &MatchResult{}
+	arena.allianceStationDisplays = make(map[string]string)
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.

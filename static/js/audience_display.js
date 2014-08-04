@@ -3,6 +3,7 @@
 //
 // Client-side methods for the audience display.
 
+var websocket;
 var transitionMap;
 var currentScreen = "blank";
 

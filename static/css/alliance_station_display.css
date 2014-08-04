@@ -1,0 +1,39 @@
+html {
+  cursor: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  overflow: hidden;
+}
+body {
+  background-color: #000;
+  font-family: "FuturaLTBold";
+}
+#displayId {
+  color: #ff0;
+  font-size: 500px;
+}
+#teamId {
+  font-size: 500px;
+  line-height: 500px;
+  margin: 50px 0px;
+}
+#teamName {
+  font-family: "FuturaLT";
+  font-size: 120px;
+}
+[data-alliance=R] {
+  color: #f00;
+}
+[data-alliance=B] {
+  color: #00f;
+}
+.match-info {
+  color: #fff;
+  font-size: 190px;
+}
+#redScore {
+  color: #f00;
+}
+#blueScore {
+  color: #00f;
+}
