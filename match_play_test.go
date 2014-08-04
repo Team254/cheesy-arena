@@ -95,6 +95,31 @@ func TestMatchPlayLoad(t *testing.T) {
 	assert.NotContains(t, recorder.Body.String(), "106")
 }
 
+func TestMatchPlayShowResult(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+	mainArena.Setup()
+
+	recorder := getHttpResponse("/match_play/1/show_result")
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Invalid match")
+	match := Match{Type: "qualification", DisplayName: "1", Status: "complete"}
+	db.CreateMatch(&match)
+	recorder = getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "No result found")
+	db.CreateMatchResult(&MatchResult{MatchId: match.Id})
+	recorder = getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
+	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, match.Id, mainArena.savedMatch.Id)
+	assert.Equal(t, match.Id, mainArena.savedMatchResult.MatchId)
+}
+
 func TestMatchPlayErrors(t *testing.T) {
 	clearDb()
 	defer clearDb()
