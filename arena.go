@@ -432,8 +432,8 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	arena.lastDsPacketTime = time.Now()
 }
 
-func (realtimeScore *RealtimeScore) Score() int {
-	score := scoreSummary(&realtimeScore.CurrentScore, []Foul{}).Score
+func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
+	score := scoreSummary(&realtimeScore.CurrentScore, opponentFouls).Score
 	if realtimeScore.CurrentCycle.Truss {
 		score += 10
 		if realtimeScore.CurrentCycle.Catch {

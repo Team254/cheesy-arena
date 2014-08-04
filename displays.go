@@ -92,8 +92,10 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		RedCycle  Cycle
 		BlueScore int
 		BlueCycle Cycle
-	}{mainArena.redRealtimeScore.Score(), mainArena.redRealtimeScore.CurrentCycle,
-		mainArena.blueRealtimeScore.Score(), mainArena.blueRealtimeScore.CurrentCycle}
+	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
+		mainArena.redRealtimeScore.CurrentCycle,
+		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls),
+		mainArena.blueRealtimeScore.CurrentCycle}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -149,8 +151,10 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					RedCycle  Cycle
 					BlueScore int
 					BlueCycle Cycle
-				}{mainArena.redRealtimeScore.Score(), mainArena.redRealtimeScore.CurrentCycle,
-					mainArena.blueRealtimeScore.Score(), mainArena.blueRealtimeScore.CurrentCycle}
+				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
+					mainArena.redRealtimeScore.CurrentCycle,
+					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls),
+					mainArena.blueRealtimeScore.CurrentCycle}
 			case _, ok := <-scorePostedListener:
 				if !ok {
 					return
@@ -280,7 +284,8 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	data = struct {
 		RedScore  int
 		BlueScore int
-	}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
+	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
+		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls)}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -325,7 +330,8 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				message = struct {
 					RedScore  int
 					BlueScore int
-				}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
+				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
+					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls)}
 			case _, ok := <-scorePostedListener:
 				if !ok {
 					return
@@ -708,6 +714,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				mainArena.blueRealtimeScore.Fouls = append(mainArena.blueRealtimeScore.Fouls, foul)
 			}
+			mainArena.realtimeScoreNotifier.Notify(nil)
 		case "deleteFoul":
 			args := struct {
 				Alliance       string
@@ -737,6 +744,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 			}
+			mainArena.realtimeScoreNotifier.Notify(nil)
 		case "commitMatch":
 			mainArena.redRealtimeScore.FoulsCommitted = true
 			mainArena.blueRealtimeScore.FoulsCommitted = true
