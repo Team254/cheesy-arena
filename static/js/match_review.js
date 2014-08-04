@@ -75,19 +75,25 @@ var renderResults = function(alliance) {
     $("input[name=" + alliance + "Cycle" + k + "End][value=" + cycleEnd + "]").prop("checked", true);
   });
 
-  $.each(result.fouls, function(k, v) {
-    $("input[name=" + alliance + "Foul" + k + "Team][value=" + v.TeamId + "]").prop("checked", true);
-    $("input[name=" + alliance + "Foul" + k + "Tech][value=" + v.IsTechnical + "]").prop("checked", true);
-    $("input[name=" + alliance + "Foul" + k + "Rule]").val(v.Rule);
-    $("input[name=" + alliance + "Foul" + k + "Time]").val(v.TimeInMatchSec);
-  });
+  if (result.fouls != null) {
+    $.each(result.fouls, function(k, v) {
+      $("input[name=" + alliance + "Foul" + k + "Team][value=" + v.TeamId + "]").prop("checked", true);
+      $("input[name=" + alliance + "Foul" + k + "Tech][value=" + v.IsTechnical + "]").prop("checked", true);
+      $("input[name=" + alliance + "Foul" + k + "Rule]").val(v.Rule);
+      $("input[name=" + alliance + "Foul" + k + "Time]").val(v.TimeInMatchSec);
+    });
+  }
 
-  $.each(result.cards.YellowCardTeamIds, function(k, v) {
-    $("input[name=" + alliance + "Team" + v + "Card][value=Y]").prop("checked", true);
-  });
-  $.each(result.cards.RedCardTeamIds, function(k, v) {
-    $("input[name=" + alliance + "Team" + v + "Card][value=R]").prop("checked", true);
-  });
+  if (result.cards.YellowCardTeamIds != null) {
+    $.each(result.cards.YellowCardTeamIds, function(k, v) {
+      $("input[name=" + alliance + "Team" + v + "Card][value=Y]").prop("checked", true);
+    });
+  }
+  if (result.cards.RedCardTeamIds != null) {
+    $.each(result.cards.RedCardTeamIds, function(k, v) {
+      $("input[name=" + alliance + "Team" + v + "Card][value=R]").prop("checked", true);
+    });
+  }
 }
 
 // Converts the current form values back into JSON structures and caches them.
