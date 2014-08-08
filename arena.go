@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	arenaLoopPeriodMs = 10
-	dsPacketPeriodMs  = 250
+	arenaLoopPeriodMs     = 10
+	dsPacketPeriodMs      = 250
+	matchEndScoreDwellSec = 3
 )
 
 // Progression of match states.
@@ -389,8 +390,12 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = false
 			sendDsPacket = true
-			arena.audienceDisplayScreen = "blank"
-			arena.audienceDisplayNotifier.Notify(nil)
+			go func() {
+				// Leave the scores on the screen briefly at the end of the match.
+				time.Sleep(time.Second * matchEndScoreDwellSec)
+				arena.audienceDisplayScreen = "blank"
+				arena.audienceDisplayNotifier.Notify(nil)
+			}()
 			arena.playSoundNotifier.Notify("match-end")
 		}
 	}
