@@ -3,10 +3,26 @@
 //
 // Client-side methods for the alliance station display.
 
-// A unique id to differentiate this station's display from its peers.
-var displayId;
 var allianceStation = "";
+var blinkInterval;
 var websocket;
+
+var handleSetAllianceStationDisplay = function(targetScreen) {
+  switch (targetScreen) {
+    case "logo":
+      $("#match").hide();
+      $("#logo").show();
+      break;
+    case "blank":
+      $("#match").hide();
+      $("#logo").hide();
+      break;
+    case "match":
+      $("#match").show();
+      $("#logo").hide();
+      break;
+  }
+};
 
 var handleSetMatch = function(data) {
   if (allianceStation != "" && data.AllianceStation == "") {
@@ -22,22 +38,49 @@ var handleSetMatch = function(data) {
     if (team == null) {
       $("#teamId").text("");
       $("#teamName").text("");
+      $("#teamName").attr("data-alliance", "");
     } else {
-      $("#teamId").attr("data-alliance", allianceStation[0]);
       $("#teamName").attr("data-alliance", allianceStation[0]);
       $("#teamId").text(data.Teams[allianceStation].Id);
       $("#teamName").text(data.Teams[allianceStation].Nickname);
     }
-    $("#displayIdRow").hide();
-    $("#teamIdRow").show();
-    $("#teamNameRow").show();
+    $("#displayId").hide();
+    $("#teamId").show();
+    $("#teamName").show();
   } else {
     // Show the display ID so that someone can assign it to a station from the configuration interface.
     $("#teamId").text("");
     $("#teamName").text("");
-    $("#displayIdRow").show();
-    $("#teamIdRow").hide();
-    $("#teamNameRow").hide();
+    $("#displayId").show();
+    $("#teamId").hide();
+    $("#teamName").hide();
+  }
+};
+
+var handleStatus = function(data) {
+  stationStatus = data.AllianceStations[allianceStation];
+  var blink = false;
+  if (stationStatus.Bypass) {
+    $("#match").attr("data-status", "bypass");
+  } else if (stationStatus.DsConn) {
+    if (!stationStatus.DsConn.DriverStationStatus.DsLinked) {
+      $("#match").attr("data-status", allianceStation[0]);
+    } else if (!stationStatus.DsConn.DriverStationStatus.RobotLinked) {
+      blink = true;
+      if (!blinkInterval) {
+        blinkInterval = setInterval(function() {
+          var status = $("#match").attr("data-status");
+          $("#match").attr("data-status", (status == "") ? allianceStation[0] : "");
+        }, 250);
+      }
+    }
+  } else {
+    $("#match").attr("data-status", "");
+  }
+
+  if (!blink && blinkInterval) {
+    clearInterval(blinkInterval);
+    blinkInterval = null;
   }
 };
 
@@ -51,11 +94,11 @@ var handleMatchTime = function(data) {
     $("#matchTime").text(countdownString);
 
     if (matchState == "PRE_MATCH" || matchState == "POST_MATCH") {
-      $("#teamNameRow").show();
-      $("#matchInfoRow").hide();
+      $("#teamName").show();
+      $("#matchInfo").hide();
     } else {
-      $("#teamNameRow").hide();
-      $("#matchInfoRow").show();
+      $("#teamName").hide();
+      $("#matchInfo").show();
     }
   });
 };
@@ -66,12 +109,17 @@ var handleRealtimeScore = function(data) {
 };
 
 $(function() {
-  displayId = Math.floor(Math.random() * 10000);
+  if (displayId == "") {
+    displayId = Math.floor(Math.random() * 10000);
+    window.location = "/displays/alliance_station?displayId=" + displayId;
+  }
   $("#displayId").text(displayId);
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/alliance_station/websocket?displayId=" + displayId, {
+    setAllianceStationDisplay: function(event) { handleSetAllianceStationDisplay(event.data); },
     setMatch: function(event) { handleSetMatch(event.data); },
+    status: function(event) { handleStatus(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); }

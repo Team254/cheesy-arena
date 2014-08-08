@@ -34,6 +34,10 @@ var setAudienceDisplay = function() {
   websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
 };
 
+var setAllianceStationDisplay = function() {
+  websocket.send("setAllianceStationDisplay", $("input[name=allianceStationDisplay]:checked").val());
+};
+
 var confirmCommit = function(isReplay) {
   if (isReplay || !scoreIsReady) {
     // Show the appropriate message(s) in the confirmation dialog.
@@ -118,6 +122,10 @@ var handleScoringStatus = function(data) {
   $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
 };
 
+var handleSetAllianceStationDisplay = function(data) {
+  $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);
+};
+
 $(function() {
   // Activate tooltips above the status headers.
   $("[data-toggle=tooltip]").tooltip({"placement": "top"});
@@ -128,6 +136,7 @@ $(function() {
     matchTiming: function(event) { handleMatchTiming(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     setAudienceDisplay: function(event) { handleSetAudienceDisplay(event.data); },
-    scoringStatus: function(event) { handleScoringStatus(event.data); }
+    scoringStatus: function(event) { handleScoringStatus(event.data); },
+    setAllianceStationDisplay: function(event) { handleSetAllianceStationDisplay(event.data); }
   });
 });

@@ -56,30 +56,32 @@ type RealtimeScore struct {
 }
 
 type Arena struct {
-	AllianceStations        map[string]*AllianceStation
-	MatchState              int
-	CanStartMatch           bool
-	matchTiming             MatchTiming
-	currentMatch            *Match
-	redRealtimeScore        *RealtimeScore
-	blueRealtimeScore       *RealtimeScore
-	matchStartTime          time.Time
-	lastDsPacketTime        time.Time
-	matchStateNotifier      *Notifier
-	matchTimeNotifier       *Notifier
-	robotStatusNotifier     *Notifier
-	matchLoadTeamsNotifier  *Notifier
-	scoringStatusNotifier   *Notifier
-	realtimeScoreNotifier   *Notifier
-	scorePostedNotifier     *Notifier
-	audienceDisplayNotifier *Notifier
-	playSoundNotifier       *Notifier
-	audienceDisplayScreen   string
-	allianceStationDisplays map[string]string
-	lastMatchState          int
-	lastMatchTimeSec        float64
-	savedMatch              *Match
-	savedMatchResult        *MatchResult
+	AllianceStations               map[string]*AllianceStation
+	MatchState                     int
+	CanStartMatch                  bool
+	matchTiming                    MatchTiming
+	currentMatch                   *Match
+	redRealtimeScore               *RealtimeScore
+	blueRealtimeScore              *RealtimeScore
+	matchStartTime                 time.Time
+	lastDsPacketTime               time.Time
+	matchStateNotifier             *Notifier
+	matchTimeNotifier              *Notifier
+	robotStatusNotifier            *Notifier
+	matchLoadTeamsNotifier         *Notifier
+	scoringStatusNotifier          *Notifier
+	realtimeScoreNotifier          *Notifier
+	scorePostedNotifier            *Notifier
+	audienceDisplayNotifier        *Notifier
+	playSoundNotifier              *Notifier
+	allianceStationDisplayNotifier *Notifier
+	audienceDisplayScreen          string
+	allianceStationDisplays        map[string]string
+	allianceStationDisplayScreen   string
+	lastMatchState                 int
+	lastMatchTimeSec               float64
+	savedMatch                     *Match
+	savedMatchResult               *MatchResult
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
@@ -108,6 +110,7 @@ func (arena *Arena) Setup() {
 	arena.scorePostedNotifier = NewNotifier()
 	arena.audienceDisplayNotifier = NewNotifier()
 	arena.playSoundNotifier = NewNotifier()
+	arena.allianceStationDisplayNotifier = NewNotifier()
 
 	// Load empty match as current.
 	arena.MatchState = PRE_MATCH
@@ -120,6 +123,7 @@ func (arena *Arena) Setup() {
 	arena.savedMatch = &Match{}
 	arena.savedMatchResult = &MatchResult{}
 	arena.allianceStationDisplays = make(map[string]string)
+	arena.allianceStationDisplayScreen = "blank"
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.

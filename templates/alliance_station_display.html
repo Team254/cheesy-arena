@@ -8,20 +8,21 @@
     <link rel="stylesheet" href="/static/css/alliance_station_display.css" />
   </head>
   <body>
-    <div class="row" id="displayIdRow" style="display: none;">>
-      <div class="col-lg-12 text-center" id="displayId">1718</div>
+    <div id="displayId" style="display: none;"></div>
+    <div id="match" style="display: none;">
+      <div id="teamId" style="display: none;"></div>
+      <div id="teamName" style="display: none;"></div>
+      <div class="row" id="matchInfo" style="display: none;">
+        <div class="col-lg-4 text-center" id="redScore"></div>
+        <div class="col-lg-4 text-center" id="matchTime"></div>
+        <div class="col-lg-4 text-center" id="blueScore"></div>
+      </div>
     </div>
-    <div class="row" id="teamIdRow" style="display: none;">>
-      <div class="col-lg-12 text-center" id="teamId">254</div>
-    </div>
-    <div class="row" id="teamNameRow" style="display: none;">
-      <div class="col-lg-12 text-center" id="teamName">Buchanan Bird Brains</div>
-    </div>
-    <div class="row" id="matchInfoRow" style="display: none;">
-      <div class="col-lg-4 text-center match-info" id="redScore"></div>
-      <div class="col-lg-4 text-center match-info" id="matchTime"></div>
-      <div class="col-lg-4 text-center match-info" id="blueScore"></div>
-    </div>
+    <img id="logo" src="/static/img/logo-black.png" style="display: none;"/>
+    <script>
+      // A unique id to differentiate this station's display from its peers.
+      var displayId = "{{.DisplayId}}";
+    </script>
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
