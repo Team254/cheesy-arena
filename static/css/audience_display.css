@@ -5,7 +5,8 @@ html {
   overflow: hidden;
 }
 #centering {
-  position: absolute; left: 50%;
+  position: absolute;
+  left: 50%;
   bottom: -340px;
 }
 #matchOverlay {
@@ -273,5 +274,33 @@ html {
   padding: 0px 25px;
   font-family: "FuturaLT";
   font-size: 28px;
+  color: #fff;
+}
+#allianceSelectionCentering {
+  position: absolute;
+  left: 50%;
+  height: 100%;
+  display: table;
+}
+#allianceSelection {
+  position: relative;
+  left: -50%;
+  display: table-cell;
+  vertical-align: middle;
+}
+#allianceSelectionTable {
+  background-color: #006;
+  border-radius: 20px;
+  text-align: center;
+  font-family: "FuturaLTBold";
+  font-size: 70px;
+}
+.alliance-cell {
+  padding: 0px 40px;
+  font-family: "FuturaLT";
+  color: #999;
+}
+.selection-cell {
+  width: 250px;
   color: #fff;
 }

@@ -60,6 +60,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(scorePostedListener)
 	playSoundListener := mainArena.playSoundNotifier.Listen()
 	defer close(playSoundListener)
+	allianceSelectionListener := mainArena.allianceSelectionNotifier.Listen()
+	defer close(allianceSelectionListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
@@ -109,6 +111,11 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}{mainArena.savedMatch, mainArena.savedMatch.CapitalizedType(),
 		mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary()}
 	err = websocket.Write("setFinalScore", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	err = websocket.Write("allianceSelection", cachedAlliances)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -173,6 +180,12 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "playSound"
 				message = sound
+			case _, ok := <-allianceSelectionListener:
+				if !ok {
+					return
+				}
+				messageType = "allianceSelection"
+				message = cachedAlliances
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {

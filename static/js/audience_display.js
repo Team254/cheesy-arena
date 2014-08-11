@@ -6,6 +6,7 @@
 var websocket;
 var transitionMap;
 var currentScreen = "blank";
+var allianceSelectionTemplate = Handlebars.compile($("#allianceSelectionTemplate").html());
 
 var handleSetAudienceDisplay = function(targetScreen) {
   if (targetScreen == currentScreen) {
@@ -85,6 +86,15 @@ var handlePlaySound = function(sound) {
     v.currentTime = 0;
   });
   $("#" + sound)[0].play();
+};
+
+var handleAllianceSelection = function(alliances) {
+  if (alliances) {
+    $.each(alliances, function(k, v) {
+      v.Index = k + 1;
+    });
+    $("#allianceSelection").html(allianceSelectionTemplate(alliances));
+  }
 };
 
 var transitionBlankToIntro = function(callback) {
@@ -209,6 +219,20 @@ var transitionScoreToBlank = function(callback) {
   });
 }
 
+var transitionBlankToAllianceSelection = function(callback) {
+  $("#allianceSelectionCentering").show();
+  if (callback) {
+    callback();
+  }
+};
+
+var transitionAllianceSelectionToBlank = function(callback) {
+  $("#allianceSelectionCentering").hide();
+  if (callback) {
+    callback();
+  }
+};
+
 $(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {
@@ -218,7 +242,8 @@ $(function() {
     matchTime: function(event) { handleMatchTime(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
     setFinalScore: function(event) { handleSetFinalScore(event.data); },
-    playSound: function(event) { handlePlaySound(event.data); }
+    playSound: function(event) { handlePlaySound(event.data); },
+    allianceSelection: function(event) { handleAllianceSelection(event.data); }
   });
 
   // Map how to transition from one screen to another. Missing links between screens indicate that first we
@@ -228,7 +253,8 @@ $(function() {
       intro: transitionBlankToIntro,
       match: transitionBlankToInMatch,
       score: transitionBlankToScore,
-      logo: transitionBlankToLogo
+      logo: transitionBlankToLogo,
+      allianceSelection: transitionBlankToAllianceSelection
     },
     intro: {
       blank: transitionIntroToBlank,
@@ -245,6 +271,9 @@ $(function() {
     logo: {
       blank: transitionLogoToBlank,
       score: transitionLogoToScore
+    },
+    allianceSelection: {
+      blank: transitionAllianceSelectionToBlank
     }
   }
 });
