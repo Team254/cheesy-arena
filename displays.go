@@ -60,6 +60,10 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(scorePostedListener)
 	playSoundListener := mainArena.playSoundNotifier.Listen()
 	defer close(playSoundListener)
+	allianceSelectionListener := mainArena.allianceSelectionNotifier.Listen()
+	defer close(allianceSelectionListener)
+	lowerThirdListener := mainArena.lowerThirdNotifier.Listen()
+	defer close(lowerThirdListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
@@ -109,6 +113,11 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}{mainArena.savedMatch, mainArena.savedMatch.CapitalizedType(),
 		mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary()}
 	err = websocket.Write("setFinalScore", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	err = websocket.Write("allianceSelection", cachedAlliances)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -173,6 +182,18 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "playSound"
 				message = sound
+			case _, ok := <-allianceSelectionListener:
+				if !ok {
+					return
+				}
+				messageType = "allianceSelection"
+				message = cachedAlliances
+			case lowerThird, ok := <-lowerThirdListener:
+				if !ok {
+					return
+				}
+				messageType = "lowerThird"
+				message = lowerThird
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {
@@ -772,9 +793,14 @@ func AllianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	displayId := ""
+	if _, ok := r.URL.Query()["displayId"]; ok {
+		displayId = r.URL.Query()["displayId"][0]
+	}
 	data := struct {
 		*EventSettings
-	}{eventSettings}
+		DisplayId string
+	}{eventSettings, displayId}
 	err = template.ExecuteTemplate(w, "alliance_station_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -797,10 +823,13 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		station = ""
 		mainArena.allianceStationDisplays[displayId] = station
 	}
-	defer delete(mainArena.allianceStationDisplays, displayId)
 
+	allianceStationDisplayListener := mainArena.allianceStationDisplayNotifier.Listen()
+	defer close(allianceStationDisplayListener)
 	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
 	defer close(matchLoadTeamsListener)
+	robotStatusListener := mainArena.robotStatusNotifier.Listen()
+	defer close(robotStatusListener)
 	matchTimeListener := mainArena.matchTimeNotifier.Listen()
 	defer close(matchTimeListener)
 	realtimeScoreListener := mainArena.realtimeScoreNotifier.Listen()
@@ -808,6 +837,11 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
+	err = websocket.Write("setAllianceStationDisplay", mainArena.allianceStationDisplayScreen)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
 	err = websocket.Write("matchTiming", mainArena.matchTiming)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -851,6 +885,12 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 			var messageType string
 			var message interface{}
 			select {
+			case _, ok := <-allianceStationDisplayListener:
+				if !ok {
+					return
+				}
+				messageType = "setAllianceStationDisplay"
+				message = mainArena.allianceStationDisplayScreen
 			case _, ok := <-matchLoadTeamsListener:
 				if !ok {
 					return
@@ -864,6 +904,12 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 					"R2": mainArena.AllianceStations["R2"].team, "R3": mainArena.AllianceStations["R3"].team,
 					"B1": mainArena.AllianceStations["B1"].team, "B2": mainArena.AllianceStations["B2"].team,
 					"B3": mainArena.AllianceStations["B3"].team}}
+			case _, ok := <-robotStatusListener:
+				if !ok {
+					return
+				}
+				messageType = "status"
+				message = mainArena
 			case matchTimeSec, ok := <-matchTimeListener:
 				if !ok {
 					return

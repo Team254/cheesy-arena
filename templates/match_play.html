@@ -97,8 +97,8 @@
     </div>
     <br />
     <div class="row">
-      <div class="col-lg-6 well">
-        <div class="col-lg-6">
+      <div class="col-lg-9 well">
+        <div class="col-lg-4">
           Audience Display
           <div class="form-group">
             <div class="radio">
@@ -126,13 +126,42 @@
                 <input type="radio" name="audienceDisplay" value="logo" onclick="setAudienceDisplay();">Logo
               </label>
             </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="audienceDisplay" value="allianceSelection"
+                    onclick="setAudienceDisplay();">Alliance Selection
+              </label>
+            </div>
           </div>
         </div>
-        <div class="col-lg-6">
+        <div class="col-lg-4">
           <p>Scoring Status</p>
           <p><span class="label label-scoring" id="refereeScoreStatus">Referee</span><br />
           <span class="label label-scoring" id="redScoreStatus">Red Scoring</span><br />
           <span class="label label-scoring" id="blueScoreStatus">Blue Scoring</span></p>
+        </div>
+        <div class="col-lg-4">
+          Alliance Station Display
+          <div class="form-group">
+            <div class="radio">
+              <label>
+                <input type="radio" name="allianceStationDisplay" value="blank"
+                    onclick="setAllianceStationDisplay();">Blank
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="allianceStationDisplay" value="match"
+                    onclick="setAllianceStationDisplay();">Match
+              </label>
+            </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="allianceStationDisplay" value="logo"
+                    onclick="setAllianceStationDisplay();">Logo
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>

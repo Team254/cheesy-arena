@@ -34,6 +34,10 @@ var setAudienceDisplay = function() {
   websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
 };
 
+var setAllianceStationDisplay = function() {
+  websocket.send("setAllianceStationDisplay", $("input[name=allianceStationDisplay]:checked").val());
+};
+
 var confirmCommit = function(isReplay) {
   if (isReplay || !scoreIsReady) {
     // Show the appropriate message(s) in the confirmation dialog.
@@ -108,6 +112,7 @@ var handleMatchTime = function(data) {
 };
 
 var handleSetAudienceDisplay = function(data) {
+  $("input[name=audienceDisplay]:checked").prop("checked", false);
   $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
 };
 
@@ -116,6 +121,11 @@ var handleScoringStatus = function(data) {
   $("#refereeScoreStatus").attr("data-ready", data.RefereeScoreReady);
   $("#redScoreStatus").attr("data-ready", data.RedScoreReady);
   $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
+};
+
+var handleSetAllianceStationDisplay = function(data) {
+  $("input[name=allianceStationDisplay]:checked").prop("checked", false);
+  $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);
 };
 
 $(function() {
@@ -128,6 +138,7 @@ $(function() {
     matchTiming: function(event) { handleMatchTiming(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     setAudienceDisplay: function(event) { handleSetAudienceDisplay(event.data); },
-    scoringStatus: function(event) { handleScoringStatus(event.data); }
+    scoringStatus: function(event) { handleScoringStatus(event.data); },
+    setAllianceStationDisplay: function(event) { handleSetAllianceStationDisplay(event.data); }
   });
 });

@@ -123,6 +123,8 @@ func newHandler() http.Handler {
 	router.HandleFunc("/setup/alliance_selection/finalize", AllianceSelectionFinalizeHandler).Methods("POST")
 	router.HandleFunc("/setup/field", FieldGetHandler).Methods("GET")
 	router.HandleFunc("/setup/field", FieldPostHandler).Methods("POST")
+	router.HandleFunc("/setup/lower_thirds", LowerThirdsGetHandler).Methods("GET")
+	router.HandleFunc("/setup/lower_thirds", LowerThirdsPostHandler).Methods("POST")
 	router.HandleFunc("/match_play", MatchPlayHandler).Methods("GET")
 	router.HandleFunc("/match_play/{matchId}/load", MatchPlayLoadHandler).Methods("GET")
 	router.HandleFunc("/match_play/{matchId}/show_result", MatchPlayShowResultHandler).Methods("GET")

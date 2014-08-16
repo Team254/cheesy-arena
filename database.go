@@ -23,6 +23,7 @@ type Database struct {
 	rankingMap       *modl.DbMap
 	teamMap          *modl.DbMap
 	allianceTeamMap  *modl.DbMap
+	lowerThirdMap    *modl.DbMap
 }
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
@@ -75,4 +76,7 @@ func (database *Database) mapTables() {
 
 	database.allianceTeamMap = modl.NewDbMap(database.db, dialect)
 	database.allianceTeamMap.AddTableWithName(AllianceTeam{}, "alliance_teams").SetKeys(true, "Id")
+
+	database.lowerThirdMap = modl.NewDbMap(database.db, dialect)
+	database.lowerThirdMap.AddTableWithName(LowerThird{}, "lower_thirds").SetKeys(true, "Id")
 }

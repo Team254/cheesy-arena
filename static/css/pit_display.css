@@ -15,7 +15,7 @@ body {
   background: -webkit-linear-gradient(top, #003375 1%, #3C679D 100%); /* Chrome10+,Safari5.1+ */
   background: -webkit-linear-gradient(top, #003375 1%, #3C679D 100%); /* Chrome10+,Safari5.1+ */
   background-repeat: no-repeat;
-  font-family: sans-serif;
+  font-family: "FuturaLT";
 }
 #column {
   width: 80%;
@@ -26,7 +26,7 @@ body {
   padding: 20px 0px;
   line-height: 50px;
   font-size: 40px;
-  font-weight: bold;
+  font-family: "FuturaLTBold";
   color: #fff;
 }
 #logo {

@@ -72,6 +72,8 @@ func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
+	mainArena.allianceSelectionNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
 }
 
@@ -109,6 +111,8 @@ func AllianceSelectionStartHandler(w http.ResponseWriter, r *http.Request) {
 	for i, ranking := range rankings {
 		cachedRankedTeams[i] = &RankedTeam{i + 1, ranking.TeamId, false}
 	}
+
+	mainArena.allianceSelectionNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
 }
 
@@ -121,6 +125,7 @@ func AllianceSelectionResetHandler(w http.ResponseWriter, r *http.Request) {
 
 	cachedAlliances = [][]*AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
+	mainArena.allianceSelectionNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
 }
 

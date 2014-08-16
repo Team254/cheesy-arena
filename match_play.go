@@ -161,6 +161,8 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(audienceDisplayListener)
 	scoringStatusListener := mainArena.scoringStatusNotifier.Listen()
 	defer close(scoringStatusListener)
+	allianceStationDisplayListener := mainArena.allianceStationDisplayNotifier.Listen()
+	defer close(allianceStationDisplayListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
@@ -192,6 +194,11 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}{mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted,
 		mainArena.redRealtimeScore.TeleopCommitted, mainArena.blueRealtimeScore.TeleopCommitted}
 	err = websocket.Write("scoringStatus", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	err = websocket.Write("setAllianceStationDisplay", mainArena.allianceStationDisplayScreen)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -232,6 +239,12 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					BlueScoreReady    bool
 				}{mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted,
 					mainArena.redRealtimeScore.TeleopCommitted, mainArena.blueRealtimeScore.TeleopCommitted}
+			case _, ok := <-allianceStationDisplayListener:
+				if !ok {
+					return
+				}
+				messageType = "setAllianceStationDisplay"
+				message = mainArena.allianceStationDisplayScreen
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {
@@ -339,6 +352,15 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			mainArena.audienceDisplayScreen = screen
 			mainArena.audienceDisplayNotifier.Notify(nil)
+			continue
+		case "setAllianceStationDisplay":
+			screen, ok := data.(string)
+			if !ok {
+				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			mainArena.allianceStationDisplayScreen = screen
+			mainArena.allianceStationDisplayNotifier.Notify(nil)
 			continue
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))

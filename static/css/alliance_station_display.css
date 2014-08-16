@@ -8,32 +8,82 @@ body {
   background-color: #000;
   font-family: "FuturaLTBold";
 }
+#match {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
 #displayId {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto auto;
+  height: 1px;
+  line-height: 1px;
+  text-align: center;
   color: #ff0;
   font-size: 500px;
 }
 #teamId {
+  position: absolute;
+  top: 7%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   font-size: 500px;
   line-height: 500px;
+  text-align: center;
   margin: 50px 0px;
+  color: #fff;
 }
 #teamName {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  height: 200px;
+  line-height: 200px;
+  text-align: center;
   font-family: "FuturaLT";
   font-size: 120px;
-}
-[data-alliance=R] {
-  color: #f00;
-}
-[data-alliance=B] {
-  color: #00f;
-}
-.match-info {
   color: #fff;
+}
+#matchInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  height: 200px;
+  line-height: 200px;
+  text-align: center;
   font-size: 190px;
+  color: #fff;
 }
 #redScore {
   color: #f00;
 }
 #blueScore {
   color: #00f;
+}
+#logo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 90%;
+  margin: auto auto;
+}
+[data-alliance=R], [data-status=R] {
+  background-color: #f00;
+}
+[data-alliance=B], [data-status=B] {
+  background-color: #00f;
+}
+[data-status=bypass] {
+  background-color: #999;
 }

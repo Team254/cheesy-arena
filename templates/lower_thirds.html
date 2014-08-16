@@ -1,0 +1,43 @@
+{{define "title"}}Lower Thirds{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-6 col-lg-offset-3">
+    <div class="well">
+      <legend>Lower Thirds</legend>
+      {{range $lowerThird := .LowerThirds}}
+        <form class="form-horizontal" action="/setup/lower_thirds" method="POST">
+          <div class="form-group">
+            <div class="col-lg-7">
+              <input type="hidden" name="id" value="{{$lowerThird.Id}}" />
+              <input type="text" class="form-control" name="topText" value="{{$lowerThird.TopText}}"
+                  placeholder="Top Text"/>
+              <input type="text" class="form-control" name="bottomText" value="{{$lowerThird.BottomText}}"
+                  placeholder="Bottom Text"/>
+            </div>
+            <div class="col-lg-5">
+              <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
+              <button type="submit" class="btn btn-success btn-lower-third" name="action" value="show">Show</button>
+              <br />
+              <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="delete">Delete</button>
+              <button type="submit" class="btn btn-default btn-lower-third" name="action" value="hide">Hide</button>
+            </div>
+          </div>
+        </form>
+      {{end}}
+      <form class="form-horizontal" action="/setup/lower_thirds" method="POST">
+        <div class="form-group">
+          <div class="col-lg-7">
+            <input type="text" class="form-control" name="topText" placeholder="Top or Solo Text" />
+            <input type="text" class="form-control" name="bottomText" placeholder="Bottom Text" />
+          </div>
+          <div class="col-lg-5">
+            <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+{{end}}

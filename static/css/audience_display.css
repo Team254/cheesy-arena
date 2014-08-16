@@ -5,7 +5,8 @@ html {
   overflow: hidden;
 }
 #centering {
-  position: absolute; left: 50%;
+  position: absolute;
+  left: 50%;
   bottom: -340px;
 }
 #matchOverlay {
@@ -274,4 +275,62 @@ html {
   font-family: "FuturaLT";
   font-size: 28px;
   color: #fff;
+}
+#allianceSelectionCentering {
+  position: absolute;
+  left: 50%;
+  height: 100%;
+  display: table;
+}
+#allianceSelection {
+  position: relative;
+  left: -50%;
+  display: table-cell;
+  vertical-align: middle;
+}
+#allianceSelectionTable {
+  background-color: #006;
+  border-radius: 20px;
+  text-align: center;
+  font-family: "FuturaLTBold";
+  font-size: 70px;
+}
+.alliance-cell {
+  padding: 0px 40px;
+  font-family: "FuturaLT";
+  color: #999;
+}
+.selection-cell {
+  width: 250px;
+  color: #fff;
+}
+#lowerThird {
+  display: none;
+  position: absolute;
+  left: -1000px;
+  bottom: 100px;
+  background-color: #fff;
+  border: 1px solid #000;
+  color: #000;
+  font-size: 30px;
+  width: 800px;
+  height: 87px;
+}
+#lowerThirdLogo {
+  margin: 20px;
+  height: 45px;
+  float: left;
+}
+#lowerThirdTop {
+  display: none;
+  font-family: "FuturaLTBold";
+}
+#lowerThirdBottom {
+  display: none;
+  font-family: "FuturaLT";
+}
+#lowerThirdSingle {
+  display: none;
+  font-family: "FuturaLTBold";
+  line-height: 87px;
 }
