@@ -73,9 +73,9 @@ var handleStatus = function(data) {
           $("#match").attr("data-status", (status == "") ? allianceStation[0] : "");
         }, 250);
       }
+    } else {
+      $("#match").attr("data-status", "");
     }
-  } else {
-    $("#match").attr("data-status", "");
   }
 
   if (!blink && blinkInterval) {

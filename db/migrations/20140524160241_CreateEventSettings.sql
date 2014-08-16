@@ -14,7 +14,9 @@ CREATE TABLE event_settings (
   networksecurityenabled bool,
   apaddress VARCHAR(255),
   apusername VARCHAR(255),
-  appassword VARCHAR(255)
+  appassword VARCHAR(255),
+  switchaddress VARCHAR(255),
+  switchpassword VARCHAR(255)
 );
 
 -- +goose Down

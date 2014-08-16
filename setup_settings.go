@@ -49,6 +49,8 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.ApAddress = r.PostFormValue("apAddress")
 	eventSettings.ApUsername = r.PostFormValue("apUsername")
 	eventSettings.ApPassword = r.PostFormValue("apPassword")
+	eventSettings.SwitchAddress = r.PostFormValue("switchAddress")
+	eventSettings.SwitchPassword = r.PostFormValue("switchPassword")
 	err := db.SaveEventSettings(eventSettings)
 	if err != nil {
 		handleWebErr(w, err)

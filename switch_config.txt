@@ -1,0 +1,181 @@
+!
+version 12.1
+no service pad
+service timestamps debug uptime
+service timestamps log uptime
+no service password-encryption
+!
+hostname ChezySwitch
+!
+enable secret 5 $1$kKSW$fCMwnMdYvXui1TulfyYHN/
+!
+ip subnet-zero
+ip routing
+!
+ip dhcp pool dhcppool
+   network 10.0.100.0 255.255.255.0
+   default-router 10.0.100.1 
+   domain-name team254.com
+   dns-server 8.8.8.8 8.8.4.4 
+   lease 7
+!
+!
+spanning-tree mode pvst
+spanning-tree extend system-id
+!
+!
+!
+!
+!
+interface FastEthernet0/1
+ switchport mode dynamic desirable
+!
+interface FastEthernet0/2
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/3
+ switchport mode dynamic desirable
+!
+interface FastEthernet0/4
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/5
+ switchport mode dynamic desirable
+!
+interface FastEthernet0/6
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/7
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface FastEthernet0/8
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/9
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface FastEthernet0/10
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/11
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+!
+interface FastEthernet0/12
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/13
+ switchport access vlan 11
+ switchport mode access
+!
+interface FastEthernet0/14
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/15
+ switchport access vlan 12
+ switchport mode access
+!
+interface FastEthernet0/16
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/17
+ switchport access vlan 13
+ switchport mode access
+!
+interface FastEthernet0/18
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/19
+ switchport access vlan 14
+ switchport mode access
+!
+interface FastEthernet0/20
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/21
+ switchport access vlan 15
+ switchport mode access
+!
+interface FastEthernet0/22
+ switchport access vlan 2
+ switchport mode access
+!
+interface FastEthernet0/23
+ switchport access vlan 16
+ switchport mode access
+!
+interface FastEthernet0/24
+ switchport access vlan 2
+ switchport mode access
+!
+interface GigabitEthernet0/1
+ switchport mode dynamic desirable
+!
+interface GigabitEthernet0/2
+ switchport mode dynamic desirable
+!
+interface Vlan1
+ ip address 10.0.0.61 255.255.255.0
+!
+interface Vlan2
+ ip address 10.0.100.1 255.255.255.0
+ ip access-group 102 in
+!
+interface Vlan11
+ ip address 10.0.1.1 255.255.255.0
+ ip access-group 111 in
+!
+interface Vlan12
+ ip address 10.0.2.1 255.255.255.0
+ ip access-group 112 in
+!
+interface Vlan13
+ ip address 10.0.3.1 255.255.255.0
+ ip access-group 113 in
+!
+interface Vlan14
+ ip address 10.0.4.1 255.255.255.0
+ ip access-group 114 in
+!
+interface Vlan15
+ ip address 10.0.5.1 255.255.255.0
+ ip access-group 115 in
+!
+interface Vlan16
+ ip address 10.0.6.1 255.255.255.0
+ ip access-group 116 in
+!
+ip classless
+ip http server
+!
+access-list 102 permit ip 10.0.100.0 0.0.0.255 host 10.0.0.50
+access-list 111 permit ip 10.0.1.0 0.0.0.255 host 10.0.0.50
+access-list 112 permit ip 10.0.2.0 0.0.0.255 host 10.0.0.50
+access-list 113 permit ip 10.0.3.0 0.0.0.255 host 10.0.0.50
+access-list 114 permit ip 10.0.4.0 0.0.0.255 host 10.0.0.50
+access-list 115 permit ip 10.0.5.0 0.0.0.255 host 10.0.0.50
+access-list 116 permit ip 10.0.6.0 0.0.0.255 host 10.0.0.50
+!
+line con 0
+ exec-timeout 0 0
+line vty 0 4
+ password 1234Five
+ login
+line vty 5 15
+ password 1234Five
+ login
+!
+!
+end

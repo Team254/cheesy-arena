@@ -283,6 +283,14 @@ func (arena *Arena) SetupNetwork() {
 				log.Printf("Failed to configure team WiFi: %s", err.Error())
 			}
 		}()
+		go func() {
+			err := ConfigureTeamEthernet(arena.AllianceStations["R1"].team, arena.AllianceStations["R2"].team,
+				arena.AllianceStations["R3"].team, arena.AllianceStations["B1"].team,
+				arena.AllianceStations["B2"].team, arena.AllianceStations["B3"].team)
+			if err != nil {
+				log.Printf("Failed to configure team Ethernet: %s", err.Error())
+			}
+		}()
 	}
 }
 

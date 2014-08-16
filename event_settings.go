@@ -21,6 +21,8 @@ type EventSettings struct {
 	ApAddress              string
 	ApUsername             string
 	ApPassword             string
+	SwitchAddress          string
+	SwitchPassword         string
 }
 
 const eventSettingsId = 0
