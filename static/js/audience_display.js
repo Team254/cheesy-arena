@@ -97,6 +97,21 @@ var handleAllianceSelection = function(alliances) {
   }
 };
 
+var handleLowerThird = function(data) {
+  if (data.BottomText == "") {
+    $("#lowerThirdTop").hide();
+    $("#lowerThirdBottom").hide();
+    $("#lowerThirdSingle").text(data.TopText);
+    $("#lowerThirdSingle").show();
+  } else {
+    $("#lowerThirdSingle").hide();
+    $("#lowerThirdTop").text(data.TopText);
+    $("#lowerThirdBottom").text(data.BottomText);
+    $("#lowerThirdTop").show();
+    $("#lowerThirdBottom").show();
+  }
+};
+
 var transitionBlankToIntro = function(callback) {
   $("#centering").transition({queue: false, bottom: "0px"}, 500, "ease", function() {
     $(".teams").transition({queue: false, width: "75px"}, 100, "linear", function() {
@@ -233,6 +248,20 @@ var transitionAllianceSelectionToBlank = function(callback) {
   }
 };
 
+var transitionBlankToLowerThird = function(callback) {
+  $("#lowerThird").show();
+  $("#lowerThird").transition({queue: false, left: "150px"}, 750, "ease", callback);
+};
+
+var transitionLowerThirdToBlank = function(callback) {
+  $("#lowerThird").transition({queue: false, left: "-1000px"}, 1000, "ease", function() {
+    $("#lowerThird").hide();
+    if (callback) {
+      callback();
+    }
+  });
+};
+
 $(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {
@@ -243,7 +272,8 @@ $(function() {
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
     setFinalScore: function(event) { handleSetFinalScore(event.data); },
     playSound: function(event) { handlePlaySound(event.data); },
-    allianceSelection: function(event) { handleAllianceSelection(event.data); }
+    allianceSelection: function(event) { handleAllianceSelection(event.data); },
+    lowerThird: function(event) { handleLowerThird(event.data); }
   });
 
   // Map how to transition from one screen to another. Missing links between screens indicate that first we
@@ -254,7 +284,8 @@ $(function() {
       match: transitionBlankToInMatch,
       score: transitionBlankToScore,
       logo: transitionBlankToLogo,
-      allianceSelection: transitionBlankToAllianceSelection
+      allianceSelection: transitionBlankToAllianceSelection,
+      lowerThird: transitionBlankToLowerThird
     },
     intro: {
       blank: transitionIntroToBlank,
@@ -274,6 +305,9 @@ $(function() {
     },
     allianceSelection: {
       blank: transitionAllianceSelectionToBlank
+    },
+    lowerThird: {
+      blank: transitionLowerThirdToBlank
     }
   }
 });

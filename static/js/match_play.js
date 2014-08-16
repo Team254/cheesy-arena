@@ -112,6 +112,7 @@ var handleMatchTime = function(data) {
 };
 
 var handleSetAudienceDisplay = function(data) {
+  $("input[name=audienceDisplay]:checked").prop("checked", false);
   $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
 };
 
@@ -123,6 +124,7 @@ var handleScoringStatus = function(data) {
 };
 
 var handleSetAllianceStationDisplay = function(data) {
+  $("input[name=allianceStationDisplay]:checked").prop("checked", false);
   $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);
 };
 

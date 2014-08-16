@@ -62,6 +62,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(playSoundListener)
 	allianceSelectionListener := mainArena.allianceSelectionNotifier.Listen()
 	defer close(allianceSelectionListener)
+	lowerThirdListener := mainArena.lowerThirdNotifier.Listen()
+	defer close(lowerThirdListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
@@ -186,6 +188,12 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "allianceSelection"
 				message = cachedAlliances
+			case lowerThird, ok := <-lowerThirdListener:
+				if !ok {
+					return
+				}
+				messageType = "lowerThird"
+				message = lowerThird
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {
