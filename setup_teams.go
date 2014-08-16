@@ -8,6 +8,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
 	"html"
 	"html/template"
@@ -18,6 +19,8 @@ import (
 	"strconv"
 	"strings"
 )
+
+const wpaKeyLength = 8
 
 var officialTeamInfoUrl = "https://my.usfirst.org/frc/scoring/index.lasso?page=teamlist"
 var officialTeamInfo map[int][]string
@@ -124,6 +127,13 @@ func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	team.RookieYear, _ = strconv.Atoi(r.PostFormValue("rookieYear"))
 	team.RobotName = r.PostFormValue("robotName")
 	team.Accomplishments = r.PostFormValue("accomplishments")
+	if eventSettings.NetworkSecurityEnabled {
+		team.WpaKey = r.PostFormValue("wpaKey")
+		if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
+			handleWebErr(w, fmt.Errorf("WPA key must be between 8 and 63 characters."))
+			return
+		}
+	}
 	err = db.SaveTeam(team)
 	if err != nil {
 		handleWebErr(w, err)
@@ -165,6 +175,28 @@ func TeamsPublishHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+	http.Redirect(w, r, "/setup/teams", 302)
+}
+
+// Generates random WPA keys and saves them to the team models.
+func TeamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Request) {
+	generateAllKeys := false
+	if all, ok := r.URL.Query()["all"]; ok {
+		generateAllKeys = all[0] == "true"
+	}
+
+	teams, err := db.GetAllTeams()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	for _, team := range teams {
+		if len(team.WpaKey) == 0 || generateAllKeys {
+			team.WpaKey = uniuri.NewLen(wpaKeyLength)
+			db.SaveTeam(&team)
+		}
+	}
+
 	http.Redirect(w, r, "/setup/teams", 302)
 }
 

@@ -197,6 +197,8 @@ func (arena *Arena) LoadMatch(match *Match) error {
 		return err
 	}
 
+	arena.SetupNetwork()
+
 	// Reset the realtime scores.
 	arena.redRealtimeScore = new(RealtimeScore)
 	arena.blueRealtimeScore = new(RealtimeScore)
@@ -256,8 +258,23 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 	case "B3":
 		arena.currentMatch.Blue3 = teamId
 	}
+	arena.SetupNetwork()
 	arena.matchLoadTeamsNotifier.Notify(nil)
 	return nil
+}
+
+// Asynchronously reconfigures the networking hardware for the new set of teams.
+func (arena *Arena) SetupNetwork() {
+	if eventSettings.NetworkSecurityEnabled {
+		go func() {
+			err := ConfigureTeamWifi(arena.AllianceStations["R1"].team, arena.AllianceStations["R2"].team,
+				arena.AllianceStations["R3"].team, arena.AllianceStations["B1"].team,
+				arena.AllianceStations["B2"].team, arena.AllianceStations["B3"].team)
+			if err != nil {
+				log.Printf("Failed to configure team WiFi: %s", err.Error())
+			}
+		}()
+	}
 }
 
 // Returns nil if the match can be started, and an error otherwise.

@@ -113,6 +113,35 @@
             </div>
           </div>
         </fieldset>
+        <fieldset>
+          <legend>Hardware</legend>
+          <p>Enable this setting if you have a Cisco Aironet AP1252AG access point and Catalyst 3500-series
+              switch available, for isolating each team to its own SSID and VLAN.</p>
+          <div class="form-group">
+            <label class="col-lg-7 control-label">Enable advanced network security</label>
+            <div class="col-lg-1 checkbox">
+              <input type="checkbox" name="networkSecurityEnabled"{{if .NetworkSecurityEnabled}} checked{{end}}>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">AP Address</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="apAddress" value="{{.ApAddress}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">AP Username</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="apUsername" value="{{.ApUsername}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">AP Password</label>
+            <div class="col-lg-7">
+              <input type="password" class="form-control" name="apPassword" value="{{.ApPassword}}">
+            </div>
+          </div>
+        </fieldset>
         <div class="form-group">
           <div class="col-lg-7 col-lg-offset-5">
             <button type="submit" class="btn btn-info">Save</button>

@@ -10,7 +10,11 @@ CREATE TABLE event_settings (
   tbapublishingenabled bool,
   tbaeventcode VARCHAR(16),
   tbasecretid VARCHAR(255),
-  tbasecret VARCHAR(255)
+  tbasecret VARCHAR(255),
+  networksecurityenabled bool,
+  apaddress VARCHAR(255),
+  apusername VARCHAR(255),
+  appassword VARCHAR(255)
 );
 
 -- +goose Down

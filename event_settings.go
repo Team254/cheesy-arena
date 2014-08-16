@@ -17,6 +17,10 @@ type EventSettings struct {
 	TbaEventCode           string
 	TbaSecretId            string
 	TbaSecret              string
+	NetworkSecurityEnabled bool
+	ApAddress              string
+	ApUsername             string
+	ApPassword             string
 }
 
 const eventSettingsId = 0

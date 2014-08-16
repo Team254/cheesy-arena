@@ -8,7 +8,8 @@ CREATE TABLE teams (
   country VARCHAR(255),
   rookieyear int,
   robotname VARCHAR(255),
-  accomplishments VARCHAR(1000)
+  accomplishments VARCHAR(1000),
+  wpakey VARCHAR(16)
 );
 
 -- +goose Down

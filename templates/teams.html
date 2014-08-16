@@ -31,6 +31,14 @@
             </button>
           </div>
         {{end}}
+        {{if .EventSettings.NetworkSecurityEnabled}}
+          <div class="form-group">
+            <a href="/setup/teams/generate_wpa_keys?all=true" class="btn btn-primary">Generate All WPA Keys</a>
+          </div>
+          <div class="form-group">
+            <a href="/setup/teams/generate_wpa_keys?all=false" class="btn btn-primary">Generate Missing WPA Keys</a>
+          </div>
+        {{end}}
       </fieldset>
     </form>
   </div>
