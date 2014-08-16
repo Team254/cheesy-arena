@@ -21,6 +21,7 @@ ip dhcp pool dhcppool
 !
 !
 spanning-tree mode pvst
+spanning-tree portfast default
 spanning-tree extend system-id
 !
 !
