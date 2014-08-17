@@ -56,7 +56,8 @@ var handleStatus = function(data) {
       var dsStatus = stationStatus.DsConn.DriverStationStatus;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsStatus.DsLinked);
       $("#status" + station + " .robot-status").attr("data-status-ok", dsStatus.RobotLinked);
-      $("#status" + station + " .battery-status").attr("data-status-ok", dsStatus.BatteryVoltage > 0);
+      $("#status" + station + " .battery-status").attr("data-status-ok",
+                                                       dsStatus.BatteryVoltage > 10 && dsStatus.RobotLinked);
       $("#status" + station + " .battery-status").text(dsStatus.BatteryVoltage.toFixed(1) + "V");
     } else {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
