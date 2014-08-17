@@ -6,22 +6,32 @@
 package main
 
 import (
+	"bytes"
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strconv"
 )
 
 var tbaBaseUrl = "http://tbatv-dev-efang.appspot.com"
 
 type TbaMatch struct {
-	CompLevel   string                 `json:"comp_level"`
-	SetNumber   int                    `json:"set_number"`
-	MatchNumber int                    `json:"match_number"`
-	Alliances   map[string]interface{} `json:"alliances"`
-	TimeString  string                 `json:"time_string"`
+	CompLevel      string                       `json:"comp_level"`
+	SetNumber      int                          `json:"set_number"`
+	MatchNumber    int                          `json:"match_number"`
+	Alliances      map[string]interface{}       `json:"alliances"`
+	ScoreBreakdown map[string]TbaScoreBreakdown `json:"score_breakdown"`
+	TimeString     string                       `json:"time_string"`
+	TimeUtc        string                       `json:"time_utc"`
+}
+
+type TbaScoreBreakdown struct {
+	Auto       int `json:"auto"`
+	Assist     int `json:"assist"`
+	TrussCatch int `json:"truss+catch"`
+	GoalFoul   int `json:"teleop_goal+foul"`
 }
 
 type TbaRanking struct {
@@ -56,7 +66,7 @@ func PublishTeams() error {
 		return err
 	}
 
-	resp, err := http.PostForm(getTbaPostUrl("team_list"), getTbaPostBody("team_list", string(jsonBody)))
+	resp, err := postTbaRequest("team_list", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -88,6 +98,7 @@ func PublishMatches() error {
 			getTbaTeam(match.Red3)}, "score": nil}
 		blueAlliance := map[string]interface{}{"teams": []string{getTbaTeam(match.Blue1), getTbaTeam(match.Blue2),
 			getTbaTeam(match.Blue3)}, "score": nil}
+		var scoreBreakdown map[string]TbaScoreBreakdown
 
 		// Fill in scores if the match has been played.
 		if match.Status == "complete" {
@@ -96,13 +107,21 @@ func PublishMatches() error {
 				return err
 			}
 			if matchResult != nil {
-				redAlliance["score"] = matchResult.RedScoreSummary().Score
-				blueAlliance["score"] = matchResult.BlueScoreSummary().Score
+				redScoreSummary := matchResult.RedScoreSummary()
+				blueScoreSummary := matchResult.BlueScoreSummary()
+				redAlliance["score"] = redScoreSummary.Score
+				blueAlliance["score"] = blueScoreSummary.Score
+				scoreBreakdown = make(map[string]TbaScoreBreakdown)
+				scoreBreakdown["red"] = TbaScoreBreakdown{redScoreSummary.AutoPoints, redScoreSummary.AssistPoints,
+					redScoreSummary.TrussCatchPoints, redScoreSummary.GoalPoints + redScoreSummary.FoulPoints}
+				scoreBreakdown["blue"] = TbaScoreBreakdown{blueScoreSummary.AutoPoints, blueScoreSummary.AssistPoints,
+					blueScoreSummary.TrussCatchPoints, blueScoreSummary.GoalPoints + blueScoreSummary.FoulPoints}
 			}
 		}
 
 		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, map[string]interface{}{"red": redAlliance,
-			"blue": blueAlliance}, match.Time.Local().Format("3:04 PM")}
+			"blue": blueAlliance}, scoreBreakdown, match.Time.Local().Format("3:04 PM"),
+			match.Time.Format("2006-01-02T15:04:05")}
 		if match.Type == "elimination" {
 			tbaMatches[i].CompLevel = map[int]string{1: "f", 2: "sf", 4: "qf", 8: "ef"}[match.ElimRound]
 			tbaMatches[i].SetNumber = match.ElimGroup
@@ -114,7 +133,7 @@ func PublishMatches() error {
 		return err
 	}
 
-	resp, err := http.PostForm(getTbaPostUrl("matches"), getTbaPostBody("matches", string(jsonBody)))
+	resp, err := postTbaRequest("matches", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -146,7 +165,7 @@ func PublishRankings() error {
 		return err
 	}
 
-	resp, err := http.PostForm(getTbaPostUrl("rankings"), getTbaPostBody("rankings", string(jsonBody)))
+	resp, err := postTbaRequest("rankings", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -177,7 +196,7 @@ func PublishAlliances() error {
 		return err
 	}
 
-	resp, err := http.PostForm(getTbaPostUrl("alliance_selections"), getTbaPostBody("alliances", string(jsonBody)))
+	resp, err := postTbaRequest("alliance_selections", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -189,16 +208,22 @@ func PublishAlliances() error {
 	return nil
 }
 
-func getTbaPostUrl(resource string) string {
-	return fmt.Sprintf("%s/api/trusted/v1/event/%s/%s/update", tbaBaseUrl, eventSettings.TbaEventCode,
-		resource)
-}
-
-func getTbaPostBody(key string, value string) url.Values {
-	return url.Values{"secret-id": {eventSettings.TbaSecretId}, "secret": {eventSettings.TbaSecret}, key: {value}}
-}
-
 // Converts an integer team number into the "frcXXXX" format TBA expects.
 func getTbaTeam(team int) string {
 	return fmt.Sprintf("frc%d", team)
+}
+
+// Signs the request and sends it to the TBA API.
+func postTbaRequest(resource string, body []byte) (*http.Response, error) {
+	path := fmt.Sprintf("/api/trusted/v1/event/%s/%s/update", eventSettings.TbaEventCode, resource)
+	signature := fmt.Sprintf("%x", md5.Sum(append([]byte(eventSettings.TbaSecret+path), body...)))
+
+	client := &http.Client{}
+	request, err := http.NewRequest("POST", fmt.Sprintf("%s%s", tbaBaseUrl, path), bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("X-TBA-Auth-Id", eventSettings.TbaSecretId)
+	request.Header.Add("X-TBA-Auth-Sig", signature)
+	return client.Do(request)
 }
