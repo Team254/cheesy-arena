@@ -276,6 +276,25 @@ func TeamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Generates a CSV-formatted report of the WPA keys, for import into the radio kiosk.
+func WpaKeysCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	teams, err := db.GetAllTeams()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=wpa_keys.csv")
+	for _, team := range teams {
+		_, err := w.Write([]byte(fmt.Sprintf("%d,%s\r\n", team.Id, team.WpaKey)))
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+	}
+}
+
 // Returns the text to display if a team is a surrogate.
 func surrogateText(isSurrogate bool) string {
 	if isSurrogate {
