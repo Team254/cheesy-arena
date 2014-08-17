@@ -31,8 +31,8 @@ func setupVlan(team *Team, vlan int) string {
 		return ""
 	}
 	return fmt.Sprintf("no access-list 1%d\naccess-list 1%d permit ip 10.%d.%d.0 0.0.0.255 host %s\n"+
-		"interface Vlan%d\nip address 10.%d.%d.1 255.255.255.0\n", vlan, vlan, team.Id/100, team.Id%100,
-		eventServerAddress, vlan, team.Id/100, team.Id%100)
+		"interface Vlan%d\nno ip address\nip address 10.%d.%d.1 255.255.255.0\n", vlan, vlan, team.Id/100,
+		team.Id%100, eventServerAddress, vlan, team.Id/100, team.Id%100)
 }
 
 // Logs into the Catalyst via Telnet and runs the given command in user exec mode. Reads the output and
