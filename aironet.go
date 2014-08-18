@@ -29,6 +29,10 @@ var aironetMutex sync.Mutex
 
 // Sets up wireless networks for the given set of teams.
 func ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *Team) error {
+	// Make sure multiple configurations aren't being set at the same time.
+	aironetMutex.Lock()
+	defer aironetMutex.Unlock()
+
 	for _, team := range []*Team{red1, red2, red3, blue1, blue2, blue3} {
 		if team != nil && (len(team.WpaKey) < 8 || len(team.WpaKey) > 63) {
 			return fmt.Errorf("Invalid WPA key '%s' configured for team %d.", team.WpaKey, team.Id)
@@ -109,10 +113,6 @@ func getSsids() (map[string]int, error) {
 // Logs into the Aironet via Telnet and runs the given command in user exec mode. Reads the output and returns
 // it as a string.
 func runAironetCommand(command string) (string, error) {
-	// Make sure multiple commands aren't being run at the same time.
-	aironetMutex.Lock()
-	defer aironetMutex.Unlock()
-
 	// Open a Telnet connection to the AP.
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", eventSettings.ApAddress, aironetTelnetPort))
 	if err != nil {
