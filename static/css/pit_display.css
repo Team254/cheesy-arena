@@ -30,6 +30,7 @@ body {
   color: #fff;
 }
 #logo {
+  margin-bottom: 10px;
   height: 50px;
 }
 #standings {
