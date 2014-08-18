@@ -235,7 +235,7 @@ func canModifyTeamList() bool {
 
 // Returns the data for the given team number.
 func getOfficialTeamInfo(teamId int) (*Team, error) {
-	if officialTeamInfo == nil {
+	if officialTeamInfo == nil && eventSettings.TeamInfoDownloadEnabled {
 		// Download all team info from the FIRST website if it is not cached.
 		resp, err := http.Get(officialTeamInfoUrl)
 		if err != nil {

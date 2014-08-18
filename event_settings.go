@@ -6,23 +6,24 @@
 package main
 
 type EventSettings struct {
-	Id                     int
-	Name                   string
-	Code                   string
-	DisplayBackgroundColor string
-	NumElimAlliances       int
-	SelectionRound2Order   string
-	SelectionRound3Order   string
-	TbaPublishingEnabled   bool
-	TbaEventCode           string
-	TbaSecretId            string
-	TbaSecret              string
-	NetworkSecurityEnabled bool
-	ApAddress              string
-	ApUsername             string
-	ApPassword             string
-	SwitchAddress          string
-	SwitchPassword         string
+	Id                      int
+	Name                    string
+	Code                    string
+	DisplayBackgroundColor  string
+	NumElimAlliances        int
+	SelectionRound2Order    string
+	SelectionRound3Order    string
+	TeamInfoDownloadEnabled bool
+	TbaPublishingEnabled    bool
+	TbaEventCode            string
+	TbaSecretId             string
+	TbaSecret               string
+	NetworkSecurityEnabled  bool
+	ApAddress               string
+	ApUsername              string
+	ApPassword              string
+	SwitchAddress           string
+	SwitchPassword          string
 }
 
 const eventSettingsId = 0
@@ -38,6 +39,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.NumElimAlliances = 8
 		eventSettings.SelectionRound2Order = "L"
 		eventSettings.SelectionRound3Order = ""
+		eventSettings.TeamInfoDownloadEnabled = true
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {
 			return nil, err

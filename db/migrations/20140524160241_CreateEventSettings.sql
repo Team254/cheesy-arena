@@ -7,6 +7,7 @@ CREATE TABLE event_settings (
   numelimalliances int,
   selectionround2order VARCHAR(1),
   selectionround3order VARCHAR(1),
+  teaminfodownloadenabled bool,
   tbapublishingenabled bool,
   tbaeventcode VARCHAR(16),
   tbasecretid VARCHAR(255),
