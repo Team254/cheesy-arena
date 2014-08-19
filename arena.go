@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -85,6 +86,7 @@ type Arena struct {
 	lastMatchTimeSec               float64
 	savedMatch                     *Match
 	savedMatchResult               *MatchResult
+	leftGoalHotFirst               bool
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
@@ -129,6 +131,8 @@ func (arena *Arena) Setup() {
 	arena.savedMatchResult = &MatchResult{}
 	arena.allianceStationDisplays = make(map[string]string)
 	arena.allianceStationDisplayScreen = "blank"
+
+	SetupLights()
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -375,6 +379,7 @@ func (arena *Arena) Update() {
 		arena.MatchState = AUTO_PERIOD
 		arena.matchStartTime = time.Now()
 		arena.lastMatchTimeSec = -1
+		arena.leftGoalHotFirst = rand.Intn(2) == 1
 		auto = true
 		enabled = true
 		sendDsPacket = true
@@ -448,6 +453,9 @@ func (arena *Arena) Update() {
 		// TODO(pat): Come up with better criteria for sending robot status updates.
 		arena.robotStatusNotifier.Notify(nil)
 	}
+
+	arena.handleLighting("red", arena.redRealtimeScore)
+	arena.handleLighting("blue", arena.blueRealtimeScore)
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -481,4 +489,23 @@ func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
 		}
 	}
 	return score
+}
+
+// Manipulates the arena LED lighting based on the current state of the match.
+func (arena *Arena) handleLighting(alliance string, score *RealtimeScore) {
+	switch arena.MatchState {
+	case AUTO_PERIOD:
+		leftSide := arena.MatchTimeSec() < float64(arena.matchTiming.AutoDurationSec)/2 == arena.leftGoalHotFirst
+		SetHotGoalLights(alliance, leftSide)
+	case TELEOP_PERIOD:
+		if score.AutoLeftoverBalls == 0 && score.CurrentCycle.Assists == 0 {
+			SetPedestalLight(alliance)
+		} else {
+			ClearPedestalLight(alliance)
+		}
+		SetAssistGoalLights(alliance, score.CurrentCycle.Assists)
+	default:
+		ClearGoalLights(alliance)
+		ClearPedestalLight(alliance)
+	}
 }
