@@ -36,8 +36,9 @@ func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Reset picked state for each team in preparation for reconstructing it.
-	for _, team := range cachedRankedTeams {
-		team.Picked = false
+	newRankedTeams := make([]*RankedTeam, len(cachedRankedTeams))
+	for i, team := range cachedRankedTeams {
+		newRankedTeams[i] = &RankedTeam{team.Rank, team.TeamId, false}
 	}
 
 	// Iterate through all selections and update the alliances.
@@ -53,7 +54,7 @@ func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				found := false
-				for _, team := range cachedRankedTeams {
+				for _, team := range newRankedTeams {
 					if team.TeamId == teamId {
 						if team.Picked {
 							renderAllianceSelection(w, r, fmt.Sprintf("Team %d is already part of an alliance.", teamId))
@@ -72,6 +73,7 @@ func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+	cachedRankedTeams = newRankedTeams
 
 	mainArena.allianceSelectionNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
