@@ -171,16 +171,24 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		// Capitalize match types.
 		matchType := match.CapitalizedType()
 
+		formatTeam := func(teamId int) string {
+			if teamId == 0 {
+				return ""
+			} else {
+				return strconv.Itoa(teamId)
+			}
+		}
+
 		// Render match info row.
 		pdf.CellFormat(colWidths["Time"], height, match.Time.Local().Format("Mon 1/02 03:04 PM"), borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Type"], height, matchType, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Match"], height, match.DisplayName, borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Team"], height, strconv.Itoa(match.Red1), borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Team"], height, strconv.Itoa(match.Red2), borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Team"], height, strconv.Itoa(match.Red3), borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Team"], height, strconv.Itoa(match.Blue1), borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Team"], height, strconv.Itoa(match.Blue2), borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Team"], height, strconv.Itoa(match.Blue3), borderStr, 1, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red1), borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red2), borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red3), borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Blue1), borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Blue2), borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Blue3), borderStr, 1, alignStr, false, 0, "")
 		if surrogate {
 			// Render the text that indicates which teams are surrogates.
 			height := 4.0
