@@ -176,6 +176,30 @@ func TestCommitMatch(t *testing.T) {
 	assert.Equal(t, "T", match.Winner)
 }
 
+func TestCommitEliminationTie(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+	mainArena.Setup()
+
+	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
+	db.CreateMatch(match)
+	matchResult := &MatchResult{MatchId: match.Id, RedScore: Score{AutoHighHot: 1}, RedFouls: []Foul{Foul{}}}
+	CommitMatchScore(match, matchResult)
+	assert.Nil(t, err)
+	match, _ = db.GetMatchById(1)
+	assert.Equal(t, "T", match.Winner)
+	match.Type = "elimination"
+	db.SaveMatch(match)
+	CommitMatchScore(match, matchResult)
+	match, _ = db.GetMatchById(1)
+	assert.Equal(t, "B", match.Winner)
+}
+
 func TestMatchPlayWebsocketCommands(t *testing.T) {
 	clearDb()
 	defer clearDb()

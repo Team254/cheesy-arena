@@ -41,6 +41,7 @@ type Score struct {
 	AutoClearLow        int
 	AutoClearDead       int
 	Cycles              []Cycle
+	ElimTiebreaker      int
 }
 
 type Cycle struct {
@@ -148,6 +149,46 @@ func (matchResult *MatchResult) BlueScoreSummary() *ScoreSummary {
 	return scoreSummary(&matchResult.BlueScore, matchResult.RedFouls)
 }
 
+func (matchResult *MatchResult) CorrectEliminationTie() {
+	matchResult.RedScore.ElimTiebreaker = 0
+	matchResult.BlueScore.ElimTiebreaker = 0
+	redScore := matchResult.RedScoreSummary()
+	blueScore := matchResult.BlueScoreSummary()
+	if redScore.Score != blueScore.Score {
+		return
+	}
+
+	// Tiebreakers, in order: foul points, assist points, auto points, truss/catch points.
+	if redScore.FoulPoints > blueScore.FoulPoints {
+		matchResult.RedScore.ElimTiebreaker = 1
+		return
+	} else if redScore.FoulPoints < blueScore.FoulPoints {
+		matchResult.BlueScore.ElimTiebreaker = 1
+		return
+	}
+	if redScore.AssistPoints > blueScore.AssistPoints {
+		matchResult.RedScore.ElimTiebreaker = 1
+		return
+	} else if redScore.AssistPoints < blueScore.AssistPoints {
+		matchResult.BlueScore.ElimTiebreaker = 1
+		return
+	}
+	if redScore.AutoPoints > blueScore.AutoPoints {
+		matchResult.RedScore.ElimTiebreaker = 1
+		return
+	} else if redScore.AutoPoints < blueScore.AutoPoints {
+		matchResult.BlueScore.ElimTiebreaker = 1
+		return
+	}
+	if redScore.TrussCatchPoints > blueScore.TrussCatchPoints {
+		matchResult.RedScore.ElimTiebreaker = 1
+		return
+	} else if redScore.TrussCatchPoints < blueScore.TrussCatchPoints {
+		matchResult.BlueScore.ElimTiebreaker = 1
+		return
+	}
+}
+
 // Calculates and returns the summary fields used for ranking and display.
 func scoreSummary(score *Score, opponentFouls []Foul) *ScoreSummary {
 	summary := new(ScoreSummary)
@@ -191,7 +232,7 @@ func scoreSummary(score *Score, opponentFouls []Foul) *ScoreSummary {
 
 	// Fill in summed values.
 	summary.TeleopPoints = summary.AssistPoints + summary.TrussCatchPoints + summary.GoalPoints
-	summary.Score = summary.AutoPoints + summary.TeleopPoints + summary.FoulPoints
+	summary.Score = summary.AutoPoints + summary.TeleopPoints + summary.FoulPoints + score.ElimTiebreaker
 
 	return summary
 }

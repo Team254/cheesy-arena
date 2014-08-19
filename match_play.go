@@ -378,6 +378,11 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 // Saves the given match and result to the database, supplanting any previous result for the match.
 func CommitMatchScore(match *Match, matchResult *MatchResult) error {
+	if match.Type == "elimination" {
+		// Adjust the score if necessary for an elimination tie.
+		matchResult.CorrectEliminationTie()
+	}
+
 	// Store the result in the buffer to be shown in the audience display.
 	mainArena.savedMatch = match
 	mainArena.savedMatchResult = matchResult

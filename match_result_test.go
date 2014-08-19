@@ -147,14 +147,70 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 593, blueSummary.Score)
 }
 
+func TestCorrectEliminationTie(t *testing.T) {
+	matchResult := MatchResult{}
+	matchResult.CorrectEliminationTie()
+	assert.Equal(t, 0, matchResult.RedScore.ElimTiebreaker)
+	assert.Equal(t, 0, matchResult.BlueScore.ElimTiebreaker)
+
+	matchResult.RedScore.AutoHighHot = 1
+	matchResult.RedFouls = []Foul{Foul{}}
+	matchResult.CorrectEliminationTie()
+	assert.Equal(t, 0, matchResult.RedScore.ElimTiebreaker)
+	assert.Equal(t, 1, matchResult.BlueScore.ElimTiebreaker)
+	assert.Equal(t, 1, matchResult.BlueScoreSummary().Score-matchResult.RedScoreSummary().Score)
+	matchResult.RedScore, matchResult.BlueScore = matchResult.BlueScore, matchResult.RedScore
+	matchResult.RedFouls, matchResult.BlueFouls = matchResult.BlueFouls, matchResult.RedFouls
+	matchResult.CorrectEliminationTie()
+	assert.Equal(t, 1, matchResult.RedScore.ElimTiebreaker)
+	assert.Equal(t, 0, matchResult.BlueScore.ElimTiebreaker)
+	assert.Equal(t, 1, matchResult.RedScoreSummary().Score-matchResult.BlueScoreSummary().Score)
+
+	matchResult = MatchResult{}
+	matchResult.RedScore.Cycles = []Cycle{Cycle{Assists: 2, ScoredHigh: true}}
+	matchResult.BlueScore.Cycles = []Cycle{Cycle{Truss: true, Catch: true}}
+	matchResult.CorrectEliminationTie()
+	assert.Equal(t, 1, matchResult.RedScore.ElimTiebreaker)
+	assert.Equal(t, 0, matchResult.BlueScore.ElimTiebreaker)
+	matchResult.RedScore, matchResult.BlueScore = matchResult.BlueScore, matchResult.RedScore
+	matchResult.RedFouls, matchResult.BlueFouls = matchResult.BlueFouls, matchResult.RedFouls
+	matchResult.CorrectEliminationTie()
+	assert.Equal(t, 0, matchResult.RedScore.ElimTiebreaker)
+	assert.Equal(t, 1, matchResult.BlueScore.ElimTiebreaker)
+
+	matchResult = MatchResult{}
+	matchResult.RedScore.Cycles = []Cycle{Cycle{Truss: true, Catch: true}}
+	matchResult.BlueScore.AutoHighHot = 1
+	matchResult.CorrectEliminationTie()
+	assert.Equal(t, 0, matchResult.RedScore.ElimTiebreaker)
+	assert.Equal(t, 1, matchResult.BlueScore.ElimTiebreaker)
+	matchResult.RedScore, matchResult.BlueScore = matchResult.BlueScore, matchResult.RedScore
+	matchResult.RedFouls, matchResult.BlueFouls = matchResult.BlueFouls, matchResult.RedFouls
+	matchResult.CorrectEliminationTie()
+	assert.Equal(t, 1, matchResult.RedScore.ElimTiebreaker)
+	assert.Equal(t, 0, matchResult.BlueScore.ElimTiebreaker)
+
+	matchResult = MatchResult{}
+	matchResult.RedScore.Cycles = []Cycle{Cycle{Truss: true, Catch: true}}
+	matchResult.BlueScore.Cycles = []Cycle{Cycle{ScoredHigh: true}, Cycle{ScoredHigh: true}}
+	matchResult.CorrectEliminationTie()
+	assert.Equal(t, 1, matchResult.RedScore.ElimTiebreaker)
+	assert.Equal(t, 0, matchResult.BlueScore.ElimTiebreaker)
+	matchResult.RedScore, matchResult.BlueScore = matchResult.BlueScore, matchResult.RedScore
+	matchResult.RedFouls, matchResult.BlueFouls = matchResult.BlueFouls, matchResult.RedFouls
+	matchResult.CorrectEliminationTie()
+	assert.Equal(t, 0, matchResult.RedScore.ElimTiebreaker)
+	assert.Equal(t, 1, matchResult.BlueScore.ElimTiebreaker)
+}
+
 func buildTestMatchResult(matchId int, playNumber int) MatchResult {
 	cycle1 := Cycle{3, true, true, true, false, false}
 	cycle2 := Cycle{2, false, false, false, true, false}
 	cycle3 := Cycle{1, true, false, false, false, true}
 	fouls := []Foul{Foul{25, "G22", 25.2, false}, Foul{25, "G18", 150, false}, Foul{1868, "G20", 0, true}}
 	matchResult := MatchResult{MatchId: matchId, PlayNumber: playNumber}
-	matchResult.RedScore = Score{1, 2, 3, 4, 5, 6, 7, 8, []Cycle{cycle1, cycle2, cycle3}}
-	matchResult.BlueScore = Score{7, 6, 5, 4, 3, 2, 1, 0, []Cycle{cycle3, cycle1, cycle1, cycle1}}
+	matchResult.RedScore = Score{1, 2, 3, 4, 5, 6, 7, 8, []Cycle{cycle1, cycle2, cycle3}, 0}
+	matchResult.BlueScore = Score{7, 6, 5, 4, 3, 2, 1, 0, []Cycle{cycle3, cycle1, cycle1, cycle1}, 0}
 	matchResult.RedFouls = fouls
 	matchResult.BlueFouls = []Foul{}
 	matchResult.Cards = Cards{[]int{1868}, []int{}}
