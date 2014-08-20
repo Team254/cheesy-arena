@@ -16,6 +16,7 @@ type Team struct {
 	RobotName       string
 	Accomplishments string
 	WpaKey          string
+	YellowCard      bool
 }
 
 func (database *Database) CreateTeam(team *Team) error {

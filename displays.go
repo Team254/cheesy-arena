@@ -644,22 +644,49 @@ func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 	match := mainArena.currentMatch
 	matchType := match.CapitalizedType()
+	red1 := mainArena.AllianceStations["R1"].team
+	if red1 == nil {
+		red1 = &Team{}
+	}
+	red2 := mainArena.AllianceStations["R2"].team
+	if red2 == nil {
+		red2 = &Team{}
+	}
+	red3 := mainArena.AllianceStations["R3"].team
+	if red3 == nil {
+		red3 = &Team{}
+	}
+	blue1 := mainArena.AllianceStations["B1"].team
+	if blue1 == nil {
+		blue1 = &Team{}
+	}
+	blue2 := mainArena.AllianceStations["B2"].team
+	if blue2 == nil {
+		blue2 = &Team{}
+	}
+	blue3 := mainArena.AllianceStations["B3"].team
+	if blue3 == nil {
+		blue3 = &Team{}
+	}
 	data := struct {
 		*EventSettings
 		MatchType        string
 		MatchDisplayName string
-		Red1             int
-		Red2             int
-		Red3             int
-		Blue1            int
-		Blue2            int
-		Blue3            int
+		Red1             *Team
+		Red2             *Team
+		Red3             *Team
+		Blue1            *Team
+		Blue2            *Team
+		Blue3            *Team
 		RedFouls         []Foul
 		BlueFouls        []Foul
+		RedCards         map[string]string
+		BlueCards        map[string]string
 		Rules            []string
 		EntryEnabled     bool
-	}{eventSettings, matchType, match.DisplayName, match.Red1, match.Red2, match.Red3, match.Blue1, match.Blue2,
-		match.Blue3, mainArena.redRealtimeScore.Fouls, mainArena.blueRealtimeScore.Fouls, rules,
+	}{eventSettings, matchType, match.DisplayName, red1, red2, red3, blue1, blue2, blue3,
+		mainArena.redRealtimeScore.Fouls, mainArena.blueRealtimeScore.Fouls, mainArena.redRealtimeScore.Cards,
+		mainArena.blueRealtimeScore.Cards, rules,
 		!(mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted)}
 	err = template.ExecuteTemplate(w, "referee_display.html", data)
 	if err != nil {
@@ -766,6 +793,27 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			mainArena.realtimeScoreNotifier.Notify(nil)
+		case "card":
+			args := struct {
+				Alliance string
+				TeamId   int
+				Card     string
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+
+			// Set the card in the correct alliance's score.
+			var cards map[string]string
+			if args.Alliance == "red" {
+				cards = mainArena.redRealtimeScore.Cards
+			} else {
+				cards = mainArena.blueRealtimeScore.Cards
+			}
+			cards[strconv.Itoa(args.TeamId)] = args.Card
+			continue
 		case "commitMatch":
 			mainArena.redRealtimeScore.FoulsCommitted = true
 			mainArena.blueRealtimeScore.FoulsCommitted = true

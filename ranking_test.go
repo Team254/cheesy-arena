@@ -190,7 +190,7 @@ func setupMatchResultsForRankings(db *Database) {
 		Blue3: 6, Status: "complete"}
 	db.CreateMatch(&match1)
 	matchResult1 := buildTestMatchResult(match1.Id, 1)
-	matchResult1.Cards = Cards{[]int{}, []int{2}}
+	matchResult1.RedCards = map[string]string{"2": "red"}
 	db.CreateMatchResult(&matchResult1)
 
 	match2 := Match{Type: "qualification", DisplayName: "2", Red1: 1, Red2: 3, Red3: 5, Blue1: 2, Blue2: 4,
@@ -212,20 +212,17 @@ func setupMatchResultsForRankings(db *Database) {
 		Blue3: 6, Status: "complete"}
 	db.CreateMatch(&match4)
 	matchResult4 := buildTestMatchResult(match4.Id, 1)
-	matchResult4.Cards = Cards{[]int{}, []int{}}
 	db.CreateMatchResult(&matchResult4)
 
 	match5 := Match{Type: "elimination", DisplayName: "F-1", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5,
 		Blue3: 6, Status: "complete"}
 	db.CreateMatch(&match5)
 	matchResult5 := buildTestMatchResult(match5.Id, 1)
-	matchResult5.Cards = Cards{[]int{}, []int{}}
 	db.CreateMatchResult(&matchResult5)
 
 	match6 := Match{Type: "qualification", DisplayName: "4", Red1: 7, Red2: 8, Red3: 9, Blue1: 10, Blue2: 11,
 		Blue3: 12, Status: ""}
 	db.CreateMatch(&match6)
 	matchResult6 := buildTestMatchResult(match6.Id, 1)
-	matchResult6.Cards = Cards{[]int{}, []int{}}
 	db.CreateMatchResult(&matchResult6)
 }

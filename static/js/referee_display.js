@@ -64,6 +64,19 @@ var deleteFoul = function(alliance, team, rule, timeSec, isTech) {
       TimeInMatchSec: timeSec, IsTechnical: isTech});
 };
 
+// Cycles through no card, yellow card, and red card.
+var cycleCard = function(cardButton) {
+  var newCard = "";
+  if ($(cardButton).attr("data-card") == "") {
+    newCard = "yellow";
+  } else if ($(cardButton).attr("data-card") == "yellow") {
+    newCard = "red";
+  }
+  websocket.send("card", {Alliance: $(cardButton).attr("data-alliance"),
+      TeamId: parseInt($(cardButton).attr("data-card-team")), Card: newCard});
+  $(cardButton).attr("data-card", newCard);
+};
+
 // Signals the scorekeeper that foul entry is complete for this match.
 var commitMatch = function() {
   websocket.send("commitMatch");

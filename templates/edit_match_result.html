@@ -208,19 +208,19 @@
       <div class="col-lg-8">
         <div class="radio col-lg-3">
           <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team1}}"}}Card" value="N" checked>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team1}}"}}Card" value="" checked>
             None
           </label>
         </div>
         <div class="radio col-lg-3">
           <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team1}}"}}Card" value="Y">
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team1}}"}}Card" value="yellow">
             Yellow
           </label>
         </div>
         <div class="radio col-lg-6">
           <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team1}}"}}Card" value="R">
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team1}}"}}Card" value="red">
             Red
           </label>
         </div>
@@ -231,19 +231,19 @@
       <div class="col-lg-8">
         <div class="radio col-lg-3">
           <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team2}}"}}Card" value="N" checked>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team2}}"}}Card" value="" checked>
             None
           </label>
         </div>
         <div class="radio col-lg-3">
           <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team2}}"}}Card" value="Y">
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team2}}"}}Card" value="yellow">
             Yellow
           </label>
         </div>
         <div class="radio col-lg-6">
           <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team2}}"}}Card" value="R">
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team2}}"}}Card" value="red">
             Red
           </label>
         </div>
@@ -254,19 +254,19 @@
       <div class="col-lg-8">
         <div class="radio col-lg-3">
           <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team3}}"}}Card" value="N" checked>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team3}}"}}Card" value="" checked>
             None
           </label>
         </div>
         <div class="radio col-lg-3">
           <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team3}}"}}Card" value="Y">
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team3}}"}}Card" value="yellow">
             Yellow
           </label>
         </div>
         <div class="radio col-lg-6">
           <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team3}}"}}Card" value="R">
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team3}}"}}Card" value="red">
             Red
           </label>
         </div>
@@ -283,11 +283,11 @@
   allianceResults["red"] = {alliance: "red", team1: {{.Match.Red1}}, team2: {{.Match.Red2}},
       team3: {{.Match.Red3}}, score: jQuery.parseJSON('{{.MatchResultJson.RedScoreJson}}'),
       fouls: jQuery.parseJSON('{{.MatchResultJson.RedFoulsJson}}'),
-      cards: jQuery.parseJSON('{{.MatchResultJson.CardsJson}}')};
+      cards: jQuery.parseJSON('{{.MatchResultJson.RedCardsJson}}')};
   allianceResults["blue"] = {alliance: "blue", team1: {{.Match.Blue1}}, team2: {{.Match.Blue2}},
       team3: {{.Match.Blue3}}, score: jQuery.parseJSON('{{.MatchResultJson.BlueScoreJson}}'),
       fouls: jQuery.parseJSON('{{.MatchResultJson.BlueFoulsJson}}'),
-      cards: jQuery.parseJSON('{{.MatchResultJson.CardsJson}}')};
+      cards: jQuery.parseJSON('{{.MatchResultJson.BlueCardsJson}}')};
   renderResults("red");
   renderResults("blue");
 </script>

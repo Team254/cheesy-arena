@@ -17,7 +17,8 @@ type MatchResult struct {
 	BlueScore  Score
 	RedFouls   []Foul
 	BlueFouls  []Foul
-	Cards      Cards
+	RedCards   map[string]string
+	BlueCards  map[string]string
 }
 
 type MatchResultDb struct {
@@ -28,7 +29,8 @@ type MatchResultDb struct {
 	BlueScoreJson string
 	RedFoulsJson  string
 	BlueFoulsJson string
-	CardsJson     string
+	RedCardsJson  string
+	BlueCardsJson string
 }
 
 type Score struct {
@@ -42,6 +44,7 @@ type Score struct {
 	AutoClearDead       int
 	Cycles              []Cycle
 	ElimTiebreaker      int
+	ElimDq              bool
 }
 
 type Cycle struct {
@@ -58,11 +61,6 @@ type Foul struct {
 	Rule           string
 	TimeInMatchSec float64
 	IsTechnical    bool
-}
-
-type Cards struct {
-	YellowCardTeamIds []int
-	RedCardTeamIds    []int
 }
 
 type ScoreSummary struct {
@@ -82,8 +80,8 @@ func NewMatchResult() *MatchResult {
 	matchResult.BlueScore.Cycles = []Cycle{}
 	matchResult.RedFouls = []Foul{}
 	matchResult.BlueFouls = []Foul{}
-	matchResult.Cards.YellowCardTeamIds = []int{}
-	matchResult.Cards.RedCardTeamIds = []int{}
+	matchResult.RedCards = make(map[string]string)
+	matchResult.BlueCards = make(map[string]string)
 	return matchResult
 }
 
@@ -149,7 +147,20 @@ func (matchResult *MatchResult) BlueScoreSummary() *ScoreSummary {
 	return scoreSummary(&matchResult.BlueScore, matchResult.RedFouls)
 }
 
-func (matchResult *MatchResult) CorrectEliminationTie() {
+// Checks the score for disqualifications or a tie and adjusts it appropriately.
+func (matchResult *MatchResult) CorrectEliminationScore() {
+	matchResult.RedScore.ElimDq = false
+	for _, card := range matchResult.RedCards {
+		if card == "red" {
+			matchResult.RedScore.ElimDq = true
+		}
+	}
+	for _, card := range matchResult.BlueCards {
+		if card == "red" {
+			matchResult.BlueScore.ElimDq = true
+		}
+	}
+
 	matchResult.RedScore.ElimTiebreaker = 0
 	matchResult.BlueScore.ElimTiebreaker = 0
 	redScore := matchResult.RedScoreSummary()
@@ -192,6 +203,11 @@ func (matchResult *MatchResult) CorrectEliminationTie() {
 // Calculates and returns the summary fields used for ranking and display.
 func scoreSummary(score *Score, opponentFouls []Foul) *ScoreSummary {
 	summary := new(ScoreSummary)
+
+	// Leave the score at zero if the team was disqualified.
+	if score.ElimDq {
+		return summary
+	}
 
 	// Calculate autonomous score.
 	summary.AutoPoints = 5*score.AutoMobilityBonuses + 20*score.AutoHighHot + 15*score.AutoHigh +
@@ -252,7 +268,10 @@ func (matchResult *MatchResult) serialize() (*MatchResultDb, error) {
 	if err := serializeHelper(&matchResultDb.BlueFoulsJson, matchResult.BlueFouls); err != nil {
 		return nil, err
 	}
-	if err := serializeHelper(&matchResultDb.CardsJson, matchResult.Cards); err != nil {
+	if err := serializeHelper(&matchResultDb.RedCardsJson, matchResult.RedCards); err != nil {
+		return nil, err
+	}
+	if err := serializeHelper(&matchResultDb.BlueCardsJson, matchResult.BlueCards); err != nil {
 		return nil, err
 	}
 	return &matchResultDb, nil
@@ -282,7 +301,10 @@ func (matchResultDb *MatchResultDb) deserialize() (*MatchResult, error) {
 	if err := json.Unmarshal([]byte(matchResultDb.BlueFoulsJson), &matchResult.BlueFouls); err != nil {
 		return nil, err
 	}
-	if err := json.Unmarshal([]byte(matchResultDb.CardsJson), &matchResult.Cards); err != nil {
+	if err := json.Unmarshal([]byte(matchResultDb.RedCardsJson), &matchResult.RedCards); err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal([]byte(matchResultDb.BlueCardsJson), &matchResult.BlueCards); err != nil {
 		return nil, err
 	}
 	return &matchResult, nil

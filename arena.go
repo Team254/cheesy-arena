@@ -50,6 +50,7 @@ type RealtimeScore struct {
 	AutoPreloadedBalls int
 	AutoLeftoverBalls  int
 	Fouls              []Foul
+	Cards              map[string]string
 	AutoCommitted      bool
 	TeleopCommitted    bool
 	FoulsCommitted     bool
@@ -90,6 +91,12 @@ type Arena struct {
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
+
+func NewRealtimeScore() *RealtimeScore {
+	realtimeScore := new(RealtimeScore)
+	realtimeScore.Cards = make(map[string]string)
+	return realtimeScore
+}
 
 // Sets the arena to its initial state.
 func (arena *Arena) Setup() {
@@ -213,8 +220,8 @@ func (arena *Arena) LoadMatch(match *Match) error {
 	arena.SetupNetwork()
 
 	// Reset the realtime scores.
-	arena.redRealtimeScore = new(RealtimeScore)
-	arena.blueRealtimeScore = new(RealtimeScore)
+	arena.redRealtimeScore = NewRealtimeScore()
+	arena.blueRealtimeScore = NewRealtimeScore()
 
 	arena.matchLoadTeamsNotifier.Notify(nil)
 	arena.realtimeScoreNotifier.Notify(nil)

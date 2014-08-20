@@ -28,7 +28,6 @@ h3, h4 {
 .btn-referee[data-selected="true"] {
   border: 5px solid #fc0;
   margin: 0px 5px;
-  background-color: #fc0;
 }
 tr {
   font-size: 15px;
@@ -38,4 +37,22 @@ tr {
 }
 .row-blue {
   background-color: #028fc0;
+}
+.btn-card {
+  width: 120px;
+  margin: 5px 5px;
+  font-size: 30px;
+  cursor: default;
+  background-color: #444;
+  color: #fff;
+}
+.btn-card[data-card="yellow"] {
+  background-color: #dd0;
+}
+.btn-card[data-card="red"] {
+  background-color: #cb210e;
+}
+.btn-card[data-old-yellow-card="true"] {
+  border: 5px solid #ff0;
+  margin: 0px 5px;
 }

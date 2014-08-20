@@ -9,7 +9,8 @@ CREATE TABLE teams (
   rookieyear int,
   robotname VARCHAR(255),
   accomplishments VARCHAR(1000),
-  wpakey VARCHAR(16)
+  wpakey VARCHAR(16),
+  yellowcard bool
 );
 
 -- +goose Down

@@ -173,6 +173,13 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Reset yellow cards.
+	err = db.CalculateTeamCards("elimination")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
 	if eventSettings.TbaPublishingEnabled {
 		// Publish alliances and schedule to The Blue Alliance.
 		err = PublishAlliances()

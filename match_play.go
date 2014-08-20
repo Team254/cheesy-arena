@@ -379,8 +379,8 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 // Saves the given match and result to the database, supplanting any previous result for the match.
 func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 	if match.Type == "elimination" {
-		// Adjust the score if necessary for an elimination tie.
-		matchResult.CorrectEliminationTie()
+		// Adjust the score if necessary for an elimination DQ or tie.
+		matchResult.CorrectEliminationScore()
 	}
 
 	// Store the result in the buffer to be shown in the audience display.
@@ -434,6 +434,10 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 		return err
 	}
 
+	if match.Type != "practice" {
+		db.CalculateTeamCards(match.Type)
+	}
+
 	if match.Type == "qualification" {
 		// Recalculate all the rankings.
 		err = db.CalculateRankings()
@@ -471,10 +475,10 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 
 // Saves the realtime result as the final score for the match currently loaded into the arena.
 func CommitCurrentMatchScore() error {
-	// TODO(patrick): Set the red/yellow cards.
 	matchResult := MatchResult{MatchId: mainArena.currentMatch.Id,
 		RedScore: mainArena.redRealtimeScore.CurrentScore, BlueScore: mainArena.blueRealtimeScore.CurrentScore,
-		RedFouls: mainArena.redRealtimeScore.Fouls, BlueFouls: mainArena.blueRealtimeScore.Fouls}
+		RedFouls: mainArena.redRealtimeScore.Fouls, BlueFouls: mainArena.blueRealtimeScore.Fouls,
+		RedCards: mainArena.redRealtimeScore.Cards, BlueCards: mainArena.blueRealtimeScore.Cards}
 	return CommitMatchScore(mainArena.currentMatch, &matchResult)
 }
 

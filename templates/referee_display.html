@@ -23,22 +23,29 @@
               {{template "foul" dict "foul" $foul "color" "blue"}}
             {{end}}
           </table>
+          <h4>Yellow/Red Cards</h4>
+          {{template "card" dict "team" .Red1 "alliance" "red" "cards" .RedCards}}
+          {{template "card" dict "team" .Red2 "alliance" "red" "cards" .RedCards}}
+          {{template "card" dict "team" .Red3 "alliance" "red" "cards" .RedCards}}
+          {{template "card" dict "team" .Blue1 "alliance" "blue" "cards" .BlueCards}}
+          {{template "card" dict "team" .Blue2 "alliance" "blue" "cards" .BlueCards}}
+          {{template "card" dict "team" .Blue3 "alliance" "blue" "cards" .BlueCards}}
         </div>
         <div class="col-lg-9">
-          <h4>Add/Edit Foul</h4>
+          <h4>Add Foul</h4>
           <div class="row">
-            <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red1}}"
-                onclick="setFoulTeam(this);">{{.Red1}}</a>
-            <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red2}}"
-                onclick="setFoulTeam(this);">{{.Red2}}</a>
-            <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red3}}"
-                onclick="setFoulTeam(this);">{{.Red3}}</a>
-            <a class="btn btn-lg btn-info btn-referee" data-alliance="blue" data-team="{{.Blue1}}"
-                onclick="setFoulTeam(this);">{{.Blue1}}</a>
-            <a class="btn btn-lg btn-info btn-referee" data-alliance="blue" data-team="{{.Blue2}}"
-                onclick="setFoulTeam(this);">{{.Blue2}}</a>
-            <a class="btn btn-lg btn-info btn-referee" data-alliance="blue" data-team="{{.Blue3}}"
-                onclick="setFoulTeam(this);">{{.Blue3}}</a>
+            <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red1.Id}}"
+                onclick="setFoulTeam(this);">{{.Red1.Id}}</a>
+            <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red2.Id}}"
+                onclick="setFoulTeam(this);">{{.Red2.Id}}</a>
+            <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red3.Id}}"
+                onclick="setFoulTeam(this);">{{.Red3.Id}}</a>
+            <a class="btn btn-lg btn-info btn-referee" data-alliance="blue" data-team="{{.Blue1.Id}}"
+                onclick="setFoulTeam(this);">{{.Blue1.Id}}</a>
+            <a class="btn btn-lg btn-info btn-referee" data-alliance="blue" data-team="{{.Blue2.Id}}"
+                onclick="setFoulTeam(this);">{{.Blue2.Id}}</a>
+            <a class="btn btn-lg btn-info btn-referee" data-alliance="blue" data-team="{{.Blue3.Id}}"
+                onclick="setFoulTeam(this);">{{.Blue3.Id}}</a>
           </div>
           <div class="row">
             <a class="btn btn-lg btn-default btn-referee btn-referee-wide" id="foul"
@@ -84,4 +91,9 @@
     <td><a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.Rule}}',
           {{.foul.TimeInMatchSec}}, {{.foul.IsTechnical}});">Delete</a></td>
   </tr>
+{{end}}
+{{define "card"}}
+  <a class="btn btn-lg btn-card" data-old-yellow-card="{{.team.YellowCard}}" data-alliance="{{.alliance}}"
+      data-card-team="{{.team.Id}}" data-card="{{index .cards (print .team.Id)}}"
+      onclick="cycleCard(this);">{{.team.Id}}</a><br />
 {{end}}

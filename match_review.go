@@ -106,7 +106,7 @@ func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	matchResultJson := MatchResultDb{Id: matchResult.Id, MatchId: match.Id, PlayNumber: matchResult.PlayNumber,
 		RedScoreJson: r.PostFormValue("redScoreJson"), BlueScoreJson: r.PostFormValue("blueScoreJson"),
 		RedFoulsJson: r.PostFormValue("redFoulsJson"), BlueFoulsJson: r.PostFormValue("blueFoulsJson"),
-		CardsJson: r.PostFormValue("cardsJson")}
+		RedCardsJson: r.PostFormValue("redCardsJson"), BlueCardsJson: r.PostFormValue("blueCardsJson")}
 
 	// Deserialize the JSON using the same mechanism as to store scoring information in the database.
 	matchResult, err = matchResultJson.deserialize()

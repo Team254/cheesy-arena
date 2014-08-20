@@ -15,20 +15,16 @@ $("form").submit(function() {
   var blueScoreJson = JSON.stringify(allianceResults["blue"].score);
   var redFoulsJson = JSON.stringify(allianceResults["red"].fouls);
   var blueFoulsJson = JSON.stringify(allianceResults["blue"].fouls);
-
-  // Merge the red and blue cards data since that's what the database model expects.
-  var mergedCards = {YellowCardTeamIds: allianceResults["red"].cards.YellowCardTeamIds.
-      concat(allianceResults["blue"].cards.YellowCardTeamIds),
-      RedCardTeamIds:allianceResults["red"].cards.RedCardTeamIds.
-      concat(allianceResults["blue"].cards.RedCardTeamIds)};
-  var cardsJson = JSON.stringify(mergedCards);
+  var redCardsJson = JSON.stringify(allianceResults["red"].cards);
+  var blueCardsJson = JSON.stringify(allianceResults["blue"].cards);
 
   // Inject the JSON data into the form as hidden inputs.
   $("<input />").attr("type", "hidden").attr("name", "redScoreJson").attr("value", redScoreJson).appendTo("form");
   $("<input />").attr("type", "hidden").attr("name", "blueScoreJson").attr("value", blueScoreJson).appendTo("form");
   $("<input />").attr("type", "hidden").attr("name", "redFoulsJson").attr("value", redFoulsJson).appendTo("form");
   $("<input />").attr("type", "hidden").attr("name", "blueFoulsJson").attr("value", blueFoulsJson).appendTo("form");
-  $("<input />").attr("type", "hidden").attr("name", "cardsJson").attr("value", cardsJson).appendTo("form");
+  $("<input />").attr("type", "hidden").attr("name", "redCardsJson").attr("value", redCardsJson).appendTo("form");
+  $("<input />").attr("type", "hidden").attr("name", "blueCardsJson").attr("value", blueCardsJson).appendTo("form");
 
   return true;
 });
@@ -48,32 +44,34 @@ var renderResults = function(alliance) {
   $("input[name=" + alliance + "AutoClearHigh]").val(result.score.AutoClearHigh);
   $("input[name=" + alliance + "AutoClearLow]").val(result.score.AutoClearLow);
 
-  $.each(result.score.Cycles, function(k, v) {
-    $("#" + alliance + "Cycle" + k + "Title").text("Cycle " + (k + 1));
-    $("input[name=" + alliance + "Cycle" + k + "Assists][value=" + v.Assists + "]").prop("checked", true);
+  if (result.score.Cycles != null) {
+    $.each(result.score.Cycles, function(k, v) {
+      $("#" + alliance + "Cycle" + k + "Title").text("Cycle " + (k + 1));
+      $("input[name=" + alliance + "Cycle" + k + "Assists][value=" + v.Assists + "]").prop("checked", true);
 
-    var trussCatch;
-    if (v.Truss && v.Catch) {
-      trussCatch = "TC";
-    } else if (v.Truss) {
-      trussCatch = "T";
-    } else {
-      trussCatch = "N";
-    }
-    $("input[name=" + alliance + "Cycle" + k + "TrussCatch][value=" + trussCatch + "]").prop("checked", true);
+      var trussCatch;
+      if (v.Truss && v.Catch) {
+        trussCatch = "TC";
+      } else if (v.Truss) {
+        trussCatch = "T";
+      } else {
+        trussCatch = "N";
+      }
+      $("input[name=" + alliance + "Cycle" + k + "TrussCatch][value=" + trussCatch + "]").prop("checked", true);
 
-    var cycleEnd;
-    if (v.ScoredHigh) {
-      cycleEnd = "SH";
-    } else if (v.ScoredLow) {
-      cycleEnd = "SL";
-    } else if (v.DeadBall) {
-      cycleEnd = "DB";
-    } else {
-      cycleEnd = "DE";
-    }
-    $("input[name=" + alliance + "Cycle" + k + "End][value=" + cycleEnd + "]").prop("checked", true);
-  });
+      var cycleEnd;
+      if (v.ScoredHigh) {
+        cycleEnd = "SH";
+      } else if (v.ScoredLow) {
+        cycleEnd = "SL";
+      } else if (v.DeadBall) {
+        cycleEnd = "DB";
+      } else {
+        cycleEnd = "DE";
+      }
+      $("input[name=" + alliance + "Cycle" + k + "End][value=" + cycleEnd + "]").prop("checked", true);
+    });
+  }
 
   if (result.fouls != null) {
     $.each(result.fouls, function(k, v) {
@@ -84,14 +82,9 @@ var renderResults = function(alliance) {
     });
   }
 
-  if (result.cards.YellowCardTeamIds != null) {
-    $.each(result.cards.YellowCardTeamIds, function(k, v) {
-      $("input[name=" + alliance + "Team" + v + "Card][value=Y]").prop("checked", true);
-    });
-  }
-  if (result.cards.RedCardTeamIds != null) {
-    $.each(result.cards.RedCardTeamIds, function(k, v) {
-      $("input[name=" + alliance + "Team" + v + "Card][value=R]").prop("checked", true);
+  if (result.cards != null) {
+    $.each(result.cards, function(k, v) {
+      $("input[name=" + alliance + "Team" + k + "Card][value=" + v + "]").prop("checked", true);
     });
   }
 }
@@ -145,16 +138,9 @@ var updateResults = function(alliance) {
     result.fouls.push(foul);
   }
 
-  result.cards.YellowCardTeamIds = []
-  result.cards.RedCardTeamIds = []
+  result.cards = {};
   $.each([result.team1, result.team2, result.team3], function(i, team) {
-    switch (formData[alliance + "Team" + team + "Card"]) {
-      case "Y":
-        result.cards.YellowCardTeamIds.push(team);
-        break
-      case "R":
-        result.cards.RedCardTeamIds.push(team);
-    }
+    result.cards[team] = formData[alliance + "Team" + team + "Card"];
   });
 }
 

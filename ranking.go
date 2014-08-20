@@ -8,6 +8,7 @@ package main
 import (
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 type Ranking struct {
@@ -122,6 +123,57 @@ func (database *Database) CalculateRankings() error {
 	return nil
 }
 
+// Checks all the match results for yellow and red cards, and updates the team model accordingly.
+func (database *Database) CalculateTeamCards(matchType string) error {
+	teams, err := database.GetAllTeams()
+	if err != nil {
+		return err
+	}
+	teamsMap := make(map[string]Team)
+	for _, team := range teams {
+		team.YellowCard = false
+		teamsMap[strconv.Itoa(team.Id)] = team
+	}
+
+	matches, err := database.GetMatchesByType(matchType)
+	if err != nil {
+		return err
+	}
+	for _, match := range matches {
+		if match.Status != "complete" {
+			continue
+		}
+		matchResult, err := database.GetMatchResultForMatch(match.Id)
+		if err != nil {
+			return err
+		}
+
+		// Mark the team as having a yellow card if they got either a yellow or red in a previous match.
+		for teamId, card := range matchResult.RedCards {
+			if team, ok := teamsMap[teamId]; ok && card != "" {
+				team.YellowCard = true
+				teamsMap[teamId] = team
+			}
+		}
+		for teamId, card := range matchResult.BlueCards {
+			if team, ok := teamsMap[teamId]; ok && card != "" {
+				team.YellowCard = true
+				teamsMap[teamId] = team
+			}
+		}
+	}
+
+	// Save the teams to the database.
+	for _, team := range teamsMap {
+		err = db.SaveTeam(&team)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func addMatchResultToRankings(rankings map[int]*Ranking, teamId int, matchResult *MatchResult, isRed bool) {
 	ranking := rankings[teamId]
 	if ranking == nil {
@@ -131,11 +183,15 @@ func addMatchResultToRankings(rankings map[int]*Ranking, teamId int, matchResult
 	ranking.Played += 1
 
 	// Don't award any points if the team was disqualified.
-	for _, dqTeamId := range matchResult.Cards.RedCardTeamIds {
-		if teamId == dqTeamId {
-			ranking.Disqualifications += 1
-			return
-		}
+	var cards map[string]string
+	if isRed {
+		cards = matchResult.RedCards
+	} else {
+		cards = matchResult.BlueCards
+	}
+	if card, ok := cards[strconv.Itoa(teamId)]; ok && card == "red" {
+		ranking.Disqualifications += 1
+		return
 	}
 
 	var ownScore, opponentScore *ScoreSummary
