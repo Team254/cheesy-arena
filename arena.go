@@ -257,8 +257,8 @@ func (arena *Arena) LoadNextMatch() error {
 
 // Assigns the given team to the given station, also substituting it into the match record.
 func (arena *Arena) SubstituteTeam(teamId int, station string) error {
-	if arena.currentMatch.Type != "test" && arena.currentMatch.Type != "practice" {
-		return fmt.Errorf("Can only substitute teams for test and practice matches.")
+	if arena.currentMatch.Type == "qualification" {
+		return fmt.Errorf("Can't substitute teams for qualification matches.")
 	}
 	err := arena.AssignTeam(teamId, station)
 	if err != nil {
