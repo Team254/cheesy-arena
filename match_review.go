@@ -162,7 +162,7 @@ func buildMatchReviewList(matchType string) ([]MatchReviewListItem, error) {
 	for i, match := range matches {
 		matchReviewList[i].Id = match.Id
 		matchReviewList[i].DisplayName = prefix + match.DisplayName
-		matchReviewList[i].Time = match.Time.Format("Mon 1/02 03:04 PM")
+		matchReviewList[i].Time = match.Time.Local().Format("Mon 1/02 03:04 PM")
 		matchReviewList[i].RedTeams = []int{match.Red1, match.Red2, match.Red3}
 		matchReviewList[i].BlueTeams = []int{match.Blue1, match.Blue2, match.Blue3}
 		matchResult, err := db.GetMatchResultForMatch(match.Id)

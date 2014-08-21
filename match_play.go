@@ -510,7 +510,7 @@ func buildMatchPlayList(matchType string) (MatchPlayList, error) {
 	for i, match := range matches {
 		matchPlayList[i].Id = match.Id
 		matchPlayList[i].DisplayName = prefix + match.DisplayName
-		matchPlayList[i].Time = match.Time.Format("3:04 PM")
+		matchPlayList[i].Time = match.Time.Local().Format("3:04 PM")
 		matchPlayList[i].Status = match.Status
 		switch match.Winner {
 		case "R":
