@@ -36,6 +36,10 @@ var updateBlock = function(blockNumber) {
   $("#numMatches" + blockNumber).text(numMatches);
   $("#actualEndTime" + blockNumber).text(actualEndTime);
 
+  updateStats();
+}
+
+var updateStats = function() {
   // Update total number of matches.
   var totalNumMatches = 0;
   $.each(blockMatches, function(k, v) {
@@ -48,13 +52,13 @@ var updateBlock = function(blockNumber) {
   $("#matchesPerTeam").text(matchesPerTeam);
   $("#numExcessMatches").text(numExcessMatches);
   $("#nextLevelMatches").text(nextLevelMatches);
-}
+};
 
 var deleteBlock = function(blockNumber) {
   delete blockMatches[blockNumber];
   $("#block" + blockNumber).remove();
-  updateBlock(blockNumber);
-}
+  updateStats();
+};
 
 // Dynamically generates and posts a form containing the schedule blocks to the server for population.
 var generateSchedule = function() {
