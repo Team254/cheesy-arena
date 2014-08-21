@@ -327,6 +327,12 @@ func (arena *Arena) CheckCanStartMatch() error {
 func (arena *Arena) StartMatch() error {
 	err := arena.CheckCanStartMatch()
 	if err == nil {
+		// Save the match start time to the database for posterity.
+		arena.currentMatch.StartedAt = time.Now()
+		if arena.currentMatch.Type != "test" {
+			db.SaveMatch(arena.currentMatch)
+		}
+
 		arena.MatchState = START_MATCH
 	}
 	return err
