@@ -80,6 +80,7 @@ type Arena struct {
 	allianceStationDisplayNotifier *Notifier
 	allianceSelectionNotifier      *Notifier
 	lowerThirdNotifier             *Notifier
+	hotGoalLightNotifier           *Notifier
 	audienceDisplayScreen          string
 	allianceStationDisplays        map[string]string
 	allianceStationDisplayScreen   string
@@ -125,6 +126,7 @@ func (arena *Arena) Setup() {
 	arena.allianceStationDisplayNotifier = NewNotifier()
 	arena.allianceSelectionNotifier = NewNotifier()
 	arena.lowerThirdNotifier = NewNotifier()
+	arena.hotGoalLightNotifier = NewNotifier()
 
 	// Load empty match as current.
 	arena.MatchState = PRE_MATCH

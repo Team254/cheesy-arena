@@ -12,26 +12,34 @@ import (
 var hotGoalLights map[string]bool
 var assistLights map[string]int
 var pedestalLights map[string]bool
+var newMatch bool
 
 func SetupLights() {
 	hotGoalLights = make(map[string]bool)
 	assistLights = make(map[string]int)
 	pedestalLights = make(map[string]bool)
+	newMatch = true
 }
 
 func SetHotGoalLights(alliance string, leftSide bool) {
-	if hotGoalLights[alliance] == leftSide {
+	if !newMatch && hotGoalLights[alliance] == leftSide {
 		return
 	}
+	newMatch = false
 	hotGoalLights[alliance] = leftSide
 	if leftSide {
 		fmt.Printf("Setting left %s goal hot\n", alliance)
+		mainArena.hotGoalLightNotifier.Notify("left")
 	} else {
 		fmt.Printf("Setting right %s goal hot\n", alliance)
+		mainArena.hotGoalLightNotifier.Notify("right")
 	}
 }
 
 func SetAssistGoalLights(alliance string, numAssists int) {
+	newMatch = true
+	mainArena.hotGoalLightNotifier.Notify("")
+
 	if assistLights[alliance] == numAssists {
 		return
 	}

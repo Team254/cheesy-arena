@@ -882,6 +882,8 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	defer close(matchTimeListener)
 	realtimeScoreListener := mainArena.realtimeScoreNotifier.Listen()
 	defer close(realtimeScoreListener)
+	hotGoalLightListener := mainArena.hotGoalLightNotifier.Listen()
+	defer close(hotGoalLightListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
@@ -978,6 +980,15 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 					mainArena.redRealtimeScore.CurrentCycle,
 					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls),
 					mainArena.blueRealtimeScore.CurrentCycle}
+			case side, ok := <-hotGoalLightListener:
+				if !ok {
+					return
+				}
+				if !eventSettings.AllianceDisplayHotGoals {
+					continue
+				}
+				messageType = "hotGoalLight"
+				message = side
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {

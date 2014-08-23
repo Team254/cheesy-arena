@@ -116,6 +116,15 @@ var handleRealtimeScore = function(data) {
   $("#blueScore").text(data.BlueScore);
 };
 
+var handleHotGoalLight = function(side) {
+  if (allianceStation != "" &&
+      (side == "left" && allianceStation[1] == "3" || side == "right" && allianceStation[1] == "1")) {
+    $("#hotGoalLight").show();
+  } else {
+    $("#hotGoalLight").hide();
+  }
+};
+
 $(function() {
   if (displayId == "") {
     displayId = Math.floor(Math.random() * 10000);
@@ -130,6 +139,7 @@ $(function() {
     status: function(event) { handleStatus(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); }
+    realtimeScore: function(event) { handleRealtimeScore(event.data); },
+    hotGoalLight: function(event) { handleHotGoalLight(event.data); }
   });
 });
