@@ -5,9 +5,16 @@
 
 var allianceStation = "";
 var blinkInterval;
+var currentScreen = "blank";
 var websocket;
 
 var handleSetAllianceStationDisplay = function(targetScreen) {
+  currentScreen = targetScreen;
+
+  if (allianceStation == "") {
+    // Don't show anything if this screen hasn't been assigned a position yet.
+    targetScreen = "blank";
+  }
   switch (targetScreen) {
     case "logo":
       $("#match").hide();
@@ -31,6 +38,7 @@ var handleSetMatch = function(data) {
   } else if (allianceStation != data.AllianceStation) {
     // The server knows better what display this should be; sync up.
     allianceStation = data.AllianceStation;
+    handleSetAllianceStationDisplay(currentScreen);
   }
 
   if (allianceStation != "") {
