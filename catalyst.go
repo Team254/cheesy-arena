@@ -40,7 +40,7 @@ func ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *Team) error {
 			delete(oldTeamVlans, team.Id)
 		} else {
 			addTeamVlansCommand += fmt.Sprintf("no access-list 1%d\naccess-list 1%d permit ip "+
-				"10.%d.%d.0 0.0.0.255 host %s\ninterface Vlan%d\nip address 10.%d.%d.1 255.255.255.0\n", vlan,
+				"10.%d.%d.0 0.0.0.255 host %s\ninterface Vlan%d\nip address 10.%d.%d.61 255.255.255.0\n", vlan,
 				vlan, team.Id/100, team.Id%100, eventServerAddress, vlan, team.Id/100, team.Id%100)
 		}
 	}
@@ -77,7 +77,7 @@ func getTeamVlans() (map[int]int, error) {
 	}
 
 	// Parse out the team IDs and VLANs from the config dump.
-	re := regexp.MustCompile("(?s)interface Vlan(\\d\\d)\\s+ip address 10\\.(\\d+)\\.(\\d+)\\.1")
+	re := regexp.MustCompile("(?s)interface Vlan(\\d\\d)\\s+ip address 10\\.(\\d+)\\.(\\d+)\\.61")
 	teamVlanMatches := re.FindAllStringSubmatch(config, -1)
 	if teamVlanMatches == nil {
 		// There are probably no teams currently configured.

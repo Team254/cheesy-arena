@@ -135,27 +135,27 @@ interface Vlan2
  ip address 10.0.100.2 255.255.255.0
 !
 interface Vlan11
- ip address 10.0.1.1 255.255.255.0
+ ip address 10.0.1.61 255.255.255.0
  ip access-group 111 in
 !
 interface Vlan12
- ip address 10.0.2.1 255.255.255.0
+ ip address 10.0.2.61 255.255.255.0
  ip access-group 112 in
 !
 interface Vlan13
- ip address 10.0.3.1 255.255.255.0
+ ip address 10.0.3.61 255.255.255.0
  ip access-group 113 in
 !
 interface Vlan14
- ip address 10.0.4.1 255.255.255.0
+ ip address 10.0.4.61 255.255.255.0
  ip access-group 114 in
 !
 interface Vlan15
- ip address 10.0.5.1 255.255.255.0
+ ip address 10.0.5.61 255.255.255.0
  ip access-group 115 in
 !
 interface Vlan16
- ip address 10.0.6.1 255.255.255.0
+ ip address 10.0.6.61 255.255.255.0
  ip access-group 116 in
 !
 ip classless
