@@ -602,6 +602,10 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		case "commitMatch":
+			if mainArena.MatchState != POST_MATCH {
+				// Don't allow committing the score until the match is over.
+				continue
+			}
 			(*score).AutoCommitted = true
 			(*score).TeleopCommitted = true
 			if (*score).CurrentCycle != (Cycle{}) {
@@ -815,6 +819,10 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			cards[strconv.Itoa(args.TeamId)] = args.Card
 			continue
 		case "commitMatch":
+			if mainArena.MatchState != POST_MATCH {
+				// Don't allow committing the fouls until the match is over.
+				continue
+			}
 			mainArena.redRealtimeScore.FoulsCommitted = true
 			mainArena.blueRealtimeScore.FoulsCommitted = true
 			mainArena.scoringStatusNotifier.Notify(nil)
