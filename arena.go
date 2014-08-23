@@ -102,7 +102,7 @@ func NewRealtimeScore() *RealtimeScore {
 // Sets the arena to its initial state.
 func (arena *Arena) Setup() {
 	arena.matchTiming.AutoDurationSec = 10
-	arena.matchTiming.PauseDurationSec = 1
+	arena.matchTiming.PauseDurationSec = 2
 	arena.matchTiming.TeleopDurationSec = 140
 	arena.matchTiming.EndgameTimeLeftSec = 30
 
