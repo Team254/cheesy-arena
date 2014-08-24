@@ -6,12 +6,40 @@ html {
 body {
   background-color: #000;
   font-family: "FuturaLTBold";
+  color: #fff;
 }
-#match {
+body[data-mode=logo] {
+  background-color: #fff;
+}
+
+
+/* Switching Modes */
+.mode {
+  display: none;
+}
+body[data-mode=displayId] .mode#displayId {
+  display: block;
+}
+body[data-mode=logo] .mode#logo {
+  display: block;
+}
+body[data-mode=match] .mode#match {
+  display: block;
+}
+
+
+/* Logo Mode */
+#logo {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 90%;
+  margin: auto auto;
 }
+
+/* Display ID Mode */
 #displayId {
   position: absolute;
   top: 0;
@@ -25,7 +53,56 @@ body {
   color: #ff0;
   font-size: 500px;
 }
-#preMatchTeamId {
+
+/* Match Mode */
+#match {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+#match[data-state=AUTO_PERIOD], #match[data-state=TELEOP_PERIOD], #match[data-state=ENDGAME_PERIOD] {
+  background-color: #fff;
+  color: #000;
+}
+#preMatch, #inMatch {
+  display: none;
+}
+#match[data-state=PRE_MATCH] #preMatch, #match[data-state=POST_MATCH] #preMatch {
+  display: block;
+}
+#match[data-state=AUTO_PERIOD] #inMatch, #match[data-state=TELEOP_PERIOD] #inMatch, #match[data-state=ENDGAME_PERIOD] #inMatch {
+  display: block;
+}
+
+
+/* In Match */
+#inMatch .datapoint {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: auto;
+  margin-top: -250px;
+  height: 250px;
+  top: 50%;
+  font-size: 500px;
+  line-height: 500px;
+  text-align: center;
+}
+body[data-position=left] #inMatch #redScore {
+  display: block;
+  color: #f43;
+}
+body[data-position=middle] #inMatch #timeRemaining {
+  display: block;
+}
+body[data-position=right] #inMatch #blueScore {
+  display: block;
+  color: #07f;
+}
+
+/* Pre Match */
+#preMatch #teamNumber {
   position: absolute;
   top: 40px;
   left: 0;
@@ -34,21 +111,8 @@ body {
   font-size: 500px;
   line-height: 500px;
   text-align: center;
-  color: #fff;
 }
-#inMatchTeamId {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  font-size: 200px;
-  line-height: 200px;
-  text-align: center;
-  -webkit-text-stroke-width: 5px;
-  -webkit-text-stroke-color: #fff;
-}
-#teamName {
+#preMatch .databar {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -61,78 +125,25 @@ body {
   font-size: 120px;
   color: #fff;
 }
-#matchTime {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto auto;
-  height: 400px;
-  line-height: 350px;
-  text-align: center;
-  font-size: 350px;
-  color: #fff;
+#preMatch .databar#disabled {
+  font-family: "FuturaLTBold";
+  display: none;
 }
-#matchInfo {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  height: 250px;
-  line-height: 250px;
-  text-align: center;
-  font-size: 250px;
-  color: #fff;
+#match[data-status=bypass] #disabled {
+  display: block;
 }
-#redScore {
-  color: #f00;
-  -webkit-text-stroke-width: 5px;
-  -webkit-text-stroke-color: #fff;
-}
-#blueScore {
-  color: #00f;
-  -webkit-text-stroke-width: 5px;
-  -webkit-text-stroke-color: #fff;
-}
-#logoContainer {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: #fff;
-}
-#logo {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  width: 90%;
-  margin: auto auto;
+#match[data-status=bypass] #teamName {
+  display: none;
 }
 [data-alliance-bg=R], [data-status=R] {
-  background-color: #f00;
+  background-color: #d00;
 }
 [data-alliance-bg=B], [data-status=B] {
-  background-color: #00f;
+  background-color: #00c;
 }
-[data-alliance=R], [data-status=R] {
-  color: #f00;
-}
-[data-alliance=B], [data-status=B] {
-  color: #00f;
-}
-[data-status=bypass] {
-  background-color: #666;
-}
-#hotGoalLight {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+
+/* Hot Goal Mode */
+#match[data-hotgoal=active]{
   background-color: #ff0;
+  color: #000;
 }

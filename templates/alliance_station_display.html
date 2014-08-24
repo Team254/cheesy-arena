@@ -8,25 +8,22 @@
     <link rel="stylesheet" href="/static/css/alliance_station_display.css" />
   </head>
   <body>
-    <div id="displayId" style="display: none;"></div>
-    <div id="match" style="display: none;">
-      <div id="preMatch" style="display: none;">
-        <div id="preMatchTeamId"></div>
-        <div id="teamName"></div>
+    <div id="displayId" class="mode"></div>
+    <div id="match" class="mode">
+      <div id="preMatch">
+        <div id="teamNumber"></div>
+        <div id="teamName" class='databar'></div>
+        <div id="disabled" class='databar'>DISABLED</div>
       </div>
-      <div id="inMatch" style="display: none;">
-        <div id="inMatchTeamId"></div>
-        <div id="matchTime"></div>
-        <div class="row" id="matchInfo">
-          <div class="col-lg-6 text-center" id="redScore"></div>
-          <div class="col-lg-6 text-center" id="blueScore"></div>
-        </div>
+      <div id="inMatch">
+        <div id="redScore" class="datapoint"></div>
+        <div id="blueScore" class="datapoint"></div>
+        <div id="timeRemaining" class="datapoint"></div>
       </div>
     </div>
-    <div id="logoContainer" style="display: none;">
+    <div id="logo" class="mode">
       <img id="logo" src="/static/img/logo-white.svg" />
     </div>
-    <div id="hotGoalLight" style="display: none;"></div>
     <script>
       // A unique id to differentiate this station's display from its peers.
       var displayId = "{{.DisplayId}}";

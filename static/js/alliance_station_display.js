@@ -10,23 +10,20 @@ var websocket;
 
 var handleSetAllianceStationDisplay = function(targetScreen) {
   currentScreen = targetScreen;
-
   if (allianceStation == "") {
     // Don't show anything if this screen hasn't been assigned a position yet.
     targetScreen = "blank";
   }
-  switch (targetScreen) {
-    case "logo":
-      $("#match").hide();
-      $("#logoContainer").show();
+  $('body').attr('data-mode', targetScreen);
+  switch(allianceStation[1]){
+    case '1':
+      $('body').attr('data-position','right');
       break;
-    case "blank":
-      $("#match").hide();
-      $("#logoContainer").hide();
+    case '2':
+      $('body').attr('data-position','middle');
       break;
-    case "match":
-      $("#match").show();
-      $("#logoContainer").hide();
+    case '3':
+      $('body').attr('data-position','left');
       break;
   }
 };
@@ -43,28 +40,10 @@ var handleSetMatch = function(data) {
 
   if (allianceStation != "") {
     team = data.Teams[allianceStation];
-    if (team == null) {
-      $("#preMatchTeamId").text("");
-      $("#inMatchTeamId").text("");
-      $("#teamName").text("");
-      $("#teamName").attr("data-alliance-bg", "");
-      $("#inMatchTeamId").attr("data-alliance", "");
-    } else {
-      $("#teamName").attr("data-alliance-bg", allianceStation[0]);
-      $("#inMatchTeamId").attr("data-alliance", allianceStation[0]);
-      $("#preMatchTeamId").text(data.Teams[allianceStation].Id);
-      $("#inMatchTeamId").text(data.Teams[allianceStation].Id);
-      $("#teamName").text(data.Teams[allianceStation].Nickname);
-    }
-    $("#displayId").hide();
+    $("#teamNumber").text(data.Teams[allianceStation].Id);
+    $("#teamName").attr("data-alliance-bg", allianceStation[0]).text(data.Teams[allianceStation].Nickname);
   } else {
-    // Show the display ID so that someone can assign it to a station from the configuration interface.
-    $("#preMatchTeamId").text("");
-    $("#inMatchTeamId").text("");
-    $("#teamName").text("");
-    $("#displayId").show();
-    $("#preMatch").hide();
-    $("#inMatch").hide();
+    $('body').attr('data-mode', 'displayId');
   }
 };
 
@@ -102,15 +81,8 @@ var handleMatchTime = function(data) {
       countdownString = "0" + countdownString;
     }
     countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
-    $("#matchTime").text(countdownString);
-
-    if (matchState == "PRE_MATCH" || matchState == "POST_MATCH") {
-      $("#preMatch").show();
-      $("#inMatch").hide();
-    } else {
-      $("#preMatch").hide();
-      $("#inMatch").show();
-    }
+    $("#timeRemaining").text(countdownString);
+    $('#match').attr('data-state', matchState);
   });
 };
 
@@ -120,11 +92,10 @@ var handleRealtimeScore = function(data) {
 };
 
 var handleHotGoalLight = function(side) {
-  if (allianceStation != "" &&
-      (side == "left" && allianceStation[1] == "3" || side == "right" && allianceStation[1] == "1")) {
-    $("#hotGoalLight").show();
+  if (allianceStation != "" && (side == "left" && allianceStation[1] == "3" || side == "right" && allianceStation[1] == "1")) {
+    $("#match").attr('data-hotgoal','active');
   } else {
-    $("#hotGoalLight").hide();
+    $("#match").attr('data-hotgoal','');
   }
 };
 
