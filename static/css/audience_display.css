@@ -291,22 +291,32 @@ html {
   background-color: #fff;
   text-align: center;
 }
-#sponsor h1 {
+#sponsor .carousel-inner, #sponsor .item {
+  height: 100%;
+}
+#sponsor h1, #sponsor h2 {
   font-family: "FuturaLTBold";
+  margin: 0;
+}
+#sponsor h1 {
   font-size: 60px;
   background-color: #444;
   color: #fff;
-  margin: 0;
   padding: 0.25em;
   position: absolute;
   left: 0;
   bottom: 0;
   right: 0;
 }
+#sponsor h2 {
+  font-size: 7em;
+  padding-top: 150px;
+}
 #sponsor img {
   max-width: 800px;
   height: 400px;
   margin-top: 50px;
+  display: inline-block;
 }
 #allianceSelectionCentering {
   position: absolute;
