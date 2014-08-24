@@ -211,23 +211,22 @@ var transitionLogoToBlank = function(callback) {
 };
 
 var transitionLogoToScore = function(callback) {
-  $(".blindsCenter.full").transition({queue: false, top: "-350px"}, 750, "ease", function () {
-    $("#finalScore").show();
-    $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
-  });
+  $(".blindsCenter.full").transition({queue: false, top: "-350px"}, 625, "ease");
+  $("#finalScore").show();
+  $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
 };
 
 var transitionBlankToScore = function(callback) {
   transitionBlankToLogo(function() {
-    setTimeout(function() { transitionLogoToScore(callback); }, 100);
+    setTimeout(function() { transitionLogoToScore(callback); }, 50);
   });
 };
 
 var transitionScoreToLogo = function(callback) {
-  $("#finalScore").transition({queue: false, opacity: 0}, 500, "linear", function() {
+  $("#finalScore").transition({queue: false, opacity: 0}, 500, "ease", function(){
     $("#finalScore").hide();
-    $(".blindsCenter.full").transition({queue: false, top: 0}, 750, "ease", callback);
   });
+  $(".blindsCenter.full").transition({queue: false, top: 0}, 625, "ease", callback);
 };
 
 var transitionScoreToBlank = function(callback) {
