@@ -1118,3 +1118,21 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 }
+
+// Renders the FTA diagnostic display.
+func FtaDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	template := template.New("").Funcs(templateHelpers)
+	_, err := template.ParseFiles("templates/fta_display.html", "templates/base.html")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	data := struct {
+		*EventSettings
+	}{eventSettings}
+	err = template.ExecuteTemplate(w, "base", data)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}

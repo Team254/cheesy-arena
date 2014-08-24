@@ -41,17 +41,20 @@
 .modal-large {
   width: 60%;
 }
-.ds-status, .robot-status, .battery-status, .bypass-status {
+.ds-status, .robot-status, .battery-status, .bypass-status, .bypass-status-fta, .trip-time, .packet-loss  {
   background-color: #aaa;
   color: #000;
   border: 1px solid #999;
   border-radius: 4px;
   padding: 0px;
-  width: 40px;
+  width: 45px;
   height: 27px;
   line-height: 25px;
   font-size: 14px;
   margin: 0 auto;
+}
+.trip-time, .packet-loss {
+  width: 90px;
 }
 .bypass-status {
   cursor: pointer;
