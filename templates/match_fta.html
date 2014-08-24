@@ -1,0 +1,62 @@
+{{define "title"}}Match FTA{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="row text-center">
+      <div id="matchState" class="col-lg-2 col-lg-offset-4 well well-sm">&nbsp;</div>
+      <div id="matchTime" class="col-lg-2 well well-sm">&nbsp;</div>
+    </div>
+    <div class="row text-center">
+      <div class="col-lg-6 well well-darkblue">
+        <div class="row form-group">
+          <div class="col-lg-4">Blue Teams</div>
+          <div class="col-lg-1" data-toggle="tooltip" title="Driver Station">DS</div>
+          <div class="col-lg-1" data-toggle="tooltip" title="Robot Status and time since last seen">R</div>
+          <div class="col-lg-1" data-toggle="tooltip" title="Battery">Bat</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Trip Time">Trip Time</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Packet Loss">Lost Pack</div>
+          <div class="col-lg-1" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
+        </div>
+        {{template "matchPlayTeam" dict "team" .Match.Blue1 "color" "B" "position" 1 "data" .}}
+        {{template "matchPlayTeam" dict "team" .Match.Blue2 "color" "B" "position" 2 "data" .}}
+        {{template "matchPlayTeam" dict "team" .Match.Blue3 "color" "B" "position" 3 "data" .}}
+      </div>
+      <div class="col-lg-6 well well-darkred">
+        <div class="row form-group">
+          <div class="col-lg-4">Red Teams</div>
+          <div class="col-lg-1" data-toggle="tooltip" title="Driver Station">DS</div>
+          <div class="col-lg-1" data-toggle="tooltip" title="Robot Status and time since last seen">R</div>
+          <div class="col-lg-1" data-toggle="tooltip" title="Battery">Bat</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Trip Time">Trip Time</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Packet Loss">Lost Pack</div>
+          <div class="col-lg-1" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
+        </div>
+        {{template "matchPlayTeam" dict "team" .Match.Red3 "color" "R" "position" 3 "data" .}}
+        {{template "matchPlayTeam" dict "team" .Match.Red2 "color" "R" "position" 2 "data" .}}
+        {{template "matchPlayTeam" dict "team" .Match.Red1 "color" "R" "position" 1 "data" .}}
+      </div>
+    </div>
+    <br />
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+<script src="/static/js/match_timing.js"></script>
+<script src="/static/js/match_fta.js"></script>
+{{end}}
+{{define "matchPlayTeam"}}
+<div class="row form-group" id="status{{.color}}{{.position}}">
+  <div class="col-lg-1">{{.position}} </div>
+  <div class="col-lg-3">
+    <input type="text" disabled class="form-control input-sm" value="{{if ne 0 .team}}{{.team}}{{end}}"
+        {{if not .data.AllowSubstitution}}disabled{{end}}>
+  </div>
+  <div class="col-lg-1 col-no-padding"><div class="ds-status"></div></div>
+  <div class="col-lg-1 col-no-padding"><div class="robot-status"></div></div>
+  <div class="col-lg-1 col-no-padding"><div class="battery-status"></div></div>
+  <div class="col-lg-2 col-no-padding"><div class="trip-time" ></div></div>
+  <div class="col-lg-2 col-no-padding"><div class="packet-loss" ></div></div>
+  <div class="col-lg-1 col-no-padding"><div class="bypass-status"></div>
+  </div>
+</div>
+{{end}}
