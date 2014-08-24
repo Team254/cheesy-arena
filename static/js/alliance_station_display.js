@@ -17,17 +17,16 @@ var handleSetAllianceStationDisplay = function(targetScreen) {
   }
   switch (targetScreen) {
     case "logo":
-      $("#preMatch").hide();
-      $("#inMatch").hide();
-      $("#logo").show();
+      $("#match").hide();
+      $("#logoContainer").show();
       break;
     case "blank":
-      $("#preMatch").hide();
-      $("#inMatch").hide();
-      $("#logo").hide();
+      $("#match").hide();
+      $("#logoContainer").hide();
       break;
     case "match":
-      $("#logo").hide();
+      $("#match").show();
+      $("#logoContainer").hide();
       break;
   }
 };
