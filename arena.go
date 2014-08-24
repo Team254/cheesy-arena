@@ -14,7 +14,7 @@ import (
 
 const (
 	arenaLoopPeriodMs     = 10
-	dsPacketPeriodMs      = 20
+	dsPacketPeriodMs      = 100
 	matchEndScoreDwellSec = 3
 )
 
@@ -335,11 +335,11 @@ func (arena *Arena) StartMatch() error {
 			db.SaveMatch(arena.currentMatch)
 		}
 
-		// At the beginning of the match, save the missed packet count.
+		// Save the missed packet count to subtract it from the running count.
 		for _, allianceStation := range arena.AllianceStations {
 			if allianceStation.DsConn != nil {
-				allianceStation.DsConn.DriverStationStatus.MissedOffset =
-		    		allianceStation.DsConn.DriverStationStatus.MissedPacketCount
+				allianceStation.DsConn.DriverStationStatus.MissedPacketOffset =
+					allianceStation.DsConn.DriverStationStatus.MissedPacketCount
 			}
 		}
 

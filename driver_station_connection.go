@@ -20,33 +20,33 @@ const driverStationProtocolVersion = "11191100"
 const driverStationLinkTimeoutMs = 500
 
 type DriverStationStatus struct {
-	TeamId            int
-	AllianceStation   string
-	DsLinked          bool
-	RobotLinked       bool
-	Auto              bool
-	Enabled           bool
-	EmergencyStop     bool
-	BatteryVoltage    float64
-	DsVersion         string
-	PacketCount       int
-	MissedPacketCount int
-	DsRobotTripTimeMs int
-	MissedOffset      int
+	TeamId             int
+	AllianceStation    string
+	DsLinked           bool
+	RobotLinked        bool
+	Auto               bool
+	Enabled            bool
+	EmergencyStop      bool
+	BatteryVoltage     float64
+	DsVersion          string
+	PacketCount        int
+	MissedPacketCount  int
+	MissedPacketOffset int
+	DsRobotTripTimeMs  int
 }
 
 type DriverStationConnection struct {
-	TeamId                           int
-	AllianceStation                  string
-	Auto                             bool
-	Enabled                          bool
-	EmergencyStop                    bool
-	DriverStationStatus             *DriverStationStatus
-	LastPacketTime                   time.Time
-	LastRobotLinkedTime              time.Time
-	SecondsSinceLastRobotConnection  float64
-	conn                             net.Conn
-	packetCount                      int
+	TeamId                    int
+	AllianceStation           string
+	Auto                      bool
+	Enabled                   bool
+	EmergencyStop             bool
+	DriverStationStatus       *DriverStationStatus
+	LastPacketTime            time.Time
+	LastRobotLinkedTime       time.Time
+	SecondsSinceLastRobotLink float64
+	conn                      net.Conn
+	packetCount               int
 }
 
 // Opens a UDP connection for communicating to the driver station.
@@ -107,7 +107,7 @@ func ListenForDsPackets(listener *net.UDPConn) {
 			if dsStatus.RobotLinked {
 				dsConn.LastRobotLinkedTime = time.Now()
 			}
-			dsConn.SecondsSinceLastRobotConnection = time.Since(dsConn.LastRobotLinkedTime).Seconds()
+			dsConn.SecondsSinceLastRobotLink = time.Since(dsConn.LastRobotLinkedTime).Seconds()
 		}
 	}
 }

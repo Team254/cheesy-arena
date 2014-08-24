@@ -87,58 +87,6 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
-// Shows the match play control interface.
-func MatchFTAHandler(w http.ResponseWriter, r *http.Request) {
-	practiceMatches, err := buildMatchPlayList("practice")
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	qualificationMatches, err := buildMatchPlayList("qualification")
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	eliminationMatches, err := buildMatchPlayList("elimination")
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-
-	template := template.New("").Funcs(templateHelpers)
-	_, err = template.ParseFiles("templates/match_fta.html", "templates/base.html")
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	matchesByType := map[string]MatchPlayList{"practice": practiceMatches,
-		"qualification": qualificationMatches, "elimination": eliminationMatches}
-	if currentMatchType == "" {
-		currentMatchType = "practice"
-	}
-	allowSubstitution := mainArena.currentMatch.Type != "qualification"
-	matchResult, err := db.GetMatchResultForMatch(mainArena.currentMatch.Id)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	isReplay := matchResult != nil
-	data := struct {
-		*EventSettings
-		MatchesByType     map[string]MatchPlayList
-		CurrentMatchType  string
-		Match             *Match
-		AllowSubstitution bool
-		IsReplay          bool
-	}{eventSettings, matchesByType, currentMatchType, mainArena.currentMatch, allowSubstitution, isReplay}
-	err = template.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-}
-
 func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	matchId, _ := strconv.Atoi(vars["matchId"])
