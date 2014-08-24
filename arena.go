@@ -89,6 +89,7 @@ type Arena struct {
 	savedMatch                     *Match
 	savedMatchResult               *MatchResult
 	leftGoalHotFirst               bool
+	lights                         Lights
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
@@ -141,7 +142,7 @@ func (arena *Arena) Setup() {
 	arena.allianceStationDisplays = make(map[string]string)
 	arena.allianceStationDisplayScreen = "blank"
 
-	SetupLights()
+	arena.lights.Setup()
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -511,16 +512,16 @@ func (arena *Arena) handleLighting(alliance string, score *RealtimeScore) {
 	switch arena.MatchState {
 	case AUTO_PERIOD:
 		leftSide := arena.MatchTimeSec() < float64(arena.matchTiming.AutoDurationSec)/2 == arena.leftGoalHotFirst
-		SetHotGoalLights(alliance, leftSide)
+		arena.lights.SetHotGoal(alliance, leftSide)
 	case TELEOP_PERIOD:
 		if score.AutoLeftoverBalls == 0 && score.CurrentCycle.Assists == 0 {
-			SetPedestalLight(alliance)
+			arena.lights.SetPedestal(alliance)
 		} else {
-			ClearPedestalLight(alliance)
+			arena.lights.ClearPedestal(alliance)
 		}
-		SetAssistGoalLights(alliance, score.CurrentCycle.Assists)
+		arena.lights.SetAssistGoal(alliance, score.CurrentCycle.Assists)
 	default:
-		ClearGoalLights(alliance)
-		ClearPedestalLight(alliance)
+		arena.lights.ClearGoal(alliance)
+		arena.lights.ClearPedestal(alliance)
 	}
 }

@@ -38,11 +38,14 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		renderSettings(w, r, "Number of alliances must be between 2 and 16.")
 		return
 	}
+
 	eventSettings.NumElimAlliances = numAlliances
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
 	eventSettings.TeamInfoDownloadEnabled = r.PostFormValue("teamInfoDownloadEnabled") == "on"
 	eventSettings.AllianceDisplayHotGoals = r.PostFormValue("allianceDisplayHotGoals") == "on"
+	eventSettings.RedGoalLightsAddress = r.PostFormValue("redGoalLightsAddress")
+	eventSettings.BlueGoalLightsAddress = r.PostFormValue("blueGoalLightsAddress")
 	eventSettings.TbaPublishingEnabled = r.PostFormValue("tbaPublishingEnabled") == "on"
 	eventSettings.TbaEventCode = r.PostFormValue("tbaEventCode")
 	eventSettings.TbaSecretId = r.PostFormValue("tbaSecretId")
@@ -58,6 +61,14 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+
+	// Set up the light controller connections again in case the address changed.
+	err = mainArena.lights.SetupConnections()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
 	http.Redirect(w, r, "/setup/settings", 302)
 }
 

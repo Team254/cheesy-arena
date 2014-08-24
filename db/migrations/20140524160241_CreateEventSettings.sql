@@ -9,6 +9,8 @@ CREATE TABLE event_settings (
   selectionround3order VARCHAR(1),
   teaminfodownloadenabled bool,
   alliancedisplayhotgoals bool,
+  redgoallightsaddress VARCHAR(255),
+  bluegoallightsaddress VARCHAR(255),
   tbapublishingenabled bool,
   tbaeventcode VARCHAR(16),
   tbasecretid VARCHAR(255),
