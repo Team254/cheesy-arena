@@ -17,15 +17,16 @@ var handleSetAllianceStationDisplay = function(targetScreen) {
   }
   switch (targetScreen) {
     case "logo":
-      $("#match").hide();
+      $("#preMatch").hide();
+      $("#inMatch").hide();
       $("#logo").show();
       break;
     case "blank":
-      $("#match").hide();
+      $("#preMatch").hide();
+      $("#inMatch").hide();
       $("#logo").hide();
       break;
     case "match":
-      $("#match").show();
       $("#logo").hide();
       break;
   }
@@ -44,24 +45,27 @@ var handleSetMatch = function(data) {
   if (allianceStation != "") {
     team = data.Teams[allianceStation];
     if (team == null) {
-      $("#teamId").text("");
+      $("#preMatchTeamId").text("");
+      $("#inMatchTeamId").text("");
       $("#teamName").text("");
-      $("#teamName").attr("data-alliance", "");
+      $("#teamName").attr("data-alliance-bg", "");
+      $("#inMatchTeamId").attr("data-alliance", "");
     } else {
-      $("#teamName").attr("data-alliance", allianceStation[0]);
-      $("#teamId").text(data.Teams[allianceStation].Id);
+      $("#teamName").attr("data-alliance-bg", allianceStation[0]);
+      $("#inMatchTeamId").attr("data-alliance", allianceStation[0]);
+      $("#preMatchTeamId").text(data.Teams[allianceStation].Id);
+      $("#inMatchTeamId").text(data.Teams[allianceStation].Id);
       $("#teamName").text(data.Teams[allianceStation].Nickname);
     }
     $("#displayId").hide();
-    $("#teamId").show();
-    $("#teamName").show();
   } else {
     // Show the display ID so that someone can assign it to a station from the configuration interface.
-    $("#teamId").text("");
+    $("#preMatchTeamId").text("");
+    $("#inMatchTeamId").text("");
     $("#teamName").text("");
     $("#displayId").show();
-    $("#teamId").hide();
-    $("#teamName").hide();
+    $("#preMatch").hide();
+    $("#inMatch").hide();
   }
 };
 
@@ -102,11 +106,11 @@ var handleMatchTime = function(data) {
     $("#matchTime").text(countdownString);
 
     if (matchState == "PRE_MATCH" || matchState == "POST_MATCH") {
-      $("#teamName").show();
-      $("#matchInfo").hide();
+      $("#preMatch").show();
+      $("#inMatch").hide();
     } else {
-      $("#teamName").hide();
-      $("#matchInfo").show();
+      $("#preMatch").hide();
+      $("#inMatch").show();
     }
   });
 };

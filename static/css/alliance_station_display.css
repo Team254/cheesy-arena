@@ -25,17 +25,28 @@ body {
   color: #ff0;
   font-size: 500px;
 }
-#teamId {
+#preMatchTeamId {
   position: absolute;
-  top: 0;
+  top: 40px;
   left: 0;
   right: 0;
   margin: 0 auto;
   font-size: 500px;
   line-height: 500px;
   text-align: center;
-  margin: 50px 0px;
   color: #fff;
+}
+#inMatchTeamId {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  font-size: 200px;
+  line-height: 200px;
+  text-align: center;
+  -webkit-text-stroke-width: 5px;
+  -webkit-text-stroke-color: #fff;
 }
 #teamName {
   position: absolute;
@@ -50,23 +61,40 @@ body {
   font-size: 120px;
   color: #fff;
 }
+#matchTime {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto auto;
+  height: 400px;
+  line-height: 350px;
+  text-align: center;
+  font-size: 350px;
+  color: #fff;
+}
 #matchInfo {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   margin: 0 auto;
-  height: 200px;
-  line-height: 200px;
+  height: 250px;
+  line-height: 250px;
   text-align: center;
-  font-size: 190px;
+  font-size: 250px;
   color: #fff;
 }
 #redScore {
   color: #f00;
+  -webkit-text-stroke-width: 5px;
+  -webkit-text-stroke-color: #fff;
 }
 #blueScore {
-  color: #66f;
+  color: #00f;
+  -webkit-text-stroke-width: 5px;
+  -webkit-text-stroke-color: #fff;
 }
 #logo {
   position: absolute;
@@ -77,11 +105,17 @@ body {
   width: 90%;
   margin: auto auto;
 }
-[data-alliance=R], [data-status=R] {
+[data-alliance-bg=R], [data-status=R] {
   background-color: #f00;
 }
-[data-alliance=B], [data-status=B] {
+[data-alliance-bg=B], [data-status=B] {
   background-color: #00f;
+}
+[data-alliance=R], [data-status=R] {
+  color: #f00;
+}
+[data-alliance=B], [data-status=B] {
+  color: #00f;
 }
 [data-status=bypass] {
   background-color: #666;

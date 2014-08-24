@@ -9,13 +9,16 @@
   </head>
   <body>
     <div id="displayId" style="display: none;"></div>
-    <div id="match" style="display: none;">
-      <div id="teamId" style="display: none;"></div>
-      <div id="teamName" style="display: none;"></div>
-      <div class="row" id="matchInfo" style="display: none;">
-        <div class="col-lg-4 text-center" id="redScore"></div>
-        <div class="col-lg-4 text-center" id="matchTime"></div>
-        <div class="col-lg-4 text-center" id="blueScore"></div>
+    <div id="preMatch" style="display: none;">
+      <div id="preMatchTeamId"></div>
+      <div id="teamName"></div>
+    </div>
+    <div id="inMatch" style="display: none;">
+      <div id="inMatchTeamId"></div>
+      <div id="matchTime"></div>
+      <div class="row" id="matchInfo">
+        <div class="col-lg-6 text-center" id="redScore"></div>
+        <div class="col-lg-6 text-center" id="blueScore"></div>
       </div>
     </div>
     <img id="logo" src="/static/img/logo-black.svg" style="display: none;"/>
