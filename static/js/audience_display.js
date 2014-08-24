@@ -185,21 +185,22 @@ var transitionInMatchToBlank = function(callback) {
 };
 
 var transitionBlankToLogo = function(callback) {
+  $(".blindsCenter.blank").css({rotateY: "0deg"});
+  $(".blindsCenter.full").css({rotateY: "-180deg"});
   $(".blinds.right").transition({queue: false, right: 0}, 1000, "ease");
   $(".blinds.left").transition({queue: false, left: 0}, 1000, "ease", function() {
     $(".blinds.left").addClass("full");
     $(".blinds.right").hide();
-    $(".blinds.center-blank").css({rotateY: "0deg"});
     setTimeout(function() {
-      $(".blinds.center-blank").transition({queue: false, rotateY: "180deg"}, 500, "ease");
-      $("#blindsCenter").transition({queue: false, rotateY: "0deg"}, 500, "ease", callback);
+      $(".blindsCenter.blank").transition({queue: false, rotateY: "180deg"}, 500, "ease");
+      $(".blindsCenter.full").transition({queue: false, rotateY: "0deg"}, 500, "ease", callback);
     }, 200);
   });
 };
 
 var transitionLogoToBlank = function(callback) {
-  $(".blinds.center-blank").transition({queue: false, rotateY: "360deg"}, 500, "ease");
-  $("#blindsCenter").transition({queue: false, rotateY: "180deg"}, 500, "ease", function() {
+  $(".blindsCenter.blank").transition({queue: false, rotateY: "360deg"}, 500, "ease");
+  $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 500, "ease", function() {
     setTimeout(function() {
       $(".blinds.left").removeClass("full");
       $(".blinds.right").show();
@@ -210,7 +211,7 @@ var transitionLogoToBlank = function(callback) {
 };
 
 var transitionLogoToScore = function(callback) {
-  $("#blindsCenter").transition({queue: false, top: "-350px"}, 750, "ease", function () {
+  $(".blindsCenter.full").transition({queue: false, top: "-350px"}, 750, "ease", function () {
     $("#finalScore").show();
     $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
   });
@@ -225,7 +226,7 @@ var transitionBlankToScore = function(callback) {
 var transitionScoreToLogo = function(callback) {
   $("#finalScore").transition({queue: false, opacity: 0}, 500, "linear", function() {
     $("#finalScore").hide();
-    $("#blindsCenter").transition({queue: false, top: 0}, 750, "ease", callback);
+    $(".blindsCenter.full").transition({queue: false, top: 0}, 750, "ease", callback);
   });
 };
 
@@ -264,7 +265,7 @@ var transitionLowerThirdToBlank = function(callback) {
 };
 
 var transitionBlankToSponsor = function(callback) {
-  $(".blinds.center-blank").css({rotateY: "90deg"});
+  $(".blindsCenter.blank").css({rotateY: "90deg"});
   $(".blinds.right").transition({queue: false, right: 0}, 1000, "ease");
   $(".blinds.left").transition({queue: false, left: 0}, 1000, "ease", function() {
     $(".blinds.left").addClass("full");
@@ -279,17 +280,17 @@ var transitionBlankToSponsor = function(callback) {
 var transitionSponsorToBlank = function(callback) {
   $("#sponsor").transition({queue: false, opacity: 0}, 1000, "ease", function() {
     setTimeout(function() {
-      $("#sponsor").hide();
       $(".blinds.left").removeClass("full");
       $(".blinds.right").show();
       $(".blinds.right").transition({queue: false, right: "-50%"}, 1000, "ease");
       $(".blinds.left").transition({queue: false, left: "-50%"}, 1000, "ease", callback);
+      $("#sponsor").hide();
     }, 200);
   });
 };
 
 var transitionLogoToSponsor = function(callback) {
-  $("#blindsCenter").transition({queue: false, rotateY: "90deg"}, 750, "ease", function () {
+  $(".blindsCenter.full").transition({queue: false, rotateY: "90deg"}, 750, "ease", function () {
     $("#sponsor").show();
     $("#sponsor").transition({queue: false, opacity: 1}, 1000, "ease", callback);
   });
@@ -297,8 +298,8 @@ var transitionLogoToSponsor = function(callback) {
 
 var transitionSponsorToLogo = function(callback) {
   $("#sponsor").transition({queue: false, opacity: 0}, 1000, "ease", function() {
+    $(".blindsCenter.full").transition({queue: false, rotateY: "0deg"}, 750, "ease", callback);
     $("#sponsor").hide();
-    $("#blindsCenter").transition({queue: false, rotateY: "0deg"}, 750, "ease", callback);
   });
 };
 

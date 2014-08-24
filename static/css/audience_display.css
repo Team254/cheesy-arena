@@ -139,6 +139,7 @@ html {
   background-size: 200%;
   height: 100%;
   width: 50%;
+  overflow: hidden;
 }
 .blinds.left {
   background-position: left;
@@ -156,21 +157,10 @@ html {
 .blinds.background {
   background-image: url("/static/img/endofmatch-bg.png");
 }
-.blinds.center {
-  position: fixed;
-  background-image: url("/static/img/endofmatch-center.png");
-}
-.blinds.center-blank {
-  background-image: url("/static/img/endofmatch-center-blank.png");
-  -webkit-backface-visibility: hidden;
-  z-index: 3;
-}
-#blindsCenter {
+.blindsCenter {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 0;
-  right: 0;
   margin: auto auto;
   border-radius: 50%;
   width: 310px;
@@ -181,7 +171,21 @@ html {
   text-align: center;
   -webkit-backface-visibility: hidden;
   z-index: 2;
+}
+.blindsCenter.full {
+  left: 0;
+  right: 0;
   transform: rotateY(-180deg);
+}
+.blinds.left .blindsCenter.blank {
+  right: -155px;
+}
+.blinds.full .blindsCenter.blank {
+  right: 0;
+  left: 0;
+}
+.blinds.right .blindsCenter.blank {
+  left: -155px;
 }
 #blindsLogo {
   position: relative;
