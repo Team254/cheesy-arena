@@ -1,5 +1,6 @@
 // Copyright 2014 Team 254. All Rights Reserved.
-// Author: pat@patfairbank.com (Patrick Fairbank)
+// Authors: pat@patfairbank.com (Patrick Fairbank)
+//          nick@team254.com (Nick Eyre)
 //
 // Client-side methods for the audience display.
 
@@ -262,6 +263,57 @@ var transitionLowerThirdToBlank = function(callback) {
   });
 };
 
+var transitionBlankToSponsor = function(callback) {
+  $(".blinds.center-blank").css({rotateY: "90deg"});
+  $(".blinds.right").transition({queue: false, right: 0}, 1000, "ease");
+  $(".blinds.left").transition({queue: false, left: 0}, 1000, "ease", function() {
+    $(".blinds.left").addClass("full");
+    $(".blinds.right").hide();
+    setTimeout(function() {
+      $("#sponsor").show();
+      $("#sponsor").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+    }, 200);
+  });
+};
+
+var transitionSponsorToBlank = function(callback) {
+  $("#sponsor").transition({queue: false, opacity: 0}, 1000, "ease", function() {
+    setTimeout(function() {
+      $("#sponsor").hide();
+      $(".blinds.left").removeClass("full");
+      $(".blinds.right").show();
+      $(".blinds.right").transition({queue: false, right: "-50%"}, 1000, "ease");
+      $(".blinds.left").transition({queue: false, left: "-50%"}, 1000, "ease", callback);
+    }, 200);
+  });
+};
+
+var transitionLogoToSponsor = function(callback) {
+  $("#blindsCenter").transition({queue: false, rotateY: "90deg"}, 750, "ease", function () {
+    $("#sponsor").show();
+    $("#sponsor").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+  });
+};
+
+var transitionSponsorToLogo = function(callback) {
+  $("#sponsor").transition({queue: false, opacity: 0}, 1000, "ease", function() {
+    $("#sponsor").hide();
+    $("#blindsCenter").transition({queue: false, rotateY: "0deg"}, 750, "ease", callback);
+  });
+};
+
+var transitionScoreToSponsor = function(callback) {
+  transitionScoreToLogo(function() {
+    transitionLogoToSponsor(callback);
+  });
+};
+
+var transitionSponsorToScore = function(callback) {
+  transitionSponsorToLogo(function() {
+    transitionLogoToScore(callback);
+  });
+};
+
 $(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {
@@ -284,6 +336,7 @@ $(function() {
       match: transitionBlankToInMatch,
       score: transitionBlankToScore,
       logo: transitionBlankToLogo,
+      sponsor: transitionBlankToSponsor,
       allianceSelection: transitionBlankToAllianceSelection,
       lowerThird: transitionBlankToLowerThird
     },
@@ -297,11 +350,18 @@ $(function() {
     },
     score: {
       blank: transitionScoreToBlank,
-      logo: transitionScoreToLogo
+      logo: transitionScoreToLogo,
+      sponsor: transitionScoreToSponsor
     },
     logo: {
       blank: transitionLogoToBlank,
-      score: transitionLogoToScore
+      score: transitionLogoToScore,
+      sponsor: transitionLogoToSponsor
+    },
+    sponsor: {
+      blank: transitionSponsorToBlank,
+      logo: transitionSponsorToLogo,
+      score: transitionSponsorToScore
     },
     allianceSelection: {
       blank: transitionAllianceSelectionToBlank
