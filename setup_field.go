@@ -36,3 +36,9 @@ func FieldPostHandler(w http.ResponseWriter, r *http.Request) {
 	mainArena.matchLoadTeamsNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/field", 302)
 }
+
+// Force-reloads all the websocket-connected displays.
+func FieldReloadDisplaysHandler(w http.ResponseWriter, r *http.Request) {
+	mainArena.reloadDisplaysNotifier.Notify(nil)
+	http.Redirect(w, r, "/setup/field", 302)
+}

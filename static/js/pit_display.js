@@ -4,6 +4,7 @@
 //
 // Client-side methods for the pit display.
 
+var websocket;
 var initial_dwell_ms = 3000;
 var scroll_ms_per_row = 700;  // How long in milliseconds it takes to scroll a height of one row.
 var static_update_interval_ms = 10000;  // How long between updates if not scrolling.
@@ -80,5 +81,8 @@ var setHighestPlayedMatch = function(highestPlayedMatch) {
 };
 
 $(function() {
+  // Set up the websocket back to the server. Used only for remote forcing of reloads.
+  websocket = new CheesyWebsocket("/displays/pit/websocket", {});
+
   updateStaticRankings();
 });

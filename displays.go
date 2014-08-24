@@ -64,6 +64,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(allianceSelectionListener)
 	lowerThirdListener := mainArena.lowerThirdNotifier.Listen()
 	defer close(lowerThirdListener)
+	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
@@ -194,6 +196,12 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "lowerThird"
 				message = lowerThird
+			case _, ok := <-reloadDisplaysListener:
+				if !ok {
+					return
+				}
+				messageType = "reload"
+				message = nil
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {
@@ -234,6 +242,53 @@ func PitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// The websocket endpoint for the pit display, used only to force reloads remotely.
+func PitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	websocket, err := NewWebsocket(w, r)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	defer websocket.Close()
+
+	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	defer close(reloadDisplaysListener)
+
+	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
+	go func() {
+		for {
+			var messageType string
+			var message interface{}
+			select {
+			case _, ok := <-reloadDisplaysListener:
+				if !ok {
+					return
+				}
+				messageType = "reload"
+				message = nil
+			}
+			err = websocket.Write(messageType, message)
+			if err != nil {
+				// The client has probably closed the connection; nothing to do here.
+				return
+			}
+		}
+	}()
+
+	// Loop, waiting for commands and responding to them, until the client closes the connection.
+	for {
+		_, _, err := websocket.Read()
+		if err != nil {
+			if err == io.EOF {
+				// Client has closed the connection; nothing to do here.
+				return
+			}
+			log.Printf("Websocket error: %s", err)
+			return
+		}
+	}
+}
+
 // Renders the announcer display which shows team info and scores for the current match.
 func AnnouncerDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	template := template.New("").Funcs(templateHelpers)
@@ -271,6 +326,8 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(scorePostedListener)
 	audienceDisplayListener := mainArena.audienceDisplayNotifier.Listen()
 	defer close(audienceDisplayListener)
+	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
@@ -374,6 +431,12 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "setAudienceDisplay"
 				message = mainArena.audienceDisplayScreen
+			case _, ok := <-reloadDisplaysListener:
+				if !ok {
+					return
+				}
+				messageType = "reload"
+				message = nil
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {
@@ -459,6 +522,8 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
 	defer close(matchLoadTeamsListener)
+	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
 	err = websocket.Write("score", *score)
@@ -479,6 +544,12 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "score"
 				message = *score
+			case _, ok := <-reloadDisplaysListener:
+				if !ok {
+					return
+				}
+				messageType = "reload"
+				message = nil
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {
@@ -710,6 +781,8 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
 	defer close(matchLoadTeamsListener)
+	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	defer close(reloadDisplaysListener)
 
 	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
 	go func() {
@@ -718,6 +791,12 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			var message interface{}
 			select {
 			case _, ok := <-matchLoadTeamsListener:
+				if !ok {
+					return
+				}
+				messageType = "reload"
+				message = nil
+			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return
 				}
@@ -892,6 +971,8 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	defer close(realtimeScoreListener)
 	hotGoalLightListener := mainArena.hotGoalLightNotifier.Listen()
 	defer close(hotGoalLightListener)
+	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
@@ -997,6 +1078,12 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				}
 				messageType = "hotGoalLight"
 				message = side
+			case _, ok := <-reloadDisplaysListener:
+				if !ok {
+					return
+				}
+				messageType = "reload"
+				message = nil
 			}
 			err = websocket.Write(messageType, message)
 			if err != nil {
