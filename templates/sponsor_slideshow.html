@@ -1,0 +1,85 @@
+{{define "title"}}Sponsor Slideshow Configuration{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <div class="well">
+      <legend>Sponsor Slideshow Configuration</legend>
+      <p>Place images in /static/img/sponsors/</p>
+      {{range $sponsorSlideshow := .SponsorSlideshow}}
+        <form class="form-horizontal existing" action="/setup/sponsor_slideshow" method="POST" data-priority="{{$sponsorSlideshow.Priority}}">
+          <div class="form-group">
+            <div class="col-lg-7">
+              <input type="hidden" name="id" value="{{$sponsorSlideshow.Id}}" />
+              <input type="text" class="form-control" name="image" value="{{$sponsorSlideshow.Image}}" placeholder="Image File Name" />
+              <div class='form-inline'>
+                <input type="text" class="form-control" name="line1" value="{{$sponsorSlideshow.Line1}}" placeholder="Line 1 Text" />
+                <input type="text" class="form-control" name="line2" value="{{$sponsorSlideshow.Line2}}" placeholder="Line 2 Text" />
+              </div>
+              <input type="text" class="form-control" name="subtitle" value="{{$sponsorSlideshow.Subtitle}}" placeholder="Subtitle Text" />
+              <label class="radio-inline">
+                <input type="radio" name="priority" value="1"> 1 (Show Often)
+              </label>
+              <label class="radio-inline">
+                <input type="radio" name="priority" value="2"> 2
+              </label>
+              <label class="radio-inline">
+                <input type="radio" name="priority" value="3"> 3
+              </label>
+              <label class="radio-inline">
+                <input type="radio" name="priority" value="4"> 4
+              </label>
+              <label class="radio-inline">
+                <input type="radio" name="priority" value="5"> 5 (Show Rarely)
+              </label>
+            </div>
+            <div class="col-lg-5">
+              <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
+              <br />
+              <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="delete">Delete</button>
+            </div>
+          </div>
+        </form>
+      {{end}}
+      <form class="form-horizontal" action="/setup/sponsor_slideshow" method="POST">
+        <div class="form-group">
+          <div class="col-lg-7">
+            <input type="text" class="form-control" name="image" placeholder="Image File Name" />
+            <div class='form-inline'>
+              <input type="text" class="form-control" name="line1" placeholder="Line 1 Text" />
+              <input type="text" class="form-control" name="line2" placeholder="Line 2 Text" />
+            </div>
+            <input type="text" class="form-control" name="subtitle" placeholder="Subtitle Text" />
+            <label class="radio-inline">
+              <input type="radio" name="priority" value="1"> 1 (Show Often)
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="priority" value="2"> 2
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="priority" value="3"> 3
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="priority" value="4"> 4
+            </label>
+            <label class="radio-inline">
+              <input type="radio" name="priority" value="5"> 5 (Show Rarely)
+            </label>
+          </div>
+          <div class="col-lg-5">
+            <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+<script type='text/javascript'>
+$(function(){
+  $('form.existing').each(function(){
+    $(this).find('input[name=priority][value='+$(this).attr('data-priority')+']').attr('checked','true');
+  });
+});
+</script>
+{{end}}

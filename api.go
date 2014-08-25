@@ -55,6 +55,27 @@ func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func SponsorsApiHandler(w http.ResponseWriter, r *http.Request) {
+	sponsors, err := db.GetAllSponsorSlideshows()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	jsonData, err := json.MarshalIndent(sponsors, "", "  ")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(jsonData)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
+
 // Generates a JSON dump of the qualification rankings.
 func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	rankings, err := db.GetAllRankings()

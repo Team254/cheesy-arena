@@ -311,6 +311,7 @@ html {
   left: 0;
   bottom: 0;
   right: 0;
+  height: 96px;
 }
 #sponsor h2 {
   font-size: 7em;

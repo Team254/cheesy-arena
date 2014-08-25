@@ -314,6 +314,53 @@ var transitionSponsorToScore = function(callback) {
   });
 };
 
+// Load and Prioritize Sponsor Data
+var sponsors;
+var sponsorIndex = [];
+var initializeSponsorDisplay = function() {
+  $.getJSON("/api/sponsors", function(data) {
+    sponsors = data;
+
+    // Invert Priorities
+    $.each(sponsors, function(index){
+      var priorityCount = 10 / sponsors[index]['Priority'];
+      for(i=0; i<priorityCount; i++){
+        sponsorIndex.push(index);
+      }
+    });
+
+    // Load Tiles
+    loadNextSponsor(true);
+    if(sponsors.length > 1)
+      loadNextSponsor();
+    $('.carousel#sponsor').on('slid.bs.carousel', function(){
+      loadNextSponsor();
+      $('#sponsorContainer').children()[0].remove();
+    });
+  });
+}
+var lastSponsor;
+var loadNextSponsor = function(active) {
+  // Don't load same sponsor twice in a row
+  var currentSponsor = sponsorIndex[Math.round(Math.random()*sponsorIndex.length)];
+  while(currentSponsor == lastSponsor){
+    currentSponsor = sponsorIndex[Math.round(Math.random()*sponsorIndex.length)];
+  }
+  lastSponsor = currentSponsor;
+  currentSponsor = sponsors[currentSponsor];
+
+  if(active == true)
+    active = 'active'
+  else
+    active = '';
+  
+  if(currentSponsor['Image'].length)
+    $('#sponsorContainer').append('<div class="item '+active+'"><img src="/static/img/sponsors/'+currentSponsor['Image']+'" /><h1>'+currentSponsor['Subtitle']+'</h1></div>');
+  else
+    $('#sponsorContainer').append('<div class="item '+active+'"><h2>'+currentSponsor['Line1']+'<br />'+currentSponsor['Line2']+'</h2><h1>'+currentSponsor['Subtitle']+'</h1></div>');
+}
+
+
 $(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {
@@ -327,6 +374,8 @@ $(function() {
     allianceSelection: function(event) { handleAllianceSelection(event.data); },
     lowerThird: function(event) { handleLowerThird(event.data); }
   });
+
+  initializeSponsorDisplay();
 
   // Map how to transition from one screen to another. Missing links between screens indicate that first we
   // must transition to the blank screen and then to the target screen.

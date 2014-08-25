@@ -15,15 +15,16 @@ import (
 const migrationsDir = "db/migrations"
 
 type Database struct {
-	path             string
-	db               *sql.DB
-	eventSettingsMap *modl.DbMap
-	matchMap         *modl.DbMap
-	matchResultMap   *modl.DbMap
-	rankingMap       *modl.DbMap
-	teamMap          *modl.DbMap
-	allianceTeamMap  *modl.DbMap
-	lowerThirdMap    *modl.DbMap
+	path             	string
+	db               	*sql.DB
+	eventSettingsMap 	*modl.DbMap
+	matchMap         	*modl.DbMap
+	matchResultMap   	*modl.DbMap
+	rankingMap       	*modl.DbMap
+	teamMap          	*modl.DbMap
+	allianceTeamMap  	*modl.DbMap
+	lowerThirdMap    	*modl.DbMap
+	sponsorSlideshowMap	*modl.DbMap
 }
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
@@ -79,4 +80,7 @@ func (database *Database) mapTables() {
 
 	database.lowerThirdMap = modl.NewDbMap(database.db, dialect)
 	database.lowerThirdMap.AddTableWithName(LowerThird{}, "lower_thirds").SetKeys(true, "Id")
+
+	database.sponsorSlideshowMap = modl.NewDbMap(database.db, dialect)
+	database.sponsorSlideshowMap.AddTableWithName(SponsorSlideshow{}, "sponsor_slideshow").SetKeys(true, "Id")
 }
