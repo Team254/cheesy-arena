@@ -15,7 +15,7 @@ import (
 	"strconv"
 )
 
-var tbaBaseUrl = "http://tbatv-dev-efang.appspot.com"
+var tbaBaseUrl = "http://www.thebluealliance.com"
 
 type TbaMatch struct {
 	CompLevel      string                       `json:"comp_level"`
