@@ -79,3 +79,25 @@ func TestRankingsApi(t *testing.T) {
 	}
 	assert.Equal(t, "29", rankingsData.HighestPlayedMatch)
 }
+
+func TestSponsorSlides(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	db, _ = OpenDatabase(testDbPath)
+
+	slide1 := SponsorSlide{1, "subtitle", "line1", "line2", "image", "priority"}
+	slide2 := SponsorSlide{2, "Chezy Sponsaur", "Teh", "Chezy Pofs", "ejface.jpg", "high"}
+	db.CreateSponsorSlide(&slide1)
+	db.CreateSponsorSlide(&slide2)
+
+	recorder := getHttpResponse("/api/sponsor_slides")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "application/json", recorder.HeaderMap["Content-Type"][0])
+	var sponsorSlides []SponsorSlide
+	err := json.Unmarshal([]byte(recorder.Body.String()), &sponsorSlides)
+	assert.Nil(t, err)
+	if assert.Equal(t, 2, len(sponsorSlides)) {
+		assert.Equal(t, slide1, sponsorSlides[0])
+		assert.Equal(t, slide2, sponsorSlides[1])
+	}
+}

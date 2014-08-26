@@ -16,6 +16,7 @@ import (
 )
 
 var catalystTelnetPort = 23
+
 const eventServerAddress = "10.0.100.50"
 
 var catalystMutex sync.Mutex
