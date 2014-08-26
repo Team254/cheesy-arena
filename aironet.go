@@ -15,7 +15,8 @@ import (
 	"sync"
 )
 
-const aironetTelnetPort = 23
+var aironetTelnetPort = 23
+
 const (
 	red1Vlan  = 11
 	red2Vlan  = 12
@@ -94,7 +95,7 @@ func getSsids() (map[string]int, error) {
 	}
 
 	// Parse out the SSIDs and VLANs from the config dump.
-	re := regexp.MustCompile("(?s)dot11 ssid (\\w+)\\s+vlan (\\d+)")
+	re := regexp.MustCompile("(?s)dot11 ssid (\\w+)\\s+vlan (1[1-6])")
 	ssidMatches := re.FindAllStringSubmatch(config, -1)
 	if ssidMatches == nil {
 		// There are probably no SSIDs currently configured.
