@@ -315,54 +315,45 @@ var transitionSponsorToScore = function(callback) {
 };
 
 // Load and Prioritize Sponsor Data
-var sponsors;
-var sponsorIndex = [];
-var lastSponsor;
-
 var initializeSponsorDisplay = function() {
-  $.getJSON("/api/sponsor_slides", function(data) {
-    sponsors = data;
+  $.getJSON("/api/sponsor_slides", function(sponsors) {
 
-    // Invert Priorities
+    // Populate Tiles
     $.each(sponsors, function(index){
-      var priorityCount = 10 / sponsors[index]["Priority"];
-      for(i=0; i<priorityCount; i++){
-        sponsorIndex.push(index);
-      }
+      var active = 'active';
+      if(index)
+        active = '';
+
+      if(sponsors[index]['Image'].length)
+        $('#sponsorContainer').append('<div class="item '+active+'" data-interval="'+sponsors[index]["Priority"]*1000+'"><img src="/static/img/sponsors/'+sponsors[index]['Image']+'" /><h1>'+sponsors[index]['Subtitle']+'</h1></div>');
+      else
+        $('#sponsorContainer').append('<div class="item '+active+'" data-interval="'+sponsors[index]["Priority"]*1000+'"><h2>'+sponsors[index]['Line1']+'<br />'+sponsors[index]['Line2']+'</h2><h1>'+sponsors[index]['Subtitle']+'</h1></div>');
+
     });
 
-    // Load Tiles
-    loadNextSponsor(true);
-    if(sponsors.length > 1)
-      loadNextSponsor();
-    $(".carousel#sponsor").on("slid.bs.carousel", function(){
-      loadNextSponsor();
-      $("#sponsorContainer").children()[0].remove();
+    // Start Carousel
+    var t;
+    var start = $('.carousel#sponsor').find('.active').attr('data-interval');
+    t = setTimeout("$('.carousel#sponsor').carousel({interval: 1000});", start-1000);
+
+    $('.carousel#sponsor').on('slid.bs.carousel', function () {   
+         clearTimeout(t);  
+         var duration = $(this).find('.active').attr('data-interval');
+
+         $('.carousel#sponsor').carousel('pause');
+         t = setTimeout("$('.carousel#sponsor').carousel();", duration-1000);
+    })
+
+    $('.carousel-control.right').on('click', function(){
+        clearTimeout(t);   
     });
+
+    $('.carousel-control.left').on('click', function(){
+        clearTimeout(t);   
+    });
+
   });
-};
-
-var loadNextSponsor = function(active) {
-  // Don't load same sponsor twice in a row
-  var currentSponsor = sponsorIndex[Math.round(Math.random() * sponsorIndex.length)];
-  while(currentSponsor == lastSponsor) {
-    currentSponsor = sponsorIndex[Math.round(Math.random() * sponsorIndex.length)];
-  }
-  lastSponsor = currentSponsor;
-  currentSponsor = sponsors[currentSponsor];
-
-  if (active == true) {
-    active = "active"
-  } else {
-    active = "";
-  }
-
-  if (currentSponsor["Image"].length) {
-    $("#sponsorContainer").append('<div class="item '+active+'"><img src="/static/img/sponsors/'+currentSponsor['Image']+'" /><h1>'+currentSponsor['Subtitle']+'</h1></div>');
-  } else {
-    $("#sponsorContainer").append('<div class="item '+active+'"><h2>'+currentSponsor['Line1']+'<br />'+currentSponsor['Line2']+'</h2><h1>'+currentSponsor['Subtitle']+'</h1></div>');
-  }
-};
+}
 
 
 $(function() {

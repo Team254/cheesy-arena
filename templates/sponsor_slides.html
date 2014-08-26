@@ -10,32 +10,43 @@
           <div class="form-group">
             <div class="col-lg-7">
               <input type="hidden" name="id" value="{{$sponsorSlide.Id}}" />
-              <input type="text" class="form-control" name="image" value="{{$sponsorSlide.Image}}" placeholder="Image File Name" />
-              <div class='form-inline'>
-                <input type="text" class="form-control" name="line1" value="{{$sponsorSlide.Line1}}" placeholder="Line 1 Text" />
-                <input type="text" class="form-control" name="line2" value="{{$sponsorSlide.Line2}}" placeholder="Line 2 Text" />
+                <div class="form-group imagetoggle">
+                  <label for="image" class="col-sm-5 control-label">Image File Name</label>
+                  <div class="col-sm-7">
+                    <input type="text" class="form-control" name="image" placeholder="image.svg" value="{{$sponsorSlide.Image}}">
+                  </div>
+                </div>
+                <div class="form-group hidden imagetoggle">
+                  <label for="line1" class="col-sm-5 control-label">Line 1 Text</label>
+                  <div class="col-sm-7">
+                    <input type="text" class="form-control" value="{{$sponsorSlide.Line1}}" name="line1" placeholder="Chezy">
+                  </div>
+                </div>
+                <div class="form-group hidden imagetoggle">
+                  <label for="line2" class="col-sm-5 control-label">Line 2 Text</label>
+                  <div class="col-sm-7">
+                    <input type="text" class="form-control" value="{{$sponsorSlide.Line2}}" name="line2" placeholder="Industries">
+                  </div>
+                </div>
+              <div class="form-group">
+                <label for="subtitle" class="col-sm-5 control-label">Subtitle Text</label>
+                <div class="col-sm-7">
+                  <input type="text" class="form-control" name="subtitle" value="{{$sponsorSlide.Subtitle}}" placeholder="Gold Sponsor">
+                </div>
               </div>
-              <input type="text" class="form-control" name="subtitle" value="{{$sponsorSlide.Subtitle}}" placeholder="Subtitle Text" />
-              <label class="radio-inline">
-                <input type="radio" name="priority" value="1"> 1 (Show Often)
-              </label>
-              <label class="radio-inline">
-                <input type="radio" name="priority" value="2"> 2
-              </label>
-              <label class="radio-inline">
-                <input type="radio" name="priority" value="3"> 3
-              </label>
-              <label class="radio-inline">
-                <input type="radio" name="priority" value="4"> 4
-              </label>
-              <label class="radio-inline">
-                <input type="radio" name="priority" value="5"> 5 (Show Rarely)
-              </label>
+              <div class="form-group">
+                <label for="priority" class="col-sm-5 control-label">Display Time (s)</label>
+                <div class="col-sm-7">
+                  <input type="number" class="form-control" name="priority" value="{{$sponsorSlide.Priority}}" placeholder="10">
+                </div>
+              </div>
             </div>
             <div class="col-lg-5">
               <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
               <br />
               <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="delete">Delete</button>
+              <br />
+              <button class="btn btn-warning" name="toggleImage">Toggle Image</button>
             </div>
           </div>
         </form>
@@ -43,30 +54,41 @@
       <form class="form-horizontal" action="/setup/sponsor_slides" method="POST">
         <div class="form-group">
           <div class="col-lg-7">
-            <input type="text" class="form-control" name="image" placeholder="Image File Name" />
-            <div class='form-inline'>
-              <input type="text" class="form-control" name="line1" placeholder="Line 1 Text" />
-              <input type="text" class="form-control" name="line2" placeholder="Line 2 Text" />
+            <div class="form-group imagetoggle">
+              <label for="image" class="col-sm-5 control-label">Image File Name</label>
+              <div class="col-sm-7">
+                <input type="text" class="form-control" name="image" placeholder="image.svg">
+              </div>
             </div>
-            <input type="text" class="form-control" name="subtitle" placeholder="Subtitle Text" />
-            <label class="radio-inline">
-              <input type="radio" name="priority" value="1"> 1 (Show Often)
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="priority" value="2"> 2
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="priority" value="3"> 3
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="priority" value="4"> 4
-            </label>
-            <label class="radio-inline">
-              <input type="radio" name="priority" value="5"> 5 (Show Rarely)
-            </label>
+            <div class="form-group hidden imagetoggle">
+              <label for="line1" class="col-sm-5 control-label">Line 1 Text</label>
+              <div class="col-sm-7">
+                <input type="text" class="form-control" name="line1" placeholder="Chezy">
+              </div>
+            </div>
+            <div class="form-group hidden imagetoggle">
+              <label for="line2" class="col-sm-5 control-label">Line 2 Text</label>
+              <div class="col-sm-7">
+                <input type="text" class="form-control" name="line2" placeholder="Industries">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="subtitle" class="col-sm-5 control-label">Subtitle Text</label>
+              <div class="col-sm-7">
+                <input type="text" class="form-control" name="subtitle" placeholder="Gold Sponsor">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="priority" class="col-sm-5 control-label">Display Time (s)</label>
+              <div class="col-sm-7">
+                <input type="number" class="form-control" name="priority" placeholder="10">
+              </div>
+            </div>
           </div>
           <div class="col-lg-5">
             <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
+            <br />
+            <button class="btn btn-warning" name="toggleImage">Toggle Image</button>
           </div>
         </div>
       </form>
@@ -76,10 +98,17 @@
 {{end}}
 {{define "script"}}
 <script type='text/javascript'>
-$(function(){
-  $('form.existing').each(function(){
-    $(this).find('input[name=priority][value='+$(this).attr('data-priority')+']').attr('checked','true');
+  $(function(){
+    $('form.existing').each(function(index){
+      if(!$(this).find('input[name=image]').val().length && ($(this).find('input[name=line2]').val().length || $(this).find('input[name=line1]').val().length))
+        $(this).find('.imagetoggle').toggleClass('hidden');
+    });
+
+    $('button[name=toggleImage]').click(function(event){
+      event.preventDefault();
+      $(this).parents('form').find('.imagetoggle').toggleClass('hidden');
+      $(this).parents('form').find('.imagetoggle input').val('');
+    });
   });
-});
 </script>
 {{end}}
