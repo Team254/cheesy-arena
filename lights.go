@@ -23,13 +23,13 @@ type Lights struct {
 func (lightPacket *LightPacket) setColor(channel int, color string) {
 	switch color {
 	case "red":
-		lightPacket.setRgb(channel, 16, 0, 0)
+		lightPacket.setRgb(channel, 15, 0, 0)
 	case "blue":
-		lightPacket.setRgb(channel, 0, 0, 16)
+		lightPacket.setRgb(channel, 0, 0, 15)
 	case "yellow":
-		lightPacket.setRgb(channel, 16, 16, 0)
+		lightPacket.setRgb(channel, 15, 11, 0)
 	default:
-		lightPacket.setRgb(channel, 13, 12, 11)
+		lightPacket.setRgb(channel, 0, 0, 0)
 	}
 }
 
