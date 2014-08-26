@@ -14,16 +14,16 @@ var handleSetAllianceStationDisplay = function(targetScreen) {
     // Don't show anything if this screen hasn't been assigned a position yet.
     targetScreen = "blank";
   }
-  $('body').attr('data-mode', targetScreen);
+  $("body").attr("data-mode", targetScreen);
   switch(allianceStation[1]){
-    case '1':
-      $('body').attr('data-position','right');
+    case "1":
+      $("body").attr("data-position", "right");
       break;
-    case '2':
-      $('body').attr('data-position','middle');
+    case "2":
+      $("body").attr("data-position", "middle");
       break;
-    case '3':
-      $('body').attr('data-position','left');
+    case "3":
+      $("body").attr("data-position", "left");
       break;
   }
 };
@@ -40,10 +40,15 @@ var handleSetMatch = function(data) {
 
   if (allianceStation != "") {
     team = data.Teams[allianceStation];
-    $("#teamNumber").text(data.Teams[allianceStation].Id);
-    $("#teamName").attr("data-alliance-bg", allianceStation[0]).text(data.Teams[allianceStation].Nickname);
+    if (team) {
+      $("#teamNumber").text(team.Id);
+      $("#teamName").attr("data-alliance-bg", allianceStation[0]).text(team.Nickname);
+    } else {
+      $("#teamNumber").text("");
+      $("#teamName").attr("data-alliance-bg", allianceStation[0]).text("");
+    }
   } else {
-    $('body').attr('data-mode', 'displayId');
+    $("body").attr("data-mode", "displayId");
   }
 };
 
@@ -82,7 +87,7 @@ var handleMatchTime = function(data) {
     }
     countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
     $("#timeRemaining").text(countdownString);
-    $('#match').attr('data-state', matchState);
+    $("#match").attr("data-state", matchState);
   });
 };
 
@@ -93,9 +98,9 @@ var handleRealtimeScore = function(data) {
 
 var handleHotGoalLight = function(side) {
   if (allianceStation != "" && (side == "left" && allianceStation[1] == "3" || side == "right" && allianceStation[1] == "1")) {
-    $("#match").attr('data-hotgoal','active');
+    $("#match").attr("data-hotgoal", "active");
   } else {
-    $("#match").attr('data-hotgoal','');
+    $("#match").attr("data-hotgoal", "");
   }
 };
 
