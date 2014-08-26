@@ -119,3 +119,19 @@ func TestTeamsPdfReport(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "application/pdf", recorder.HeaderMap["Content-Type"][0])
 }
+
+func TestWpaKeysCsvReport(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	db, _ = OpenDatabase(testDbPath)
+	team1 := Team{Id: 254, WpaKey: "12345678"}
+	team2 := Team{Id: 1114, WpaKey: "9876543210"}
+	db.CreateTeam(&team1)
+	db.CreateTeam(&team2)
+
+	recorder := getHttpResponse("/reports/csv/wpa_keys")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "text/csv", recorder.HeaderMap["Content-Type"][0])
+	assert.Equal(t, "attachment; filename=wpa_keys.csv", recorder.HeaderMap["Content-Disposition"][0])
+	assert.Equal(t, "254,12345678\r\n1114,9876543210\r\n", recorder.Body.String())
+}
