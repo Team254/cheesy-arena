@@ -128,3 +128,40 @@ func TestSetupTeamsBadReqest(t *testing.T) {
 	assert.Equal(t, 400, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "No such team")
 }
+
+func TestSetupTeamsWpaKeys(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+	eventSettings.NetworkSecurityEnabled = true
+
+	team1 := &Team{Id: 254, WpaKey: "aaaaaaaa"}
+	team2 := &Team{Id: 1114}
+	db.CreateTeam(team1)
+	db.CreateTeam(team2)
+
+	recorder := getHttpResponse("/setup/teams/generate_wpa_keys?all=false")
+	assert.Equal(t, 302, recorder.Code)
+	team1, _ = db.GetTeamById(254)
+	team2, _ = db.GetTeamById(1114)
+	assert.Equal(t, "aaaaaaaa", team1.WpaKey)
+	assert.Equal(t, 8, len(team2.WpaKey))
+
+	recorder = getHttpResponse("/setup/teams/generate_wpa_keys?all=true")
+	assert.Equal(t, 302, recorder.Code)
+	team1, _ = db.GetTeamById(254)
+	team3, _ := db.GetTeamById(1114)
+	assert.NotEqual(t, "aaaaaaaa", team1.WpaKey)
+	assert.Equal(t, 8, len(team1.WpaKey))
+	assert.NotEqual(t, team2.WpaKey, team3.WpaKey)
+	assert.Equal(t, 8, len(team3.WpaKey))
+
+	// Disallow invalid manual WPA keys.
+	recorder = postHttpResponse("/setup/teams/254/edit", "wpa_key=1234567")
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "WPA key must be between 8 and 63 characters")
+}
