@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE sponsor_slideshow (
+CREATE TABLE sponsor_slides (
   id INTEGER PRIMARY KEY,
   subtitle VARCHAR(255),
   line1 VARCHAR(255),
@@ -9,4 +9,4 @@ CREATE TABLE sponsor_slideshow (
 );
 
 -- +goose Down
-DROP TABLE sponsor_slideshow;
+DROP TABLE sponsor_slides;

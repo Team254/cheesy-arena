@@ -1,21 +1,21 @@
-{{define "title"}}Sponsor Slideshow Configuration{{end}}
+{{define "title"}}Sponsor Slides Configuration{{end}}
 {{define "body"}}
 <div class="row">
   <div class="col-lg-8 col-lg-offset-2">
     <div class="well">
-      <legend>Sponsor Slideshow Configuration</legend>
+      <legend>Sponsor Slides Configuration</legend>
       <p>Place images in /static/img/sponsors/</p>
-      {{range $sponsorSlideshow := .SponsorSlideshow}}
-        <form class="form-horizontal existing" action="/setup/sponsor_slideshow" method="POST" data-priority="{{$sponsorSlideshow.Priority}}">
+      {{range $sponsorSlide := .SponsorSlides}}
+        <form class="form-horizontal existing" action="/setup/sponsor_slides" method="POST" data-priority="{{$sponsorSlide.Priority}}">
           <div class="form-group">
             <div class="col-lg-7">
-              <input type="hidden" name="id" value="{{$sponsorSlideshow.Id}}" />
-              <input type="text" class="form-control" name="image" value="{{$sponsorSlideshow.Image}}" placeholder="Image File Name" />
+              <input type="hidden" name="id" value="{{$sponsorSlide.Id}}" />
+              <input type="text" class="form-control" name="image" value="{{$sponsorSlide.Image}}" placeholder="Image File Name" />
               <div class='form-inline'>
-                <input type="text" class="form-control" name="line1" value="{{$sponsorSlideshow.Line1}}" placeholder="Line 1 Text" />
-                <input type="text" class="form-control" name="line2" value="{{$sponsorSlideshow.Line2}}" placeholder="Line 2 Text" />
+                <input type="text" class="form-control" name="line1" value="{{$sponsorSlide.Line1}}" placeholder="Line 1 Text" />
+                <input type="text" class="form-control" name="line2" value="{{$sponsorSlide.Line2}}" placeholder="Line 2 Text" />
               </div>
-              <input type="text" class="form-control" name="subtitle" value="{{$sponsorSlideshow.Subtitle}}" placeholder="Subtitle Text" />
+              <input type="text" class="form-control" name="subtitle" value="{{$sponsorSlide.Subtitle}}" placeholder="Subtitle Text" />
               <label class="radio-inline">
                 <input type="radio" name="priority" value="1"> 1 (Show Often)
               </label>
@@ -40,7 +40,7 @@
           </div>
         </form>
       {{end}}
-      <form class="form-horizontal" action="/setup/sponsor_slideshow" method="POST">
+      <form class="form-horizontal" action="/setup/sponsor_slides" method="POST">
         <div class="form-group">
           <div class="col-lg-7">
             <input type="text" class="form-control" name="image" placeholder="Image File Name" />

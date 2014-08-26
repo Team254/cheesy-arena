@@ -55,8 +55,8 @@ func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SponsorsApiHandler(w http.ResponseWriter, r *http.Request) {
-	sponsors, err := db.GetAllSponsorSlideshows()
+func SponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
+	sponsors, err := db.GetAllSponsorSlides()
 	if err != nil {
 		handleWebErr(w, err)
 		return
