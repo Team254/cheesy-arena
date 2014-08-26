@@ -208,6 +208,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 	db.CreateTeam(&Team{Id: 254})
+	eventSettings, _ = db.GetEventSettings()
 	mainArena.Setup()
 
 	server, wsUrl := startTestServer()
@@ -223,6 +224,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "setAudienceDisplay")
 	readWebsocketType(t, ws, "scoringStatus")
+	readWebsocketType(t, ws, "setAllianceStationDisplay")
 
 	// Test that a server-side error is communicated to the client.
 	ws.Write("nonexistenttype", nil)
@@ -297,6 +299,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 	db.CreateTeam(&Team{Id: 254})
+	eventSettings, _ = db.GetEventSettings()
 	mainArena.Setup()
 
 	server, wsUrl := startTestServer()
@@ -321,12 +324,14 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	mainArena.AllianceStations["B3"].Bypass = true
 	mainArena.StartMatch()
 	mainArena.Update()
-	messages := readWebsocketMultiple(t, ws, 3)
+	messages := readWebsocketMultiple(t, ws, 4)
 	statusReceived, matchTime := getStatusMatchTime(t, messages)
 	assert.Equal(t, true, statusReceived)
 	assert.Equal(t, 2, matchTime.MatchState)
 	assert.Equal(t, 0, matchTime.MatchTimeSec)
 	_, ok := messages["setAudienceDisplay"]
+	assert.True(t, ok)
+	_, ok = messages["setAllianceStationDisplay"]
 	assert.True(t, ok)
 	mainArena.scoringStatusNotifier.Notify(nil)
 	readWebsocketType(t, ws, "scoringStatus")

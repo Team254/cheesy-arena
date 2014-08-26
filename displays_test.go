@@ -32,6 +32,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	db, err = OpenDatabase(testDbPath)
 	assert.Nil(t, err)
 	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 	mainArena.Setup()
 
 	server, wsUrl := startTestServer()
@@ -48,6 +49,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "setMatch")
 	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "setFinalScore")
+	readWebsocketType(t, ws, "allianceSelection")
 
 	// Run through a match cycle.
 	mainArena.matchLoadTeamsNotifier.Notify(nil)
@@ -181,6 +183,7 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	db, err = OpenDatabase(testDbPath)
 	assert.Nil(t, err)
 	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 	mainArena.Setup()
 
 	server, wsUrl := startTestServer()
@@ -235,8 +238,9 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	blueWs.Write("undo", nil)
 	blueWs.Write("scoredLow", nil)
 	blueWs.Write("commit", nil)
+	mainArena.MatchState = POST_MATCH
 	redWs.Write("commitMatch", nil)
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 11; i++ {
 		readWebsocketType(t, redWs, "score")
 	}
 	for i := 0; i < 24; i++ {
@@ -288,11 +292,12 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	assert.False(t, mainArena.blueRealtimeScore.TeleopCommitted)
 
 	// Load another match to reset the results.
+	mainArena.ResetMatch()
 	mainArena.LoadTestMatch()
 	readWebsocketType(t, redWs, "score")
 	readWebsocketType(t, blueWs, "score")
-	assert.Equal(t, RealtimeScore{}, *mainArena.redRealtimeScore)
-	assert.Equal(t, RealtimeScore{}, *mainArena.blueRealtimeScore)
+	assert.Equal(t, *NewRealtimeScore(), *mainArena.redRealtimeScore)
+	assert.Equal(t, *NewRealtimeScore(), *mainArena.blueRealtimeScore)
 }
 
 func TestRefereeDisplay(t *testing.T) {
@@ -317,6 +322,7 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	db, err = OpenDatabase(testDbPath)
 	assert.Nil(t, err)
 	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 	mainArena.Setup()
 
 	server, wsUrl := startTestServer()
@@ -378,6 +384,7 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	assert.Equal(t, 1, len(mainArena.redRealtimeScore.Fouls))
 
 	// Test match committing.
+	mainArena.MatchState = POST_MATCH
 	ws.Write("commitMatch", foulData)
 	readWebsocketType(t, ws, "reload")
 	assert.True(t, mainArena.redRealtimeScore.FoulsCommitted)

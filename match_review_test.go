@@ -47,6 +47,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 	eventSettings, _ = db.GetEventSettings()
+	mainArena.Setup()
 
 	match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 101,
 		Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
@@ -73,7 +74,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	// Update the score to something else.
 	postBody := "redScoreJson={\"AutoMobilityBonuses\":3}&blueScoreJson={\"Cycles\":[{\"ScoredHigh\":true}]}&" +
 		"redFoulsJson=[{\"TeamId\":103,\"IsTechnical\":false}]&blueFoulsJson=[{\"TeamId\":104,\"IsTechnical\":" +
-		"true}]&cardsJson={\"RedCardTeamIds\":[105]}"
+		"true}]&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 302, recorder.Code)
 
@@ -111,7 +112,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 
 	// Update the score to something else.
 	postBody := "redScoreJson={\"AutoHighHot\":4}&blueScoreJson={\"Cycles\":[{\"Assists\":3," +
-		"\"ScoredLow\":true}]}&redFoulsJson=[]&blueFoulsJson=[]&cardsJson={}"
+		"\"ScoredLow\":true}]}&redFoulsJson=[]&blueFoulsJson=[]&redCardsJson={}&blueCardsJson={}"
 	recorder = postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 302, recorder.Code)
 

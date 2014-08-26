@@ -434,6 +434,7 @@ func TestSubstituteTeam(t *testing.T) {
 	db, err = OpenDatabase(testDbPath)
 	assert.Nil(t, err)
 	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 	mainArena.Setup()
 	db.CreateTeam(&Team{Id: 101})
 	db.CreateTeam(&Team{Id: 102})
@@ -469,19 +470,16 @@ func TestSubstituteTeam(t *testing.T) {
 	match2, _ := db.GetMatchById(match.Id)
 	assert.Equal(t, 107, match2.Red1)
 
-	// Check that substitution is disallowed in qualification and elimination matches.
+	// Check that substitution is disallowed in qualification matches.
 	match = Match{Type: "qualification", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	db.CreateMatch(&match)
 	mainArena.LoadMatch(&match)
 	err = mainArena.SubstituteTeam(107, "R1")
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Can only substitute teams for test and practice matches")
+		assert.Contains(t, err.Error(), "Can't substitute teams for qualification matches.")
 	}
 	match = Match{Type: "elimination", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	db.CreateMatch(&match)
 	mainArena.LoadMatch(&match)
-	err = mainArena.SubstituteTeam(107, "R1")
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Can only substitute teams for test and practice matches")
-	}
+	assert.Nil(t, mainArena.SubstituteTeam(107, "R1"))
 }
