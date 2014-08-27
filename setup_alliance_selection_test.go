@@ -20,6 +20,7 @@ func TestSetupAllianceSelection(t *testing.T) {
 	eventSettings, _ = db.GetEventSettings()
 	eventSettings.NumElimAlliances = 15
 	eventSettings.SelectionRound3Order = "L"
+	mainArena.Setup()
 	for i := 1; i <= 10; i++ {
 		db.CreateRanking(&Ranking{TeamId: 100 + i, Rank: i})
 	}
@@ -79,6 +80,7 @@ func TestSetupAllianceSelection(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), ">110<")
 
 	// Finalize alliance selection.
+	db.CreateTeam(&Team{Id: 254, YellowCard: true})
 	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
 	assert.Equal(t, 302, recorder.Code)
 	alliances, err := db.GetAllAlliances()
@@ -91,6 +93,8 @@ func TestSetupAllianceSelection(t *testing.T) {
 	matches, err := db.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	assert.Equal(t, 6, len(matches))
+	team, _ := db.GetTeamById(254)
+	assert.False(t, team.YellowCard)
 }
 
 func TestSetupAllianceSelectionErrors(t *testing.T) {

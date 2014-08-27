@@ -383,6 +383,25 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "reload")
 	assert.Equal(t, 1, len(mainArena.redRealtimeScore.Fouls))
 
+	// Test card setting.
+	cardData := struct {
+		Alliance string
+		TeamId   int
+		Card     string
+	}{"red", 256, "yellow"}
+	ws.Write("card", cardData)
+	cardData.Alliance = "blue"
+	cardData.TeamId = 1680
+	cardData.Card = "red"
+	ws.Write("card", cardData)
+	time.Sleep(time.Millisecond * 10) // Allow some time for the command to be processed.
+	if assert.Equal(t, 1, len(mainArena.redRealtimeScore.Cards)) {
+		assert.Equal(t, "yellow", mainArena.redRealtimeScore.Cards["256"])
+	}
+	if assert.Equal(t, 1, len(mainArena.blueRealtimeScore.Cards)) {
+		assert.Equal(t, "red", mainArena.blueRealtimeScore.Cards["1680"])
+	}
+
 	// Test match committing.
 	mainArena.MatchState = POST_MATCH
 	ws.Write("commitMatch", foulData)

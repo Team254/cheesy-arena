@@ -189,7 +189,7 @@ func TestCommitEliminationTie(t *testing.T) {
 	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	db.CreateMatch(match)
 	matchResult := &MatchResult{MatchId: match.Id, RedScore: Score{AutoHighHot: 1}, RedFouls: []Foul{Foul{}}}
-	CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult)
 	assert.Nil(t, err)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner)
@@ -198,6 +198,53 @@ func TestCommitEliminationTie(t *testing.T) {
 	CommitMatchScore(match, matchResult)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "B", match.Winner)
+}
+
+func TestCommitCards(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+	mainArena.Setup()
+
+	// Check that a yellow card sticks with a team.
+	team := &Team{Id: 5}
+	db.CreateTeam(team)
+	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
+	db.CreateMatch(match)
+	matchResult := &MatchResult{MatchId: match.Id, BlueCards: map[string]string{"5": "yellow"}}
+	err = CommitMatchScore(match, matchResult)
+	assert.Nil(t, err)
+	team, _ = db.GetTeamById(5)
+	assert.True(t, team.YellowCard)
+
+	// Check that editing a match result removes a yellow card from a team.
+	matchResult = &MatchResult{MatchId: match.Id}
+	err = CommitMatchScore(match, matchResult)
+	assert.Nil(t, err)
+	team, _ = db.GetTeamById(5)
+	assert.False(t, team.YellowCard)
+
+	// Check that a red card causes a yellow card to stick with a team.
+	matchResult = &MatchResult{MatchId: match.Id, BlueCards: map[string]string{"5": "red"}}
+	err = CommitMatchScore(match, matchResult)
+	assert.Nil(t, err)
+	team, _ = db.GetTeamById(5)
+	assert.True(t, team.YellowCard)
+
+	// Check that a red card in eliminations zeroes out the score.
+	createTestAlliances(db, 2)
+	match.Type = "elimination"
+	db.SaveMatch(match)
+	*matchResult = buildTestMatchResult(match.Id, 10)
+	matchResult.RedCards = map[string]string{"1": "red"}
+	err = CommitMatchScore(match, matchResult)
+	assert.Nil(t, err)
+	assert.Equal(t, 0, matchResult.RedScoreSummary().Score)
+	assert.Equal(t, 593, matchResult.BlueScoreSummary().Score)
 }
 
 func TestMatchPlayWebsocketCommands(t *testing.T) {
