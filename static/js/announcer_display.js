@@ -51,7 +51,9 @@ var postMatchResult = function(data) {
 
 // Replaces newlines in team fields with HTML line breaks.
 var formatTeam = function(team) {
-  team.Accomplishments = team.Accomplishments.replace(/[\r\n]+/g, "<br />");
+  if (team) {
+    team.Accomplishments = team.Accomplishments.replace(/[\r\n]+/g, "<br />");
+  }
   return team;
 };
 

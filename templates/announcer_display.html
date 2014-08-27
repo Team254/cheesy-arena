@@ -1,34 +1,25 @@
 {{define "title"}}Announcer Display{{end}}
 {{define "body"}}
 <h3 id="matchName"></h3>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Team</th>
-      <th>Nickname</th>
-      <th>Location</th>
-      <th>Name</th>
-      <th class="nowrap">Robot Name</th>
-      <th class="nowrap">Rookie Year</th>
-      <th class="nowrap">Recent Accomplishments</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr class="well-darkred" id="red1"></tr>
-    <tr class="well-darkred" id="red2"></tr>
-    <tr class="well-darkred" id="red3"></tr>
-    <tr class="well-darkblue" id="blue1"></tr>
-    <tr class="well-darkblue" id="blue2"></tr>
-    <tr class="well-darkblue" id="blue3"></tr>
-  </tbody>
-</table>
+<div class="row">
+  <div class="col-lg-2"><h4>Team</h4></div>
+  <div class="col-lg-5"><h4>Name</h4></div>
+  <div class="col-lg-5"><h4>Recent Accomplishments</h4></div>
+</div>
+<div class="row">
+  <div class="row well-sm well-darkred" id="red1"></div>
+  <div class="row well-sm well-darkred" id="red2"></div>
+  <div class="row well-sm well-darkred" id="red3"></div>
+  <div class="row well-sm well-darkblue" id="blue1"></div>
+  <div class="row well-sm well-darkblue" id="blue2"></div>
+  <div class="row well-sm well-darkblue" id="blue3"></div>
+</div>
+<br />
 <div class="row">
   <div id="matchState" class="col-lg-2 col-lg-offset-2 well well-sm text-center">&nbsp;</div>
   <div id="matchTime" class="col-lg-2 well well-sm text-center">&nbsp;</div>
   <div id="redScore" class="col-lg-2 well well-sm well-red text-center">&nbsp;</div>
   <div id="blueScore" class="col-lg-2 well well-sm well-blue text-center">&nbsp;</div>
-</div>
-<div class="row">
 </div>
 <div id="matchResult" class="modal" style="top: 10%;">
   <div class="modal-dialog modal-large">
@@ -58,15 +49,17 @@
 </div>
 <script id="teamTemplate" type="text/x-handlebars-template">
   {{"{{#if this}}"}}
-    <td><b>{{"{{Id}}"}}</b></td>
-    <td class="nowrap">{{"{{Nickname}}"}}</td>
-    <td class="nowrap">{{"{{City}}"}}, {{"{{StateProv}}"}}, {{"{{Country}}"}}</td>
-    <td>{{"{{Name}}"}}</td>
-    <td class="nowrap">{{"{{RobotName}}"}}</td>
-    <td>{{"{{RookieYear}}"}}</td>
-    <td class="nowrap">{{"{{{Accomplishments}}}"}}</td>
+    <div class="col-lg-2">
+      <div><h4><b>{{"{{Id}}"}}</b></h4></div>
+      <div class="nowrap"><h4><b>{{"{{Nickname}}"}}</b></h4></div>
+      <div class="nowrap">{{"{{City}}"}}, {{"{{StateProv}}"}}, {{"{{Country}}"}}</div>
+      <div class="nowrap">Robot: {{"{{RobotName}}"}}</div>
+      <div>Rookie Year: {{"{{RookieYear}}"}}</div>
+    </div>
+    <div class="col-lg-5">{{"{{Name}}"}}</div>
+    <div class="col-lg-5 nowrap">{{"{{{Accomplishments}}}"}}</div>
   {{"{{else}}"}}
-    <td colspan="100">No team present</td>
+    <div class="col-lg-12">No team present</div>
   {{"{{/if}}"}}
 </script>
 <script id="matchResultTemplate" type="text/x-handlebars-template">
