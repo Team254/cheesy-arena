@@ -13,6 +13,11 @@ import (
 
 // Shows the sponsor slides configuration page.
 func SponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) {
+	if auth.Authorize(r) == "" {
+		auth.NotifyAuthRequired(w, r)
+		return
+	}
+
 	template, err := template.ParseFiles("templates/sponsor_slides.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -36,6 +41,11 @@ func SponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // Saves the new or modified sponsor slides to the database.
 func SponsorSlidesPostHandler(w http.ResponseWriter, r *http.Request) {
+	if auth.Authorize(r) == "" {
+		auth.NotifyAuthRequired(w, r)
+		return
+	}
+
 	sponsorSlideId, _ := strconv.Atoi(r.PostFormValue("id"))
 	sponsorSlide, err := db.GetSponsorSlideById(sponsorSlideId)
 	if err != nil {

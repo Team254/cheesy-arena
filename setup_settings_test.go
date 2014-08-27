@@ -144,6 +144,7 @@ func postFileHttpResponse(path string, paramName string, file *bytes.Buffer) *ht
 	writer.Close()
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", path, body)
+	req.SetBasicAuth("chezychamps", "1234Five")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	newHandler().ServeHTTP(recorder, req)
 	return recorder

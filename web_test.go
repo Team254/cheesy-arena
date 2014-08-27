@@ -28,6 +28,7 @@ func TestIndex(t *testing.T) {
 func getHttpResponse(path string) *httptest.ResponseRecorder {
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", path, nil)
+	req.SetBasicAuth("chezychamps", "1234Five")
 	newHandler().ServeHTTP(recorder, req)
 	return recorder
 }
@@ -35,6 +36,7 @@ func getHttpResponse(path string) *httptest.ResponseRecorder {
 func postHttpResponse(path string, body string) *httptest.ResponseRecorder {
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", path, strings.NewReader(body))
+	req.SetBasicAuth("chezychamps", "1234Five")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
 	newHandler().ServeHTTP(recorder, req)
 	return recorder

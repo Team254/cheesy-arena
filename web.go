@@ -6,6 +6,7 @@
 package main
 
 import (
+	"bitbucket.org/rj/httpauth-go"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -17,6 +18,7 @@ import (
 const httpPort = 8080
 
 var websocketUpgrader = websocket.Upgrader{ReadBufferSize: 1024, WriteBufferSize: 2014}
+var auth = httpauth.NewBasic("Cheesy Arena", authenticate, nil)
 
 // Helper functions that can be used inside templates.
 var templateHelpers = template.FuncMap{
@@ -96,6 +98,11 @@ func ServeWebInterface() {
 
 	// Start Server
 	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
+}
+
+func authenticate(user, password string) bool {
+	// TODO(patrick): Replace this with something better before general release.
+	return user == "chezychamps" && password == "1234Five"
 }
 
 func newHandler() http.Handler {

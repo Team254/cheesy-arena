@@ -13,6 +13,11 @@ import (
 
 // Shows the lower third configuration page.
 func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
+	if auth.Authorize(r) == "" {
+		auth.NotifyAuthRequired(w, r)
+		return
+	}
+
 	template, err := template.ParseFiles("templates/lower_thirds.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -36,6 +41,11 @@ func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // Saves the new or modified lower third to the database and triggers showing it on the audience display.
 func LowerThirdsPostHandler(w http.ResponseWriter, r *http.Request) {
+	if auth.Authorize(r) == "" {
+		auth.NotifyAuthRequired(w, r)
+		return
+	}
+
 	lowerThirdId, _ := strconv.Atoi(r.PostFormValue("id"))
 	lowerThird, err := db.GetLowerThirdById(lowerThirdId)
 	if err != nil {

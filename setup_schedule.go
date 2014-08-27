@@ -21,6 +21,11 @@ var cachedTeamFirstMatches map[int]string
 
 // Shows the schedule editing page.
 func ScheduleGetHandler(w http.ResponseWriter, r *http.Request) {
+	if auth.Authorize(r) == "" {
+		auth.NotifyAuthRequired(w, r)
+		return
+	}
+
 	if len(cachedScheduleBlocks) == 0 {
 		tomorrow := time.Now().AddDate(0, 0, 1)
 		location, _ := time.LoadLocation("Local")
@@ -33,6 +38,11 @@ func ScheduleGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates the schedule and presents it for review without saving it to the database.
 func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
+	if auth.Authorize(r) == "" {
+		auth.NotifyAuthRequired(w, r)
+		return
+	}
+
 	r.ParseForm()
 	cachedMatchType = r.PostFormValue("matchType")
 	scheduleBlocks, err := getScheduleBlocks(r)
@@ -88,6 +98,11 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 
 // Saves the generated schedule to the database.
 func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
+	if auth.Authorize(r) == "" {
+		auth.NotifyAuthRequired(w, r)
+		return
+	}
+
 	existingMatches, err := db.GetMatchesByType(cachedMatchType)
 	if err != nil {
 		handleWebErr(w, err)
