@@ -530,7 +530,7 @@ func (arena *Arena) handleLighting(alliance string, score *RealtimeScore) {
 			arena.lights.ClearPedestal(alliance)
 		}
 		arena.lights.SetAssistGoal(alliance, score.CurrentCycle.Assists)
-	default:
+	case POST_MATCH:
 		arena.lights.ClearGoal(alliance)
 		arena.lights.ClearPedestal(alliance)
 	}

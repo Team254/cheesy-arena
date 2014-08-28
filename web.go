@@ -131,6 +131,7 @@ func newHandler() http.Handler {
 	router.HandleFunc("/setup/field", FieldGetHandler).Methods("GET")
 	router.HandleFunc("/setup/field", FieldPostHandler).Methods("POST")
 	router.HandleFunc("/setup/field/reload_displays", FieldReloadDisplaysHandler).Methods("GET")
+	router.HandleFunc("/setup/field/lights", FieldLightsPostHandler).Methods("POST")
 	router.HandleFunc("/setup/lower_thirds", LowerThirdsGetHandler).Methods("GET")
 	router.HandleFunc("/setup/lower_thirds", LowerThirdsPostHandler).Methods("POST")
 	router.HandleFunc("/setup/sponsor_slides", SponsorSlidesGetHandler).Methods("GET")

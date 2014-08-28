@@ -25,7 +25,8 @@ func FieldGetHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*EventSettings
 		AllianceStationDisplays map[string]string
-	}{eventSettings, mainArena.allianceStationDisplays}
+		LightsMode              string
+	}{eventSettings, mainArena.allianceStationDisplays, mainArena.lights.currentMode}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -55,5 +56,16 @@ func FieldReloadDisplaysHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mainArena.reloadDisplaysNotifier.Notify(nil)
+	http.Redirect(w, r, "/setup/field", 302)
+}
+
+// Controls the field LEDs for testing or effect.
+func FieldLightsPostHandler(w http.ResponseWriter, r *http.Request) {
+	if auth.Authorize(r) == "" {
+		auth.NotifyAuthRequired(w, r)
+		return
+	}
+
+	mainArena.lights.SetMode(r.PostFormValue("mode"))
 	http.Redirect(w, r, "/setup/field", 302)
 }
