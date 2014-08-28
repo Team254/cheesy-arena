@@ -524,7 +524,7 @@ func (arena *Arena) handleLighting(alliance string, score *RealtimeScore) {
 		leftSide := arena.MatchTimeSec() < float64(arena.matchTiming.AutoDurationSec)/2 == arena.leftGoalHotFirst
 		arena.lights.SetHotGoal(alliance, leftSide)
 	case TELEOP_PERIOD:
-		if score.AutoLeftoverBalls == 0 && score.CurrentCycle.Assists == 0 {
+		if score.AutoCommitted && score.AutoLeftoverBalls == 0 && score.CurrentCycle.Assists == 0 {
 			arena.lights.SetPedestal(alliance)
 		} else {
 			arena.lights.ClearPedestal(alliance)
