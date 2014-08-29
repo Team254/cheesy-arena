@@ -25,7 +25,7 @@ var handleStatus = function(data) {
       $("#status" + station + " .trip-time").attr("data-status-ok", true);
       $("#status" + station + " .trip-time").text(dsStatus.DsRobotTripTimeMs.toFixed(1) + "ms");
       $("#status" + station + " .packet-loss").attr("data-status-ok", true);
-      $("#status" + station + " .packet-loss").text(dsStatus.MissedPacketCount - dsStatus.MissedPacketOffset);
+      $("#status" + station + " .packet-loss").text(dsStatus.MissedPacketCount);
     } else {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").attr("data-status-ok", "");

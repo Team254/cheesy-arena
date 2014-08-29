@@ -341,8 +341,10 @@ func (arena *Arena) StartMatch() error {
 		// Save the missed packet count to subtract it from the running count.
 		for _, allianceStation := range arena.AllianceStations {
 			if allianceStation.DsConn != nil {
-				allianceStation.DsConn.DriverStationStatus.MissedPacketOffset =
-					allianceStation.DsConn.DriverStationStatus.MissedPacketCount
+				err = allianceStation.DsConn.signalMatchStart(arena.currentMatch)
+				if err != nil {
+					log.Println(err)
+				}
 			}
 		}
 

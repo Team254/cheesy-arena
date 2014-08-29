@@ -20,19 +20,18 @@ const driverStationProtocolVersion = "11191100"
 const driverStationLinkTimeoutMs = 500
 
 type DriverStationStatus struct {
-	TeamId             int
-	AllianceStation    string
-	DsLinked           bool
-	RobotLinked        bool
-	Auto               bool
-	Enabled            bool
-	EmergencyStop      bool
-	BatteryVoltage     float64
-	DsVersion          string
-	PacketCount        int
-	MissedPacketCount  int
-	MissedPacketOffset int
-	DsRobotTripTimeMs  int
+	TeamId            int
+	AllianceStation   string
+	DsLinked          bool
+	RobotLinked       bool
+	Auto              bool
+	Enabled           bool
+	EmergencyStop     bool
+	BatteryVoltage    float64
+	DsVersion         string
+	PacketCount       int
+	MissedPacketCount int
+	DsRobotTripTimeMs int
 }
 
 type DriverStationConnection struct {
@@ -47,6 +46,8 @@ type DriverStationConnection struct {
 	SecondsSinceLastRobotLink float64
 	conn                      net.Conn
 	packetCount               int
+	missedPacketOffset        int
+	log                       *TeamMatchLog
 }
 
 // Opens a UDP connection for communicating to the driver station.
@@ -76,6 +77,9 @@ func (dsConn *DriverStationConnection) Update() error {
 }
 
 func (dsConn *DriverStationConnection) Close() error {
+	if dsConn.log != nil {
+		dsConn.log.Close()
+	}
 	return dsConn.conn.Close()
 }
 
@@ -108,8 +112,22 @@ func ListenForDsPackets(listener *net.UDPConn) {
 				dsConn.LastRobotLinkedTime = time.Now()
 			}
 			dsConn.SecondsSinceLastRobotLink = time.Since(dsConn.LastRobotLinkedTime).Seconds()
+			dsConn.DriverStationStatus.MissedPacketCount -= dsConn.missedPacketOffset
+
+			// Log the packet if the match is in progress.
+			matchTimeSec := mainArena.MatchTimeSec()
+			if matchTimeSec > 0 && dsConn.log != nil {
+				dsConn.log.LogDsStatus(matchTimeSec, dsStatus)
+			}
 		}
 	}
+}
+
+func (dsConn *DriverStationConnection) signalMatchStart(match *Match) error {
+	dsConn.missedPacketOffset = dsConn.DriverStationStatus.MissedPacketCount
+	var err error
+	dsConn.log, err = NewTeamMatchLog(dsConn.TeamId, match)
+	return err
 }
 
 // Serializes the control information into a packet.
