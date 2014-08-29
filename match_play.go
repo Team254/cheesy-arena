@@ -485,6 +485,12 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 		}()
 	}
 
+	// Back up the database, but don't error out if it fails.
+	err = db.Backup()
+	if err != nil {
+		log.Println(err)
+	}
+
 	return nil
 }
 

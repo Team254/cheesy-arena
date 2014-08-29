@@ -8,10 +8,16 @@ package main
 import (
 	"bitbucket.org/liamstask/goose/lib/goose"
 	"database/sql"
+	"fmt"
 	"github.com/jmoiron/modl"
 	_ "github.com/mattn/go-sqlite3"
+	"io"
+	"os"
+	"strings"
+	"time"
 )
 
+const backupsDir = "db/backups"
 const migrationsDir = "db/migrations"
 
 type Database struct {
@@ -54,6 +60,30 @@ func OpenDatabase(path string) (*Database, error) {
 
 func (database *Database) Close() {
 	database.db.Close()
+}
+
+// Creates a copy of the current database and saves it to the backups directory.
+func (database *Database) Backup() error {
+	err := os.MkdirAll(backupsDir, 0755)
+	if err != nil {
+		return err
+	}
+	filename := fmt.Sprintf("%s/%s-%s.db", backupsDir, strings.Replace(eventSettings.Name, " ", "_", -1),
+		time.Now().Format("20060102150405"))
+	src, err := os.Open(database.path)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+	dest, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer dest.Close()
+	if _, err := io.Copy(dest, src); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Sets up table-object associations.

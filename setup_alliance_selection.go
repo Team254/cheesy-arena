@@ -218,6 +218,13 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Back up the database.
+	err = db.Backup()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
 }
 
