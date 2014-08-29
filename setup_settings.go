@@ -137,7 +137,7 @@ func RestoreDbHandler(w http.ResponseWriter, r *http.Request) {
 	tempDb.Close()
 
 	// Back up the current database.
-	err = db.Backup()
+	err = db.Backup("pre_restore")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -162,7 +162,14 @@ func ClearDbHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := db.TruncateMatches()
+	// Back up the database.
+	err := db.Backup("pre_clear")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	err = db.TruncateMatches()
 	if err != nil {
 		handleWebErr(w, err)
 		return

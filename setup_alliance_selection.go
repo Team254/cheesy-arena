@@ -219,7 +219,7 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Back up the database.
-	err = db.Backup()
+	err = db.Backup("post_alliance_selection")
 	if err != nil {
 		handleWebErr(w, err)
 		return

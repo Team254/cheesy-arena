@@ -132,7 +132,7 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Back up the database.
-	err = db.Backup()
+	err = db.Backup("post_scheduling")
 	if err != nil {
 		handleWebErr(w, err)
 		return

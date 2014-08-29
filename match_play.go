@@ -486,7 +486,7 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 	}
 
 	// Back up the database, but don't error out if it fails.
-	err = db.Backup()
+	err = db.Backup(fmt.Sprintf("post_%s_match_%s", match.Type, match.DisplayName))
 	if err != nil {
 		log.Println(err)
 	}

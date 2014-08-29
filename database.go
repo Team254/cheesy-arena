@@ -63,13 +63,13 @@ func (database *Database) Close() {
 }
 
 // Creates a copy of the current database and saves it to the backups directory.
-func (database *Database) Backup() error {
+func (database *Database) Backup(reason string) error {
 	err := os.MkdirAll(backupsDir, 0755)
 	if err != nil {
 		return err
 	}
-	filename := fmt.Sprintf("%s/%s-%s.db", backupsDir, strings.Replace(eventSettings.Name, " ", "_", -1),
-		time.Now().Format("20060102150405"))
+	filename := fmt.Sprintf("%s/%s_%s_%s.db", backupsDir, strings.Replace(eventSettings.Name, " ", "_", -1),
+		time.Now().Format("20060102150405"), reason)
 	src, err := os.Open(database.path)
 	if err != nil {
 		return err
