@@ -14,7 +14,7 @@ import (
 
 const (
 	arenaLoopPeriodMs     = 10
-	dsPacketPeriodMs      = 100
+	dsPacketPeriodMs      = 250
 	matchEndScoreDwellSec = 3
 )
 
