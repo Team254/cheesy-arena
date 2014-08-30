@@ -27,7 +27,9 @@ var handleScore = function(data) {
   $("#scoredLow").text(cycle.ScoredLow ? "X" : "");
   $("#deadBall").text(cycle.DeadBall ? "X" : "");
   if (cycle.ScoredHigh || cycle.ScoredLow || cycle.DeadBall) {
-    $("#teleopMessage").html("Press Enter to commit cycle and light pedestal.<br />This cannot be undone.");
+    $("#teleopMessage").html("Press Enter to commit cycle.<br />This cannot be undone.");
+  } else if (data.AutoLeftoverBalls > 0) {
+    $("#teleopMessage").html(data.AutoLeftoverBalls + " leftover preload" + ((data.AutoLeftoverBalls > 1) ? "s" : ""));
   } else {
     $("#teleopMessage").text("");
   }
