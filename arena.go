@@ -377,6 +377,10 @@ func (arena *Arena) ResetMatch() error {
 	arena.AllianceStations["B1"].Bypass = false
 	arena.AllianceStations["B2"].Bypass = false
 	arena.AllianceStations["B3"].Bypass = false
+	arena.lights.ClearGoal("red")
+	arena.lights.ClearGoal("blue")
+	arena.lights.ClearPedestal("red")
+	arena.lights.ClearPedestal("blue")
 	return nil
 }
 
@@ -535,7 +539,11 @@ func (arena *Arena) handleLighting(alliance string, score *RealtimeScore) {
 		}
 		arena.lights.SetAssistGoal(alliance, score.CurrentCycle.Assists)
 	case POST_MATCH:
-		arena.lights.ClearGoal(alliance)
-		arena.lights.ClearPedestal(alliance)
+		if mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted {
+			arena.lights.SetFieldReset()
+		} else {
+			arena.lights.ClearGoal(alliance)
+			arena.lights.ClearPedestal(alliance)
+		}
 	}
 }

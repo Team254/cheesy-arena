@@ -185,6 +185,12 @@ func (lights *Lights) ClearPedestal(alliance string) {
 	lights.sendLights()
 }
 
+func (lights *Lights) SetFieldReset() {
+	lights.packets["red"].setAllColor("green")
+	lights.packets["blue"].setAllColor("green")
+	lights.sendLights()
+}
+
 func (lights *Lights) SetMode(mode string) {
 	lights.currentMode = mode
 	lights.animationCount = 0
