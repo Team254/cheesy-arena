@@ -56,12 +56,18 @@ var handleStatus = function(data) {
       var dsStatus = stationStatus.DsConn.DriverStationStatus;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsStatus.DsLinked);
       $("#status" + station + " .robot-status").attr("data-status-ok", dsStatus.RobotLinked);
+      if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
+        $("#status" + station + " .robot-status").text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
+      } else {
+        $("#status" + station + " .robot-status").text("");
+      }
       $("#status" + station + " .battery-status").attr("data-status-ok",
                                                        dsStatus.BatteryVoltage > 6 && dsStatus.RobotLinked);
       $("#status" + station + " .battery-status").text(dsStatus.BatteryVoltage.toFixed(1) + "V");
     } else {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").attr("data-status-ok", "");
+      $("#status" + station + " .robot-status").text("");
       $("#status" + station + " .battery-status").attr("data-status-ok", "");
       $("#status" + station + " .battery-status").text("");
     }
