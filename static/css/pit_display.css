@@ -28,6 +28,7 @@ body {
   font-size: 40px;
   font-family: "FuturaLTBold";
   color: #fff;
+  text-transform: uppercase;
 }
 #logo {
   margin-bottom: 10px;
