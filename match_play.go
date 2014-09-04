@@ -38,11 +38,6 @@ var currentMatchType string
 
 // Shows the match play control interface.
 func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	practiceMatches, err := buildMatchPlayList("practice")
 	if err != nil {
 		handleWebErr(w, err)
@@ -93,11 +88,6 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	vars := mux.Vars(r)
 	matchId, _ := strconv.Atoi(vars["matchId"])
 	var match *Match
@@ -127,11 +117,6 @@ func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 
 // Loads the results for the given match into the display buffer.
 func MatchPlayShowResultHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	vars := mux.Vars(r)
 	matchId, _ := strconv.Atoi(vars["matchId"])
 	match, err := db.GetMatchById(matchId)

@@ -12,11 +12,6 @@ import (
 
 // Shows the field configuration page.
 func FieldGetHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	template, err := template.ParseFiles("templates/field.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -36,11 +31,6 @@ func FieldGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // Updates the display-station mapping for a single display.
 func FieldPostHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	displayId := r.PostFormValue("displayId")
 	allianceStation := r.PostFormValue("allianceStation")
 	mainArena.allianceStationDisplays[displayId] = allianceStation
@@ -50,22 +40,12 @@ func FieldPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // Force-reloads all the websocket-connected displays.
 func FieldReloadDisplaysHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	mainArena.reloadDisplaysNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/field", 302)
 }
 
 // Controls the field LEDs for testing or effect.
 func FieldLightsPostHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	mainArena.lights.SetMode(r.PostFormValue("mode"))
 	http.Redirect(w, r, "/setup/field", 302)
 }

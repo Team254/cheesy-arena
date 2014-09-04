@@ -20,20 +20,11 @@ import (
 
 // Shows the event settings editing page.
 func SettingsGetHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
 	renderSettings(w, r, "")
 }
 
 // Saves the event settings.
 func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	eventSettings.Name = r.PostFormValue("name")
 	eventSettings.Code = r.PostFormValue("code")
 	match, _ := regexp.MatchString("^#([0-9A-Fa-f]{3}){1,2}$", r.PostFormValue("displayBackgroundColor"))
@@ -83,11 +74,6 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // Sends a copy of the event database file to the client as a download.
 func SaveDbHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	dbFile, err := os.Open(db.path)
 	defer dbFile.Close()
 	if err != nil {
@@ -102,11 +88,6 @@ func SaveDbHandler(w http.ResponseWriter, r *http.Request) {
 
 // Accepts an event database file as an upload and loads it.
 func RestoreDbHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	file, _, err := r.FormFile("databaseFile")
 	if err != nil {
 		renderSettings(w, r, "No database backup file was specified.")
@@ -157,11 +138,6 @@ func RestoreDbHandler(w http.ResponseWriter, r *http.Request) {
 
 // Deletes all data except for the team list.
 func ClearDbHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	// Back up the database.
 	err := db.Backup("pre_clear")
 	if err != nil {

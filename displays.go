@@ -291,11 +291,6 @@ func PitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 // Renders the announcer display which shows team info and scores for the current match.
 func AnnouncerDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	template := template.New("").Funcs(templateHelpers)
 	_, err := template.ParseFiles("templates/announcer_display.html", "templates/base.html")
 	if err != nil {
@@ -480,11 +475,6 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 // Renders the scoring interface which enables input of scores in real-time.
 func ScoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	vars := mux.Vars(r)
 	alliance := vars["alliance"]
 	if alliance != "red" && alliance != "blue" {
@@ -720,11 +710,6 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 // Renders the referee interface for assigning fouls.
 func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	template := template.New("").Funcs(templateHelpers)
 	_, err := template.ParseFiles("templates/referee_display.html")
 	if err != nil {
@@ -1136,11 +1121,6 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 
 // Renders the FTA diagnostic display.
 func FtaDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if auth.Authorize(r) == "" {
-		auth.NotifyAuthRequired(w, r)
-		return
-	}
-
 	template := template.New("").Funcs(templateHelpers)
 	_, err := template.ParseFiles("templates/fta_display.html", "templates/base.html")
 	if err != nil {
