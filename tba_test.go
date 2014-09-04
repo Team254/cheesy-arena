@@ -69,7 +69,7 @@ func TestPublishMatches(t *testing.T) {
 			"\"1970-01-01T00:10:00\"},{\"comp_level\":\"sf\",\"set_number\":2,\"match_number\":2,"+
 			"\"alliances\":{\"blue\":{\"score\":null,\"teams\":[\"frc0\",\"frc0\",\"frc0\"]},\"red\":"+
 			"{\"score\":null,\"teams\":[\"frc0\",\"frc0\",\"frc0\"]}},\"score_breakdown\":null,"+
-			"\"time_string\":\"4:00 PM\",\"time_utc\":\"0001-01-01T00:00:00\"}]", reader.String())
+			"\"time_string\":\"5:00 PM\",\"time_utc\":\"0001-01-01T00:00:00\"}]", reader.String())
 	}))
 	defer tbaServer.Close()
 	tbaBaseUrl = tbaServer.URL
