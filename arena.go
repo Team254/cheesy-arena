@@ -142,7 +142,7 @@ func (arena *Arena) Setup() {
 	arena.savedMatch = &Match{}
 	arena.savedMatchResult = &MatchResult{}
 	arena.allianceStationDisplays = make(map[string]string)
-	arena.allianceStationDisplayScreen = "blank"
+	arena.allianceStationDisplayScreen = "match"
 
 	arena.lights.Setup()
 }
@@ -230,6 +230,10 @@ func (arena *Arena) LoadMatch(match *Match) error {
 
 	arena.matchLoadTeamsNotifier.Notify(nil)
 	arena.realtimeScoreNotifier.Notify(nil)
+
+	arena.allianceStationDisplayScreen = "match"
+	arena.allianceStationDisplayNotifier.Notify(nil)
+
 	return nil
 }
 
@@ -461,6 +465,8 @@ func (arena *Arena) Update() {
 				time.Sleep(time.Second * matchEndScoreDwellSec)
 				arena.audienceDisplayScreen = "blank"
 				arena.audienceDisplayNotifier.Notify(nil)
+				arena.allianceStationDisplayScreen = "logo"
+				arena.allianceStationDisplayNotifier.Notify(nil)
 			}()
 			arena.playSoundNotifier.Notify("match-end")
 		}

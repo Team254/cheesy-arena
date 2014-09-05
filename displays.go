@@ -1028,6 +1028,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				if !ok {
 					return
 				}
+				websocket.Write("matchTime", MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)})
 				messageType = "setAllianceStationDisplay"
 				message = mainArena.allianceStationDisplayScreen
 			case _, ok := <-matchLoadTeamsListener:

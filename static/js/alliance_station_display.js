@@ -97,7 +97,8 @@ var handleRealtimeScore = function(data) {
 };
 
 var handleHotGoalLight = function(side) {
-  if (allianceStation != "" && (side == "left" && allianceStation[1] == "3" || side == "right" && allianceStation[1] == "1")) {
+  if (allianceStation != "" && (side == "left" && allianceStation[1] == "3" ||
+      side == "right" && allianceStation[1] == "1")) {
     $("#match").attr("data-hotgoal", "active");
   } else {
     $("#match").attr("data-hotgoal", "");
