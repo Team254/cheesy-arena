@@ -61,8 +61,12 @@ var handleStatus = function(data) {
       } else {
         $("#status" + station + " .robot-status").text("");
       }
+      var lowBatteryThreshold = 6;
+      if (matchStates[data.MatchState] == "PRE_MATCH") {
+        lowBatteryThreshold = 12;
+      }
       $("#status" + station + " .battery-status").attr("data-status-ok",
-                                                       dsStatus.BatteryVoltage > 6 && dsStatus.RobotLinked);
+          dsStatus.BatteryVoltage > lowBatteryThreshold && dsStatus.RobotLinked);
       $("#status" + station + " .battery-status").text(dsStatus.BatteryVoltage.toFixed(1) + "V");
     } else {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
