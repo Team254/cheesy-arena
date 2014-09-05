@@ -5,7 +5,7 @@ CREATE TABLE sponsor_slides (
   line1 VARCHAR(255),
   line2 VARCHAR(255),
   image VARCHAR(255),
-  priority VARCHAR(255)
+  displaytimesec int
 );
 
 -- +goose Down

@@ -6,38 +6,43 @@
       <legend>Sponsor Slides Configuration</legend>
       <p>Place images in /static/img/sponsors/</p>
       {{range $sponsorSlide := .SponsorSlides}}
-        <form class="form-horizontal existing" action="/setup/sponsor_slides" method="POST" data-priority="{{$sponsorSlide.Priority}}">
+        <form class="form-horizontal existing" action="/setup/sponsor_slides" method="POST">
           <div class="form-group">
             <div class="col-lg-7">
               <input type="hidden" name="id" value="{{$sponsorSlide.Id}}" />
                 <div class="form-group imagetoggle">
                   <label for="image" class="col-sm-5 control-label">Image File Name</label>
                   <div class="col-sm-7">
-                    <input type="text" class="form-control" name="image" placeholder="image.svg" value="{{$sponsorSlide.Image}}">
+                    <input type="text" class="form-control" name="image" placeholder="image.svg"
+                        value="{{$sponsorSlide.Image}}">
                   </div>
                 </div>
                 <div class="form-group hidden imagetoggle">
                   <label for="line1" class="col-sm-5 control-label">Line 1 Text</label>
                   <div class="col-sm-7">
-                    <input type="text" class="form-control" value="{{$sponsorSlide.Line1}}" name="line1" placeholder="Chezy">
+                    <input type="text" class="form-control" value="{{$sponsorSlide.Line1}}" name="line1"
+                        placeholder="Chezy">
                   </div>
                 </div>
                 <div class="form-group hidden imagetoggle">
                   <label for="line2" class="col-sm-5 control-label">Line 2 Text</label>
                   <div class="col-sm-7">
-                    <input type="text" class="form-control" value="{{$sponsorSlide.Line2}}" name="line2" placeholder="Industries">
+                    <input type="text" class="form-control" value="{{$sponsorSlide.Line2}}" name="line2"
+                        placeholder="Industries">
                   </div>
                 </div>
               <div class="form-group">
                 <label for="subtitle" class="col-sm-5 control-label">Subtitle Text</label>
                 <div class="col-sm-7">
-                  <input type="text" class="form-control" name="subtitle" value="{{$sponsorSlide.Subtitle}}" placeholder="Gold Sponsor">
+                  <input type="text" class="form-control" name="subtitle" value="{{$sponsorSlide.Subtitle}}"
+                      placeholder="Gold Sponsor">
                 </div>
               </div>
               <div class="form-group">
-                <label for="priority" class="col-sm-5 control-label">Display Time (s)</label>
+                <label for="displayTimeSec" class="col-sm-5 control-label">Display Time (s)</label>
                 <div class="col-sm-7">
-                  <input type="number" class="form-control" name="priority" value="{{$sponsorSlide.Priority}}" placeholder="10">
+                  <input type="number" class="form-control" name="displayTimeSec"
+                      value="{{$sponsorSlide.DisplayTimeSec}}" placeholder="10">
                 </div>
               </div>
             </div>
@@ -79,9 +84,9 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="priority" class="col-sm-5 control-label">Display Time (s)</label>
+              <label for="displayTimeSec" class="col-sm-5 control-label">Display Time (s)</label>
               <div class="col-sm-7">
-                <input type="number" class="form-control" name="priority" placeholder="10">
+                <input type="number" class="form-control" name="displayTimeSec" placeholder="10">
               </div>
             </div>
           </div>
@@ -97,17 +102,19 @@
 </div>
 {{end}}
 {{define "script"}}
-<script type='text/javascript'>
+<script type="text/javascript">
   $(function(){
-    $('form.existing').each(function(index){
-      if(!$(this).find('input[name=image]').val().length && ($(this).find('input[name=line2]').val().length || $(this).find('input[name=line1]').val().length))
-        $(this).find('.imagetoggle').toggleClass('hidden');
+    $("form.existing").each(function(index){
+      if (!$(this).find("input[name=image]").val().length && ($(this).find("input[name=line2]").val().length
+          || $(this).find("input[name=line1]").val().length)) {
+        $(this).find(".imagetoggle").toggleClass("hidden");
+      }
     });
 
-    $('button[name=toggleImage]').click(function(event){
+    $("button[name=toggleImage]").click(function(event) {
       event.preventDefault();
-      $(this).parents('form').find('.imagetoggle').toggleClass('hidden');
-      $(this).parents('form').find('.imagetoggle input').val('');
+      $(this).parents("form").find(".imagetoggle").toggleClass("hidden");
+      $(this).parents("form").find(".imagetoggle input").val("");
     });
   });
 </script>

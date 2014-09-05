@@ -6,12 +6,12 @@
 package main
 
 type SponsorSlide struct {
-	Id       int
-	Subtitle string
-	Line1    string
-	Line2    string
-	Image    string
-	Priority string
+	Id             int
+	Subtitle       string
+	Line1          string
+	Line2          string
+	Image          string
+	DisplayTimeSec int
 }
 
 func (database *Database) CreateSponsorSlide(sponsorSlide *SponsorSlide) error {

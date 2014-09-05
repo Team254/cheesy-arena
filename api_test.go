@@ -85,8 +85,8 @@ func TestSponsorSlides(t *testing.T) {
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
 
-	slide1 := SponsorSlide{1, "subtitle", "line1", "line2", "image", "priority"}
-	slide2 := SponsorSlide{2, "Chezy Sponsaur", "Teh", "Chezy Pofs", "ejface.jpg", "high"}
+	slide1 := SponsorSlide{1, "subtitle", "line1", "line2", "image", 2}
+	slide2 := SponsorSlide{2, "Chezy Sponsaur", "Teh", "Chezy Pofs", "ejface.jpg", 54}
 	db.CreateSponsorSlide(&slide1)
 	db.CreateSponsorSlide(&slide2)
 

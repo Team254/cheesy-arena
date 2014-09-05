@@ -325,9 +325,9 @@ var initializeSponsorDisplay = function() {
         active = '';
 
       if(sponsors[index]['Image'].length)
-        $('#sponsorContainer').append('<div class="item '+active+'" data-interval="'+sponsors[index]["Priority"]*1000+'"><img src="/static/img/sponsors/'+sponsors[index]['Image']+'" /><h1>'+sponsors[index]['Subtitle']+'</h1></div>');
+        $('#sponsorContainer').append('<div class="item '+active+'" data-interval="'+sponsors[index]["DisplayTimeSec"]*1000+'"><img src="/static/img/sponsors/'+sponsors[index]['Image']+'" /><h1>'+sponsors[index]['Subtitle']+'</h1></div>');
       else
-        $('#sponsorContainer').append('<div class="item '+active+'" data-interval="'+sponsors[index]["Priority"]*1000+'"><h2>'+sponsors[index]['Line1']+'<br />'+sponsors[index]['Line2']+'</h2><h1>'+sponsors[index]['Subtitle']+'</h1></div>');
+        $('#sponsorContainer').append('<div class="item '+active+'" data-interval="'+sponsors[index]["DisplayTimeSec"]*1000+'"><h2>'+sponsors[index]['Line1']+'<br />'+sponsors[index]['Line2']+'</h2><h1>'+sponsors[index]['Subtitle']+'</h1></div>');
 
     });
 

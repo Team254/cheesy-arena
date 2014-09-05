@@ -49,17 +49,18 @@ func SponsorSlidesPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
+		displayTimeSec, _ := strconv.Atoi(r.PostFormValue("displayTimeSec"))
 		if sponsorSlide == nil {
 			sponsorSlide = &SponsorSlide{Subtitle: r.PostFormValue("subtitle"),
 				Line1: r.PostFormValue("line1"), Line2: r.PostFormValue("line2"),
-				Image: r.PostFormValue("image"), Priority: r.PostFormValue("priority")}
+				Image: r.PostFormValue("image"), DisplayTimeSec: displayTimeSec}
 			err = db.CreateSponsorSlide(sponsorSlide)
 		} else {
 			sponsorSlide.Subtitle = r.PostFormValue("subtitle")
 			sponsorSlide.Line1 = r.PostFormValue("line1")
 			sponsorSlide.Line2 = r.PostFormValue("line2")
 			sponsorSlide.Image = r.PostFormValue("image")
-			sponsorSlide.Priority = r.PostFormValue("priority")
+			sponsorSlide.DisplayTimeSec = displayTimeSec
 			err = db.SaveSponsorSlide(sponsorSlide)
 		}
 		if err != nil {
