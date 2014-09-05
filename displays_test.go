@@ -77,6 +77,12 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "realtimeScore")
 	mainArena.scorePostedNotifier.Notify(nil)
 	readWebsocketType(t, ws, "setFinalScore")
+
+	// Test other overlays.
+	mainArena.allianceSelectionNotifier.Notify(nil)
+	readWebsocketType(t, ws, "allianceSelection")
+	mainArena.lowerThirdNotifier.Notify(nil)
+	readWebsocketType(t, ws, "lowerThird")
 }
 
 func TestPitDisplay(t *testing.T) {
