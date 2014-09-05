@@ -102,6 +102,8 @@ func (lights *Lights) SetupConnections() error {
 		if err != nil {
 			return err
 		}
+	} else {
+		lights.connections["red"] = nil
 	}
 	if len(eventSettings.BlueGoalLightsAddress) != 0 {
 		conn, err := net.Dial("udp4", eventSettings.BlueGoalLightsAddress)
@@ -109,6 +111,8 @@ func (lights *Lights) SetupConnections() error {
 		if err != nil {
 			return err
 		}
+	} else {
+		lights.connections["blue"] = nil
 	}
 	lights.newConnections = true
 	return nil
@@ -216,11 +220,13 @@ func (lights *Lights) SetMode(mode string) {
 }
 
 func (lights *Lights) sendLights() {
-	for alliance, connections := range lights.connections {
+	for alliance, connection := range lights.connections {
 		if lights.newConnections || *lights.packets[alliance] != *lights.oldPackets[alliance] {
-			_, err := (*connections).Write(lights.packets[alliance][:])
-			if err != nil {
-				log.Printf("Failed to send %s light packet.", alliance)
+			if connection != nil {
+				_, err := (*connection).Write(lights.packets[alliance][:])
+				if err != nil {
+					log.Printf("Failed to send %s light packet.", alliance)
+				}
 			}
 			mainArena.hotGoalLightNotifier.Notify(lights.hotGoal)
 		}
