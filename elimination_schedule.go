@@ -111,6 +111,7 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 	if err != nil {
 		return []AllianceTeam{}, err
 	}
+	var unplayedMatches []*Match
 	for _, match := range matches {
 		// Update the teams in the match if they are not yet set.
 		if match.Red1 == 0 && len(redAlliance) != 0 {
@@ -122,6 +123,7 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 		}
 
 		if match.Status != "complete" {
+			unplayedMatches = append(unplayedMatches, &match)
 			numIncomplete += 1
 			continue
 		}
@@ -139,8 +141,27 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 		}
 	}
 
-	if len(matches) == 0 {
-		// Create the initial set of matches, filling in zeroes if only one alliance is known.
+	// Delete any superfluous matches if the round is won.
+	if redWins == 2 || blueWins == 2 {
+		for _, match := range unplayedMatches {
+			err = database.DeleteMatch(match)
+			if err != nil {
+				return []AllianceTeam{}, err
+			}
+		}
+
+		// Bail out and announce the winner of this round.
+		if redWins == 2 {
+			return redAlliance, nil
+		} else {
+			return blueAlliance, nil
+		}
+	}
+
+	// Create initial set of matches or recreate any superfluous matches that were deleted but now are needed
+	// due to a revision in who won.
+	if len(matches) == 0 || len(ties) == 0 && numIncomplete == 0 {
+		// Fill in zeroes if only one alliance is known.
 		if len(redAlliance) == 0 {
 			redAlliance = []AllianceTeam{AllianceTeam{}, AllianceTeam{}, AllianceTeam{}}
 		} else if len(blueAlliance) == 0 {
@@ -150,25 +171,24 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 			// Raise an error if the alliance selection process gave us less than 3 teams per alliance.
 			return []AllianceTeam{}, fmt.Errorf("Alliances must consist of at least 3 teams")
 		}
-		err = database.CreateMatch(createMatch(roundName, round, group, 1, redAlliance, blueAlliance))
-		if err != nil {
-			return []AllianceTeam{}, err
+		if len(matches) < 1 {
+			err = database.CreateMatch(createMatch(roundName, round, group, 1, redAlliance, blueAlliance))
+			if err != nil {
+				return []AllianceTeam{}, err
+			}
 		}
-		err = database.CreateMatch(createMatch(roundName, round, group, 2, redAlliance, blueAlliance))
-		if err != nil {
-			return []AllianceTeam{}, err
+		if len(matches) < 2 {
+			err = database.CreateMatch(createMatch(roundName, round, group, 2, redAlliance, blueAlliance))
+			if err != nil {
+				return []AllianceTeam{}, err
+			}
 		}
-		err = database.CreateMatch(createMatch(roundName, round, group, 3, redAlliance, blueAlliance))
-		if err != nil {
-			return []AllianceTeam{}, err
+		if len(matches) < 3 {
+			err = database.CreateMatch(createMatch(roundName, round, group, 3, redAlliance, blueAlliance))
+			if err != nil {
+				return []AllianceTeam{}, err
+			}
 		}
-	}
-
-	// Bail out and announce the winner of this round if there is one.
-	if redWins == 2 {
-		return redAlliance, nil
-	} else if blueWins == 2 {
-		return blueAlliance, nil
 	}
 
 	// Duplicate any ties if we have run out of matches. Don't reshuffle the team positions, so queueing
