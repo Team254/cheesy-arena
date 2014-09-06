@@ -53,7 +53,9 @@
                 <li><a target="_blank" href="/reports/csv/schedule/qualification">Qualification Schedule</a></li>
                 <li><a target="_blank" href="/reports/csv/schedule/elimination">Elimination Schedule</a></li>
                 <li><a target="_blank" href="/reports/csv/rankings">Standings</a></li>
-                <li><a target="_blank" href="/reports/csv/wpa_keys">WPA Keys</a></li>
+                {{if .EventSettings.NetworkSecurityEnabled}}
+                  <li><a target="_blank" href="/reports/csv/wpa_keys">WPA Keys</a></li>
+                {{end}}
               </ul>
             </li>
             <li class="dropdown">
