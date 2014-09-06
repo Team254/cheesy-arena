@@ -174,13 +174,13 @@ func (arena *Arena) AssignTeam(teamId int, station string) error {
 		return nil
 	}
 
-	// Load the team model. Raise an error if a team doesn't exist.
+	// Load the team model. If it doesn't exist, enable anonymous operation.
 	team, err := db.GetTeamById(teamId)
 	if err != nil {
 		return err
 	}
 	if team == nil {
-		return fmt.Errorf("Invalid team number '%d'.", teamId)
+		team = &Team{Id: teamId}
 	}
 
 	arena.AllianceStations[station].team = team

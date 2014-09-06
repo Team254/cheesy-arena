@@ -48,12 +48,6 @@ func TestAssignTeam(t *testing.T) {
 	err = dsConn.conn.Close()
 	assert.NotNil(t, err) // Connection should have already been closed.
 
-	// Check assigning an unknown team.
-	err = mainArena.AssignTeam(1503, "R1")
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Invalid team number")
-	}
-
 	// Check assigning zero as the team number.
 	err = mainArena.AssignTeam(0, "R2")
 	assert.Nil(t, err)
@@ -451,10 +445,6 @@ func TestSubstituteTeam(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 101, mainArena.currentMatch.Blue1)
 	assert.Equal(t, 101, mainArena.AllianceStations["B1"].team.Id)
-	err = mainArena.SubstituteTeam(1503, "R1")
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Invalid team number")
-	}
 	err = mainArena.AssignTeam(104, "R4")
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Invalid alliance station")
