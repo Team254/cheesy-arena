@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"net"
 	"testing"
 	"time"
@@ -154,7 +155,13 @@ func TestDecodeStatusPacket(t *testing.T) {
 }
 
 func TestListenForDsPackets(t *testing.T) {
-	db, _ = OpenDatabase(testDbPath)
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 
 	listener, err := DsPacketListener()
 	if assert.Nil(t, err) {
@@ -211,6 +218,18 @@ func TestListenForDsPackets(t *testing.T) {
 	}
 	assert.True(t, time.Since(mainArena.AllianceStations["B1"].DsConn.LastPacketTime).Seconds() < 0.1)
 	assert.True(t, time.Since(mainArena.AllianceStations["B1"].DsConn.LastRobotLinkedTime).Seconds() < 0.1)
+
+	// Should log the packet to file if received during a match.
+	dsConn = mainArena.AllianceStations["B1"].DsConn
+	dsConn.signalMatchStart(&Match{Type: "Qualification", DisplayName: "1"})
+	mainArena.matchStartTime = time.Now().Add(-1 * time.Second)
+	mainArena.MatchState = AUTO_PERIOD
+	_, err = conn.Write(packet[:])
+	assert.Nil(t, err)
+	time.Sleep(time.Millisecond * 10)
+	logContents, err := ioutil.ReadFile(dsConn.log.logFile.Name())
+	assert.Nil(t, err)
+	assert.Contains(t, string(logContents), "254,B1,true,false,true,false,19.750000,02121300,39072,0,256")
 
 	// Should ignore a packet coming from an expected team in the wrong position.
 	statusBefore := mainArena.AllianceStations["R3"].DsConn.DriverStationStatus

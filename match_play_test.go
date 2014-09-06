@@ -4,10 +4,12 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"testing"
 	"time"
 )
@@ -174,6 +176,17 @@ func TestCommitMatch(t *testing.T) {
 	assert.Equal(t, 3, matchResult.PlayNumber)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner)
+
+	// Verify TBA publishing by checking the log for the expected failure messages.
+	tbaBaseUrl = "fakeurl"
+	eventSettings.TbaPublishingEnabled = true
+	var writer bytes.Buffer
+	log.SetOutput(&writer)
+	err = CommitMatchScore(match, matchResult)
+	assert.Nil(t, err)
+	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous publishing to happen.
+	assert.Contains(t, writer.String(), "Failed to publish matches")
+	assert.Contains(t, writer.String(), "Failed to publish rankings")
 }
 
 func TestCommitEliminationTie(t *testing.T) {
@@ -325,17 +338,22 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	mainArena.blueRealtimeScore.CurrentScore.AutoHighHot = 37
 	ws.Write("commitResults", nil)
 	readWebsocketType(t, ws, "reload")
+	readWebsocketType(t, ws, "setAllianceStationDisplay")
 	assert.Equal(t, 29, mainArena.savedMatchResult.RedScore.AutoHighHot)
 	assert.Equal(t, 37, mainArena.savedMatchResult.BlueScore.AutoHighHot)
 	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
 	ws.Write("discardResults", nil)
 	readWebsocketType(t, ws, "reload")
+	readWebsocketType(t, ws, "setAllianceStationDisplay")
 	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
 
-	// Test changing the audience display.
+	// Test changing the displays.
 	ws.Write("setAudienceDisplay", "logo")
 	readWebsocketType(t, ws, "setAudienceDisplay")
 	assert.Equal(t, "logo", mainArena.audienceDisplayScreen)
+	ws.Write("setAllianceStationDisplay", "logo")
+	readWebsocketType(t, ws, "setAllianceStationDisplay")
+	assert.Equal(t, "logo", mainArena.allianceStationDisplayScreen)
 }
 
 func TestMatchPlayWebsocketNotifications(t *testing.T) {

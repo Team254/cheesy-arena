@@ -107,20 +107,20 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if eventSettings.TbaPublishingEnabled && cachedMatchType != "practice" {
-		// Publish schedule to The Blue Alliance.
-		err = PublishMatches()
-		if err != nil {
-			handleWebErr(w, err)
-			return
-		}
-	}
-
 	// Back up the database.
 	err = db.Backup("post_scheduling")
 	if err != nil {
 		handleWebErr(w, err)
 		return
+	}
+
+	if eventSettings.TbaPublishingEnabled && cachedMatchType != "practice" {
+		// Publish schedule to The Blue Alliance.
+		err = PublishMatches()
+		if err != nil {
+			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
+			return
+		}
 	}
 
 	http.Redirect(w, r, "/setup/schedule", 302)

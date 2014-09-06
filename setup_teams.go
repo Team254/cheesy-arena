@@ -172,7 +172,7 @@ func TeamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 func TeamsPublishHandler(w http.ResponseWriter, r *http.Request) {
 	err := PublishTeams()
 	if err != nil {
-		handleWebErr(w, err)
+		http.Error(w, "Failed to publish teams: "+err.Error(), 500)
 		return
 	}
 	http.Redirect(w, r, "/setup/teams", 302)

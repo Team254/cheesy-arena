@@ -180,25 +180,25 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if eventSettings.TbaPublishingEnabled {
-		// Publish alliances and schedule to The Blue Alliance.
-		err = PublishAlliances()
-		if err != nil {
-			handleWebErr(w, err)
-			return
-		}
-		err = PublishMatches()
-		if err != nil {
-			handleWebErr(w, err)
-			return
-		}
-	}
-
 	// Back up the database.
 	err = db.Backup("post_alliance_selection")
 	if err != nil {
 		handleWebErr(w, err)
 		return
+	}
+
+	if eventSettings.TbaPublishingEnabled {
+		// Publish alliances and schedule to The Blue Alliance.
+		err = PublishAlliances()
+		if err != nil {
+			renderAllianceSelection(w, r, fmt.Sprintf("Failed to publish alliances: %s", err.Error()))
+			return
+		}
+		err = PublishMatches()
+		if err != nil {
+			renderAllianceSelection(w, r, fmt.Sprintf("Failed to publish matches: %s", err.Error()))
+			return
+		}
 	}
 
 	http.Redirect(w, r, "/setup/alliance_selection", 302)

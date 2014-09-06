@@ -4,7 +4,9 @@
 package main
 
 import (
+	"bytes"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"testing"
 	"time"
 )
@@ -482,4 +484,26 @@ func TestSubstituteTeam(t *testing.T) {
 	db.CreateMatch(&match)
 	mainArena.LoadMatch(&match)
 	assert.Nil(t, mainArena.SubstituteTeam(107, "R1"))
+}
+
+func TestSetupNetwork(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+	mainArena.Setup()
+
+	// Verify the setup ran by checking the log for the expected failure messages.
+	eventSettings.NetworkSecurityEnabled = true
+	aironetTelnetPort = 10023
+	catalystTelnetPort = 10023
+	mainArena.LoadMatch(&Match{Type: "test"})
+	var writer bytes.Buffer
+	log.SetOutput(&writer)
+	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous configuration to happen.
+	assert.Contains(t, writer.String(), "Failed to configure team Ethernet")
+	assert.Contains(t, writer.String(), "Failed to configure team WiFi")
 }

@@ -459,12 +459,12 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 		go func() {
 			err = PublishMatches()
 			if err != nil {
-				log.Println(err)
+				log.Printf("Failed to publish matches: %s", err.Error())
 			}
 			if match.Type == "qualification" {
 				err = PublishRankings()
 				if err != nil {
-					log.Println(err)
+					log.Printf("Failed to publish rankings: %s", err.Error())
 				}
 			}
 		}()

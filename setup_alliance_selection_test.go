@@ -141,9 +141,13 @@ func TestSetupAllianceSelectionErrors(t *testing.T) {
 	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=asdf")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "valid start time")
-	recorder = postHttpResponse("/setup/alliance_selection/finalize",
-		"startTime=2014-01-01 01:00:00 PM")
-	assert.Equal(t, 302, recorder.Code)
+
+	// Finalize for real and check that TBA publishing is triggered.
+	tbaBaseUrl = "fakeurl"
+	eventSettings.TbaPublishingEnabled = true
+	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Failed to publish alliances")
 
 	// Do other things after finalization.
 	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")

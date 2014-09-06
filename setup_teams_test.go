@@ -165,3 +165,19 @@ func TestSetupTeamsWpaKeys(t *testing.T) {
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "WPA key must be between 8 and 63 characters")
 }
+
+func TestSetupTeamsPublish(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+	tbaBaseUrl = "fakeurl"
+	eventSettings.TbaPublishingEnabled = true
+
+	recorder := postHttpResponse("/setup/teams/publish", "")
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Failed to publish teams")
+}
