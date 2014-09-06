@@ -113,11 +113,13 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 	}
 	var unplayedMatches []*Match
 	for _, match := range matches {
-		// Update the teams in the match if they are not yet set.
-		if match.Red1 == 0 && len(redAlliance) != 0 {
+		// Update the teams in the match if they are not yet set or are incorrect.
+		if len(redAlliance) != 0 && !(teamInAlliance(match.Red1, redAlliance) &&
+			teamInAlliance(match.Red2, redAlliance) && teamInAlliance(match.Red3, redAlliance)) {
 			shuffleRedTeams(&match, redAlliance)
 			database.SaveMatch(&match)
-		} else if match.Blue1 == 0 && len(blueAlliance) != 0 {
+		} else if len(blueAlliance) != 0 && !(teamInAlliance(match.Blue1, blueAlliance) &&
+			teamInAlliance(match.Blue2, blueAlliance) && teamInAlliance(match.Blue3, blueAlliance)) {
 			shuffleBlueTeams(&match, blueAlliance)
 			database.SaveMatch(&match)
 		}
@@ -228,4 +230,13 @@ func shuffleBlueTeams(match *Match, alliance []AllianceTeam) {
 	match.Blue1 = alliance[shuffle[0]].TeamId
 	match.Blue2 = alliance[shuffle[1]].TeamId
 	match.Blue3 = alliance[shuffle[2]].TeamId
+}
+
+func teamInAlliance(teamId int, alliance []AllianceTeam) bool {
+	for _, allianceTeam := range alliance {
+		if teamId == allianceTeam.TeamId {
+			return true
+		}
+	}
+	return false
 }
