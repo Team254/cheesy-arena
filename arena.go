@@ -54,6 +54,7 @@ type RealtimeScore struct {
 	AutoCommitted      bool
 	TeleopCommitted    bool
 	FoulsCommitted     bool
+	FieldReset         bool
 	undoAutoScores     []Score
 	undoCycles         []Cycle
 }
@@ -545,7 +546,7 @@ func (arena *Arena) handleLighting(alliance string, score *RealtimeScore) {
 		}
 		arena.lights.SetAssistGoal(alliance, score.CurrentCycle.Assists)
 	case POST_MATCH:
-		if mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted {
+		if mainArena.redRealtimeScore.FieldReset && mainArena.blueRealtimeScore.FieldReset {
 			arena.lights.SetFieldReset()
 		} else {
 			arena.lights.ClearGoal(alliance)

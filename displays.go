@@ -897,6 +897,14 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			cards[strconv.Itoa(args.TeamId)] = args.Card
 			continue
+		case "signalReset":
+			if mainArena.MatchState != POST_MATCH {
+				// Don't allow clearing the field until the match is over.
+				continue
+			}
+			mainArena.redRealtimeScore.FieldReset = true
+			mainArena.blueRealtimeScore.FieldReset = true
+			continue // Don't reload.
 		case "commitMatch":
 			if mainArena.MatchState != POST_MATCH {
 				// Don't allow committing the fouls until the match is over.
@@ -904,6 +912,8 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			mainArena.redRealtimeScore.FoulsCommitted = true
 			mainArena.blueRealtimeScore.FoulsCommitted = true
+			mainArena.redRealtimeScore.FieldReset = true
+			mainArena.blueRealtimeScore.FieldReset = true
 			mainArena.scoringStatusNotifier.Notify(nil)
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))

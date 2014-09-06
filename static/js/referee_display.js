@@ -77,6 +77,11 @@ var cycleCard = function(cardButton) {
   $(cardButton).attr("data-card", newCard);
 };
 
+// Signals to the teams that they may enter the field.
+var signalReset = function() {
+  websocket.send("signalReset");
+};
+
 // Signals the scorekeeper that foul entry is complete for this match.
 var commitMatch = function() {
   websocket.send("commitMatch");
