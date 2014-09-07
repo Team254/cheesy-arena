@@ -68,8 +68,10 @@ func TestArenaMatchFlow(t *testing.T) {
 	db, err = OpenDatabase(testDbPath)
 	assert.Nil(t, err)
 	defer db.Close()
-	db.CreateTeam(&Team{Id: 254})
+	eventSettings, _ = db.GetEventSettings()
+	mainArena = Arena{}
 	mainArena.Setup()
+	db.CreateTeam(&Team{Id: 254})
 	err = mainArena.AssignTeam(254, "B3")
 	assert.Nil(t, err)
 
