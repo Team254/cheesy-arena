@@ -20,7 +20,7 @@ A field management system that just works.
 * Reports, results, and logs can be viewed from any computer
 
 ##License
-Teams may use Cheesy Arena freely for practice, scrimmages, and off-season events. See [LICENSE.md]() for more details.
+Teams may use Cheesy Arena freely for practice, scrimmages, and off-season events. See [LICENSE.md](LICENSE.md) for more details.
 
 ##Installation and use
 **Via binaries:**
