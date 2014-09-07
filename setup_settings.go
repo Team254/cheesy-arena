@@ -169,7 +169,7 @@ func ClearDbHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string) {
-	template, err := template.ParseFiles("templates/settings.html", "templates/base.html")
+	template, err := template.ParseFiles("templates/setup_settings.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return

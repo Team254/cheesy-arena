@@ -207,7 +207,7 @@ func renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) 
 		return
 	}
 
-	template, err := template.ParseFiles("templates/teams.html", "templates/base.html")
+	template, err := template.ParseFiles("templates/setup_teams.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return

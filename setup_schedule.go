@@ -132,7 +132,7 @@ func renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string)
 		handleWebErr(w, err)
 		return
 	}
-	template, err := template.ParseFiles("templates/schedule.html", "templates/base.html")
+	template, err := template.ParseFiles("templates/setup_schedule.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return

@@ -205,7 +205,7 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
-	template, err := template.ParseFiles("templates/alliance_selection.html", "templates/base.html")
+	template, err := template.ParseFiles("templates/setup_alliance_selection.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return

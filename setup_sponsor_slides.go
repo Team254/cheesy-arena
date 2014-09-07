@@ -13,7 +13,7 @@ import (
 
 // Shows the sponsor slides configuration page.
 func SponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) {
-	template, err := template.ParseFiles("templates/sponsor_slides.html", "templates/base.html")
+	template, err := template.ParseFiles("templates/setup_sponsor_slides.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return

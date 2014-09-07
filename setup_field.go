@@ -12,7 +12,7 @@ import (
 
 // Shows the field configuration page.
 func FieldGetHandler(w http.ResponseWriter, r *http.Request) {
-	template, err := template.ParseFiles("templates/field.html", "templates/base.html")
+	template, err := template.ParseFiles("templates/setup_field.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return

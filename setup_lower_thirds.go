@@ -13,7 +13,7 @@ import (
 
 // Shows the lower third configuration page.
 func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
-	template, err := template.ParseFiles("templates/lower_thirds.html", "templates/base.html")
+	template, err := template.ParseFiles("templates/setup_lower_thirds.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
