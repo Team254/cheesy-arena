@@ -41,5 +41,5 @@ Cheesy Arena To-Do List
 * Show non-modal dialog with websocket-returned errors
 * JavaScript unit testing
 * Fix Handlebars and golang html/template confict
-* Set up Travis Continuous Integration
-* Selenium testing
+* Set up [Travis continuous integration](https://travis-ci.org)
+* [Selenium](http://www.seleniumhq.org) testing
