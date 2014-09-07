@@ -20,7 +20,7 @@ A field management system that just works.
 * Reports, results, and logs can be viewed from any computer
 
 ##License
-Teams may use Cheesy Arena freely for practice, scrimmages, and off-season events. See [LICENSE.md](LICENSE.md) for more details.
+Teams may use Cheesy Arena freely for practice, scrimmages, and off-season events. See [LICENSE](LICENSE) for more details.
 
 ##Installation and use
 **Via binaries:**
@@ -34,6 +34,7 @@ Teams may use Cheesy Arena freely for practice, scrimmages, and off-season event
 
 1. Download [Go](http://golang.org/doc/install)
 1. Set up your [Go workspace](http://golang.org/doc/code.html)
+1. If you're using Windows and don't already have a working version of GCC (needed to compile a dependency), install [TDM-GCC](http://tdm-gcc.tdragon.net).
 1. Download the Cheesy Arena source and dependencies with `go get github.com/Team254/cheesy-arena`
 1. Compile the code with `go build`
 1. Run the `cheesy-arena` or `cheesy-arena.exe` binary
