@@ -6,34 +6,42 @@
 var websocket;
 var scoreIsReady;
 
+// Sends a websocket message to load a team into an alliance station.
 var substituteTeam = function(team, position) {
   websocket.send("substituteTeam", { team: parseInt(team), position: position })
 };
 
+// Sends a websocket message to toggle the bypass status for an alliance station.
 var toggleBypass = function(station) {
   websocket.send("toggleBypass", station);
 };
 
+// Sends a websocket message to start the match.
 var startMatch = function() {
   websocket.send("startMatch");
 };
 
+// Sends a websocket message to abort the match.
 var abortMatch = function() {
   websocket.send("abortMatch");
 };
 
+// Sends a websocket message to commit the match score and load the next match.
 var commitResults = function() {
   websocket.send("commitResults");
 };
 
+// Sends a websocket message to discard the match score and load the next match.
 var discardResults = function() {
   websocket.send("discardResults");
 };
 
+// Sends a websocket message to change what the audience display is showing.
 var setAudienceDisplay = function() {
   websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
 };
 
+// Sends a websocket message to change what the alliance station display is showing.
 var setAllianceStationDisplay = function() {
   websocket.send("setAllianceStationDisplay", $("input[name=allianceStationDisplay]:checked").val());
 };
@@ -49,6 +57,7 @@ var confirmCommit = function(isReplay) {
   }
 };
 
+// Handles a websocket message to update the team connection status.
 var handleStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
@@ -115,6 +124,7 @@ var handleStatus = function(data) {
   }
 };
 
+// Handles a websocket message to update the match time countdown.
 var handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
@@ -122,11 +132,13 @@ var handleMatchTime = function(data) {
   });
 };
 
+// Handles a websocket message to update the audience display screen selector.
 var handleSetAudienceDisplay = function(data) {
   $("input[name=audienceDisplay]:checked").prop("checked", false);
   $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
 };
 
+// Handles a websocket message to signal whether the referee and scorers have committed after the match.
 var handleScoringStatus = function(data) {
   scoreIsReady = data.RefereeScoreReady && data.RedScoreReady && data.BlueScoreReady;
   $("#refereeScoreStatus").attr("data-ready", data.RefereeScoreReady);
@@ -134,6 +146,7 @@ var handleScoringStatus = function(data) {
   $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
 };
 
+// Handles a websocket message to update the alliance station display screen selector.
 var handleSetAllianceStationDisplay = function(data) {
   $("input[name=allianceStationDisplay]:checked").prop("checked", false);
   $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);

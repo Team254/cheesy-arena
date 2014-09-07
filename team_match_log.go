@@ -19,6 +19,7 @@ type TeamMatchLog struct {
 	logFile *os.File
 }
 
+// Creates a file to log to for the given match and team.
 func NewTeamMatchLog(teamId int, match *Match) (*TeamMatchLog, error) {
 	err := os.MkdirAll(logsDir, 0755)
 	if err != nil {
@@ -39,6 +40,7 @@ func NewTeamMatchLog(teamId int, match *Match) (*TeamMatchLog, error) {
 	return &log, nil
 }
 
+// Adds a line to the log when a packet is received.
 func (log *TeamMatchLog) LogDsStatus(matchTimeSec float64, dsStatus *DriverStationStatus) {
 	log.logger.Printf("%f,%d,%s,%v,%v,%v,%v,%f,%s,%d,%d,%d", matchTimeSec, dsStatus.TeamId,
 		dsStatus.AllianceStation, dsStatus.RobotLinked, dsStatus.Auto, dsStatus.Enabled,

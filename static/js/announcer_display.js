@@ -7,6 +7,7 @@ var websocket;
 var teamTemplate = Handlebars.compile($("#teamTemplate").html());
 var matchResultTemplate = Handlebars.compile($("#matchResultTemplate").html());
 
+// Handles a websocket message to hide the score dialog once the next match is being introduced.
 var handleSetAudienceDisplay = function(targetScreen) {
   // Hide the final results so that they aren't blocking the current teams when the announcer needs them most.
   if (targetScreen == "intro" || targetScreen == "match") {
@@ -14,6 +15,7 @@ var handleSetAudienceDisplay = function(targetScreen) {
   }
 };
 
+// Handles a websocket message to update the teams for the current match.
 var handleSetMatch = function(data) {
   $("#matchName").text(data.MatchType + " Match " + data.MatchDisplayName);
   $("#red1").html(teamTemplate(formatTeam(data.Red1)));
@@ -24,6 +26,7 @@ var handleSetMatch = function(data) {
   $("#blue3").html(teamTemplate(formatTeam(data.Blue3)));
 };
 
+// Handles a websocket message to update the match time countdown.
 var handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
@@ -31,11 +34,13 @@ var handleMatchTime = function(data) {
   });
 };
 
+// Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
   $("#redScore").text(data.RedScore);
   $("#blueScore").text(data.BlueScore);
 };
 
+// Handles a websocket message to populate the final score data.
 var handleSetFinalScore = function(data) {
 console.log(data);
   $("#scoreMatchName").text(data.MatchType + " Match " + data.MatchDisplayName);

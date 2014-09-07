@@ -58,6 +58,7 @@ func ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *Team) error {
 		removeTeamVlansCommand += fmt.Sprintf("interface Vlan%d\nno ip address\nno access-list 1%d\n", vlan, vlan)
 	}
 
+	// Build and run the overall command to do everything in a single telnet session.
 	command := removeTeamVlansCommand + addTeamVlansCommand
 	if len(command) > 0 {
 		_, err = runCatalystConfigCommand(removeTeamVlansCommand + addTeamVlansCommand)

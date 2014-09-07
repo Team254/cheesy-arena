@@ -8,6 +8,7 @@ var blinkInterval;
 var currentScreen = "blank";
 var websocket;
 
+// Handles a websocket message to change which screen is displayed.
 var handleSetAllianceStationDisplay = function(targetScreen) {
   currentScreen = targetScreen;
   if (allianceStation == "") {
@@ -28,6 +29,7 @@ var handleSetAllianceStationDisplay = function(targetScreen) {
   }
 };
 
+// Handles a websocket message to update the team to display.
 var handleSetMatch = function(data) {
   if (allianceStation != "" && data.AllianceStation == "") {
     // The client knows better what display this should be; let the server know.
@@ -52,6 +54,7 @@ var handleSetMatch = function(data) {
   }
 };
 
+// Handles a websocket message to update the team connection status.
 var handleStatus = function(data) {
   stationStatus = data.AllianceStations[allianceStation];
   var blink = false;
@@ -79,6 +82,7 @@ var handleStatus = function(data) {
   }
 };
 
+// Handles a websocket message to update the match time countdown.
 var handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
     var countdownString = String(countdownSec % 60);
@@ -91,11 +95,13 @@ var handleMatchTime = function(data) {
   });
 };
 
+// Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
   $("#redScore").text(data.RedScore);
   $("#blueScore").text(data.BlueScore);
 };
 
+// Handles a websocket message to show or hide the hot goal indication.
 var handleHotGoalLight = function(side) {
   if (allianceStation != "" && (side == "left" && allianceStation[1] == "3" ||
       side == "right" && allianceStation[1] == "1")) {

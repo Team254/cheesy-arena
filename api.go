@@ -55,6 +55,7 @@ func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Generates a JSON dump of the sponsor slides for use by the audience display.
 func SponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
 	sponsors, err := db.GetAllSponsorSlides()
 	if err != nil {
@@ -76,7 +77,7 @@ func SponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Generates a JSON dump of the qualification rankings.
+// Generates a JSON dump of the qualification rankings, primarily for use by the pit display.
 func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	rankings, err := db.GetAllRankings()
 	if err != nil {

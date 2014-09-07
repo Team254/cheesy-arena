@@ -123,7 +123,9 @@ func ListenForDsPackets(listener *net.UDPConn) {
 	}
 }
 
+// Called at the start of the match to allow for driver station initialization.
 func (dsConn *DriverStationConnection) signalMatchStart(match *Match) error {
+	// Zero out missed packet count and begin logging.
 	dsConn.missedPacketOffset = dsConn.DriverStationStatus.MissedPacketCount
 	var err error
 	dsConn.log, err = NewTeamMatchLog(dsConn.TeamId, match)

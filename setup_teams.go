@@ -249,6 +249,7 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 		re := regexp.MustCompile("(?s).*<PRE>(.*)</PRE>.*")
 		teamsCsv := re.FindStringSubmatch(string(body))[1]
 
+		// Parse the tab-separated data.
 		reader := csv.NewReader(strings.NewReader(teamsCsv))
 		reader.Comma = '\t'
 		reader.FieldsPerRecord = -1

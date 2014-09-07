@@ -91,6 +91,7 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 	return matches, nil
 }
 
+// Returns the total number of matches that can be run within the given schedule blocks.
 func countMatches(scheduleBlocks []ScheduleBlock) int {
 	numMatches := 0
 	for _, block := range scheduleBlocks {

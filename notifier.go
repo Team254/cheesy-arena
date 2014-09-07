@@ -47,7 +47,7 @@ func (notifier *Notifier) notifyListener(listener chan interface{}, message inte
 	}()
 
 	// Do a non-blocking send. This guarantees that sending notifications won't interrupt the main event loop,
-	// at the risk of clients missing some messages.
+	// at the risk of clients missing some messages if they don't read them all promptly.
 	select {
 	case listener <- message:
 		// The notification was sent and received successfully.

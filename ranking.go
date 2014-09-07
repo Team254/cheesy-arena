@@ -99,7 +99,7 @@ func (database *Database) CalculateRankings() error {
 	}
 	sortedRankings := sortRankings(rankings)
 
-	// Stuff the match results into the database in an atomic operation.
+	// Stuff the rankings into the database in an atomic operation to prevent messing them up halfway.
 	transaction, err := database.rankingMap.Begin()
 	if err != nil {
 		return err
@@ -174,6 +174,7 @@ func (database *Database) CalculateTeamCards(matchType string) error {
 	return nil
 }
 
+// Incrementally accounts for the given match result in the set of rankings that are being built.
 func addMatchResultToRankings(rankings map[int]*Ranking, teamId int, matchResult *MatchResult, isRed bool) {
 	ranking := rankings[teamId]
 	if ranking == nil {
@@ -233,10 +234,12 @@ func sortRankings(rankings map[int]*Ranking) Rankings {
 	return sortedRankings
 }
 
+// Helper function to implement the required interface for Sort.
 func (rankings Rankings) Len() int {
 	return len(rankings)
 }
 
+// Helper function to implement the required interface for Sort.
 func (rankings Rankings) Less(i, j int) bool {
 	a := rankings[i]
 	b := rankings[j]
@@ -259,6 +262,7 @@ func (rankings Rankings) Less(i, j int) bool {
 	return a.QualificationScore*b.Played > b.QualificationScore*a.Played
 }
 
+// Helper function to implement the required interface for Sort.
 func (rankings Rankings) Swap(i, j int) {
 	rankings[i], rankings[j] = rankings[j], rankings[i]
 }

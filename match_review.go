@@ -124,6 +124,7 @@ func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/match_review", 302)
 }
 
+// Load the match result for the match referenced in the HTTP query string.
 func getMatchResultFromRequest(r *http.Request) (*Match, *MatchResult, error) {
 	vars := mux.Vars(r)
 	matchId, _ := strconv.Atoi(vars["matchId"])
@@ -146,6 +147,7 @@ func getMatchResultFromRequest(r *http.Request) (*Match, *MatchResult, error) {
 	return match, matchResult, nil
 }
 
+// Constructs the list of matches to display in the match review interface.
 func buildMatchReviewList(matchType string) ([]MatchReviewListItem, error) {
 	matches, err := db.GetMatchesByType(matchType)
 	if err != nil {

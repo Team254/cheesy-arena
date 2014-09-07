@@ -1,6 +1,6 @@
 // Copyright 2014 Team 254. All Rights Reserved.
-// Authors: pat@patfairbank.com (Patrick Fairbank)
-//          nick@team254.com (Nick Eyre)
+// Author: pat@patfairbank.com (Patrick Fairbank)
+// Author: nick@team254.com (Nick Eyre)
 //
 // Client-side methods for the audience display.
 
@@ -9,6 +9,7 @@ var transitionMap;
 var currentScreen = "blank";
 var allianceSelectionTemplate = Handlebars.compile($("#allianceSelectionTemplate").html());
 
+// Handles a websocket message to change which screen is displayed.
 var handleSetAudienceDisplay = function(targetScreen) {
   if (targetScreen == currentScreen) {
     return;
@@ -26,6 +27,7 @@ var handleSetAudienceDisplay = function(targetScreen) {
   currentScreen = targetScreen;
 };
 
+// Handles a websocket message to update the teams for the current match.
 var handleSetMatch = function(data) {
   $("#redTeam1").text(data.Match.Red1)
   $("#redTeam2").text(data.Match.Red2)
@@ -36,6 +38,7 @@ var handleSetMatch = function(data) {
   $("#matchName").text(data.MatchName + " " + data.Match.DisplayName);
 };
 
+// Handles a websocket message to update the match time countdown.
 var handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
     var countdownString = String(countdownSec % 60);
@@ -47,6 +50,7 @@ var handleMatchTime = function(data) {
   });
 };
 
+// Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
   $("#redScoreNumber").text(data.RedScore);
   $("#redAssist1").attr("data-on", data.RedCycle.Assists >= 1);
@@ -62,6 +66,7 @@ var handleRealtimeScore = function(data) {
   $("#blueCatch").attr("data-on", data.BlueCycle.Catch);
 };
 
+// Handles a websocket message to populate the final score data.
 var handleSetFinalScore = function(data) {
   $("#redFinalScore").text(data.RedScore.Score);
   $("#redFinalTeam1").text(data.Match.Red1);
@@ -80,6 +85,7 @@ var handleSetFinalScore = function(data) {
   $("#finalMatchName").text(data.MatchName + " " + data.Match.DisplayName);
 };
 
+// Handles a websocket message to play a sound to signal match start/stop/etc.
 var handlePlaySound = function(sound) {
   $("audio").each(function(k, v) {
     // Stop and reset any sounds that are still playing.
@@ -89,6 +95,7 @@ var handlePlaySound = function(sound) {
   $("#" + sound)[0].play();
 };
 
+// Handles a websocket message to update the alliance selection screen.
 var handleAllianceSelection = function(alliances) {
   if (alliances) {
     $.each(alliances, function(k, v) {
@@ -98,6 +105,7 @@ var handleAllianceSelection = function(alliances) {
   }
 };
 
+// Handles a websocket message to populate and/or show/hide a lower third.
 var handleLowerThird = function(data) {
   if (data.BottomText == "") {
     $("#lowerThirdTop").hide();
@@ -314,7 +322,7 @@ var transitionSponsorToScore = function(callback) {
   });
 };
 
-// Load and Prioritize Sponsor Data
+// Loads sponsor slide data and builds the slideshow HTML.
 var initializeSponsorDisplay = function() {
   $.getJSON("/api/sponsor_slides", function(sponsors) {
 
@@ -354,7 +362,6 @@ var initializeSponsorDisplay = function() {
 
   });
 }
-
 
 $(function() {
   // Set up the websocket back to the server.

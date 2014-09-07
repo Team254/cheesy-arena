@@ -210,6 +210,7 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 	return []AllianceTeam{}, nil
 }
 
+// Creates a match at the given point in the elimination bracket and populates the teams.
 func createMatch(roundName string, round int, group int, instance int, redAlliance []AllianceTeam, blueAlliance []AllianceTeam) *Match {
 	match := Match{Type: "elimination", DisplayName: fmt.Sprintf("%s-%d", roundName, instance),
 		ElimRound: round, ElimGroup: group, ElimInstance: instance}
@@ -218,6 +219,7 @@ func createMatch(roundName string, round int, group int, instance int, redAllian
 	return &match
 }
 
+// Assigns the first three teams from the alliance randomly into the red team slots for the match.
 func shuffleRedTeams(match *Match, alliance []AllianceTeam) {
 	shuffle := rand.Perm(3)
 	match.Red1 = alliance[shuffle[0]].TeamId
@@ -225,6 +227,7 @@ func shuffleRedTeams(match *Match, alliance []AllianceTeam) {
 	match.Red3 = alliance[shuffle[2]].TeamId
 }
 
+// Assigns the first three teams from the alliance randomly into the blue team slots for the match.
 func shuffleBlueTeams(match *Match, alliance []AllianceTeam) {
 	shuffle := rand.Perm(3)
 	match.Blue1 = alliance[shuffle[0]].TeamId
@@ -232,6 +235,7 @@ func shuffleBlueTeams(match *Match, alliance []AllianceTeam) {
 	match.Blue3 = alliance[shuffle[2]].TeamId
 }
 
+// Returns true if the given team is part of the given alliance.
 func teamInAlliance(teamId int, alliance []AllianceTeam) bool {
 	for _, allianceTeam := range alliance {
 		if teamId == allianceTeam.TeamId {

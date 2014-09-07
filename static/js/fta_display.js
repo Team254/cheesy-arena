@@ -6,6 +6,7 @@
 
 var websocket;
 
+// Handles a websocket message to update the team connection status.
 var handleStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {

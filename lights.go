@@ -23,6 +23,7 @@ type Lights struct {
 	animationCount int
 }
 
+// Sets the color by name and transition time for the given LED channel.
 func (lightPacket *LightPacket) setColorFade(channel int, color string, fade byte) {
 	switch color {
 	case "off":
@@ -44,10 +45,12 @@ func (lightPacket *LightPacket) setColorFade(channel int, color string, fade byt
 	}
 }
 
+// Sets the color by name with instant transition for the given LED channel.
 func (lightPacket *LightPacket) setColor(channel int, color string) {
 	lightPacket.setColorFade(channel, color, 0)
 }
 
+// Sets the color by RGB values and transition time for the given LED channel.
 func (lightPacket *LightPacket) setRgbFade(channel int, red byte, green byte, blue byte, fade byte) {
 	lightPacket[channel*4] = red
 	lightPacket[channel*4+1] = green
@@ -55,10 +58,12 @@ func (lightPacket *LightPacket) setRgbFade(channel int, red byte, green byte, bl
 	lightPacket[channel*4+3] = fade
 }
 
+// Sets the color by name with instant transition for all LED channels.
 func (lightPacket *LightPacket) setAllColor(color string) {
 	lightPacket.setAllColorFade(color, 0)
 }
 
+// Sets the color by name and transition time for all LED channels.
 func (lightPacket *LightPacket) setAllColorFade(color string, fade byte) {
 	for i := 0; i < 8; i++ {
 		lightPacket.setColorFade(i, color, fade)
@@ -118,6 +123,7 @@ func (lights *Lights) SetupConnections() error {
 	return nil
 }
 
+// Makes a goal for the given alliance hot.
 func (lights *Lights) SetHotGoal(alliance string, leftSide bool) {
 	if leftSide {
 		lights.packets[alliance].setColor(0, "off")
@@ -139,6 +145,7 @@ func (lights *Lights) SetHotGoal(alliance string, leftSide bool) {
 	lights.sendLights()
 }
 
+// Lights up the given alliance's goal for the given number of assists.
 func (lights *Lights) SetAssistGoal(alliance string, numAssists int) {
 	lights.packets[alliance].setColor(0, "off")
 	lights.packets[alliance].setColor(1, "off")
@@ -162,6 +169,7 @@ func (lights *Lights) SetAssistGoal(alliance string, numAssists int) {
 	lights.sendLights()
 }
 
+// Turns off all lights for the given alliance's goal.
 func (lights *Lights) ClearGoal(alliance string) {
 	lights.packets[alliance].setColorFade(0, "off", 10)
 	lights.packets[alliance].setColorFade(1, "off", 10)
@@ -171,6 +179,7 @@ func (lights *Lights) ClearGoal(alliance string) {
 	lights.packets[alliance].setColorFade(5, "off", 10)
 }
 
+// Turns on the given alliance's pedestal.
 func (lights *Lights) SetPedestal(alliance string) {
 	if alliance == "red" {
 		lights.packets["blue"].setColor(6, alliance)
@@ -180,6 +189,7 @@ func (lights *Lights) SetPedestal(alliance string) {
 	lights.sendLights()
 }
 
+// Turns off the given alliance's pedestal.
 func (lights *Lights) ClearPedestal(alliance string) {
 	if alliance == "red" {
 		lights.packets["blue"].setColorFade(6, "off", 10)
@@ -189,12 +199,14 @@ func (lights *Lights) ClearPedestal(alliance string) {
 	lights.sendLights()
 }
 
+// Turns all lights green to signal that the field is safe to enter.
 func (lights *Lights) SetFieldReset() {
 	lights.packets["red"].setAllColor("green")
 	lights.packets["blue"].setAllColor("green")
 	lights.sendLights()
 }
 
+// Sets the lights to the given non-match mode for show or testing.
 func (lights *Lights) SetMode(mode string) {
 	lights.currentMode = mode
 	lights.animationCount = 0
@@ -219,6 +231,7 @@ func (lights *Lights) SetMode(mode string) {
 	lights.sendLights()
 }
 
+// Sends a control packet to the LED controllers only if their state needs to be updated.
 func (lights *Lights) sendLights() {
 	for alliance, connection := range lights.connections {
 		if lights.newConnections || *lights.packets[alliance] != *lights.oldPackets[alliance] {
@@ -235,6 +248,7 @@ func (lights *Lights) sendLights() {
 	lights.newConnections = false
 }
 
+// State machine for controlling light sequences in the non-match modes.
 func (lights *Lights) animate() {
 	lights.animationCount += 1
 

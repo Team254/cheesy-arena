@@ -109,14 +109,14 @@
 {{end}}
 {{define "script"}}
 <script type="text/javascript">
-  $(function(){
-    $("form.existing").each(function(index){
+  $(function() {
+    // Set up the toggling between specifying an image and specifying two lines of text.
+    $("form.existing").each(function(index) {
       if (!$(this).find("input[name=image]").val().length && ($(this).find("input[name=line2]").val().length
           || $(this).find("input[name=line1]").val().length)) {
         $(this).find(".imagetoggle").toggleClass("hidden");
       }
     });
-
     $("button[name=toggleImage]").click(function(event) {
       event.preventDefault();
       $(this).parents("form").find(".imagetoggle").toggleClass("hidden");

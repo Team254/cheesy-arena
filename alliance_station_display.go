@@ -24,8 +24,10 @@ func AllianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 	displayId := ""
 	if _, ok := r.URL.Query()["displayId"]; ok {
+		// Register the display in memory by its ID so that it can be configured to a certain station.
 		displayId = r.URL.Query()["displayId"][0]
 	}
+
 	data := struct {
 		*EventSettings
 		DisplayId string
@@ -202,6 +204,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 
 		switch messageType {
 		case "setAllianceStation":
+			// The client knows what station it is (e.g. across a server restart) and is informing the server.
 			station, ok := data.(string)
 			if !ok {
 				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))

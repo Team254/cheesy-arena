@@ -87,6 +87,7 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Loads the given match onto the arena in preparation for playing it.
 func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	matchId, _ := strconv.Atoi(vars["matchId"])
@@ -435,6 +436,7 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 	}
 
 	if match.Type != "practice" {
+		// Regenerate the residual yellow cards that teams may carry.
 		db.CalculateTeamCards(match.Type)
 	}
 
@@ -488,18 +490,22 @@ func CommitCurrentMatchScore() error {
 	return CommitMatchScore(mainArena.currentMatch, &matchResult)
 }
 
+// Helper function to implement the required interface for Sort.
 func (list MatchPlayList) Len() int {
 	return len(list)
 }
 
+// Helper function to implement the required interface for Sort.
 func (list MatchPlayList) Less(i, j int) bool {
 	return list[i].Status != "complete" && list[j].Status == "complete"
 }
 
+// Helper function to implement the required interface for Sort.
 func (list MatchPlayList) Swap(i, j int) {
 	list[i], list[j] = list[j], list[i]
 }
 
+// Constructs the list of matches to display on the side of the match play interface.
 func buildMatchPlayList(matchType string) (MatchPlayList, error) {
 	matches, err := db.GetMatchesByType(matchType)
 	if err != nil {

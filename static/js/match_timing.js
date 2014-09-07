@@ -14,10 +14,13 @@ var matchStates = {
 };
 var matchTiming;
 
+// Handles a websocket message containing the length of each period in the match.
 var handleMatchTiming = function(data) {
   matchTiming = data;
 };
 
+// Converts the raw match state and time into a human-readable state and per-period time. Calls the provided
+// callback with the result.
 var translateMatchTime = function(data, callback) {
   var matchStateText;
   switch (matchStates[data.MatchState]) {
@@ -42,6 +45,7 @@ var translateMatchTime = function(data, callback) {
   callback(matchStates[data.MatchState], matchStateText, getCountdown(data.MatchState, data.MatchTimeSec));
 };
 
+// Returns the per-period countdown for the given match state and overall time into the match.
 var getCountdown = function(matchState, matchTimeSec) {
   switch (matchStates[matchState]) {
     case "PRE_MATCH":

@@ -20,13 +20,13 @@ const (
 
 // Progression of match states.
 const (
-	PRE_MATCH = iota
-	START_MATCH
-	AUTO_PERIOD
-	PAUSE_PERIOD
-	TELEOP_PERIOD
-	ENDGAME_PERIOD
-	POST_MATCH
+	PRE_MATCH      = 0
+	START_MATCH    = 1
+	AUTO_PERIOD    = 2
+	PAUSE_PERIOD   = 3
+	TELEOP_PERIOD  = 4
+	ENDGAME_PERIOD = 5
+	POST_MATCH     = 6
 )
 
 type AllianceStation struct {
@@ -229,16 +229,16 @@ func (arena *Arena) LoadMatch(match *Match) error {
 	arena.redRealtimeScore = NewRealtimeScore()
 	arena.blueRealtimeScore = NewRealtimeScore()
 
+	// Notify any listeners about the new match.
 	arena.matchLoadTeamsNotifier.Notify(nil)
 	arena.realtimeScoreNotifier.Notify(nil)
-
 	arena.allianceStationDisplayScreen = "match"
 	arena.allianceStationDisplayNotifier.Notify(nil)
 
 	return nil
 }
 
-// Sets a new test match as the current match.
+// Sets a new test match containing no teams as the current match.
 func (arena *Arena) LoadTestMatch() error {
 	return arena.LoadMatch(&Match{Type: "test"})
 }
@@ -488,8 +488,6 @@ func (arena *Arena) Update() {
 	// Send a packet if at a period transition point or if it's been long enough since the last one.
 	if sendDsPacket || time.Since(arena.lastDsPacketTime).Seconds()*1000 >= dsPacketPeriodMs {
 		arena.sendDsPacket(auto, enabled)
-
-		// TODO(pat): Come up with better criteria for sending robot status updates.
 		arena.robotStatusNotifier.Notify(nil)
 	}
 
@@ -519,6 +517,7 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	arena.lastDsPacketTime = time.Now()
 }
 
+// Calculates the integer score value for the given realtime snapshot.
 func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
 	score := scoreSummary(&realtimeScore.CurrentScore, opponentFouls).Score
 	if realtimeScore.CurrentCycle.Truss {

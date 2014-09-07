@@ -5,6 +5,7 @@
 
 var websocket;
 
+// Handles a websocket message to update the realtime scoring fields.
 var handleScore = function(data) {
   // Update autonomous period values.
   var score = data.CurrentScore;
@@ -59,6 +60,7 @@ var handleScore = function(data) {
   }
 };
 
+// Handles a keyboard event and sends the appropriate websocket message.
 var handleKeyPress = function(event) {
   var key = String.fromCharCode(event.keyCode);
   switch(key) {
@@ -110,6 +112,7 @@ var handleKeyPress = function(event) {
   }
 };
 
+// Sends a websocket message to indicate that the score for this alliance is ready.
 var commitMatchScore = function() {
   websocket.send("commitMatch");
 };

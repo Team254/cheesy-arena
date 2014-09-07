@@ -75,6 +75,7 @@ func ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *Team) error {
 		removeSsidsCommand += fmt.Sprintf("no dot11 ssid %s\n", ssid)
 	}
 
+	// Build and run the overall command to do everything in a single telnet session.
 	command := removeSsidsCommand + addSsidsCommand + associateSsidsCommand
 	if len(command) > 0 {
 		_, err = runAironetConfigCommand(removeSsidsCommand + addSsidsCommand + associateSsidsCommand)

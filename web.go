@@ -37,7 +37,7 @@ var templateHelpers = template.FuncMap{
 	},
 }
 
-// Wraps the Gorilla Websocket module for convenience.
+// Wraps the Gorilla Websocket module so that we can define additional functions on it.
 type Websocket struct {
 	conn *websocket.Conn
 }
@@ -47,6 +47,7 @@ type WebsocketMessage struct {
 	Data interface{} `json:"data"`
 }
 
+// Upgrades the given HTTP request to a websocket connection.
 func NewWebsocket(w http.ResponseWriter, r *http.Request) (*Websocket, error) {
 	conn, err := websocketUpgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -73,6 +74,7 @@ func (websocket *Websocket) WriteError(errorMessage string) error {
 	return websocket.conn.WriteJSON(WebsocketMessage{"error", errorMessage})
 }
 
+// Serves the root page of Cheesy Arena.
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	template, err := template.ParseFiles("templates/index.html", "templates/base.html")
 	if err != nil {
@@ -89,6 +91,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Starts the webserver and blocks, waiting on requests. Does not return until the application exits.
 func ServeWebInterface() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 	http.Handle("/", newHandler())
@@ -98,6 +101,7 @@ func ServeWebInterface() {
 	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
 }
 
+// Sets up the mapping between URLs and handlers.
 func newHandler() http.Handler {
 	router := mux.NewRouter()
 	router.HandleFunc("/setup/settings", SettingsGetHandler).Methods("GET")
@@ -163,6 +167,7 @@ func newHandler() http.Handler {
 	return router
 }
 
+// Writes the given error out as plain text with a status code of 500.
 func handleWebErr(w http.ResponseWriter, err error) {
 	http.Error(w, "Internal server error: "+err.Error(), 500)
 }

@@ -184,6 +184,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		switch messageType {
 		case "setAudienceDisplay":
+			// The announcer can make the final score screen show when they are ready to announce the score.
 			screen, ok := data.(string)
 			if !ok {
 				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))

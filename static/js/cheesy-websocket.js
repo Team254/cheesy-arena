@@ -20,7 +20,7 @@ var CheesyWebsocket = function(path, events) {
     }
   }
 
-  // Insert an event to allow the server to force-reload the client.
+  // Insert an event to allow the server to force-reload the client for any display.
   events.reload = function(event) {
     location.reload();
   };
@@ -43,4 +43,4 @@ var CheesyWebsocket = function(path, events) {
   };
 
   this.connect();
-}
+};
