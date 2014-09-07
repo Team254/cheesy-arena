@@ -126,6 +126,11 @@ func RestoreDbHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Replace the current database with the new one.
 	db.Close()
+	err = os.Remove(eventDbPath)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
 	err = os.Rename(tempFilePath, eventDbPath)
 	if err != nil {
 		handleWebErr(w, err)
