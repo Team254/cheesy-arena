@@ -1,8 +1,4 @@
-
 !
-! Last configuration change at 05:36:53 UTC Sat Aug 16 2014 by patfair
-! NVRAM config last updated at 05:36:53 UTC Sat Aug 16 2014 by patfair
-! NVRAM config last updated at 05:36:53 UTC Sat Aug 16 2014 by patfair
 version 15.2
 no service pad
 service timestamps debug datetime msec
@@ -87,7 +83,7 @@ dot11 ssid Cheesy Arena
 crypto pki token default removal timeout 0
 !
 !
-username patfair privilege 15 password 7 0548545F70181C2F101343
+username cheesyarena privilege 15 password 7 040A59555B0745580C
 !
 !
 bridge irb
