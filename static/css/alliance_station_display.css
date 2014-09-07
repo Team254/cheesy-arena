@@ -29,7 +29,7 @@ body[data-mode=match] .mode#match {
 
 
 /* Logo Mode */
-#logo {
+#logo #logoImg {
   position: absolute;
   top: 0;
   bottom: 0;

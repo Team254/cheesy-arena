@@ -56,7 +56,7 @@
         </div>
       </div>
       <div class="text-center" id="matchCircle">
-        <img id="logo" src="/static/img/game-logo.png" />
+        <img id="logo" src="/static/img/game-logo.png" alt="logo" />
         <div id="matchTime"></div>
       </div>
     </div>
@@ -68,7 +68,7 @@
         <div class="blindsCenter blank"></div>
       </div>
       <div class="blindsCenter full">
-        <img id="blindsLogo" src="/static/img/game-logo.png" />
+        <img id="blindsLogo" src="/static/img/game-logo.png" alt="logo" />
       </div>
       <div id="finalScore">
         <div class="final-score" id="redFinalScore"></div>
@@ -91,7 +91,7 @@
           </span>
         </div>
         <div class="final-breakdown" id="centerFinalBreakdown">
-          <span class="valign-cell">Autonomous</br>Teleoperated</br>Foul</span>
+          <span class="valign-cell">Autonomous<br />Teleoperated<br />Foul</span>
         </div>
         <div class="final-breakdown" id="blueFinalBreakdown">
           <span class="valign-cell">
@@ -114,7 +114,7 @@
       <div id="allianceSelection"></div>
     </div>
     <div id="lowerThird">
-      <img id="lowerThirdLogo" src="/static/img/lower-third-logo.png" />
+      <img id="lowerThirdLogo" src="/static/img/lower-third-logo.png" alt="logo" />
       <div id="lowerThirdTop"></div>
       <div id="lowerThirdBottom"></div>
       <div id="lowerThirdSingle"></div>
@@ -131,11 +131,11 @@
         {{"{{/each}}"}}
       </table>
     </script>
-    <audio id="match-start" src="/static/audio/match_start.wav" type="audio/wav" preload="auto" />
-    <audio id="match-end" src="/static/audio/match_end.wav" type="audio/wav" preload="auto" />
-    <audio id="match-abort" src="/static/audio/match_abort.mp3" type="audio/mp3" preload="auto" />
-    <audio id="match-resume" src="/static/audio/match_resume.wav" type="audio/wav" preload="auto" />
-    <audio id="match-endgame" src="/static/audio/match_endgame.wav" type="audio/wav" preload="auto" />
+    <audio id="match-start" src="/static/audio/match_start.wav" preload="auto"></audio>
+    <audio id="match-end" src="/static/audio/match_end.wav" preload="auto"></audio>
+    <audio id="match-abort" src="/static/audio/match_abort.mp3" preload="auto"></audio>
+    <audio id="match-resume" src="/static/audio/match_resume.wav" preload="auto"></audio>
+    <audio id="match-endgame" src="/static/audio/match_endgame.wav" preload="auto"></audio>
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
