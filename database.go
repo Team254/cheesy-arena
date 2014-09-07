@@ -38,7 +38,7 @@ type Database struct {
 func OpenDatabase(path string) (*Database, error) {
 	// Find and run the migrations using goose. This also auto-creates the DB.
 	dbDriver := goose.DBDriver{"sqlite3", path, "github.com/mattn/go-sqlite3", &goose.Sqlite3Dialect{}}
-	dbConf := goose.DBConf{migrationsDir, "prod", dbDriver}
+	dbConf := goose.DBConf{MigrationsDir: migrationsDir, Env: "prod", Driver: dbDriver}
 	target, err := goose.GetMostRecentDBVersion(migrationsDir)
 	if err != nil {
 		return nil, err
