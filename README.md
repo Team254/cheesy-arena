@@ -3,6 +3,8 @@ Cheesy Arena
 A field management system that just works.
 
 ##Key Features
+Check out a [video overview](http://video.team254.com/watch/Z5ZWI2cDqsvVe--AjHhePAHlOhLK8MT0) of Cheesy Arena's functionality.
+
 **For participants and spectators:**
 
 * No-lag goal/pedestal lighting and realtime scoring

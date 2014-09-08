@@ -15,6 +15,7 @@ Cheesy Arena To-Do List
 ###Public-facing features
 * Fancier graphics and animations for alliance station display
 * Ability to yank the match data from the Internet for an existing event, for use just in webcast overlays
+* GameSense-style next match screen with robot photos
 
 ###Scorekeeper-facing features
 * Ability to unscore a match and reset it to non-played status
