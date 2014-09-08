@@ -53,6 +53,9 @@ Schedule generation is fast because pregenerated schedules are included with the
 
 Cheesy Arena includes support for, but doesn't require, networking hardware similar to that used in official FRC events. Teams are issued their own SSIDs and WPA keys, and when connected to Cheesy Arena are isolated to a VLAN which prevents any communication other than between the driver station, robot, and event server. The network hardware is configured via Telnet commands for the new set of teams when each mach is loaded.
 
+## LED hardware
+Due to the prohibitive cost of the LEDs and LED controllers used on official fields, a custom solution was developed for Chezy Champs using consumer-grade LED strips and embedded microcontrollers. The bill of materials, control board schematics, and embedded source code will be provided in an upcoming release.
+
 ##Contributing
 Cheesy Arena is far from finished! You can help by:
 
