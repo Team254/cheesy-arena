@@ -29,7 +29,7 @@ Teams may use Cheesy Arena freely for practice, scrimmages, and off-season event
 
 1. Download the [latest release](https://github.com/Team254/cheesy-arena/releases) for OS X or Windows
 1. Unzip the file
-1. From the command line, run the `cheesy-arena` or `cheesy-arena.exe` binary
+1. On Mac OS X, run `cheesy-arena.command`. On Windows, run `cheesy-arena.exe`.
 1. Navigate to http://localhost:8080 in your browser (Google Chrome recommended)
 
 **From source:**
@@ -55,6 +55,9 @@ Cheesy Arena includes support for, but doesn't require, networking hardware simi
 
 ## LED hardware
 Due to the prohibitive cost of the LEDs and LED controllers used on official fields, a custom solution was developed for Chezy Champs using consumer-grade LED strips and embedded microcontrollers. The bill of materials, control board schematics, and embedded source code will be provided in an upcoming release.
+
+## Advanced networking
+See the [Advanced Networking wiki page](wiki/Advanced-Networking) for instructions on what equipment to obtain and how to configure it in order to support advanced network security.
 
 ##Contributing
 Cheesy Arena is far from finished! You can help by:
