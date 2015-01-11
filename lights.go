@@ -17,7 +17,6 @@ type Lights struct {
 	connections    map[string]*net.Conn
 	packets        map[string]*LightPacket
 	oldPackets     map[string]*LightPacket
-	hotGoal        string
 	newConnections bool
 	currentMode    string
 	animationCount int
@@ -123,82 +122,6 @@ func (lights *Lights) SetupConnections() error {
 	return nil
 }
 
-// Makes a goal for the given alliance hot.
-func (lights *Lights) SetHotGoal(alliance string, leftSide bool) {
-	if leftSide {
-		lights.packets[alliance].setColor(0, "off")
-		lights.packets[alliance].setColor(1, "off")
-		lights.packets[alliance].setColor(2, "off")
-		lights.packets[alliance].setColor(3, "yellow")
-		lights.packets[alliance].setColor(4, "yellow")
-		lights.packets[alliance].setColor(5, "yellow")
-		lights.hotGoal = "left"
-	} else {
-		lights.packets[alliance].setColor(0, "yellow")
-		lights.packets[alliance].setColor(1, "yellow")
-		lights.packets[alliance].setColor(2, "yellow")
-		lights.packets[alliance].setColor(3, "off")
-		lights.packets[alliance].setColor(4, "off")
-		lights.packets[alliance].setColor(5, "off")
-		lights.hotGoal = "right"
-	}
-	lights.sendLights()
-}
-
-// Lights up the given alliance's goal for the given number of assists.
-func (lights *Lights) SetAssistGoal(alliance string, numAssists int) {
-	lights.packets[alliance].setColor(0, "off")
-	lights.packets[alliance].setColor(1, "off")
-	lights.packets[alliance].setColor(2, "off")
-	lights.packets[alliance].setColor(3, "off")
-	lights.packets[alliance].setColor(4, "off")
-	lights.packets[alliance].setColor(5, "off")
-	if numAssists > 0 {
-		lights.packets[alliance].setColor(2, alliance)
-		lights.packets[alliance].setColor(3, alliance)
-	}
-	if numAssists > 1 {
-		lights.packets[alliance].setColor(1, alliance)
-		lights.packets[alliance].setColor(4, alliance)
-	}
-	if numAssists > 2 {
-		lights.packets[alliance].setColor(0, alliance)
-		lights.packets[alliance].setColor(5, alliance)
-	}
-	lights.hotGoal = ""
-	lights.sendLights()
-}
-
-// Turns off all lights for the given alliance's goal.
-func (lights *Lights) ClearGoal(alliance string) {
-	lights.packets[alliance].setColorFade(0, "off", 10)
-	lights.packets[alliance].setColorFade(1, "off", 10)
-	lights.packets[alliance].setColorFade(2, "off", 10)
-	lights.packets[alliance].setColorFade(3, "off", 10)
-	lights.packets[alliance].setColorFade(4, "off", 10)
-	lights.packets[alliance].setColorFade(5, "off", 10)
-}
-
-// Turns on the given alliance's pedestal.
-func (lights *Lights) SetPedestal(alliance string) {
-	if alliance == "red" {
-		lights.packets["blue"].setColor(6, alliance)
-	} else {
-		lights.packets["red"].setColor(6, alliance)
-	}
-	lights.sendLights()
-}
-
-// Turns off the given alliance's pedestal.
-func (lights *Lights) ClearPedestal(alliance string) {
-	if alliance == "red" {
-		lights.packets["blue"].setColorFade(6, "off", 10)
-	} else {
-		lights.packets["red"].setColorFade(6, "off", 10)
-	}
-	lights.sendLights()
-}
-
 // Turns all lights green to signal that the field is safe to enter.
 func (lights *Lights) SetFieldReset() {
 	lights.packets["red"].setAllColor("green")
@@ -241,7 +164,6 @@ func (lights *Lights) sendLights() {
 					log.Printf("Failed to send %s light packet.", alliance)
 				}
 			}
-			mainArena.hotGoalLightNotifier.Notify(lights.hotGoal)
 		}
 		*lights.oldPackets[alliance] = *lights.packets[alliance]
 	}

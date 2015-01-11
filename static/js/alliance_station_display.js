@@ -101,16 +101,6 @@ var handleRealtimeScore = function(data) {
   $("#blueScore").text(data.BlueScore);
 };
 
-// Handles a websocket message to show or hide the hot goal indication.
-var handleHotGoalLight = function(side) {
-  if (allianceStation != "" && (side == "left" && allianceStation[1] == "3" ||
-      side == "right" && allianceStation[1] == "1")) {
-    $("#match").attr("data-hotgoal", "active");
-  } else {
-    $("#match").attr("data-hotgoal", "");
-  }
-};
-
 $(function() {
   if (displayId == "") {
     displayId = Math.floor(Math.random() * 10000);
@@ -125,7 +115,6 @@ $(function() {
     status: function(event) { handleStatus(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    hotGoalLight: function(event) { handleHotGoalLight(event.data); }
+    realtimeScore: function(event) { handleRealtimeScore(event.data); }
   });
 });

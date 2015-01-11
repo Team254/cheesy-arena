@@ -33,7 +33,6 @@ func TestAllianceStationDisplayWebsocket(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 	eventSettings, _ = db.GetEventSettings()
-	eventSettings.AllianceDisplayHotGoals = true
 	mainArena.Setup()
 
 	server, wsUrl := startTestServer()
@@ -73,12 +72,10 @@ func TestAllianceStationDisplayWebsocket(t *testing.T) {
 	mainArena.AllianceStations["B3"].Bypass = true
 	mainArena.StartMatch()
 	mainArena.Update()
-	messages := readWebsocketMultiple(t, ws, 4)
+	messages := readWebsocketMultiple(t, ws, 2)
 	_, ok := messages["status"]
 	assert.True(t, ok)
 	_, ok = messages["matchTime"]
-	assert.True(t, ok)
-	_, ok = messages["hotGoalLight"]
 	assert.True(t, ok)
 	mainArena.realtimeScoreNotifier.Notify(nil)
 	readWebsocketType(t, ws, "realtimeScore")

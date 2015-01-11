@@ -149,9 +149,3 @@ body[data-position=right] #inMatch #blueScore {
 [data-alliance-bg=B], [data-status=B] {
   background-color: #00c;
 }
-
-/* Hot Goal Mode */
-#match[data-hotgoal=active]{
-  background-color: #ff0;
-  color: #000;
-}

@@ -65,8 +65,6 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	defer close(matchTimeListener)
 	realtimeScoreListener := mainArena.realtimeScoreNotifier.Listen()
 	defer close(realtimeScoreListener)
-	hotGoalLightListener := mainArena.hotGoalLightNotifier.Listen()
-	defer close(hotGoalLightListener)
 	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
 	defer close(reloadDisplaysListener)
 
@@ -166,15 +164,6 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 					mainArena.redRealtimeScore.CurrentCycle,
 					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls),
 					mainArena.blueRealtimeScore.CurrentCycle}
-			case side, ok := <-hotGoalLightListener:
-				if !ok {
-					return
-				}
-				if !eventSettings.AllianceDisplayHotGoals {
-					continue
-				}
-				messageType = "hotGoalLight"
-				message = side
 			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return

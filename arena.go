@@ -81,7 +81,6 @@ type Arena struct {
 	allianceStationDisplayNotifier *Notifier
 	allianceSelectionNotifier      *Notifier
 	lowerThirdNotifier             *Notifier
-	hotGoalLightNotifier           *Notifier
 	reloadDisplaysNotifier         *Notifier
 	audienceDisplayScreen          string
 	allianceStationDisplays        map[string]string
@@ -129,7 +128,6 @@ func (arena *Arena) Setup() {
 	arena.allianceStationDisplayNotifier = NewNotifier()
 	arena.allianceSelectionNotifier = NewNotifier()
 	arena.lowerThirdNotifier = NewNotifier()
-	arena.hotGoalLightNotifier = NewNotifier()
 	arena.reloadDisplaysNotifier = NewNotifier()
 
 	// Load empty match as current.
@@ -382,10 +380,6 @@ func (arena *Arena) ResetMatch() error {
 	arena.AllianceStations["B1"].Bypass = false
 	arena.AllianceStations["B2"].Bypass = false
 	arena.AllianceStations["B3"].Bypass = false
-	arena.lights.ClearGoal("red")
-	arena.lights.ClearGoal("blue")
-	arena.lights.ClearPedestal("red")
-	arena.lights.ClearPedestal("blue")
 	return nil
 }
 
@@ -490,9 +484,6 @@ func (arena *Arena) Update() {
 		arena.sendDsPacket(auto, enabled)
 		arena.robotStatusNotifier.Notify(nil)
 	}
-
-	arena.handleLighting("red", arena.redRealtimeScore)
-	arena.handleLighting("blue", arena.blueRealtimeScore)
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -527,29 +518,4 @@ func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
 		}
 	}
 	return score
-}
-
-// Manipulates the arena LED lighting based on the current state of the match.
-func (arena *Arena) handleLighting(alliance string, score *RealtimeScore) {
-	switch arena.MatchState {
-	case AUTO_PERIOD:
-		leftSide := arena.MatchTimeSec() < float64(arena.matchTiming.AutoDurationSec)/2 == arena.leftGoalHotFirst
-		arena.lights.SetHotGoal(alliance, leftSide)
-	case TELEOP_PERIOD:
-		fallthrough
-	case ENDGAME_PERIOD:
-		if score.AutoCommitted && score.AutoLeftoverBalls == 0 && score.CurrentCycle.Assists == 0 {
-			arena.lights.SetPedestal(alliance)
-		} else {
-			arena.lights.ClearPedestal(alliance)
-		}
-		arena.lights.SetAssistGoal(alliance, score.CurrentCycle.Assists)
-	case POST_MATCH:
-		if mainArena.redRealtimeScore.FieldReset && mainArena.blueRealtimeScore.FieldReset {
-			arena.lights.SetFieldReset()
-		} else {
-			arena.lights.ClearGoal(alliance)
-			arena.lights.ClearPedestal(alliance)
-		}
-	}
 }
