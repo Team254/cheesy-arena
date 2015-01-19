@@ -19,7 +19,6 @@ var tbaBaseUrl = "http://www.thebluealliance.com"
 
 type TbaMatch struct {
 	CompLevel      string                       `json:"comp_level"`
-	SetNumber      int                          `json:"set_number"`
 	MatchNumber    int                          `json:"match_number"`
 	Alliances      map[string]interface{}       `json:"alliances"`
 	ScoreBreakdown map[string]TbaScoreBreakdown `json:"score_breakdown"`
@@ -28,25 +27,25 @@ type TbaMatch struct {
 }
 
 type TbaScoreBreakdown struct {
-	Auto       int `json:"auto"`
-	Assist     int `json:"assist"`
-	TrussCatch int `json:"truss+catch"`
-	GoalFoul   int `json:"teleop_goal+foul"`
+	Coopertition int `json:"coopertition"`
+	Auto         int `json:"auto"`
+	Container    int `json:"container"`
+	Tote         int `json:"tote"`
+	Litter       int `json:"litter"`
+	Foul         int `json:"foul"`
 }
 
 type TbaRanking struct {
-	TeamKey    string `json:"team_key"`
-	Rank       int    `json:"rank"`
-	Wins       int    `json:"wins"`
-	Losses     int    `json:"losses"`
-	Ties       int    `json:"ties"`
-	Played     int    `json:"played"`
-	Dqs        int    `json:"dqs"`
-	QS         int
-	Assist     int
-	Auto       int
-	TrussCatch int `json:"T&C"`
-	GoalFoul   int `json:"G&F"`
+	TeamKey      string  `json:"team_key"`
+	Rank         int     `json:"rank"`
+	QA           float64 `json:"qa"`
+	Coopertition int     `json:"coopertition"`
+	Auto         int     `json:"auto"`
+	Container    int     `json:"container"`
+	Tote         int     `json:"tote"`
+	Litter       int     `json:"litter"`
+	Dqs          int     `json:"dqs"`
+	Played       int     `json:"played"`
 }
 
 // Uploads the event team list to The Blue Alliance.
@@ -112,19 +111,20 @@ func PublishMatches() error {
 				redAlliance["score"] = redScoreSummary.Score
 				blueAlliance["score"] = blueScoreSummary.Score
 				scoreBreakdown = make(map[string]TbaScoreBreakdown)
-				scoreBreakdown["red"] = TbaScoreBreakdown{redScoreSummary.AutoPoints, redScoreSummary.AssistPoints,
-					redScoreSummary.TrussCatchPoints, redScoreSummary.GoalPoints + redScoreSummary.FoulPoints}
-				scoreBreakdown["blue"] = TbaScoreBreakdown{blueScoreSummary.AutoPoints, blueScoreSummary.AssistPoints,
-					blueScoreSummary.TrussCatchPoints, blueScoreSummary.GoalPoints + blueScoreSummary.FoulPoints}
+				scoreBreakdown["red"] = TbaScoreBreakdown{redScoreSummary.CoopertitionPoints,
+					redScoreSummary.AutoPoints, redScoreSummary.ContainerPoints, redScoreSummary.TotePoints,
+					redScoreSummary.LitterPoints, redScoreSummary.FoulPoints}
+				scoreBreakdown["blue"] = TbaScoreBreakdown{blueScoreSummary.CoopertitionPoints,
+					blueScoreSummary.AutoPoints, blueScoreSummary.ContainerPoints, blueScoreSummary.TotePoints,
+					blueScoreSummary.LitterPoints, blueScoreSummary.FoulPoints}
 			}
 		}
 
-		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, map[string]interface{}{"red": redAlliance,
+		tbaMatches[i] = TbaMatch{"qm", matchNumber, map[string]interface{}{"red": redAlliance,
 			"blue": blueAlliance}, scoreBreakdown, match.Time.Local().Format("3:04 PM"),
 			match.Time.Format("2006-01-02T15:04:05")}
 		if match.Type == "elimination" {
 			tbaMatches[i].CompLevel = map[int]string{1: "f", 2: "sf", 4: "qf", 8: "ef"}[match.ElimRound]
-			tbaMatches[i].SetNumber = match.ElimGroup
 			tbaMatches[i].MatchNumber = match.ElimInstance
 		}
 	}
@@ -153,12 +153,12 @@ func PublishRankings() error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"QS", "Assist", "Auto", "T&C", "G&F"}
+	breakdowns := []string{"QA", "Coopertition", "Auto", "Container", "Tote", "Litter"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
-		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.Wins, ranking.Losses,
-			ranking.Ties, ranking.Played, ranking.Disqualifications, ranking.QualificationScore,
-			ranking.AssistPoints, ranking.AutoPoints, ranking.TrussCatchPoints, ranking.GoalFoulPoints}
+		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.QualificationAverage,
+			ranking.CoopertitionPoints, ranking.AutoPoints, ranking.ContainerPoints, ranking.TotePoints,
+			ranking.LitterPoints, ranking.Disqualifications, ranking.Played}
 	}
 	jsonBody, err := json.Marshal(map[string]interface{}{"breakdowns": breakdowns, "rankings": tbaRankings})
 	if err != nil {

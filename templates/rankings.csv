@@ -1,3 +1,3 @@
-Rank,TeamId,QualificationScore,AssistPoints,AutoPoints,TrussCatchPoints,GoalFoulPoints,Wins,Losses,Ties,Disqualifications,Played
-{{range $ranking := .}}{{$ranking.Rank}},{{$ranking.TeamId}},{{$ranking.QualificationScore}},{{$ranking.AssistPoints}},{{$ranking.AutoPoints}},{{$ranking.TrussCatchPoints}},{{$ranking.GoalFoulPoints}},{{$ranking.Wins}},{{$ranking.Losses}},{{$ranking.Ties}},{{$ranking.Disqualifications}},{{$ranking.Played}}
+Rank,TeamId,QualificationAverage,CoopertitionPoints,AutoPoints,ContainerPoints,TotePoints,LitterPoints,Disqualifications,Played
+{{range $ranking := .}}{{$ranking.Rank}},{{$ranking.TeamId}},{{$ranking.QualificationAverage}},{{$ranking.CoopertitionPoints}},{{$ranking.AutoPoints}},{{$ranking.ContainerPoints}},{{$ranking.TotePoints}},{{$ranking.LitterPoints}},{{$ranking.Disqualifications}},{{$ranking.Played}}
 {{end}}

@@ -64,16 +64,13 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 		assert.Equal(t, 256, mainArena.redRealtimeScore.Fouls[0].TeamId)
 		assert.Equal(t, "G22", mainArena.redRealtimeScore.Fouls[0].Rule)
 		assert.Equal(t, 0, mainArena.redRealtimeScore.Fouls[0].TimeInMatchSec)
-		assert.Equal(t, false, mainArena.redRealtimeScore.Fouls[0].IsTechnical)
 		assert.Equal(t, 359, mainArena.redRealtimeScore.Fouls[1].TeamId)
 		assert.Equal(t, "G22", mainArena.redRealtimeScore.Fouls[1].Rule)
-		assert.Equal(t, true, mainArena.redRealtimeScore.Fouls[1].IsTechnical)
 	}
 	if assert.Equal(t, 1, len(mainArena.blueRealtimeScore.Fouls)) {
 		assert.Equal(t, 1680, mainArena.blueRealtimeScore.Fouls[0].TeamId)
 		assert.Equal(t, "G22", mainArena.blueRealtimeScore.Fouls[0].Rule)
 		assert.Equal(t, 0, mainArena.blueRealtimeScore.Fouls[0].TimeInMatchSec)
-		assert.Equal(t, true, mainArena.blueRealtimeScore.Fouls[0].IsTechnical)
 	}
 	assert.False(t, mainArena.redRealtimeScore.FoulsCommitted)
 	assert.False(t, mainArena.blueRealtimeScore.FoulsCommitted)

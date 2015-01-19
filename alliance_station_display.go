@@ -99,13 +99,8 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	}
 	data = struct {
 		RedScore  int
-		RedCycle  Cycle
 		BlueScore int
-		BlueCycle Cycle
-	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
-		mainArena.redRealtimeScore.CurrentCycle,
-		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls),
-		mainArena.blueRealtimeScore.CurrentCycle}
+	}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -157,13 +152,8 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				messageType = "realtimeScore"
 				message = struct {
 					RedScore  int
-					RedCycle  Cycle
 					BlueScore int
-					BlueCycle Cycle
-				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
-					mainArena.redRealtimeScore.CurrentCycle,
-					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls),
-					mainArena.blueRealtimeScore.CurrentCycle}
+				}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
 			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return

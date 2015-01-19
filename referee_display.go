@@ -149,8 +149,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Add the foul to the correct alliance's list.
-			foul := Foul{TeamId: args.TeamId, Rule: args.Rule, IsTechnical: args.IsTechnical,
-				TimeInMatchSec: mainArena.MatchTimeSec()}
+			foul := Foul{TeamId: args.TeamId, Rule: args.Rule, TimeInMatchSec: mainArena.MatchTimeSec()}
 			if args.Alliance == "red" {
 				mainArena.redRealtimeScore.Fouls = append(mainArena.redRealtimeScore.Fouls, foul)
 			} else {
@@ -172,8 +171,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Remove the foul from the correct alliance's list.
-			deleteFoul := Foul{TeamId: args.TeamId, Rule: args.Rule, IsTechnical: args.IsTechnical,
-				TimeInMatchSec: args.TimeInMatchSec}
+			deleteFoul := Foul{TeamId: args.TeamId, Rule: args.Rule, TimeInMatchSec: args.TimeInMatchSec}
 			var fouls *[]Foul
 			if args.Alliance == "red" {
 				fouls = &mainArena.redRealtimeScore.Fouls

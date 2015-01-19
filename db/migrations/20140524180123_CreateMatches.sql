@@ -5,7 +5,6 @@ CREATE TABLE matches (
   displayname VARCHAR(16),
   time DATETIME,
   elimround int,
-  elimgroup int,
   eliminstance int,
   red1 int,
   red1issurrogate bool,
@@ -20,8 +19,7 @@ CREATE TABLE matches (
   blue3 int,
   blue3issurrogate bool,
   status VARCHAR(16),
-  startedat DATETIME,
-  winner VARCHAR(16)
+  startedat DATETIME
 );
 CREATE UNIQUE INDEX type_displayname ON matches(type, displayname);
 

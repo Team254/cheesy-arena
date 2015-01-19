@@ -87,13 +87,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data = struct {
 		RedScore  int
-		RedCycle  Cycle
 		BlueScore int
-		BlueCycle Cycle
-	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
-		mainArena.redRealtimeScore.CurrentCycle,
-		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls),
-		mainArena.blueRealtimeScore.CurrentCycle}
+	}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -151,13 +146,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				messageType = "realtimeScore"
 				message = struct {
 					RedScore  int
-					RedCycle  Cycle
 					BlueScore int
-					BlueCycle Cycle
-				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
-					mainArena.redRealtimeScore.CurrentCycle,
-					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls),
-					mainArena.blueRealtimeScore.CurrentCycle}
+				}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
 			case _, ok := <-scorePostedListener:
 				if !ok {
 					return

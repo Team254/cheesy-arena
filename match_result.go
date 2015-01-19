@@ -15,8 +15,6 @@ type MatchResult struct {
 	PlayNumber int
 	RedScore   Score
 	BlueScore  Score
-	RedFouls   []Foul
-	BlueFouls  []Foul
 	RedCards   map[string]string
 	BlueCards  map[string]string
 }
@@ -27,59 +25,49 @@ type MatchResultDb struct {
 	PlayNumber    int
 	RedScoreJson  string
 	BlueScoreJson string
-	RedFoulsJson  string
-	BlueFoulsJson string
 	RedCardsJson  string
 	BlueCardsJson string
 }
 
 type Score struct {
-	AutoMobilityBonuses int
-	AutoHighHot         int
-	AutoHigh            int
-	AutoLowHot          int
-	AutoLow             int
-	AutoClearHigh       int
-	AutoClearLow        int
-	AutoClearDead       int
-	Cycles              []Cycle
-	ElimTiebreaker      int
-	ElimDq              bool
-}
-
-type Cycle struct {
-	Assists    int
-	Truss      bool
-	Catch      bool
-	ScoredHigh bool
-	ScoredLow  bool
-	DeadBall   bool
+	AutoRobotSet       bool
+	AutoToteSet        bool
+	AutoContainerSet   bool
+	AutoStackedToteSet bool
+	Totes              int
+	ContainerLevels    []int
+	ContainerLitter    int
+	LandfillLitter     int
+	UnprocessedLitter  int
+	CoopertitionSet    bool
+	CoopertitionStack  bool
+	Fouls              []Foul
+	ElimDq             bool
 }
 
 type Foul struct {
 	TeamId         int
 	Rule           string
 	TimeInMatchSec float64
-	IsTechnical    bool
 }
 
 type ScoreSummary struct {
-	AutoPoints       int
-	AssistPoints     int
-	TrussCatchPoints int
-	GoalPoints       int
-	TeleopPoints     int
-	FoulPoints       int
-	Score            int
+	CoopertitionPoints int
+	AutoPoints         int
+	ContainerPoints    int
+	TotePoints         int
+	LitterPoints       int
+	FoulPoints         int
+	Score              int
 }
 
 // Returns a new match result object with empty slices instead of nil.
 func NewMatchResult() *MatchResult {
 	matchResult := new(MatchResult)
-	matchResult.RedScore.Cycles = []Cycle{}
-	matchResult.BlueScore.Cycles = []Cycle{}
-	matchResult.RedFouls = []Foul{}
-	matchResult.BlueFouls = []Foul{}
+	matchResult.RedScore.ContainerLevels = []int{}
+	matchResult.BlueScore.ContainerLevels = []int{}
+	matchResult.RedScore.Fouls = []Foul{}
+	matchResult.BlueScore.Fouls = []Foul{}
 	matchResult.RedCards = make(map[string]string)
 	matchResult.BlueCards = make(map[string]string)
 	return matchResult
@@ -139,12 +127,12 @@ func (database *Database) TruncateMatchResults() error {
 
 // Calculates and returns the summary fields used for ranking and display for the red alliance.
 func (matchResult *MatchResult) RedScoreSummary() *ScoreSummary {
-	return scoreSummary(&matchResult.RedScore, matchResult.BlueFouls)
+	return scoreSummary(&matchResult.RedScore)
 }
 
 // Calculates and returns the summary fields used for ranking and display for the blue alliance.
 func (matchResult *MatchResult) BlueScoreSummary() *ScoreSummary {
-	return scoreSummary(&matchResult.BlueScore, matchResult.RedFouls)
+	return scoreSummary(&matchResult.BlueScore)
 }
 
 // Checks the score for disqualifications or a tie and adjusts it appropriately.
@@ -161,47 +149,11 @@ func (matchResult *MatchResult) CorrectEliminationScore() {
 		}
 	}
 
-	matchResult.RedScore.ElimTiebreaker = 0
-	matchResult.BlueScore.ElimTiebreaker = 0
-	redScore := matchResult.RedScoreSummary()
-	blueScore := matchResult.BlueScoreSummary()
-	if redScore.Score != blueScore.Score {
-		return
-	}
-
-	// Tiebreakers, in order: foul points, assist points, auto points, truss/catch points.
-	if redScore.FoulPoints > blueScore.FoulPoints {
-		matchResult.RedScore.ElimTiebreaker = 1
-		return
-	} else if redScore.FoulPoints < blueScore.FoulPoints {
-		matchResult.BlueScore.ElimTiebreaker = 1
-		return
-	}
-	if redScore.AssistPoints > blueScore.AssistPoints {
-		matchResult.RedScore.ElimTiebreaker = 1
-		return
-	} else if redScore.AssistPoints < blueScore.AssistPoints {
-		matchResult.BlueScore.ElimTiebreaker = 1
-		return
-	}
-	if redScore.AutoPoints > blueScore.AutoPoints {
-		matchResult.RedScore.ElimTiebreaker = 1
-		return
-	} else if redScore.AutoPoints < blueScore.AutoPoints {
-		matchResult.BlueScore.ElimTiebreaker = 1
-		return
-	}
-	if redScore.TrussCatchPoints > blueScore.TrussCatchPoints {
-		matchResult.RedScore.ElimTiebreaker = 1
-		return
-	} else if redScore.TrussCatchPoints < blueScore.TrussCatchPoints {
-		matchResult.BlueScore.ElimTiebreaker = 1
-		return
-	}
+	// No elimination tiebreakers in 2015.
 }
 
 // Calculates and returns the summary fields used for ranking and display.
-func scoreSummary(score *Score, opponentFouls []Foul) *ScoreSummary {
+func scoreSummary(score *Score) *ScoreSummary {
 	summary := new(ScoreSummary)
 
 	// Leave the score at zero if the team was disqualified.
@@ -210,45 +162,35 @@ func scoreSummary(score *Score, opponentFouls []Foul) *ScoreSummary {
 	}
 
 	// Calculate autonomous score.
-	summary.AutoPoints = 5*score.AutoMobilityBonuses + 20*score.AutoHighHot + 15*score.AutoHigh +
-		11*score.AutoLowHot + 6*score.AutoLow
+	summary.AutoPoints = 0
+	if score.AutoRobotSet {
+		summary.AutoPoints += 4
+	}
+	if score.AutoContainerSet {
+		summary.AutoPoints += 8
+	}
+	if score.AutoStackedToteSet {
+		summary.AutoPoints += 20
+	} else if score.AutoToteSet {
+		summary.AutoPoints += 6
+	}
 
 	// Calculate teleop score.
-	summary.GoalPoints = 10*score.AutoClearHigh + 1*score.AutoClearLow
-	for _, cycle := range score.Cycles {
-		if cycle.Truss {
-			summary.TrussCatchPoints += 10
-			if cycle.Catch {
-				summary.TrussCatchPoints += 10
-			}
-		}
-		if cycle.ScoredHigh {
-			summary.GoalPoints += 10
-		} else if cycle.ScoredLow {
-			summary.GoalPoints += 1
-		}
-		if cycle.ScoredHigh || cycle.ScoredLow {
-			if cycle.Assists == 2 {
-				summary.AssistPoints += 10
-			} else if cycle.Assists == 3 {
-				summary.AssistPoints += 30
-			}
-		}
+	summary.ContainerPoints = 0
+	for _, containerLevel := range score.ContainerLevels {
+		summary.ContainerPoints += 4 * containerLevel
 	}
-
-	// Calculate foul score.
-	summary.FoulPoints = 0
-	for _, foul := range opponentFouls {
-		if foul.IsTechnical {
-			summary.FoulPoints += 50
-		} else {
-			summary.FoulPoints += 20
-		}
+	summary.TotePoints = 2 * score.Totes
+	summary.LitterPoints = 6*score.ContainerLitter + score.LandfillLitter + 4*score.UnprocessedLitter
+	if score.CoopertitionStack {
+		summary.CoopertitionPoints = 40
+	} else if score.CoopertitionSet {
+		summary.CoopertitionPoints = 20
 	}
+	summary.FoulPoints = 6 * len(score.Fouls)
 
-	// Fill in summed values.
-	summary.TeleopPoints = summary.AssistPoints + summary.TrussCatchPoints + summary.GoalPoints
-	summary.Score = summary.AutoPoints + summary.TeleopPoints + summary.FoulPoints + score.ElimTiebreaker
+	summary.Score = summary.CoopertitionPoints + summary.AutoPoints + summary.ContainerPoints +
+		summary.TotePoints + summary.LitterPoints - summary.FoulPoints
 
 	return summary
 }
@@ -260,12 +202,6 @@ func (matchResult *MatchResult) serialize() (*MatchResultDb, error) {
 		return nil, err
 	}
 	if err := serializeHelper(&matchResultDb.BlueScoreJson, matchResult.BlueScore); err != nil {
-		return nil, err
-	}
-	if err := serializeHelper(&matchResultDb.RedFoulsJson, matchResult.RedFouls); err != nil {
-		return nil, err
-	}
-	if err := serializeHelper(&matchResultDb.BlueFoulsJson, matchResult.BlueFouls); err != nil {
 		return nil, err
 	}
 	if err := serializeHelper(&matchResultDb.RedCardsJson, matchResult.RedCards); err != nil {
@@ -293,12 +229,6 @@ func (matchResultDb *MatchResultDb) deserialize() (*MatchResult, error) {
 		return nil, err
 	}
 	if err := json.Unmarshal([]byte(matchResultDb.BlueScoreJson), &matchResult.BlueScore); err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal([]byte(matchResultDb.RedFoulsJson), &matchResult.RedFouls); err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal([]byte(matchResultDb.BlueFoulsJson), &matchResult.BlueFouls); err != nil {
 		return nil, err
 	}
 	if err := json.Unmarshal([]byte(matchResultDb.RedCardsJson), &matchResult.RedCards); err != nil {

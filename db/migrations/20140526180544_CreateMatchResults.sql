@@ -5,8 +5,6 @@ CREATE TABLE match_results (
   playnumber int,
   redscorejson text,
   bluescorejson text,
-  redfoulsjson text,
-  bluefoulsjson text,
   redcardsjson text,
   bluecardsjson text
 );

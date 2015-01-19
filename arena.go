@@ -45,18 +45,14 @@ type MatchTiming struct {
 }
 
 type RealtimeScore struct {
-	CurrentScore       Score
-	CurrentCycle       Cycle
-	AutoPreloadedBalls int
-	AutoLeftoverBalls  int
-	Fouls              []Foul
-	Cards              map[string]string
-	AutoCommitted      bool
-	TeleopCommitted    bool
-	FoulsCommitted     bool
-	FieldReset         bool
-	undoAutoScores     []Score
-	undoCycles         []Cycle
+	CurrentScore    Score
+	Fouls           []Foul
+	Cards           map[string]string
+	AutoCommitted   bool
+	TeleopCommitted bool
+	FoulsCommitted  bool
+	FieldReset      bool
+	undoScores      []Score
 }
 
 type Arena struct {
@@ -509,13 +505,6 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 }
 
 // Calculates the integer score value for the given realtime snapshot.
-func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
-	score := scoreSummary(&realtimeScore.CurrentScore, opponentFouls).Score
-	if realtimeScore.CurrentCycle.Truss {
-		score += 10
-		if realtimeScore.CurrentCycle.Catch {
-			score += 10
-		}
-	}
-	return score
+func (realtimeScore *RealtimeScore) Score() int {
+	return scoreSummary(&realtimeScore.CurrentScore).Score
 }

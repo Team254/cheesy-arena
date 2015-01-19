@@ -2,15 +2,13 @@
 CREATE TABLE rankings (
   teamid INTEGER PRIMARY KEY,
   rank int,
-  qualificationscore int,
-  assistpoints int,
+  qualificationaverage int,
+  coopertitionpoints int,
   autopoints int,
-  trusscatchpoints int,
-  goalfoulpoints int,
+  containerpoints int,
+  totepoints int,
+  litterpoints int,
   random REAL,
-  wins int,
-  losses int,
-  ties int,
   disqualifications int,
   played int
 );

@@ -86,8 +86,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	data = struct {
 		RedScore  int
 		BlueScore int
-	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
-		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls)}
+	}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -132,8 +131,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				message = struct {
 					RedScore  int
 					BlueScore int
-				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.Fouls),
-					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.Fouls)}
+				}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
 			case _, ok := <-scorePostedListener:
 				if !ok {
 					return
@@ -148,7 +146,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					BlueFouls        []Foul
 				}{mainArena.savedMatch.CapitalizedType(), mainArena.savedMatch.DisplayName,
 					mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary(),
-					mainArena.savedMatchResult.RedFouls, mainArena.savedMatchResult.BlueFouls}
+					mainArena.savedMatchResult.RedScore.Fouls, mainArena.savedMatchResult.BlueScore.Fouls}
 			case _, ok := <-audienceDisplayListener:
 				if !ok {
 					return

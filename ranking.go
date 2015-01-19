@@ -12,19 +12,17 @@ import (
 )
 
 type Ranking struct {
-	TeamId             int
-	Rank               int
-	QualificationScore int
-	AssistPoints       int
-	AutoPoints         int
-	TrussCatchPoints   int
-	GoalFoulPoints     int
-	Random             float64
-	Wins               int
-	Losses             int
-	Ties               int
-	Disqualifications  int
-	Played             int
+	TeamId               int
+	Rank                 int
+	QualificationAverage float64
+	CoopertitionPoints   int
+	AutoPoints           int
+	ContainerPoints      int
+	TotePoints           int
+	LitterPoints         int
+	Random               float64
+	Disqualifications    int
+	Played               int
 }
 
 type Rankings []*Ranking
@@ -97,6 +95,12 @@ func (database *Database) CalculateRankings() error {
 			addMatchResultToRankings(rankings, match.Blue3, matchResult, false)
 		}
 	}
+
+	// Divide the total score by the number of matches played and truncate (floor) to two decimal places.
+	for _, ranking := range rankings {
+		ranking.QualificationAverage = float64(int(ranking.QualificationAverage*100/float64(ranking.Played))) / 100
+	}
+
 	sortedRankings := sortRankings(rankings)
 
 	// Stuff the rankings into the database in an atomic operation to prevent messing them up halfway.
@@ -195,31 +199,20 @@ func addMatchResultToRankings(rankings map[int]*Ranking, teamId int, matchResult
 		return
 	}
 
-	var ownScore, opponentScore *ScoreSummary
+	var score *ScoreSummary
 	if isRed {
-		ownScore = matchResult.RedScoreSummary()
-		opponentScore = matchResult.BlueScoreSummary()
+		score = matchResult.RedScoreSummary()
 	} else {
-		ownScore = matchResult.BlueScoreSummary()
-		opponentScore = matchResult.RedScoreSummary()
+		score = matchResult.BlueScoreSummary()
 	}
 
-	// Assign win/loss/tie points.
-	if ownScore.Score > opponentScore.Score {
-		ranking.QualificationScore += 2
-		ranking.Wins += 1
-	} else if ownScore.Score < opponentScore.Score {
-		ranking.Losses += 1
-	} else {
-		ranking.QualificationScore += 1
-		ranking.Ties += 1
-	}
-
-	// Assign tiebreakers points.
-	ranking.AssistPoints += ownScore.AssistPoints
-	ranking.AutoPoints += ownScore.AutoPoints
-	ranking.TrussCatchPoints += ownScore.TrussCatchPoints
-	ranking.GoalFoulPoints += ownScore.GoalPoints + ownScore.FoulPoints
+	// Assign points.
+	ranking.QualificationAverage += float64(score.Score)
+	ranking.CoopertitionPoints += score.CoopertitionPoints
+	ranking.AutoPoints += score.AutoPoints
+	ranking.ContainerPoints += score.ContainerPoints
+	ranking.TotePoints += score.TotePoints
+	ranking.LitterPoints += score.LitterPoints
 
 	// Store a random value to be used as the last tiebreaker if necessary.
 	ranking.Random = rand.Float64()
@@ -243,23 +236,26 @@ func (rankings Rankings) Len() int {
 func (rankings Rankings) Less(i, j int) bool {
 	a := rankings[i]
 	b := rankings[j]
-	if a.QualificationScore*b.Played == b.QualificationScore*a.Played {
-		if a.AssistPoints*b.Played == b.AssistPoints*a.Played {
+	if a.QualificationAverage == b.QualificationAverage {
+		// Use cross-multiplication to keep it in integer math.
+		if a.CoopertitionPoints*b.Played == b.CoopertitionPoints*a.Played {
 			if a.AutoPoints*b.Played == b.AutoPoints*a.Played {
-				if a.TrussCatchPoints*b.Played == b.TrussCatchPoints*a.Played {
-					if a.GoalFoulPoints*b.Played == b.GoalFoulPoints*a.Played {
-						return a.Random > b.Random
+				if a.ContainerPoints*b.Played == b.ContainerPoints*a.Played {
+					if a.TotePoints*b.Played == b.TotePoints*a.Played {
+						if a.LitterPoints*b.Played == b.LitterPoints*a.Played {
+							return a.Random > b.Random
+						}
+						return a.LitterPoints*b.Played > b.LitterPoints*a.Played
 					}
-					// Use cross-multiplication to keep it in integer math.
-					return a.GoalFoulPoints*b.Played > b.GoalFoulPoints*a.Played
+					return a.TotePoints*b.Played > b.TotePoints*a.Played
 				}
-				return a.TrussCatchPoints*b.Played > b.TrussCatchPoints*a.Played
+				return a.ContainerPoints*b.Played > b.ContainerPoints*a.Played
 			}
 			return a.AutoPoints*b.Played > b.AutoPoints*a.Played
 		}
-		return a.AssistPoints*b.Played > b.AssistPoints*a.Played
+		return a.CoopertitionPoints*b.Played > b.CoopertitionPoints*a.Played
 	}
-	return a.QualificationScore*b.Played > b.QualificationScore*a.Played
+	return a.QualificationAverage > b.QualificationAverage
 }
 
 // Helper function to implement the required interface for Sort.
