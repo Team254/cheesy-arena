@@ -119,8 +119,8 @@ html {
 }
 #logo {
   position: relative;
-  top: 30px;
-  height: 80px;
+  top: 35px;
+  height: 70px;
 }
 #matchTime {
   position: relative;
@@ -195,8 +195,8 @@ html {
 }
 #blindsLogo {
   position: relative;
-  top: 55px;
-  height: 180px;
+  top: 70px;
+  height: 150px;
 }
 #finalScore {
   position: fixed;
