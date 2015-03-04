@@ -6,6 +6,7 @@
 var allianceStation = "";
 var blinkInterval;
 var currentScreen = "blank";
+var animationName = "rubberBand"; // See https://github.com/daneden/animate.css for more
 var websocket;
 
 // Handles a websocket message to change which screen is displayed.
@@ -49,13 +50,23 @@ var handleSetMatch = function(data) {
       $("#teamNumber").text("");
       $("#teamName").attr("data-alliance-bg", allianceStation[0]).text("");
     }
+    
+    animateTeamNumber();
   } else {
     $("body").attr("data-mode", "displayId");
   }
 };
 
+function animateTeamNumber() {
+  $("#teamNumber").addClass(animationName);
+  setTimeout(function() {
+    $("#teamNumber").removeClass(animationName);
+  }, 1500);
+}
+
 // Handles a websocket message to update the team connection status.
 var handleStatus = function(data) {
+  console.log(data);
   stationStatus = data.AllianceStations[allianceStation];
   var blink = false;
   if (stationStatus.Bypass) {
@@ -117,7 +128,7 @@ $(function() {
     window.location = "/displays/alliance_station?displayId=" + displayId;
   }
   $("#displayId").text(displayId);
-
+  
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/alliance_station/websocket?displayId=" + displayId, {
     setAllianceStationDisplay: function(event) { handleSetAllianceStationDisplay(event.data); },
