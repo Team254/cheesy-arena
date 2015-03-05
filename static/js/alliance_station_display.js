@@ -66,7 +66,6 @@ function animateTeamNumber() {
 
 // Handles a websocket message to update the team connection status.
 var handleStatus = function(data) {
-  console.log(data);
   stationStatus = data.AllianceStations[allianceStation];
   var blink = false;
   if (stationStatus.Bypass) {
