@@ -57,12 +57,6 @@
                 onclick="setFoulTeam(this);">{{.Blue3.Id}}</a>
           </div>
           <div class="row">
-            <a class="btn btn-lg btn-default btn-referee btn-referee-wide" id="foul"
-                onclick="setFoulIsTech(false);">Foul</a>
-            <a class="btn btn-lg btn-default btn-referee btn-referee-wide" id="techFoul"
-                onclick="setFoulIsTech(true);">Tech Foul</a>
-          </div>
-          <div class="row">
             {{range $rule := .Rules}}
               <a class="btn btn-lg btn-warning btn-referee" data-rule="{{$rule}}"
                   onclick="setFoulRule(this);">{{$rule}}</a>
@@ -97,10 +91,9 @@
 {{define "foul"}}
   <tr class="row-{{.color}}">
     <td>{{.foul.TeamId}}</td>
-    <td>{{if .foul.IsTechnical}}Technical {{end}}Foul</td>
     <td>{{.foul.Rule}}</td>
     <td><a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.Rule}}',
-          {{.foul.TimeInMatchSec}}, {{.foul.IsTechnical}});">Delete</a></td>
+          {{.foul.TimeInMatchSec}});">Delete</a></td>
   </tr>
 {{end}}
 {{define "card"}}

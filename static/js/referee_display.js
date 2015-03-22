@@ -6,19 +6,12 @@
 var websocket;
 var foulAlliance;
 var foulTeam;
-var foulIsTech;
 var foulRule;
 
 // Handles a click on a team button.
 var setFoulTeam = function(teamButton) {
   foulAlliance = $(teamButton).attr("data-alliance");
   foulTeam = $(teamButton).attr("data-team");
-  setSelections();
-};
-
-// Handles a click on the non-tech/tech foul buttons.
-var setFoulIsTech = function(isTech) {
-  foulIsTech = isTech;
   setSelections();
 };
 
@@ -34,9 +27,6 @@ var setSelections = function() {
     $(teamButton).attr("data-selected", $(teamButton).attr("data-team") == foulTeam);
   });
 
-  $("#foul").attr("data-selected", !foulIsTech);
-  $("#techFoul").attr("data-selected", foulIsTech);
-
   $("[data-rule]").each(function(i, ruleButton) {
     $(ruleButton).attr("data-selected", $(ruleButton).attr("data-rule") == foulRule);
   });
@@ -47,21 +37,19 @@ var setSelections = function() {
 // Resets the buttons to their default selections.
 var clearFoul = function() {
   foulTeam = "";
-  foulIsTech = false;
   foulRule = "";
   setSelections();
 };
 
 // Sends the foul to the server to add it to the list.
 var commitFoul = function() {
-  websocket.send("addFoul", {Alliance: foulAlliance, TeamId: parseInt(foulTeam), Rule: foulRule,
-      IsTechnical: foulIsTech});
+  websocket.send("addFoul", {Alliance: foulAlliance, TeamId: parseInt(foulTeam), Rule: foulRule});
 };
 
 // Removes the foul with the given parameters from the list.
-var deleteFoul = function(alliance, team, rule, timeSec, isTech) {
+var deleteFoul = function(alliance, team, rule, timeSec) {
   websocket.send("deleteFoul", {Alliance: alliance, TeamId: parseInt(team), Rule: rule,
-      TimeInMatchSec: timeSec, IsTechnical: isTech});
+      TimeInMatchSec: timeSec});
 };
 
 // Cycles through no card, yellow card, and red card.

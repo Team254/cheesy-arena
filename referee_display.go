@@ -15,9 +15,8 @@ import (
 	"text/template"
 )
 
-var rules = []string{"G3", "G5", "G10", "G11", "G12", "G14", "G15", "G16", "G17", "G18", "G19", "G21", "G22",
-	"G23", "G24", "G25", "G26", "G26-1", "G27", "G28", "G29", "G30", "G31", "G32", "G34", "G35", "G36", "G37",
-	"G38", "G39", "G40", "G41", "G42"}
+var rules = []string{"G4", "G5", "G6", "G6-1", "G16", "G17", "G18", "G19", "G20", "G21", "G22", "G23", "G24",
+	"G26", "G30", "G31", "G33", "G34", }
 
 // Renders the referee interface for assigning fouls.
 func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +139,6 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				Alliance    string
 				TeamId      int
 				Rule        string
-				IsTechnical bool
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
