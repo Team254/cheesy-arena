@@ -35,6 +35,7 @@ Cheesy Arena To-Do List
 * Automatic download of recent accomplishments (needs better TBA API)
 
 ###Development tasks
+* Change to use the new FMS API for team data
 * Generate more schedules and find an automated way to evaluate them
 * Clean up sponsor carousel JavaScript and make it load new slides asynchronously without needing a reload of the audience display page
 * Refactor websockets to reduce code repetition between displays with similar functions
