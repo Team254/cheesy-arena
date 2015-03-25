@@ -19,7 +19,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, EventSettings{Id: 0, Name: "Untitled Event", Code: "UE", DisplayBackgroundColor: "#00ff00",
 		NumElimAlliances: 8, SelectionRound2Order: "L", SelectionRound3Order: "",
-		TeamInfoDownloadEnabled: true}, *eventSettings)
+		FMSAPIDownloadEnabled: false}, *eventSettings)
 
 	eventSettings.Name = "Chezy Champs"
 	eventSettings.Code = "cc"

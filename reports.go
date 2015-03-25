@@ -6,9 +6,9 @@
 package main
 
 import (
-	"code.google.com/p/gofpdf"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jung-kurt/gofpdf"
 	"net/http"
 	"strconv"
 	"text/template"

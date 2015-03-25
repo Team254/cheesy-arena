@@ -6,24 +6,32 @@
 package main
 
 import (
-	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
-	"html"
 	"html/template"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
 )
 
+type TeamListings struct {
+    NumberOfTeams int `json:"teamCountTotal"`
+    Teams []JSONTeam `json:"teams"`
+ }
+
+type JSONTeam struct {
+        ShortName string `json:"nameShort"`
+        TeamNumber string   `json:"teamNumber"`
+        LongName string   `json:"nameFull"`
+        City string   `json:"city"`
+ }
+
 const wpaKeyLength = 8
 
-var officialTeamInfoUrl = "https://my.usfirst.org/frc/scoring/index.lasso?page=teamlist"
-var officialTeamInfo map[int][]string
+var officialTeamInfoUrl = "https://frc-api.usfirst.org/api/v1.0/teams/2015"
 
 // Shows the team list.
 func TeamsGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -235,52 +243,74 @@ func canModifyTeamList() bool {
 
 // Returns the data for the given team number.
 func getOfficialTeamInfo(teamId int) (*Team, error) {
-	if officialTeamInfo == nil && eventSettings.TeamInfoDownloadEnabled {
-		// Download all team info from the FIRST website if it is not cached.
-		resp, err := http.Get(officialTeamInfoUrl)
+  // Create the team variable that stores the result
+  var team Team
+
+  // If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
+	if eventSettings.FMSAPIDownloadEnabled && eventSettings.FMSAPIUsername != "" && eventSettings.FMSAPIAuthKey != "" {
+	  // Make an HTTP GET request with basic auth to get the info
+		client := &http.Client{}
+		var url = officialTeamInfoUrl + "?teamNumber=" + strconv.Itoa(teamId);
+		req, err := http.NewRequest("GET", url, nil)
+		req.SetBasicAuth(eventSettings.FMSAPIUsername, eventSettings.FMSAPIAuthKey)
+    resp, err := client.Do(req)
+    
+    // Handle any errors
 		if err != nil {
 			return nil, err
 		}
+		
+		// Get the response and handle errors
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, err
 		}
-		re := regexp.MustCompile("(?s).*<PRE>(.*)</PRE>.*")
-		teamsCsv := re.FindStringSubmatch(string(body))[1]
-
-		// Parse the tab-separated data.
-		reader := csv.NewReader(strings.NewReader(teamsCsv))
-		reader.Comma = '\t'
-		reader.FieldsPerRecord = -1
-		officialTeamInfo = make(map[int][]string)
-		reader.Read() // Ignore header line.
-		for {
-			fields, err := reader.Read()
-			if err == io.EOF {
-				break
-			} else if err != nil {
-				return nil, err
-			}
-			teamNumber, err := strconv.Atoi(fields[1])
-			if err != nil {
-				return nil, err
-			}
-			officialTeamInfo[teamNumber] = fields
+		
+		
+		// Parse the response into an object
+    var respJSON map[string]interface{}
+		json.Unmarshal(body, &respJSON)
+				
+		// Check if the result is valid.  If a team is not found it won't be allowing us to just return a basic team
+		if respJSON == nil {
+		  team = Team{Id: teamId}
+      return &team, nil
 		}
-	}
-
-	teamData, ok := officialTeamInfo[teamId]
-	var team Team
-	if ok {
-		rookieYear, _ := strconv.Atoi(teamData[8])
-		team = Team{Id: teamId, Name: html.UnescapeString(teamData[2]), Nickname: html.UnescapeString(teamData[7]),
-			City: html.UnescapeString(teamData[4]), StateProv: html.UnescapeString(teamData[5]),
-			Country: html.UnescapeString(teamData[6]), RookieYear: rookieYear,
-			RobotName: html.UnescapeString(teamData[9])}
+		
+		// Break out teams array
+		var teams = respJSON["teams"].([]interface{})
+		
+		// Get the first team returned
+    var teamData = teams[0].(map[string]interface {})        	  
+    
+    // Put all the info into variables (to allow for validation)
+    var name string
+    var nickname string
+    var city string
+    var stateProv string
+    var country string
+    var rookieYear int
+    var robotName string
+    
+    if teamData["nameFull"] != nil { name = teamData["nameFull"].(string) }
+    if teamData["nameShort"] != nil { nickname = teamData["nameShort"].(string) }
+    if teamData["city"] != nil { city = teamData["city"].(string) }
+    if teamData["stateProv"] != nil { stateProv = teamData["stateProv"].(string) }
+    if teamData["country"] != nil { country = teamData["country"].(string) }
+    if teamData["rookieYear"] != nil { rookieYear = int(teamData["rookieYear"].(float64)) }
+    if teamData["robotName"] != nil { robotName = teamData["robotName"].(string) }
+    
+    // Use those variables to make a team object
+	  team = Team{Id: teamId, Name: name, Nickname: nickname,
+			City: city, StateProv: stateProv,
+			Country: country, RookieYear: rookieYear,
+			RobotName: robotName}
 	} else {
-		// If no team data exists, just fill in the team number.
-		team = Team{Id: teamId}
+	  // If team grab is disabled, just use the team number
+	  team = Team{Id: teamId}
 	}
+	
+	// Return the team object
 	return &team, nil
 }

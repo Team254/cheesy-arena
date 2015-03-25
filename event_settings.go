@@ -13,7 +13,9 @@ type EventSettings struct {
 	NumElimAlliances        int
 	SelectionRound2Order    string
 	SelectionRound3Order    string
-	TeamInfoDownloadEnabled bool
+	FMSAPIDownloadEnabled bool
+	FMSAPIUsername string
+	FMSAPIAuthKey string
 	AllianceDisplayHotGoals bool
 	RedGoalLightsAddress    string
 	BlueGoalLightsAddress   string
@@ -42,7 +44,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.NumElimAlliances = 8
 		eventSettings.SelectionRound2Order = "L"
 		eventSettings.SelectionRound3Order = ""
-		eventSettings.TeamInfoDownloadEnabled = true
+		eventSettings.FMSAPIDownloadEnabled = false
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {
 			return nil, err
