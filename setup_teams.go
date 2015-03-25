@@ -17,18 +17,6 @@ import (
 	"strings"
 )
 
-type TeamListings struct {
-    NumberOfTeams int `json:"teamCountTotal"`
-    Teams []JSONTeam `json:"teams"`
- }
-
-type JSONTeam struct {
-        ShortName string `json:"nameShort"`
-        TeamNumber string   `json:"teamNumber"`
-        LongName string   `json:"nameFull"`
-        City string   `json:"city"`
- }
-
 const wpaKeyLength = 8
 
 var officialTeamInfoUrl = "https://frc-api.usfirst.org/api/v1.0/teams/2015"
