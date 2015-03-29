@@ -132,6 +132,12 @@ var handleMatchTime = function(data) {
   });
 };
 
+// Handles a websocket message to update the match score.
+var handleRealtimeScore = function(data) {
+  $("#redScore").text(data.RedScore);
+  $("#blueScore").text(data.BlueScore);
+};
+
 // Handles a websocket message to update the audience display screen selector.
 var handleSetAudienceDisplay = function(data) {
   $("input[name=audienceDisplay]:checked").prop("checked", false);
@@ -161,6 +167,7 @@ $(function() {
     status: function(event) { handleStatus(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
+    realtimeScore: function(event) { handleRealtimeScore(event.data); },
     setAudienceDisplay: function(event) { handleSetAudienceDisplay(event.data); },
     scoringStatus: function(event) { handleScoringStatus(event.data); },
     setAllianceStationDisplay: function(event) { handleSetAllianceStationDisplay(event.data); }

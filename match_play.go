@@ -156,6 +156,8 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	matchTimeListener := mainArena.matchTimeNotifier.Listen()
 	defer close(matchTimeListener)
+	realtimeScoreListener := mainArena.realtimeScoreNotifier.Listen()
+	defer close(realtimeScoreListener)
 	robotStatusListener := mainArena.robotStatusNotifier.Listen()
 	defer close(robotStatusListener)
 	audienceDisplayListener := mainArena.audienceDisplayNotifier.Listen()
@@ -179,6 +181,15 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data = MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)}
 	err = websocket.Write("matchTime", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	data = struct {
+		RedScore  int
+		BlueScore int
+	}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
+	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -217,6 +228,15 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "matchTime"
 				message = MatchTimeMessage{mainArena.MatchState, matchTimeSec.(int)}
+			case _, ok := <-realtimeScoreListener:
+				if !ok {
+					return
+				}
+				messageType = "realtimeScore"
+				message = struct {
+					RedScore  int
+					BlueScore int
+				}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
 			case _, ok := <-robotStatusListener:
 				if !ok {
 					return

@@ -252,6 +252,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchTime")
+	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "setAudienceDisplay")
 	readWebsocketType(t, ws, "scoringStatus")
 	readWebsocketType(t, ws, "setAllianceStationDisplay")
@@ -308,13 +309,21 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	mainArena.blueRealtimeScore.CurrentScore.Totes = 37
 	ws.Write("commitResults", nil)
 	readWebsocketType(t, ws, "reload")
-	readWebsocketType(t, ws, "setAllianceStationDisplay")
+	messages := readWebsocketMultiple(t, ws, 2)
+	_, ok := messages["realtimeScore"]
+	assert.True(t, ok)
+	_, ok = messages["setAllianceStationDisplay"]
+	assert.True(t, ok)
 	assert.Equal(t, 29, mainArena.savedMatchResult.RedScore.Totes)
 	assert.Equal(t, 37, mainArena.savedMatchResult.BlueScore.Totes)
 	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
 	ws.Write("discardResults", nil)
 	readWebsocketType(t, ws, "reload")
-	readWebsocketType(t, ws, "setAllianceStationDisplay")
+	messages = readWebsocketMultiple(t, ws, 2)
+	_, ok = messages["realtimeScore"]
+	assert.True(t, ok)
+	_, ok = messages["setAllianceStationDisplay"]
+	assert.True(t, ok)
 	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
 
 	// Test changing the displays.
@@ -348,6 +357,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchTime")
+	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "setAudienceDisplay")
 	readWebsocketType(t, ws, "scoringStatus")
 
