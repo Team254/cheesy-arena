@@ -18,7 +18,7 @@ var toggleBypass = function(station) {
 
 // Sends a websocket message to start the match.
 var startMatch = function() {
-  websocket.send("startMatch");
+  websocket.send("startMatch", { muteMatchSounds: $("#muteMatchSounds").prop("checked") });
 };
 
 // Sends a websocket message to abort the match.

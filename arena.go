@@ -87,6 +87,7 @@ type Arena struct {
 	savedMatchResult               *MatchResult
 	leftGoalHotFirst               bool
 	lights                         Lights
+	muteMatchSounds                bool
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
@@ -99,10 +100,10 @@ func NewRealtimeScore() *RealtimeScore {
 
 // Sets the arena to its initial state.
 func (arena *Arena) Setup() {
-	arena.matchTiming.AutoDurationSec = 10
+	arena.matchTiming.AutoDurationSec = 15
 	arena.matchTiming.PauseDurationSec = 2
-	arena.matchTiming.TeleopDurationSec = 140
-	arena.matchTiming.EndgameTimeLeftSec = 30
+	arena.matchTiming.TeleopDurationSec = 135
+	arena.matchTiming.EndgameTimeLeftSec = 20
 
 	arena.AllianceStations = make(map[string]*AllianceStation)
 	arena.AllianceStations["R1"] = new(AllianceStation)
@@ -360,7 +361,9 @@ func (arena *Arena) AbortMatch() error {
 	arena.MatchState = POST_MATCH
 	arena.audienceDisplayScreen = "blank"
 	arena.audienceDisplayNotifier.Notify(nil)
-	arena.playSoundNotifier.Notify("match-abort")
+	if !arena.muteMatchSounds {
+		arena.playSoundNotifier.Notify("match-abort")
+	}
 	return nil
 }
 
@@ -376,6 +379,7 @@ func (arena *Arena) ResetMatch() error {
 	arena.AllianceStations["B1"].Bypass = false
 	arena.AllianceStations["B2"].Bypass = false
 	arena.AllianceStations["B3"].Bypass = false
+	arena.muteMatchSounds = false
 	return nil
 }
 
@@ -412,7 +416,9 @@ func (arena *Arena) Update() {
 		sendDsPacket = true
 		arena.audienceDisplayScreen = "match"
 		arena.audienceDisplayNotifier.Notify(nil)
-		arena.playSoundNotifier.Notify("match-start")
+		if !arena.muteMatchSounds {
+			arena.playSoundNotifier.Notify("match-start")
+		}
 	case AUTO_PERIOD:
 		auto = true
 		enabled = true
@@ -421,7 +427,9 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = false
 			sendDsPacket = true
-			arena.playSoundNotifier.Notify("match-end")
+			if !arena.muteMatchSounds {
+				arena.playSoundNotifier.Notify("match-end")
+			}
 		}
 	case PAUSE_PERIOD:
 		auto = false
@@ -431,7 +439,9 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = true
 			sendDsPacket = true
-			arena.playSoundNotifier.Notify("match-resume")
+			if !arena.muteMatchSounds {
+				arena.playSoundNotifier.Notify("match-resume")
+			}
 		}
 	case TELEOP_PERIOD:
 		auto = false
@@ -440,7 +450,9 @@ func (arena *Arena) Update() {
 			arena.matchTiming.TeleopDurationSec-arena.matchTiming.EndgameTimeLeftSec) {
 			arena.MatchState = ENDGAME_PERIOD
 			sendDsPacket = false
-			arena.playSoundNotifier.Notify("match-endgame")
+			if !arena.muteMatchSounds {
+				arena.playSoundNotifier.Notify("match-endgame")
+			}
 		}
 	case ENDGAME_PERIOD:
 		auto = false
@@ -459,7 +471,9 @@ func (arena *Arena) Update() {
 				arena.allianceStationDisplayScreen = "logo"
 				arena.allianceStationDisplayNotifier.Notify(nil)
 			}()
-			arena.playSoundNotifier.Notify("match-end")
+			if !arena.muteMatchSounds {
+				arena.playSoundNotifier.Notify("match-end")
+			}
 		}
 	}
 

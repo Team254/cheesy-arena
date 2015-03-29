@@ -295,6 +295,15 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			mainArena.AllianceStations[station].Bypass = !mainArena.AllianceStations[station].Bypass
 		case "startMatch":
+			args := struct {
+				MuteMatchSounds bool
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+			mainArena.muteMatchSounds = args.MuteMatchSounds
 			err = mainArena.StartMatch()
 			if err != nil {
 				websocket.WriteError(err.Error())

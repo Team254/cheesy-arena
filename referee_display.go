@@ -16,7 +16,7 @@ import (
 )
 
 var rules = []string{"G4", "G5", "G6", "G6-1", "G16", "G17", "G18", "G19", "G20", "G21", "G22", "G23", "G24",
-	"G26", "G30", "G31", "G33", "G34", }
+	"G26", "G30", "G31", "G33", "G34"}
 
 // Renders the referee interface for assigning fouls.
 func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -136,9 +136,9 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		switch messageType {
 		case "addFoul":
 			args := struct {
-				Alliance    string
-				TeamId      int
-				Rule        string
+				Alliance string
+				TeamId   int
+				Rule     string
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
