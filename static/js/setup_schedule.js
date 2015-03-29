@@ -9,9 +9,18 @@ var blockMatches = {};
 
 // Adds a new scheduling block to the page.
 var addBlock = function(startTime, numMatches, matchSpacingSec) {
+  if (!startTime) {
+    // Start the next block where the last one left off and use the same spacing.
+    var lastStartTime = moment(Date.parse($("#startTime" + lastBlockNumber).val()));
+    var lastNumMatches = blockMatches[lastBlockNumber];
+    matchSpacingSec = getMatchSpacingSec(lastBlockNumber);
+    startTime = moment(lastStartTime + lastNumMatches * matchSpacingSec * 1000);
+    numMatches = 10;
+  }
   var endTime = moment(startTime + numMatches * matchSpacingSec * 1000);
   lastBlockNumber += 1;
-  var block = blockTemplate({blockNumber: lastBlockNumber, matchSpacingSec: matchSpacingSec});
+  var matchSpacingMinSec = moment(matchSpacingSec * 1000).format("m:ss");
+  var block = blockTemplate({blockNumber: lastBlockNumber, matchSpacingMinSec: matchSpacingMinSec});
   $("#blockContainer").append(block);
   $("#startTimePicker" + lastBlockNumber).datetimepicker({useSeconds: true}).
       data("DateTimePicker").setDate(startTime);
@@ -24,7 +33,7 @@ var addBlock = function(startTime, numMatches, matchSpacingSec) {
 var updateBlock = function(blockNumber) {
   var startTime = moment(Date.parse($("#startTime" + blockNumber).val()));
   var endTime = moment(Date.parse($("#endTime" + blockNumber).val()));
-  var matchSpacingSec = parseInt($("#matchSpacingSec" + blockNumber).val());
+  var matchSpacingSec = getMatchSpacingSec(blockNumber);
   var numMatches = Math.floor((endTime - startTime) / matchSpacingSec / 1000);
   var actualEndTime = moment(startTime + numMatches * matchSpacingSec * 1000).format("hh:mm:ss A");
   blockMatches[blockNumber] = numMatches;
@@ -74,11 +83,17 @@ var generateSchedule = function() {
   }
   var i = 0;
   $.each(blockMatches, function(k, v) {
-    addField("startTime" + i, $("#startTime" + k).val())
-    addField("numMatches" + i, $("#numMatches" + k).text())
-    addField("matchSpacingSec" + i, $("#matchSpacingSec" + k).val())
+    addField("startTime" + i, $("#startTime" + k).val());
+    addField("numMatches" + i, $("#numMatches" + k).text());
+    addField("matchSpacingSec" + i, getMatchSpacingSec(k));
     i++;
   });
   addField("numScheduleBlocks", i);
   form.submit();
-}
+};
+
+// Parses the min:sec match spacing field for the given block and returns the number of seconds.
+var getMatchSpacingSec = function(blockNumber) {
+  var matchSpacingMinSec = $("#matchSpacingMinSec" + blockNumber).val().split(":");
+  return parseInt(matchSpacingMinSec[0]) * 60 + parseInt(matchSpacingMinSec[1]);
+};
