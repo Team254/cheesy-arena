@@ -6,12 +6,12 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"time"
+	"bytes"
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
 	"html/template"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -19,7 +19,7 @@ import (
 
 const wpaKeyLength = 8
 
-var officialTeamInfoUrl = "https://frc-api.usfirst.org/api/v1.0/teams/2015"
+var officialTeamInfoUrl = "http://www.thebluealliance.com/api/v2/team/"
 
 // Shows the team list.
 func TeamsGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -233,71 +233,39 @@ func canModifyTeamList() bool {
 func getOfficialTeamInfo(teamId int) (*Team, error) {
   // Create the team variable that stores the result
   var team Team
-
+    
   // If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
-	if eventSettings.FMSAPIDownloadEnabled && eventSettings.FMSAPIUsername != "" && eventSettings.FMSAPIAuthKey != "" {
-	  // Make an HTTP GET request with basic auth to get the info
-		client := &http.Client{}
-		var url = officialTeamInfoUrl + "?teamNumber=" + strconv.Itoa(teamId);
-		req, err := http.NewRequest("GET", url, nil)
-		req.SetBasicAuth(eventSettings.FMSAPIUsername, eventSettings.FMSAPIAuthKey)
-    resp, err := client.Do(req)
-    
-    // Handle any errors
-		if err != nil {
-			return nil, err
-		}
+	if eventSettings.TBADownloadEnabled {
+	  var tbaTeam *TbaTeam = getTeamFromTba(teamId)
 		
-		// Get the response and handle errors
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		
-		
-		// Parse the response into an object
-    var respJSON map[string]interface{}
-		json.Unmarshal(body, &respJSON)
-				
-		// Check if the result is valid.  If a team is not found it won't be allowing us to just return a basic team
-		if respJSON == nil {
-		  team = Team{Id: teamId}
+		// Check if the result is valid.  If a team is not found, just return a basic team
+    if tbaTeam == nil {
+      team = Team{Id: teamId}
       return &team, nil
-		}
-		
-		// Break out teams array
-		var teams = respJSON["teams"].([]interface{})
-		
-		// Get the first team returned
-    var teamData = teams[0].(map[string]interface {})        	  
+    }
     
-    // Put all the info into variables (to allow for validation)
-    var name string
-    var nickname string
-    var city string
-    var stateProv string
-    var country string
-    var rookieYear int
-    var robotName string
+    var recentAwards []TbaAward;
+    if eventSettings.TBAAwardsDownloadEnabled {
+	    recentAwards = getTeamAwardsFromTba(teamId)
+	  }
     
-    if teamData["nameFull"] != nil { name = teamData["nameFull"].(string) }
-    if teamData["nameShort"] != nil { nickname = teamData["nameShort"].(string) }
-    if teamData["city"] != nil { city = teamData["city"].(string) }
-    if teamData["stateProv"] != nil { stateProv = teamData["stateProv"].(string) }
-    if teamData["country"] != nil { country = teamData["country"].(string) }
-    if teamData["rookieYear"] != nil { rookieYear = int(teamData["rookieYear"].(float64)) }
-    if teamData["robotName"] != nil { robotName = teamData["robotName"].(string) }
-    
+    var accomplishmentsBuffer bytes.Buffer
+
+    // Generate accomplishments string
+    for _, award := range recentAwards {
+      if time.Now().Year() - award.Year <= 2 {
+        accomplishmentsBuffer.WriteString(fmt.Sprint(award.Year, " - ", award.Name, "\n"))
+      }
+  	}
+
     // Use those variables to make a team object
-	  team = Team{Id: teamId, Name: name, Nickname: nickname,
-			City: city, StateProv: stateProv,
-			Country: country, RookieYear: rookieYear,
-			RobotName: robotName}
-	} else {
-	  // If team grab is disabled, just use the team number
-	  team = Team{Id: teamId}
-	}
+    team = Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname,
+    	City: tbaTeam.Locality, StateProv: tbaTeam.Reigon,
+    	Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear, Accomplishments: accomplishmentsBuffer.String()}
+  } else {
+    // If team grab is disabled, just use the team number
+    team = Team{Id: teamId}
+  }
 	
 	// Return the team object
 	return &team, nil

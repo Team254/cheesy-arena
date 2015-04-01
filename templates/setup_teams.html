@@ -18,7 +18,7 @@
     <form class="form-horizontal" action="/setup/teams" method="POST">
       <fieldset>
         <legend>Import Teams</legend>
-        {{if not .EventSettings.FMSAPIDownloadEnabled}}<p>To automatically download data about teams, enter your FRC Events API key on the event settings page</p>{{end}}
+        {{if not .EventSettings.TBADownloadEnabled}}<p>To automatically download data about teams, enable TBA Team Info Download on the settings page</p>{{end}}
         <div class="form-group">
           <textarea class="form-control" rows="10" name="teamNumbers"
               placeholder="One team number per line"></textarea>

@@ -42,9 +42,8 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.NumElimAlliances = numAlliances
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
-	eventSettings.FMSAPIDownloadEnabled = r.PostFormValue("FMSAPIDownloadEnabled") == "on"
-	eventSettings.FMSAPIUsername = r.PostFormValue("FMSAPIUsername")
-	eventSettings.FMSAPIAuthKey = r.PostFormValue("FMSAPIAuthKey")
+	eventSettings.TBADownloadEnabled = r.PostFormValue("TBADownloadEnabled") == "on"
+	eventSettings.TBAAwardsDownloadEnabled = r.PostFormValue("TBAAwardsDownloadEnabled") == "on"
 	eventSettings.AllianceDisplayHotGoals = r.PostFormValue("allianceDisplayHotGoals") == "on"
 	eventSettings.RedGoalLightsAddress = r.PostFormValue("redGoalLightsAddress")
 	eventSettings.BlueGoalLightsAddress = r.PostFormValue("blueGoalLightsAddress")
