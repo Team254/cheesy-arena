@@ -6,15 +6,15 @@
 package main
 
 import (
-	"fmt"
-	"time"
 	"bytes"
+	"fmt"
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
 	"html/template"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const wpaKeyLength = 8
@@ -231,42 +231,42 @@ func canModifyTeamList() bool {
 
 // Returns the data for the given team number.
 func getOfficialTeamInfo(teamId int) (*Team, error) {
-  // Create the team variable that stores the result
-  var team Team
-    
-  // If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
+	// Create the team variable that stores the result
+	var team Team
+
+	// If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
 	if eventSettings.TBADownloadEnabled {
-	  var tbaTeam *TbaTeam = getTeamFromTba(teamId)
-		
+		var tbaTeam *TbaTeam = getTeamFromTba(teamId)
+
 		// Check if the result is valid.  If a team is not found, just return a basic team
-    if tbaTeam == nil {
-      team = Team{Id: teamId}
-      return &team, nil
-    }
-    
-    var recentAwards []TbaAward;
-    if eventSettings.TBAAwardsDownloadEnabled {
-	    recentAwards = getTeamAwardsFromTba(teamId)
-	  }
-    
-    var accomplishmentsBuffer bytes.Buffer
+		if tbaTeam == nil {
+			team = Team{Id: teamId}
+			return &team, nil
+		}
 
-    // Generate accomplishments string
-    for _, award := range recentAwards {
-      if time.Now().Year() - award.Year <= 2 {
-        accomplishmentsBuffer.WriteString(fmt.Sprint(award.Year, " - ", award.Name, "\n"))
-      }
-  	}
+		var recentAwards []TbaAward
+		if eventSettings.TBAAwardsDownloadEnabled {
+			recentAwards = getTeamAwardsFromTba(teamId)
+		}
 
-    // Use those variables to make a team object
-    team = Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname,
-    	City: tbaTeam.Locality, StateProv: tbaTeam.Reigon,
-    	Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear, Accomplishments: accomplishmentsBuffer.String()}
-  } else {
-    // If team grab is disabled, just use the team number
-    team = Team{Id: teamId}
-  }
-	
+		var accomplishmentsBuffer bytes.Buffer
+
+		// Generate accomplishments string
+		for _, award := range recentAwards {
+			if time.Now().Year()-award.Year <= 2 {
+				accomplishmentsBuffer.WriteString(fmt.Sprint(award.Year, " - ", award.Name, "\n"))
+			}
+		}
+
+		// Use those variables to make a team object
+		team = Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname,
+			City: tbaTeam.Locality, StateProv: tbaTeam.Reigon,
+			Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear, Accomplishments: accomplishmentsBuffer.String()}
+	} else {
+		// If team grab is disabled, just use the team number
+		team = Team{Id: teamId}
+	}
+
 	// Return the team object
 	return &team, nil
 }

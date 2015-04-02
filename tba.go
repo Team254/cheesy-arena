@@ -52,60 +52,58 @@ type TbaRanking struct {
 }
 
 type TbaTeam struct {
-  Website    string `json:"website"`
-  Name       string `json:"name"`
-  Locality   string `json:"locality"`
-  RookieYear int    `json:"rookie_year"`
-  Reigon     string `json:"region"`
-  TeamNumber int    `json:"team_number"`
-  Location   string `json:"location"`
-  Key        string `json:"key"`
-  Country    string `json:"country_name"`
-  Nickname   string `json:"nickname"`
+	Website    string `json:"website"`
+	Name       string `json:"name"`
+	Locality   string `json:"locality"`
+	RookieYear int    `json:"rookie_year"`
+	Reigon     string `json:"region"`
+	TeamNumber int    `json:"team_number"`
+	Location   string `json:"location"`
+	Key        string `json:"key"`
+	Country    string `json:"country_name"`
+	Nickname   string `json:"nickname"`
 }
 
 type TbaAward struct {
-  Name       string `json:"name"`
-  EventKey   string `json:"event_key"`
-  Year       int    `json:"year"`
-  AwardType  int    `json:"award_type"`
+	Name      string `json:"name"`
+	EventKey  string `json:"event_key"`
+	Year      int    `json:"year"`
+	AwardType int    `json:"award_type"`
 }
 
 // DATA RETRIEVAL
-func getTeamFromTba(teamNumber int) (*TbaTeam) {
-  url := fmt.Sprint("/api/v2/team/", string(getTbaTeam(teamNumber)))
-  resp, _ := getTbaRequest(url);
-  
+func getTeamFromTba(teamNumber int) *TbaTeam {
+	url := fmt.Sprint("/api/v2/team/", string(getTbaTeam(teamNumber)))
+	resp, _ := getTbaRequest(url)
 
-  // Get the response and handle errors
+	// Get the response and handle errors
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil
 	}
-	
+
 	var teamData TbaTeam
-  json.Unmarshal(body, &teamData)
-  
-  return &teamData
+	json.Unmarshal(body, &teamData)
+
+	return &teamData
 }
 
-func getTeamAwardsFromTba(teamNumber int) ([]TbaAward) {
-  url := fmt.Sprint("/api/v2/team/", string(getTbaTeam(teamNumber)), "/history/awards")
-  resp, _ := getTbaRequest(url);
-  
+func getTeamAwardsFromTba(teamNumber int) []TbaAward {
+	url := fmt.Sprint("/api/v2/team/", string(getTbaTeam(teamNumber)), "/history/awards")
+	resp, _ := getTbaRequest(url)
 
-  // Get the response and handle errors
+	// Get the response and handle errors
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil
 	}
-	
+
 	var awardData []TbaAward
-  json.Unmarshal(body, &awardData)
-  
-  return awardData
+	json.Unmarshal(body, &awardData)
+
+	return awardData
 }
 
 // PUBLISHING
@@ -293,12 +291,12 @@ func postTbaRequest(resource string, body []byte) (*http.Response, error) {
 
 // Sends a GET request to the TBA API
 func getTbaRequest(path string) (*http.Response, error) {
-  // Make an HTTP GET request with the TBA auth headers
+	// Make an HTTP GET request with the TBA auth headers
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fmt.Sprint(tbaBaseUrl, path), nil)
 	if err != nil {
-	  return nil, err
+		return nil, err
 	}
 	req.Header.Set("X-TBA-App-Id", "cheesy-arena:cheesy-fms:v0.1")
-  return client.Do(req)
+	return client.Do(req)
 }
