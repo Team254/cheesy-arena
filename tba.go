@@ -153,7 +153,7 @@ func PublishRankings() error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"QS", "Assist", "Auto", "T&C", "G&F"}
+	breakdowns := []string{"QS", "Assist", "Auto", "T&C", "G&F", "wins", "losses", "ties"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.Wins, ranking.Losses,
