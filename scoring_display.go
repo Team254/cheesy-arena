@@ -64,11 +64,18 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
 	defer close(matchLoadTeamsListener)
+	matchTimeListener := mainArena.matchTimeNotifier.Listen()
+	defer close(matchTimeListener)
 	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
 	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
 	err = websocket.Write("score", *score)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+	err = websocket.Write("matchTime", MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)})
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -86,6 +93,12 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "score"
 				message = *score
+			case matchTimeSec, ok := <-matchTimeListener:
+				if !ok {
+					return
+				}
+				messageType = "matchTime"
+				message = MatchTimeMessage{mainArena.MatchState, matchTimeSec.(int)}
 			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return

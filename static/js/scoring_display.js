@@ -8,6 +8,7 @@ var selectedStack = 0;
 var numStacks = 10;
 var stacks;
 var stackScoreChanged = false;
+var scoreCommitted = false;
 
 function Stack() {
   this.Totes = 0;
@@ -59,15 +60,15 @@ var handleScore = function(data) {
     $("#autoScore").show();
     $("#teleopCommands").hide();
     $("#teleopScore").hide();
-    $("#commitMatchScore").hide();
     $("#waitingMessage").hide();
+    scoreCommitted = false;
   } else if (!data.TeleopCommitted) {
     $("#autoCommands").hide();
     $("#autoScore").hide();
     $("#teleopCommands").show();
     $("#teleopScore").show();
-    $("#commitMatchScore").show();
     $("#waitingMessage").hide();
+    scoreCommitted = false;
   } else {
     $("#autoCommands").hide();
     $("#autoScore").hide();
@@ -75,6 +76,7 @@ var handleScore = function(data) {
     $("#teleopScore").hide();
     $("#commitMatchScore").hide();
     $("#waitingMessage").show();
+    scoreCommitted = true;
   }
 };
 
@@ -146,6 +148,15 @@ var handleKeyPress = function(event) {
   }
 };
 
+// Handles a websocket message to update the match status.
+var handleMatchTime = function(data) {
+  if (matchStates[data.MatchState] == "POST_MATCH" && !scoreCommitted) {
+    $("#commitMatchScore").show();
+  } else {
+    $("#commitMatchScore").hide();
+  }
+};
+
 // Updates the stack grid to highlight only the active stack.
 var updateSelectedStack = function() {
   for (i = 0; i < numStacks; i++) {
@@ -176,7 +187,8 @@ var commitMatchScore = function() {
 $(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/scoring/" + alliance + "/websocket", {
-    score: function(event) { handleScore(event.data); }
+    score: function(event) { handleScore(event.data); },
+    matchTime: function(event) { handleMatchTime(event.data); }
   });
 
   updateSelectedStack();
