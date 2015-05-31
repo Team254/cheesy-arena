@@ -31,18 +31,20 @@ type MatchResultDb struct {
 
 type Score struct {
 	AutoRobotSet       bool
-	AutoToteSet        bool
 	AutoContainerSet   bool
+	AutoToteSet        bool
 	AutoStackedToteSet bool
-	Totes              int
-	ContainerLevels    []int
-	ContainerLitter    int
-	LandfillLitter     int
-	UnprocessedLitter  int
+	Stacks []Stack
 	CoopertitionSet    bool
 	CoopertitionStack  bool
 	Fouls              []Foul
 	ElimDq             bool
+}
+
+type Stack struct {
+	Totes int
+	Container bool
+	Litter bool
 }
 
 type Foul struct {
@@ -64,8 +66,8 @@ type ScoreSummary struct {
 // Returns a new match result object with empty slices instead of nil.
 func NewMatchResult() *MatchResult {
 	matchResult := new(MatchResult)
-	matchResult.RedScore.ContainerLevels = []int{}
-	matchResult.BlueScore.ContainerLevels = []int{}
+	matchResult.RedScore.Stacks = []Stack{}
+	matchResult.BlueScore.Stacks = []Stack{}
 	matchResult.RedScore.Fouls = []Foul{}
 	matchResult.BlueScore.Fouls = []Foul{}
 	matchResult.RedCards = make(map[string]string)
@@ -176,12 +178,18 @@ func scoreSummary(score *Score) *ScoreSummary {
 	}
 
 	// Calculate teleop score.
+	summary.TotePoints = 0
 	summary.ContainerPoints = 0
-	for _, containerLevel := range score.ContainerLevels {
-		summary.ContainerPoints += 4 * containerLevel
+	summary.LitterPoints = 0
+	for _, stack := range score.Stacks {
+		summary.TotePoints += 2 * stack.Totes
+		if stack.Container {
+  			summary.ContainerPoints += 4 * stack.Totes
+  			if stack.Litter && stack.Totes > 0 {
+  				summary.LitterPoints += 6
+  			}
+		}
 	}
-	summary.TotePoints = 2 * score.Totes
-	summary.LitterPoints = 6*score.ContainerLitter + score.LandfillLitter + 4*score.UnprocessedLitter
 	if score.CoopertitionStack {
 		summary.CoopertitionPoints = 40
 	} else if score.CoopertitionSet {

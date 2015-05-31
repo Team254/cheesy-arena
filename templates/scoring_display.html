@@ -16,72 +16,60 @@
         <h2>Autonomous Period</h2>
         <p>Use the following keyboard shortcuts:</p>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">0-9</div>
-          <div class="col-lg-8 scoring-comment">Set the number of pre-loaded balls</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">r</div>
+          <div class="col-lg-8 scoring-comment">Toggle robot set</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">m</div>
-          <div class="col-lg-8 scoring-comment">Add mobility bonus</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">c</div>
+          <div class="col-lg-8 scoring-comment">Toggle container set</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">H</div>
-          <div class="col-lg-8 scoring-comment">High hot goal</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">t</div>
+          <div class="col-lg-8 scoring-comment">Toggle tote set</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">h</div>
-          <div class="col-lg-8 scoring-comment">High non-hot goal</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">L</div>
-          <div class="col-lg-8 scoring-comment">Low hot goal</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">l</div>
-          <div class="col-lg-8 scoring-comment">Low non-hot goal</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">s</div>
+          <div class="col-lg-8 scoring-comment">Toggle stacked tote set</div>
         </div>
         <div class="row">
           <div class="col-lg-3 col-lg-offset-1 scoring">Enter</div>
           <div class="col-lg-8 scoring-comment">Commit autonomous score</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">u</div>
-          <div class="col-lg-8 scoring-comment">Undo last scoring action</div>
         </div>
       </div>
       <div id="teleopCommands" style="display: none;">
         <h2>Teleoperated Period</h2>
         <p>Use the following keyboard shortcuts:</p>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">a</div>
-          <div class="col-lg-8 scoring-comment">Add assist</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">t</div>
+          <div class="col-lg-8 scoring-comment">Toggle co-op tote set</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">t</div>
-          <div class="col-lg-8 scoring-comment">Truss</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">s</div>
+          <div class="col-lg-8 scoring-comment">Toggle co-op stacked tote set</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">j/l</div>
+          <div class="col-lg-8 scoring-comment">Change selected stack</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">i/k</div>
+          <div class="col-lg-8 scoring-comment">Add/remove totes for selected stack</div>
         </div>
         <div class="row">
           <div class="col-lg-3 col-lg-offset-1 scoring">c</div>
-          <div class="col-lg-8 scoring-comment">Catch</div>
+          <div class="col-lg-8 scoring-comment">Toggle container for selected stack</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">h</div>
-          <div class="col-lg-8 scoring-comment">High goal</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">l</div>
-          <div class="col-lg-8 scoring-comment">Low goal</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">d</div>
-          <div class="col-lg-8 scoring-comment">Dead ball</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">n</div>
+          <div class="col-lg-8 scoring-comment">Toggle noodle for selected stack</div>
         </div>
         <div class="row">
           <div class="col-lg-3 col-lg-offset-1 scoring">Enter</div>
-          <div class="col-lg-8 scoring-comment">Commit cycle</div>
+          <div class="col-lg-8 scoring-comment">Commit tote stack change</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">u</div>
-          <div class="col-lg-8 scoring-comment">Undo last scoring action</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">a</div>
+          <div class="col-lg-8 scoring-comment">Back to autonomous</div>
         </div>
       </div>
     </div>
@@ -89,63 +77,54 @@
       <div id="autoScore" style="display: none;">
         <h2>Autonomous Score</h2>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Preloads</div>
-          <div class="col-lg-2 scoring-comment" id="autoPreloadedBalls">0</div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Robot Set</div>
+          <div class="col-lg-2 scoring-comment" id="autoRobotSet" data-value="false">No</div>
         </div>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Mobility</div>
-          <div class="col-lg-2 scoring-comment" id="autoMobilityBonuses">0</div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Container Set</div>
+          <div class="col-lg-2 scoring-comment" id="autoContainerSet" data-value="false">No</div>
         </div>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">High hot</div>
-          <div class="col-lg-2 scoring-comment" id="autoHighHot">0</div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Tote Set</div>
+          <div class="col-lg-2 scoring-comment" id="autoToteSet" data-value="false">No</div>
         </div>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">High non-hot</div>
-          <div class="col-lg-2 scoring-comment" id="autoHigh">0</div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Stacked Tote Set</div>
+          <div class="col-lg-2 scoring-comment" id="autoStackedToteSet" data-value="false">No</div>
         </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Low hot</div>
-          <div class="col-lg-2 scoring-comment" id="autoLowHot">0</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Low non-hot</div>
-          <div class="col-lg-2 scoring-comment" id="autoLow">0</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Unscored balls</div>
-          <div class="col-lg-2 scoring-comment" id="autoUnscoredBalls">0</div>
-        </div>
-        <h3 class="text-center scoring-message">Press Enter to commit autonomous score.<br />
-            This cannot be undone.</h3>
+        <h3 class="text-center scoring-message">Press Enter to commit autonomous score</h3>
       </div>
       <div id="teleopScore" style="display: none;">
-        <h2>Current Cycle</h2>
+        <h2>Teleoperated Score</h2>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Assists</div>
-          <div class="col-lg-2 scoring-comment" id="assists">0</div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Co-op set</div>
+          <div class="col-lg-2 scoring-comment" id="coopertitionSet">No</div>
         </div>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Truss</div>
-          <div class="col-lg-2 scoring-comment" id="truss">0</div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Co-op stack</div>
+          <div class="col-lg-2 scoring-comment" id="coopertitionStack">No</div>
         </div>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Catch</div>
-          <div class="col-lg-2 scoring-comment" id="catch">0</div>
+          <table class="stack-grid" data-changed="false">
+            <tr>
+              {{template "stack" "0"}}
+              {{template "stack" "1"}}
+              {{template "stack" "2"}}
+              {{template "stack" "3"}}
+              {{template "stack" "4"}}
+            </tr>
+            <tr>
+              {{template "stack" "5"}}
+              {{template "stack" "6"}}
+              {{template "stack" "7"}}
+              {{template "stack" "8"}}
+              {{template "stack" "9"}}
+            </tr>
+          </table>
         </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Scored high</div>
-          <div class="col-lg-2 scoring-comment" id="scoredHigh">0</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Scored low</div>
-          <div class="col-lg-2 scoring-comment" id="scoredLow">0</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Dead ball</div>
-          <div class="col-lg-2 scoring-comment" id="deadBall">0</div>
-        </div>
-        <h3 class="text-center scoring-message" id="teleopMessage">Hit Enter to commit cycle</h3>
+        <h3 class="text-center scoring-message" id="teleopMessage" style="opacity: 0">
+          Press Enter to confirm stack changes
+        </h3>
       </div>
     </div>
   </div>
@@ -160,4 +139,11 @@
   var alliance = "{{.Alliance}}";
 </script>
 <script src="/static/js/scoring_display.js"></script>
+{{end}}
+{{define "stack"}}
+<td id="stack{{.}}" data-selected="false">
+  <div class="stack-tote-count">0</div>
+  <div class="stack-container" style="display: none;"></div>
+  <div class="stack-litter" style="display: none;"></div>
+</td>
 {{end}}

@@ -115,14 +115,17 @@ func TestCorrectEliminationScore(t *testing.T) {
 	// TODO(patrick): Test proper calculation of DQ.
 	matchResult := MatchResult{}
 	matchResult.CorrectEliminationScore()
+
+	// TODO(patrick): Put back elim tiebreaker tests.
 }
 
 func buildTestMatchResult(matchId int, playNumber int) MatchResult {
 	fouls := []Foul{Foul{25, "G22", 25.2}, Foul{25, "G18", 150}, Foul{1868, "G20", 0}}
+	stacks1 := []Stack{Stack{6, true, true}, Stack{0, false, false}, Stack{0, true, false}}
+	stacks2 := []Stack{Stack{5, true, false}, Stack{6, false, false}, Stack{1, true, true}}
 	matchResult := MatchResult{MatchId: matchId, PlayNumber: playNumber}
-	matchResult.RedScore = Score{false, false, true, true, 1, []int{2, 3, 4}, 5, 6, 7, false, true, fouls, false}
-	// 6 + 20 + 2 + 36 + 30 + 6 + 28 + 40
-	matchResult.BlueScore = Score{true, true, false, false, 6, []int{5, 4}, 3, 2, 1, true, false, []Foul{}, false}
+	matchResult.RedScore = Score{false, false, true, true, stacks1, false, true, fouls, false}
+	matchResult.BlueScore = Score{true, true, false, false, stacks2, true, false, []Foul{}, false}
 	matchResult.RedCards = map[string]string{"1868": "yellow"}
 	matchResult.BlueCards = map[string]string{}
 	return matchResult

@@ -174,8 +174,15 @@ func buildMatchReviewList(matchType string) ([]MatchReviewListItem, error) {
 			matchReviewList[i].RedScore = matchResult.RedScoreSummary().Score
 			matchReviewList[i].BlueScore = matchResult.BlueScoreSummary().Score
 		}
-		if match.Status == "complete" {
+		switch match.Winner {
+		case "R":
+			matchReviewList[i].ColorClass = "danger"
+		case "B":
+			matchReviewList[i].ColorClass = "info"
+		case "T":
 			matchReviewList[i].ColorClass = "warning"
+		default:
+			matchReviewList[i].ColorClass = ""
 		}
 	}
 

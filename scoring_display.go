@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
 	"net/http"
@@ -102,7 +103,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		messageType, _, err := websocket.Read()
+		messageType, data, err := websocket.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
@@ -113,16 +114,59 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch messageType {
-		// TODO(pat): Add 2015 messages.
+		case "robotSet":
+			if !(*score).AutoCommitted {
+				(*score).CurrentScore.AutoRobotSet = !(*score).CurrentScore.AutoRobotSet
+			}
+		case "containerSet":
+			if !(*score).AutoCommitted {
+				(*score).CurrentScore.AutoContainerSet = !(*score).CurrentScore.AutoContainerSet
+			}
+		case "toteSet":
+			if !(*score).AutoCommitted {
+				(*score).CurrentScore.AutoToteSet = !(*score).CurrentScore.AutoToteSet
+				if (*score).CurrentScore.AutoToteSet {
+					(*score).CurrentScore.AutoStackedToteSet = false
+				}
+			} else {
+				(*score).CurrentScore.CoopertitionSet = !(*score).CurrentScore.CoopertitionSet
+				if (*score).CurrentScore.CoopertitionSet {
+					(*score).CurrentScore.CoopertitionStack = false
+				}
+			}
+		case "stackedToteSet":
+			if !(*score).AutoCommitted {
+				(*score).CurrentScore.AutoStackedToteSet = !(*score).CurrentScore.AutoStackedToteSet
+				if (*score).CurrentScore.AutoStackedToteSet {
+					(*score).CurrentScore.AutoToteSet = false
+				}
+			} else {
+				(*score).CurrentScore.CoopertitionStack = !(*score).CurrentScore.CoopertitionStack
+				if (*score).CurrentScore.CoopertitionStack {
+					(*score).CurrentScore.CoopertitionSet = false
+				}
+			}
 		case "commit":
 			if !(*score).AutoCommitted {
 				(*score).AutoCommitted = true
+			} else {
+				var stacks []Stack
+				err = mapstructure.Decode(data, &stacks)
+				if err != nil {
+					websocket.WriteError(err.Error())
+				}
+				(*score).CurrentScore.Stacks = stacks
+			}
+		case "uncommitAuto":
+			if (*score).AutoCommitted {
+				(*score).AutoCommitted = false
 			}
 		case "commitMatch":
 			if mainArena.MatchState != POST_MATCH {
 				// Don't allow committing the score until the match is over.
 				continue
 			}
+			// TODO(pat): Don't allow committing and show an error message if the red/blue co-op points aren't equal.
 			(*score).AutoCommitted = true
 			(*score).TeleopCommitted = true
 			mainArena.scoringStatusNotifier.Notify(nil)

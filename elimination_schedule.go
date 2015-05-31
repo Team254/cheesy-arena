@@ -44,7 +44,8 @@ func (database *Database) UpdateEliminationSchedule(startTime time.Time) ([]Alli
 	return winner, err
 }
 
-// Recursively traverses the elimination bracket downwards, creating matches as necessary.
+// Recursively traverses the elimination bracket downwards, creating matches as necessary. Returns the winner
+// of the given round if known.
 func (database *Database) buildEliminationMatchSet(round int, group int, numAlliances int) ([]AllianceTeam, error) {
 	if numAlliances < 2 {
 		return []AllianceTeam{}, fmt.Errorf("Must have at least 2 alliances")
@@ -106,7 +107,7 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 	// Check if the match set exists already and if it has been won.
 	var redWins, blueWins, numIncomplete int
 	var ties []*Match
-	matches, err := database.GetMatchesByElimRound(round)
+	matches, err := database.GetMatchesByElimRoundGroup(round, group)
 	if err != nil {
 		return []AllianceTeam{}, err
 	}
@@ -127,6 +128,18 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 			unplayedMatches = append(unplayedMatches, &match)
 			numIncomplete += 1
 			continue
+		}
+
+		// Check who won.
+		switch match.Winner {
+		case "R":
+			redWins += 1
+		case "B":
+			blueWins += 1
+		case "T":
+			ties = append(ties, &match)
+		default:
+			return []AllianceTeam{}, fmt.Errorf("Completed match %d has invalid winner '%s'", match.Id, match.Winner)
 		}
 	}
 
@@ -161,19 +174,19 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 			return []AllianceTeam{}, fmt.Errorf("Alliances must consist of at least 3 teams")
 		}
 		if len(matches) < 1 {
-			err = database.CreateMatch(createMatch(roundName, round, 1, redAlliance, blueAlliance))
+			err = database.CreateMatch(createMatch(roundName, round, group, 1, redAlliance, blueAlliance))
 			if err != nil {
 				return []AllianceTeam{}, err
 			}
 		}
 		if len(matches) < 2 {
-			err = database.CreateMatch(createMatch(roundName, round, 2, redAlliance, blueAlliance))
+			err = database.CreateMatch(createMatch(roundName, round, group, 2, redAlliance, blueAlliance))
 			if err != nil {
 				return []AllianceTeam{}, err
 			}
 		}
 		if len(matches) < 3 {
-			err = database.CreateMatch(createMatch(roundName, round, 3, redAlliance, blueAlliance))
+			err = database.CreateMatch(createMatch(roundName, round, group, 3, redAlliance, blueAlliance))
 			if err != nil {
 				return []AllianceTeam{}, err
 			}
@@ -184,7 +197,7 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 	// personnel can reuse any tied matches without having to print new schedules.
 	if numIncomplete == 0 {
 		for index, tie := range ties {
-			match := createMatch(roundName, round, len(matches)+index+1, redAlliance, blueAlliance)
+			match := createMatch(roundName, round, group, len(matches)+index+1, redAlliance, blueAlliance)
 			match.Red1, match.Red2, match.Red3 = tie.Red1, tie.Red2, tie.Red3
 			match.Blue1, match.Blue2, match.Blue3 = tie.Blue1, tie.Blue2, tie.Blue3
 			err = database.CreateMatch(match)
@@ -198,9 +211,9 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 }
 
 // Creates a match at the given point in the elimination bracket and populates the teams.
-func createMatch(roundName string, round int, instance int, redAlliance []AllianceTeam, blueAlliance []AllianceTeam) *Match {
+func createMatch(roundName string, round int, group int, instance int, redAlliance []AllianceTeam, blueAlliance []AllianceTeam) *Match {
 	match := Match{Type: "elimination", DisplayName: fmt.Sprintf("%s-%d", roundName, instance),
-		ElimRound: round, ElimInstance: instance}
+		ElimRound: round, ElimGroup: group, ElimInstance: instance}
 	shuffleRedTeams(&match, redAlliance)
 	shuffleBlueTeams(&match, blueAlliance)
 	return &match

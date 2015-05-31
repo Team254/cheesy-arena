@@ -4,35 +4,53 @@
 // Client-side logic for the scoring interface.
 
 var websocket;
+var selectedStack = 0;
+var numStacks = 10;
+var stacks;
+var stackScoreChanged = false;
+
+function Stack() {
+  this.Totes = 0;
+  this.Container = false;
+  this.Litter = false;
+}
 
 // Handles a websocket message to update the realtime scoring fields.
 var handleScore = function(data) {
   // Update autonomous period values.
   var score = data.CurrentScore;
-  $("#autoPreloadedBalls").text(data.AutoPreloadedBalls);
-  $("#autoMobilityBonuses").text(score.AutoMobilityBonuses);
-  $("#autoHighHot").text(score.AutoHighHot);
-  $("#autoHigh").text(score.AutoHigh);
-  $("#autoLowHot").text(score.AutoLowHot);
-  $("#autoLow").text(score.AutoLow);
-  var unscoredBalls = data.AutoPreloadedBalls - score.AutoHighHot - score.AutoHigh - score.AutoLowHot -
-      score.AutoLow;
-  $("#autoUnscoredBalls").text(unscoredBalls);
+  $("#autoRobotSet").text(score.AutoRobotSet ? "Yes" : "No");
+  $("#autoRobotSet").attr("data-value", score.AutoRobotSet);
+  $("#autoContainerSet").text(score.AutoContainerSet ? "Yes" : "No");
+  $("#autoContainerSet").attr("data-value", score.AutoContainerSet);
+  $("#autoToteSet").text(score.AutoToteSet ? "Yes" : "No");
+  $("#autoToteSet").attr("data-value", score.AutoToteSet);
+  $("#autoStackedToteSet").text(score.AutoStackedToteSet ? "Yes" : "No");
+  $("#autoStackedToteSet").attr("data-value", score.AutoStackedToteSet);
 
-  // Update teleoperated period current cycle values.
-  var cycle = data.CurrentCycle;
-  $("#assists").text(cycle.Assists);
-  $("#truss").text(cycle.Truss ? "X" : "");
-  $("#catch").text(cycle.Catch ? "X" : "");
-  $("#scoredHigh").text(cycle.ScoredHigh ? "X" : "");
-  $("#scoredLow").text(cycle.ScoredLow ? "X" : "");
-  $("#deadBall").text(cycle.DeadBall ? "X" : "");
-  if (cycle.ScoredHigh || cycle.ScoredLow || cycle.DeadBall) {
-    $("#teleopMessage").html("Press Enter to commit cycle.<br />This cannot be undone.");
-  } else if (data.AutoLeftoverBalls > 0) {
-    $("#teleopMessage").html(data.AutoLeftoverBalls + " leftover preload" + ((data.AutoLeftoverBalls > 1) ? "s" : ""));
-  } else {
-    $("#teleopMessage").text("");
+  // Update teleoperated period values.
+  $("#coopertitionSet").text(score.CoopertitionSet ? "Yes" : "No");
+  $("#coopertitionSet").attr("data-value", score.CoopertitionSet);
+  $("#coopertitionStack").text(score.CoopertitionStack ? "Yes" : "No");
+  $("#coopertitionStack").attr("data-value", score.CoopertitionStack);
+
+  // Don't stomp on pending changes to the stack score.
+  if (stackScoreChanged == false) {
+    if (score.Stacks == null) {
+      stacks = new Array();
+      for (i = 0; i < numStacks; i++) {
+        stacks.push(new Stack());
+      }
+    } else {
+      stacks = score.Stacks;
+    }
+    for (i = 0; i < numStacks; i++) {
+      updateStackView(i);
+    }
+
+    // Reset indications that the stack score is uncommitted.
+    $("#teleopMessage").css("opacity", 0);
+    $(".stack-grid").attr("data-changed", false);
   }
 
   // Update component visibility.
@@ -41,7 +59,7 @@ var handleScore = function(data) {
     $("#autoScore").show();
     $("#teleopCommands").hide();
     $("#teleopScore").hide();
-    $("#commitMatchScore").show();
+    $("#commitMatchScore").hide();
     $("#waitingMessage").hide();
   } else if (!data.TeleopCommitted) {
     $("#autoCommands").hide();
@@ -64,52 +82,90 @@ var handleScore = function(data) {
 var handleKeyPress = function(event) {
   var key = String.fromCharCode(event.keyCode);
   switch(key) {
-    case "0":
-    case "1":
-    case "2":
-    case "3":
-    case "4":
-    case "5":
-    case "6":
-    case "7":
-    case "8":
-    case "9":
-      websocket.send("preload", key);
-      break;
-    case "m":
-      websocket.send("mobility");
-      break;
-    case "H":
-      websocket.send("scoredHighHot");
-      break;
-    case "h":
-      websocket.send("scoredHigh");
-      break;
-    case "L":
-      websocket.send("scoredLowHot");
-      break;
-    case "l":
-      websocket.send("scoredLow");
-      break;
-    case "a":
-      websocket.send("assist");
-      break;
-    case "t":
-      websocket.send("truss");
+    case "r":
+      websocket.send("robotSet");
       break;
     case "c":
-      websocket.send("catch");
+      if ($("#autoCommands").is(":visible")) {
+        websocket.send("containerSet");
+      } else {
+        stacks[selectedStack].Container = !stacks[selectedStack].Container;
+        if (!stacks[selectedStack].Container) {
+          stacks[selectedStack].Litter = false;
+        }
+        updateStackView(selectedStack);
+        invalidateStackScore();
+      }
       break;
-    case "d":
-      websocket.send("deadBall");
+    case "t":
+      websocket.send("toteSet");
+      break;
+    case "s":
+      websocket.send("stackedToteSet");
+      break;
+    case "j":
+      if (selectedStack > 0) {
+        selectedStack--;
+        updateSelectedStack();
+      }
+      break;
+    case "l":
+      if (selectedStack < numStacks - 1) {
+        selectedStack++;
+        updateSelectedStack();
+      }
+      break;
+    case "i":
+      if (stacks[selectedStack].Totes < 6) {
+        stacks[selectedStack].Totes++;
+        updateStackView(selectedStack);
+        invalidateStackScore();
+      }
+      break;
+    case "k":
+      if (stacks[selectedStack].Totes > 0) {
+        stacks[selectedStack].Totes--;
+        updateStackView(selectedStack);
+        invalidateStackScore();
+      }
+      break;
+    case "n":
+      if (stacks[selectedStack].Container) {
+        stacks[selectedStack].Litter = !stacks[selectedStack].Litter;
+        updateStackView(selectedStack);
+        invalidateStackScore();
+      }
       break;
     case "\r":
-      websocket.send("commit");
+      websocket.send("commit", stacks);
+      stackScoreChanged = false;
       break;
-    case "u":
-      websocket.send("undo");
+    case "a":
+      websocket.send("uncommitAuto");
       break;
   }
+};
+
+// Updates the stack grid to highlight only the active stack.
+var updateSelectedStack = function() {
+  for (i = 0; i < numStacks; i++) {
+    $("#stack" + i).attr("data-selected", i == selectedStack);
+  }
+};
+
+// Updates the appearance of the given stack in the grid to match the scoring data.
+var updateStackView = function(stackIndex) {
+  stack = stacks[stackIndex];
+  $("#stack" + stackIndex + " .stack-tote-count").text(stack.Totes);
+  $("#stack" + stackIndex + " .stack-container").toggle(stack.Container);
+  $("#stack" + stackIndex + " .stack-litter").toggle(stack.Litter);
+};
+
+// Shows message indicating that the stack score has been changed but not yet sent to the server.
+var invalidateStackScore = function() {
+  $("#teleopMessage").css("opacity", 1);
+  $(".stack-grid").attr("data-changed", true);
+  stackScoreChanged = true;
 };
 
 // Sends a websocket message to indicate that the score for this alliance is ready.
@@ -122,6 +178,8 @@ $(function() {
   websocket = new CheesyWebsocket("/displays/scoring/" + alliance + "/websocket", {
     score: function(event) { handleScore(event.data); }
   });
+
+  updateSelectedStack();
 
   $(document).keypress(handleKeyPress);
 });
