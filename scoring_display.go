@@ -179,7 +179,16 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				// Don't allow committing the score until the match is over.
 				continue
 			}
-			// TODO(pat): Don't allow committing and show an error message if the red/blue co-op points aren't equal.
+
+			redScore := mainArena.redRealtimeScore.CurrentScore
+			blueScore := mainArena.blueRealtimeScore.CurrentScore
+			if redScore.CoopertitionSet != blueScore.CoopertitionSet ||
+				redScore.CoopertitionStack != blueScore.CoopertitionStack {
+				// Don't accept the score if the red and blue co-opertition points don't match up.
+				websocket.ShowDialog("Cannot commit score: Red and blue co-opertition points do not match.")
+				continue
+			}
+
 			(*score).AutoCommitted = true
 			(*score).TeleopCommitted = true
 			mainArena.scoringStatusNotifier.Notify(nil)

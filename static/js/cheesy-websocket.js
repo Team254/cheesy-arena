@@ -20,6 +20,11 @@ var CheesyWebsocket = function(path, events) {
     }
   }
 
+  // Insert an event to show a dialog when the server wishes it.
+  events.dialog = function(event) {
+    alert(event.data);
+  }
+
   // Insert an event to allow the server to force-reload the client for any display.
   events.reload = function(event) {
     location.reload();

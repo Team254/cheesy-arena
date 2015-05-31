@@ -74,6 +74,10 @@ func (websocket *Websocket) WriteError(errorMessage string) error {
 	return websocket.conn.WriteJSON(WebsocketMessage{"error", errorMessage})
 }
 
+func (websocket *Websocket) ShowDialog(message string) error {
+	return websocket.conn.WriteJSON(WebsocketMessage{"dialog", message})
+}
+
 // Serves the root page of Cheesy Arena.
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	template, err := template.ParseFiles("templates/index.html", "templates/base.html")
