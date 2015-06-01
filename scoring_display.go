@@ -177,6 +177,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		case "commitMatch":
 			if mainArena.MatchState != POST_MATCH {
 				// Don't allow committing the score until the match is over.
+				websocket.WriteError("Cannot commit score: Match is not over.")
 				continue
 			}
 

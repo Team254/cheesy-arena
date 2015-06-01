@@ -450,6 +450,15 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 
 	// Update and save the match record to the database.
 	match.Status = "complete"
+	redScore := matchResult.RedScoreSummary()
+	blueScore := matchResult.BlueScoreSummary()
+	if redScore.Score > blueScore.Score {
+		match.Winner = "R"
+	} else if redScore.Score < blueScore.Score {
+		match.Winner = "B"
+	} else {
+		match.Winner = "T"
+	}
 	err := db.SaveMatch(match)
 	if err != nil {
 		return err
@@ -543,10 +552,18 @@ func buildMatchPlayList(matchType string) (MatchPlayList, error) {
 		matchPlayList[i].DisplayName = prefix + match.DisplayName
 		matchPlayList[i].Time = match.Time.Local().Format("3:04 PM")
 		matchPlayList[i].Status = match.Status
+		switch match.Winner {
+		case "R":
+			matchPlayList[i].ColorClass = "danger"
+		case "B":
+			matchPlayList[i].ColorClass = "info"
+		case "T":
+			matchPlayList[i].ColorClass = "warning"
+		default:
+			matchPlayList[i].ColorClass = ""
+		}
 		if mainArena.currentMatch != nil && matchPlayList[i].Id == mainArena.currentMatch.Id {
 			matchPlayList[i].ColorClass = "success"
-		} else if match.Status == "complete" {
-			matchPlayList[i].ColorClass = "warning"
 		}
 	}
 

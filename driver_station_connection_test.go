@@ -107,7 +107,7 @@ func TestDecodeStatusPacket(t *testing.T) {
 	assert.Equal(t, false, dsStatus.Auto)
 	assert.Equal(t, false, dsStatus.Enabled)
 	assert.Equal(t, false, dsStatus.EmergencyStop)
-	assert.Equal(t, 0, dsStatus.BatteryVoltage)
+	assert.Equal(t, 0.0, dsStatus.BatteryVoltage)
 	assert.Equal(t, "02121300", dsStatus.DsVersion)
 	assert.Equal(t, 16171, dsStatus.PacketCount)
 	assert.Equal(t, 25288, dsStatus.MissedPacketCount)
@@ -263,5 +263,5 @@ func TestListenForDsPackets(t *testing.T) {
 	dsConn.Update()
 	assert.Equal(t, false, dsConn.DriverStationStatus.DsLinked)
 	assert.Equal(t, false, dsConn.DriverStationStatus.RobotLinked)
-	assert.Equal(t, 0, dsConn.DriverStationStatus.BatteryVoltage)
+	assert.Equal(t, 0.0, dsConn.DriverStationStatus.BatteryVoltage)
 }

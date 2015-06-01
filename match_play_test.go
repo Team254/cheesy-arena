@@ -145,6 +145,7 @@ func TestCommitMatch(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 	eventSettings, _ = db.GetEventSettings()
+	mainArena.Setup()
 
 	// Committing test match should do nothing.
 	match := &Match{Id: 0, Type: "test", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
@@ -201,7 +202,7 @@ func TestCommitEliminationTie(t *testing.T) {
 
 	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	db.CreateMatch(match)
-	matchResult := &MatchResult{MatchId: match.Id, RedScore: Score{AutoRobotSet: true}}
+	matchResult := &MatchResult{MatchId: match.Id, RedScore: Score{AutoToteSet: true, Fouls: []Foul{Foul{}}}}
 	err = CommitMatchScore(match, matchResult)
 	assert.Nil(t, err)
 	match, _ = db.GetMatchById(1)
@@ -210,7 +211,7 @@ func TestCommitEliminationTie(t *testing.T) {
 	db.SaveMatch(match)
 	CommitMatchScore(match, matchResult)
 	match, _ = db.GetMatchById(1)
-	assert.Equal(t, "B", match.Winner)
+	assert.Equal(t, "T", match.Winner) // No elimination tiebreakers in 2015.
 }
 
 func TestCommitCards(t *testing.T) {
@@ -257,7 +258,7 @@ func TestCommitCards(t *testing.T) {
 	err = CommitMatchScore(match, matchResult)
 	assert.Nil(t, err)
 	assert.Equal(t, 0, matchResult.RedScoreSummary().Score)
-	assert.Equal(t, 593, matchResult.BlueScoreSummary().Score)
+	assert.Equal(t, 104, matchResult.BlueScoreSummary().Score)
 }
 
 func TestMatchPlayWebsocketCommands(t *testing.T) {
@@ -282,6 +283,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchTime")
+	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "setAudienceDisplay")
 	readWebsocketType(t, ws, "scoringStatus")
 	readWebsocketType(t, ws, "setAllianceStationDisplay")
@@ -334,17 +336,15 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "setAudienceDisplay")
 	assert.Equal(t, POST_MATCH, mainArena.MatchState)
-	mainArena.redRealtimeScore.CurrentScore.AutoRobotSet =  true
+	mainArena.redRealtimeScore.CurrentScore.AutoRobotSet = true
 	mainArena.blueRealtimeScore.CurrentScore.AutoToteSet = true
 	ws.Write("commitResults", nil)
-	readWebsocketType(t, ws, "reload")
-	readWebsocketType(t, ws, "setAllianceStationDisplay")
+	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
 	assert.Equal(t, true, mainArena.savedMatchResult.RedScore.AutoRobotSet)
 	assert.Equal(t, true, mainArena.savedMatchResult.BlueScore.AutoToteSet)
 	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
 	ws.Write("discardResults", nil)
-	readWebsocketType(t, ws, "reload")
-	readWebsocketType(t, ws, "setAllianceStationDisplay")
+	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
 	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
 
 	// Test changing the displays.
@@ -378,6 +378,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchTime")
+	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "setAudienceDisplay")
 	readWebsocketType(t, ws, "scoringStatus")
 

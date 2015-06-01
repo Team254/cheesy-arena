@@ -34,7 +34,7 @@ type Score struct {
 	AutoContainerSet   bool
 	AutoToteSet        bool
 	AutoStackedToteSet bool
-	Stacks []Stack
+	Stacks             []Stack
 	CoopertitionSet    bool
 	CoopertitionStack  bool
 	Fouls              []Foul
@@ -42,9 +42,9 @@ type Score struct {
 }
 
 type Stack struct {
-	Totes int
+	Totes     int
 	Container bool
-	Litter bool
+	Litter    bool
 }
 
 type Foul struct {
@@ -184,10 +184,10 @@ func scoreSummary(score *Score) *ScoreSummary {
 	for _, stack := range score.Stacks {
 		summary.TotePoints += 2 * stack.Totes
 		if stack.Container {
-  			summary.ContainerPoints += 4 * stack.Totes
-  			if stack.Litter && stack.Totes > 0 {
-  				summary.LitterPoints += 6
-  			}
+			summary.ContainerPoints += 4 * stack.Totes
+			if stack.Litter && stack.Totes > 0 {
+				summary.LitterPoints += 6
+			}
 		}
 	}
 	if score.CoopertitionStack {

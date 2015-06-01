@@ -80,35 +80,25 @@ func TestGetMatchResultForMatch(t *testing.T) {
 	assert.Equal(t, matchResult2, *matchResult4)
 }
 
-func TestScoring(t *testing.T) {
-	matchResult := MatchResult{}
-	score := &matchResult.RedScore
-	assert.Equal(t, 0, matchResult.RedScoreSummary().Score)
-
-	// TODO(pat): Test all scoring combinations.
-	*score = Score{}
-	assert.Equal(t, 0, matchResult.RedScoreSummary().Score)
-}
-
 func TestScoreSummary(t *testing.T) {
 	matchResult := buildTestMatchResult(1, 1)
 	redSummary := matchResult.RedScoreSummary()
 	assert.Equal(t, 40, redSummary.CoopertitionPoints)
 	assert.Equal(t, 28, redSummary.AutoPoints)
-	assert.Equal(t, 36, redSummary.ContainerPoints)
-	assert.Equal(t, 2, redSummary.TotePoints)
-	assert.Equal(t, 64, redSummary.LitterPoints)
+	assert.Equal(t, 24, redSummary.ContainerPoints)
+	assert.Equal(t, 12, redSummary.TotePoints)
+	assert.Equal(t, 6, redSummary.LitterPoints)
 	assert.Equal(t, 18, redSummary.FoulPoints)
-	assert.Equal(t, 152, redSummary.Score)
+	assert.Equal(t, 92, redSummary.Score)
 
 	blueSummary := matchResult.BlueScoreSummary()
-	assert.Equal(t, 20, blueSummary.CoopertitionPoints)
+	assert.Equal(t, 40, blueSummary.CoopertitionPoints)
 	assert.Equal(t, 10, blueSummary.AutoPoints)
-	assert.Equal(t, 36, blueSummary.ContainerPoints)
-	assert.Equal(t, 12, blueSummary.TotePoints)
-	assert.Equal(t, 24, blueSummary.LitterPoints)
+	assert.Equal(t, 24, blueSummary.ContainerPoints)
+	assert.Equal(t, 24, blueSummary.TotePoints)
+	assert.Equal(t, 6, blueSummary.LitterPoints)
 	assert.Equal(t, 0, blueSummary.FoulPoints)
-	assert.Equal(t, 102, blueSummary.Score)
+	assert.Equal(t, 104, blueSummary.Score)
 }
 
 func TestCorrectEliminationScore(t *testing.T) {
@@ -116,7 +106,7 @@ func TestCorrectEliminationScore(t *testing.T) {
 	matchResult := MatchResult{}
 	matchResult.CorrectEliminationScore()
 
-	// TODO(patrick): Put back elim tiebreaker tests.
+	// TODO(patrick): Put back elim tiebreaker tests if the game calls for it.
 }
 
 func buildTestMatchResult(matchId int, playNumber int) MatchResult {
@@ -124,8 +114,8 @@ func buildTestMatchResult(matchId int, playNumber int) MatchResult {
 	stacks1 := []Stack{Stack{6, true, true}, Stack{0, false, false}, Stack{0, true, false}}
 	stacks2 := []Stack{Stack{5, true, false}, Stack{6, false, false}, Stack{1, true, true}}
 	matchResult := MatchResult{MatchId: matchId, PlayNumber: playNumber}
-	matchResult.RedScore = Score{false, false, true, true, stacks1, false, true, fouls, false}
-	matchResult.BlueScore = Score{true, true, false, false, stacks2, true, false, []Foul{}, false}
+	matchResult.RedScore = Score{false, true, false, true, stacks1, false, true, fouls, false}
+	matchResult.BlueScore = Score{true, false, true, false, stacks2, false, true, []Foul{}, false}
 	matchResult.RedCards = map[string]string{"1868": "yellow"}
 	matchResult.BlueCards = map[string]string{}
 	return matchResult

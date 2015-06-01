@@ -61,11 +61,11 @@ func TestPublishMatches(t *testing.T) {
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var reader bytes.Buffer
 		reader.ReadFrom(r.Body)
-		assert.Equal(t, "[{\"comp_level\":\"qm\",\"match_number\":2,\"alliances\":{\"blue\":{\"score\":102,"+
-			"\"teams\":[\"frc10\",\"frc11\",\"frc12\"]},\"red\":{\"score\":152,\"teams\":[\"frc7\","+
-			"\"frc8\",\"frc9\"]}},\"score_breakdown\":{\"blue\":{\"coopertition\":20,\"auto\":10,"+
-			"\"container\":36,\"tote\":12,\"litter\":24,\"foul\":0},\"red\":{\"coopertition\":40,"+
-			"\"auto\":28,\"container\":36,\"tote\":2,\"litter\":64,\"foul\":18}},\"time_string\":"+
+		assert.Equal(t, "[{\"comp_level\":\"qm\",\"match_number\":2,\"alliances\":{\"blue\":{\"score\":104,"+
+			"\"teams\":[\"frc10\",\"frc11\",\"frc12\"]},\"red\":{\"score\":92,\"teams\":[\"frc7\","+
+			"\"frc8\",\"frc9\"]}},\"score_breakdown\":{\"blue\":{\"coopertition\":40,\"auto\":10,"+
+			"\"container\":24,\"tote\":24,\"litter\":6,\"foul\":0},\"red\":{\"coopertition\":40,"+
+			"\"auto\":28,\"container\":24,\"tote\":12,\"litter\":6,\"foul\":18}},\"time_string\":"+
 			"\"4:10 PM\",\"time_utc\":\"1970-01-01T00:10:00\"},{\"comp_level\":\"sf\",\"match_number\":2,"+
 			"\"alliances\":{\"blue\":{\"score\":null,\"teams\":[\"frc0\",\"frc0\",\"frc0\"]},\"red\":"+
 			"{\"score\":null,\"teams\":[\"frc0\",\"frc0\",\"frc0\"]}},\"score_breakdown\":null,"+

@@ -98,12 +98,12 @@ func TestCalculateRankings(t *testing.T) {
 	rankings, err := db.GetAllRankings()
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(rankings)) {
-		assert.Equal(t, Ranking{4, 1, 127, 60, 38, 72, 14, 88, 0.897169713149801, 0, 2}, rankings[0])
-		assert.Equal(t, Ranking{1, 2, 101.33, 80, 56, 72, 4, 128, 0.2730468047134829, 0, 3}, rankings[1])
-		assert.Equal(t, Ranking{5, 3, 84.66, 60, 38, 72, 14, 88, 0.2885856518054551, 0, 3}, rankings[2])
-		assert.Equal(t, Ranking{3, 4, 76, 40, 28, 36, 2, 64, 0.9026048462705047, 0, 2}, rankings[3])
-		assert.Equal(t, Ranking{6, 5, 51, 20, 10, 36, 12, 24, 0.16735444255905835, 0, 2}, rankings[4])
-		assert.Equal(t, Ranking{2, 6, 50.66, 40, 28, 36, 2, 64, 0.8497802817628735, 1, 3}, rankings[5])
+		assert.Equal(t, Ranking{4, 1, 98, 80, 38, 48, 36, 12, 0.897169713149801, 0, 2}, rankings[0])
+		assert.Equal(t, Ranking{5, 2, 65.33, 80, 38, 48, 36, 12, 0.2885856518054551, 0, 3}, rankings[1])
+		assert.Equal(t, Ranking{1, 3, 61.33, 80, 56, 48, 24, 12, 0.2730468047134829, 0, 3}, rankings[2])
+		assert.Equal(t, Ranking{6, 4, 52, 40, 10, 24, 24, 6, 0.16735444255905835, 0, 2}, rankings[3])
+		assert.Equal(t, Ranking{3, 5, 46, 40, 28, 24, 12, 6, 0.9026048462705047, 0, 2}, rankings[4])
+		assert.Equal(t, Ranking{2, 6, 30.66, 40, 28, 24, 12, 6, 0.8497802817628735, 1, 3}, rankings[5])
 	}
 
 	// Test after changing a match result.
@@ -116,12 +116,12 @@ func TestCalculateRankings(t *testing.T) {
 	rankings, err = db.GetAllRankings()
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(rankings)) {
-		assert.Equal(t, Ranking{3, 1, 152, 80, 56, 72, 4, 128, 0.6930700440076261, 0, 2}, rankings[0])
-		assert.Equal(t, Ranking{1, 2, 152, 120, 84, 108, 6, 192, 0.284824110942037, 0, 3}, rankings[1])
-		assert.Equal(t, Ranking{4, 3, 127, 60, 38, 72, 14, 88, 0.5102423328818813, 0, 2}, rankings[2])
-		assert.Equal(t, Ranking{5, 4, 118.66, 80, 48, 108, 26, 112, 0.2092018731282357, 0, 3}, rankings[3])
-		assert.Equal(t, Ranking{6, 5, 102, 40, 20, 72, 24, 48, 0.24043190328608438, 0, 2}, rankings[4])
-		assert.Equal(t, Ranking{2, 6, 101.33, 80, 56, 72, 4, 128, 0.4018978925803393, 1, 3}, rankings[5])
+		assert.Equal(t, Ranking{6, 1, 104, 80, 20, 48, 48, 12, 0.24043190328608438, 0, 2}, rankings[0])
+		assert.Equal(t, Ranking{5, 2, 100, 120, 48, 72, 60, 18, 0.2092018731282357, 0, 3}, rankings[1])
+		assert.Equal(t, Ranking{4, 3, 98, 80, 38, 48, 36, 12, 0.5102423328818813, 0, 2}, rankings[2])
+		assert.Equal(t, Ranking{3, 4, 92, 80, 56, 48, 24, 12, 0.6930700440076261, 0, 2}, rankings[3])
+		assert.Equal(t, Ranking{1, 5, 92, 120, 84, 72, 36, 18, 0.284824110942037, 0, 3}, rankings[4])
+		assert.Equal(t, Ranking{2, 6, 61.33, 80, 56, 48, 24, 12, 0.4018978925803393, 1, 3}, rankings[5])
 	}
 }
 
