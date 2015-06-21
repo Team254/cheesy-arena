@@ -32,6 +32,8 @@ type DriverStationStatus struct {
 	PacketCount       int
 	MissedPacketCount int
 	DsRobotTripTimeMs int
+	MBpsToRobot       float64
+	MBpsFromRobot     float64
 }
 
 type DriverStationConnection struct {
@@ -71,6 +73,8 @@ func (dsConn *DriverStationConnection) Update() error {
 		dsConn.DriverStationStatus.DsLinked = false
 		dsConn.DriverStationStatus.RobotLinked = false
 		dsConn.DriverStationStatus.BatteryVoltage = 0
+		dsConn.DriverStationStatus.MBpsToRobot = 0
+		dsConn.DriverStationStatus.MBpsFromRobot = 0
 	}
 
 	return nil

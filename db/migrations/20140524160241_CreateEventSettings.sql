@@ -19,7 +19,8 @@ CREATE TABLE event_settings (
   apusername VARCHAR(255),
   appassword VARCHAR(255),
   switchaddress VARCHAR(255),
-  switchpassword VARCHAR(255)
+  switchpassword VARCHAR(255),
+  bandwidthmonitoringenabled bool
 );
 
 -- +goose Down

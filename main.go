@@ -24,6 +24,7 @@ func main() {
 	listener, err := DsPacketListener()
 	checkErr(err)
 	go ListenForDsPackets(listener)
+	go MonitorBandwidth()
 	mainArena.Setup()
 	mainArena.Run()
 }

@@ -125,10 +125,11 @@ interface FastEthernet0/24
  switchport mode access
 !
 interface GigabitEthernet0/1
- switchport mode dynamic desirable
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
 !
 interface GigabitEthernet0/2
- switchport mode dynamic desirable
+ switchport mode access
 !
 interface Vlan1
  ip address 10.0.0.61 255.255.255.0
@@ -169,6 +170,8 @@ access-list 113 permit ip 10.0.3.0 0.0.0.255 host 10.0.100.50
 access-list 114 permit ip 10.0.4.0 0.0.0.255 host 10.0.100.50
 access-list 115 permit ip 10.0.5.0 0.0.0.255 host 10.0.100.50
 access-list 116 permit ip 10.0.6.0 0.0.0.255 host 10.0.100.50
+!
+snmp-server community 1234Five RO
 !
 line con 0
  exec-timeout 0 0
