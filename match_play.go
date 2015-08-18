@@ -408,6 +408,16 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 // Saves the given match and result to the database, supplanting any previous result for the match.
 func CommitMatchScore(match *Match, matchResult *MatchResult) error {
+	if matchResult.RedScore.CoopertitionSet != matchResult.BlueScore.CoopertitionSet ||
+		matchResult.RedScore.CoopertitionStack != matchResult.BlueScore.CoopertitionStack {
+		// Don't accept the score if the red and blue co-opertition points don't match up.
+		return fmt.Errorf("Red and blue co-opertition points don't match.")
+	}
+
+	// Remove empty stacks to make the results more concise.
+	matchResult.RedScore.Stacks = stripEmptyStacks(matchResult.RedScore.Stacks)
+	matchResult.BlueScore.Stacks = stripEmptyStacks(matchResult.BlueScore.Stacks)
+
 	if match.Type == "elimination" {
 		// Adjust the score if necessary for an elimination DQ or tie.
 		matchResult.CorrectEliminationScore()
@@ -571,4 +581,14 @@ func buildMatchPlayList(matchType string) (MatchPlayList, error) {
 	sort.Stable(matchPlayList)
 
 	return matchPlayList, nil
+}
+
+func stripEmptyStacks(stacks []Stack) []Stack {
+	var filteredStacks []Stack
+	for _, stack := range stacks {
+		if stack.Totes > 0 || stack.Container || stack.Litter {
+			filteredStacks = append(filteredStacks, stack)
+		}
+	}
+	return filteredStacks
 }

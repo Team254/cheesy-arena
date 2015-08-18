@@ -13,16 +13,12 @@ $("form").submit(function() {
 
   var redScoreJson = JSON.stringify(allianceResults["red"].score);
   var blueScoreJson = JSON.stringify(allianceResults["blue"].score);
-  var redFoulsJson = JSON.stringify(allianceResults["red"].fouls);
-  var blueFoulsJson = JSON.stringify(allianceResults["blue"].fouls);
   var redCardsJson = JSON.stringify(allianceResults["red"].cards);
   var blueCardsJson = JSON.stringify(allianceResults["blue"].cards);
 
   // Inject the JSON data into the form as hidden inputs.
   $("<input />").attr("type", "hidden").attr("name", "redScoreJson").attr("value", redScoreJson).appendTo("form");
   $("<input />").attr("type", "hidden").attr("name", "blueScoreJson").attr("value", blueScoreJson).appendTo("form");
-  $("<input />").attr("type", "hidden").attr("name", "redFoulsJson").attr("value", redFoulsJson).appendTo("form");
-  $("<input />").attr("type", "hidden").attr("name", "blueFoulsJson").attr("value", blueFoulsJson).appendTo("form");
   $("<input />").attr("type", "hidden").attr("name", "redCardsJson").attr("value", redCardsJson).appendTo("form");
   $("<input />").attr("type", "hidden").attr("name", "blueCardsJson").attr("value", blueCardsJson).appendTo("form");
 
@@ -36,47 +32,25 @@ var renderResults = function(alliance) {
   $("#" + alliance + "Score").html(scoreContent);
 
   // Set the values of the form fields from the JSON results data.
-  $("select[name=" + alliance + "AutoMobilityBonuses]").val(result.score.AutoMobilityBonuses);
-  $("input[name=" + alliance + "AutoHighHot]").val(result.score.AutoHighHot);
-  $("input[name=" + alliance + "AutoHigh]").val(result.score.AutoHigh);
-  $("input[name=" + alliance + "AutoLowHot]").val(result.score.AutoLowHot);
-  $("input[name=" + alliance + "AutoLow]").val(result.score.AutoLow);
-  $("input[name=" + alliance + "AutoClearHigh]").val(result.score.AutoClearHigh);
-  $("input[name=" + alliance + "AutoClearLow]").val(result.score.AutoClearLow);
+  $("input[name=" + alliance + "AutoRobotSet]").prop("checked", result.score.AutoRobotSet);
+  $("input[name=" + alliance + "AutoContainerSet]").prop("checked", result.score.AutoContainerSet);
+  $("input[name=" + alliance + "AutoToteSet]").prop("checked", result.score.AutoToteSet);
+  $("input[name=" + alliance + "AutoStackedToteSet]").prop("checked", result.score.AutoStackedToteSet);
+  $("input[name=" + alliance + "CoopertitionSet]").prop("checked", result.score.CoopertitionSet);
+  $("input[name=" + alliance + "CoopertitionStack]").prop("checked", result.score.CoopertitionStack);
 
-  if (result.score.Cycles != null) {
-    $.each(result.score.Cycles, function(k, v) {
-      $("#" + alliance + "Cycle" + k + "Title").text("Cycle " + (k + 1));
-      $("input[name=" + alliance + "Cycle" + k + "Assists][value=" + v.Assists + "]").prop("checked", true);
-
-      var trussCatch;
-      if (v.Truss && v.Catch) {
-        trussCatch = "TC";
-      } else if (v.Truss) {
-        trussCatch = "T";
-      } else {
-        trussCatch = "N";
-      }
-      $("input[name=" + alliance + "Cycle" + k + "TrussCatch][value=" + trussCatch + "]").prop("checked", true);
-
-      var cycleEnd;
-      if (v.ScoredHigh) {
-        cycleEnd = "SH";
-      } else if (v.ScoredLow) {
-        cycleEnd = "SL";
-      } else if (v.DeadBall) {
-        cycleEnd = "DB";
-      } else {
-        cycleEnd = "DE";
-      }
-      $("input[name=" + alliance + "Cycle" + k + "End][value=" + cycleEnd + "]").prop("checked", true);
+  if (result.score.Stacks != null) {
+    $.each(result.score.Stacks, function(k, v) {
+      $("#" + alliance + "Stack" + k + "Title").text("Stack " + (k + 1));
+      $("input[name=" + alliance + "Stack" + k + "Totes]").val(v.Totes);
+      $("input[name=" + alliance + "Stack" + k + "Container]").prop("checked", v.Container);
+      $("input[name=" + alliance + "Stack" + k + "Litter]").prop("checked", v.Litter);
     });
   }
 
-  if (result.fouls != null) {
-    $.each(result.fouls, function(k, v) {
+  if (result.score.Fouls != null) {
+    $.each(result.score.Fouls, function(k, v) {
       $("input[name=" + alliance + "Foul" + k + "Team][value=" + v.TeamId + "]").prop("checked", true);
-      $("input[name=" + alliance + "Foul" + k + "Tech][value=" + v.IsTechnical + "]").prop("checked", true);
       $("input[name=" + alliance + "Foul" + k + "Rule]").val(v.Rule);
       $("input[name=" + alliance + "Foul" + k + "Time]").val(v.TimeInMatchSec);
     });
@@ -97,45 +71,28 @@ var updateResults = function(alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.AutoMobilityBonuses = parseInt(formData[alliance + "AutoMobilityBonuses"]);
-  result.score.AutoHighHot = parseInt(formData[alliance + "AutoHighHot"]);
-  result.score.AutoHigh = parseInt(formData[alliance + "AutoHigh"]);
-  result.score.AutoLowHot = parseInt(formData[alliance + "AutoLowHot"]);
-  result.score.AutoLow = parseInt(formData[alliance + "AutoLow"]);
-  result.score.AutoClearHigh = parseInt(formData[alliance + "AutoClearHigh"]);
-  result.score.AutoClearLow = parseInt(formData[alliance + "AutoClearLow"]);
+  result.score.AutoRobotSet = formData[alliance + "AutoRobotSet"] == "on";
+  result.score.AutoContainerSet = formData[alliance + "AutoContainerSet"] == "on";
+  result.score.AutoToteSet = formData[alliance + "AutoToteSet"] == "on";
+  result.score.AutoStackedToteSet = formData[alliance + "AutoStackedToteSet"] == "on";
+  result.score.CoopertitionSet = formData[alliance + "CoopertitionSet"] == "on";
+  result.score.CoopertitionStack = formData[alliance + "CoopertitionStack"] == "on";
 
-  result.score.Cycles = [];
-  for (var i = 0; formData[alliance + "Cycle" + i + "Assists"]; i++) {
-    var prefix = alliance + "Cycle" + i;
-    var cycle = {Assists: parseInt(formData[prefix + "Assists"]), Truss: false, Catch: false,
-                 ScoredHigh: false, ScoredLow: false, DeadBall: false}
-    switch (formData[prefix + "TrussCatch"]) {
-      case "TC":
-        cycle.Catch = true;
-      case "T":
-        cycle.Truss = true;
-    }
-    switch (formData[prefix + "End"]) {
-      case "SH":
-        cycle.ScoredHigh = true;
-        break;
-      case "SL":
-        cycle.ScoredLow = true;
-        break;
-      case "DB":
-        cycle.DeadBall = true;
-    }
-    result.score.Cycles.push(cycle);
+  result.score.Stacks = [];
+  for (var i = 0; formData[alliance + "Stack" + i + "Totes"]; i++) {
+    var prefix = alliance + "Stack" + i;
+    var stack = {Totes: parseInt(formData[prefix + "Totes"]),
+        Container: formData[prefix + "Container"] == "on",
+        Noodle: formData[prefix + "Litter"] == "on"}
+    result.score.Stacks.push(stack);
   }
 
-  result.fouls = [];
-  for (var i = 0; formData[alliance + "Foul" + i + "Tech"]; i++) {
+  result.score.Fouls = [];
+  for (var i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {
     var prefix = alliance + "Foul" + i;
     var foul = {TeamId: parseInt(formData[prefix + "Team"]), Rule: formData[prefix + "Rule"],
-                TimeInMatchSec: parseFloat(formData[prefix + "Time"]),
-                IsTechnical: (formData[prefix + "Tech"] == "true")};
-    result.fouls.push(foul);
+                TimeInMatchSec: parseFloat(formData[prefix + "Time"])};
+    result.score.Fouls.push(foul);
   }
 
   result.cards = {};
@@ -144,20 +101,19 @@ var updateResults = function(alliance) {
   });
 }
 
-// Appends a blank cycle to the end of the list.
-var addCycle = function(alliance) {
+// Appends a blank stack to the end of the list.
+var addStack = function(alliance) {
   updateResults(alliance);
   var result = allianceResults[alliance];
-  result.score.Cycles.push({Assists: 1, Truss: false, Catch: false, ScoredHigh: false, ScoredLow: false,
-                            DeadBall: false})
+  result.score.Stacks.push({Totes: 0, Container: false, Litter: false})
   renderResults(alliance);
 }
 
-// Removes the given cycle from the list.
-var deleteCycle = function(alliance, index) {
+// Removes the given stack from the list.
+var deleteStack = function(alliance, index) {
   updateResults(alliance);
   var result = allianceResults[alliance];
-  result.score.Cycles.splice(index, 1);
+  result.score.Stacks.splice(index, 1);
   renderResults(alliance);
 }
 
@@ -165,7 +121,7 @@ var deleteCycle = function(alliance, index) {
 var addFoul = function(alliance) {
   updateResults(alliance);
   var result = allianceResults[alliance];
-  result.fouls.push({TeamId: 0, Rule: "", TimeInMatchSec: 0, IsTechnical: false})
+  result.score.Fouls.push({TeamId: 0, Rule: "", TimeInMatchSec: 0})
   renderResults(alliance);
 }
 
@@ -173,6 +129,6 @@ var addFoul = function(alliance) {
 var deleteFoul = function(alliance, index) {
   updateResults(alliance);
   var result = allianceResults[alliance];
-  result.fouls.splice(index, 1);
+  result.score.Fouls.splice(index, 1);
   renderResults(alliance);
 }
