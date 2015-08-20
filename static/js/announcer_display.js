@@ -6,6 +6,14 @@
 var websocket;
 var teamTemplate = Handlebars.compile($("#teamTemplate").html());
 var matchResultTemplate = Handlebars.compile($("#matchResultTemplate").html());
+Handlebars.registerHelper("eachMapEntry", function(context, options) {
+  var ret = "";
+  $.each(context, function(key, value) {
+    var entry = {"key": key, "value": value};
+    ret = ret + options.fn(entry);
+  });
+  return ret;
+});
 
 // Handles a websocket message to hide the score dialog once the next match is being introduced.
 var handleSetAudienceDisplay = function(targetScreen) {
@@ -42,10 +50,11 @@ var handleRealtimeScore = function(data) {
 
 // Handles a websocket message to populate the final score data.
 var handleSetFinalScore = function(data) {
-console.log(data);
   $("#scoreMatchName").text(data.MatchType + " Match " + data.MatchDisplayName);
-  $("#redScoreDetails").html(matchResultTemplate({score: data.RedScoreSummary, fouls: data.RedFouls}));
-  $("#blueScoreDetails").html(matchResultTemplate({score: data.BlueScoreSummary, fouls: data.BlueFouls}));
+  $("#redScoreDetails").html(matchResultTemplate({score: data.RedScoreSummary, fouls: data.RedFouls,
+      cards: data.RedCards}));
+  $("#blueScoreDetails").html(matchResultTemplate({score: data.BlueScoreSummary, fouls: data.BlueFouls,
+      cards: data.BlueCards}));
   $("#matchResult").modal("show");
 };
 

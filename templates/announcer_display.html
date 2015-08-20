@@ -66,20 +66,20 @@
     <div class="col-lg-2">{{"{{score.AutoPoints}}"}}</div>
   </div>
   <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Teleop Points</div>
-    <div class="col-lg-2">{{"{{score.TeleopPoints}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Container Points</div>
+    <div class="col-lg-2">{{"{{score.ContainerPoints}}"}}</div>
   </div>
   <div class="row">
-    <div class="col-lg-6 col-lg-offset-2 control-label">Assist Points</div>
-    <div class="col-lg-2">{{"{{score.AssistPoints}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Tote Points</div>
+    <div class="col-lg-2">{{"{{score.TotePoints}}"}}</div>
   </div>
   <div class="row">
-    <div class="col-lg-6 col-lg-offset-2 control-label">Truss/Catch Points</div>
-    <div class="col-lg-2">{{"{{score.TrussCatchPoints}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Litter Points</div>
+    <div class="col-lg-2">{{"{{score.LitterPoints}}"}}</div>
   </div>
   <div class="row">
-    <div class="col-lg-6 col-lg-offset-2 control-label">Goal Points</div>
-    <div class="col-lg-2">{{"{{score.GoalPoints}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Coopertition Points</div>
+    <div class="col-lg-2">{{"{{score.CoopertitionPoints}}"}}</div>
   </div>
   <div class="row">
     <div class="col-lg-7 col-lg-offset-1 control-label">Foul Points</div>
@@ -92,11 +92,19 @@
   <h4>Fouls</h4>
   {{"{{#each fouls}}"}}
     <div class="row">
-      <div class="col-lg-4 col-lg-offset-1">{{"{{#if IsTechnical}}"}}Tech {{"{{/if}}"}}Foul</div>
-      <div class="col-lg-3">{{"{{TeamId}}"}}</div>
-      <div class="col-lg-3">{{"{{Rule}}"}}</div>
+      <div class="col-lg-3 col-lg-offset-1">Team {{"{{TeamId}}"}}</div>
+      <div class="col-lg-3 col-lg-offset-1">{{"{{Rule}}"}}</div>
     </div>
   {{"{{/each}}"}}
+  <h4>Cards</h4>
+  {{"{{#eachMapEntry cards}}"}}
+    {{"{{#if this.value}}"}}
+      <div class="row">
+        <div class="col-lg-3 col-lg-offset-1">Team {{"{{this.key}}"}}</div>
+        <div class="col-lg-3 col-lg-offset-1" style="text-transform: capitalize;">{{"{{this.value}}"}}</div>
+      </div>
+    {{"{{/if}}"}}
+  {{"{{/eachMapEntry}}"}}
 </script>
 {{end}}
 {{define "script"}}

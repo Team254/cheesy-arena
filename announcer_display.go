@@ -144,9 +144,12 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					BlueScoreSummary *ScoreSummary
 					RedFouls         []Foul
 					BlueFouls        []Foul
+					RedCards         map[string]string
+					BlueCards        map[string]string
 				}{mainArena.savedMatch.CapitalizedType(), mainArena.savedMatch.DisplayName,
 					mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary(),
-					mainArena.savedMatchResult.RedScore.Fouls, mainArena.savedMatchResult.BlueScore.Fouls}
+					mainArena.savedMatchResult.RedScore.Fouls, mainArena.savedMatchResult.BlueScore.Fouls,
+					mainArena.savedMatchResult.RedCards, mainArena.savedMatchResult.BlueCards}
 			case _, ok := <-audienceDisplayListener:
 				if !ok {
 					return
