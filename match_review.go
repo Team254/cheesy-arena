@@ -66,7 +66,7 @@ func MatchReviewHandler(w http.ResponseWriter, r *http.Request) {
 
 // Shows the page to edit the results for a match.
 func MatchReviewEditGetHandler(w http.ResponseWriter, r *http.Request) {
-	match, matchResult, err := getMatchResultFromRequest(r)
+	match, matchResult, _, err := getMatchResultFromRequest(r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -96,7 +96,7 @@ func MatchReviewEditGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // Updates the results for a match.
 func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
-	match, matchResult, err := getMatchResultFromRequest(r)
+	match, matchResult, isCurrent, err := getMatchResultFromRequest(r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -114,36 +114,52 @@ func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = CommitMatchScore(match, matchResult)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
+	if isCurrent {
+		// If editing the current match, just save it back to memory.
+		mainArena.redRealtimeScore.CurrentScore = matchResult.RedScore
+		mainArena.blueRealtimeScore.CurrentScore = matchResult.BlueScore
+		mainArena.redRealtimeScore.Cards = matchResult.RedCards
+		mainArena.blueRealtimeScore.Cards = matchResult.BlueCards
 
-	http.Redirect(w, r, "/match_review", 302)
+		http.Redirect(w, r, "/match_play", 302)
+	} else {
+		err = CommitMatchScore(match, matchResult, false)
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+
+		http.Redirect(w, r, "/match_review", 302)
+	}
 }
 
 // Load the match result for the match referenced in the HTTP query string.
-func getMatchResultFromRequest(r *http.Request) (*Match, *MatchResult, error) {
+func getMatchResultFromRequest(r *http.Request) (*Match, *MatchResult, bool, error) {
 	vars := mux.Vars(r)
+
+	// If editing the current match, get it from memory instead of the DB.
+	if vars["matchId"] == "current" {
+		return mainArena.currentMatch, GetCurrentMatchResult(), true, nil
+	}
+
 	matchId, _ := strconv.Atoi(vars["matchId"])
 	match, err := db.GetMatchById(matchId)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 	if match == nil {
-		return nil, nil, fmt.Errorf("Error: No such match: %d", matchId)
+		return nil, nil, false, fmt.Errorf("Error: No such match: %d", matchId)
 	}
 	matchResult, err := db.GetMatchResultForMatch(matchId)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, false, err
 	}
 	if matchResult == nil {
 		// We're scoring a match that hasn't been played yet, but that's okay.
 		matchResult = NewMatchResult()
 	}
 
-	return match, matchResult, nil
+	return match, matchResult, false, nil
 }
 
 // Constructs the list of matches to display in the match review interface.

@@ -83,7 +83,7 @@ var updateResults = function(alliance) {
     var prefix = alliance + "Stack" + i;
     var stack = {Totes: parseInt(formData[prefix + "Totes"]),
         Container: formData[prefix + "Container"] == "on",
-        Noodle: formData[prefix + "Litter"] == "on"}
+        Litter: formData[prefix + "Litter"] == "on"}
     result.score.Stacks.push(stack);
   }
 

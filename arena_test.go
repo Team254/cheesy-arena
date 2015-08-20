@@ -460,7 +460,7 @@ func TestSubstituteTeam(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 107, mainArena.currentMatch.Red1)
 	assert.Equal(t, 107, mainArena.AllianceStations["R1"].team.Id)
-	CommitMatchScore(mainArena.currentMatch, &MatchResult{MatchId: mainArena.currentMatch.Id})
+	CommitMatchScore(mainArena.currentMatch, &MatchResult{MatchId: mainArena.currentMatch.Id}, false)
 	match2, _ := db.GetMatchById(match.Id)
 	assert.Equal(t, 107, match2.Red1)
 

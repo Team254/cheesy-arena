@@ -407,7 +407,7 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Saves the given match and result to the database, supplanting any previous result for the match.
-func CommitMatchScore(match *Match, matchResult *MatchResult) error {
+func CommitMatchScore(match *Match, matchResult *MatchResult, loadToShowBuffer bool) error {
 	if matchResult.RedScore.CoopertitionSet != matchResult.BlueScore.CoopertitionSet ||
 		matchResult.RedScore.CoopertitionStack != matchResult.BlueScore.CoopertitionStack {
 		// Don't accept the score if the red and blue co-opertition points don't match up.
@@ -423,10 +423,12 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 		matchResult.CorrectEliminationScore()
 	}
 
-	// Store the result in the buffer to be shown in the audience display.
-	mainArena.savedMatch = match
-	mainArena.savedMatchResult = matchResult
-	mainArena.scorePostedNotifier.Notify(nil)
+	if loadToShowBuffer {
+		// Store the result in the buffer to be shown in the audience display.
+		mainArena.savedMatch = match
+		mainArena.savedMatchResult = matchResult
+		mainArena.scorePostedNotifier.Notify(nil)
+	}
 
 	if match.Type == "test" {
 		// Do nothing since this is a test match and doesn't exist in the database.
@@ -520,12 +522,15 @@ func CommitMatchScore(match *Match, matchResult *MatchResult) error {
 	return nil
 }
 
-// Saves the realtime result as the final score for the match currently loaded into the arena.
-func CommitCurrentMatchScore() error {
-	matchResult := MatchResult{MatchId: mainArena.currentMatch.Id,
+func GetCurrentMatchResult() *MatchResult {
+	return &MatchResult{MatchId: mainArena.currentMatch.Id,
 		RedScore: mainArena.redRealtimeScore.CurrentScore, BlueScore: mainArena.blueRealtimeScore.CurrentScore,
 		RedCards: mainArena.redRealtimeScore.Cards, BlueCards: mainArena.blueRealtimeScore.Cards}
-	return CommitMatchScore(mainArena.currentMatch, &matchResult)
+}
+
+// Saves the realtime result as the final score for the match currently loaded into the arena.
+func CommitCurrentMatchScore() error {
+	return CommitMatchScore(mainArena.currentMatch, GetCurrentMatchResult(), true)
 }
 
 // Helper function to implement the required interface for Sort.

@@ -74,7 +74,8 @@
   background-color: #fc0;
 }
 .btn-match-play {
-  width: 165px;
+  width: 150px;
+  font-size: 16px;
 }
 .label-scoring {
   background-color: #e66;

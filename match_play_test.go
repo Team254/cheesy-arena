@@ -149,7 +149,7 @@ func TestCommitMatch(t *testing.T) {
 
 	// Committing test match should do nothing.
 	match := &Match{Id: 0, Type: "test", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
-	err = CommitMatchScore(match, &MatchResult{MatchId: match.Id})
+	err = CommitMatchScore(match, &MatchResult{MatchId: match.Id}, false)
 	assert.Nil(t, err)
 	matchResult, err := db.GetMatchResultForMatch(match.Id)
 	assert.Nil(t, err)
@@ -160,19 +160,19 @@ func TestCommitMatch(t *testing.T) {
 	match.Type = "qualification"
 	db.CreateMatch(match)
 	matchResult = &MatchResult{MatchId: match.Id, BlueScore: Score{AutoRobotSet: true}}
-	err = CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, matchResult.PlayNumber)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "B", match.Winner)
 	matchResult = &MatchResult{MatchId: match.Id, RedScore: Score{AutoRobotSet: true}}
-	err = CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, matchResult.PlayNumber)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "R", match.Winner)
 	matchResult = &MatchResult{MatchId: match.Id}
-	err = CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 3, matchResult.PlayNumber)
 	match, _ = db.GetMatchById(1)
@@ -183,7 +183,7 @@ func TestCommitMatch(t *testing.T) {
 	eventSettings.TbaPublishingEnabled = true
 	var writer bytes.Buffer
 	log.SetOutput(&writer)
-	err = CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous publishing to happen.
 	assert.Contains(t, writer.String(), "Failed to publish matches")
@@ -203,13 +203,13 @@ func TestCommitEliminationTie(t *testing.T) {
 	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	db.CreateMatch(match)
 	matchResult := &MatchResult{MatchId: match.Id, RedScore: Score{AutoToteSet: true, Fouls: []Foul{Foul{}}}}
-	err = CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner)
 	match.Type = "elimination"
 	db.SaveMatch(match)
-	CommitMatchScore(match, matchResult)
+	CommitMatchScore(match, matchResult, false)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner) // No elimination tiebreakers in 2015.
 }
@@ -230,21 +230,21 @@ func TestCommitCards(t *testing.T) {
 	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	db.CreateMatch(match)
 	matchResult := &MatchResult{MatchId: match.Id, BlueCards: map[string]string{"5": "yellow"}}
-	err = CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	team, _ = db.GetTeamById(5)
 	assert.True(t, team.YellowCard)
 
 	// Check that editing a match result removes a yellow card from a team.
 	matchResult = &MatchResult{MatchId: match.Id}
-	err = CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	team, _ = db.GetTeamById(5)
 	assert.False(t, team.YellowCard)
 
 	// Check that a red card causes a yellow card to stick with a team.
 	matchResult = &MatchResult{MatchId: match.Id, BlueCards: map[string]string{"5": "red"}}
-	err = CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	team, _ = db.GetTeamById(5)
 	assert.True(t, team.YellowCard)
@@ -255,7 +255,7 @@ func TestCommitCards(t *testing.T) {
 	db.SaveMatch(match)
 	*matchResult = buildTestMatchResult(match.Id, 10)
 	matchResult.RedCards = map[string]string{"1": "red"}
-	err = CommitMatchScore(match, matchResult)
+	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 0, matchResult.RedScoreSummary().Score)
 	assert.Equal(t, 104, matchResult.BlueScoreSummary().Score)

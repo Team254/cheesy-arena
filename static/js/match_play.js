@@ -106,6 +106,7 @@ var handleStatus = function(data) {
       $("#abortMatch").prop("disabled", true);
       $("#commitResults").prop("disabled", true);
       $("#discardResults").prop("disabled", true);
+      $("#editResults").prop("disabled", true);
       break;
     case "START_MATCH":
     case "AUTO_PERIOD":
@@ -116,12 +117,14 @@ var handleStatus = function(data) {
       $("#abortMatch").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
       $("#discardResults").prop("disabled", true);
+      $("#editResults").prop("disabled", true);
       break;
     case "POST_MATCH":
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
       $("#commitResults").prop("disabled", false);
       $("#discardResults").prop("disabled", false);
+      $("#editResults").prop("disabled", false);
       break;
   }
 };
