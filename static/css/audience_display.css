@@ -90,13 +90,8 @@ html {
   text-align: center;
   font-family: "FuturaLTBold";
   font-size: 55px;
-  line-height: 80px;
+  line-height: 104px;
   color: #fff;
-  opacity: 0;
-}
-.score-fields {
-  padding: 0px 15px;
-  margin: -10px 0px;
   opacity: 0;
 }
 .assist {
@@ -120,11 +115,11 @@ html {
 #logo {
   position: relative;
   top: 35px;
-  height: 70px;
+  height: 65px;
 }
 #matchTime {
   position: relative;
-  top: 7px;
+  top: 18px;
   height: 60px;
   color: #000;
   font-family: "FuturaLTBold";
@@ -195,8 +190,8 @@ html {
 }
 #blindsLogo {
   position: relative;
-  top: 70px;
-  height: 150px;
+  top: 75px;
+  height: 130px;
 }
 #finalScore {
   position: fixed;
@@ -262,7 +257,7 @@ html {
   background-color: #fff;
   color: #000;
   font-family: "FuturaLT";
-  font-size: 30px;
+  font-size: 24px;
 }
 #redFinalBreakdown {
   clear: left;

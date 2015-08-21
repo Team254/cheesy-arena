@@ -59,6 +59,7 @@ type ScoreSummary struct {
 	ContainerPoints    int
 	TotePoints         int
 	LitterPoints       int
+	StackPoints        int
 	FoulPoints         int
 	Score              int
 }
@@ -190,6 +191,7 @@ func scoreSummary(score *Score) *ScoreSummary {
 			}
 		}
 	}
+	summary.StackPoints = summary.ContainerPoints + summary.TotePoints + summary.LitterPoints
 	if score.CoopertitionStack {
 		summary.CoopertitionPoints = 40
 	} else if score.CoopertitionSet {
@@ -197,8 +199,7 @@ func scoreSummary(score *Score) *ScoreSummary {
 	}
 	summary.FoulPoints = 6 * len(score.Fouls)
 
-	summary.Score = summary.CoopertitionPoints + summary.AutoPoints + summary.ContainerPoints +
-		summary.TotePoints + summary.LitterPoints - summary.FoulPoints
+	summary.Score = summary.AutoPoints + summary.StackPoints + summary.CoopertitionPoints - summary.FoulPoints
 
 	return summary
 }
