@@ -93,6 +93,8 @@ func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
 func (match *Match) CapitalizedType() string {
 	if match.Type == "" {
 		return ""
+	} else if match.Type == "elimination" {
+		return "Playoff"
 	}
 	return strings.ToUpper(match.Type[0:1]) + match.Type[1:]
 }

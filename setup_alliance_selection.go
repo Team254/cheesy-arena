@@ -141,7 +141,7 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	location, _ := time.LoadLocation("Local")
 	startTime, err := time.ParseInLocation("2006-01-02 03:04:05 PM", r.PostFormValue("startTime"), location)
 	if err != nil {
-		renderAllianceSelection(w, r, "Must specify a valid start time for the elimination rounds.")
+		renderAllianceSelection(w, r, "Must specify a valid start time for the playoff rounds.")
 		return
 	}
 
