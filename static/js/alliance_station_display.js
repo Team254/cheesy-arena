@@ -41,13 +41,22 @@ var handleSetMatch = function(data) {
   }
 
   if (allianceStation != "") {
-    team = data.Teams[allianceStation];
+    var team = data.Teams[allianceStation];
     if (team) {
       $("#teamNumber").text(team.Id);
-      $("#teamName").attr("data-alliance-bg", allianceStation[0]).text(team.Nickname);
+      $("#teamNameText").attr("data-alliance-bg", allianceStation[0]).text(team.Nickname);
+
+      var ranking = data.Rankings[team.Id];
+      if (ranking) {
+        var rankingText = ranking.Rank + "-" + ranking.QualificationAverage;
+        $("#teamRank").attr("data-alliance-bg", allianceStation[0]).text(rankingText);
+      } else {
+        $("#teamRank").attr("data-alliance-bg", allianceStation[0]).text("");
+      }
     } else {
       $("#teamNumber").text("");
-      $("#teamName").attr("data-alliance-bg", allianceStation[0]).text("");
+      $("#teamNameText").attr("data-alliance-bg", allianceStation[0]).text("");
+      $("#teamRank").attr("data-alliance-bg", allianceStation[0]).text("");
     }
   } else {
     $("body").attr("data-mode", "displayId");
@@ -58,9 +67,9 @@ var handleSetMatch = function(data) {
 var handleStatus = function(data) {
   stationStatus = data.AllianceStations[allianceStation];
   var blink = false;
-  if (stationStatus.Bypass) {
+  if (stationStatus && stationStatus.Bypass) {
     $("#match").attr("data-status", "bypass");
-  } else if (stationStatus.DsConn) {
+  } else if (stationStatus && stationStatus.DsConn) {
     if (!stationStatus.DsConn.DriverStationStatus.DsLinked) {
       $("#match").attr("data-status", allianceStation[0]);
     } else if (!stationStatus.DsConn.DriverStationStatus.RobotLinked) {

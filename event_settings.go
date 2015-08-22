@@ -15,7 +15,6 @@ type EventSettings struct {
 	SelectionRound3Order       string
 	TBADownloadEnabled         bool
 	TBAAwardsDownloadEnabled   bool
-	AllianceDisplayHotGoals    bool
 	RedGoalLightsAddress       string
 	BlueGoalLightsAddress      string
 	TbaPublishingEnabled       bool

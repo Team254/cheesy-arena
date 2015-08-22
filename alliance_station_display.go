@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"text/template"
 )
 
@@ -54,6 +55,12 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		station = ""
 		mainArena.allianceStationDisplays[displayId] = station
 	}
+	rankings := make(map[string]*Ranking)
+	for _, allianceStation := range mainArena.AllianceStations {
+		if allianceStation.team != nil {
+			rankings[strconv.Itoa(allianceStation.team.Id)], _ = db.GetRankingForTeam(allianceStation.team.Id)
+		}
+	}
 
 	allianceStationDisplayListener := mainArena.allianceStationDisplayNotifier.Listen()
 	defer close(allianceStationDisplayListener)
@@ -88,10 +95,11 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	data = struct {
 		AllianceStation string
 		Teams           map[string]*Team
+		Rankings		map[string]*Ranking
 	}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].team,
 		"R2": mainArena.AllianceStations["R2"].team, "R3": mainArena.AllianceStations["R3"].team,
 		"B1": mainArena.AllianceStations["B1"].team, "B2": mainArena.AllianceStations["B2"].team,
-		"B3": mainArena.AllianceStations["B3"].team}}
+		"B3": mainArena.AllianceStations["B3"].team}, rankings}
 	err = websocket.Write("setMatch", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -126,13 +134,20 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				}
 				messageType = "setMatch"
 				station = mainArena.allianceStationDisplays[displayId]
+				rankings := make(map[string]*Ranking)
+				for _, allianceStation := range mainArena.AllianceStations {
+					if allianceStation.team != nil {
+						rankings[strconv.Itoa(allianceStation.team.Id)], _ = db.GetRankingForTeam(allianceStation.team.Id)
+					}
+				}
 				message = struct {
 					AllianceStation string
 					Teams           map[string]*Team
-				}{station, map[string]*Team{station: mainArena.AllianceStations["R1"].team,
+					Rankings		map[string]*Ranking
+				}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].team,
 					"R2": mainArena.AllianceStations["R2"].team, "R3": mainArena.AllianceStations["R3"].team,
 					"B1": mainArena.AllianceStations["B1"].team, "B2": mainArena.AllianceStations["B2"].team,
-					"B3": mainArena.AllianceStations["B3"].team}}
+					"B3": mainArena.AllianceStations["B3"].team}, rankings}
 			case _, ok := <-robotStatusListener:
 				if !ok {
 					return

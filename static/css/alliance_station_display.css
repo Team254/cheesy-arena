@@ -137,6 +137,9 @@ body[data-position=right] #inMatch #blueScore {
   font-family: "FuturaLTBold";
   display: none;
 }
+#preMatch sub {
+  font-size: 50px;
+}
 #match[data-status=bypass] #disabled {
   display: block;
 }
