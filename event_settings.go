@@ -6,28 +6,28 @@
 package main
 
 type EventSettings struct {
-	Id                       int
-	Name                     string
-	Code                     string
-	DisplayBackgroundColor   string
-	NumElimAlliances         int
-	SelectionRound2Order     string
-	SelectionRound3Order     string
-	TBADownloadEnabled       bool
-	TBAAwardsDownloadEnabled bool
-	AllianceDisplayHotGoals  bool
-	RedGoalLightsAddress     string
-	BlueGoalLightsAddress    string
-	TbaPublishingEnabled     bool
-	TbaEventCode             string
-	TbaSecretId              string
-	TbaSecret                string
-	NetworkSecurityEnabled   bool
-	ApAddress                string
-	ApUsername               string
-	ApPassword               string
-	SwitchAddress            string
-	SwitchPassword           string
+	Id                         int
+	Name                       string
+	Code                       string
+	DisplayBackgroundColor     string
+	NumElimAlliances           int
+	SelectionRound2Order       string
+	SelectionRound3Order       string
+	TBADownloadEnabled         bool
+	TBAAwardsDownloadEnabled   bool
+	AllianceDisplayHotGoals    bool
+	RedGoalLightsAddress       string
+	BlueGoalLightsAddress      string
+	TbaPublishingEnabled       bool
+	TbaEventCode               string
+	TbaSecretId                string
+	TbaSecret                  string
+	NetworkSecurityEnabled     bool
+	ApAddress                  string
+	ApUsername                 string
+	ApPassword                 string
+	SwitchAddress              string
+	SwitchPassword             string
 	BandwidthMonitoringEnabled bool
 }
 
