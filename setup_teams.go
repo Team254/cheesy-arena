@@ -6,24 +6,20 @@
 package main
 
 import (
-	"encoding/csv"
+	"bytes"
 	"fmt"
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
-	"html"
 	"html/template"
-	"io"
-	"io/ioutil"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const wpaKeyLength = 8
 
-var officialTeamInfoUrl = "https://my.usfirst.org/frc/scoring/index.lasso?page=teamlist"
-var officialTeamInfo map[int][]string
+var officialTeamInfoUrl = "http://www.thebluealliance.com/api/v2/team/"
 
 // Shows the team list.
 func TeamsGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -235,52 +231,42 @@ func canModifyTeamList() bool {
 
 // Returns the data for the given team number.
 func getOfficialTeamInfo(teamId int) (*Team, error) {
-	if officialTeamInfo == nil && eventSettings.TeamInfoDownloadEnabled {
-		// Download all team info from the FIRST website if it is not cached.
-		resp, err := http.Get(officialTeamInfoUrl)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		re := regexp.MustCompile("(?s).*<PRE>(.*)</PRE>.*")
-		teamsCsv := re.FindStringSubmatch(string(body))[1]
-
-		// Parse the tab-separated data.
-		reader := csv.NewReader(strings.NewReader(teamsCsv))
-		reader.Comma = '\t'
-		reader.FieldsPerRecord = -1
-		officialTeamInfo = make(map[int][]string)
-		reader.Read() // Ignore header line.
-		for {
-			fields, err := reader.Read()
-			if err == io.EOF {
-				break
-			} else if err != nil {
-				return nil, err
-			}
-			teamNumber, err := strconv.Atoi(fields[1])
-			if err != nil {
-				return nil, err
-			}
-			officialTeamInfo[teamNumber] = fields
-		}
-	}
-
-	teamData, ok := officialTeamInfo[teamId]
+	// Create the team variable that stores the result
 	var team Team
-	if ok {
-		rookieYear, _ := strconv.Atoi(teamData[8])
-		team = Team{Id: teamId, Name: html.UnescapeString(teamData[2]), Nickname: html.UnescapeString(teamData[7]),
-			City: html.UnescapeString(teamData[4]), StateProv: html.UnescapeString(teamData[5]),
-			Country: html.UnescapeString(teamData[6]), RookieYear: rookieYear,
-			RobotName: html.UnescapeString(teamData[9])}
+
+	// If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
+	if eventSettings.TBADownloadEnabled {
+		var tbaTeam *TbaTeam = getTeamFromTba(teamId)
+
+		// Check if the result is valid.  If a team is not found, just return a basic team
+		if tbaTeam == nil {
+			team = Team{Id: teamId}
+			return &team, nil
+		}
+
+		var recentAwards []TbaAward
+		if eventSettings.TBAAwardsDownloadEnabled {
+			recentAwards = getTeamAwardsFromTba(teamId)
+		}
+
+		var accomplishmentsBuffer bytes.Buffer
+
+		// Generate accomplishments string
+		for _, award := range recentAwards {
+			if time.Now().Year()-award.Year <= 2 {
+				accomplishmentsBuffer.WriteString(fmt.Sprint(award.Year, " - ", award.Name, "\n"))
+			}
+		}
+
+		// Use those variables to make a team object
+		team = Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname,
+			City: tbaTeam.Locality, StateProv: tbaTeam.Reigon,
+			Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear, Accomplishments: accomplishmentsBuffer.String()}
 	} else {
-		// If no team data exists, just fill in the team number.
+		// If team grab is disabled, just use the team number
 		team = Team{Id: teamId}
 	}
+
+	// Return the team object
 	return &team, nil
 }
