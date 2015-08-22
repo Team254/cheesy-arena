@@ -15,7 +15,10 @@ import (
 	"strconv"
 )
 
+// Distinct endpoints are necessary for testing.
 var tbaBaseUrl = "http://www.thebluealliance.com"
+var tbaTeamBaseUrl = tbaBaseUrl
+var tbaTeamAwardsBaseUrl = tbaBaseUrl
 
 // MODELS
 
@@ -71,38 +74,44 @@ type TbaAward struct {
 }
 
 // DATA RETRIEVAL
-func getTeamFromTba(teamNumber int) *TbaTeam {
-	url := fmt.Sprint("/api/v2/team/", string(getTbaTeam(teamNumber)))
-	resp, _ := getTbaRequest(url)
+func getTeamFromTba(teamNumber int) (*TbaTeam, error) {
+	url := fmt.Sprintf("%s/api/v2/team/%s", tbaTeamBaseUrl, getTbaTeam(teamNumber))
+	resp, err := getTbaRequest(url)
+	if err != nil {
+		return nil, err
+	}
 
 	// Get the response and handle errors
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	var teamData TbaTeam
-	json.Unmarshal(body, &teamData)
+	err = json.Unmarshal(body, &teamData)
 
-	return &teamData
+	return &teamData, err
 }
 
-func getTeamAwardsFromTba(teamNumber int) []TbaAward {
-	url := fmt.Sprint("/api/v2/team/", string(getTbaTeam(teamNumber)), "/history/awards")
-	resp, _ := getTbaRequest(url)
+func getTeamAwardsFromTba(teamNumber int) ([]TbaAward, error) {
+	url := fmt.Sprintf("%s/api/v2/team/%s/history/awards", tbaTeamAwardsBaseUrl, getTbaTeam(teamNumber))
+	resp, err := getTbaRequest(url)
+	if err != nil {
+		return nil, err
+	}
 
 	// Get the response and handle errors
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	var awardData []TbaAward
-	json.Unmarshal(body, &awardData)
+	err = json.Unmarshal(body, &awardData)
 
-	return awardData
+	return awardData, err
 }
 
 // PUBLISHING
@@ -212,7 +221,7 @@ func PublishRankings() error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"QS", "Assist", "Auto", "T&C", "G&F", "wins", "losses", "ties"}
+	breakdowns := []string{"QA", "Coopertition", "Auto", "Container", "Tote", "Litter"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.QualificationAverage,
@@ -290,10 +299,10 @@ func postTbaRequest(resource string, body []byte) (*http.Response, error) {
 }
 
 // Sends a GET request to the TBA API
-func getTbaRequest(path string) (*http.Response, error) {
+func getTbaRequest(url string) (*http.Response, error) {
 	// Make an HTTP GET request with the TBA auth headers
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", fmt.Sprint(tbaBaseUrl, path), nil)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}

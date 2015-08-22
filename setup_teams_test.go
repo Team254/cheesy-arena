@@ -26,14 +26,53 @@ func TestSetupTeams(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "0 teams")
 
 	// Mock the URL to download team info from.
-	teamInfoBody := "<PRE>\nID_team\tteam_number\tteam_name\tteam_name_short\tteam_city\tteam_stateprov\t" +
-		"team_country\tteam_nickname team_rookieyear robot_name\n1\t254\tNASA\tChezy\tThe Cheesy Poofs\t" +
-		"San Jose\tCA\tUSA\t1999\tBarrage\n</PRE>"
+	teamInfoBody := `{
+		"website": "http://www.team254.com",
+		"name": "NASA Ames Research Center",
+		"locality": "San Jose",
+		"rookie_year": 1999,
+		"region": "CA",
+		"team_number": 254,
+		"location": "San Jose, CA, USA",
+		"key": "frc254",
+		"country_name": "USA",
+		"nickname": "The Cheesy Poofs"
+	}`
 	teamInfoServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, teamInfoBody)
 	}))
 	defer teamInfoServer.Close()
-	officialTeamInfoUrl = teamInfoServer.URL
+	tbaTeamBaseUrl = teamInfoServer.URL
+
+	teamAwardsBody := `[{
+		"event_key": "2014cmp",
+		"award_type": 1,
+		"name": "Championship Winners",
+		"recipient_list": [
+		{
+			"team_number": 254,
+			"awardee": null
+		},
+		{
+			"team_number": 2848,
+			"awardee": null
+		},
+		{
+			"team_number": 469,
+			"awardee": null
+		},
+		{
+			"team_number": 74,
+			"awardee": null
+		}
+		],
+		"year": 2014
+	}]`
+	teamAwardsServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, teamAwardsBody)
+	}))
+	defer teamAwardsServer.Close()
+	tbaTeamAwardsBaseUrl = teamAwardsServer.URL
 
 	// Add some teams.
 	recorder = postHttpResponse("/setup/teams", "teamNumbers=254\r\nnotateam\r\n1114\r\n")

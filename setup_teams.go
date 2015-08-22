@@ -19,8 +19,6 @@ import (
 
 const wpaKeyLength = 8
 
-var officialTeamInfoUrl = "http://www.thebluealliance.com/api/v2/team/"
-
 // Shows the team list.
 func TeamsGetHandler(w http.ResponseWriter, r *http.Request) {
 	renderTeams(w, r, false)
@@ -236,7 +234,10 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 
 	// If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
 	if eventSettings.TBADownloadEnabled {
-		var tbaTeam *TbaTeam = getTeamFromTba(teamId)
+		tbaTeam, err := getTeamFromTba(teamId)
+		if err != nil {
+			return nil, err
+		}
 
 		// Check if the result is valid.  If a team is not found, just return a basic team
 		if tbaTeam == nil {
@@ -246,7 +247,10 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 
 		var recentAwards []TbaAward
 		if eventSettings.TBAAwardsDownloadEnabled {
-			recentAwards = getTeamAwardsFromTba(teamId)
+			recentAwards, err = getTeamAwardsFromTba(teamId)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		var accomplishmentsBuffer bytes.Buffer

@@ -95,7 +95,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	data = struct {
 		AllianceStation string
 		Teams           map[string]*Team
-		Rankings		map[string]*Ranking
+		Rankings        map[string]*Ranking
 	}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].team,
 		"R2": mainArena.AllianceStations["R2"].team, "R3": mainArena.AllianceStations["R3"].team,
 		"B1": mainArena.AllianceStations["B1"].team, "B2": mainArena.AllianceStations["B2"].team,
@@ -143,7 +143,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				message = struct {
 					AllianceStation string
 					Teams           map[string]*Team
-					Rankings		map[string]*Ranking
+					Rankings        map[string]*Ranking
 				}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].team,
 					"R2": mainArena.AllianceStations["R2"].team, "R3": mainArena.AllianceStations["R3"].team,
 					"B1": mainArena.AllianceStations["B1"].team, "B2": mainArena.AllianceStations["B2"].team,
