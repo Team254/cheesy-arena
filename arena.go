@@ -51,7 +51,6 @@ type RealtimeScore struct {
 	AutoCommitted   bool
 	TeleopCommitted bool
 	FoulsCommitted  bool
-	FieldReset      bool
 	undoScores      []Score
 }
 

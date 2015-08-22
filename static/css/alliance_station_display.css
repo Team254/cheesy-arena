@@ -16,7 +16,9 @@ body {
 body[data-mode=logo] {
   background-color: #fff;
 }
-
+body[data-mode=fieldReset] {
+  background-color: #0a3;
+}
 
 /* Switching Modes */
 .mode {
@@ -31,7 +33,9 @@ body[data-mode=logo] .mode#logo {
 body[data-mode=match] .mode#match {
   display: block;
 }
-
+body[data-mode=fieldReset] .mode#fieldReset {
+  display: block;
+}
 
 /* Logo Mode */
 #logo #logoImg {
@@ -57,6 +61,21 @@ body[data-mode=match] .mode#match {
   text-align: center;
   color: #ff0;
   font-size: 500px;
+}
+
+/* Field Reset Mode */
+#fieldReset {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65%;
+  line-height: 300px;
+  margin: auto auto;
+  text-align: center;
+  color: #fff;
+  font-size: 300px;
 }
 
 /* Match Mode */
@@ -152,3 +171,4 @@ body[data-position=right] #inMatch #blueScore {
 [data-alliance-bg=B], [data-status=B] {
   background-color: #00c;
 }
+

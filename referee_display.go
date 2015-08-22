@@ -209,8 +209,8 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				// Don't allow clearing the field until the match is over.
 				continue
 			}
-			mainArena.redRealtimeScore.FieldReset = true
-			mainArena.blueRealtimeScore.FieldReset = true
+			mainArena.allianceStationDisplayScreen = "fieldReset"
+			mainArena.allianceStationDisplayNotifier.Notify(nil)
 			continue // Don't reload.
 		case "commitMatch":
 			if mainArena.MatchState != POST_MATCH {
@@ -219,8 +219,8 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			mainArena.redRealtimeScore.FoulsCommitted = true
 			mainArena.blueRealtimeScore.FoulsCommitted = true
-			mainArena.redRealtimeScore.FieldReset = true
-			mainArena.blueRealtimeScore.FieldReset = true
+			mainArena.allianceStationDisplayScreen = "fieldReset"
+			mainArena.allianceStationDisplayNotifier.Notify(nil)
 			mainArena.scoringStatusNotifier.Notify(nil)
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
