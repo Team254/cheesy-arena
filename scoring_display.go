@@ -17,6 +17,10 @@ import (
 
 // Renders the scoring interface which enables input of scores in real-time.
 func ScoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	vars := mux.Vars(r)
 	alliance := vars["alliance"]
 	if alliance != "red" && alliance != "blue" {
@@ -42,6 +46,10 @@ func ScoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the scoring interface client to send control commands and receive status updates.
 func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	vars := mux.Vars(r)
 	alliance := vars["alliance"]
 	if alliance != "red" && alliance != "blue" {

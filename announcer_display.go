@@ -15,6 +15,10 @@ import (
 
 // Renders the announcer display which shows team info and scores for the current match.
 func AnnouncerDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	template := template.New("").Funcs(templateHelpers)
 	_, err := template.ParseFiles("templates/announcer_display.html", "templates/base.html")
 	if err != nil {
@@ -33,6 +37,10 @@ func AnnouncerDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the announcer display client to send control commands and receive status updates.
 func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	websocket, err := NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)

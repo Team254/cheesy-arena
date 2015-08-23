@@ -26,6 +26,10 @@ type MatchReviewListItem struct {
 
 // Shows the match review interface.
 func MatchReviewHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	practiceMatches, err := buildMatchReviewList("practice")
 	if err != nil {
 		handleWebErr(w, err)
@@ -66,6 +70,10 @@ func MatchReviewHandler(w http.ResponseWriter, r *http.Request) {
 
 // Shows the page to edit the results for a match.
 func MatchReviewEditGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	match, matchResult, _, err := getMatchResultFromRequest(r)
 	if err != nil {
 		handleWebErr(w, err)
@@ -96,6 +104,10 @@ func MatchReviewEditGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // Updates the results for a match.
 func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	match, matchResult, isCurrent, err := getMatchResultFromRequest(r)
 	if err != nil {
 		handleWebErr(w, err)

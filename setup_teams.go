@@ -21,11 +21,19 @@ const wpaKeyLength = 8
 
 // Shows the team list.
 func TeamsGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	renderTeams(w, r, false)
 }
 
 // Adds teams to the team list.
 func TeamsPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	if !canModifyTeamList() {
 		renderTeams(w, r, true)
 		return
@@ -56,6 +64,10 @@ func TeamsPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // Clears the team list.
 func TeamsClearHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	if !canModifyTeamList() {
 		renderTeams(w, r, true)
 		return
@@ -71,6 +83,10 @@ func TeamsClearHandler(w http.ResponseWriter, r *http.Request) {
 
 // Shows the page to edit a team's fields.
 func TeamEditGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	vars := mux.Vars(r)
 	teamId, _ := strconv.Atoi(vars["id"])
 	team, err := db.GetTeamById(teamId)
@@ -101,6 +117,10 @@ func TeamEditGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // Updates a team's fields.
 func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	vars := mux.Vars(r)
 	teamId, _ := strconv.Atoi(vars["id"])
 	team, err := db.GetTeamById(teamId)
@@ -138,6 +158,10 @@ func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // Removes a team from the team list.
 func TeamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	if !canModifyTeamList() {
 		renderTeams(w, r, true)
 		return
@@ -164,6 +188,10 @@ func TeamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 
 // Publishes the team list to the web.
 func TeamsPublishHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	err := PublishTeams()
 	if err != nil {
 		http.Error(w, "Failed to publish teams: "+err.Error(), 500)
@@ -174,6 +202,10 @@ func TeamsPublishHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates random WPA keys and saves them to the team models.
 func TeamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	generateAllKeys := false
 	if all, ok := r.URL.Query()["all"]; ok {
 		generateAllKeys = all[0] == "true"

@@ -28,6 +28,8 @@ type EventSettings struct {
 	SwitchAddress              string
 	SwitchPassword             string
 	BandwidthMonitoringEnabled bool
+	AdminPassword              string
+	ReaderPassword             string
 }
 
 const eventSettingsId = 0

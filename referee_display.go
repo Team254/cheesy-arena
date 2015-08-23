@@ -20,6 +20,10 @@ var rules = []string{"G4", "G5", "G6", "G6-1", "G16", "G17", "G18", "G19", "G20"
 
 // Renders the referee interface for assigning fouls.
 func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	template := template.New("").Funcs(templateHelpers)
 	_, err := template.ParseFiles("templates/referee_display.html")
 	if err != nil {
@@ -82,6 +86,10 @@ func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the refereee interface client to send control commands and receive status updates.
 func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	websocket, err := NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)

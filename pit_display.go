@@ -14,6 +14,10 @@ import (
 
 // Renders the pit display which shows scrolling rankings.
 func PitDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	template, err := template.ParseFiles("templates/pit_display.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -31,6 +35,10 @@ func PitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the pit display, used only to force reloads remotely.
 func PitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	websocket, err := NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)

@@ -20,7 +20,11 @@ CREATE TABLE event_settings (
   appassword VARCHAR(255),
   switchaddress VARCHAR(255),
   switchpassword VARCHAR(255),
-  bandwidthmonitoringenabled bool
+  bandwidthmonitoringenabled bool,
+  tbadownloadenabled bool,
+  tbaawardsdownloadenabled bool,
+  adminpassword VARCHAR(255),
+  readerpassword VARCHAR(255)
 );
 
 -- +goose Down

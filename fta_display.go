@@ -12,6 +12,10 @@ import (
 
 // Renders the FTA diagnostic display.
 func FtaDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	template := template.New("").Funcs(templateHelpers)
 	_, err := template.ParseFiles("templates/fta_display.html", "templates/base.html")
 	if err != nil {

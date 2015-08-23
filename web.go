@@ -6,6 +6,7 @@
 package main
 
 import (
+	"bitbucket.org/rj/httpauth-go"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -15,8 +16,12 @@ import (
 )
 
 const httpPort = 8080
+const adminUser = "admin"
+const readerUser = "reader"
 
 var websocketUpgrader = websocket.Upgrader{ReadBufferSize: 1024, WriteBufferSize: 2014}
+var adminAuth = httpauth.NewBasic("Cheesy Arena", checkAdminPassword, nil)
+var readerAuth = httpauth.NewBasic("Cheesy Arena", checkReaderPassword, nil)
 
 // Helper functions that can be used inside templates.
 var templateHelpers = template.FuncMap{
@@ -103,6 +108,45 @@ func ServeWebInterface() {
 
 	// Start Server
 	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
+}
+
+// Returns true if the given user is authorized for admin operations. Used for HTTP Basic Auth.
+func UserIsAdmin(w http.ResponseWriter, r *http.Request) bool {
+	if eventSettings.AdminPassword == "" {
+		// Disable auth if there is no password configured.
+		return true
+	}
+	if adminAuth.Authorize(r) == "" {
+		adminAuth.NotifyAuthRequired(w, r)
+		return false
+	}
+	return true
+}
+
+// Returns true if the given user is authorized for read-only operations. Used for HTTP Basic Auth.
+func UserIsReader(w http.ResponseWriter, r *http.Request) bool {
+	if eventSettings.ReaderPassword == "" {
+		// Disable auth if there is no password configured.
+		return true
+	}
+	if readerAuth.Authorize(r) == "" {
+		readerAuth.NotifyAuthRequired(w, r)
+		return false
+	}
+	return true
+}
+
+func checkAdminPassword(user, password string) bool {
+	return user == adminUser && password == eventSettings.AdminPassword
+}
+
+func checkReaderPassword(user, password string) bool {
+	if user == readerUser {
+		return password == eventSettings.ReaderPassword
+	}
+
+	// The admin role also has read permissions.
+	return checkAdminPassword(user, password)
 }
 
 // Sets up the mapping between URLs and handlers.

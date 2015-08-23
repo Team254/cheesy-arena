@@ -16,6 +16,10 @@ import (
 
 // Shows the lower third configuration page.
 func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	template, err := template.ParseFiles("templates/setup_lower_thirds.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -39,6 +43,10 @@ func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the lower thirds client to send control commands.
 func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	websocket, err := NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)

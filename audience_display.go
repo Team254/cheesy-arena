@@ -14,6 +14,10 @@ import (
 
 // Renders the audience display to be chroma keyed over the video feed.
 func AudienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	template := template.New("").Funcs(templateHelpers)
 	_, err := template.ParseFiles("templates/audience_display.html")
 	if err != nil {
@@ -33,6 +37,10 @@ func AudienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the audience display client to receive status updates.
 func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	websocket, err := NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)

@@ -16,6 +16,10 @@ import (
 
 // Renders the team number and status display shown above each alliance station.
 func AllianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	template := template.New("").Funcs(templateHelpers)
 	_, err := template.ParseFiles("templates/alliance_station_display.html")
 	if err != nil {
@@ -42,6 +46,10 @@ func AllianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the alliance station display client to receive status updates.
 func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	websocket, err := NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)

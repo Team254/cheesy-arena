@@ -25,11 +25,19 @@ var cachedRankedTeams []*RankedTeam
 
 // Shows the alliance selection page.
 func AllianceSelectionGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	renderAllianceSelection(w, r, "")
 }
 
 // Updates the cache with the latest input from the client.
 func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	if !canModifyAllianceSelection() {
 		renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
 		return
@@ -81,6 +89,10 @@ func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
 
 // Sets up the empty alliances and populates the ranked team list.
 func AllianceSelectionStartHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	if len(cachedAlliances) != 0 {
 		renderAllianceSelection(w, r, "Can't start alliance selection when it is already in progress.")
 		return
@@ -120,6 +132,10 @@ func AllianceSelectionStartHandler(w http.ResponseWriter, r *http.Request) {
 
 // Resets the alliance selection process back to the starting point.
 func AllianceSelectionResetHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	if !canModifyAllianceSelection() {
 		renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
 		return
@@ -133,6 +149,10 @@ func AllianceSelectionResetHandler(w http.ResponseWriter, r *http.Request) {
 
 // Saves the selected alliances to the database and generates the first round of elimination matches.
 func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	if !canModifyAllianceSelection() {
 		renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
 		return

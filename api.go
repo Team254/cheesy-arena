@@ -23,6 +23,10 @@ type RankingWithNickname struct {
 
 // Generates a JSON dump of the matches and results.
 func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	vars := mux.Vars(r)
 	matches, err := db.GetMatchesByType(vars["type"])
 	if err != nil {
@@ -57,6 +61,10 @@ func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a JSON dump of the sponsor slides for use by the audience display.
 func SponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	sponsors, err := db.GetAllSponsorSlides()
 	if err != nil {
 		handleWebErr(w, err)
@@ -79,6 +87,10 @@ func SponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a JSON dump of the qualification rankings, primarily for use by the pit display.
 func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	rankings, err := db.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)

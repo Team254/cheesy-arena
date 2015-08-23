@@ -16,6 +16,10 @@ import (
 
 // Generates a CSV-formatted report of the qualification rankings.
 func RankingsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	rankings, err := db.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
@@ -38,6 +42,10 @@ func RankingsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a PDF-formatted report of the qualification rankings.
 func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	rankings, err := db.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
@@ -93,6 +101,10 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a CSV-formatted report of the match schedule.
 func ScheduleCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	vars := mux.Vars(r)
 	matches, err := db.GetMatchesByType(vars["type"])
 	if err != nil {
@@ -116,6 +128,10 @@ func ScheduleCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a PDF-formatted report of the match schedule.
 func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	vars := mux.Vars(r)
 	matches, err := db.GetMatchesByType(vars["type"])
 	if err != nil {
@@ -221,6 +237,10 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a CSV-formatted report of the team list.
 func TeamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	teams, err := db.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
@@ -243,6 +263,10 @@ func TeamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a PDF-formatted report of the team list.
 func TeamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
 	teams, err := db.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
@@ -285,6 +309,10 @@ func TeamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a CSV-formatted report of the WPA keys, for import into the radio kiosk.
 func WpaKeysCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsAdmin(w, r) {
+		return
+	}
+
 	teams, err := db.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
