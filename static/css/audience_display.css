@@ -370,12 +370,17 @@ html {
   float: left;
 }
 #lowerThirdTop {
+  position: relative;
+  top: 10px;
   display: none;
   font-family: "FuturaLTBold";
 }
 #lowerThirdBottom {
   display: none;
   font-family: "FuturaLT";
+  font-size: 23px;
+  position: relative;
+  top: 5px;
 }
 #lowerThirdSingle {
   display: none;

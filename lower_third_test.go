@@ -27,7 +27,7 @@ func TestLowerThirdCrud(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 
-	lowerThird := LowerThird{0, "Top Text", "Bottom Text"}
+	lowerThird := LowerThird{0, "Top Text", "Bottom Text", 0}
 	db.CreateLowerThird(&lowerThird)
 	lowerThird2, err := db.GetLowerThirdById(1)
 	assert.Nil(t, err)
@@ -52,7 +52,7 @@ func TestTruncateLowerThirds(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 
-	lowerThird := LowerThird{0, "Top Text", "Bottom Text"}
+	lowerThird := LowerThird{0, "Top Text", "Bottom Text", 0}
 	db.CreateLowerThird(&lowerThird)
 	db.TruncateLowerThirds()
 	lowerThird2, err := db.GetLowerThirdById(1)

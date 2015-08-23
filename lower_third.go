@@ -6,9 +6,10 @@
 package main
 
 type LowerThird struct {
-	Id         int
-	TopText    string
-	BottomText string
+	Id           int
+	TopText      string
+	BottomText   string
+	DisplayOrder int
 }
 
 func (database *Database) CreateLowerThird(lowerThird *LowerThird) error {
@@ -41,6 +42,6 @@ func (database *Database) TruncateLowerThirds() error {
 
 func (database *Database) GetAllLowerThirds() ([]LowerThird, error) {
 	var lowerThirds []LowerThird
-	err := database.teamMap.Select(&lowerThirds, "SELECT * FROM lower_thirds ORDER BY id")
+	err := database.lowerThirdMap.Select(&lowerThirds, "SELECT * FROM lower_thirds ORDER BY displayorder")
 	return lowerThirds, err
 }
