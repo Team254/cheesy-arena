@@ -74,8 +74,8 @@ func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		Rules            []string
 		EntryEnabled     bool
 	}{eventSettings, matchType, match.DisplayName, red1, red2, red3, blue1, blue2, blue3,
-		mainArena.redRealtimeScore.Fouls, mainArena.blueRealtimeScore.Fouls, mainArena.redRealtimeScore.Cards,
-		mainArena.blueRealtimeScore.Cards, rules,
+		mainArena.redRealtimeScore.CurrentScore.Fouls, mainArena.blueRealtimeScore.CurrentScore.Fouls,
+		mainArena.redRealtimeScore.Cards, mainArena.blueRealtimeScore.Cards, rules,
 		!(mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted)}
 	err = template.ExecuteTemplate(w, "referee_display.html", data)
 	if err != nil {
@@ -157,9 +157,11 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			// Add the foul to the correct alliance's list.
 			foul := Foul{TeamId: args.TeamId, Rule: args.Rule, TimeInMatchSec: mainArena.MatchTimeSec()}
 			if args.Alliance == "red" {
-				mainArena.redRealtimeScore.Fouls = append(mainArena.redRealtimeScore.Fouls, foul)
+				mainArena.redRealtimeScore.CurrentScore.Fouls =
+					append(mainArena.redRealtimeScore.CurrentScore.Fouls, foul)
 			} else {
-				mainArena.blueRealtimeScore.Fouls = append(mainArena.blueRealtimeScore.Fouls, foul)
+				mainArena.blueRealtimeScore.CurrentScore.Fouls =
+					append(mainArena.blueRealtimeScore.CurrentScore.Fouls, foul)
 			}
 			mainArena.realtimeScoreNotifier.Notify(nil)
 		case "deleteFoul":
@@ -180,9 +182,9 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			deleteFoul := Foul{TeamId: args.TeamId, Rule: args.Rule, TimeInMatchSec: args.TimeInMatchSec}
 			var fouls *[]Foul
 			if args.Alliance == "red" {
-				fouls = &mainArena.redRealtimeScore.Fouls
+				fouls = &mainArena.redRealtimeScore.CurrentScore.Fouls
 			} else {
-				fouls = &mainArena.blueRealtimeScore.Fouls
+				fouls = &mainArena.blueRealtimeScore.CurrentScore.Fouls
 			}
 			for i, foul := range *fouls {
 				if foul == deleteFoul {

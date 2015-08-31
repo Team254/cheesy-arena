@@ -4,21 +4,29 @@
 // Client-side logic for the referee interface.
 
 var websocket;
-var foulAlliance;
-var foulTeam;
-var foulRule;
+var foulTeamButton;
+var foulRuleButton;
 
 // Handles a click on a team button.
 var setFoulTeam = function(teamButton) {
-  foulAlliance = $(teamButton).attr("data-alliance");
-  foulTeam = $(teamButton).attr("data-team");
-  setSelections();
+  if (foulTeamButton) {
+    foulTeamButton.attr("data-selected", false);
+  }
+  foulTeamButton = $(teamButton);
+  foulTeamButton.attr("data-selected", true);
+
+  $("#commit").prop("disabled", !(foulTeamButton && foulRuleButton));
 };
 
 // Handles a click on a rule button.
 var setFoulRule = function(ruleButton) {
-  foulRule = $(ruleButton).attr("data-rule");
-  setSelections();
+  if (foulRuleButton) {
+    foulRuleButton.attr("data-selected", false);
+  }
+  foulRuleButton = $(ruleButton);
+  foulRuleButton.attr("data-selected", true);
+
+  $("#commit").prop("disabled", !(foulTeamButton && foulRuleButton));
 };
 
 // Sets button styles to match the selection cached in the global variables.
@@ -30,20 +38,25 @@ var setSelections = function() {
   $("[data-rule]").each(function(i, ruleButton) {
     $(ruleButton).attr("data-selected", $(ruleButton).attr("data-rule") == foulRule);
   });
-
-  $("#commit").prop("disabled", (foulTeam == "" || foulRule == ""));
 };
 
 // Resets the buttons to their default selections.
 var clearFoul = function() {
-  foulTeam = "";
-  foulRule = "";
-  setSelections();
+  if (foulTeamButton) {
+    foulTeamButton.attr("data-selected", false);
+    foulTeamButton = null;
+  }
+  if (foulRuleButton) {
+    foulRuleButton.attr("data-selected", false);
+    foulRuleButton = null;
+  }
+  $("#commit").prop("disabled", true);
 };
 
 // Sends the foul to the server to add it to the list.
 var commitFoul = function() {
-  websocket.send("addFoul", {Alliance: foulAlliance, TeamId: parseInt(foulTeam), Rule: foulRule});
+  websocket.send("addFoul", {Alliance: foulTeamButton.attr("data-alliance"),
+      TeamId: parseInt(foulTeamButton.attr("data-team")), Rule: foulRuleButton.attr("data-rule")});
 };
 
 // Removes the foul with the given parameters from the list.

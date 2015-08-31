@@ -10,6 +10,7 @@
     <title>Referee Display - {{.EventSettings.Name}} - Cheesy Arena</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
     <link rel="shortcut icon" href="/static/img/favicon.png">
     <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
     <link href="/static/css/lib/bootstrap.min.css" rel="stylesheet">
@@ -22,7 +23,7 @@
     {{if .EntryEnabled}}
       <h3 style="margin-top: 0">{{.MatchType}} Match {{.MatchDisplayName}}</h3>
       <div class="row">
-        <div class="col-lg-3">
+        <div class="col-xs-3">
           <h4>Fouls</h4>
           <table class="table">
             {{range $foul := .RedFouls}}
@@ -40,7 +41,7 @@
           {{template "card" dict "team" .Blue2 "alliance" "blue" "cards" .BlueCards}}
           {{template "card" dict "team" .Blue3 "alliance" "blue" "cards" .BlueCards}}
         </div>
-        <div class="col-lg-9">
+        <div class="col-xs-9">
           <h4>Add Foul</h4>
           <div class="row">
             <a class="btn btn-lg btn-primary btn-referee" data-alliance="red" data-team="{{.Red1.Id}}"
@@ -62,6 +63,7 @@
                   onclick="setFoulRule(this);">{{$rule}}</a>
             {{end}}
           </div>
+          <br />
           <div class="row text-center">
             <a class="btn btn-lg btn-default btn-referee btn-referee-wide" onclick="clearFoul();">Clear Foul</a>
             <button type="button" class="btn btn-lg btn-success btn-referee btn-referee-wide" id="commit"
@@ -73,6 +75,11 @@
             <a class="btn btn-lg btn-info btn-referee btn-referee-wide"
                 onclick="commitMatch();">Commit Match</a>
           </div>
+          <br />
+          <div class="row text-center">
+            <a class="btn btn-lg btn-danger btn-referee btn-referee-wide"
+                onclick="location.reload();">Refresh</a>
+          </div>
         </div>
     </div>
     {{else}}
@@ -83,7 +90,6 @@
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
-    <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/cheesy-websocket.js"></script>
     <script src="/static/js/referee_display.js"></script>
   </body>
@@ -97,7 +103,7 @@
   </tr>
 {{end}}
 {{define "card"}}
-  <a class="btn btn-lg btn-card" data-old-yellow-card="{{.team.YellowCard}}" data-alliance="{{.alliance}}"
+  <a class="btn btn-md btn-card" data-old-yellow-card="{{.team.YellowCard}}" data-alliance="{{.alliance}}"
       data-card-team="{{.team.Id}}" data-card="{{index .cards (print .team.Id)}}"
       onclick="cycleCard(this);">{{.team.Id}}</a><br />
 {{end}}

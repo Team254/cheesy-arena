@@ -46,7 +46,6 @@ type MatchTiming struct {
 
 type RealtimeScore struct {
 	CurrentScore    Score
-	Fouls           []Foul
 	Cards           map[string]string
 	AutoCommitted   bool
 	TeleopCommitted bool

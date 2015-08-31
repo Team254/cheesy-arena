@@ -60,17 +60,17 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "reload")
 	readWebsocketType(t, ws, "reload")
 	readWebsocketType(t, ws, "reload")
-	if assert.Equal(t, 2, len(mainArena.redRealtimeScore.Fouls)) {
-		assert.Equal(t, 256, mainArena.redRealtimeScore.Fouls[0].TeamId)
-		assert.Equal(t, "G22", mainArena.redRealtimeScore.Fouls[0].Rule)
-		assert.Equal(t, 0.0, mainArena.redRealtimeScore.Fouls[0].TimeInMatchSec)
-		assert.Equal(t, 359, mainArena.redRealtimeScore.Fouls[1].TeamId)
-		assert.Equal(t, "G22", mainArena.redRealtimeScore.Fouls[1].Rule)
+	if assert.Equal(t, 2, len(mainArena.redRealtimeScore.CurrentScore.Fouls)) {
+		assert.Equal(t, 256, mainArena.redRealtimeScore.CurrentScore.Fouls[0].TeamId)
+		assert.Equal(t, "G22", mainArena.redRealtimeScore.CurrentScore.Fouls[0].Rule)
+		assert.Equal(t, 0.0, mainArena.redRealtimeScore.CurrentScore.Fouls[0].TimeInMatchSec)
+		assert.Equal(t, 359, mainArena.redRealtimeScore.CurrentScore.Fouls[1].TeamId)
+		assert.Equal(t, "G22", mainArena.redRealtimeScore.CurrentScore.Fouls[1].Rule)
 	}
-	if assert.Equal(t, 1, len(mainArena.blueRealtimeScore.Fouls)) {
-		assert.Equal(t, 1680, mainArena.blueRealtimeScore.Fouls[0].TeamId)
-		assert.Equal(t, "G22", mainArena.blueRealtimeScore.Fouls[0].Rule)
-		assert.Equal(t, 0.0, mainArena.blueRealtimeScore.Fouls[0].TimeInMatchSec)
+	if assert.Equal(t, 1, len(mainArena.blueRealtimeScore.CurrentScore.Fouls)) {
+		assert.Equal(t, 1680, mainArena.blueRealtimeScore.CurrentScore.Fouls[0].TeamId)
+		assert.Equal(t, "G22", mainArena.blueRealtimeScore.CurrentScore.Fouls[0].Rule)
+		assert.Equal(t, 0.0, mainArena.blueRealtimeScore.CurrentScore.Fouls[0].TimeInMatchSec)
 	}
 	assert.False(t, mainArena.redRealtimeScore.FoulsCommitted)
 	assert.False(t, mainArena.blueRealtimeScore.FoulsCommitted)
@@ -78,17 +78,17 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	// Test foul deletion.
 	ws.Write("deleteFoul", foulData)
 	readWebsocketType(t, ws, "reload")
-	assert.Equal(t, 0, len(mainArena.blueRealtimeScore.Fouls))
+	assert.Equal(t, 0, len(mainArena.blueRealtimeScore.CurrentScore.Fouls))
 	foulData.Alliance = "red"
 	foulData.TeamId = 359
 	foulData.TimeInMatchSec = 29 // Make it not match.
 	ws.Write("deleteFoul", foulData)
 	readWebsocketType(t, ws, "reload")
-	assert.Equal(t, 2, len(mainArena.redRealtimeScore.Fouls))
+	assert.Equal(t, 2, len(mainArena.redRealtimeScore.CurrentScore.Fouls))
 	foulData.TimeInMatchSec = 0
 	ws.Write("deleteFoul", foulData)
 	readWebsocketType(t, ws, "reload")
-	assert.Equal(t, 1, len(mainArena.redRealtimeScore.Fouls))
+	assert.Equal(t, 1, len(mainArena.redRealtimeScore.CurrentScore.Fouls))
 
 	// Test card setting.
 	cardData := struct {

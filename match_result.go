@@ -200,6 +200,9 @@ func scoreSummary(score *Score) *ScoreSummary {
 	summary.FoulPoints = 6 * len(score.Fouls)
 
 	summary.Score = summary.AutoPoints + summary.StackPoints + summary.CoopertitionPoints - summary.FoulPoints
+	if summary.Score < 0 {
+		summary.Score = 0
+	}
 
 	return summary
 }

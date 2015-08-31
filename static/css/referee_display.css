@@ -17,15 +17,15 @@ h3, h4 {
   color: #fff;
 }
 .btn-referee {
-  width: 120px;
+  width: 100px;
   margin: 5px 5px;
-  font-size: 30px;
+  font-size: 25px;
   cursor: default;
 }
 .btn-referee-wide {
   width: 254px;
   margin: 5px 5px;
-  font-size: 30px;
+  font-size: 25px;
 }
 .btn {
   cursor: default;
