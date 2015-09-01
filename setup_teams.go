@@ -272,32 +272,31 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 		}
 
 		// Check if the result is valid.  If a team is not found, just return a basic team
-		if tbaTeam == nil {
+		if tbaTeam.TeamNumber == 0 {
 			team = Team{Id: teamId}
-			return &team, nil
-		}
-
-		var recentAwards []TbaAward
-		if eventSettings.TBAAwardsDownloadEnabled {
-			recentAwards, err = getTeamAwardsFromTba(teamId)
-			if err != nil {
-				return nil, err
+		} else {
+			var recentAwards []TbaAward
+			if eventSettings.TBAAwardsDownloadEnabled {
+				recentAwards, err = getTeamAwardsFromTba(teamId)
+				if err != nil {
+					return nil, err
+				}
 			}
-		}
 
-		var accomplishmentsBuffer bytes.Buffer
+			var accomplishmentsBuffer bytes.Buffer
 
-		// Generate accomplishments string
-		for _, award := range recentAwards {
-			if time.Now().Year()-award.Year <= 2 {
-				accomplishmentsBuffer.WriteString(fmt.Sprint(award.Year, " - ", award.Name, "\n"))
+			// Generate accomplishments string
+			for _, award := range recentAwards {
+				if time.Now().Year()-award.Year <= 2 {
+					accomplishmentsBuffer.WriteString(fmt.Sprint(award.Year, " - ", award.Name, "\n"))
+				}
 			}
-		}
 
-		// Use those variables to make a team object
-		team = Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname,
-			City: tbaTeam.Locality, StateProv: tbaTeam.Reigon,
-			Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear, Accomplishments: accomplishmentsBuffer.String()}
+			// Use those variables to make a team object
+			team = Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname,
+				City: tbaTeam.Locality, StateProv: tbaTeam.Reigon,
+				Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear, Accomplishments: accomplishmentsBuffer.String()}
+		}
 	} else {
 		// If team grab is disabled, just use the team number
 		team = Team{Id: teamId}
