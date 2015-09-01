@@ -22,7 +22,6 @@ CREATE TABLE event_settings (
   switchpassword VARCHAR(255),
   bandwidthmonitoringenabled bool,
   tbadownloadenabled bool,
-  tbaawardsdownloadenabled bool,
   adminpassword VARCHAR(255),
   readerpassword VARCHAR(255)
 );

@@ -74,6 +74,13 @@ func TestSetupTeams(t *testing.T) {
 	defer teamAwardsServer.Close()
 	tbaTeamAwardsBaseUrl = teamAwardsServer.URL
 
+	eventBody := `{ "name": "Championship" }`
+	eventServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, eventBody)
+	}))
+	defer eventServer.Close()
+	tbaEventBaseUrl = eventServer.URL
+
 	// Add some teams.
 	recorder = postHttpResponse("/setup/teams", "teamNumbers=254\r\nnotateam\r\n1114\r\n")
 	assert.Equal(t, 302, recorder.Code)

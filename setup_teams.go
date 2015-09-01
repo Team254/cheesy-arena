@@ -275,12 +275,9 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 		if tbaTeam.TeamNumber == 0 {
 			team = Team{Id: teamId}
 		} else {
-			var recentAwards []TbaAward
-			if eventSettings.TBAAwardsDownloadEnabled {
-				recentAwards, err = getTeamAwardsFromTba(teamId)
-				if err != nil {
-					return nil, err
-				}
+			recentAwards, err := getTeamAwardsFromTba(teamId)
+			if err != nil {
+				return nil, err
 			}
 
 			var accomplishmentsBuffer bytes.Buffer
@@ -288,7 +285,7 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 			// Generate accomplishments string
 			for _, award := range recentAwards {
 				if time.Now().Year()-award.Year <= 2 {
-					accomplishmentsBuffer.WriteString(fmt.Sprint(award.Year, " - ", award.Name, "\n"))
+					accomplishmentsBuffer.WriteString(fmt.Sprintf("%d %s - %s\n", award.Year, award.EventName, award.Name))
 				}
 			}
 

@@ -51,7 +51,6 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
 	eventSettings.TBADownloadEnabled = r.PostFormValue("TBADownloadEnabled") == "on"
-	eventSettings.TBAAwardsDownloadEnabled = r.PostFormValue("TBAAwardsDownloadEnabled") == "on"
 	eventSettings.RedGoalLightsAddress = r.PostFormValue("redGoalLightsAddress")
 	eventSettings.BlueGoalLightsAddress = r.PostFormValue("blueGoalLightsAddress")
 	eventSettings.TbaPublishingEnabled = r.PostFormValue("tbaPublishingEnabled") == "on"

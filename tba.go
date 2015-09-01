@@ -19,6 +19,10 @@ import (
 var tbaBaseUrl = "http://www.thebluealliance.com"
 var tbaTeamBaseUrl = tbaBaseUrl
 var tbaTeamAwardsBaseUrl = tbaBaseUrl
+var tbaEventBaseUrl = tbaBaseUrl
+
+// Cache of event codes to names.
+var tbaEventNames = make(map[string]string)
 
 // MODELS
 
@@ -71,6 +75,11 @@ type TbaAward struct {
 	EventKey  string `json:"event_key"`
 	Year      int    `json:"year"`
 	AwardType int    `json:"award_type"`
+	EventName string
+}
+
+type TbaEvent struct {
+	Name string `json:"name"`
 }
 
 // DATA RETRIEVAL
@@ -94,7 +103,7 @@ func getTeamFromTba(teamNumber int) (*TbaTeam, error) {
 	return &teamData, err
 }
 
-func getTeamAwardsFromTba(teamNumber int) ([]TbaAward, error) {
+func getTeamAwardsFromTba(teamNumber int) ([]*TbaAward, error) {
 	url := fmt.Sprintf("%s/api/v2/team/%s/history/awards", tbaTeamAwardsBaseUrl, getTbaTeam(teamNumber))
 	resp, err := getTbaRequest(url)
 	if err != nil {
@@ -108,10 +117,46 @@ func getTeamAwardsFromTba(teamNumber int) ([]TbaAward, error) {
 		return nil, err
 	}
 
-	var awardData []TbaAward
-	err = json.Unmarshal(body, &awardData)
+	var awards []*TbaAward
+	err = json.Unmarshal(body, &awards)
+	if err != nil {
+		return nil, err
+	}
 
-	return awardData, err
+	for _, award := range awards {
+		if _, ok := tbaEventNames[award.EventKey]; !ok {
+			tbaEventNames[award.EventKey], err = getEventNameFromTba(award.EventKey)
+			if err != nil {
+				return nil, err
+			}
+		}
+		award.EventName = tbaEventNames[award.EventKey]
+	}
+
+	return awards, nil
+}
+
+func getEventNameFromTba(eventCode string) (string, error) {
+	url := fmt.Sprintf("%s/api/v2/event/%s", tbaEventBaseUrl, eventCode)
+	resp, err := getTbaRequest(url)
+	if err != nil {
+		return "", err
+	}
+
+	// Get the response and handle errors
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var event TbaEvent
+	err = json.Unmarshal(body, &event)
+	if err != nil {
+		return "", err
+	}
+
+	return event.Name, err
 }
 
 // PUBLISHING

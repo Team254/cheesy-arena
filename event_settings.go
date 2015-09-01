@@ -14,7 +14,6 @@ type EventSettings struct {
 	SelectionRound2Order       string
 	SelectionRound3Order       string
 	TBADownloadEnabled         bool
-	TBAAwardsDownloadEnabled   bool
 	RedGoalLightsAddress       string
 	BlueGoalLightsAddress      string
 	TbaPublishingEnabled       bool
@@ -46,7 +45,6 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.SelectionRound2Order = "L"
 		eventSettings.SelectionRound3Order = ""
 		eventSettings.TBADownloadEnabled = true
-		eventSettings.TBAAwardsDownloadEnabled = true
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {
 			return nil, err
