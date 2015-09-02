@@ -86,6 +86,11 @@
 .nowrap {
   white-space: nowrap;
 }
+.indentwrap p {
+  margin: 8px 0px;
+  padding-left: 20px;
+  text-indent: -20px;
+}
 .scoring {
   font-size: 20px;
   font-weight: bold;

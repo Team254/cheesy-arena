@@ -290,7 +290,7 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 			// Generate accomplishments string
 			for _, award := range recentAwards {
 				if time.Now().Year()-award.Year <= 2 {
-					accomplishmentsBuffer.WriteString(fmt.Sprintf("%d %s - %s\n", award.Year, award.EventName, award.Name))
+					accomplishmentsBuffer.WriteString(fmt.Sprintf("<p>%d %s - %s</p>", award.Year, award.EventName, award.Name))
 				}
 			}
 
