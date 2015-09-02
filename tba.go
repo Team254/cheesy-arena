@@ -18,6 +18,7 @@ import (
 // Distinct endpoints are necessary for testing.
 var tbaBaseUrl = "http://www.thebluealliance.com"
 var tbaTeamBaseUrl = tbaBaseUrl
+var tbaTeamRobotsBaseUrl = tbaBaseUrl
 var tbaTeamAwardsBaseUrl = tbaBaseUrl
 var tbaEventBaseUrl = tbaBaseUrl
 
@@ -70,6 +71,10 @@ type TbaTeam struct {
 	Nickname   string `json:"nickname"`
 }
 
+type TbaRobot struct {
+	Name string `json:"name"`
+}
+
 type TbaAward struct {
 	Name      string `json:"name"`
 	EventKey  string `json:"event_key"`
@@ -101,6 +106,31 @@ func getTeamFromTba(teamNumber int) (*TbaTeam, error) {
 	err = json.Unmarshal(body, &teamData)
 
 	return &teamData, err
+}
+
+func getRobotNameFromTba(teamNumber int, year int) (string, error) {
+	url := fmt.Sprintf("%s/api/v2/team/frc%d/history/robots", tbaTeamRobotsBaseUrl, teamNumber)
+	resp, err := getTbaRequest(url)
+	if err != nil {
+		return "", err
+	}
+
+	// Get the response and handle errors
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var robots map[string]TbaRobot
+	err = json.Unmarshal(body, &robots)
+	if err != nil {
+		return "", err
+	}
+	if robotName, ok := robots[strconv.Itoa(year)]; ok {
+		return robotName.Name, nil
+	}
+	return "", nil
 }
 
 func getTeamAwardsFromTba(teamNumber int) ([]*TbaAward, error) {

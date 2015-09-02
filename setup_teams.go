@@ -275,6 +275,11 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 		if tbaTeam.TeamNumber == 0 {
 			team = Team{Id: teamId}
 		} else {
+			robotName, err := getRobotNameFromTba(teamId, 2015)
+			if err != nil {
+				return nil, err
+			}
+
 			recentAwards, err := getTeamAwardsFromTba(teamId)
 			if err != nil {
 				return nil, err
@@ -290,9 +295,9 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 			}
 
 			// Use those variables to make a team object
-			team = Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname,
-				City: tbaTeam.Locality, StateProv: tbaTeam.Reigon,
-				Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear, Accomplishments: accomplishmentsBuffer.String()}
+			team = Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname, City: tbaTeam.Locality,
+				StateProv: tbaTeam.Reigon, Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear,
+				RobotName: robotName, Accomplishments: accomplishmentsBuffer.String()}
 		}
 	} else {
 		// If team grab is disabled, just use the team number
