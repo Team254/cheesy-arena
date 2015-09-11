@@ -20,9 +20,9 @@ html {
   bottom: 70px;
   margin: 0 auto;
   height: 104px;
-  background-color: #fff;
-  border: 1px solid #000;
-  color: #000;
+  background-color: #222;
+  border: 1px solid #222;
+  color: #222;
   font-size: 22px;
 }
 .teams {
@@ -39,11 +39,11 @@ html {
 }
 #redTeams {
   float: left;
-  border-right: 1px solid #000;
+  border-right: 1px solid #222;
 }
 #blueTeams {
   float: right;
-  border-left: 1px solid #000;
+  border-left: 1px solid #222;
 }
 .score {
   width: 0px;
@@ -67,7 +67,7 @@ html {
   bottom: 0px;
   line-height: 30px;
   background-color: #444;
-  border: 1px solid #000;
+  border: 1px solid #222;
   padding: 0px 5px;
   font-family: "FuturaLT";
   font-size: 15px;
@@ -83,7 +83,7 @@ html {
   width: 150px;
   height: 150px;
   background-color: #fff;
-  border: 1px solid #000;
+  border: 1px solid #222;
 }
 .score-number {
   width: 60%;
@@ -122,7 +122,7 @@ html {
   position: relative;
   top: 18px;
   height: 60px;
-  color: #000;
+  color: #222;
   font-family: "FuturaLTBold";
   font-size: 32px;
   opacity: 0;
@@ -256,7 +256,7 @@ html {
   display: table;
   text-align: center;
   background-color: #fff;
-  color: #000;
+  color: #222;
   font-family: "FuturaLT";
   font-size: 24px;
 }
@@ -336,7 +336,7 @@ html {
 }
 #allianceSelectionTable {
   background-color: #fff;
-  border: 2px solid #000;
+  border: 2px solid #222;
   text-align: center;
   font-family: "FuturaLT";
   font-size: 3.5em;
@@ -355,7 +355,7 @@ html {
 }
 .selection-cell {
   width: 3.4em;
-  color: #000;
+  color: #222;
 }
 #lowerThird {
   display: none;
@@ -363,8 +363,8 @@ html {
   left: -1000px;
   bottom: 100px;
   background-color: #fff;
-  border: 1px solid #000;
-  color: #000;
+  border: 1px solid #222;
+  color: #222;
   font-size: 30px;
   width: 800px;
   height: 87px;
