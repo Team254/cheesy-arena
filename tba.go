@@ -29,6 +29,7 @@ var tbaEventNames = make(map[string]string)
 
 type TbaMatch struct {
 	CompLevel      string                       `json:"comp_level"`
+	SetNumber      int                          `json:"set_number"`
 	MatchNumber    int                          `json:"match_number"`
 	Alliances      map[string]interface{}       `json:"alliances"`
 	ScoreBreakdown map[string]TbaScoreBreakdown `json:"score_breakdown"`
@@ -37,23 +38,23 @@ type TbaMatch struct {
 }
 
 type TbaScoreBreakdown struct {
-	Coopertition int `json:"coopertition"`
-	Auto         int `json:"auto"`
-	Container    int `json:"container"`
-	Tote         int `json:"tote"`
-	Litter       int `json:"litter"`
-	Foul         int `json:"foul"`
+	Coopertition int `json:"coopertition_points"`
+	Auto         int `json:"auto_points"`
+	Container    int `json:"container_points"`
+	Tote         int `json:"tote_points"`
+	Litter       int `json:"litter_points"`
+	Foul         int `json:"foul_points"`
 }
 
 type TbaRanking struct {
 	TeamKey      string  `json:"team_key"`
 	Rank         int     `json:"rank"`
-	QA           float64 `json:"qa"`
-	Coopertition int     `json:"coopertition"`
-	Auto         int     `json:"auto"`
-	Container    int     `json:"container"`
-	Tote         int     `json:"tote"`
-	Litter       int     `json:"litter"`
+	QA           float64 `json:"QA"`
+	Coopertition int     `json:"Coopertition"`
+	Auto         int     `json:"Auto"`
+	Container    int     `json:"Container"`
+	Tote         int     `json:"Tote"`
+	Litter       int     `json:"Litter"`
 	Dqs          int     `json:"dqs"`
 	Played       int     `json:"played"`
 }
@@ -208,7 +209,7 @@ func PublishTeams() error {
 		return err
 	}
 
-	resp, err := postTbaRequest("team_list", jsonBody)
+	resp, err := postTbaRequest("team_list", "update", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -263,11 +264,12 @@ func PublishMatches() error {
 			}
 		}
 
-		tbaMatches[i] = TbaMatch{"qm", matchNumber, map[string]interface{}{"red": redAlliance,
+		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, map[string]interface{}{"red": redAlliance,
 			"blue": blueAlliance}, scoreBreakdown, match.Time.Local().Format("3:04 PM"),
 			match.Time.Format("2006-01-02T15:04:05")}
 		if match.Type == "elimination" {
 			tbaMatches[i].CompLevel = map[int]string{1: "f", 2: "sf", 4: "qf", 8: "ef"}[match.ElimRound]
+			tbaMatches[i].SetNumber = match.ElimGroup
 			tbaMatches[i].MatchNumber = match.ElimInstance
 		}
 	}
@@ -276,7 +278,7 @@ func PublishMatches() error {
 		return err
 	}
 
-	resp, err := postTbaRequest("matches", jsonBody)
+	resp, err := postTbaRequest("matches", "update", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -308,7 +310,7 @@ func PublishRankings() error {
 		return err
 	}
 
-	resp, err := postTbaRequest("rankings", jsonBody)
+	resp, err := postTbaRequest("rankings", "update", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -339,7 +341,21 @@ func PublishAlliances() error {
 		return err
 	}
 
-	resp, err := postTbaRequest("alliance_selections", jsonBody)
+	resp, err := postTbaRequest("alliance_selections", "update", jsonBody)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		defer resp.Body.Close()
+		body, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
+	}
+	return nil
+}
+
+// Clears out the existing match data on The Blue Alliance for the event.
+func DeletePublishedMatches() error {
+	resp, err := postTbaRequest("matches", "delete_all", []byte(eventSettings.TbaEventCode))
 	if err != nil {
 		return err
 	}
@@ -359,8 +375,8 @@ func getTbaTeam(team int) string {
 // HELPERS
 
 // Signs the request and sends it to the TBA API.
-func postTbaRequest(resource string, body []byte) (*http.Response, error) {
-	path := fmt.Sprintf("/api/trusted/v1/event/%s/%s/update", eventSettings.TbaEventCode, resource)
+func postTbaRequest(resource string, action string, body []byte) (*http.Response, error) {
+	path := fmt.Sprintf("/api/trusted/v1/event/%s/%s/%s", eventSettings.TbaEventCode, resource, action)
 	signature := fmt.Sprintf("%x", md5.Sum(append([]byte(eventSettings.TbaSecret+path), body...)))
 
 	client := &http.Client{}

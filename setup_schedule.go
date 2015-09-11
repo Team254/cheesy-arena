@@ -128,6 +128,11 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	if eventSettings.TbaPublishingEnabled && cachedMatchType != "practice" {
 		// Publish schedule to The Blue Alliance.
+		err = DeletePublishedMatches()
+		if err != nil {
+			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
+			return
+		}
 		err = PublishMatches()
 		if err != nil {
 			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
