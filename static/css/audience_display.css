@@ -61,7 +61,8 @@ html {
 #eventMatchInfo {
   display: none;
   position: absolute;
-  width: 100%;
+  right: -1px;
+  left: -1px;
   height: 30px;
   bottom: 0px;
   line-height: 30px;
@@ -326,22 +327,26 @@ html {
 }
 #allianceSelectionCentering {
   position: absolute;
-  left: 50%;
   height: 100%;
-  display: table;
+  right: 3em;
 }
 #allianceSelection {
-  position: relative;
-  left: -50%;
   display: table-cell;
   vertical-align: middle;
 }
 #allianceSelectionTable {
-  background-color: #006;
-  border-radius: 20px;
+  background-color: #fff;
+  border: 2px solid #000;
   text-align: center;
-  font-family: "FuturaLTBold";
-  font-size: 70px;
+  font-family: "FuturaLT";
+  font-size: 3.5em;
+}
+#allianceSelectionTable img {
+  width: 3em;
+  margin: 0.75em;
+}
+#allianceSelectionTable tr:nth-child(even) {
+  background-color: #eee;
 }
 .alliance-cell {
   padding: 0px 40px;
@@ -349,8 +354,8 @@ html {
   color: #999;
 }
 .selection-cell {
-  width: 250px;
-  color: #fff;
+  width: 3.4em;
+  color: #000;
 }
 #lowerThird {
   display: none;
