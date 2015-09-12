@@ -16,7 +16,7 @@ import (
 )
 
 // Distinct endpoints are necessary for testing.
-var tbaBaseUrl = "http://www.thebluealliance.com"
+var tbaBaseUrl = "https://www.thebluealliance.com"
 var tbaTeamBaseUrl = tbaBaseUrl
 var tbaTeamRobotsBaseUrl = tbaBaseUrl
 var tbaTeamAwardsBaseUrl = tbaBaseUrl
