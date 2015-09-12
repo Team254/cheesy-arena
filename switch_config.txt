@@ -13,6 +13,7 @@ enable secret 5 $1$kKSW$fCMwnMdYvXui1TulfyYHN/
 !
 ip subnet-zero
 ip routing
+ip dhcp excluded-address 10.0.100.1 10.0.100.100
 !
 ip dhcp pool dhcppool
    network 10.0.100.0 255.255.255.0
@@ -129,6 +130,7 @@ interface GigabitEthernet0/1
  switchport mode trunk
 !
 interface GigabitEthernet0/2
+ switchport access vlan 2
  switchport mode access
 !
 interface Vlan1

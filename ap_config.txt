@@ -80,7 +80,7 @@ dot11 ssid Cheesy Arena
    authentication open 
    authentication key-management wpa version 2
    guest-mode
-   wpa-psk ascii 7 030D5704100A22435C071D0A1001
+   wpa-psk ascii 7 144640585822233D21
 !
 crypto pki token default removal timeout 0
 !
@@ -154,6 +154,7 @@ interface Dot11Radio1
  antenna gain 0
  dfs band 3 block
  mbssid
+ channel width 40-above
  channel dfs
  station-role root
  no dot11 extension aironet
@@ -242,6 +243,7 @@ interface GigabitEthernet0.2
 !
 interface GigabitEthernet0.11
  encapsulation dot1Q 11
+ ip access-group 100 in
  no ip route-cache
  bridge-group 11
  bridge-group 11 spanning-disabled
@@ -249,6 +251,7 @@ interface GigabitEthernet0.11
 !
 interface GigabitEthernet0.12
  encapsulation dot1Q 12
+ ip access-group 100 in
  no ip route-cache
  bridge-group 12
  bridge-group 12 spanning-disabled
@@ -256,6 +259,7 @@ interface GigabitEthernet0.12
 !
 interface GigabitEthernet0.13
  encapsulation dot1Q 13
+ ip access-group 100 in
  no ip route-cache
  bridge-group 13
  bridge-group 13 spanning-disabled
@@ -263,6 +267,7 @@ interface GigabitEthernet0.13
 !
 interface GigabitEthernet0.14
  encapsulation dot1Q 14
+ ip access-group 100 in
  no ip route-cache
  bridge-group 14
  bridge-group 14 spanning-disabled
@@ -270,6 +275,7 @@ interface GigabitEthernet0.14
 !
 interface GigabitEthernet0.15
  encapsulation dot1Q 15
+ ip access-group 100 in
  no ip route-cache
  bridge-group 15
  bridge-group 15 spanning-disabled
@@ -277,6 +283,7 @@ interface GigabitEthernet0.15
 !
 interface GigabitEthernet0.16
  encapsulation dot1Q 16
+ ip access-group 100 in
  no ip route-cache
  bridge-group 16
  bridge-group 16 spanning-disabled
@@ -291,6 +298,8 @@ ip http server
 ip http authentication aaa
 no ip http secure-server
 ip http help-path http://www.cisco.com/warp/public/779/smbiz/prodconfig/help/eag
+access-list 100 deny udp any any eq 1120
+access-list 100 allow ip any any
 !
 bridge 1 route ip
 !
