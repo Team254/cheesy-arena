@@ -232,17 +232,12 @@ var transitionScoreToBlank = function(callback) {
 }
 
 var transitionBlankToAllianceSelection = function(callback) {
-  $("#allianceSelectionCentering").show();
-  if (callback) {
-    callback();
-  }
+  $('#allianceSelectionCentering').css("right","-60em").show();
+  $('#allianceSelectionCentering').transition({queue: false, right: "3em"}, 500, "ease", callback);
 };
 
 var transitionAllianceSelectionToBlank = function(callback) {
-  $("#allianceSelectionCentering").hide();
-  if (callback) {
-    callback();
-  }
+  $('#allianceSelectionCentering').transition({queue: false, right: "-60em"}, 500, "ease", callback);
 };
 
 var transitionBlankToLowerThird = function(callback) {

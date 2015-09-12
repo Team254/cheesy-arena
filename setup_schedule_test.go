@@ -44,7 +44,7 @@ func TestSetupSchedule(t *testing.T) {
 	recorder = postHttpResponse("/setup/schedule/save", "")
 	matches, err := db.GetMatchesByType("qualification")
 	assert.Equal(t, 500, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Failed to publish matches")
+	assert.Contains(t, recorder.Body.String(), "Failed to delete published matches")
 	assert.Nil(t, err)
 	assert.Equal(t, 64, len(matches))
 	assert.Equal(t, int64(1388595600), matches[0].Time.Unix())
