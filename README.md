@@ -2,7 +2,7 @@ Cheesy Arena
 ============
 A field management system that just works.
 
-##Key Features
+##Key features
 Check out a [video overview](http://video.team254.com/watch/Z5ZWI2cDqsvVe--AjHhePAHlOhLK8MT0) of Cheesy Arena's functionality.
 
 **For participants and spectators:**
@@ -43,7 +43,7 @@ Teams may use Cheesy Arena freely for practice, scrimmages, and off-season event
 1. Run the `cheesy-arena` or `cheesy-arena.exe` binary
 1. Navigate to http://localhost:8080 in your browser (Google Chrome recommended)
 
-##roboRIO Compatibility
+##roboRIO compatibility
 The 2015 FIRST FMS uses dynamic addressing and mDNS; however, the protocol by which it does so has not been documented or reverse-engineered.
 As a result, in order to use Cheesy Arena with the 2015 control system, all teams must assign static IP addresses to their roboRIOs and driver stations,
 as well as select the *'15 DS, '14 FMS* mode in the driver station settings. See the

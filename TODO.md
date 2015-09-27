@@ -28,7 +28,7 @@ Cheesy Arena To-Do List
 * Referee interface: have separate fouls for tech/non-tech for each applicable rule instead of the extra variable
 * Mobile compatibility for announcer display
 
-###Cheesy Arena Lite -- a game-agnostic version
+###Cheesy Arena Lite - a game-agnostic version
 * Configurable match period timing
 * Realtime scoring: just a simple single number input, plus API
 * Final score screen: just show point total and remove breakdowns
