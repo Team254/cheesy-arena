@@ -7,7 +7,6 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"strconv"
 	"time"
 )
@@ -116,11 +115,11 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 		// Update the teams in the match if they are not yet set or are incorrect.
 		if len(redAlliance) != 0 && !(teamInAlliance(match.Red1, redAlliance) &&
 			teamInAlliance(match.Red2, redAlliance) && teamInAlliance(match.Red3, redAlliance)) {
-			shuffleRedTeams(&match, redAlliance)
+			positionRedTeams(&match, redAlliance)
 			database.SaveMatch(&match)
 		} else if len(blueAlliance) != 0 && !(teamInAlliance(match.Blue1, blueAlliance) &&
 			teamInAlliance(match.Blue2, blueAlliance) && teamInAlliance(match.Blue3, blueAlliance)) {
-			shuffleBlueTeams(&match, blueAlliance)
+			positionBlueTeams(&match, blueAlliance)
 			database.SaveMatch(&match)
 		}
 
@@ -193,7 +192,7 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 		}
 	}
 
-	// Duplicate any ties if we have run out of matches. Don't reshuffle the team positions, so queueing
+	// Duplicate any ties if we have run out of matches. Don't change the team positions, so queueing
 	// personnel can reuse any tied matches without having to print new schedules.
 	if numIncomplete == 0 {
 		for index, tie := range ties {
@@ -214,25 +213,25 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 func createMatch(roundName string, round int, group int, instance int, redAlliance []AllianceTeam, blueAlliance []AllianceTeam) *Match {
 	match := Match{Type: "elimination", DisplayName: fmt.Sprintf("%s-%d", roundName, instance),
 		ElimRound: round, ElimGroup: group, ElimInstance: instance}
-	shuffleRedTeams(&match, redAlliance)
-	shuffleBlueTeams(&match, blueAlliance)
+	positionRedTeams(&match, redAlliance)
+	positionBlueTeams(&match, blueAlliance)
 	return &match
 }
 
-// Assigns the first three teams from the alliance randomly into the red team slots for the match.
-func shuffleRedTeams(match *Match, alliance []AllianceTeam) {
-	shuffle := rand.Perm(3)
-	match.Red1 = alliance[shuffle[0]].TeamId
-	match.Red2 = alliance[shuffle[1]].TeamId
-	match.Red3 = alliance[shuffle[2]].TeamId
+// Assigns the first three teams from the alliance into the red team slots for the match.
+func positionRedTeams(match *Match, alliance []AllianceTeam) {
+	// For the 2015 game, the alliance captain is in the middle, first pick on the left, second on the right.
+	match.Red1 = alliance[1].TeamId
+	match.Red2 = alliance[0].TeamId
+	match.Red3 = alliance[2].TeamId
 }
 
-// Assigns the first three teams from the alliance randomly into the blue team slots for the match.
-func shuffleBlueTeams(match *Match, alliance []AllianceTeam) {
-	shuffle := rand.Perm(3)
-	match.Blue1 = alliance[shuffle[0]].TeamId
-	match.Blue2 = alliance[shuffle[1]].TeamId
-	match.Blue3 = alliance[shuffle[2]].TeamId
+// Assigns the first three teams from the alliance into the blue team slots for the match.
+func positionBlueTeams(match *Match, alliance []AllianceTeam) {
+	// For the 2015 game, the alliance captain is in the middle, first pick on the left, second on the right.
+	match.Blue1 = alliance[1].TeamId
+	match.Blue2 = alliance[0].TeamId
+	match.Blue3 = alliance[2].TeamId
 }
 
 // Returns true if the given team is part of the given alliance.
