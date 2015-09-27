@@ -181,6 +181,7 @@ var invalidateStackScore = function() {
 
 // Sends a websocket message to indicate that the score for this alliance is ready.
 var commitMatchScore = function() {
+  websocket.send("commit", stacks);
   websocket.send("commitMatch");
 };
 
