@@ -86,9 +86,7 @@ func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the refereee interface client to send control commands and receive status updates.
 func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
-		return
-	}
+	// TODO(patrick): Enable authentication once Safari (for iPad) supports it over Websocket.
 
 	websocket, err := NewWebsocket(w, r)
 	if err != nil {
