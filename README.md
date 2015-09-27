@@ -7,7 +7,8 @@ Check out a [video overview](http://video.team254.com/watch/Z5ZWI2cDqsvVe--AjHhe
 
 **For participants and spectators:**
 
-* No-lag goal/pedestal lighting and realtime scoring
+* Same network isolation and security as the official FIRST FMS
+* No-lag realtime scoring
 * Team stack lights and sevent-segment display are replaced by an LCD screen, which shows team info before the match and realtime scoring and timer during the match
 * Smooth-scrolling rankings display
 * Direct publishing of schedule, results, and rankings to The Blue Alliance
@@ -42,6 +43,12 @@ Teams may use Cheesy Arena freely for practice, scrimmages, and off-season event
 1. Run the `cheesy-arena` or `cheesy-arena.exe` binary
 1. Navigate to http://localhost:8080 in your browser (Google Chrome recommended)
 
+##roboRIO Compatibility
+The 2015 FIRST FMS uses dynamic addressing and mDNS; however, the protocol by which it does so has not been documented or reverse-engineered.
+As a result, in order to use Cheesy Arena with the 2015 control system, all teams must assign static IP addresses to their roboRIOs and driver stations,
+as well as select the *'15 DS, '14 FMS* mode in the driver station settings. See the
+[Team Network Configuration wiki page](https://github.com/Team254/cheesy-arena/wiki/Team-Network-Configuration) for more details.
+
 ##Under the hood
 Cheesy Arena is written using [Go](http://golang.org), a relatively new language developed by Google. Go excels in the areas of concurrency, networking, performance, and portability, which makes it ideal for a field management system.
 
@@ -68,7 +75,7 @@ Cheesy Arena is far from finished! You can help by:
 * Sending baked goods to Pat
 
 ##Acknowledgements
-The following individuals contributed to make Cheesy Arena a reality:
+The following individuals contributed to make the initial release of Cheesy Arena a reality:
 
 * Tom Bottiglieri
 * James Cerar
@@ -82,3 +89,5 @@ The following individuals contributed to make Cheesy Arena a reality:
 * Jared Russell
 * Austin Schuh
 * Colin Wilson
+
+Since then, [several others](https://github.com/Team254/cheesy-arena/graphs/contributors) have contributed pull requests. Thanks!

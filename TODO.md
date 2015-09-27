@@ -6,9 +6,7 @@ Cheesy Arena To-Do List
 * Awards tracking and publishing
 * Elimination bracket report and audience screen
 * Interface for viewing logs (right now it's CSV files in Excel)
-* Ability to edit match result before committing it
-* Configurable match period timing (for test/practice matches only)
-* Block driver station port through AP to facilitate on-field tethering
+* Log/report to see which teams have successfully connected to the field
 * Quality of service
 * Twitter publishing
 
@@ -19,23 +17,26 @@ Cheesy Arena To-Do List
 
 ###Scorekeeper-facing features
 * Ability to unscore a match and reset it to non-played status
-* Role-based cookie authentication
-* Ability to mute match sounds from match play screen
 * Logging console on Match Play page for errors and warnings
-* Schedule generation takes match cycle time in min:sec instead of just seconds
 * Team/field timeout tracking and overlay
-* Make lower third show/hide commands use websockets instead of POST so that the scrolling doesn't reset when the page reloads
-* Allow reordering of lower thirds and sponsor slides in their respective setup pages
+* Allow reordering of sponsor slides in the setup page
 * Automatic creation of lower thirds for awards
+* Persist schedule blocks after schedule generation, in case the schedule needs to be tweaked and re-run
 
 ###Features for other volunteers
 * Referee interface: add timer starting at field reset to track time limit for calling timeouts/backups
 * Referee interface: have separate fouls for tech/non-tech for each applicable rule instead of the extra variable
-* Mobile compatibility for FTA and announcer displays
-* Automatic download of recent accomplishments (needs better TBA API)
+* Mobile compatibility for announcer display
+
+###Cheesy Arena Lite -- a game-agnostic version
+* Configurable match period timing
+* Realtime scoring: just a simple single number input, plus API
+* Final score screen: just show point total and remove breakdowns
+* Genericize logos
+* Manual input of match name
+* Remove match scheduling and team standings functionality
 
 ###Development tasks
-* Change to use the new FMS API for team data
 * Generate more schedules and find an automated way to evaluate them
 * Clean up sponsor carousel JavaScript and make it load new slides asynchronously without needing a reload of the audience display page
 * Refactor websockets to reduce code repetition between displays with similar functions
