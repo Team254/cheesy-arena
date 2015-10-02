@@ -229,7 +229,7 @@ var transitionScoreToBlank = function(callback) {
   transitionScoreToLogo(function() {
     transitionLogoToBlank(callback);
   });
-}
+};
 
 var transitionBlankToAllianceSelection = function(callback) {
   $('#allianceSelectionCentering').css("right","-60em").show();
