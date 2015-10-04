@@ -299,7 +299,7 @@ ip http authentication aaa
 no ip http secure-server
 ip http help-path http://www.cisco.com/warp/public/779/smbiz/prodconfig/help/eag
 access-list 100 deny udp any any eq 1120
-access-list 100 allow ip any any
+access-list 100 permit ip any any
 !
 bridge 1 route ip
 !
