@@ -33,7 +33,8 @@ func TestSetupSettings(t *testing.T) {
 
 	// Change the settings and check the response.
 	recorder = postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&displayBackgroundColor=#ff00ff&"+
-		"numElimAlliances=16&tbaPublishingEnabled=on&tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec")
+		"numElimAlliances=16&tbaPublishingEnabled=on&tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec&"+
+		"initialTowerStrength=9001")
 	assert.Equal(t, 302, recorder.Code)
 	recorder = getHttpResponse("/setup/settings")
 	assert.Contains(t, recorder.Body.String(), "Chezy Champs")
@@ -44,6 +45,7 @@ func TestSetupSettings(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "2014cc")
 	assert.Contains(t, recorder.Body.String(), "secretId")
 	assert.Contains(t, recorder.Body.String(), "tbasec")
+	assert.Contains(t, recorder.Body.String(), "9001")
 }
 
 func TestSetupSettingsInvalidValues(t *testing.T) {

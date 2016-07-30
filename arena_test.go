@@ -154,7 +154,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	// Check endgame and match end.
 	mainArena.matchStartTime = time.Now().
 		Add(-time.Duration(mainArena.matchTiming.AutoDurationSec+mainArena.matchTiming.PauseDurationSec+
-		mainArena.matchTiming.TeleopDurationSec-mainArena.matchTiming.EndgameTimeLeftSec) * time.Second)
+			mainArena.matchTiming.TeleopDurationSec-mainArena.matchTiming.EndgameTimeLeftSec) * time.Second)
 	mainArena.Update()
 	assert.Equal(t, ENDGAME_PERIOD, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)

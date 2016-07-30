@@ -14,8 +14,6 @@ type EventSettings struct {
 	SelectionRound2Order       string
 	SelectionRound3Order       string
 	TBADownloadEnabled         bool
-	RedGoalLightsAddress       string
-	BlueGoalLightsAddress      string
 	TbaPublishingEnabled       bool
 	TbaEventCode               string
 	TbaSecretId                string
@@ -29,6 +27,11 @@ type EventSettings struct {
 	BandwidthMonitoringEnabled bool
 	AdminPassword              string
 	ReaderPassword             string
+	RedGoalLightsAddress       string
+	RedDefenseLightsAddress    string
+	BlueGoalLightsAddress      string
+	BlueDefenseLightsAddress   string
+	InitialTowerStrength       int
 }
 
 const eventSettingsId = 0
@@ -45,6 +48,10 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.SelectionRound2Order = "L"
 		eventSettings.SelectionRound3Order = ""
 		eventSettings.TBADownloadEnabled = true
+
+		// Game-specific default settings.
+		eventSettings.InitialTowerStrength = 10
+
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {
 			return nil, err

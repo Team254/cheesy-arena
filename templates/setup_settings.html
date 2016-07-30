@@ -146,19 +146,6 @@
           </div>
         </fieldset>
         <fieldset>
-          <legend>Field I/O</legend>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Red goal LED controller address/port</label>
-            <div class="col-lg-7">
-              <input type="text" class="form-control" name="redGoalLightsAddress" value="{{.RedGoalLightsAddress}}">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Blue goal LED controller address/port</label>
-            <div class="col-lg-7">
-              <input type="text" class="form-control" name="blueGoalLightsAddress" value="{{.BlueGoalLightsAddress}}">
-            </div>
-          </div>
           <legend>Networking</legend>
           <p>Enable this setting if you have a Cisco Aironet AP1252AG access point and Catalyst 3500-series
               switch available, for isolating each team to its own SSID and VLAN.</p>
@@ -202,6 +189,42 @@
             <label class="col-lg-7 control-label">Enable bandwidth monitoring</label>
             <div class="col-lg-1 checkbox">
               <input type="checkbox" name="bandwidthMonitoringEnabled"{{if .BandwidthMonitoringEnabled}} checked{{end}}>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>LED Controllers</legend>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Red goal address/port</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="redGoalLightsAddress" value="{{.RedGoalLightsAddress}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Red defense address/port</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="redDefenseLightsAddress" value="{{.RedDefenseLightsAddress}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Blue goal address/port</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="blueGoalLightsAddress" value="{{.BlueGoalLightsAddress}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Blue defense address/port</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="blueDefenseLightsAddress" value="{{.BlueDefenseLightsAddress}}">
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>2016 Game Rules</legend>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Initial tower strength</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="initialTowerStrength" value="{{.InitialTowerStrength}}">
             </div>
           </div>
         </fieldset>

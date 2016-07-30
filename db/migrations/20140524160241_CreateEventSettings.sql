@@ -8,8 +8,6 @@ CREATE TABLE event_settings (
   selectionround2order VARCHAR(1),
   selectionround3order VARCHAR(1),
   teaminfodownloadenabled bool,
-  redgoallightsaddress VARCHAR(255),
-  bluegoallightsaddress VARCHAR(255),
   tbapublishingenabled bool,
   tbaeventcode VARCHAR(16),
   tbasecretid VARCHAR(255),
@@ -23,7 +21,12 @@ CREATE TABLE event_settings (
   bandwidthmonitoringenabled bool,
   tbadownloadenabled bool,
   adminpassword VARCHAR(255),
-  readerpassword VARCHAR(255)
+  readerpassword VARCHAR(255),
+  redgoallightsaddress VARCHAR(255),
+  reddefenselightsaddress VARCHAR(255),
+  bluegoallightsaddress VARCHAR(255),
+  bluedefenselightsaddress VARCHAR(255),
+  initialtowerstrength int
 );
 
 -- +goose Down

@@ -51,8 +51,6 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
 	eventSettings.TBADownloadEnabled = r.PostFormValue("TBADownloadEnabled") == "on"
-	eventSettings.RedGoalLightsAddress = r.PostFormValue("redGoalLightsAddress")
-	eventSettings.BlueGoalLightsAddress = r.PostFormValue("blueGoalLightsAddress")
 	eventSettings.TbaPublishingEnabled = r.PostFormValue("tbaPublishingEnabled") == "on"
 	eventSettings.TbaEventCode = r.PostFormValue("tbaEventCode")
 	eventSettings.TbaSecretId = r.PostFormValue("tbaSecretId")
@@ -66,6 +64,18 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.BandwidthMonitoringEnabled = r.PostFormValue("bandwidthMonitoringEnabled") == "on"
 	eventSettings.AdminPassword = r.PostFormValue("adminPassword")
 	eventSettings.ReaderPassword = r.PostFormValue("readerPassword")
+	eventSettings.RedGoalLightsAddress = r.PostFormValue("redGoalLightsAddress")
+	eventSettings.RedDefenseLightsAddress = r.PostFormValue("redDefenseLightsAddress")
+	eventSettings.BlueGoalLightsAddress = r.PostFormValue("blueGoalLightsAddress")
+	eventSettings.BlueDefenseLightsAddress = r.PostFormValue("blueDefenseLightsAddress")
+
+	initialTowerStrength, _ := strconv.Atoi(r.PostFormValue("initialTowerStrength"))
+	if initialTowerStrength < 1 {
+		renderSettings(w, r, "Initial tower strength must be at least 1.")
+		return
+	}
+	eventSettings.InitialTowerStrength = initialTowerStrength
+
 	err := db.SaveEventSettings(eventSettings)
 	if err != nil {
 		handleWebErr(w, err)
