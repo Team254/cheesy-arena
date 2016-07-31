@@ -3,6 +3,7 @@ CREATE TABLE match_results (
   id INTEGER PRIMARY KEY,
   matchid int,
   playnumber int,
+  matchtype VARCHAR(16),
   redscorejson text,
   bluescorejson text,
   redcardsjson text,

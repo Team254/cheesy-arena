@@ -33,7 +33,7 @@ func TestMatchResultCrud(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, matchResult, *matchResult2)
 
-	matchResult.BlueScore.CoopertitionSet = !matchResult.BlueScore.CoopertitionSet
+	matchResult.BlueScore.AutoDefensesReached = 12
 	db.SaveMatchResult(&matchResult)
 	matchResult2, err = db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)
@@ -81,41 +81,77 @@ func TestGetMatchResultForMatch(t *testing.T) {
 }
 
 func TestScoreSummary(t *testing.T) {
+	clearDb()
+	defer clearDb()
+	db, err := OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+
 	matchResult := buildTestMatchResult(1, 1)
 	redSummary := matchResult.RedScoreSummary()
-	assert.Equal(t, 40, redSummary.CoopertitionPoints)
-	assert.Equal(t, 28, redSummary.AutoPoints)
-	assert.Equal(t, 24, redSummary.ContainerPoints)
-	assert.Equal(t, 12, redSummary.TotePoints)
-	assert.Equal(t, 6, redSummary.LitterPoints)
-	assert.Equal(t, 18, redSummary.FoulPoints)
-	assert.Equal(t, 92, redSummary.Score)
+	assert.Equal(t, 55, redSummary.AutoPoints)
+	assert.Equal(t, 60, redSummary.DefensePoints)
+	assert.Equal(t, 86, redSummary.GoalPoints)
+	assert.Equal(t, 10, redSummary.ScaleChallengePoints)
+	assert.Equal(t, 101, redSummary.TeleopPoints)
+	assert.Equal(t, 0, redSummary.FoulPoints)
+	assert.Equal(t, 0, redSummary.BonusPoints)
+	assert.Equal(t, 156, redSummary.Score)
+	assert.Equal(t, true, redSummary.Breached)
+	assert.Equal(t, false, redSummary.Captured)
+	assert.Equal(t, -5, redSummary.OpponentTowerStrength)
 
 	blueSummary := matchResult.BlueScoreSummary()
-	assert.Equal(t, 40, blueSummary.CoopertitionPoints)
-	assert.Equal(t, 10, blueSummary.AutoPoints)
-	assert.Equal(t, 24, blueSummary.ContainerPoints)
-	assert.Equal(t, 24, blueSummary.TotePoints)
-	assert.Equal(t, 6, blueSummary.LitterPoints)
-	assert.Equal(t, 0, blueSummary.FoulPoints)
-	assert.Equal(t, 104, blueSummary.Score)
-}
+	assert.Equal(t, 22, blueSummary.AutoPoints)
+	assert.Equal(t, 25, blueSummary.DefensePoints)
+	assert.Equal(t, 36, blueSummary.GoalPoints)
+	assert.Equal(t, 35, blueSummary.ScaleChallengePoints)
+	assert.Equal(t, 76, blueSummary.TeleopPoints)
+	assert.Equal(t, 15, blueSummary.FoulPoints)
+	assert.Equal(t, 0, blueSummary.BonusPoints)
+	assert.Equal(t, 113, blueSummary.Score)
+	assert.Equal(t, false, blueSummary.Breached)
+	assert.Equal(t, false, blueSummary.Captured)
+	assert.Equal(t, 1, blueSummary.OpponentTowerStrength)
 
-func TestCorrectEliminationScore(t *testing.T) {
-	// TODO(patrick): Test proper calculation of DQ.
-	matchResult := MatchResult{}
-	matchResult.CorrectEliminationScore()
+	// Test breach boundary conditions.
+	matchResult.RedScore.DefensesCrossed[4] = 2
+	assert.Equal(t, true, matchResult.RedScoreSummary().Breached)
+	matchResult.RedScore.AutoDefensesCrossed[0] = 0
+	assert.Equal(t, true, matchResult.RedScoreSummary().Breached)
+	matchResult.RedScore.DefensesCrossed[1] = 1
+	assert.Equal(t, false, matchResult.RedScoreSummary().Breached)
 
-	// TODO(patrick): Put back elim tiebreaker tests if the game calls for it.
+	// Test capture boundary conditions.
+	matchResult.BlueScore.AutoHighGoals = 1
+	assert.Equal(t, 0, matchResult.BlueScoreSummary().OpponentTowerStrength)
+	assert.Equal(t, true, matchResult.BlueScoreSummary().Captured)
+	matchResult.BlueScore.HighGoals = 5
+	assert.Equal(t, true, matchResult.BlueScoreSummary().Captured)
+	matchResult.BlueScore.Challenges = 0
+	assert.Equal(t, false, matchResult.BlueScoreSummary().Captured)
+
+	// Test elimination bonus.
+	matchResult.MatchType = "elimination"
+	matchResult.RedScore.DefensesCrossed[1] = 2
+	assert.Equal(t, 20, matchResult.RedScoreSummary().BonusPoints)
+	assert.Equal(t, 171, matchResult.RedScoreSummary().Score)
+	matchResult.BlueScore.Challenges = 1
+	assert.Equal(t, 25, matchResult.BlueScoreSummary().BonusPoints)
+	assert.Equal(t, 153, matchResult.BlueScoreSummary().Score)
+	matchResult.RedScore.Scales = 1
+	assert.Equal(t, 45, matchResult.RedScoreSummary().BonusPoints)
+	matchResult.MatchType = "qualification"
+	assert.Equal(t, 0, matchResult.RedScoreSummary().BonusPoints)
+	assert.Equal(t, 0, matchResult.BlueScoreSummary().BonusPoints)
 }
 
 func buildTestMatchResult(matchId int, playNumber int) MatchResult {
-	fouls := []Foul{Foul{25, "G22", 25.2}, Foul{25, "G18", 150}, Foul{1868, "G20", 0}}
-	stacks1 := []Stack{Stack{6, true, true}, Stack{0, false, false}, Stack{0, true, false}}
-	stacks2 := []Stack{Stack{5, true, false}, Stack{6, false, false}, Stack{1, true, true}}
-	matchResult := MatchResult{MatchId: matchId, PlayNumber: playNumber}
-	matchResult.RedScore = Score{false, true, false, true, stacks1, false, true, fouls, false}
-	matchResult.BlueScore = Score{true, false, true, false, stacks2, false, true, []Foul{}, false}
+	fouls := []Foul{Foul{25, "G22", false, 25.2}, Foul{25, "G18", true, 150}, Foul{1868, "G20", true, 0}}
+	matchResult := MatchResult{MatchId: matchId, PlayNumber: playNumber, MatchType: "qualification"}
+	matchResult.RedScore = Score{0, [5]int{1, 0, 1, 1, 0}, 1, 2, [5]int{1, 2, 1, 1, 1}, 3, 11, 2, 0, fouls, false}
+	matchResult.BlueScore = Score{1, [5]int{0, 1, 0, 0, 0}, 2, 0, [5]int{1, 1, 0, 0, 1}, 3, 4, 1, 2, []Foul{}, false}
 	matchResult.RedCards = map[string]string{"1868": "yellow"}
 	matchResult.BlueCards = map[string]string{}
 	return matchResult

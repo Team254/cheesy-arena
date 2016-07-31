@@ -47,9 +47,9 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 		Alliance       string
 		TeamId         int
 		Rule           string
-		TimeInMatchSec float64
 		IsTechnical    bool
-	}{"red", 256, "G22", 0, false}
+		TimeInMatchSec float64
+	}{"red", 256, "G22", false, 0}
 	ws.Write("addFoul", foulData)
 	foulData.TeamId = 359
 	foulData.IsTechnical = true
@@ -63,13 +63,16 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	if assert.Equal(t, 2, len(mainArena.redRealtimeScore.CurrentScore.Fouls)) {
 		assert.Equal(t, 256, mainArena.redRealtimeScore.CurrentScore.Fouls[0].TeamId)
 		assert.Equal(t, "G22", mainArena.redRealtimeScore.CurrentScore.Fouls[0].Rule)
+		assert.Equal(t, false, mainArena.redRealtimeScore.CurrentScore.Fouls[0].IsTechnical)
 		assert.Equal(t, 0.0, mainArena.redRealtimeScore.CurrentScore.Fouls[0].TimeInMatchSec)
 		assert.Equal(t, 359, mainArena.redRealtimeScore.CurrentScore.Fouls[1].TeamId)
 		assert.Equal(t, "G22", mainArena.redRealtimeScore.CurrentScore.Fouls[1].Rule)
+		assert.Equal(t, true, mainArena.redRealtimeScore.CurrentScore.Fouls[1].IsTechnical)
 	}
 	if assert.Equal(t, 1, len(mainArena.blueRealtimeScore.CurrentScore.Fouls)) {
 		assert.Equal(t, 1680, mainArena.blueRealtimeScore.CurrentScore.Fouls[0].TeamId)
 		assert.Equal(t, "G22", mainArena.blueRealtimeScore.CurrentScore.Fouls[0].Rule)
+		assert.Equal(t, true, mainArena.blueRealtimeScore.CurrentScore.Fouls[0].IsTechnical)
 		assert.Equal(t, 0.0, mainArena.blueRealtimeScore.CurrentScore.Fouls[0].TimeInMatchSec)
 	}
 	assert.False(t, mainArena.redRealtimeScore.FoulsCommitted)

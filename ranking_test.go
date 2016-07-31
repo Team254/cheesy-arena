@@ -28,7 +28,7 @@ func TestRankingCrud(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 
-	ranking := Ranking{254, 1, 20, 1100, 625, 90, 554, 10, 0.254, 0, 10}
+	ranking := Ranking{254, 1, 20, 625, 90, 554, 10, 0.254, 0, 10}
 	db.CreateRanking(&ranking)
 	ranking2, err := db.GetRankingForTeam(254)
 	assert.Nil(t, err)
@@ -53,7 +53,7 @@ func TestTruncateRankings(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 
-	ranking := Ranking{254, 1, 20, 1100, 625, 90, 554, 10, 0.254, 0, 10}
+	ranking := Ranking{254, 1, 20, 625, 90, 554, 10, 0.254, 0, 10}
 	db.CreateRanking(&ranking)
 	db.TruncateRankings()
 	ranking2, err := db.GetRankingForTeam(254)
@@ -90,6 +90,7 @@ func TestCalculateRankings(t *testing.T) {
 	db, err := OpenDatabase(testDbPath)
 	assert.Nil(t, err)
 	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 	rand.Seed(0)
 
 	setupMatchResultsForRankings(db)
@@ -98,12 +99,12 @@ func TestCalculateRankings(t *testing.T) {
 	rankings, err := db.GetAllRankings()
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(rankings)) {
-		assert.Equal(t, Ranking{4, 1, 98, 80, 38, 48, 36, 12, 0.897169713149801, 0, 2}, rankings[0])
-		assert.Equal(t, Ranking{5, 2, 65.33, 80, 38, 48, 36, 12, 0.2885856518054551, 0, 3}, rankings[1])
-		assert.Equal(t, Ranking{1, 3, 61.33, 80, 56, 48, 24, 12, 0.2730468047134829, 0, 3}, rankings[2])
-		assert.Equal(t, Ranking{6, 4, 52, 40, 10, 24, 24, 6, 0.16735444255905835, 0, 2}, rankings[3])
-		assert.Equal(t, Ranking{3, 5, 46, 40, 28, 24, 12, 6, 0.9026048462705047, 0, 2}, rankings[4])
-		assert.Equal(t, Ranking{2, 6, 30.66, 40, 28, 24, 12, 6, 0.8497802817628735, 1, 3}, rankings[5])
+		assert.Equal(t, Ranking{1, 1, 6, 110, 20, 172, 120, 0.2730468047134829, 0, 3}, rankings[0])
+		assert.Equal(t, Ranking{3, 2, 4, 55, 10, 86, 60, 0.9026048462705047, 0, 2}, rankings[1])
+		assert.Equal(t, Ranking{4, 3, 2, 77, 45, 122, 85, 0.897169713149801, 0, 2}, rankings[2])
+		assert.Equal(t, Ranking{5, 4, 3, 77, 45, 122, 85, 0.2885856518054551, 0, 3}, rankings[3])
+		assert.Equal(t, Ranking{2, 5, 3, 55, 10, 86, 60, 0.8497802817628735, 1, 3}, rankings[4])
+		assert.Equal(t, Ranking{6, 6, 1, 22, 35, 36, 25, 0.16735444255905835, 0, 2}, rankings[5])
 	}
 
 	// Test after changing a match result.
@@ -116,12 +117,12 @@ func TestCalculateRankings(t *testing.T) {
 	rankings, err = db.GetAllRankings()
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(rankings)) {
-		assert.Equal(t, Ranking{6, 1, 104, 80, 20, 48, 48, 12, 0.24043190328608438, 0, 2}, rankings[0])
-		assert.Equal(t, Ranking{5, 2, 100, 120, 48, 72, 60, 18, 0.2092018731282357, 0, 3}, rankings[1])
-		assert.Equal(t, Ranking{4, 3, 98, 80, 38, 48, 36, 12, 0.5102423328818813, 0, 2}, rankings[2])
-		assert.Equal(t, Ranking{3, 4, 92, 80, 56, 48, 24, 12, 0.6930700440076261, 0, 2}, rankings[3])
-		assert.Equal(t, Ranking{1, 5, 92, 120, 84, 72, 36, 18, 0.284824110942037, 0, 3}, rankings[4])
-		assert.Equal(t, Ranking{2, 6, 61.33, 80, 56, 48, 24, 12, 0.4018978925803393, 1, 3}, rankings[5])
+		assert.Equal(t, Ranking{3, 1, 6, 110, 20, 172, 120, 0.6930700440076261, 0, 2}, rankings[0])
+		assert.Equal(t, Ranking{1, 2, 8, 165, 30, 258, 180, 0.284824110942037, 0, 3}, rankings[1])
+		assert.Equal(t, Ranking{2, 3, 5, 110, 20, 172, 120, 0.4018978925803393, 1, 3}, rankings[2])
+		assert.Equal(t, Ranking{4, 4, 2, 77, 45, 122, 85, 0.5102423328818813, 0, 2}, rankings[3])
+		assert.Equal(t, Ranking{5, 5, 2, 99, 80, 158, 110, 0.2092018731282357, 0, 3}, rankings[4])
+		assert.Equal(t, Ranking{6, 6, 0, 44, 70, 72, 50, 0.24043190328608438, 0, 2}, rankings[5])
 	}
 }
 
@@ -134,18 +135,18 @@ func TestSortRankings(t *testing.T) {
 
 	// Check tiebreakers.
 	rankings := make(map[int]*Ranking)
-	rankings[1] = &Ranking{1, 0, 20, 50, 50, 50, 50, 10, 0.49, 0, 10}
-	rankings[2] = &Ranking{2, 0, 20, 50, 50, 50, 50, 10, 0.51, 0, 10}
-	rankings[3] = &Ranking{3, 0, 20, 50, 50, 50, 49, 10, 0.50, 0, 10}
-	rankings[4] = &Ranking{4, 0, 20, 50, 50, 50, 51, 10, 0.50, 0, 10}
-	rankings[5] = &Ranking{5, 0, 20, 50, 50, 49, 50, 10, 0.50, 0, 10}
-	rankings[6] = &Ranking{6, 0, 20, 50, 50, 51, 50, 10, 0.50, 0, 10}
-	rankings[7] = &Ranking{7, 0, 20, 50, 49, 50, 50, 10, 0.50, 0, 10}
-	rankings[8] = &Ranking{8, 0, 20, 50, 51, 50, 50, 10, 0.50, 0, 10}
-	rankings[9] = &Ranking{9, 0, 20, 49, 50, 50, 50, 10, 0.50, 0, 10}
-	rankings[10] = &Ranking{10, 0, 20, 51, 50, 50, 50, 10, 0.50, 0, 10}
-	rankings[11] = &Ranking{11, 0, 19, 50, 50, 50, 50, 10, 0.50, 0, 10}
-	rankings[12] = &Ranking{12, 0, 21, 50, 50, 50, 50, 10, 0.50, 0, 10}
+	rankings[1] = &Ranking{1, 0, 50, 50, 50, 50, 50, 0.49, 0, 10}
+	rankings[2] = &Ranking{2, 0, 50, 50, 50, 50, 50, 0.51, 0, 10}
+	rankings[3] = &Ranking{3, 0, 50, 50, 50, 50, 49, 0.50, 0, 10}
+	rankings[4] = &Ranking{4, 0, 50, 50, 50, 50, 51, 0.50, 0, 10}
+	rankings[5] = &Ranking{5, 0, 50, 50, 50, 49, 50, 0.50, 0, 10}
+	rankings[6] = &Ranking{6, 0, 50, 50, 50, 51, 50, 0.50, 0, 10}
+	rankings[7] = &Ranking{7, 0, 50, 50, 49, 50, 50, 0.50, 0, 10}
+	rankings[8] = &Ranking{8, 0, 50, 50, 51, 50, 50, 0.50, 0, 10}
+	rankings[9] = &Ranking{9, 0, 50, 49, 50, 50, 50, 0.50, 0, 10}
+	rankings[10] = &Ranking{10, 0, 50, 51, 50, 50, 50, 0.50, 0, 10}
+	rankings[11] = &Ranking{11, 0, 49, 50, 50, 50, 50, 0.50, 0, 10}
+	rankings[12] = &Ranking{12, 0, 51, 50, 50, 50, 50, 0.50, 0, 10}
 	sortedRankings := sortRankings(rankings)
 	assert.Equal(t, 12, sortedRankings[0].TeamId)
 	assert.Equal(t, 10, sortedRankings[1].TeamId)
@@ -162,9 +163,9 @@ func TestSortRankings(t *testing.T) {
 
 	// Check with unequal number of matches played.
 	rankings = make(map[int]*Ranking)
-	rankings[1] = &Ranking{1, 0, 5, 10, 25, 25, 25, 25, 0.49, 0, 5}
-	rankings[2] = &Ranking{2, 0, 5, 19, 50, 50, 50, 50, 0.51, 0, 9}
-	rankings[3] = &Ranking{3, 0, 5, 20, 50, 50, 50, 50, 0.51, 0, 10}
+	rankings[1] = &Ranking{1, 0, 10, 25, 25, 25, 25, 0.49, 0, 5}
+	rankings[2] = &Ranking{2, 0, 19, 50, 50, 50, 50, 0.51, 0, 9}
+	rankings[3] = &Ranking{3, 0, 20, 50, 50, 50, 50, 0.51, 0, 10}
 	sortedRankings = sortRankings(rankings)
 	assert.Equal(t, 2, sortedRankings[0].TeamId)
 	assert.Equal(t, 3, sortedRankings[1].TeamId)

@@ -204,7 +204,8 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	data = struct {
 		RedScore  int
 		BlueScore int
-	}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
+	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
+		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -252,7 +253,8 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				message = struct {
 					RedScore  int
 					BlueScore int
-				}{mainArena.redRealtimeScore.Score(), mainArena.blueRealtimeScore.Score()}
+				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
+					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
 			case _, ok := <-robotStatusListener:
 				if !ok {
 					return
@@ -424,18 +426,8 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 // Saves the given match and result to the database, supplanting any previous result for the match.
 func CommitMatchScore(match *Match, matchResult *MatchResult, loadToShowBuffer bool) error {
-	if matchResult.RedScore.CoopertitionSet != matchResult.BlueScore.CoopertitionSet ||
-		matchResult.RedScore.CoopertitionStack != matchResult.BlueScore.CoopertitionStack {
-		// Don't accept the score if the red and blue co-opertition points don't match up.
-		return fmt.Errorf("Red and blue co-opertition points don't match.")
-	}
-
-	// Remove empty stacks to make the results more concise.
-	matchResult.RedScore.Stacks = stripEmptyStacks(matchResult.RedScore.Stacks)
-	matchResult.BlueScore.Stacks = stripEmptyStacks(matchResult.BlueScore.Stacks)
-
 	if match.Type == "elimination" {
-		// Adjust the score if necessary for an elimination DQ or tie.
+		// Adjust the score if necessary for an elimination DQ.
 		matchResult.CorrectEliminationScore()
 	}
 
@@ -539,7 +531,7 @@ func CommitMatchScore(match *Match, matchResult *MatchResult, loadToShowBuffer b
 }
 
 func GetCurrentMatchResult() *MatchResult {
-	return &MatchResult{MatchId: mainArena.currentMatch.Id,
+	return &MatchResult{MatchId: mainArena.currentMatch.Id, MatchType: mainArena.currentMatch.Type,
 		RedScore: mainArena.redRealtimeScore.CurrentScore, BlueScore: mainArena.blueRealtimeScore.CurrentScore,
 		RedCards: mainArena.redRealtimeScore.Cards, BlueCards: mainArena.blueRealtimeScore.Cards}
 }
@@ -602,14 +594,4 @@ func buildMatchPlayList(matchType string) (MatchPlayList, error) {
 	sort.Stable(matchPlayList)
 
 	return matchPlayList, nil
-}
-
-func stripEmptyStacks(stacks []Stack) []Stack {
-	var filteredStacks []Stack
-	for _, stack := range stacks {
-		if stack.Totes > 0 || stack.Container || stack.Litter {
-			filteredStacks = append(filteredStacks, stack)
-		}
-	}
-	return filteredStacks
 }

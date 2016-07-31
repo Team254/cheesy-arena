@@ -142,9 +142,10 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		switch messageType {
 		case "addFoul":
 			args := struct {
-				Alliance string
-				TeamId   int
-				Rule     string
+				Alliance    string
+				TeamId      int
+				Rule        string
+				IsTechnical bool
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -153,7 +154,8 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Add the foul to the correct alliance's list.
-			foul := Foul{TeamId: args.TeamId, Rule: args.Rule, TimeInMatchSec: mainArena.MatchTimeSec()}
+			foul := Foul{TeamId: args.TeamId, Rule: args.Rule, IsTechnical: args.IsTechnical,
+				TimeInMatchSec: mainArena.MatchTimeSec()}
 			if args.Alliance == "red" {
 				mainArena.redRealtimeScore.CurrentScore.Fouls =
 					append(mainArena.redRealtimeScore.CurrentScore.Fouls, foul)
@@ -167,8 +169,8 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				Alliance       string
 				TeamId         int
 				Rule           string
-				TimeInMatchSec float64
 				IsTechnical    bool
+				TimeInMatchSec float64
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -177,7 +179,8 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Remove the foul from the correct alliance's list.
-			deleteFoul := Foul{TeamId: args.TeamId, Rule: args.Rule, TimeInMatchSec: args.TimeInMatchSec}
+			deleteFoul := Foul{TeamId: args.TeamId, Rule: args.Rule, IsTechnical: args.IsTechnical,
+				TimeInMatchSec: args.TimeInMatchSec}
 			var fouls *[]Foul
 			if args.Alliance == "red" {
 				fouls = &mainArena.redRealtimeScore.CurrentScore.Fouls

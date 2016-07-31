@@ -517,6 +517,6 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 }
 
 // Calculates the integer score value for the given realtime snapshot.
-func (realtimeScore *RealtimeScore) Score() int {
-	return scoreSummary(&realtimeScore.CurrentScore).Score
+func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
+	return scoreSummary(&realtimeScore.CurrentScore, opponentFouls, mainArena.currentMatch.Type).Score
 }

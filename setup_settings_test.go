@@ -5,6 +5,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"mime/multipart"
@@ -135,6 +136,7 @@ func TestSetupSettingsBackupRestoreDb(t *testing.T) {
 
 	// Check restoring with the backup retrieved before.
 	recorder = postFileHttpResponse("/setup/db/restore", "databaseFile", backupBody)
+	fmt.Println(recorder.Body.String())
 	assert.Equal(t, "Chezy Champs", eventSettings.Name)
 }
 

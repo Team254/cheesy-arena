@@ -47,16 +47,15 @@ type TbaScoreBreakdown struct {
 }
 
 type TbaRanking struct {
-	TeamKey      string  `json:"team_key"`
-	Rank         int     `json:"rank"`
-	QA           float64 `json:"QA"`
-	Coopertition int     `json:"Coopertition"`
-	Auto         int     `json:"Auto"`
-	Container    int     `json:"Container"`
-	Tote         int     `json:"Tote"`
-	Litter       int     `json:"Litter"`
-	Dqs          int     `json:"dqs"`
-	Played       int     `json:"played"`
+	TeamKey        string `json:"team_key"`
+	Rank           int    `json:"rank"`
+	RP             int    `json:"RP"`
+	Auto           int    `json:"Auto"`
+	ScaleChallenge int    `json:"ScaleChallenge"`
+	Goal           int    `json:"Goal"`
+	Defense        int    `json:"Defense"`
+	Dqs            int    `json:"dqs"`
+	Played         int    `json:"played"`
 }
 
 type TbaTeam struct {
@@ -245,23 +244,26 @@ func PublishMatches() error {
 
 		// Fill in scores if the match has been played.
 		if match.Status == "complete" {
-			matchResult, err := db.GetMatchResultForMatch(match.Id)
-			if err != nil {
-				return err
-			}
-			if matchResult != nil {
-				redScoreSummary := matchResult.RedScoreSummary()
-				blueScoreSummary := matchResult.BlueScoreSummary()
-				redAlliance["score"] = redScoreSummary.Score
-				blueAlliance["score"] = blueScoreSummary.Score
-				scoreBreakdown = make(map[string]TbaScoreBreakdown)
-				scoreBreakdown["red"] = TbaScoreBreakdown{redScoreSummary.CoopertitionPoints,
-					redScoreSummary.AutoPoints, redScoreSummary.ContainerPoints, redScoreSummary.TotePoints,
-					redScoreSummary.LitterPoints, redScoreSummary.FoulPoints}
-				scoreBreakdown["blue"] = TbaScoreBreakdown{blueScoreSummary.CoopertitionPoints,
-					blueScoreSummary.AutoPoints, blueScoreSummary.ContainerPoints, blueScoreSummary.TotePoints,
-					blueScoreSummary.LitterPoints, blueScoreSummary.FoulPoints}
-			}
+			// TODO(patrick): Implement for 2016.
+			/*
+				matchResult, err := db.GetMatchResultForMatch(match.Id)
+				if err != nil {
+					return err
+				}
+				if matchResult != nil {
+					redScoreSummary := matchResult.RedScoreSummary()
+					blueScoreSummary := matchResult.BlueScoreSummary()
+					redAlliance["score"] = redScoreSummary.Score
+					blueAlliance["score"] = blueScoreSummary.Score
+					scoreBreakdown = make(map[string]TbaScoreBreakdown)
+					scoreBreakdown["red"] = TbaScoreBreakdown{redScoreSummary.CoopertitionPoints,
+						redScoreSummary.AutoPoints, redScoreSummary.ContainerPoints, redScoreSummary.TotePoints,
+						redScoreSummary.LitterPoints, redScoreSummary.FoulPoints}
+					scoreBreakdown["blue"] = TbaScoreBreakdown{blueScoreSummary.CoopertitionPoints,
+						blueScoreSummary.AutoPoints, blueScoreSummary.ContainerPoints, blueScoreSummary.TotePoints,
+						blueScoreSummary.LitterPoints, blueScoreSummary.FoulPoints}
+				}
+			*/
 		}
 
 		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, map[string]interface{}{"red": redAlliance,
@@ -298,12 +300,12 @@ func PublishRankings() error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"QA", "Coopertition", "Auto", "Container", "Tote", "Litter"}
+	breakdowns := []string{"RP", "Auto", "Scale/Challenge", "Goal", "Defense"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
-		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.QualificationAverage,
-			ranking.CoopertitionPoints, ranking.AutoPoints, ranking.ContainerPoints, ranking.TotePoints,
-			ranking.LitterPoints, ranking.Disqualifications, ranking.Played}
+		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.RankingPoints,
+			ranking.AutoPoints, ranking.ScaleChallengePoints, ranking.GoalPoints, ranking.DefensePoints,
+			ranking.Disqualifications, ranking.Played}
 	}
 	jsonBody, err := json.Marshal(map[string]interface{}{"breakdowns": breakdowns, "rankings": tbaRankings})
 	if err != nil {
