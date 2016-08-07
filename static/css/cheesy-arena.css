@@ -99,54 +99,8 @@
 .scoring-comment {
   font-size: 20px;
 }
-.scoring-comment[data-value=true] {
-  color: #0a0;
-}
-.scoring-comment[data-value=false] {
-  color: #f00;
-}
 .scoring-message {
   color: #f00;
-}
-.stack-grid {
-  width: 90%;
-  margin: 5%;
-  border: 2px solid transparent;
-}
-.stack-grid[data-changed=true] {
-  border: 2px solid #fc0;
-}
-.stack-grid td {
-  width: 20%;
-  height: 120px;
-}
-.stack-grid td[data-selected=true] {
-  background-color: #ffc;
-}
-.stack-tote-count {
-  color: #999;
-  font-size: 40px;
-  padding: 20px;
-}
-.stack-container {
-  position: relative;
-  left: 47px;
-  bottom: 50px;
-  margin-bottom: -40px;
-  border-top: 40px solid #696;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  width: 35px;
-  height: 0;
-}
-.stack-litter {
-  position: relative;
-  left: 60px;
-  bottom: 80px;
-  margin-bottom: -30px;
-  width: 10px;
-  height: 30px;
-  background-color: #9f0;
 }
 .btn-lower-third {
   width: 80px;

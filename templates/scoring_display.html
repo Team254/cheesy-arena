@@ -16,20 +16,24 @@
         <h2>Autonomous Period</h2>
         <p>Use the following keyboard shortcuts:</p>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">r</div>
-          <div class="col-lg-8 scoring-comment">Toggle robot set</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">1-5</div>
+          <div class="col-lg-8 scoring-comment">Defense crossed +</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">c</div>
-          <div class="col-lg-8 scoring-comment">Toggle container set</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">Shift+1-5</div>
+          <div class="col-lg-8 scoring-comment">Defense crossed -</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">t</div>
-          <div class="col-lg-8 scoring-comment">Toggle tote set</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">r/R</div>
+          <div class="col-lg-8 scoring-comment">Defenses reached +/-</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">s</div>
-          <div class="col-lg-8 scoring-comment">Toggle stacked tote set</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">h/H</div>
+          <div class="col-lg-8 scoring-comment">High goals +/-</div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-1 scoring">l/L</div>
+          <div class="col-lg-8 scoring-comment">Low goals +/-</div>
         </div>
         <div class="row">
           <div class="col-lg-3 col-lg-offset-1 scoring">Enter</div>
@@ -40,32 +44,28 @@
         <h2>Teleoperated Period</h2>
         <p>Use the following keyboard shortcuts:</p>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">t</div>
-          <div class="col-lg-8 scoring-comment">Toggle co-op tote set</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">1-5</div>
+          <div class="col-lg-8 scoring-comment">Defense crossed +</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">s</div>
-          <div class="col-lg-8 scoring-comment">Toggle co-op stacked tote set</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">Shift+1-5</div>
+          <div class="col-lg-8 scoring-comment">Defense crossed -</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">j/l</div>
-          <div class="col-lg-8 scoring-comment">Change selected stack</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">h/H</div>
+          <div class="col-lg-8 scoring-comment">High goals +/-</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">i/k</div>
-          <div class="col-lg-8 scoring-comment">Add/remove totes for selected stack</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">l/L</div>
+          <div class="col-lg-8 scoring-comment">Low goals +/-</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">c</div>
-          <div class="col-lg-8 scoring-comment">Toggle container for selected stack</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">c/C</div>
+          <div class="col-lg-8 scoring-comment">Challenges +/-</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">n</div>
-          <div class="col-lg-8 scoring-comment">Toggle noodle for selected stack</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">Enter</div>
-          <div class="col-lg-8 scoring-comment">Commit tote stack change</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">s/S</div>
+          <div class="col-lg-8 scoring-comment">Scales +/-</div>
         </div>
         <div class="row">
           <div class="col-lg-3 col-lg-offset-1 scoring">a</div>
@@ -77,54 +77,83 @@
       <div id="autoScore" style="display: none;">
         <h2>Autonomous Score</h2>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Robot Set</div>
-          <div class="col-lg-2 scoring-comment" id="autoRobotSet" data-value="false">No</div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Defense crossings</div>
         </div>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Container Set</div>
-          <div class="col-lg-2 scoring-comment" id="autoContainerSet" data-value="false">No</div>
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 1</div>
+          <div class="col-lg-2 scoring-comment" id="autoDefense1Crossings"></div>
         </div>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Tote Set</div>
-          <div class="col-lg-2 scoring-comment" id="autoToteSet" data-value="false">No</div>
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 2</div>
+          <div class="col-lg-2 scoring-comment" id="autoDefense2Crossings"></div>
         </div>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Stacked Tote Set</div>
-          <div class="col-lg-2 scoring-comment" id="autoStackedToteSet" data-value="false">No</div>
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 3</div>
+          <div class="col-lg-2 scoring-comment" id="autoDefense3Crossings"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 4</div>
+          <div class="col-lg-2 scoring-comment" id="autoDefense4Crossings"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 5</div>
+          <div class="col-lg-2 scoring-comment" id="autoDefense5Crossings"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Defenses reached</div>
+          <div class="col-lg-2 scoring-comment" id="autoDefensesReached"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">High goals</div>
+          <div class="col-lg-2 scoring-comment" id="autoHighGoals"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Low goals</div>
+          <div class="col-lg-2 scoring-comment" id="autoLowGoals"></div>
         </div>
         <h3 class="text-center scoring-message">Press Enter to commit autonomous score</h3>
       </div>
       <div id="teleopScore" style="display: none;">
         <h2>Teleoperated Score</h2>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Co-op set</div>
-          <div class="col-lg-2 scoring-comment" id="coopertitionSet">No</div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Defense crossings</div>
         </div>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Co-op stack</div>
-          <div class="col-lg-2 scoring-comment" id="coopertitionStack">No</div>
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 1</div>
+          <div class="col-lg-4 scoring-comment" id="defense1Crossings"></div>
         </div>
         <div class="row">
-          <table class="stack-grid" data-changed="false">
-            <tr>
-              {{template "stack" "0"}}
-              {{template "stack" "1"}}
-              {{template "stack" "2"}}
-              {{template "stack" "3"}}
-              {{template "stack" "4"}}
-            </tr>
-            <tr>
-              {{template "stack" "5"}}
-              {{template "stack" "6"}}
-              {{template "stack" "7"}}
-              {{template "stack" "8"}}
-              {{template "stack" "9"}}
-            </tr>
-          </table>
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 2</div>
+          <div class="col-lg-4 scoring-comment" id="defense2Crossings"></div>
         </div>
-        <h3 class="text-center scoring-message" id="teleopMessage" style="opacity: 0">
-          Press Enter to confirm stack changes
-        </h3>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 3</div>
+          <div class="col-lg-4 scoring-comment" id="defense3Crossings"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 4</div>
+          <div class="col-lg-4 scoring-comment" id="defense4Crossings"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 5</div>
+          <div class="col-lg-4 scoring-comment" id="defense5Crossings"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">High goals</div>
+          <div class="col-lg-2 scoring-comment" id="highGoals"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Low goals</div>
+          <div class="col-lg-2 scoring-comment" id="lowGoals"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Challenges</div>
+          <div class="col-lg-2 scoring-comment" id="challenges"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Scales</div>
+          <div class="col-lg-2 scoring-comment" id="scales"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -140,11 +169,4 @@
 </script>
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/scoring_display.js"></script>
-{{end}}
-{{define "stack"}}
-<td id="stack{{.}}" data-selected="false">
-  <div class="stack-tote-count">0</div>
-  <div class="stack-container" style="display: none;"></div>
-  <div class="stack-litter" style="display: none;"></div>
-</td>
 {{end}}

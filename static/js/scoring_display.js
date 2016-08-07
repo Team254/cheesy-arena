@@ -4,55 +4,31 @@
 // Client-side logic for the scoring interface.
 
 var websocket;
-var selectedStack = 0;
-var numStacks = 10;
-var stacks;
-var stackScoreChanged = false;
 var scoreCommitted = false;
-
-function Stack() {
-  this.Totes = 0;
-  this.Container = false;
-  this.Litter = false;
-}
 
 // Handles a websocket message to update the realtime scoring fields.
 var handleScore = function(data) {
   // Update autonomous period values.
   var score = data.CurrentScore;
-  $("#autoRobotSet").text(score.AutoRobotSet ? "Yes" : "No");
-  $("#autoRobotSet").attr("data-value", score.AutoRobotSet);
-  $("#autoContainerSet").text(score.AutoContainerSet ? "Yes" : "No");
-  $("#autoContainerSet").attr("data-value", score.AutoContainerSet);
-  $("#autoToteSet").text(score.AutoToteSet ? "Yes" : "No");
-  $("#autoToteSet").attr("data-value", score.AutoToteSet);
-  $("#autoStackedToteSet").text(score.AutoStackedToteSet ? "Yes" : "No");
-  $("#autoStackedToteSet").attr("data-value", score.AutoStackedToteSet);
+  $("#autoDefense1Crossings").text(score.AutoDefensesCrossed[0]);
+  $("#autoDefense2Crossings").text(score.AutoDefensesCrossed[1]);
+  $("#autoDefense3Crossings").text(score.AutoDefensesCrossed[2]);
+  $("#autoDefense4Crossings").text(score.AutoDefensesCrossed[3]);
+  $("#autoDefense5Crossings").text(score.AutoDefensesCrossed[4]);
+  $("#autoDefensesReached").text(score.AutoDefensesReached);
+  $("#autoHighGoals").text(score.AutoHighGoals);
+  $("#autoLowGoals").text(score.AutoLowGoals);
 
   // Update teleoperated period values.
-  $("#coopertitionSet").text(score.CoopertitionSet ? "Yes" : "No");
-  $("#coopertitionSet").attr("data-value", score.CoopertitionSet);
-  $("#coopertitionStack").text(score.CoopertitionStack ? "Yes" : "No");
-  $("#coopertitionStack").attr("data-value", score.CoopertitionStack);
-
-  // Don't stomp on pending changes to the stack score.
-  if (stackScoreChanged == false) {
-    if (score.Stacks == null) {
-      stacks = new Array();
-      for (i = 0; i < numStacks; i++) {
-        stacks.push(new Stack());
-      }
-    } else {
-      stacks = score.Stacks;
-    }
-    for (i = 0; i < numStacks; i++) {
-      updateStackView(i);
-    }
-
-    // Reset indications that the stack score is uncommitted.
-    $("#teleopMessage").css("opacity", 0);
-    $(".stack-grid").attr("data-changed", false);
-  }
+  $("#defense1Crossings").text(score.DefensesCrossed[0] + " (" + score.AutoDefensesCrossed[0] + " in auto)");
+  $("#defense2Crossings").text(score.DefensesCrossed[1] + " (" + score.AutoDefensesCrossed[1] + " in auto)");
+  $("#defense3Crossings").text(score.DefensesCrossed[2] + " (" + score.AutoDefensesCrossed[2] + " in auto)");
+  $("#defense4Crossings").text(score.DefensesCrossed[3] + " (" + score.AutoDefensesCrossed[3] + " in auto)");
+  $("#defense5Crossings").text(score.DefensesCrossed[4] + " (" + score.AutoDefensesCrossed[4] + " in auto)");
+  $("#highGoals").text(score.HighGoals);
+  $("#lowGoals").text(score.LowGoals);
+  $("#challenges").text(score.Challenges);
+  $("#scales").text(score.Scales);
 
   // Update component visibility.
   if (!data.AutoCommitted) {
@@ -83,64 +59,61 @@ var handleScore = function(data) {
 // Handles a keyboard event and sends the appropriate websocket message.
 var handleKeyPress = function(event) {
   var key = String.fromCharCode(event.keyCode);
-  switch(key) {
+  switch (key) {
+    case "1":
+    case "2":
+    case "3":
+    case "4":
+    case "5":
+      websocket.send("defenseCrossed", key);
+      break;
+    case "!":
+      websocket.send("undoDefenseCrossed", "1");
+      break;
+    case "@":
+      websocket.send("undoDefenseCrossed", "2");
+      break;
+    case "#":
+      websocket.send("undoDefenseCrossed", "3");
+      break;
+    case "$":
+      websocket.send("undoDefenseCrossed", "4");
+      break;
+    case "%":
+      websocket.send("undoDefenseCrossed", "5");
+      break;
     case "r":
-      websocket.send("robotSet");
+      websocket.send("autoDefenseReached");
       break;
-    case "c":
-      if ($("#autoCommands").is(":visible")) {
-        websocket.send("containerSet");
-      } else {
-        stacks[selectedStack].Container = !stacks[selectedStack].Container;
-        if (!stacks[selectedStack].Container) {
-          stacks[selectedStack].Litter = false;
-        }
-        updateStackView(selectedStack);
-        invalidateStackScore();
-      }
+    case "R":
+      websocket.send("undoAutoDefenseReached");
       break;
-    case "t":
-      websocket.send("toteSet");
+    case "h":
+      websocket.send("highGoal");
       break;
-    case "s":
-      websocket.send("stackedToteSet");
-      break;
-    case "j":
-      if (selectedStack > 0) {
-        selectedStack--;
-        updateSelectedStack();
-      }
+    case "H":
+      websocket.send("undoHighGoal");
       break;
     case "l":
-      if (selectedStack < numStacks - 1) {
-        selectedStack++;
-        updateSelectedStack();
-      }
+      websocket.send("lowGoal");
       break;
-    case "i":
-      if (stacks[selectedStack].Totes < 6) {
-        stacks[selectedStack].Totes++;
-        updateStackView(selectedStack);
-        invalidateStackScore();
-      }
+    case "L":
+      websocket.send("undoLowGoal");
       break;
-    case "k":
-      if (stacks[selectedStack].Totes > 0) {
-        stacks[selectedStack].Totes--;
-        updateStackView(selectedStack);
-        invalidateStackScore();
-      }
+    case "c":
+      websocket.send("challenge");
       break;
-    case "n":
-      if (stacks[selectedStack].Container) {
-        stacks[selectedStack].Litter = !stacks[selectedStack].Litter;
-        updateStackView(selectedStack);
-        invalidateStackScore();
-      }
+    case "C":
+      websocket.send("undoChallenge");
+      break;
+    case "s":
+      websocket.send("scale");
+      break;
+    case "S":
+      websocket.send("undoScale");
       break;
     case "\r":
-      websocket.send("commit", stacks);
-      stackScoreChanged = false;
+      websocket.send("commit");
       break;
     case "a":
       websocket.send("uncommitAuto");
@@ -157,31 +130,8 @@ var handleMatchTime = function(data) {
   }
 };
 
-// Updates the stack grid to highlight only the active stack.
-var updateSelectedStack = function() {
-  for (i = 0; i < numStacks; i++) {
-    $("#stack" + i).attr("data-selected", i == selectedStack);
-  }
-};
-
-// Updates the appearance of the given stack in the grid to match the scoring data.
-var updateStackView = function(stackIndex) {
-  stack = stacks[stackIndex];
-  $("#stack" + stackIndex + " .stack-tote-count").text(stack.Totes);
-  $("#stack" + stackIndex + " .stack-container").toggle(stack.Container);
-  $("#stack" + stackIndex + " .stack-litter").toggle(stack.Litter);
-};
-
-// Shows message indicating that the stack score has been changed but not yet sent to the server.
-var invalidateStackScore = function() {
-  $("#teleopMessage").css("opacity", 1);
-  $(".stack-grid").attr("data-changed", true);
-  stackScoreChanged = true;
-};
-
 // Sends a websocket message to indicate that the score for this alliance is ready.
 var commitMatchScore = function() {
-  websocket.send("commit", stacks);
   websocket.send("commitMatch");
 };
 
@@ -191,8 +141,6 @@ $(function() {
     score: function(event) { handleScore(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); }
   });
-
-  updateSelectedStack();
 
   $(document).keypress(handleKeyPress);
 });

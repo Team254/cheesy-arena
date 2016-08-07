@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"text/template"
 )
 
@@ -123,7 +124,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		messageType, _, err := websocket.Read()
+		messageType, data, err := websocket.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
@@ -134,7 +135,113 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch messageType {
-		// TODO(patrick): Add 2016 messages.
+		case "defenseCrossed":
+			position, ok := data.(string)
+			if !ok {
+				websocket.WriteError("Defense position is not a string.")
+				continue
+			}
+			intPosition, err := strconv.Atoi(position)
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+			if (*score).CurrentScore.AutoDefensesCrossed[intPosition-1]+
+				(*score).CurrentScore.DefensesCrossed[intPosition-1] < 2 {
+				if !(*score).AutoCommitted {
+					(*score).CurrentScore.AutoDefensesCrossed[intPosition-1]++
+				} else {
+					(*score).CurrentScore.DefensesCrossed[intPosition-1]++
+				}
+			}
+		case "undoDefenseCrossed":
+			position, ok := data.(string)
+			if !ok {
+				websocket.WriteError("Defense position is not a string.")
+				continue
+			}
+			intPosition, err := strconv.Atoi(position)
+			if err != nil {
+				websocket.WriteError(err.Error())
+				continue
+			}
+			if !(*score).AutoCommitted {
+				if (*score).CurrentScore.AutoDefensesCrossed[intPosition-1] > 0 {
+					(*score).CurrentScore.AutoDefensesCrossed[intPosition-1]--
+				}
+			} else {
+				if (*score).CurrentScore.DefensesCrossed[intPosition-1] > 0 {
+					(*score).CurrentScore.DefensesCrossed[intPosition-1]--
+				}
+			}
+		case "autoDefenseReached":
+			if !(*score).AutoCommitted {
+				if (*score).CurrentScore.AutoDefensesReached < 3 {
+					(*score).CurrentScore.AutoDefensesReached++
+				}
+			}
+		case "undoAutoDefenseReached":
+			if !(*score).AutoCommitted {
+				if (*score).CurrentScore.AutoDefensesReached > 0 {
+					(*score).CurrentScore.AutoDefensesReached--
+				}
+			}
+		case "highGoal":
+			if !(*score).AutoCommitted {
+				(*score).CurrentScore.AutoHighGoals++
+			} else {
+				(*score).CurrentScore.HighGoals++
+			}
+		case "undoHighGoal":
+			if !(*score).AutoCommitted {
+				if (*score).CurrentScore.AutoHighGoals > 0 {
+					(*score).CurrentScore.AutoHighGoals--
+				}
+			} else {
+				if (*score).CurrentScore.HighGoals > 0 {
+					(*score).CurrentScore.HighGoals--
+				}
+			}
+		case "lowGoal":
+			if !(*score).AutoCommitted {
+				(*score).CurrentScore.AutoLowGoals++
+			} else {
+				(*score).CurrentScore.LowGoals++
+			}
+		case "undoLowGoal":
+			if !(*score).AutoCommitted {
+				if (*score).CurrentScore.AutoLowGoals > 0 {
+					(*score).CurrentScore.AutoLowGoals--
+				}
+			} else {
+				if (*score).CurrentScore.LowGoals > 0 {
+					(*score).CurrentScore.LowGoals--
+				}
+			}
+		case "challenge":
+			if (*score).AutoCommitted {
+				if (*score).CurrentScore.Challenges < 3 {
+					(*score).CurrentScore.Challenges++
+				}
+			}
+		case "undoChallenge":
+			if (*score).AutoCommitted {
+				if (*score).CurrentScore.Challenges > 0 {
+					(*score).CurrentScore.Challenges--
+				}
+			}
+		case "scale":
+			if (*score).AutoCommitted {
+				if (*score).CurrentScore.Scales < 3 {
+					(*score).CurrentScore.Scales++
+				}
+			}
+		case "undoScale":
+			if (*score).AutoCommitted {
+				if (*score).CurrentScore.Scales > 0 {
+					(*score).CurrentScore.Scales--
+				}
+			}
 		case "commit":
 			(*score).AutoCommitted = true
 		case "uncommitAuto":
@@ -149,11 +256,6 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			(*score).AutoCommitted = true
 			(*score).TeleopCommitted = true
 			mainArena.scoringStatusNotifier.Notify(nil)
-		case "undo":
-			if len((*score).undoScores) > 0 {
-				(*score).CurrentScore = (*score).undoScores[len((*score).undoScores)-1]
-				(*score).undoScores = (*score).undoScores[0 : len((*score).undoScores)-1]
-			}
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue

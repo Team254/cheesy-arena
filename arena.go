@@ -50,7 +50,6 @@ type RealtimeScore struct {
 	AutoCommitted   bool
 	TeleopCommitted bool
 	FoulsCommitted  bool
-	undoScores      []Score
 }
 
 type Arena struct {
