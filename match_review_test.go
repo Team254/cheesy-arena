@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -39,91 +40,86 @@ func TestMatchReview(t *testing.T) {
 }
 
 func TestMatchReviewEditExistingResult(t *testing.T) {
-	// TODO(patrick): Update test for 2016.
-	/*
-		clearDb()
-		defer clearDb()
-		var err error
-		db, err = OpenDatabase(testDbPath)
-		assert.Nil(t, err)
-		defer db.Close()
-		eventSettings, _ = db.GetEventSettings()
-		mainArena.Setup()
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
+	mainArena.Setup()
 
-		match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
-			Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006}
-		db.CreateMatch(&match)
-		matchResult := buildTestMatchResult(match.Id, 1)
-		db.CreateMatchResult(&matchResult)
-		createTestAlliances(db, 2)
+	match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
+		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006}
+	db.CreateMatch(&match)
+	matchResult := buildTestMatchResult(match.Id, 1)
+	matchResult.MatchType = match.Type
+	db.CreateMatchResult(&matchResult)
+	createTestAlliances(db, 2)
 
-		recorder := getHttpResponse("/match_review")
-		assert.Equal(t, 200, recorder.Code)
-		assert.Contains(t, recorder.Body.String(), "QF4-3")
-		assert.Contains(t, recorder.Body.String(), "92")  // The red score
-		assert.Contains(t, recorder.Body.String(), "104") // The blue score
+	recorder := getHttpResponse("/match_review")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "QF4-3")
+	assert.Contains(t, recorder.Body.String(), "176") // The red score
+	assert.Contains(t, recorder.Body.String(), "113") // The blue score
 
-		// Check response for non-existent match.
-		recorder = getHttpResponse(fmt.Sprintf("/match_review/%d/edit", 12345))
-		assert.Equal(t, 500, recorder.Code)
-		assert.Contains(t, recorder.Body.String(), "No such match")
+	// Check response for non-existent match.
+	recorder = getHttpResponse(fmt.Sprintf("/match_review/%d/edit", 12345))
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "No such match")
 
-		recorder = getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
-		assert.Equal(t, 200, recorder.Code)
-		assert.Contains(t, recorder.Body.String(), "QF4-3")
+	recorder = getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "QF4-3")
 
-		// Update the score to something else.
-		postBody := "redScoreJson={\"AutoRobotSet\":true}&blueScoreJson={\"Stacks\":[{\"Totes\":6,\"Container\":true,\"Litter\":true}]," +
-			"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
-		recorder = postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
-		assert.Equal(t, 302, recorder.Code)
+	// Update the score to something else.
+	postBody := "redScoreJson={\"AutoLowGoals\":5}&blueScoreJson={\"DefensesCrossed\":[2,2,1,2,2]," +
+		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
+	recorder = postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
+	assert.Equal(t, 302, recorder.Code)
 
-		// Check for the updated scores back on the match list page.
-		recorder = getHttpResponse("/match_review")
-		assert.Equal(t, 200, recorder.Code)
-		assert.Contains(t, recorder.Body.String(), "QF4-3")
-		assert.Contains(t, recorder.Body.String(), "4")  // The red score
-		assert.Contains(t, recorder.Body.String(), "36") // The blue score
-	*/
+	// Check for the updated scores back on the match list page.
+	recorder = getHttpResponse("/match_review")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "QF4-3")
+	assert.Contains(t, recorder.Body.String(), "30") // The red score
+	assert.Contains(t, recorder.Body.String(), "65") // The blue score
 }
 
 func TestMatchReviewCreateNewResult(t *testing.T) {
-	// TODO(patrick): Update test for 2016.
-	/*
-		clearDb()
-		defer clearDb()
-		var err error
-		db, err = OpenDatabase(testDbPath)
-		assert.Nil(t, err)
-		defer db.Close()
-		eventSettings, _ = db.GetEventSettings()
+	clearDb()
+	defer clearDb()
+	var err error
+	db, err = OpenDatabase(testDbPath)
+	assert.Nil(t, err)
+	defer db.Close()
+	eventSettings, _ = db.GetEventSettings()
 
-		match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
-			Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006}
-		db.CreateMatch(&match)
-		createTestAlliances(db, 2)
+	match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
+		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006}
+	db.CreateMatch(&match)
+	createTestAlliances(db, 2)
 
-		recorder := getHttpResponse("/match_review")
-		assert.Equal(t, 200, recorder.Code)
-		assert.Contains(t, recorder.Body.String(), "QF4-3")
-		assert.NotContains(t, recorder.Body.String(), "92")  // The red score
-		assert.NotContains(t, recorder.Body.String(), "104") // The blue score
+	recorder := getHttpResponse("/match_review")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "QF4-3")
+	assert.NotContains(t, recorder.Body.String(), "176") // The red score
+	assert.NotContains(t, recorder.Body.String(), "113") // The blue score
 
-		recorder = getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
-		assert.Equal(t, 200, recorder.Code)
-		assert.Contains(t, recorder.Body.String(), "QF4-3")
+	recorder = getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "QF4-3")
 
-		// Update the score to something else.
-		postBody := "redScoreJson={\"AutoToteSet\":true}&blueScoreJson={\"Stacks\":[{\"Totes\":6,\"Container\":true,\"Litter\":true}]," +
-			"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
-		recorder = postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
-		assert.Equal(t, 302, recorder.Code)
+	// Update the score to something else.
+	postBody := "redScoreJson={\"AutoDefensesReached\":3}&blueScoreJson={\"HighGoals\":3," +
+		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
+	recorder = postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
+	assert.Equal(t, 302, recorder.Code)
 
-		// Check for the updated scores back on the match list page.
-		recorder = getHttpResponse("/match_review")
-		assert.Equal(t, 200, recorder.Code)
-		assert.Contains(t, recorder.Body.String(), "QF4-3")
-		assert.Contains(t, recorder.Body.String(), "6")  // The red score
-		assert.Contains(t, recorder.Body.String(), "36") // The blue score
-	*/
+	// Check for the updated scores back on the match list page.
+	recorder = getHttpResponse("/match_review")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "QF4-3")
+	assert.Contains(t, recorder.Body.String(), "11") // The red score
+	assert.Contains(t, recorder.Body.String(), "15") // The blue score
 }

@@ -27,40 +27,104 @@
   <div class="well well-{{"{{alliance}}"}}">
     <legend>Autonomous</legend>
     <div class="form-group">
-      <label class="col-lg-4 control-label">Robot Set</label>
-      <div class="col-lg-2"><input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}AutoRobotSet"></div>
-      <label class="col-lg-4 control-label">Container Set</label>
-      <div class="col-lg-2"><input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}AutoContainerSet"></div>
-      <label class="col-lg-4 control-label">Tote Set</label>
-      <div class="col-lg-2"><input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}AutoToteSet"></div>
-      <label class="col-lg-4 control-label">Stacked Tote Set</label>
-      <div class="col-lg-2"><input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}AutoStackedToteSet"></div>
+      <div class="col-lg-6">
+        <b>Defense Crossings</b><br />
+        <label class="col-lg-6 control-label">Position 1</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoDefense1Crossings">
+        </div>
+        <label class="col-lg-6 control-label">Position 2</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoDefense2Crossings">
+        </div>
+        <label class="col-lg-6 control-label">Position 3</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoDefense3Crossings">
+        </div>
+        <label class="col-lg-6 control-label">Position 4</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoDefense4Crossings">
+        </div>
+        <label class="col-lg-6 control-label">Position 5</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoDefense5Crossings">
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <br />
+        <div class="row">
+          <label class="col-lg-8 control-label">Defenses Reached</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoDefensesReached">
+          </div>
+        </div>
+        <div class="row">
+          <label class="col-lg-8 control-label">High Goals</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoHighGoals">
+          </div>
+        </div>
+        <div class="row">
+          <label class="col-lg-8 control-label">Low Goals</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoLowGoals">
+          </div>
+        </div>
+      </div>
     </div>
     <legend>Teleoperated</legend>
     <div class="form-group">
-      <label class="col-lg-4 control-label">Co-op Set</label>
-      <div class="col-lg-2"><input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}CoopertitionSet"></div>
-      <label class="col-lg-4 control-label">Co-op Stack</label>
-      <div class="col-lg-2"><input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}CoopertitionStack"></div>
-    </div>
-    {{"{{#each score.Stacks}}"}}
-      <div class="well well-sm well-dark{{"{{../alliance}}"}}">
-        <b id="{{"{{../alliance}}"}}Stack{{"{{@index}}"}}Title">Stack</b>
-        <button type="button" class="close" onclick="deleteStack('{{"{{../alliance}}"}}', {{"{{@index}}"}});">×</button>
-        <br />
-        <div class="form-group">
-          <label class="col-lg-2 control-label"># Totes</label>
-          <div class="col-lg-2"><input type="text" class="form-control input-sm" name="{{"{{../alliance}}"}}Stack{{"{{@index}}"}}Totes"></div>
-          <label class="col-lg-2 control-label">Container</label>
-          <div class="col-lg-2"><input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Stack{{"{{@index}}"}}Container"></div>
-          <label class="col-lg-2 control-label">Litter</label>
-          <div class="col-lg-2"><input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Stack{{"{{@index}}"}}Litter"></div>
+      <div class="col-lg-6">
+        <b>Defense Crossings</b><br />
+        <label class="col-lg-6 control-label">Position 1</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Defense1Crossings">
+        </div>
+        <label class="col-lg-6 control-label">Position 2</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Defense2Crossings">
+        </div>
+        <label class="col-lg-6 control-label">Position 3</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Defense3Crossings">
+        </div>
+        <label class="col-lg-6 control-label">Position 4</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Defense4Crossings">
+        </div>
+        <label class="col-lg-6 control-label">Position 5</label>
+        <div class="col-lg-4">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Defense5Crossings">
         </div>
       </div>
-    {{"{{/each}}"}}
-    <button type="button" class="btn btn-default btn-sm" onclick="addStack('{{"{{alliance}}"}}');">
-      Add Stack
-    </button>
+      <div class="col-lg-6">
+        <br />
+        <div class="row">
+          <label class="col-lg-8 control-label">High Goals</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}HighGoals">
+          </div>
+        </div>
+        <div class="row">
+          <label class="col-lg-8 control-label">Low Goals</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}LowGoals">
+          </div>
+        </div>
+        <div class="row">
+          <label class="col-lg-8 control-label">Challenges</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Challenges">
+          </div>
+        </div>
+        <div class="row">
+          <label class="col-lg-8 control-label">Scales</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Scales">
+          </div>
+        </div>
+      </div>
+    </div>
     <br /><br />
     <legend>Fouls</legend>
     {{"{{#each score.Fouls}}"}}
@@ -94,6 +158,12 @@
           <label class="col-lg-4 control-label">Rule Violated</label>
           <div class="col-lg-3">
             <input type="text" class="form-control input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Rule">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-lg-4 control-label">Is Technical</label>
+          <div class="col-lg-3">
+            <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsTechnical">
           </div>
         </div>
         <div class="form-group">

@@ -32,26 +32,30 @@ var renderResults = function(alliance) {
   $("#" + alliance + "Score").html(scoreContent);
 
   // Set the values of the form fields from the JSON results data.
-  $("input[name=" + alliance + "AutoRobotSet]").prop("checked", result.score.AutoRobotSet);
-  $("input[name=" + alliance + "AutoContainerSet]").prop("checked", result.score.AutoContainerSet);
-  $("input[name=" + alliance + "AutoToteSet]").prop("checked", result.score.AutoToteSet);
-  $("input[name=" + alliance + "AutoStackedToteSet]").prop("checked", result.score.AutoStackedToteSet);
-  $("input[name=" + alliance + "CoopertitionSet]").prop("checked", result.score.CoopertitionSet);
-  $("input[name=" + alliance + "CoopertitionStack]").prop("checked", result.score.CoopertitionStack);
+  $("input[name=" + alliance + "AutoDefense1Crossings]").val(result.score.AutoDefensesCrossed[0]);
+  $("input[name=" + alliance + "AutoDefense2Crossings]").val(result.score.AutoDefensesCrossed[1]);
+  $("input[name=" + alliance + "AutoDefense3Crossings]").val(result.score.AutoDefensesCrossed[2]);
+  $("input[name=" + alliance + "AutoDefense4Crossings]").val(result.score.AutoDefensesCrossed[3]);
+  $("input[name=" + alliance + "AutoDefense5Crossings]").val(result.score.AutoDefensesCrossed[4]);
+  $("input[name=" + alliance + "AutoDefensesReached]").val(result.score.AutoDefensesReached);
+  $("input[name=" + alliance + "AutoHighGoals]").val(result.score.AutoHighGoals);
+  $("input[name=" + alliance + "AutoLowGoals]").val(result.score.AutoLowGoals);
 
-  if (result.score.Stacks != null) {
-    $.each(result.score.Stacks, function(k, v) {
-      $("#" + alliance + "Stack" + k + "Title").text("Stack " + (k + 1));
-      $("input[name=" + alliance + "Stack" + k + "Totes]").val(v.Totes);
-      $("input[name=" + alliance + "Stack" + k + "Container]").prop("checked", v.Container);
-      $("input[name=" + alliance + "Stack" + k + "Litter]").prop("checked", v.Litter);
-    });
-  }
+  $("input[name=" + alliance + "Defense1Crossings]").val(result.score.DefensesCrossed[0]);
+  $("input[name=" + alliance + "Defense2Crossings]").val(result.score.DefensesCrossed[1]);
+  $("input[name=" + alliance + "Defense3Crossings]").val(result.score.DefensesCrossed[2]);
+  $("input[name=" + alliance + "Defense4Crossings]").val(result.score.DefensesCrossed[3]);
+  $("input[name=" + alliance + "Defense5Crossings]").val(result.score.DefensesCrossed[4]);
+  $("input[name=" + alliance + "HighGoals]").val(result.score.HighGoals);
+  $("input[name=" + alliance + "LowGoals]").val(result.score.LowGoals);
+  $("input[name=" + alliance + "Challenges]").val(result.score.Challenges);
+  $("input[name=" + alliance + "Scales]").val(result.score.Scales);
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
       $("input[name=" + alliance + "Foul" + k + "Team][value=" + v.TeamId + "]").prop("checked", true);
       $("input[name=" + alliance + "Foul" + k + "Rule]").val(v.Rule);
+      $("input[name=" + alliance + "Foul" + k + "IsTechnical]").prop("checked", v.IsTechnical);
       $("input[name=" + alliance + "Foul" + k + "Time]").val(v.TimeInMatchSec);
     });
   }
@@ -71,26 +75,31 @@ var updateResults = function(alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.AutoRobotSet = formData[alliance + "AutoRobotSet"] == "on";
-  result.score.AutoContainerSet = formData[alliance + "AutoContainerSet"] == "on";
-  result.score.AutoToteSet = formData[alliance + "AutoToteSet"] == "on";
-  result.score.AutoStackedToteSet = formData[alliance + "AutoStackedToteSet"] == "on";
-  result.score.CoopertitionSet = formData[alliance + "CoopertitionSet"] == "on";
-  result.score.CoopertitionStack = formData[alliance + "CoopertitionStack"] == "on";
-
-  result.score.Stacks = [];
-  for (var i = 0; formData[alliance + "Stack" + i + "Totes"]; i++) {
-    var prefix = alliance + "Stack" + i;
-    var stack = {Totes: parseInt(formData[prefix + "Totes"]),
-        Container: formData[prefix + "Container"] == "on",
-        Litter: formData[prefix + "Litter"] == "on"}
-    result.score.Stacks.push(stack);
-  }
+  result.score.AutoDefensesCrossed = [];
+  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense1Crossings"]));
+  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense2Crossings"]));
+  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense3Crossings"]));
+  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense4Crossings"]));
+  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense5Crossings"]));
+  result.score.AutoDefensesReached = parseInt(formData[alliance + "AutoDefensesReached"]);
+  result.score.AutoHighGoals = parseInt(formData[alliance + "AutoHighGoals"]);
+  result.score.AutoLowGoals = parseInt(formData[alliance + "AutoLowGoals"]);
+  result.score.DefensesCrossed = [];
+  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense1Crossings"]));
+  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense2Crossings"]));
+  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense3Crossings"]));
+  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense4Crossings"]));
+  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense5Crossings"]));
+  result.score.HighGoals = parseInt(formData[alliance + "HighGoals"]);
+  result.score.LowGoals = parseInt(formData[alliance + "LowGoals"]);
+  result.score.Challenges = parseInt(formData[alliance + "Challenges"]);
+  result.score.Scales = parseInt(formData[alliance + "Scales"]);
 
   result.score.Fouls = [];
   for (var i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {
     var prefix = alliance + "Foul" + i;
     var foul = {TeamId: parseInt(formData[prefix + "Team"]), Rule: formData[prefix + "Rule"],
+                IsTechnical: formData[prefix + "IsTechnical"] == "on",
                 TimeInMatchSec: parseFloat(formData[prefix + "Time"])};
     result.score.Fouls.push(foul);
   }
@@ -99,22 +108,6 @@ var updateResults = function(alliance) {
   $.each([result.team1, result.team2, result.team3], function(i, team) {
     result.cards[team] = formData[alliance + "Team" + team + "Card"];
   });
-}
-
-// Appends a blank stack to the end of the list.
-var addStack = function(alliance) {
-  updateResults(alliance);
-  var result = allianceResults[alliance];
-  result.score.Stacks.push({Totes: 0, Container: false, Litter: false})
-  renderResults(alliance);
-}
-
-// Removes the given stack from the list.
-var deleteStack = function(alliance, index) {
-  updateResults(alliance);
-  var result = allianceResults[alliance];
-  result.score.Stacks.splice(index, 1);
-  renderResults(alliance);
 }
 
 // Appends a blank foul to the end of the list.
