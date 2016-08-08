@@ -53,8 +53,8 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Rank": 13, "Team": 23, "QA": 20, "Coop": 20, "Auto": 20,
-		"Container": 20, "Tote": 20, "Litter": 20, "DQ": 20, "Played": 20}
+	colWidths := map[string]float64{"Rank": 13, "Team": 23, "RP": 20, "Auto": 20, "SC": 21, "Goal": 20,
+		"Defense": 20, "DQ": 20, "Played": 20}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -64,17 +64,19 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
 	pdf.CellFormat(195, rowHeight, "Team Standings - "+eventSettings.Name, "", 1, "C", false, 0, "")
+	pdf.SetX(19)
 	pdf.CellFormat(colWidths["Rank"], rowHeight, "Rank", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["RP"], rowHeight, "QA", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["RP"], rowHeight, "RB", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Auto"], rowHeight, "Auto", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["SC"], rowHeight, "Container", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Goal"], rowHeight, "Tote", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Litter", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["SC"], rowHeight, "Scale/Chal.", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Goal"], rowHeight, "Goal", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Defense", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["DQ"], rowHeight, "DQ", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Played"], rowHeight, "Played", "1", 1, "C", true, 0, "")
 	for _, ranking := range rankings {
 		// Render ranking info row.
+		pdf.SetX(19)
 		pdf.SetFont("Arial", "B", 10)
 		pdf.CellFormat(colWidths["Rank"], rowHeight, strconv.Itoa(ranking.Rank), "1", 0, "C", false, 0, "")
 		pdf.SetFont("Arial", "", 10)
