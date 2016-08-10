@@ -275,7 +275,7 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 		if tbaTeam.TeamNumber == 0 {
 			team = Team{Id: teamId}
 		} else {
-			robotName, err := getRobotNameFromTba(teamId, 2015)
+			robotName, err := getRobotNameFromTba(teamId, time.Now().Year())
 			if err != nil {
 				return nil, err
 			}
