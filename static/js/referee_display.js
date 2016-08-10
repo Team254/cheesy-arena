@@ -56,13 +56,14 @@ var clearFoul = function() {
 // Sends the foul to the server to add it to the list.
 var commitFoul = function() {
   websocket.send("addFoul", {Alliance: foulTeamButton.attr("data-alliance"),
-      TeamId: parseInt(foulTeamButton.attr("data-team")), Rule: foulRuleButton.attr("data-rule")});
+      TeamId: parseInt(foulTeamButton.attr("data-team")), Rule: foulRuleButton.attr("data-rule"),
+      IsTechnical: foulRuleButton.attr("data-is-technical") == "true"});
 };
 
 // Removes the foul with the given parameters from the list.
-var deleteFoul = function(alliance, team, rule, timeSec) {
+var deleteFoul = function(alliance, team, rule, isTechnical, timeSec) {
   websocket.send("deleteFoul", {Alliance: alliance, TeamId: parseInt(team), Rule: rule,
-      TimeInMatchSec: timeSec});
+      IsTechnical: isTechnical, TimeInMatchSec: timeSec});
 };
 
 // Cycles through no card, yellow card, and red card.

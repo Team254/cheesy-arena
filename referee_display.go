@@ -15,8 +15,17 @@ import (
 	"text/template"
 )
 
-var rules = []string{"G4", "G5", "G6", "G6-1", "G16", "G17", "G18", "G19", "G20", "G21", "G22", "G23", "G24",
-	"G26", "G30", "G31", "G33", "G34"}
+type Rule struct {
+	Rule        string
+	IsTechnical bool
+}
+
+var rules = []Rule{{"G4", false}, {"G11", false}, {"G12", false}, {"G12-1", false}, {"G13", false},
+	{"G14", false}, {"G15", false}, {"G16", false}, {"G17", false}, {"G18", false}, {"G19-1", false},
+	{"G20", false}, {"G20", true}, {"G21", true}, {"G22", false}, {"G23", false}, {"G24", false},
+	{"G26", false}, {"G26", true}, {"G27", true}, {"G33", false}, {"G34", false}, {"G36", false},
+	{"G37", false}, {"G38", false}, {"G39", true}, {"G40", true}, {"G40-1", true}, {"G41", true},
+	{"G42", false}, {"G43", false}, {"G44", false}, {"G45", false}}
 
 // Renders the referee interface for assigning fouls.
 func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,7 +80,7 @@ func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		BlueFouls        []Foul
 		RedCards         map[string]string
 		BlueCards        map[string]string
-		Rules            []string
+		Rules            []Rule
 		EntryEnabled     bool
 	}{eventSettings, matchType, match.DisplayName, red1, red2, red3, blue1, blue2, blue3,
 		mainArena.redRealtimeScore.CurrentScore.Fouls, mainArena.blueRealtimeScore.CurrentScore.Fouls,
