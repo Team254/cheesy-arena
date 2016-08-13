@@ -16,24 +16,40 @@
   <body style="background-color: {{.EventSettings.DisplayBackgroundColor}};">
     <div id="centering">
       <div id="matchOverlay">
-        <div class="teams" id="redTeams">
-          <span class="valign-cell">
-            <span id="redTeam1"></span><br />
-            <span id="redTeam2"></span><br />
-            <span id="redTeam3"></span>
-          </span>
-        </div>
-        <div class="score" id="redScore">
-          <div class="score-number" id="redScoreNumber">&nbsp;</div>
-        </div>
-        <div class="score" id="blueScore">
-          <div class="score-number pull-right" id="blueScoreNumber">&nbsp;</div>
-        </div>
         <div class="teams" id="blueTeams">
           <span class="valign-cell">
             <span id="blueTeam1"></span><br />
             <span id="blueTeam2"></span><br />
             <span id="blueTeam3"></span>
+          </span>
+        </div>
+        <div class="score" id="blueScore">
+          <div class="score-fields">
+            <div class="tower" id="blueTower">&nbsp;</div>
+            <div class="defense"><progress max="2" value="2" id="blueDefense5"></progress></div>
+            <div class="defense"><progress max="2" value="2" id="blueDefense4"></progress></div>
+            <div class="defense"><progress max="2" value="2" id="blueDefense3"></progress></div>
+            <div class="defense"><progress max="2" value="2" id="blueDefense2"></progress></div>
+            <div class="defense"><progress max="2" value="2" id="blueDefense1"></progress></div>
+          </div>
+          <div class="score-number" id="blueScoreNumber">&nbsp;</div>
+        </div>
+        <div class="score" id="redScore">
+          <div class="score-fields pull-right">
+            <div class="tower" id="redTower">&nbsp;</div>
+            <div class="defense"><progress max="2" value="2" id="redDefense1"></progress></div>
+            <div class="defense"><progress max="2" value="2" id="redDefense2"></progress></div>
+            <div class="defense"><progress max="2" value="2" id="redDefense3"></progress></div>
+            <div class="defense"><progress max="2" value="2" id="redDefense4"></progress></div>
+            <div class="defense"><progress max="2" value="2" id="redDefense5"></progress></div>
+          </div>
+          <div class="score-number pull-right" id="redScoreNumber">&nbsp;</div>
+        </div>
+        <div class="teams" id="redTeams">
+          <span class="valign-cell">
+            <span id="redTeam1"></span><br />
+            <span id="redTeam2"></span><br />
+            <span id="redTeam3"></span>
           </span>
         </div>
         <div id="eventMatchInfo">

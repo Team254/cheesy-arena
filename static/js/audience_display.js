@@ -52,8 +52,14 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScoreNumber").text(data.RedScore);
-  $("#blueScoreNumber").text(data.BlueScore);
+  $("#redScoreNumber").text(data.RedScoreFields.Score);
+  $("#redTower").text(data.RedScoreFields.TowerStrength);
+  $("#blueScoreNumber").text(data.BlueScoreFields.Score);
+  $("#blueTower").text(data.BlueScoreFields.TowerStrength);
+  for (var i = 0; i < 5; i++) {
+    $("#redDefense" + (i + 1)).attr("value", data.RedScoreFields.DefensesStrength[i]);
+    $("#blueDefense" + (i + 1)).attr("value", data.BlueScoreFields.DefensesStrength[i]);
+  }
 };
 
 // Handles a websocket message to populate the final score data.
@@ -127,8 +133,9 @@ var transitionBlankToIntro = function(callback) {
 
 var transitionIntroToInMatch = function(callback) {
   $("#logo").transition({queue: false, top: "35px"}, 500, "ease");
-  $(".score").transition({queue: false, width: "230px"}, 500, "ease", function() {
+  $(".score").transition({queue: false, width: "260px"}, 500, "ease", function() {
     $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
+    $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
     $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
   });
 };
@@ -147,9 +154,10 @@ var transitionBlankToInMatch = function(callback) {
   $("#centering").transition({queue: false, bottom: "0px"}, 500, "ease", function() {
     $(".teams").transition({queue: false, width: "75px"}, 100, "linear", function() {
       $("#logo").transition({queue: false, top: "35px"}, 500, "ease");
-      $(".score").transition({queue: false, width: "230px"}, 500, "ease", function() {
+      $(".score").transition({queue: false, width: "260px"}, 500, "ease", function() {
         $("#eventMatchInfo").show();
         $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
+        $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
         $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
         var height = -$("#eventMatchInfo").height();
         $("#eventMatchInfo").transition({queue: false, bottom: height + "px"}, 500, "ease", callback);
@@ -160,6 +168,7 @@ var transitionBlankToInMatch = function(callback) {
 
 var transitionInMatchToIntro = function(callback) {
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear");
+  $(".score-fields").transition({queue: false, opacity: 0}, 300, "linear");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#logo").transition({queue: false, top: "50px"}, 500, "ease");
     $(".score").transition({queue: false, width: "120px"}, 500, "ease");
@@ -170,6 +179,7 @@ var transitionInMatchToIntro = function(callback) {
 var transitionInMatchToBlank = function(callback) {
   $("#eventMatchInfo").transition({queue: false, bottom: "0px"}, 500, "ease");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear");
+  $(".score-fields").transition({queue: false, opacity: 0}, 300, "linear");
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#eventMatchInfo").hide();
     $("#logo").transition({queue: false, top: "50px"}, 500, "ease");

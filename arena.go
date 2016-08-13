@@ -100,7 +100,7 @@ func (arena *Arena) Setup() {
 	arena.matchTiming.AutoDurationSec = 15
 	arena.matchTiming.PauseDurationSec = 2
 	arena.matchTiming.TeleopDurationSec = 135
-	arena.matchTiming.EndgameTimeLeftSec = 20
+	arena.matchTiming.EndgameTimeLeftSec = 30
 
 	arena.AllianceStations = make(map[string]*AllianceStation)
 	arena.AllianceStations["R1"] = new(AllianceStation)

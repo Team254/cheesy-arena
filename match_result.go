@@ -53,17 +53,17 @@ type Foul struct {
 }
 
 type ScoreSummary struct {
-	AutoPoints            int
-	DefensePoints         int
-	GoalPoints            int
-	ScaleChallengePoints  int
-	TeleopPoints          int
-	FoulPoints            int
-	BonusPoints           int
-	Score                 int
-	Breached              bool
-	Captured              bool
-	OpponentTowerStrength int
+	AutoPoints           int
+	DefensePoints        int
+	GoalPoints           int
+	ScaleChallengePoints int
+	TeleopPoints         int
+	FoulPoints           int
+	BonusPoints          int
+	Score                int
+	Breached             bool
+	Captured             bool
+	TowerStrength        int
 }
 
 // Returns a new match result object with empty slices instead of nil.
@@ -186,7 +186,7 @@ func scoreSummary(score *Score, opponentFouls []Foul, matchType string) *ScoreSu
 			numTechFouls++
 		}
 	}
-	summary.OpponentTowerStrength = eventSettings.InitialTowerStrength + numTechFouls - score.AutoLowGoals -
+	summary.TowerStrength = eventSettings.InitialTowerStrength + numTechFouls - score.AutoLowGoals -
 		score.AutoHighGoals - score.LowGoals - score.HighGoals
 
 	// Calculate bonuses.
@@ -203,7 +203,7 @@ func scoreSummary(score *Score, opponentFouls []Foul, matchType string) *ScoreSu
 			summary.BonusPoints += 20
 		}
 	}
-	if score.Challenges+score.Scales == 3 && summary.OpponentTowerStrength <= 0 {
+	if score.Challenges+score.Scales == 3 && summary.TowerStrength <= 0 {
 		summary.Captured = true
 		if matchType == "elimination" {
 			summary.BonusPoints += 25

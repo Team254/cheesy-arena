@@ -38,12 +38,12 @@ html {
   vertical-align: middle;
 }
 #redTeams {
-  float: left;
-  border-right: 1px solid #222;
-}
-#blueTeams {
   float: right;
   border-left: 1px solid #222;
+}
+#blueTeams {
+  float: left;
+  border-right: 1px solid #222;
 }
 .score {
   width: 0px;
@@ -86,7 +86,8 @@ html {
   border: 1px solid #222;
 }
 .score-number {
-  width: 60%;
+  float: left;
+  width: 45%;
   margin: 0px 5px;
   text-align: center;
   font-family: "FuturaLTBold";
@@ -95,23 +96,33 @@ html {
   color: #fff;
   opacity: 0;
 }
-.assist {
+.score-fields {
   float: left;
-  width: 22px;
-  height: 12px;
-  margin: 10px 4px;
-  background-color: #fff;
-  opacity: 0.3;
+  width: 20%;
+  padding-top: 10px;
+  text-align: center;
+  opacity: 0;
 }
-.trussCatch {
-  float: left;
+.tower {
+  font-size: 20px;
   font-family: "FuturaLTBold";
-  margin: 0px 5px;
   color: #fff;
-  opacity: 0.3;
 }
-[data-on=true] {
-  opacity: 1;
+.defense {
+  font-size: 0;
+}
+.defense>progress {
+  width: 20px;
+  height: 6px;
+  margin: 2px 0;
+  -webkit-appearance: none;
+}
+.defense>progress::-webkit-progress-bar {
+  background-color: rgba(0, 0, 0, 0);
+  border: 1px solid white;
+}
+.defense>progress::-webkit-progress-value {
+  background-color: #fff;
 }
 #logo {
   position: relative;
