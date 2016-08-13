@@ -177,7 +177,6 @@ func scoreSummary(score *Score, opponentFouls []Foul, matchType string) *ScoreSu
 	}
 	summary.ScaleChallengePoints = 5*score.Challenges + 15*score.Scales
 	teleopGoalPoints := 2*score.LowGoals + 5*score.HighGoals
-	summary.TeleopPoints = teleopDefensePoints + teleopGoalPoints + summary.ScaleChallengePoints
 
 	// Calculate tower strength.
 	numTechFouls := 0
@@ -209,11 +208,13 @@ func scoreSummary(score *Score, opponentFouls []Foul, matchType string) *ScoreSu
 			summary.BonusPoints += 25
 		}
 	}
+	summary.TeleopPoints = teleopDefensePoints + teleopGoalPoints + summary.ScaleChallengePoints +
+		summary.BonusPoints
 
 	summary.FoulPoints = 5 * len(opponentFouls)
 	summary.DefensePoints = autoDefensePoints + teleopDefensePoints
 	summary.GoalPoints = autoGoalPoints + teleopGoalPoints
-	summary.Score = summary.AutoPoints + summary.TeleopPoints + summary.FoulPoints + summary.BonusPoints
+	summary.Score = summary.AutoPoints + summary.TeleopPoints + summary.FoulPoints
 
 	return summary
 }

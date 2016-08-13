@@ -208,7 +208,7 @@ html {
 #finalScore {
   position: fixed;
   width: 800px;
-  height: 450px;
+  height: 495px;
   top: 0;
   bottom: 0;
   left: 0;
@@ -292,6 +292,12 @@ html {
   font-family: "FuturaLT";
   font-size: 28px;
   color: #fff;
+}
+[data-checked=true] {
+  color: #0c0;
+}
+[data-checked=false] {
+  color: #e00;
 }
 #sponsor {
   position: fixed;

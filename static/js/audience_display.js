@@ -69,17 +69,23 @@ var handleSetFinalScore = function(data) {
   $("#redFinalTeam2").text(data.Match.Red2);
   $("#redFinalTeam3").text(data.Match.Red3);
   $("#redFinalAuto").text(data.RedScore.AutoPoints);
-  $("#redFinalStack").text(data.RedScore.StackPoints);
-  $("#redFinalCoopertition").text(data.RedScore.CoopertitionPoints);
+  $("#redFinalTeleop").text(data.RedScore.TeleopPoints);
   $("#redFinalFoul").text(data.RedScore.FoulPoints);
+  $("#redFinalBreached").html(data.RedScore.Breached ? "&#x2714;" : "&#x2718;");
+  $("#redFinalBreached").attr("data-checked", data.RedScore.Breached);
+  $("#redFinalCaptured").html(data.RedScore.Captured ? "&#x2714;" : "&#x2718;");
+  $("#redFinalCaptured").attr("data-checked", data.RedScore.Captured);
   $("#blueFinalScore").text(data.BlueScore.Score);
   $("#blueFinalTeam1").text(data.Match.Blue1);
   $("#blueFinalTeam2").text(data.Match.Blue2);
   $("#blueFinalTeam3").text(data.Match.Blue3);
   $("#blueFinalAuto").text(data.BlueScore.AutoPoints);
-  $("#blueFinalStack").text(data.BlueScore.StackPoints);
-  $("#blueFinalCoopertition").text(data.BlueScore.CoopertitionPoints);
+  $("#blueFinalTeleop").text(data.BlueScore.TeleopPoints);
   $("#blueFinalFoul").text(data.BlueScore.FoulPoints);
+  $("#blueFinalBreached").html(data.BlueScore.Breached ? "&#x2714;" : "&#x2718;");
+  $("#blueFinalBreached").attr("data-checked", data.BlueScore.Breached);
+  $("#blueFinalCaptured").html(data.BlueScore.Captured ? "&#x2714;" : "&#x2718;");
+  $("#blueFinalCaptured").attr("data-checked", data.BlueScore.Captured);
   $("#finalMatchName").text(data.MatchName + " " + data.Match.DisplayName);
 };
 

@@ -100,7 +100,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 156, redSummary.Score)
 	assert.Equal(t, true, redSummary.Breached)
 	assert.Equal(t, false, redSummary.Captured)
-	assert.Equal(t, -5, redSummary.OpponentTowerStrength)
+	assert.Equal(t, -5, redSummary.TowerStrength)
 
 	blueSummary := matchResult.BlueScoreSummary()
 	assert.Equal(t, 22, blueSummary.AutoPoints)
@@ -113,7 +113,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 113, blueSummary.Score)
 	assert.Equal(t, false, blueSummary.Breached)
 	assert.Equal(t, false, blueSummary.Captured)
-	assert.Equal(t, 1, blueSummary.OpponentTowerStrength)
+	assert.Equal(t, 1, blueSummary.TowerStrength)
 
 	// Test breach boundary conditions.
 	matchResult.RedScore.DefensesCrossed[4] = 2
@@ -125,7 +125,7 @@ func TestScoreSummary(t *testing.T) {
 
 	// Test capture boundary conditions.
 	matchResult.BlueScore.AutoHighGoals = 1
-	assert.Equal(t, 0, matchResult.BlueScoreSummary().OpponentTowerStrength)
+	assert.Equal(t, 0, matchResult.BlueScoreSummary().TowerStrength)
 	assert.Equal(t, true, matchResult.BlueScoreSummary().Captured)
 	matchResult.BlueScore.HighGoals = 5
 	assert.Equal(t, true, matchResult.BlueScoreSummary().Captured)
