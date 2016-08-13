@@ -235,6 +235,68 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Generates a PDF-formatted report of the defenses schedule.
+func DefensesPdfReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !UserIsReader(w, r) {
+		return
+	}
+
+	vars := mux.Vars(r)
+	matches, err := db.GetMatchesByType(vars["type"])
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
+	colWidths := map[string]float64{"Type": 25, "Match": 15, "Defense": 15.5}
+	rowHeight := 6.5
+
+	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf.AddPage()
+
+	// Render table header row.
+	pdf.SetFont("Arial", "B", 10)
+	pdf.SetFillColor(220, 220, 220)
+	pdf.CellFormat(195, rowHeight, "Defenses Schedule - "+eventSettings.Name, "", 1, "C", false, 0, "")
+	pdf.CellFormat(colWidths["Type"], rowHeight, "Type", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 1", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 2", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 3", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 4", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 5", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 1", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 2", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 3", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 4", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 5", "1", 1, "C", true, 0, "")
+	pdf.SetFont("Arial", "", 10)
+	for _, match := range matches {
+		// Render match defenses row.
+		pdf.CellFormat(colWidths["Type"], rowHeight, match.CapitalizedType(), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Match"], rowHeight, match.DisplayName, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense1, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense2, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense3, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense4, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense5, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense1, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense2, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense3, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense4, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense5, "1", 1, "C", false, 0, "")
+	}
+
+	// Write out the PDF file as the HTTP response.
+	w.Header().Set("Content-Type", "application/pdf")
+	err = pdf.Output(w)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
+
 // Generates a CSV-formatted report of the team list.
 func TeamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 	if !UserIsReader(w, r) {

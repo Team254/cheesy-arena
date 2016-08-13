@@ -45,6 +45,8 @@ type Match struct {
 	BlueDefense5     string
 }
 
+var placeableDefenses = []string{"CDF", "M", "R", "RW", "RT"}
+
 func (database *Database) CreateMatch(match *Match) error {
 	return database.matchMap.Insert(match)
 }

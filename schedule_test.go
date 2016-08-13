@@ -56,17 +56,29 @@ func TestScheduleTeams(t *testing.T) {
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	assert.Nil(t, err)
 	assert.Equal(t, Match{Type: "test", DisplayName: "1", Time: time.Unix(0, 0).UTC(), Red1: 115, Red2: 111,
-		Red3: 108, Blue1: 109, Blue2: 116, Blue3: 117}, matches[0])
+		Red3: 108, Blue1: 109, Blue2: 116, Blue3: 117, RedDefense1: "LB", RedDefense2: "RW", RedDefense3: "RT",
+		RedDefense4: "R", RedDefense5: "M", BlueDefense1: "LB", BlueDefense2: "RW", BlueDefense3: "RT",
+		BlueDefense4: "R", BlueDefense5: "M"}, matches[0])
 	assert.Equal(t, Match{Type: "test", DisplayName: "2", Time: time.Unix(60, 0).UTC(), Red1: 114, Red2: 112,
-		Red3: 103, Blue1: 101, Blue2: 104, Blue3: 118}, matches[1])
+		Red3: 103, Blue1: 101, Blue2: 104, Blue3: 118, RedDefense1: "LB", RedDefense2: "RW", RedDefense3: "RT",
+		RedDefense4: "R", RedDefense5: "M", BlueDefense1: "LB", BlueDefense2: "RW", BlueDefense3: "RT",
+		BlueDefense4: "R", BlueDefense5: "M"}, matches[1])
 	assert.Equal(t, Match{Type: "test", DisplayName: "3", Time: time.Unix(120, 0).UTC(), Red1: 110, Red2: 107,
-		Red3: 105, Blue1: 106, Blue2: 113, Blue3: 102}, matches[2])
+		Red3: 105, Blue1: 106, Blue2: 113, Blue3: 102, RedDefense1: "LB", RedDefense2: "RW", RedDefense3: "RT",
+		RedDefense4: "R", RedDefense5: "M", BlueDefense1: "LB", BlueDefense2: "RW", BlueDefense3: "RT",
+		BlueDefense4: "R", BlueDefense5: "M"}, matches[2])
 	assert.Equal(t, Match{Type: "test", DisplayName: "4", Time: time.Unix(180, 0).UTC(), Red1: 112, Red2: 108,
-		Red3: 109, Blue1: 101, Blue2: 111, Blue3: 103}, matches[3])
+		Red3: 109, Blue1: 101, Blue2: 111, Blue3: 103, RedDefense1: "LB", RedDefense2: "RT", RedDefense3: "M",
+		RedDefense4: "CDF", RedDefense5: "R", BlueDefense1: "LB", BlueDefense2: "RT", BlueDefense3: "M",
+		BlueDefense4: "CDF", BlueDefense5: "R"}, matches[3])
 	assert.Equal(t, Match{Type: "test", DisplayName: "5", Time: time.Unix(240, 0).UTC(), Red1: 113, Red2: 117,
-		Red3: 115, Blue1: 110, Blue2: 114, Blue3: 102}, matches[4])
+		Red3: 115, Blue1: 110, Blue2: 114, Blue3: 102, RedDefense1: "LB", RedDefense2: "RT", RedDefense3: "M",
+		RedDefense4: "CDF", RedDefense5: "R", BlueDefense1: "LB", BlueDefense2: "RT", BlueDefense3: "M",
+		BlueDefense4: "CDF", BlueDefense5: "R"}, matches[4])
 	assert.Equal(t, Match{Type: "test", DisplayName: "6", Time: time.Unix(300, 0).UTC(), Red1: 118, Red2: 105,
-		Red3: 106, Blue1: 107, Blue2: 104, Blue3: 116}, matches[5])
+		Red3: 106, Blue1: 107, Blue2: 104, Blue3: 116, RedDefense1: "LB", RedDefense2: "RT", RedDefense3: "M",
+		RedDefense4: "CDF", RedDefense5: "R", BlueDefense1: "LB", BlueDefense2: "RT", BlueDefense3: "M",
+		BlueDefense4: "CDF", BlueDefense5: "R"}, matches[5])
 
 	// Check with excess room for matches in the schedule.
 	scheduleBlocks = []ScheduleBlock{{time.Unix(0, 0).UTC(), 7, 60}}

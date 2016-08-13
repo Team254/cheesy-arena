@@ -60,9 +60,11 @@ func TestScheduleCsvReport(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.HeaderMap["Content-Type"][0])
 	expectedBody := "Match,Type,Time,Red1,Red1IsSurrogate,Red2,Red2IsSurrogate,Red3,Red3IsSurrogate,Blue1," +
-		"Blue1IsSurrogate,Blue2,Blue2IsSurrogate,Blue3,Blue3IsSurrogate\n1,qualification," +
-		"1969-12-31 16:00:00 -0800 PST,1,false,2,false,3,false,4,true,5,true,6,true\n" +
-		"2,qualification,1969-12-31 16:10:00 -0800 PST,7,true,8,true,9,true,10,false,11,false,12,false\n\n"
+		"Blue1IsSurrogate,Blue2,Blue2IsSurrogate,Blue3,Blue3IsSurrogate,RedDefense1,RedDefense2," +
+		"RedDefense3,RedDefense4,RedDefense5,BlueDefense1,BlueDefense2,BlueDefense3,BlueDefense4," +
+		"BlueDefense5\n1,qualification,1969-12-31 16:00:00 -0800 PST,1,false,2,false,3,false,4,true,5,true," +
+		"6,true,,,,,,,,,,\n2,qualification,1969-12-31 16:10:00 -0800 PST,7,true,8,true,9,true,10,false,11,false,12," +
+		"false,,,,,,,,,,\n\n"
 	assert.Equal(t, expectedBody, recorder.Body.String())
 }
 

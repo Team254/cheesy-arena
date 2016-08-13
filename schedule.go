@@ -88,6 +88,8 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 		}
 	}
 
+	randomizeDefenses(matches, numTeams)
+
 	return matches, nil
 }
 
@@ -98,4 +100,29 @@ func countMatches(scheduleBlocks []ScheduleBlock) int {
 		numMatches += block.NumMatches
 	}
 	return numMatches
+}
+
+// Fills in a random set of defenses per round of all teams playing.
+func randomizeDefenses(matches []Match, numTeams int) {
+	// Take the floor, to err on the side of a team missing a set of defenses instead of seeing it twice.
+	matchesPerRound := numTeams / 6
+
+	var defenseShuffle []int
+	for i := 0; i < len(matches); i++ {
+		if i%matchesPerRound == 0 {
+			// Pick a new set of defenses.
+			defenseShuffle = rand.Perm(len(placeableDefenses))
+		}
+
+		matches[i].RedDefense1 = "LB"
+		matches[i].RedDefense2 = placeableDefenses[defenseShuffle[0]]
+		matches[i].RedDefense3 = placeableDefenses[defenseShuffle[1]]
+		matches[i].RedDefense4 = placeableDefenses[defenseShuffle[2]]
+		matches[i].RedDefense5 = placeableDefenses[defenseShuffle[3]]
+		matches[i].BlueDefense1 = "LB"
+		matches[i].BlueDefense2 = placeableDefenses[defenseShuffle[0]]
+		matches[i].BlueDefense3 = placeableDefenses[defenseShuffle[1]]
+		matches[i].BlueDefense4 = placeableDefenses[defenseShuffle[2]]
+		matches[i].BlueDefense5 = placeableDefenses[defenseShuffle[3]]
+	}
 }
