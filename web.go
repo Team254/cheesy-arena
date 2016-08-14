@@ -182,6 +182,8 @@ func newHandler() http.Handler {
 	router.HandleFunc("/setup/sponsor_slides", SponsorSlidesGetHandler).Methods("GET")
 	router.HandleFunc("/setup/sponsor_slides", SponsorSlidesPostHandler).Methods("POST")
 	router.HandleFunc("/api/sponsor_slides", SponsorSlidesApiHandler).Methods("GET")
+	router.HandleFunc("/setup/defense_selection", DefenseSelectionGetHandler).Methods("GET")
+	router.HandleFunc("/setup/defense_selection", DefenseSelectionPostHandler).Methods("POST")
 	router.HandleFunc("/match_play", MatchPlayHandler).Methods("GET")
 	router.HandleFunc("/match_play/{matchId}/load", MatchPlayLoadHandler).Methods("GET")
 	router.HandleFunc("/match_play/{matchId}/show_result", MatchPlayShowResultHandler).Methods("GET")

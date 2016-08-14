@@ -75,6 +75,7 @@ type Arena struct {
 	allianceSelectionNotifier      *Notifier
 	lowerThirdNotifier             *Notifier
 	reloadDisplaysNotifier         *Notifier
+	defenseSelectionNotifier       *Notifier
 	audienceDisplayScreen          string
 	allianceStationDisplays        map[string]string
 	allianceStationDisplayScreen   string
@@ -123,6 +124,7 @@ func (arena *Arena) Setup() {
 	arena.allianceSelectionNotifier = NewNotifier()
 	arena.lowerThirdNotifier = NewNotifier()
 	arena.reloadDisplaysNotifier = NewNotifier()
+	arena.defenseSelectionNotifier = NewNotifier()
 
 	// Load empty match as current.
 	arena.MatchState = PRE_MATCH
@@ -226,6 +228,7 @@ func (arena *Arena) LoadMatch(match *Match) error {
 	arena.realtimeScoreNotifier.Notify(nil)
 	arena.allianceStationDisplayScreen = "match"
 	arena.allianceStationDisplayNotifier.Notify(nil)
+	arena.defenseSelectionNotifier.Notify(nil)
 
 	return nil
 }

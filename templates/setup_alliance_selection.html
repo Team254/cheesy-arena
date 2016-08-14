@@ -153,7 +153,6 @@
 {{define "script"}}
 <script>
   $(function() {
-    $("#displayBackgroundColor").colorpicker();
     var startTime = moment(new Date()).hour(13).minute(0).second(0);
     $("#startTimePicker").datetimepicker().data("DateTimePicker").setDate(startTime);
   });

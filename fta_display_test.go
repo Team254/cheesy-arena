@@ -19,5 +19,5 @@ func TestFtaDisplay(t *testing.T) {
 
 	recorder := getHttpResponse("/displays/fta")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "FTA Display - Untitled Event - Cheesy Arena")
+	assert.Contains(t, recorder.Body.String(), "Field Monitor - Untitled Event - Cheesy Arena")
 }

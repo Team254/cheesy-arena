@@ -46,6 +46,8 @@ type Match struct {
 }
 
 var placeableDefenses = []string{"CDF", "M", "R", "RW", "RT"}
+var defenseNames = map[string]string{"LB": "Low Bar", "CDF": "Cheval de Frise", "M": "Moat",
+	"R": "Ramparts", "RW": "Rock Wall", "RT": "Rough Terrain"}
 
 func (database *Database) CreateMatch(match *Match) error {
 	return database.matchMap.Insert(match)
