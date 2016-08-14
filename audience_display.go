@@ -12,12 +12,6 @@ import (
 	"text/template"
 )
 
-type RealtimeScoreFields struct {
-	Score            int
-	TowerStrength    int
-	DefensesStrength [5]int
-}
-
 // Renders the audience display to be chroma keyed over the video feed.
 func AudienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !UserIsReader(w, r) {
@@ -221,15 +215,4 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-}
-
-// Calculates the integer score, tower strength, and defenses strength for the given realtime snapshot.
-func (realtimeScore *RealtimeScore) ScoreFields(opponentFouls []Foul) *RealtimeScoreFields {
-	scoreSummary := scoreSummary(&realtimeScore.CurrentScore, opponentFouls, mainArena.currentMatch.Type)
-	var defensesStrength [5]int
-	for i := 0; i < 5; i++ {
-		defensesStrength[i] = 2 - realtimeScore.CurrentScore.AutoDefensesCrossed[i] -
-			realtimeScore.CurrentScore.DefensesCrossed[i]
-	}
-	return &RealtimeScoreFields{scoreSummary.Score, scoreSummary.TowerStrength, defensesStrength}
 }

@@ -8,7 +8,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"time"
 )
 
@@ -83,9 +82,15 @@ type Arena struct {
 	lastMatchTimeSec               float64
 	savedMatch                     *Match
 	savedMatchResult               *MatchResult
-	leftGoalHotFirst               bool
 	lights                         Lights
 	muteMatchSounds                bool
+	fieldReset                     bool
+}
+
+type RealtimeScoreFields struct {
+	Score            int
+	TowerStrength    int
+	DefensesStrength [5]int
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
@@ -126,6 +131,8 @@ func (arena *Arena) Setup() {
 	arena.reloadDisplaysNotifier = NewNotifier()
 	arena.defenseSelectionNotifier = NewNotifier()
 
+	arena.lights.Setup()
+
 	// Load empty match as current.
 	arena.MatchState = PRE_MATCH
 	arena.LoadTestMatch()
@@ -138,8 +145,6 @@ func (arena *Arena) Setup() {
 	arena.savedMatchResult = &MatchResult{}
 	arena.allianceStationDisplays = make(map[string]string)
 	arena.allianceStationDisplayScreen = "match"
-
-	arena.lights.Setup()
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -222,6 +227,8 @@ func (arena *Arena) LoadMatch(match *Match) error {
 	// Reset the realtime scores.
 	arena.redRealtimeScore = NewRealtimeScore()
 	arena.blueRealtimeScore = NewRealtimeScore()
+	arena.fieldReset = false
+	arena.lights.ClearAll()
 
 	// Notify any listeners about the new match.
 	arena.matchLoadTeamsNotifier.Notify(nil)
@@ -410,7 +417,6 @@ func (arena *Arena) Update() {
 		arena.MatchState = AUTO_PERIOD
 		arena.matchStartTime = time.Now()
 		arena.lastMatchTimeSec = -1
-		arena.leftGoalHotFirst = rand.Intn(2) == 1
 		auto = true
 		enabled = true
 		sendDsPacket = true
@@ -494,6 +500,8 @@ func (arena *Arena) Update() {
 		arena.sendDsPacket(auto, enabled)
 		arena.robotStatusNotifier.Notify(nil)
 	}
+
+	arena.handleLighting()
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -521,4 +529,38 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 // Calculates the integer score value for the given realtime snapshot.
 func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
 	return scoreSummary(&realtimeScore.CurrentScore, opponentFouls, mainArena.currentMatch.Type).Score
+}
+
+// Calculates the integer score, tower strength, and defenses strength for the given realtime snapshot.
+func (realtimeScore *RealtimeScore) ScoreFields(opponentFouls []Foul) *RealtimeScoreFields {
+	scoreSummary := scoreSummary(&realtimeScore.CurrentScore, opponentFouls, mainArena.currentMatch.Type)
+	var defensesStrength [5]int
+	for i := 0; i < 5; i++ {
+		defensesStrength[i] = 2 - realtimeScore.CurrentScore.AutoDefensesCrossed[i] -
+			realtimeScore.CurrentScore.DefensesCrossed[i]
+	}
+	return &RealtimeScoreFields{scoreSummary.Score, scoreSummary.TowerStrength, defensesStrength}
+}
+
+// Manipulates the arena LED lighting based on the current state of the match.
+func (arena *Arena) handleLighting() {
+	switch arena.MatchState {
+	case AUTO_PERIOD:
+		fallthrough
+	case PAUSE_PERIOD:
+		fallthrough
+	case TELEOP_PERIOD:
+		fallthrough
+	case ENDGAME_PERIOD:
+		redScoreFields := arena.redRealtimeScore.ScoreFields(arena.blueRealtimeScore.CurrentScore.Fouls)
+		blueScoreFields := arena.blueRealtimeScore.ScoreFields(arena.redRealtimeScore.CurrentScore.Fouls)
+		arena.lights.SetGoals(redScoreFields.TowerStrength, blueScoreFields.TowerStrength)
+		arena.lights.SetDefenses(redScoreFields.DefensesStrength, blueScoreFields.DefensesStrength)
+	case POST_MATCH:
+		if mainArena.fieldReset {
+			arena.lights.SetFieldReset()
+		} else {
+			arena.lights.ClearAll()
+		}
+	}
 }

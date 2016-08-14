@@ -229,6 +229,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				// Don't allow clearing the field until the match is over.
 				continue
 			}
+			mainArena.fieldReset = true
 			mainArena.allianceStationDisplayScreen = "fieldReset"
 			mainArena.allianceStationDisplayNotifier.Notify(nil)
 			continue // Don't reload.
@@ -239,6 +240,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			mainArena.redRealtimeScore.FoulsCommitted = true
 			mainArena.blueRealtimeScore.FoulsCommitted = true
+			mainArena.fieldReset = true
 			mainArena.allianceStationDisplayScreen = "fieldReset"
 			mainArena.allianceStationDisplayNotifier.Notify(nil)
 			mainArena.scoringStatusNotifier.Notify(nil)
