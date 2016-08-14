@@ -63,7 +63,7 @@ $(function() {
   $("[data-toggle=tooltip]").tooltip({"placement": "top"});
 
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/match_play/websocket", {
+  websocket = new CheesyWebsocket("/displays/fta/websocket", {
     status: function(event) { handleStatus(event.data); }
   });
 });

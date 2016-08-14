@@ -41,6 +41,44 @@
     <br />
   </div>
 </div>
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <legend>Upcoming Defenses</legend>
+    <table class="table table-striped table-hover text-center">
+      <thead>
+        <tr>
+          <td><h4>Match</h4></td>
+          <td><h4>1</h4></td>
+          <td><h4>2</h4></td>
+          <td><h4>3</h4></td>
+          <td><h4>4</h4></td>
+          <td><h4>5</h4></td>
+        </tr>
+      </thead>
+      <tbody>
+        {{range $match := .UpcomingMatches}}
+          <tr class="danger">
+            <td>{{$match.DisplayName}}</td>
+            <td>{{index $.DefenseNames $match.RedDefense1}}</td>
+            <td>{{index $.DefenseNames $match.RedDefense2}}</td>
+            <td>{{index $.DefenseNames $match.RedDefense3}}</td>
+            <td>{{index $.DefenseNames $match.RedDefense4}}</td>
+            <td>{{index $.DefenseNames $match.RedDefense5}}</td>
+          </tr>
+          <tr class="info">
+            <td>&nbsp;</td>
+            <td>{{index $.DefenseNames $match.BlueDefense1}}</td>
+            <td>{{index $.DefenseNames $match.BlueDefense2}}</td>
+            <td>{{index $.DefenseNames $match.BlueDefense3}}</td>
+            <td>{{index $.DefenseNames $match.BlueDefense4}}</td>
+            <td>{{index $.DefenseNames $match.BlueDefense5}}</td>
+          </tr>
+          <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</div>
 {{end}}
 {{define "script"}}
 <script src="/static/js/match_timing.js"></script>
