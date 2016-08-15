@@ -28,22 +28,41 @@ var tbaEventNames = make(map[string]string)
 // MODELS
 
 type TbaMatch struct {
-	CompLevel      string                       `json:"comp_level"`
-	SetNumber      int                          `json:"set_number"`
-	MatchNumber    int                          `json:"match_number"`
-	Alliances      map[string]interface{}       `json:"alliances"`
-	ScoreBreakdown map[string]TbaScoreBreakdown `json:"score_breakdown"`
-	TimeString     string                       `json:"time_string"`
-	TimeUtc        string                       `json:"time_utc"`
+	CompLevel      string                        `json:"comp_level"`
+	SetNumber      int                           `json:"set_number"`
+	MatchNumber    int                           `json:"match_number"`
+	Alliances      map[string]interface{}        `json:"alliances"`
+	ScoreBreakdown map[string]*TbaScoreBreakdown `json:"score_breakdown"`
+	TimeString     string                        `json:"time_string"`
+	TimeUtc        string                        `json:"time_utc"`
 }
 
 type TbaScoreBreakdown struct {
-	Coopertition int `json:"coopertition_points"`
-	Auto         int `json:"auto_points"`
-	Container    int `json:"container_points"`
-	Tote         int `json:"tote_points"`
-	Litter       int `json:"litter_points"`
-	Foul         int `json:"foul_points"`
+	TeleopBouldersLow      int    `json:"teleopBouldersLow"`
+	TeleopBouldersHigh     int    `json:"teleopBouldersHigh"`
+	TeleopTowerCaptured    bool   `json:"teleopTowerCaptured"`
+	TeleopDefensesBreached bool   `json:"teleopDefensesBreached"`
+	Position1Crossings     int    `json:"position1crossings"`
+	Position2              string `json:"position2"`
+	Position2Crossings     int    `json:"position2crossings"`
+	Position3              string `json:"position3"`
+	Position3Crossings     int    `json:"position3crossings"`
+	Position4              string `json:"position4"`
+	Position4Crossings     int    `json:"position4crossings"`
+	Position5              string `json:"position5"`
+	Position5Crossings     int    `json:"position5crossings"`
+	AutoPoints             int    `json:"autoPoints"`
+	AutoReachPoints        int    `json:"autoReachPoints"`
+	AutoCrossingPoints     int    `json:"autoCrossingPoints"`
+	AutoBoulderPoints      int    `json:"autoBoulderPoints"`
+	TeleopCrossingPoints   int    `json:"teleopCrossingPoints"`
+	TeleopBoulderPoints    int    `json:"teleopBoulderPoints"`
+	TeleopChallengePoints  int    `json:"teleopChallengePoints"`
+	TeleopScalePoints      int    `json:"teleopScalePoints"`
+	BreachPoints           int    `json:"breachPoints"`
+	CapturePoints          int    `json:"capturePoints"`
+	FoulPoints             int    `json:"foulPoints"`
+	TotalPoints            int    `json:"totalPoints"`
 }
 
 type TbaRanking struct {
@@ -51,9 +70,10 @@ type TbaRanking struct {
 	Rank           int    `json:"rank"`
 	RP             int    `json:"RP"`
 	Auto           int    `json:"Auto"`
-	ScaleChallenge int    `json:"ScaleChallenge"`
+	ScaleChallenge int    `json:"Scale/Challenge"`
 	Goal           int    `json:"Goal"`
 	Defense        int    `json:"Defense"`
+	WinLossTie     string `json:"W-L-T"`
 	Dqs            int    `json:"dqs"`
 	Played         int    `json:"played"`
 }
@@ -240,30 +260,21 @@ func PublishMatches() error {
 			getTbaTeam(match.Red3)}, "score": nil}
 		blueAlliance := map[string]interface{}{"teams": []string{getTbaTeam(match.Blue1), getTbaTeam(match.Blue2),
 			getTbaTeam(match.Blue3)}, "score": nil}
-		var scoreBreakdown map[string]TbaScoreBreakdown
+		var scoreBreakdown map[string]*TbaScoreBreakdown
 
 		// Fill in scores if the match has been played.
 		if match.Status == "complete" {
-			// TODO(patrick): Implement for 2016.
-			/*
-				matchResult, err := db.GetMatchResultForMatch(match.Id)
-				if err != nil {
-					return err
-				}
-				if matchResult != nil {
-					redScoreSummary := matchResult.RedScoreSummary()
-					blueScoreSummary := matchResult.BlueScoreSummary()
-					redAlliance["score"] = redScoreSummary.Score
-					blueAlliance["score"] = blueScoreSummary.Score
-					scoreBreakdown = make(map[string]TbaScoreBreakdown)
-					scoreBreakdown["red"] = TbaScoreBreakdown{redScoreSummary.CoopertitionPoints,
-						redScoreSummary.AutoPoints, redScoreSummary.ContainerPoints, redScoreSummary.TotePoints,
-						redScoreSummary.LitterPoints, redScoreSummary.FoulPoints}
-					scoreBreakdown["blue"] = TbaScoreBreakdown{blueScoreSummary.CoopertitionPoints,
-						blueScoreSummary.AutoPoints, blueScoreSummary.ContainerPoints, blueScoreSummary.TotePoints,
-						blueScoreSummary.LitterPoints, blueScoreSummary.FoulPoints}
-				}
-			*/
+			matchResult, err := db.GetMatchResultForMatch(match.Id)
+			if err != nil {
+				return err
+			}
+			if matchResult != nil {
+				scoreBreakdown = make(map[string]*TbaScoreBreakdown)
+				scoreBreakdown["red"] = createTbaScoringBreakdown(&match, matchResult, "red")
+				scoreBreakdown["blue"] = createTbaScoringBreakdown(&match, matchResult, "blue")
+				redAlliance["score"] = scoreBreakdown["red"].TotalPoints
+				blueAlliance["score"] = scoreBreakdown["blue"].TotalPoints
+			}
 		}
 
 		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, map[string]interface{}{"red": redAlliance,
@@ -300,12 +311,13 @@ func PublishRankings() error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "Auto", "Scale/Challenge", "Goal", "Defense"}
+	breakdowns := []string{"RP", "Auto", "Scale/Challenge", "Goal", "Defense", "W-L-T"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.RankingPoints,
 			ranking.AutoPoints, ranking.ScaleChallengePoints, ranking.GoalPoints, ranking.DefensePoints,
-			ranking.Disqualifications, ranking.Played}
+			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
+			ranking.Played}
 	}
 	jsonBody, err := json.Marshal(map[string]interface{}{"breakdowns": breakdowns, "rankings": tbaRankings})
 	if err != nil {
@@ -401,4 +413,62 @@ func getTbaRequest(url string) (*http.Response, error) {
 	}
 	req.Header.Set("X-TBA-App-Id", "cheesy-arena:cheesy-fms:v0.1")
 	return client.Do(req)
+}
+
+func createTbaScoringBreakdown(match *Match, matchResult *MatchResult, alliance string) *TbaScoreBreakdown {
+	tbaDefenseNames := map[string]string{"CDF": "A_ChevalDeFrise", "M": "B_Moat", "R": "B_Ramparts",
+		"RW": "D_RockWall", "RT": "D_RoughTerrain"}
+	var score *Score
+	var opponentScore *Score
+	var scoreSummary *ScoreSummary
+	var breakdown TbaScoreBreakdown
+	if alliance == "red" {
+		score = &matchResult.RedScore
+		opponentScore = &matchResult.BlueScore
+		scoreSummary = matchResult.RedScoreSummary()
+		breakdown.Position2 = tbaDefenseNames[match.RedDefense2]
+		breakdown.Position3 = tbaDefenseNames[match.RedDefense3]
+		breakdown.Position4 = tbaDefenseNames[match.RedDefense4]
+		breakdown.Position5 = tbaDefenseNames[match.RedDefense5]
+	} else {
+		score = &matchResult.BlueScore
+		opponentScore = &matchResult.RedScore
+		scoreSummary = matchResult.BlueScoreSummary()
+		breakdown.Position2 = tbaDefenseNames[match.BlueDefense2]
+		breakdown.Position3 = tbaDefenseNames[match.BlueDefense3]
+		breakdown.Position4 = tbaDefenseNames[match.BlueDefense4]
+		breakdown.Position5 = tbaDefenseNames[match.BlueDefense5]
+	}
+	breakdown.TeleopBouldersLow = score.LowGoals
+	breakdown.TeleopBouldersHigh = score.HighGoals
+	breakdown.TeleopTowerCaptured = scoreSummary.Captured
+	breakdown.TeleopDefensesBreached = scoreSummary.Breached
+	breakdown.Position1Crossings = score.AutoDefensesCrossed[0] + score.DefensesCrossed[0]
+	breakdown.Position2Crossings = score.AutoDefensesCrossed[1] + score.DefensesCrossed[1]
+	breakdown.Position3Crossings = score.AutoDefensesCrossed[2] + score.DefensesCrossed[2]
+	breakdown.Position4Crossings = score.AutoDefensesCrossed[3] + score.DefensesCrossed[3]
+	breakdown.Position5Crossings = score.AutoDefensesCrossed[4] + score.DefensesCrossed[4]
+	breakdown.AutoPoints = scoreSummary.AutoPoints
+	breakdown.AutoReachPoints = 2 * score.AutoDefensesReached
+	for _, crossings := range score.AutoDefensesCrossed {
+		breakdown.AutoCrossingPoints += 10 * crossings
+	}
+	breakdown.AutoBoulderPoints = 5*score.AutoLowGoals + 10*score.AutoHighGoals
+	for _, crossings := range score.DefensesCrossed {
+		breakdown.TeleopCrossingPoints += 5 * crossings
+	}
+	breakdown.TeleopBoulderPoints = 2*score.LowGoals + 5*score.HighGoals
+	breakdown.TeleopChallengePoints = 5 * score.Challenges
+	breakdown.TeleopScalePoints = 15 * score.Scales
+	if match.Type == "elimination" {
+		if scoreSummary.Breached {
+			breakdown.BreachPoints = 20
+		}
+		if scoreSummary.Captured {
+			breakdown.CapturePoints = 25
+		}
+	}
+	breakdown.FoulPoints = 5 * len(opponentScore.Fouls)
+	breakdown.TotalPoints = scoreSummary.Score
+	return &breakdown
 }
