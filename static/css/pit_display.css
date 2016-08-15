@@ -68,10 +68,10 @@ body {
   margin: 0;
 }
 .team-field {
-  width: 8%;
+  width: 7%;
 }
 .team-nickname {
-  width: 28%;
+  width: 30%;
   overflow: hidden;
   white-space: nowrap;
   text-align: left;

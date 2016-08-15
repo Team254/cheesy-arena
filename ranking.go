@@ -20,6 +20,9 @@ type Ranking struct {
 	GoalPoints           int
 	DefensePoints        int
 	Random               float64
+	Wins                 int
+	Losses               int
+	Ties                 int
 	Disqualifications    int
 	Played               int
 }
@@ -202,11 +205,15 @@ func addMatchResultToRankings(rankings map[int]*Ranking, teamId int, matchResult
 		opponentScore = matchResult.RedScoreSummary()
 	}
 
-	// Assign ranking points.
+	// Assign ranking points and wins/losses/ties.
 	if ownScore.Score > opponentScore.Score {
 		ranking.RankingPoints += 2
+		ranking.Wins += 1
 	} else if ownScore.Score == opponentScore.Score {
 		ranking.RankingPoints += 1
+		ranking.Ties += 1
+	} else {
+		ranking.Losses += 1
 	}
 	if ownScore.Breached {
 		ranking.RankingPoints += 1

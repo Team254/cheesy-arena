@@ -13,8 +13,8 @@ func TestRankingsCsvReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
-	ranking1 := Ranking{1114, 2, 18, 625, 90, 554, 10, 0.254, 0, 10}
-	ranking2 := Ranking{254, 1, 20, 625, 90, 554, 10, 0.254, 0, 10}
+	ranking1 := Ranking{1114, 2, 18, 625, 90, 554, 10, 0.254, 3, 2, 1, 0, 10}
+	ranking2 := Ranking{254, 1, 20, 625, 90, 554, 10, 0.254, 1, 2, 3, 0, 10}
 	db.CreateRanking(&ranking1)
 	db.CreateRanking(&ranking2)
 
@@ -22,7 +22,8 @@ func TestRankingsCsvReport(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.HeaderMap["Content-Type"][0])
 	expectedBody := "Rank,TeamId,RankingPoints,AutoPoints,ScaleChallengePoints,GoalPoints,DefensePoints," +
-		"Disqualifications,Played\n1,254,20,625,90,554,10,0,10\n2,1114,18,625,90,554,10,0,10\n\n"
+		"Wins,Losses,Ties,Disqualifications,Played\n1,254,20,625,90,554,10,1,2,3,0,10\n2,1114,18,625,90," +
+		"554,10,3,2,1,0,10\n\n"
 	assert.Equal(t, expectedBody, recorder.Body.String())
 }
 
@@ -31,8 +32,8 @@ func TestRankingsPdfReport(t *testing.T) {
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
 	eventSettings, _ = db.GetEventSettings()
-	ranking1 := Ranking{1114, 2, 18, 625, 90, 554, 10, 0.254, 0, 10}
-	ranking2 := Ranking{254, 1, 20, 625, 90, 554, 10, 0.254, 0, 10}
+	ranking1 := Ranking{1114, 2, 18, 625, 90, 554, 10, 0.254, 3, 2, 1, 0, 10}
+	ranking2 := Ranking{254, 1, 20, 625, 90, 554, 10, 0.254, 3, 2, 1, 0, 10}
 	db.CreateRanking(&ranking1)
 	db.CreateRanking(&ranking2)
 

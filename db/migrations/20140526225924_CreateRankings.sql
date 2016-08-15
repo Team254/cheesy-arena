@@ -8,6 +8,9 @@ CREATE TABLE rankings (
   goalpoints int,
   defensepoints int,
   random REAL,
+  wins int,
+  losses int,
+  ties int,
   disqualifications int,
   played int
 );

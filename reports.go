@@ -54,7 +54,7 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
 	colWidths := map[string]float64{"Rank": 13, "Team": 23, "RP": 20, "Auto": 20, "SC": 21, "Goal": 20,
-		"Defense": 20, "DQ": 20, "Played": 20}
+		"Defense": 20, "W-L-T": 20, "DQ": 20, "Played": 20}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -64,7 +64,6 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
 	pdf.CellFormat(195, rowHeight, "Team Standings - "+eventSettings.Name, "", 1, "C", false, 0, "")
-	pdf.SetX(19)
 	pdf.CellFormat(colWidths["Rank"], rowHeight, "Rank", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["RP"], rowHeight, "RB", "1", 0, "C", true, 0, "")
@@ -72,11 +71,11 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	pdf.CellFormat(colWidths["SC"], rowHeight, "Scale/Chal.", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Goal"], rowHeight, "Goal", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Defense"], rowHeight, "Defense", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["W-L-T"], rowHeight, "W-L-T", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["DQ"], rowHeight, "DQ", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Played"], rowHeight, "Played", "1", 1, "C", true, 0, "")
 	for _, ranking := range rankings {
 		// Render ranking info row.
-		pdf.SetX(19)
 		pdf.SetFont("Arial", "B", 10)
 		pdf.CellFormat(colWidths["Rank"], rowHeight, strconv.Itoa(ranking.Rank), "1", 0, "C", false, 0, "")
 		pdf.SetFont("Arial", "", 10)
@@ -86,6 +85,8 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		pdf.CellFormat(colWidths["SC"], rowHeight, strconv.Itoa(ranking.ScaleChallengePoints), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["Goal"], rowHeight, strconv.Itoa(ranking.GoalPoints), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["Defense"], rowHeight, strconv.Itoa(ranking.DefensePoints), "1", 0, "C", false, 0, "")
+		record := fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties)
+		pdf.CellFormat(colWidths["W-L-T"], rowHeight, record, "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["DQ"], rowHeight, strconv.Itoa(ranking.Disqualifications), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["Played"], rowHeight, strconv.Itoa(ranking.Played), "1", 1, "C", false, 0, "")
 	}
