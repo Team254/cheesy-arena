@@ -17,8 +17,6 @@ import (
 
 var catalystTelnetPort = 23
 
-const eventServerAddress = "10.0.100.50"
-
 var catalystMutex sync.Mutex
 
 // Sets up wired networks for the given set of teams.
@@ -42,7 +40,7 @@ func ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *Team) error {
 		} else {
 			addTeamVlansCommand += fmt.Sprintf("no access-list 1%d\naccess-list 1%d permit ip "+
 				"10.%d.%d.0 0.0.0.255 host %s\ninterface Vlan%d\nip address 10.%d.%d.61 255.255.255.0\n", vlan,
-				vlan, team.Id/100, team.Id%100, eventServerAddress, vlan, team.Id/100, team.Id%100)
+				vlan, team.Id/100, team.Id%100, driverStationTcpListenAddress, vlan, team.Id/100, team.Id%100)
 		}
 	}
 	replaceTeamVlan(red1, red1Vlan)

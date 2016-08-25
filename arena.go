@@ -160,10 +160,7 @@ func (arena *Arena) AssignTeam(teamId int, station string) error {
 		return nil
 	}
 	if dsConn != nil {
-		err := dsConn.Close()
-		if err != nil {
-			return err
-		}
+		dsConn.Close()
 		arena.AllianceStations[station].team = nil
 		arena.AllianceStations[station].DsConn = nil
 	}
@@ -183,10 +180,6 @@ func (arena *Arena) AssignTeam(teamId int, station string) error {
 	}
 
 	arena.AllianceStations[station].team = team
-	arena.AllianceStations[station].DsConn, err = NewDriverStationConnection(team.Id, station)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -327,7 +320,7 @@ func (arena *Arena) CheckCanStartMatch() error {
 			return fmt.Errorf("Cannot start match while an emergency stop is active.")
 		}
 		if !allianceStation.Bypass {
-			if allianceStation.DsConn == nil || !allianceStation.DsConn.DriverStationStatus.RobotLinked {
+			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
 				return fmt.Errorf("Cannot start match until all robots are connected or bypassed.")
 			}
 		}
@@ -514,10 +507,11 @@ func (arena *Arena) Run() {
 
 func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	for _, allianceStation := range arena.AllianceStations {
-		if allianceStation.DsConn != nil {
-			allianceStation.DsConn.Auto = auto
-			allianceStation.DsConn.Enabled = enabled && !allianceStation.EmergencyStop && !allianceStation.Bypass
-			err := allianceStation.DsConn.Update()
+		dsConn := allianceStation.DsConn
+		if dsConn != nil {
+			dsConn.Auto = auto
+			dsConn.Enabled = enabled && !allianceStation.EmergencyStop && !allianceStation.Bypass
+			err := dsConn.Update()
 			if err != nil {
 				log.Printf("Unable to send driver station packet for team %d.", allianceStation.team.Id)
 			}
@@ -563,4 +557,16 @@ func (arena *Arena) handleLighting() {
 			arena.lights.ClearAll()
 		}
 	}
+}
+
+// Returns the alliance station identifier for the given team, or the empty string if the team is not present
+// in the current match.
+func (arena *Arena) getAssignedAllianceStation(teamId int) string {
+	for station, allianceStation := range arena.AllianceStations {
+		if allianceStation.team != nil && allianceStation.team.Id == teamId {
+			return station
+		}
+	}
+
+	return ""
 }

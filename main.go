@@ -21,9 +21,7 @@ func main() {
 
 	// Run the webserver and DS packet listener in goroutines and use the main one for the arena state machine.
 	go ServeWebInterface()
-	listener, err := DsPacketListener()
-	checkErr(err)
-	go ListenForDsPackets(listener)
+	go ListenForDriverStations()
 	go MonitorBandwidth()
 	mainArena.Setup()
 	mainArena.Run()

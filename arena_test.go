@@ -29,24 +29,21 @@ func TestAssignTeam(t *testing.T) {
 	err = mainArena.AssignTeam(254, "B1")
 	assert.Nil(t, err)
 	assert.Equal(t, team, *mainArena.AllianceStations["B1"].team)
-	dsConn := mainArena.AllianceStations["B1"].DsConn
-	assert.Equal(t, 254, dsConn.TeamId)
-	assert.Equal(t, "B1", dsConn.AllianceStation)
+	dummyDs := &DriverStationConnection{TeamId: 254}
+	mainArena.AllianceStations["B1"].DsConn = dummyDs
 
 	// Nothing should happen if the same team is assigned to the same station.
 	err = mainArena.AssignTeam(254, "B1")
 	assert.Nil(t, err)
 	assert.Equal(t, team, *mainArena.AllianceStations["B1"].team)
-	dsConn2 := mainArena.AllianceStations["B1"].DsConn
-	assert.Equal(t, dsConn, dsConn2) // Pointer equality
+	assert.NotNil(t, mainArena.AllianceStations["B1"])
+	assert.Equal(t, dummyDs, mainArena.AllianceStations["B1"].DsConn) // Pointer equality
 
 	// Test reassignment to another team.
 	err = mainArena.AssignTeam(1114, "B1")
 	assert.Nil(t, err)
 	assert.NotEqual(t, team, *mainArena.AllianceStations["B1"].team)
-	assert.Equal(t, 1114, mainArena.AllianceStations["B1"].DsConn.TeamId)
-	err = dsConn.conn.Close()
-	assert.NotNil(t, err) // Connection should have already been closed.
+	assert.Nil(t, mainArena.AllianceStations["B1"].DsConn)
 
 	// Check assigning zero as the team number.
 	err = mainArena.AssignTeam(0, "R2")
@@ -73,6 +70,8 @@ func TestArenaMatchFlow(t *testing.T) {
 	mainArena.Setup()
 	db.CreateTeam(&Team{Id: 254})
 	err = mainArena.AssignTeam(254, "B3")
+	dummyDs := &DriverStationConnection{TeamId: 254}
+	mainArena.AllianceStations["B3"].DsConn = dummyDs
 	assert.Nil(t, err)
 
 	// Check pre-match state and packet timing.
@@ -94,7 +93,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	mainArena.AllianceStations["R3"].Bypass = true
 	mainArena.AllianceStations["B1"].Bypass = true
 	mainArena.AllianceStations["B2"].Bypass = true
-	mainArena.AllianceStations["B3"].DsConn.DriverStationStatus.RobotLinked = true
+	mainArena.AllianceStations["B3"].DsConn.RobotLinked = true
 	err = mainArena.StartMatch()
 	assert.Nil(t, err)
 	mainArena.Update()
@@ -309,8 +308,14 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 
 	err = mainArena.LoadMatch(&match)
 	assert.Nil(t, err)
+	mainArena.AllianceStations["R1"].DsConn = &DriverStationConnection{TeamId: 101}
+	mainArena.AllianceStations["R2"].DsConn = &DriverStationConnection{TeamId: 102}
+	mainArena.AllianceStations["R3"].DsConn = &DriverStationConnection{TeamId: 103}
+	mainArena.AllianceStations["B1"].DsConn = &DriverStationConnection{TeamId: 104}
+	mainArena.AllianceStations["B2"].DsConn = &DriverStationConnection{TeamId: 105}
+	mainArena.AllianceStations["B3"].DsConn = &DriverStationConnection{TeamId: 106}
 	for _, station := range mainArena.AllianceStations {
-		station.DsConn.DriverStationStatus.RobotLinked = true
+		station.DsConn.RobotLinked = true
 	}
 	err = mainArena.StartMatch()
 	assert.Nil(t, err)
@@ -323,7 +328,7 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 		assert.Contains(t, err.Error(), "while an emergency stop is active")
 	}
 	mainArena.AllianceStations["R1"].EmergencyStop = false
-	mainArena.AllianceStations["R1"].DsConn.DriverStationStatus.RobotLinked = false
+	mainArena.AllianceStations["R1"].DsConn.RobotLinked = false
 	err = mainArena.StartMatch()
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "until all robots are connected or bypassed")

@@ -166,12 +166,12 @@ interface Vlan16
 ip classless
 ip http server
 !
-access-list 111 permit ip 10.0.1.0 0.0.0.255 host 10.0.100.50
-access-list 112 permit ip 10.0.2.0 0.0.0.255 host 10.0.100.50
-access-list 113 permit ip 10.0.3.0 0.0.0.255 host 10.0.100.50
-access-list 114 permit ip 10.0.4.0 0.0.0.255 host 10.0.100.50
-access-list 115 permit ip 10.0.5.0 0.0.0.255 host 10.0.100.50
-access-list 116 permit ip 10.0.6.0 0.0.0.255 host 10.0.100.50
+access-list 111 permit ip 10.0.1.0 0.0.0.255 host 10.0.100.5
+access-list 112 permit ip 10.0.2.0 0.0.0.255 host 10.0.100.5
+access-list 113 permit ip 10.0.3.0 0.0.0.255 host 10.0.100.5
+access-list 114 permit ip 10.0.4.0 0.0.0.255 host 10.0.100.5
+access-list 115 permit ip 10.0.5.0 0.0.0.255 host 10.0.100.5
+access-list 116 permit ip 10.0.6.0 0.0.0.255 host 10.0.100.5
 !
 snmp-server community 1234Five RO
 !

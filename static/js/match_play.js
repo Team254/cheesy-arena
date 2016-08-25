@@ -62,10 +62,10 @@ var handleStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
     if (stationStatus.DsConn) {
-      var dsStatus = stationStatus.DsConn.DriverStationStatus;
-      $("#status" + station + " .ds-status").attr("data-status-ok", dsStatus.DsLinked);
-      $("#status" + station + " .ds-status").text(dsStatus.MBpsToRobot.toFixed(1) + "/" + dsStatus.MBpsFromRobot.toFixed(1));
-      $("#status" + station + " .robot-status").attr("data-status-ok", dsStatus.RobotLinked);
+      var dsConn = stationStatus.DsConn;
+      $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
+      $("#status" + station + " .ds-status").text(dsConn.MBpsToRobot.toFixed(1) + "/" + dsConn.MBpsFromRobot.toFixed(1));
+      $("#status" + station + " .robot-status").attr("data-status-ok", dsConn.RobotLinked);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
         $("#status" + station + " .robot-status").text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
       } else {
@@ -76,8 +76,8 @@ var handleStatus = function(data) {
         lowBatteryThreshold = 12;
       }
       $("#status" + station + " .battery-status").attr("data-status-ok",
-          dsStatus.BatteryVoltage > lowBatteryThreshold && dsStatus.RobotLinked);
-      $("#status" + station + " .battery-status").text(dsStatus.BatteryVoltage.toFixed(1) + "V");
+          dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked);
+      $("#status" + station + " .battery-status").text(dsConn.BatteryVoltage.toFixed(1) + "V");
     } else {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
       $("#status" + station + " .ds-status").text("");

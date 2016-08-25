@@ -7,34 +7,17 @@ package main
 
 import (
 	"fmt"
-	"hash/crc32"
+	"log"
 	"net"
-	"strconv"
 	"time"
 )
 
-// UDP port numbers that the Driver Station sends and receives on.
-const driverStationSendPort = 1120
-const driverStationReceivePort = 1160
-const driverStationProtocolVersion = "11191100"
-const driverStationLinkTimeoutMs = 500
-
-type DriverStationStatus struct {
-	TeamId            int
-	AllianceStation   string
-	DsLinked          bool
-	RobotLinked       bool
-	Auto              bool
-	Enabled           bool
-	EmergencyStop     bool
-	BatteryVoltage    float64
-	DsVersion         string
-	PacketCount       int
-	MissedPacketCount int
-	DsRobotTripTimeMs int
-	MBpsToRobot       float64
-	MBpsFromRobot     float64
-}
+const (
+	driverStationTcpListenPort  = 1750
+	driverStationUdpSendPort    = 1120
+	driverStationLinkTimeoutSec = 5
+	maxTcpPacketBytes           = 4096
+)
 
 type DriverStationConnection struct {
 	TeamId                    int
@@ -42,24 +25,40 @@ type DriverStationConnection struct {
 	Auto                      bool
 	Enabled                   bool
 	EmergencyStop             bool
-	DriverStationStatus       *DriverStationStatus
-	LastPacketTime            time.Time
-	LastRobotLinkedTime       time.Time
+	DsLinked                  bool
+	RobotLinked               bool
+	BatteryVoltage            float64
+	DsRobotTripTimeMs         int
+	MissedPacketCount         int
+	MBpsToRobot               float64
+	MBpsFromRobot             float64
 	SecondsSinceLastRobotLink float64
-	conn                      net.Conn
+	lastPacketTime            time.Time
+	lastRobotLinkedTime       time.Time
 	packetCount               int
 	missedPacketOffset        int
+	tcpConn                   net.Conn
+	udpConn                   net.Conn
 	log                       *TeamMatchLog
 }
 
+var allianceStationPositionMap = map[string]byte{"R1": 0, "R2": 1, "R3": 2, "B1": 3, "B2": 4, "B3": 5}
+var driverStationTcpListenAddress = "10.0.100.5" // The DS will try to connect to this address only.
+
 // Opens a UDP connection for communicating to the driver station.
-func NewDriverStationConnection(teamId int, station string) (*DriverStationConnection, error) {
-	conn, err := net.Dial("udp4", fmt.Sprintf("10.%d.%d.5:%d", teamId/100, teamId%100, driverStationSendPort))
+func NewDriverStationConnection(teamId int, allianceStation string, tcpConn net.Conn) (*DriverStationConnection, error) {
+	ipAddress, _, err := net.SplitHostPort(tcpConn.RemoteAddr().String())
 	if err != nil {
 		return nil, err
 	}
-	return &DriverStationConnection{TeamId: teamId, AllianceStation: station,
-		DriverStationStatus: new(DriverStationStatus), conn: conn}, nil
+	log.Printf("Driver station for Team %d connected from %s\n", teamId, ipAddress)
+
+	udpConn, err := net.Dial("udp4", fmt.Sprintf("%s:%d", ipAddress, driverStationUdpSendPort))
+	if err != nil {
+		return nil, err
+	}
+	return &DriverStationConnection{TeamId: teamId, AllianceStation: allianceStation, DsLinked: true,
+		lastPacketTime: time.Now(), tcpConn: tcpConn, udpConn: udpConn}, nil
 }
 
 // Sends a control packet to the Driver Station and checks for timeout conditions.
@@ -69,112 +68,120 @@ func (dsConn *DriverStationConnection) Update() error {
 		return err
 	}
 
-	if time.Since(dsConn.LastPacketTime).Seconds()*1000 > driverStationLinkTimeoutMs {
-		dsConn.DriverStationStatus.DsLinked = false
-		dsConn.DriverStationStatus.RobotLinked = false
-		dsConn.DriverStationStatus.BatteryVoltage = 0
-		dsConn.DriverStationStatus.MBpsToRobot = 0
-		dsConn.DriverStationStatus.MBpsFromRobot = 0
+	if time.Since(dsConn.lastPacketTime).Seconds() > driverStationLinkTimeoutSec {
+		dsConn.DsLinked = false
+		dsConn.RobotLinked = false
+		dsConn.BatteryVoltage = 0
+		dsConn.MBpsToRobot = 0
+		dsConn.MBpsFromRobot = 0
 	}
+	dsConn.SecondsSinceLastRobotLink = time.Since(dsConn.lastRobotLinkedTime).Seconds()
 
 	return nil
 }
 
-func (dsConn *DriverStationConnection) Close() error {
+func (dsConn *DriverStationConnection) Close() {
 	if dsConn.log != nil {
 		dsConn.log.Close()
 	}
-	return dsConn.conn.Close()
-}
-
-// Sets up a watch on the UDP port that Driver Stations send on.
-func DsPacketListener() (*net.UDPConn, error) {
-	udpAddress, err := net.ResolveUDPAddr("udp4", fmt.Sprintf(":%d", driverStationReceivePort))
-	if err != nil {
-		return nil, err
+	if dsConn.udpConn != nil {
+		dsConn.udpConn.Close()
 	}
-	listen, err := net.ListenUDP("udp4", udpAddress)
-	if err != nil {
-		return nil, err
-	}
-	return listen, nil
-}
-
-// Loops indefinitely to read packets and update connection status.
-func ListenForDsPackets(listener *net.UDPConn) {
-	var data [50]byte
-	for {
-		listener.Read(data[:])
-		dsStatus := decodeStatusPacket(data)
-
-		// Update the status and last packet times for this alliance/team in the global struct.
-		dsConn := mainArena.AllianceStations[dsStatus.AllianceStation].DsConn
-		if dsConn != nil && dsConn.TeamId == dsStatus.TeamId {
-			dsConn.DriverStationStatus = dsStatus
-			dsConn.LastPacketTime = time.Now()
-			if dsStatus.RobotLinked {
-				dsConn.LastRobotLinkedTime = time.Now()
-			}
-			dsConn.SecondsSinceLastRobotLink = time.Since(dsConn.LastRobotLinkedTime).Seconds()
-			dsConn.DriverStationStatus.MissedPacketCount -= dsConn.missedPacketOffset
-
-			// Log the packet if the match is in progress.
-			matchTimeSec := mainArena.MatchTimeSec()
-			if matchTimeSec > 0 && dsConn.log != nil {
-				dsConn.log.LogDsStatus(matchTimeSec, dsStatus)
-			}
-		}
+	if dsConn.tcpConn != nil {
+		dsConn.tcpConn.Close()
 	}
 }
 
 // Called at the start of the match to allow for driver station initialization.
 func (dsConn *DriverStationConnection) signalMatchStart(match *Match) error {
 	// Zero out missed packet count and begin logging.
-	dsConn.missedPacketOffset = dsConn.DriverStationStatus.MissedPacketCount
+	dsConn.missedPacketOffset = dsConn.MissedPacketCount
 	var err error
 	dsConn.log, err = NewTeamMatchLog(dsConn.TeamId, match)
 	return err
 }
 
 // Serializes the control information into a packet.
-func (dsConn *DriverStationConnection) encodeControlPacket() [74]byte {
-	var packet [74]byte
+func (dsConn *DriverStationConnection) encodeControlPacket() [22]byte {
+	var packet [22]byte
 
 	// Packet number, stored big-endian in two bytes.
 	packet[0] = byte((dsConn.packetCount >> 8) & 0xff)
 	packet[1] = byte(dsConn.packetCount & 0xff)
 
-	// Robot status byte. 0x01=competition mode, 0x02=link, 0x04=check version, 0x08=request DS ID,
-	// 0x10=autonomous, 0x20=enable, 0x40=e-stop not on
-	packet[2] = 0x03
+	// Protocol version.
+	packet[2] = 0
+
+	// Robot status byte.
+	packet[3] = 0
 	if dsConn.Auto {
-		packet[2] |= 0x10
+		packet[3] |= 0x02
 	}
 	if dsConn.Enabled {
-		packet[2] |= 0x20
+		packet[3] |= 0x04
 	}
-	if !dsConn.EmergencyStop {
-		packet[2] |= 0x40
-	}
-
-	// Alliance station, stored as ASCII characters 'R/B' and '1/2/3'.
-	packet[3] = dsConn.AllianceStation[0]
-	packet[4] = dsConn.AllianceStation[1]
-
-	// Static protocol version repeated twice.
-	for i := 0; i < 8; i++ {
-		packet[10+i] = driverStationProtocolVersion[i]
-	}
-	for i := 0; i < 8; i++ {
-		packet[18+i] = driverStationProtocolVersion[i]
+	if dsConn.EmergencyStop {
+		packet[3] |= 0x80
 	}
 
-	// Calculate and store the 4-byte CRC32 checksum.
-	checksum := crc32.ChecksumIEEE(packet[:])
-	packet[70] = byte((checksum >> 24) & 0xff)
-	packet[71] = byte((checksum >> 16) & 0xff)
-	packet[72] = byte((checksum >> 8) & 0xff)
-	packet[73] = byte((checksum) & 0xff)
+	// Unknown or unused.
+	packet[4] = 0
+
+	// Alliance station.
+	packet[5] = allianceStationPositionMap[dsConn.AllianceStation]
+
+	// Match information.
+	match := mainArena.currentMatch
+	if match.Type == "practice" {
+		packet[6] = 1
+	} else if match.Type == "qualification" {
+		packet[6] = 2
+	} else if match.Type == "elimination" {
+		packet[6] = 3
+	} else {
+		packet[6] = 0
+	}
+	// TODO(patrick): Implement if it ever becomes necessary; the official FMS has a different concept of
+	// match numbers so it's hard to translate.
+	packet[7] = 0 // Match number
+	packet[8] = 1 // Match number
+	packet[9] = 1 // Match repeat number
+
+	// Current time.
+	currentTime := time.Now()
+	packet[10] = byte(((currentTime.Nanosecond() / 1000) >> 24) & 0xff)
+	packet[11] = byte(((currentTime.Nanosecond() / 1000) >> 16) & 0xff)
+	packet[12] = byte(((currentTime.Nanosecond() / 1000) >> 8) & 0xff)
+	packet[13] = byte((currentTime.Nanosecond() / 1000) & 0xff)
+	packet[14] = byte(currentTime.Second())
+	packet[15] = byte(currentTime.Minute())
+	packet[16] = byte(currentTime.Hour())
+	packet[17] = byte(currentTime.Day())
+	packet[18] = byte(currentTime.Month())
+	packet[19] = byte(currentTime.Year() - 1900)
+
+	// Remaining number of seconds in match.
+	var matchSecondsRemaining int
+	switch mainArena.MatchState {
+	case PRE_MATCH:
+		fallthrough
+	case START_MATCH:
+		fallthrough
+	case AUTO_PERIOD:
+		matchSecondsRemaining = mainArena.matchTiming.AutoDurationSec + mainArena.matchTiming.TeleopDurationSec -
+			int(mainArena.MatchTimeSec())
+	case PAUSE_PERIOD:
+		matchSecondsRemaining = mainArena.matchTiming.TeleopDurationSec
+	case TELEOP_PERIOD:
+		fallthrough
+	case ENDGAME_PERIOD:
+		matchSecondsRemaining = mainArena.matchTiming.AutoDurationSec + mainArena.matchTiming.TeleopDurationSec +
+			mainArena.matchTiming.PauseDurationSec - int(mainArena.MatchTimeSec())
+	default:
+		matchSecondsRemaining = 0
+	}
+	packet[20] = byte(matchSecondsRemaining >> 8 & 0xff)
+	packet[21] = byte(matchSecondsRemaining & 0xff)
 
 	// Increment the packet count for next time.
 	dsConn.packetCount++
@@ -185,45 +192,136 @@ func (dsConn *DriverStationConnection) encodeControlPacket() [74]byte {
 // Builds and sends the next control packet to the Driver Station.
 func (dsConn *DriverStationConnection) sendControlPacket() error {
 	packet := dsConn.encodeControlPacket()
-	_, err := dsConn.conn.Write(packet[:])
-	if err != nil {
-		return err
+	if dsConn.udpConn != nil {
+		_, err := dsConn.udpConn.Write(packet[:])
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 // Deserializes a packet from the DS into a structure representing the DS/robot status.
-func decodeStatusPacket(data [50]byte) *DriverStationStatus {
-	dsStatus := new(DriverStationStatus)
-	dsStatus.DsLinked = true
+func (dsConn *DriverStationConnection) decodeStatusPacket(data [36]byte) {
+	if data[6]&0x01 != 0 && data[6]&0x08 == 0 {
+		// Robot is not connected.
+		dsConn.RobotLinked = false
+		return
+	}
 
-	// Robot status byte.
-	dsStatus.RobotLinked = (data[2] & 0x02) != 0
-	dsStatus.Auto = (data[2] & 0x10) != 0
-	dsStatus.Enabled = (data[2] & 0x20) != 0
-	dsStatus.EmergencyStop = (data[2] & 0x40) == 0
+	dsConn.RobotLinked = true
 
-	// Team number, stored in two bytes as hundreds and then ones (like the IP address).
-	dsStatus.TeamId = int(data[4])*100 + int(data[5])
+	// Average DS-robot trip time in milliseconds.
+	dsConn.DsRobotTripTimeMs = int(data[1]) / 2
 
-	// Alliance station, stored as ASCII characters 'R/B' and '1/2/3'.
-	dsStatus.AllianceStation = string(data[10:12])
+	// Number of missed packets sent from the DS to the robot.
+	dsConn.MissedPacketCount = int(data[2]) - dsConn.missedPacketOffset
 
-	// Driver Station software version, stored as 8-byte string.
-	dsStatus.DsVersion = string(data[18:26])
+	// Robot battery voltage, stored as volts * 256.
+	dsConn.BatteryVoltage = float64(data[3]) + float64(data[4])/256
 
-	// Number of missed packets sent from the DS to the robot, stored in two big-endian bytes.
-	dsStatus.MissedPacketCount = int(data[26])*256 + int(data[27])
+	dsConn.lastRobotLinkedTime = time.Now()
+}
 
-	// Total number of packets sent from the DS to the robot, stored in two big-endian bytes.
-	dsStatus.PacketCount = int(data[28])*256 + int(data[29])
+// Listens for TCP connection requests to Cheesy Arena from driver stations.
+func ListenForDriverStations() {
+	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", driverStationTcpListenAddress, driverStationTcpListenPort))
+	if err != nil {
+		log.Printf("Error opening driver station socket: %v", err.Error())
+		log.Printf("Change IP address to %s and restart Cheesy Arena to fix.", driverStationTcpListenAddress)
+		return
+	}
+	defer l.Close()
 
-	// Average DS-robot trip time in milliseconds, stored in two big-endian bytes.
-	dsStatus.DsRobotTripTimeMs = int(data[30])*256 + int(data[31])
+	log.Printf("Listening for driver stations on port %d\n", driverStationTcpListenPort)
+	for {
+		tcpConn, err := l.Accept()
+		if err != nil {
+			log.Println("Error accepting driver station connection: ", err.Error())
+			continue
+		}
 
-	// Robot battery voltage, stored (bizarrely) what it looks like in decimal but as two hexadecimal numbers.
-	dsStatus.BatteryVoltage, _ = strconv.ParseFloat(fmt.Sprintf("%x.%x", data[40], data[41]), 32)
+		// Read the team number back and start tracking the driver station.
+		var packet [5]byte
+		_, err = tcpConn.Read(packet[:])
+		if err != nil {
+			log.Println("Error reading initial packet: ", err.Error())
+			continue
+		}
+		if !(packet[0] == 0 && packet[1] == 3 && packet[2] == 24) {
+			log.Printf("Invalid initial packet received: %v", packet)
+			tcpConn.Close()
+			continue
+		}
+		teamId := int(packet[3])<<8 + int(packet[4])
 
-	return dsStatus
+		// Check to see if the team is supposed to be on the field, and notify the DS accordingly.
+		var assignmentPacket [5]byte
+		assignmentPacket[0] = 0  // Packet size
+		assignmentPacket[1] = 3  // Packet size
+		assignmentPacket[2] = 25 // Packet type
+		assignedStation := mainArena.getAssignedAllianceStation(teamId)
+		if assignedStation == "" {
+			log.Printf("Rejecting connection from Team %d, who is not in the current match.", teamId)
+			assignmentPacket[3] = 0
+			assignmentPacket[4] = 2
+			tcpConn.Write(assignmentPacket[:])
+			tcpConn.Close()
+			continue
+		}
+		log.Printf("Accepting connection from Team %d in station %s.", teamId, assignedStation)
+		assignmentPacket[3] = allianceStationPositionMap[assignedStation]
+		assignmentPacket[4] = 0
+		_, err = tcpConn.Write(assignmentPacket[:])
+		if err != nil {
+			log.Println("Error sending driver station assignment packet: %v", err)
+			tcpConn.Close()
+			continue
+		}
+
+		dsConn, err := NewDriverStationConnection(teamId, assignedStation, tcpConn)
+		if err != nil {
+			log.Println("Error registering driver station connection: %v", err)
+			tcpConn.Close()
+			continue
+		}
+		mainArena.AllianceStations[assignedStation].DsConn = dsConn
+
+		// Spin up a goroutine to handle further TCP communication with this driver station.
+		go dsConn.handleTcpConnection()
+	}
+}
+
+func (dsConn *DriverStationConnection) handleTcpConnection() {
+	buffer := make([]byte, maxTcpPacketBytes)
+	for {
+		dsConn.tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationLinkTimeoutSec))
+		_, err := dsConn.tcpConn.Read(buffer)
+		if err != nil {
+			fmt.Printf("Error reading from connection for Team %d: %v\n", dsConn.TeamId, err.Error())
+			dsConn.Close()
+			break
+		}
+
+		dsConn.DsLinked = true
+		dsConn.lastPacketTime = time.Now()
+
+		packetType := int(buffer[2])
+		switch packetType {
+		case 28:
+			// DS keepalive packet; do nothing.
+		case 22:
+			// Robot status packet.
+			var statusPacket [36]byte
+			copy(statusPacket[:], buffer[2:38])
+			dsConn.decodeStatusPacket(statusPacket)
+		}
+
+		// Log the packet if the match is in progress.
+		matchTimeSec := mainArena.MatchTimeSec()
+		if matchTimeSec > 0 && dsConn.log != nil {
+			dsConn.log.LogDsPacket(matchTimeSec, packetType, dsConn)
+		}
+	}
 }

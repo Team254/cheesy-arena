@@ -11,11 +11,11 @@ var handleStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
     if (stationStatus.DsConn) {
+      var dsConn = stationStatus.DsConn;
       $("#status" + station + " .team").text(stationStatus.DsConn.TeamId);
-      var dsStatus = stationStatus.DsConn.DriverStationStatus;
-      $("#status" + station + " .ds-status").attr("data-status-ok", dsStatus.DsLinked);
-      $("#status" + station + " .ds-status").text(dsStatus.MBpsToRobot.toFixed(1) + "/" + dsStatus.MBpsFromRobot.toFixed(1));
-      $("#status" + station + " .robot-status").attr("data-status-ok", dsStatus.RobotLinked);
+      $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
+      $("#status" + station + " .ds-status").text(dsConn.MBpsToRobot.toFixed(1) + "/" + dsConn.MBpsFromRobot.toFixed(1));
+      $("#status" + station + " .robot-status").attr("data-status-ok", dsConn.RobotLinked);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
         $("#status" + station + " .robot-status").text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
       } else {
@@ -26,12 +26,12 @@ var handleStatus = function(data) {
         lowBatteryThreshold = 12;
       }
       $("#status" + station + " .battery-status").attr("data-status-ok",
-          dsStatus.BatteryVoltage > lowBatteryThreshold && dsStatus.RobotLinked);
-      $("#status" + station + " .battery-status").text(dsStatus.BatteryVoltage.toFixed(1) + "V");
+          dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked);
+      $("#status" + station + " .battery-status").text(dsConn.BatteryVoltage.toFixed(1) + "V");
       $("#status" + station + " .trip-time").attr("data-status-ok", true);
-      $("#status" + station + " .trip-time").text(dsStatus.DsRobotTripTimeMs.toFixed(1) + "ms");
+      $("#status" + station + " .trip-time").text(dsConn.DsRobotTripTimeMs.toFixed(1) + "ms");
       $("#status" + station + " .packet-loss").attr("data-status-ok", true);
-      $("#status" + station + " .packet-loss").text(dsStatus.MissedPacketCount);
+      $("#status" + station + " .packet-loss").text(dsConn.MissedPacketCount);
     } else {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
       $("#status" + station + " .ds-status").text("");

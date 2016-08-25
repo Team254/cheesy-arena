@@ -70,9 +70,9 @@ var handleStatus = function(data) {
   if (stationStatus && stationStatus.Bypass) {
     $("#match").attr("data-status", "bypass");
   } else if (stationStatus && stationStatus.DsConn) {
-    if (!stationStatus.DsConn.DriverStationStatus.DsLinked) {
+    if (!stationStatus.DsConn.DsLinked) {
       $("#match").attr("data-status", allianceStation[0]);
-    } else if (!stationStatus.DsConn.DriverStationStatus.RobotLinked) {
+    } else if (!stationStatus.DsConn.RobotLinked) {
       blink = true;
       if (!blinkInterval) {
         blinkInterval = setInterval(function() {

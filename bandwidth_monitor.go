@@ -95,14 +95,13 @@ func (monitor *BandwidthMonitor) updateStationBandwidth(station string, port int
 		// No team assigned; just skip it.
 		return
 	}
-	dsStatus := dsConn.DriverStationStatus
 	secondsSinceLast := time.Now().Sub(monitor.lastBytesTime).Seconds()
 
 	toRobotBytesForPort := uint32(toRobotBytes[fmt.Sprintf("%s.%d", toRobotBytesOid, port)].(wapsnmp.Counter))
 	lastToRobotBytesForPort := uint32(monitor.lastToRobotBytes[fmt.Sprintf("%s.%d", toRobotBytesOid, port)].(wapsnmp.Counter))
-	dsStatus.MBpsToRobot = float64(toRobotBytesForPort-lastToRobotBytesForPort) / 1024 / 1024 / secondsSinceLast
+	dsConn.MBpsToRobot = float64(toRobotBytesForPort-lastToRobotBytesForPort) / 1024 / 1024 / secondsSinceLast
 
 	fromRobotBytesForPort := uint32(fromRobotBytes[fmt.Sprintf("%s.%d", fromRobotBytesOid, port)].(wapsnmp.Counter))
 	lastFromRobotBytesForPort := uint32(monitor.lastFromRobotBytes[fmt.Sprintf("%s.%d", fromRobotBytesOid, port)].(wapsnmp.Counter))
-	dsStatus.MBpsFromRobot = float64(fromRobotBytesForPort-lastFromRobotBytesForPort) / 1024 / 1024 / secondsSinceLast
+	dsConn.MBpsFromRobot = float64(fromRobotBytesForPort-lastFromRobotBytesForPort) / 1024 / 1024 / secondsSinceLast
 }
