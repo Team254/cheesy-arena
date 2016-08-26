@@ -548,7 +548,6 @@ func (arena *Arena) handleLighting() {
 	case ENDGAME_PERIOD:
 		redScoreFields := arena.redRealtimeScore.ScoreFields(arena.blueRealtimeScore.CurrentScore.Fouls)
 		blueScoreFields := arena.blueRealtimeScore.ScoreFields(arena.redRealtimeScore.CurrentScore.Fouls)
-		arena.lights.SetGoals(redScoreFields.TowerStrength, blueScoreFields.TowerStrength)
 		arena.lights.SetDefenses(redScoreFields.DefensesStrength, blueScoreFields.DefensesStrength)
 	case POST_MATCH:
 		if mainArena.fieldReset {

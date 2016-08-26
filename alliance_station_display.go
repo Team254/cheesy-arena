@@ -114,10 +114,10 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	data = struct {
-		RedScore  int
-		BlueScore int
-	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+		RedScoreFields  *RealtimeScoreFields
+		BlueScoreFields *RealtimeScoreFields
+	}{mainArena.redRealtimeScore.ScoreFields(mainArena.blueRealtimeScore.CurrentScore.Fouls),
+		mainArena.blueRealtimeScore.ScoreFields(mainArena.redRealtimeScore.CurrentScore.Fouls)}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -175,10 +175,10 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				}
 				messageType = "realtimeScore"
 				message = struct {
-					RedScore  int
-					BlueScore int
-				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+					RedScoreFields  *RealtimeScoreFields
+					BlueScoreFields *RealtimeScoreFields
+				}{mainArena.redRealtimeScore.ScoreFields(mainArena.blueRealtimeScore.CurrentScore.Fouls),
+					mainArena.blueRealtimeScore.ScoreFields(mainArena.redRealtimeScore.CurrentScore.Fouls)}
 			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return

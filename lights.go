@@ -12,9 +12,7 @@ import (
 )
 
 const (
-	RED_GOAL     = "redGoal"
 	RED_DEFENSE  = "redDefense"
-	BLUE_GOAL    = "blueGoal"
 	BLUE_DEFENSE = "blueDefense"
 )
 
@@ -85,14 +83,10 @@ func (lights *Lights) Setup() error {
 	}
 
 	lights.packets = make(map[string]*LightPacket)
-	lights.packets[RED_GOAL] = &LightPacket{}
 	lights.packets[RED_DEFENSE] = &LightPacket{}
-	lights.packets[BLUE_GOAL] = &LightPacket{}
 	lights.packets[BLUE_DEFENSE] = &LightPacket{}
 	lights.oldPackets = make(map[string]*LightPacket)
-	lights.oldPackets[RED_GOAL] = &LightPacket{}
 	lights.oldPackets[RED_DEFENSE] = &LightPacket{}
-	lights.oldPackets[BLUE_GOAL] = &LightPacket{}
 	lights.oldPackets[BLUE_DEFENSE] = &LightPacket{}
 
 	lights.sendLights()
@@ -109,13 +103,7 @@ func (lights *Lights) Setup() error {
 
 func (lights *Lights) SetupConnections() error {
 	lights.connections = make(map[string]*net.Conn)
-	if err := lights.connect(RED_GOAL, eventSettings.RedGoalLightsAddress); err != nil {
-		return err
-	}
 	if err := lights.connect(RED_DEFENSE, eventSettings.RedDefenseLightsAddress); err != nil {
-		return err
-	}
-	if err := lights.connect(BLUE_GOAL, eventSettings.BlueGoalLightsAddress); err != nil {
 		return err
 	}
 	if err := lights.connect(BLUE_DEFENSE, eventSettings.BlueDefenseLightsAddress); err != nil {
@@ -140,18 +128,14 @@ func (lights *Lights) connect(controller, address string) error {
 }
 
 func (lights *Lights) ClearAll() {
-	lights.packets[RED_GOAL].setAllColorFade("off", 10)
 	lights.packets[RED_DEFENSE].setAllColorFade("off", 10)
-	lights.packets[BLUE_GOAL].setAllColorFade("off", 10)
 	lights.packets[BLUE_DEFENSE].setAllColorFade("off", 10)
 	lights.sendLights()
 }
 
 // Turns all lights green to signal that the field is safe to enter.
 func (lights *Lights) SetFieldReset() {
-	lights.packets[RED_GOAL].setAllColor("green")
 	lights.packets[RED_DEFENSE].setAllColor("green")
-	lights.packets[BLUE_GOAL].setAllColor("green")
 	lights.packets[BLUE_DEFENSE].setAllColor("green")
 	lights.sendLights()
 }
@@ -163,29 +147,19 @@ func (lights *Lights) SetMode(mode string) {
 
 	switch mode {
 	case "off":
-		lights.packets[RED_GOAL].setAllColor("off")
 		lights.packets[RED_DEFENSE].setAllColor("off")
-		lights.packets[BLUE_GOAL].setAllColor("off")
 		lights.packets[BLUE_DEFENSE].setAllColor("off")
 	case "all_white":
-		lights.packets[RED_GOAL].setAllColor("white")
 		lights.packets[RED_DEFENSE].setAllColor("white")
-		lights.packets[BLUE_GOAL].setAllColor("white")
 		lights.packets[BLUE_DEFENSE].setAllColor("white")
 	case "all_red":
-		lights.packets[RED_GOAL].setAllColor("red")
 		lights.packets[RED_DEFENSE].setAllColor("red")
-		lights.packets[BLUE_GOAL].setAllColor("red")
 		lights.packets[BLUE_DEFENSE].setAllColor("red")
 	case "all_green":
-		lights.packets[RED_GOAL].setAllColor("green")
 		lights.packets[RED_DEFENSE].setAllColor("green")
-		lights.packets[BLUE_GOAL].setAllColor("green")
 		lights.packets[BLUE_DEFENSE].setAllColor("green")
 	case "all_blue":
-		lights.packets[RED_GOAL].setAllColor("blue")
 		lights.packets[RED_DEFENSE].setAllColor("blue")
-		lights.packets[BLUE_GOAL].setAllColor("blue")
 		lights.packets[BLUE_DEFENSE].setAllColor("blue")
 	}
 	lights.sendLights()
@@ -215,14 +189,10 @@ func (lights *Lights) animate() {
 	case "strobe":
 		switch lights.animationCount {
 		case 1:
-			lights.packets[RED_GOAL].setAllColor("white")
 			lights.packets[RED_DEFENSE].setAllColor("white")
-			lights.packets[BLUE_GOAL].setAllColor("off")
 			lights.packets[BLUE_DEFENSE].setAllColor("off")
 		case 2:
-			lights.packets[RED_GOAL].setAllColor("off")
 			lights.packets[RED_DEFENSE].setAllColor("off")
-			lights.packets[BLUE_GOAL].setAllColor("white")
 			lights.packets[BLUE_DEFENSE].setAllColor("white")
 			fallthrough
 		default:
@@ -231,14 +201,10 @@ func (lights *Lights) animate() {
 		lights.sendLights()
 	case "fade_red":
 		if lights.animationCount == 1 {
-			lights.packets[RED_GOAL].setAllColorFade("red", 18)
 			lights.packets[RED_DEFENSE].setAllColorFade("red", 18)
-			lights.packets[BLUE_GOAL].setAllColorFade("red", 18)
 			lights.packets[BLUE_DEFENSE].setAllColorFade("red", 18)
 		} else if lights.animationCount == 61 {
-			lights.packets[RED_GOAL].setAllColorFade("darkred", 18)
 			lights.packets[RED_DEFENSE].setAllColorFade("darkred", 18)
-			lights.packets[BLUE_GOAL].setAllColorFade("darkred", 18)
 			lights.packets[BLUE_DEFENSE].setAllColorFade("darkred", 18)
 		} else if lights.animationCount > 120 {
 			lights.animationCount = 0
@@ -246,14 +212,10 @@ func (lights *Lights) animate() {
 		lights.sendLights()
 	case "fade_blue":
 		if lights.animationCount == 1 {
-			lights.packets[RED_GOAL].setAllColorFade("blue", 18)
 			lights.packets[RED_DEFENSE].setAllColorFade("blue", 18)
-			lights.packets[BLUE_GOAL].setAllColorFade("blue", 18)
 			lights.packets[BLUE_DEFENSE].setAllColorFade("blue", 18)
 		} else if lights.animationCount == 61 {
-			lights.packets[RED_GOAL].setAllColorFade("darkblue", 18)
 			lights.packets[RED_DEFENSE].setAllColorFade("darkblue", 18)
-			lights.packets[BLUE_GOAL].setAllColorFade("darkblue", 18)
 			lights.packets[BLUE_DEFENSE].setAllColorFade("darkblue", 18)
 		} else if lights.animationCount > 120 {
 			lights.animationCount = 0
@@ -261,37 +223,16 @@ func (lights *Lights) animate() {
 		lights.sendLights()
 	case "fade_red_blue":
 		if lights.animationCount == 1 {
-			lights.packets[RED_GOAL].setAllColorFade("blue", 18)
 			lights.packets[RED_DEFENSE].setAllColorFade("blue", 18)
-			lights.packets[BLUE_GOAL].setAllColorFade("darkred", 18)
 			lights.packets[BLUE_DEFENSE].setAllColorFade("darkred", 18)
 		} else if lights.animationCount == 61 {
-			lights.packets[RED_GOAL].setAllColorFade("darkblue", 18)
 			lights.packets[RED_DEFENSE].setAllColorFade("darkblue", 18)
-			lights.packets[BLUE_GOAL].setAllColorFade("red", 18)
 			lights.packets[BLUE_DEFENSE].setAllColorFade("red", 18)
 		} else if lights.animationCount > 120 {
 			lights.animationCount = 0
 		}
 		lights.sendLights()
 	}
-}
-
-// Turns on a number of channels corresponding to the tower strength (all on for 8 or higher).
-func (lights *Lights) SetGoals(redTowerStrength, blueTowerStrength int) {
-	for i := 0; i < 8; i++ {
-		if redTowerStrength > i {
-			lights.packets[RED_GOAL].setColorFade(i, "red", 10)
-		} else {
-			lights.packets[RED_GOAL].setColorFade(i, "off", 10)
-		}
-		if blueTowerStrength > i {
-			lights.packets[BLUE_GOAL].setColorFade(i, "blue", 10)
-		} else {
-			lights.packets[BLUE_GOAL].setColorFade(i, "off", 10)
-		}
-	}
-	lights.sendLights()
 }
 
 // Turns on the lights below the defenses, with one channel per defense.

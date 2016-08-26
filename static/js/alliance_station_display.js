@@ -16,7 +16,7 @@ var handleSetAllianceStationDisplay = function(targetScreen) {
     targetScreen = "blank";
   }
   $("body").attr("data-mode", targetScreen);
-  switch(allianceStation[1]){
+  switch (allianceStation[1]) {
     case "1":
       $("body").attr("data-position", "right");
       break;
@@ -25,6 +25,13 @@ var handleSetAllianceStationDisplay = function(targetScreen) {
       break;
     case "3":
       $("body").attr("data-position", "left");
+      break;
+    case "T":
+      if (allianceStation[0] == "R") {
+        $("body").attr("data-position", "redTower");
+      } else {
+        $("body").attr("data-position", "blueTower");
+      }
       break;
   }
 };
@@ -106,8 +113,10 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.RedScore);
-  $("#blueScore").text(data.BlueScore);
+  $("#redScore").text(data.RedScoreFields.Score);
+  $("#blueScore").text(data.BlueScoreFields.Score);
+  $("#redTower").text(data.RedScoreFields.TowerStrength);
+  $("#blueTower").text(data.BlueScoreFields.TowerStrength);
 };
 
 $(function() {

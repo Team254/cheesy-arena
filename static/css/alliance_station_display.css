@@ -100,7 +100,13 @@ body[data-mode=fieldReset] .mode#fieldReset {
     #match[data-state=POST_MATCH] #inMatch {
   display: block;
 }
-
+body[data-position=redTower] #match[data-state=PRE_MATCH] #inMatch,
+    body[data-position=blueTower] #match[data-state=PRE_MATCH] #inMatch {
+  display: block;
+}
+body[data-position=redTower] #match, body[data-position=blueTower] #match {
+  background-color: #000;
+}
 
 /* In Match */
 #inMatch .datapoint {
@@ -124,6 +130,14 @@ body[data-position=middle] #inMatch #timeRemaining {
   display: block;
 }
 body[data-position=right] #inMatch #blueScore {
+  display: block;
+  color: #07f;
+}
+body[data-position=redTower] #inMatch #redTower {
+  display: block;
+  color: #f43;
+}
+body[data-position=blueTower] #inMatch #blueTower {
   display: block;
   color: #07f;
 }
