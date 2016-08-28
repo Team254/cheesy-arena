@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"sync"
 	"text/template"
 )
 
@@ -44,7 +45,8 @@ var templateHelpers = template.FuncMap{
 
 // Wraps the Gorilla Websocket module so that we can define additional functions on it.
 type Websocket struct {
-	conn *websocket.Conn
+	conn       *websocket.Conn
+	writeMutex *sync.Mutex
 }
 
 type WebsocketMessage struct {
@@ -58,7 +60,7 @@ func NewWebsocket(w http.ResponseWriter, r *http.Request) (*Websocket, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Websocket{conn}, nil
+	return &Websocket{conn, new(sync.Mutex)}, nil
 }
 
 func (websocket *Websocket) Close() {
@@ -72,14 +74,20 @@ func (websocket *Websocket) Read() (string, interface{}, error) {
 }
 
 func (websocket *Websocket) Write(messageType string, data interface{}) error {
+	websocket.writeMutex.Lock()
+	defer websocket.writeMutex.Unlock()
 	return websocket.conn.WriteJSON(WebsocketMessage{messageType, data})
 }
 
 func (websocket *Websocket) WriteError(errorMessage string) error {
+	websocket.writeMutex.Lock()
+	defer websocket.writeMutex.Unlock()
 	return websocket.conn.WriteJSON(WebsocketMessage{"error", errorMessage})
 }
 
 func (websocket *Websocket) ShowDialog(message string) error {
+	websocket.writeMutex.Lock()
+	defer websocket.writeMutex.Unlock()
 	return websocket.conn.WriteJSON(WebsocketMessage{"dialog", message})
 }
 

@@ -6,6 +6,7 @@ package main
 import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 	"time"
 )
@@ -34,7 +35,7 @@ func TestSetupLowerThirds(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/setup/lower_thirds/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn}
+	ws := &Websocket{conn, new(sync.Mutex)}
 
 	ws.Write("saveLowerThird", LowerThird{1, "Top Text 4", "Bottom Text 1", 0})
 	time.Sleep(time.Millisecond * 10) // Allow some time for the command to be processed.

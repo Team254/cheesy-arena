@@ -6,6 +6,7 @@ package main
 import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 	"time"
 )
@@ -40,7 +41,7 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/referee/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn}
+	ws := &Websocket{conn, new(sync.Mutex)}
 
 	// Test foul addition.
 	foulData := struct {

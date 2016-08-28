@@ -6,6 +6,7 @@ package main
 import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 )
 
@@ -38,7 +39,7 @@ func TestPitDisplayWebsocket(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/pit/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn}
+	ws := &Websocket{conn, new(sync.Mutex)}
 
 	// Check forced reloading as that is the only purpose the pit websocket serves.
 	recorder := getHttpResponse("/setup/field/reload_displays")

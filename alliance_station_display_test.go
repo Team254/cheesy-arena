@@ -6,6 +6,7 @@ package main
 import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 	"time"
 )
@@ -40,7 +41,7 @@ func TestAllianceStationDisplayWebsocket(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/alliance_station/websocket?displayId=1", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn}
+	ws := &Websocket{conn, new(sync.Mutex)}
 
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, ws, "setAllianceStationDisplay")

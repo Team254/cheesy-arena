@@ -279,7 +279,7 @@ func PublishMatches() error {
 
 		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, map[string]interface{}{"red": redAlliance,
 			"blue": blueAlliance}, scoreBreakdown, match.Time.Local().Format("3:04 PM"),
-			match.Time.Format("2006-01-02T15:04:05")}
+			match.Time.UTC().Format("2006-01-02T15:04:05")}
 		if match.Type == "elimination" {
 			tbaMatches[i].CompLevel = map[int]string{1: "f", 2: "sf", 4: "qf", 8: "ef"}[match.ElimRound]
 			tbaMatches[i].SetNumber = match.ElimGroup

@@ -10,6 +10,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 	"log"
+	"sync"
 	"testing"
 	"time"
 )
@@ -277,7 +278,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn}
+	ws := &Websocket{conn, new(sync.Mutex)}
 
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, ws, "status")
@@ -372,7 +373,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn}
+	ws := &Websocket{conn, new(sync.Mutex)}
 
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, ws, "status")

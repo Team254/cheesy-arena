@@ -6,6 +6,7 @@ package main
 import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"sync"
 	"testing"
 )
 
@@ -46,11 +47,11 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	redConn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/scoring/red/websocket", nil)
 	assert.Nil(t, err)
 	defer redConn.Close()
-	redWs := &Websocket{redConn}
+	redWs := &Websocket{redConn, new(sync.Mutex)}
 	blueConn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/scoring/blue/websocket", nil)
 	assert.Nil(t, err)
 	defer blueConn.Close()
-	blueWs := &Websocket{blueConn}
+	blueWs := &Websocket{blueConn, new(sync.Mutex)}
 
 	// Should receive a score update right after connection.
 	readWebsocketType(t, redWs, "score")
