@@ -120,6 +120,17 @@ func TestMatchPlayShowResult(t *testing.T) {
 	assert.Equal(t, 302, recorder.Code)
 	assert.Equal(t, match.Id, mainArena.savedMatch.Id)
 	assert.Equal(t, match.Id, mainArena.savedMatchResult.MatchId)
+
+	// Verify TBA publishing by checking the log for the expected failure messages.
+	tbaBaseUrl = "fakeurl"
+	eventSettings.TbaPublishingEnabled = true
+	var writer bytes.Buffer
+	log.SetOutput(&writer)
+	recorder = getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
+	assert.Equal(t, 302, recorder.Code)
+	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous publishing to happen.
+	assert.Contains(t, writer.String(), "Failed to publish matches")
+	assert.Contains(t, writer.String(), "Failed to publish rankings")
 }
 
 func TestMatchPlayErrors(t *testing.T) {
@@ -177,17 +188,6 @@ func TestCommitMatch(t *testing.T) {
 	assert.Equal(t, 3, matchResult.PlayNumber)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner)
-
-	// Verify TBA publishing by checking the log for the expected failure messages.
-	tbaBaseUrl = "fakeurl"
-	eventSettings.TbaPublishingEnabled = true
-	var writer bytes.Buffer
-	log.SetOutput(&writer)
-	err = CommitMatchScore(match, matchResult, false)
-	assert.Nil(t, err)
-	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous publishing to happen.
-	assert.Contains(t, writer.String(), "Failed to publish matches")
-	assert.Contains(t, writer.String(), "Failed to publish rankings")
 }
 
 func TestCommitEliminationTie(t *testing.T) {
