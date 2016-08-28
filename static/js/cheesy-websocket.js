@@ -5,8 +5,11 @@
 
 var CheesyWebsocket = function(path, events) {
   var that = this;
-
-  var url = "ws://" + window.location.hostname;
+  var protocol = "ws://";
+  if (window.location.protocol == "https:") {
+    protocol = "wss://";
+  }
+  var url = protocol + window.location.hostname;
   if (window.location.port != "") {
     url += ":" + window.location.port;
   }
