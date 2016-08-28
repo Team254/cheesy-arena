@@ -43,11 +43,9 @@ Teams may use Cheesy Arena freely for practice, scrimmages, and off-season event
 1. Run the `cheesy-arena` or `cheesy-arena.exe` binary
 1. Navigate to http://localhost:8080 in your browser (Google Chrome recommended)
 
-##roboRIO compatibility
-The 2015 FIRST FMS uses dynamic addressing and mDNS; however, the protocol by which it does so has not been documented or reverse-engineered.
-As a result, in order to use Cheesy Arena with the 2015 control system, all teams must assign static IP addresses to their roboRIOs and driver stations,
-as well as select the *'15 DS, '14 FMS* mode in the driver station settings. See the
-[Team Network Configuration wiki page](https://github.com/Team254/cheesy-arena/wiki/Team-Network-Configuration) for more details.
+**Configuration:**
+
+Set the IP address of the computer running Cheesy Arena to 10.0.100.5. Driver stations will broadcast their presence on the network to this hardcoded address so that the FMS does not need to discover them by some other method.
 
 ##Under the hood
 Cheesy Arena is written using [Go](http://golang.org), a relatively new language developed by Google. Go excels in the areas of concurrency, networking, performance, and portability, which makes it ideal for a field management system.

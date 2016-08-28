@@ -25,7 +25,6 @@ Cheesy Arena To-Do List
 
 ###Features for other volunteers
 * Referee interface: add timer starting at field reset to track time limit for calling timeouts/backups
-* Referee interface: have separate fouls for tech/non-tech for each applicable rule instead of the extra variable
 * Mobile compatibility for announcer display
 
 ###Cheesy Arena Lite - a game-agnostic version
