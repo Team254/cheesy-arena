@@ -32,6 +32,8 @@ type EventSettings struct {
 	BlueGoalLightsAddress      string
 	BlueDefenseLightsAddress   string
 	InitialTowerStrength       int
+	StemTvPublishingEnabled    bool
+	StemTvEventCode            string
 }
 
 const eventSettingsId = 0

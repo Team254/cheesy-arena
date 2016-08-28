@@ -170,6 +170,16 @@ func MatchPlayShowResultHandler(w http.ResponseWriter, r *http.Request) {
 		}()
 	}
 
+	if eventSettings.StemTvPublishingEnabled && match.Type != "practice" {
+		// Publish asynchronously to STEMtv.
+		go func() {
+			err = PublishMatchVideoSplit(match, time.Now())
+			if err != nil {
+				log.Printf("Failed to publish match video split to STEMtv: %s", err.Error())
+			}
+		}()
+	}
+
 	http.Redirect(w, r, "/match_play", 302)
 }
 

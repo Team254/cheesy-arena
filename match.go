@@ -6,6 +6,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"time"
 )
@@ -111,4 +112,14 @@ func (match *Match) CapitalizedType() string {
 		return "Playoff"
 	}
 	return strings.ToUpper(match.Type[0:1]) + match.Type[1:]
+}
+
+func (match *Match) TbaCode() string {
+	if match.Type == "qualification" {
+		return fmt.Sprintf("qm%s", match.DisplayName)
+	} else if match.Type == "elimination" {
+		return fmt.Sprintf("%s%dm%d", strings.ToLower(elimRoundNames[match.ElimRound]), match.ElimGroup,
+			match.ElimInstance)
+	}
+	return ""
 }

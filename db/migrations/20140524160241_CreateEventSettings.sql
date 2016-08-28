@@ -26,7 +26,9 @@ CREATE TABLE event_settings (
   reddefenselightsaddress VARCHAR(255),
   bluegoallightsaddress VARCHAR(255),
   bluedefenselightsaddress VARCHAR(255),
-  initialtowerstrength int
+  initialtowerstrength int,
+  stemtvpublishingenabled bool,
+  stemtveventcode VARCHAR(16)
 );
 
 -- +goose Down

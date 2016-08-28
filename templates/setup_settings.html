@@ -128,6 +128,19 @@
               <input type="text" class="form-control" name="tbaSecret" value="{{.TbaSecret}}">
             </div>
           </div>
+          <p>Contact STEMtv to obtain an event code.</p>
+          <div class="form-group">
+            <label class="col-lg-7 control-label">Enable STEMtv publishing</label>
+            <div class="col-lg-1 checkbox">
+              <input type="checkbox" name="stemTvPublishingEnabled"{{if .StemTvPublishingEnabled}} checked{{end}}>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">STEMtv Event Code</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="stemTvEventCode" value="{{.StemTvEventCode}}">
+            </div>
+          </div>
         </fieldset>
         <fieldset>
           <legend>Authentication</legend>

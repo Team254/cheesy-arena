@@ -13,6 +13,8 @@ import (
 
 const elimMatchSpacingSec = 600
 
+var elimRoundNames = map[int]string{1: "F", 2: "SF", 4: "QF", 8: "EF"}
+
 // Incrementally creates any elimination matches that can be created, based on the results of alliance
 // selection or prior elimination rounds. Returns the winning alliance once it has been determined.
 func (database *Database) UpdateEliminationSchedule(startTime time.Time) ([]AllianceTeam, error) {
@@ -49,7 +51,7 @@ func (database *Database) buildEliminationMatchSet(round int, group int, numAlli
 	if numAlliances < 2 {
 		return []AllianceTeam{}, fmt.Errorf("Must have at least 2 alliances")
 	}
-	roundName, ok := map[int]string{1: "F", 2: "SF", 4: "QF", 8: "EF"}[round]
+	roundName, ok := elimRoundNames[round]
 	if !ok {
 		return []AllianceTeam{}, fmt.Errorf("Round of depth %d is not supported", round*2)
 	}
