@@ -30,7 +30,10 @@ func TestConfigureCatalyst(t *testing.T) {
 	catalystTelnetPort += 1
 	mockTelnet(t, catalystTelnetPort, "interface Vlan15\nip address 10.2.54.61\n", &command)
 	assert.Nil(t, ConfigureTeamEthernet(nil, &Team{Id: 1114}, nil, nil, &Team{Id: 254}, nil))
-	assert.Equal(t, "password\nenable\npassword\nterminal length 0\nconfig terminal\nno access-list 112\n"+
-		"access-list 112 permit ip 10.11.14.0 0.0.0.255 host 10.0.100.5\ninterface Vlan12\nip address "+
-		"10.11.14.61 255.255.255.0\nend\ncopy running-config startup-config\n\nexit\n", command)
+	assert.Equal(t, "password\nenable\npassword\nterminal length 0\nconfig terminal\n"+
+		"ip dhcp excluded-address 10.11.14.1 10.11.14.100\nno ip dhcp pool dhcp12\nip dhcp pool dhcp12\n"+
+		"network 10.11.14.0 255.255.255.0\ndefault-router 10.11.14.61\nlease 7\nno access-list 112\n"+
+		"access-list 112 permit ip 10.11.14.0 0.0.0.255 host 10.0.100.5\n"+
+		"access-list 112 permit udp any eq bootpc any eq bootps\ninterface Vlan12\n"+
+		"ip address 10.11.14.61 255.255.255.0\nend\ncopy running-config startup-config\n\nexit\n", command)
 }

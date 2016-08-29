@@ -138,21 +138,9 @@ func TestDecodeStatusPacket(t *testing.T) {
 	assert.Nil(t, err)
 	defer dsConn.Close()
 
-	// Check with no linked robot.
-	data := [36]byte{22, 28, 103, 19, 192, 0, 247, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	data := [36]byte{22, 28, 103, 19, 192, 0, 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0}
 	dsConn.decodeStatusPacket(data)
-	assert.Equal(t, false, dsConn.RobotLinked)
-	assert.Equal(t, 0.0, dsConn.BatteryVoltage)
-	assert.Equal(t, 0, dsConn.MissedPacketCount)
-	assert.Equal(t, 0, dsConn.DsRobotTripTimeMs)
-
-	// Check with linked robot.
-	data = [36]byte{22, 28, 103, 19, 192, 0, 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0}
-	dsConn.decodeStatusPacket(data)
-	assert.Equal(t, true, dsConn.RobotLinked)
-	assert.Equal(t, 19.75, dsConn.BatteryVoltage)
 	assert.Equal(t, 103, dsConn.MissedPacketCount)
 	assert.Equal(t, 14, dsConn.DsRobotTripTimeMs)
 }
@@ -220,8 +208,6 @@ func TestListenForDriverStations(t *testing.T) {
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 			tcpConn.Write(dataSend2[:])
 			time.Sleep(time.Millisecond * 10)
-			assert.Equal(t, true, dsConn.RobotLinked)
-			assert.Equal(t, 19.75, dsConn.BatteryVoltage)
 			assert.Equal(t, 103, dsConn.MissedPacketCount)
 			assert.Equal(t, 14, dsConn.DsRobotTripTimeMs)
 		}
