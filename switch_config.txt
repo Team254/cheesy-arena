@@ -14,12 +14,48 @@ enable secret 5 $1$kKSW$fCMwnMdYvXui1TulfyYHN/
 ip subnet-zero
 ip routing
 ip dhcp excluded-address 10.0.100.1 10.0.100.100
+ip dhcp excluded-address 10.0.1.1 10.0.1.100
+ip dhcp excluded-address 10.0.2.1 10.0.2.100
+ip dhcp excluded-address 10.0.3.1 10.0.3.100
+ip dhcp excluded-address 10.0.4.1 10.0.4.100
+ip dhcp excluded-address 10.0.5.1 10.0.5.100
+ip dhcp excluded-address 10.0.6.1 10.0.6.100
 !
 ip dhcp pool dhcppool
    network 10.0.100.0 255.255.255.0
    default-router 10.0.100.1 
    domain-name team254.com
    dns-server 8.8.8.8 8.8.4.4 
+   lease 7
+!
+ip dhcp pool dhcp11
+   network 10.0.1.0 255.255.255.0
+   default-router 10.0.1.61
+   lease 7
+!
+ip dhcp pool dhcp12
+   network 10.0.2.0 255.255.255.0
+   default-router 10.0.2.61
+   lease 7
+!
+ip dhcp pool dhcp13
+   network 10.0.3.0 255.255.255.0
+   default-router 10.0.3.61
+   lease 7
+!
+ip dhcp pool dhcp14
+   network 10.0.4.0 255.255.255.0
+   default-router 10.0.4.61
+   lease 7
+!
+ip dhcp pool dhcp15
+   network 10.0.5.0 255.255.255.0
+   default-router 10.0.5.61
+   lease 7
+!
+ip dhcp pool dhcp16
+   network 10.0.6.0 255.255.255.0
+   default-router 10.0.6.61
    lease 7
 !
 !
@@ -167,11 +203,17 @@ ip classless
 ip http server
 !
 access-list 111 permit ip 10.0.1.0 0.0.0.255 host 10.0.100.5
+access-list 111 permit udp any eq bootpc any eq bootps
 access-list 112 permit ip 10.0.2.0 0.0.0.255 host 10.0.100.5
+access-list 112 permit udp any eq bootpc any eq bootps
 access-list 113 permit ip 10.0.3.0 0.0.0.255 host 10.0.100.5
+access-list 113 permit udp any eq bootpc any eq bootps
 access-list 114 permit ip 10.0.4.0 0.0.0.255 host 10.0.100.5
+access-list 114 permit udp any eq bootpc any eq bootps
 access-list 115 permit ip 10.0.5.0 0.0.0.255 host 10.0.100.5
+access-list 115 permit udp any eq bootpc any eq bootps
 access-list 116 permit ip 10.0.6.0 0.0.0.255 host 10.0.100.5
+access-list 116 permit udp any eq bootpc any eq bootps
 !
 snmp-server community 1234Five RO
 !

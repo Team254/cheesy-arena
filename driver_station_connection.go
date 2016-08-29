@@ -13,10 +13,12 @@ import (
 )
 
 const (
-	driverStationTcpListenPort  = 1750
-	driverStationUdpSendPort    = 1120
-	driverStationLinkTimeoutSec = 5
-	maxTcpPacketBytes           = 4096
+	driverStationTcpListenPort     = 1750
+	driverStationUdpSendPort       = 1120
+	driverStationUdpReceivePort    = 1160
+	driverStationTcpLinkTimeoutSec = 5
+	driverStationUdpLinkTimeoutSec = 1
+	maxTcpPacketBytes              = 4096
 )
 
 type DriverStationConnection struct {
@@ -57,8 +59,45 @@ func NewDriverStationConnection(teamId int, allianceStation string, tcpConn net.
 	if err != nil {
 		return nil, err
 	}
-	return &DriverStationConnection{TeamId: teamId, AllianceStation: allianceStation, DsLinked: true,
-		lastPacketTime: time.Now(), tcpConn: tcpConn, udpConn: udpConn}, nil
+	return &DriverStationConnection{TeamId: teamId, AllianceStation: allianceStation, tcpConn: tcpConn, udpConn: udpConn}, nil
+}
+
+// Loops indefinitely to read packets and update connection status.
+func ListenForDsUdpPackets() {
+	udpAddress, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf(":%d", driverStationUdpReceivePort))
+	listener, err := net.ListenUDP("udp4", udpAddress)
+	if err != nil {
+		log.Fatalln("Error opening driver station UDP socket: %v", err.Error())
+	}
+	log.Printf("Listening for driver stations on UDP port %d\n", driverStationUdpReceivePort)
+
+	var data [50]byte
+	for {
+		listener.Read(data[:])
+
+		teamId := int(data[4])<<8 + int(data[5])
+
+		var dsConn *DriverStationConnection
+		for _, allianceStation := range mainArena.AllianceStations {
+			if allianceStation.team.Id == teamId {
+				dsConn = allianceStation.DsConn
+				break
+			}
+		}
+
+		if dsConn != nil {
+			dsConn.DsLinked = true
+			dsConn.lastPacketTime = time.Now()
+
+			dsConn.RobotLinked = data[3]&0x20 != 0
+			if dsConn.RobotLinked {
+				dsConn.lastRobotLinkedTime = time.Now()
+
+				// Robot battery voltage, stored as volts * 256.
+				dsConn.BatteryVoltage = float64(data[6]) + float64(data[7])/256
+			}
+		}
+	}
 }
 
 // Sends a control packet to the Driver Station and checks for timeout conditions.
@@ -68,7 +107,7 @@ func (dsConn *DriverStationConnection) Update() error {
 		return err
 	}
 
-	if time.Since(dsConn.lastPacketTime).Seconds() > driverStationLinkTimeoutSec {
+	if time.Since(dsConn.lastPacketTime).Seconds() > driverStationUdpLinkTimeoutSec {
 		dsConn.DsLinked = false
 		dsConn.RobotLinked = false
 		dsConn.BatteryVoltage = 0
@@ -204,37 +243,24 @@ func (dsConn *DriverStationConnection) sendControlPacket() error {
 
 // Deserializes a packet from the DS into a structure representing the DS/robot status.
 func (dsConn *DriverStationConnection) decodeStatusPacket(data [36]byte) {
-	if data[6]&0x01 != 0 && data[6]&0x08 == 0 {
-		// Robot is not connected.
-		dsConn.RobotLinked = false
-		return
-	}
-
-	dsConn.RobotLinked = true
-
 	// Average DS-robot trip time in milliseconds.
 	dsConn.DsRobotTripTimeMs = int(data[1]) / 2
 
 	// Number of missed packets sent from the DS to the robot.
 	dsConn.MissedPacketCount = int(data[2]) - dsConn.missedPacketOffset
-
-	// Robot battery voltage, stored as volts * 256.
-	dsConn.BatteryVoltage = float64(data[3]) + float64(data[4])/256
-
-	dsConn.lastRobotLinkedTime = time.Now()
 }
 
 // Listens for TCP connection requests to Cheesy Arena from driver stations.
 func ListenForDriverStations() {
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", driverStationTcpListenAddress, driverStationTcpListenPort))
 	if err != nil {
-		log.Printf("Error opening driver station socket: %v", err.Error())
+		log.Printf("Error opening driver station TCP socket: %v", err.Error())
 		log.Printf("Change IP address to %s and restart Cheesy Arena to fix.", driverStationTcpListenAddress)
 		return
 	}
 	defer l.Close()
 
-	log.Printf("Listening for driver stations on port %d\n", driverStationTcpListenPort)
+	log.Printf("Listening for driver stations on TCP port %d\n", driverStationTcpListenPort)
 	for {
 		tcpConn, err := l.Accept()
 		if err != nil {
@@ -296,16 +322,14 @@ func ListenForDriverStations() {
 func (dsConn *DriverStationConnection) handleTcpConnection() {
 	buffer := make([]byte, maxTcpPacketBytes)
 	for {
-		dsConn.tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationLinkTimeoutSec))
+		dsConn.tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationTcpLinkTimeoutSec))
 		_, err := dsConn.tcpConn.Read(buffer)
 		if err != nil {
 			fmt.Printf("Error reading from connection for Team %d: %v\n", dsConn.TeamId, err.Error())
 			dsConn.Close()
+			mainArena.AllianceStations[dsConn.AllianceStation].DsConn = nil
 			break
 		}
-
-		dsConn.DsLinked = true
-		dsConn.lastPacketTime = time.Now()
 
 		packetType := int(buffer[2])
 		switch packetType {
