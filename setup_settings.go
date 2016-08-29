@@ -66,9 +66,7 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.BandwidthMonitoringEnabled = r.PostFormValue("bandwidthMonitoringEnabled") == "on"
 	eventSettings.AdminPassword = r.PostFormValue("adminPassword")
 	eventSettings.ReaderPassword = r.PostFormValue("readerPassword")
-	eventSettings.RedGoalLightsAddress = r.PostFormValue("redGoalLightsAddress")
 	eventSettings.RedDefenseLightsAddress = r.PostFormValue("redDefenseLightsAddress")
-	eventSettings.BlueGoalLightsAddress = r.PostFormValue("blueGoalLightsAddress")
 	eventSettings.BlueDefenseLightsAddress = r.PostFormValue("blueDefenseLightsAddress")
 
 	initialTowerStrength, _ := strconv.Atoi(r.PostFormValue("initialTowerStrength"))

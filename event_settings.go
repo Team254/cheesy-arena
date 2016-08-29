@@ -27,9 +27,7 @@ type EventSettings struct {
 	BandwidthMonitoringEnabled bool
 	AdminPassword              string
 	ReaderPassword             string
-	RedGoalLightsAddress       string
 	RedDefenseLightsAddress    string
-	BlueGoalLightsAddress      string
 	BlueDefenseLightsAddress   string
 	InitialTowerStrength       int
 	StemTvPublishingEnabled    bool
