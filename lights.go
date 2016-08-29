@@ -41,7 +41,7 @@ func (lightPacket *LightPacket) setColorFade(channel int, color string, fade byt
 	case "green":
 		lightPacket.setRgbFade(channel, 0, 15, 0, fade)
 	case "yellow":
-		lightPacket.setRgbFade(channel, 15, 11, 0, fade)
+		lightPacket.setRgbFade(channel, 15, 13, 5, fade)
 	case "darkred":
 		lightPacket.setRgbFade(channel, 1, 0, 0, fade)
 	case "darkblue":
