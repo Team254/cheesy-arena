@@ -16,6 +16,7 @@ const (
 	driverStationTcpListenPort  = 1750
 	driverStationUdpSendPort    = 1120
 	driverStationLinkTimeoutSec = 5
+	robotLinkTimeoutSec         = 1
 	maxTcpPacketBytes           = 4096
 )
 
@@ -206,7 +207,9 @@ func (dsConn *DriverStationConnection) sendControlPacket() error {
 func (dsConn *DriverStationConnection) decodeStatusPacket(data [36]byte) {
 	if data[6]&0x01 != 0 && data[6]&0x08 == 0 {
 		// Robot is not connected.
-		dsConn.RobotLinked = false
+		if time.Since(dsConn.lastRobotLinkedTime).Seconds() > robotLinkTimeoutSec {
+			dsConn.RobotLinked = false
+		}
 		return
 	}
 
@@ -301,6 +304,7 @@ func (dsConn *DriverStationConnection) handleTcpConnection() {
 		if err != nil {
 			fmt.Printf("Error reading from connection for Team %d: %v\n", dsConn.TeamId, err.Error())
 			dsConn.Close()
+			mainArena.AllianceStations[dsConn.AllianceStation].DsConn = nil
 			break
 		}
 
