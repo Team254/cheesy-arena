@@ -79,6 +79,7 @@ In addition, the following individuals have contributed to make Cheesy Arena a r
 
 * Tom Bottiglieri
 * James Cerar
+* Kiet Chau
 * Travis Covington
 * Nick Eyre
 * Patrick Fairbank
