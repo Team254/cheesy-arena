@@ -539,8 +539,6 @@ func (realtimeScore *RealtimeScore) ScoreFields(opponentFouls []Foul) *RealtimeS
 // Manipulates the arena LED lighting based on the current state of the match.
 func (arena *Arena) handleLighting() {
 	switch arena.MatchState {
-	case PRE_MATCH:
-		fallthrough
 	case AUTO_PERIOD:
 		fallthrough
 	case PAUSE_PERIOD:
