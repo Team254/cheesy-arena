@@ -159,9 +159,9 @@ func (dsConn *DriverStationConnection) encodeControlPacket() [22]byte {
 	if dsConn.Enabled {
 		packet[3] |= 0x04
 	}
-	if dsConn.EmergencyStop {
-		packet[3] |= 0x80
-	}
+	//if dsConn.EmergencyStop {
+	//	packet[3] |= 0x80
+	//}
 
 	// Unknown or unused.
 	packet[4] = 0
