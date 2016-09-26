@@ -155,6 +155,7 @@ func MatchPlayShowResultHandler(w http.ResponseWriter, r *http.Request) {
 	mainArena.scorePostedNotifier.Notify(nil)
 
 	if eventSettings.TbaPublishingEnabled && match.Type != "practice" {
+		log.Printf("Attempting to publish TBA")
 		// Publish asynchronously to The Blue Alliance.
 		go func() {
 			err = PublishMatches()

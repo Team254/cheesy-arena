@@ -13,6 +13,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"log"
+
 )
 
 // Distinct endpoints are necessary for testing.
@@ -242,12 +244,16 @@ func PublishTeams() error {
 
 // Uploads the qualification and elimination match schedule and results to The Blue Alliance.
 func PublishMatches() error {
+	log.Printf("TBA: qual database error")
+
 	qualMatches, err := db.GetMatchesByType("qualification")
 	if err != nil {
+		log.Printf("TBA: qual database error")
 		return err
 	}
 	elimMatches, err := db.GetMatchesByType("elimination")
 	if err != nil {
+		log.Printf("TBA: elim database error")
 		return err
 	}
 	matches := append(qualMatches, elimMatches...)
