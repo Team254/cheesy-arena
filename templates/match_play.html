@@ -243,7 +243,7 @@
 <div class="row form-group" id="status{{.color}}{{.position}}">
   <div class="col-lg-1">{{.position}} </div>
   <div class="col-lg-3">
-    <input type="text" class="form-control input-sm" value="{{if ne 0 .team}}{{.team}}{{end}}"
+    <input type="number" class="form-control input-sm" value="{{if ne 0 .team}}{{.team}}{{end}}"
         onblur="substituteTeam($(this).val(), '{{.color}}{{.position}}');"
         {{if not .data.AllowSubstitution}}disabled{{end}}>
   </div>
