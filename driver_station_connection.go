@@ -207,8 +207,7 @@ func (dsConn *DriverStationConnection) encodeControlPacket() [22]byte {
 	case START_MATCH:
 		fallthrough
 	case AUTO_PERIOD:
-		matchSecondsRemaining = mainArena.matchTiming.AutoDurationSec + mainArena.matchTiming.TeleopDurationSec -
-			int(mainArena.MatchTimeSec())
+		matchSecondsRemaining = mainArena.matchTiming.AutoDurationSec - int(mainArena.MatchTimeSec())
 	case PAUSE_PERIOD:
 		matchSecondsRemaining = mainArena.matchTiming.TeleopDurationSec
 	case TELEOP_PERIOD:
