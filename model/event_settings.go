@@ -12,6 +12,7 @@ type EventSettings struct {
 	NumElimAlliances           int
 	SelectionRound2Order       string
 	SelectionRound3Order       string
+	SelectionShowUnpickedTeams bool
 	TBADownloadEnabled         bool
 	TbaPublishingEnabled       bool
 	TbaEventCode               string
@@ -43,6 +44,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.NumElimAlliances = 8
 		eventSettings.SelectionRound2Order = "L"
 		eventSettings.SelectionRound3Order = ""
+		eventSettings.SelectionShowUnpickedTeams = false
 		eventSettings.TBADownloadEnabled = true
 
 		err = database.eventSettingsMap.Insert(eventSettings)
