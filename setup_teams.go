@@ -139,6 +139,7 @@ func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	team.StateProv = r.PostFormValue("stateProv")
 	team.Country = r.PostFormValue("country")
 	team.RookieYear, _ = strconv.Atoi(r.PostFormValue("rookieYear"))
+	team.OrigTeamNumber, _ = strconv.Atoi(r.PostFormValue("origTeamNumber"))
 	team.RobotName = r.PostFormValue("robotName")
 	team.Accomplishments = r.PostFormValue("accomplishments")
 	if eventSettings.NetworkSecurityEnabled {
