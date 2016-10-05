@@ -175,6 +175,7 @@ func newHandler() http.Handler {
 	router.HandleFunc("/setup/teams/generate_wpa_keys", TeamsGenerateWpaKeysHandler).Methods("GET")
 	router.HandleFunc("/setup/schedule", ScheduleGetHandler).Methods("GET")
 	router.HandleFunc("/setup/schedule/generate", ScheduleGeneratePostHandler).Methods("POST")
+	router.HandleFunc("/setup/schedule/republish", ScheduleRepublishPostHandler).Methods("POST")
 	router.HandleFunc("/setup/schedule/save", ScheduleSavePostHandler).Methods("POST")
 	router.HandleFunc("/setup/alliance_selection", AllianceSelectionGetHandler).Methods("GET")
 	router.HandleFunc("/setup/alliance_selection", AllianceSelectionPostHandler).Methods("POST")
