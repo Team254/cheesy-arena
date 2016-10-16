@@ -73,9 +73,9 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		Blue2            *Team
 		Blue3            *Team
 	}{mainArena.currentMatch.CapitalizedType(), mainArena.currentMatch.DisplayName,
-		mainArena.AllianceStations["R1"].team, mainArena.AllianceStations["R2"].team,
-		mainArena.AllianceStations["R3"].team, mainArena.AllianceStations["B1"].team,
-		mainArena.AllianceStations["B2"].team, mainArena.AllianceStations["B3"].team}
+		mainArena.AllianceStations["R1"].Team, mainArena.AllianceStations["R2"].Team,
+		mainArena.AllianceStations["R3"].Team, mainArena.AllianceStations["B1"].Team,
+		mainArena.AllianceStations["B2"].Team, mainArena.AllianceStations["B3"].Team}
 	err = websocket.Write("setMatch", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -123,9 +123,9 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					Blue2            *Team
 					Blue3            *Team
 				}{mainArena.currentMatch.CapitalizedType(), mainArena.currentMatch.DisplayName,
-					mainArena.AllianceStations["R1"].team, mainArena.AllianceStations["R2"].team,
-					mainArena.AllianceStations["R3"].team, mainArena.AllianceStations["B1"].team,
-					mainArena.AllianceStations["B2"].team, mainArena.AllianceStations["B3"].team}
+					mainArena.AllianceStations["R1"].Team, mainArena.AllianceStations["R2"].Team,
+					mainArena.AllianceStations["R3"].Team, mainArena.AllianceStations["B1"].Team,
+					mainArena.AllianceStations["B2"].Team, mainArena.AllianceStations["B3"].Team}
 			case matchTimeSec, ok := <-matchTimeListener:
 				if !ok {
 					return

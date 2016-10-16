@@ -79,7 +79,7 @@ func ListenForDsUdpPackets() {
 
 		var dsConn *DriverStationConnection
 		for _, allianceStation := range mainArena.AllianceStations {
-			if allianceStation.team != nil && allianceStation.team.Id == teamId {
+			if allianceStation.Team != nil && allianceStation.Team.Id == teamId {
 				dsConn = allianceStation.DsConn
 				break
 			}

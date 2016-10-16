@@ -28,27 +28,27 @@ func TestAssignTeam(t *testing.T) {
 
 	err = mainArena.AssignTeam(254, "B1")
 	assert.Nil(t, err)
-	assert.Equal(t, team, *mainArena.AllianceStations["B1"].team)
+	assert.Equal(t, team, *mainArena.AllianceStations["B1"].Team)
 	dummyDs := &DriverStationConnection{TeamId: 254}
 	mainArena.AllianceStations["B1"].DsConn = dummyDs
 
 	// Nothing should happen if the same team is assigned to the same station.
 	err = mainArena.AssignTeam(254, "B1")
 	assert.Nil(t, err)
-	assert.Equal(t, team, *mainArena.AllianceStations["B1"].team)
+	assert.Equal(t, team, *mainArena.AllianceStations["B1"].Team)
 	assert.NotNil(t, mainArena.AllianceStations["B1"])
 	assert.Equal(t, dummyDs, mainArena.AllianceStations["B1"].DsConn) // Pointer equality
 
 	// Test reassignment to another team.
 	err = mainArena.AssignTeam(1114, "B1")
 	assert.Nil(t, err)
-	assert.NotEqual(t, team, *mainArena.AllianceStations["B1"].team)
+	assert.NotEqual(t, team, *mainArena.AllianceStations["B1"].Team)
 	assert.Nil(t, mainArena.AllianceStations["B1"].DsConn)
 
 	// Check assigning zero as the team number.
 	err = mainArena.AssignTeam(0, "R2")
 	assert.Nil(t, err)
-	assert.Nil(t, mainArena.AllianceStations["R2"].team)
+	assert.Nil(t, mainArena.AllianceStations["R2"].Team)
 	assert.Nil(t, mainArena.AllianceStations["R2"].DsConn)
 
 	// Check assigning to a non-existent station.
@@ -451,7 +451,7 @@ func TestSubstituteTeam(t *testing.T) {
 	err = mainArena.SubstituteTeam(101, "B1")
 	assert.Nil(t, err)
 	assert.Equal(t, 101, mainArena.currentMatch.Blue1)
-	assert.Equal(t, 101, mainArena.AllianceStations["B1"].team.Id)
+	assert.Equal(t, 101, mainArena.AllianceStations["B1"].Team.Id)
 	err = mainArena.AssignTeam(104, "R4")
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Invalid alliance station")
@@ -464,7 +464,7 @@ func TestSubstituteTeam(t *testing.T) {
 	err = mainArena.SubstituteTeam(107, "R1")
 	assert.Nil(t, err)
 	assert.Equal(t, 107, mainArena.currentMatch.Red1)
-	assert.Equal(t, 107, mainArena.AllianceStations["R1"].team.Id)
+	assert.Equal(t, 107, mainArena.AllianceStations["R1"].Team.Id)
 	CommitMatchScore(mainArena.currentMatch, &MatchResult{MatchId: mainArena.currentMatch.Id}, false)
 	match2, _ := db.GetMatchById(match.Id)
 	assert.Equal(t, 107, match2.Red1)

@@ -32,7 +32,7 @@ type AllianceStation struct {
 	DsConn        *DriverStationConnection
 	EmergencyStop bool
 	Bypass        bool
-	team          *Team
+	Team          *Team
 }
 
 // Match period timings.
@@ -161,12 +161,13 @@ func (arena *Arena) AssignTeam(teamId int, station string) error {
 	}
 	if dsConn != nil {
 		dsConn.Close()
-		arena.AllianceStations[station].team = nil
+		arena.AllianceStations[station].Team = nil
 		arena.AllianceStations[station].DsConn = nil
 	}
 
 	// Leave the station empty if the team number is zero.
 	if teamId == 0 {
+		arena.AllianceStations[station].Team = nil
 		return nil
 	}
 
@@ -179,7 +180,7 @@ func (arena *Arena) AssignTeam(teamId int, station string) error {
 		team = &Team{Id: teamId}
 	}
 
-	arena.AllianceStations[station].team = team
+	arena.AllianceStations[station].Team = team
 	return nil
 }
 
@@ -292,17 +293,17 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 func (arena *Arena) SetupNetwork() {
 	if eventSettings.NetworkSecurityEnabled {
 		go func() {
-			err := ConfigureTeamWifi(arena.AllianceStations["R1"].team, arena.AllianceStations["R2"].team,
-				arena.AllianceStations["R3"].team, arena.AllianceStations["B1"].team,
-				arena.AllianceStations["B2"].team, arena.AllianceStations["B3"].team)
+			err := ConfigureTeamWifi(arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
+				arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team,
+				arena.AllianceStations["B2"].Team, arena.AllianceStations["B3"].Team)
 			if err != nil {
 				log.Printf("Failed to configure team WiFi: %s", err.Error())
 			}
 		}()
 		go func() {
-			err := ConfigureTeamEthernet(arena.AllianceStations["R1"].team, arena.AllianceStations["R2"].team,
-				arena.AllianceStations["R3"].team, arena.AllianceStations["B1"].team,
-				arena.AllianceStations["B2"].team, arena.AllianceStations["B3"].team)
+			err := ConfigureTeamEthernet(arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
+				arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team,
+				arena.AllianceStations["B2"].Team, arena.AllianceStations["B3"].Team)
 			if err != nil {
 				log.Printf("Failed to configure team Ethernet: %s", err.Error())
 			}
@@ -513,7 +514,7 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 			dsConn.Enabled = enabled && !allianceStation.EmergencyStop && !allianceStation.Bypass
 			err := dsConn.Update()
 			if err != nil {
-				log.Printf("Unable to send driver station packet for team %d.", allianceStation.team.Id)
+				log.Printf("Unable to send driver station packet for team %d.", allianceStation.Team.Id)
 			}
 		}
 	}
@@ -562,7 +563,7 @@ func (arena *Arena) handleLighting() {
 // in the current match.
 func (arena *Arena) getAssignedAllianceStation(teamId int) string {
 	for station, allianceStation := range arena.AllianceStations {
-		if allianceStation.team != nil && allianceStation.team.Id == teamId {
+		if allianceStation.Team != nil && allianceStation.Team.Id == teamId {
 			return station
 		}
 	}

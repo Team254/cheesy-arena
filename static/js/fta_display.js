@@ -10,9 +10,14 @@ var websocket;
 var handleStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
+    if (stationStatus.Team) {
+      $("#status" + station + " .team").text(stationStatus.Team.Id);
+    } else {
+      $("#status" + station + " .team").text("");
+    }
+
     if (stationStatus.DsConn) {
       var dsConn = stationStatus.DsConn;
-      $("#status" + station + " .team").text(stationStatus.DsConn.TeamId);
       $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
       $("#status" + station + " .ds-status").text(dsConn.MBpsToRobot.toFixed(1) + "/" + dsConn.MBpsFromRobot.toFixed(1));
       $("#status" + station + " .robot-status").attr("data-status-ok", dsConn.RobotLinked);

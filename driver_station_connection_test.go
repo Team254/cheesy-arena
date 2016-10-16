@@ -30,7 +30,7 @@ func TestEncodeControlPacket(t *testing.T) {
 	assert.Equal(t, byte(0), data[5])
 	assert.Equal(t, byte(0), data[6])
 	assert.Equal(t, byte(0), data[20])
-	assert.Equal(t, byte(150), data[21])
+	assert.Equal(t, byte(15), data[21])
 
 	// Check the different alliance station values.
 	dsConn.AllianceStation = "R2"
@@ -100,7 +100,7 @@ func TestEncodeControlPacket(t *testing.T) {
 	mainArena.MatchState = AUTO_PERIOD
 	mainArena.matchStartTime = time.Now().Add(-time.Duration(4 * time.Second))
 	data = dsConn.encodeControlPacket()
-	assert.Equal(t, byte(146), data[21])
+	assert.Equal(t, byte(11), data[21])
 	mainArena.MatchState = PAUSE_PERIOD
 	mainArena.matchStartTime = time.Now().Add(-time.Duration(16 * time.Second))
 	data = dsConn.encodeControlPacket()

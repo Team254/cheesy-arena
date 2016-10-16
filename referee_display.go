@@ -42,27 +42,27 @@ func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 	match := mainArena.currentMatch
 	matchType := match.CapitalizedType()
-	red1 := mainArena.AllianceStations["R1"].team
+	red1 := mainArena.AllianceStations["R1"].Team
 	if red1 == nil {
 		red1 = &Team{}
 	}
-	red2 := mainArena.AllianceStations["R2"].team
+	red2 := mainArena.AllianceStations["R2"].Team
 	if red2 == nil {
 		red2 = &Team{}
 	}
-	red3 := mainArena.AllianceStations["R3"].team
+	red3 := mainArena.AllianceStations["R3"].Team
 	if red3 == nil {
 		red3 = &Team{}
 	}
-	blue1 := mainArena.AllianceStations["B1"].team
+	blue1 := mainArena.AllianceStations["B1"].Team
 	if blue1 == nil {
 		blue1 = &Team{}
 	}
-	blue2 := mainArena.AllianceStations["B2"].team
+	blue2 := mainArena.AllianceStations["B2"].Team
 	if blue2 == nil {
 		blue2 = &Team{}
 	}
-	blue3 := mainArena.AllianceStations["B3"].team
+	blue3 := mainArena.AllianceStations["B3"].Team
 	if blue3 == nil {
 		blue3 = &Team{}
 	}

@@ -65,8 +65,8 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	}
 	rankings := make(map[string]*Ranking)
 	for _, allianceStation := range mainArena.AllianceStations {
-		if allianceStation.team != nil {
-			rankings[strconv.Itoa(allianceStation.team.Id)], _ = db.GetRankingForTeam(allianceStation.team.Id)
+		if allianceStation.Team != nil {
+			rankings[strconv.Itoa(allianceStation.Team.Id)], _ = db.GetRankingForTeam(allianceStation.Team.Id)
 		}
 	}
 
@@ -104,10 +104,10 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		AllianceStation string
 		Teams           map[string]*Team
 		Rankings        map[string]*Ranking
-	}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].team,
-		"R2": mainArena.AllianceStations["R2"].team, "R3": mainArena.AllianceStations["R3"].team,
-		"B1": mainArena.AllianceStations["B1"].team, "B2": mainArena.AllianceStations["B2"].team,
-		"B3": mainArena.AllianceStations["B3"].team}, rankings}
+	}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].Team,
+		"R2": mainArena.AllianceStations["R2"].Team, "R3": mainArena.AllianceStations["R3"].Team,
+		"B1": mainArena.AllianceStations["B1"].Team, "B2": mainArena.AllianceStations["B2"].Team,
+		"B3": mainArena.AllianceStations["B3"].Team}, rankings}
 	err = websocket.Write("setMatch", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -145,18 +145,18 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				station = mainArena.allianceStationDisplays[displayId]
 				rankings := make(map[string]*Ranking)
 				for _, allianceStation := range mainArena.AllianceStations {
-					if allianceStation.team != nil {
-						rankings[strconv.Itoa(allianceStation.team.Id)], _ = db.GetRankingForTeam(allianceStation.team.Id)
+					if allianceStation.Team != nil {
+						rankings[strconv.Itoa(allianceStation.Team.Id)], _ = db.GetRankingForTeam(allianceStation.Team.Id)
 					}
 				}
 				message = struct {
 					AllianceStation string
 					Teams           map[string]*Team
 					Rankings        map[string]*Ranking
-				}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].team,
-					"R2": mainArena.AllianceStations["R2"].team, "R3": mainArena.AllianceStations["R3"].team,
-					"B1": mainArena.AllianceStations["B1"].team, "B2": mainArena.AllianceStations["B2"].team,
-					"B3": mainArena.AllianceStations["B3"].team}, rankings}
+				}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].Team,
+					"R2": mainArena.AllianceStations["R2"].Team, "R3": mainArena.AllianceStations["R3"].Team,
+					"B1": mainArena.AllianceStations["B1"].Team, "B2": mainArena.AllianceStations["B2"].Team,
+					"B3": mainArena.AllianceStations["B3"].Team}, rankings}
 			case _, ok := <-robotStatusListener:
 				if !ok {
 					return
