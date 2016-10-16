@@ -324,7 +324,7 @@ func (dsConn *DriverStationConnection) handleTcpConnection() {
 		dsConn.tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationTcpLinkTimeoutSec))
 		_, err := dsConn.tcpConn.Read(buffer)
 		if err != nil {
-			fmt.Printf("Error reading from connection for Team %d: %v\n", dsConn.TeamId, err.Error())
+			log.Printf("Error reading from connection for Team %d: %v\n", dsConn.TeamId, err.Error())
 			dsConn.Close()
 			mainArena.AllianceStations[dsConn.AllianceStation].DsConn = nil
 			break
