@@ -243,7 +243,9 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		case "commit":
-			(*score).AutoCommitted = true
+			if mainArena.MatchState != PRE_MATCH || mainArena.currentMatch.Type == "test" {
+				(*score).AutoCommitted = true
+			}
 		case "uncommitAuto":
 			(*score).AutoCommitted = false
 		case "commitMatch":
