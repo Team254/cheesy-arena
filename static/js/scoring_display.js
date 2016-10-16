@@ -9,7 +9,7 @@ var scoreCommitted = false;
 // Handles a websocket message to update the realtime scoring fields.
 var handleScore = function(data) {
   // Update autonomous period values.
-  var score = data.CurrentScore;
+  var score = data.Score.CurrentScore;
   $("#autoDefense1Crossings").text(score.AutoDefensesCrossed[0]);
   $("#autoDefense2Crossings").text(score.AutoDefensesCrossed[1]);
   $("#autoDefense3Crossings").text(score.AutoDefensesCrossed[2]);
@@ -38,7 +38,7 @@ var handleScore = function(data) {
     $("#teleopScore").hide();
     $("#waitingMessage").hide();
     scoreCommitted = false;
-  } else if (!data.TeleopCommitted) {
+  } else if (!data.Score.TeleopCommitted) {
     $("#autoCommands").hide();
     $("#autoScore").hide();
     $("#teleopCommands").show();

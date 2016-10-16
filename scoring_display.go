@@ -62,6 +62,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		score = &mainArena.blueRealtimeScore
 	}
+	autoCommitted := false
 
 	websocket, err := NewWebsocket(w, r)
 	if err != nil {
@@ -78,7 +79,11 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
-	err = websocket.Write("score", *score)
+	data := struct {
+		Score *RealtimeScore
+		AutoCommitted bool
+	}{*score, autoCommitted}
+	err = websocket.Write("score", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -148,7 +153,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			if (*score).CurrentScore.AutoDefensesCrossed[intPosition-1]+
 				(*score).CurrentScore.DefensesCrossed[intPosition-1] < 2 {
-				if !(*score).AutoCommitted {
+				if !autoCommitted {
 					(*score).CurrentScore.AutoDefensesCrossed[intPosition-1]++
 				} else {
 					(*score).CurrentScore.DefensesCrossed[intPosition-1]++
@@ -165,7 +170,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				websocket.WriteError(err.Error())
 				continue
 			}
-			if !(*score).AutoCommitted {
+			if !autoCommitted {
 				if (*score).CurrentScore.AutoDefensesCrossed[intPosition-1] > 0 {
 					(*score).CurrentScore.AutoDefensesCrossed[intPosition-1]--
 				}
@@ -175,25 +180,25 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		case "autoDefenseReached":
-			if !(*score).AutoCommitted {
+			if !autoCommitted {
 				if (*score).CurrentScore.AutoDefensesReached < 3 {
 					(*score).CurrentScore.AutoDefensesReached++
 				}
 			}
 		case "undoAutoDefenseReached":
-			if !(*score).AutoCommitted {
+			if !autoCommitted {
 				if (*score).CurrentScore.AutoDefensesReached > 0 {
 					(*score).CurrentScore.AutoDefensesReached--
 				}
 			}
 		case "highGoal":
-			if !(*score).AutoCommitted {
+			if !autoCommitted {
 				(*score).CurrentScore.AutoHighGoals++
 			} else {
 				(*score).CurrentScore.HighGoals++
 			}
 		case "undoHighGoal":
-			if !(*score).AutoCommitted {
+			if !autoCommitted {
 				if (*score).CurrentScore.AutoHighGoals > 0 {
 					(*score).CurrentScore.AutoHighGoals--
 				}
@@ -203,13 +208,13 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		case "lowGoal":
-			if !(*score).AutoCommitted {
+			if !autoCommitted {
 				(*score).CurrentScore.AutoLowGoals++
 			} else {
 				(*score).CurrentScore.LowGoals++
 			}
 		case "undoLowGoal":
-			if !(*score).AutoCommitted {
+			if !autoCommitted {
 				if (*score).CurrentScore.AutoLowGoals > 0 {
 					(*score).CurrentScore.AutoLowGoals--
 				}
@@ -219,35 +224,35 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		case "challenge":
-			if (*score).AutoCommitted {
+			if autoCommitted {
 				if (*score).CurrentScore.Challenges < 3 {
 					(*score).CurrentScore.Challenges++
 				}
 			}
 		case "undoChallenge":
-			if (*score).AutoCommitted {
+			if autoCommitted {
 				if (*score).CurrentScore.Challenges > 0 {
 					(*score).CurrentScore.Challenges--
 				}
 			}
 		case "scale":
-			if (*score).AutoCommitted {
+			if autoCommitted {
 				if (*score).CurrentScore.Scales < 3 {
 					(*score).CurrentScore.Scales++
 				}
 			}
 		case "undoScale":
-			if (*score).AutoCommitted {
+			if autoCommitted {
 				if (*score).CurrentScore.Scales > 0 {
 					(*score).CurrentScore.Scales--
 				}
 			}
 		case "commit":
 			if mainArena.MatchState != PRE_MATCH || mainArena.currentMatch.Type == "test" {
-				(*score).AutoCommitted = true
+				autoCommitted = true
 			}
 		case "uncommitAuto":
-			(*score).AutoCommitted = false
+			autoCommitted = false
 		case "commitMatch":
 			if mainArena.MatchState != POST_MATCH {
 				// Don't allow committing the score until the match is over.
@@ -255,7 +260,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			(*score).AutoCommitted = true
+			autoCommitted = true
 			(*score).TeleopCommitted = true
 			mainArena.scoringStatusNotifier.Notify(nil)
 		default:
@@ -266,7 +271,11 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		mainArena.realtimeScoreNotifier.Notify(nil)
 
 		// Send out the score again after handling the command, as it most likely changed as a result.
-		err = websocket.Write("score", *score)
+		data = struct {
+			Score *RealtimeScore
+			AutoCommitted bool
+		}{*score, autoCommitted}
+		err = websocket.Write("score", data)
 		if err != nil {
 			log.Printf("Websocket error: %s", err)
 			return
