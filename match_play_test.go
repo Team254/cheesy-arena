@@ -121,20 +121,6 @@ func TestMatchPlayShowResult(t *testing.T) {
 	assert.Equal(t, 302, recorder.Code)
 	assert.Equal(t, match.Id, mainArena.savedMatch.Id)
 	assert.Equal(t, match.Id, mainArena.savedMatchResult.MatchId)
-
-	// Verify TBA and STEMtv publishing by checking the log for the expected failure messages.
-	tbaBaseUrl = "fakeurl"
-	stemTvBaseUrl = "fakeurl"
-	eventSettings.TbaPublishingEnabled = true
-	eventSettings.StemTvPublishingEnabled = true
-	var writer bytes.Buffer
-	log.SetOutput(&writer)
-	recorder = getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
-	assert.Equal(t, 302, recorder.Code)
-	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous publishing to happen.
-	assert.Contains(t, writer.String(), "Failed to publish matches")
-	assert.Contains(t, writer.String(), "Failed to publish rankings")
-	assert.Contains(t, writer.String(), "Failed to publish match video split to STEMtv")
 }
 
 func TestMatchPlayErrors(t *testing.T) {
@@ -192,6 +178,20 @@ func TestCommitMatch(t *testing.T) {
 	assert.Equal(t, 3, matchResult.PlayNumber)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner)
+
+	// Verify TBA and STEMtv publishing by checking the log for the expected failure messages.
+	tbaBaseUrl = "fakeurl"
+	stemTvBaseUrl = "fakeurl"
+	eventSettings.TbaPublishingEnabled = true
+	eventSettings.StemTvPublishingEnabled = true
+	var writer bytes.Buffer
+	log.SetOutput(&writer)
+	err = CommitMatchScore(match, matchResult, false)
+	assert.Nil(t, err)
+	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous publishing to happen.
+	assert.Contains(t, writer.String(), "Failed to publish matches")
+	assert.Contains(t, writer.String(), "Failed to publish rankings")
+	assert.Contains(t, writer.String(), "Failed to publish match video split to STEMtv")
 }
 
 func TestCommitEliminationTie(t *testing.T) {

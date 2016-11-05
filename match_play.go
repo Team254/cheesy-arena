@@ -154,32 +154,6 @@ func MatchPlayShowResultHandler(w http.ResponseWriter, r *http.Request) {
 	mainArena.savedMatchResult = matchResult
 	mainArena.scorePostedNotifier.Notify(nil)
 
-	if eventSettings.TbaPublishingEnabled && match.Type != "practice" {
-		// Publish asynchronously to The Blue Alliance.
-		go func() {
-			err = PublishMatches()
-			if err != nil {
-				log.Printf("Failed to publish matches: %s", err.Error())
-			}
-			if match.Type == "qualification" {
-				err = PublishRankings()
-				if err != nil {
-					log.Printf("Failed to publish rankings: %s", err.Error())
-				}
-			}
-		}()
-	}
-
-	if eventSettings.StemTvPublishingEnabled && match.Type != "practice" {
-		// Publish asynchronously to STEMtv.
-		go func() {
-			err = PublishMatchVideoSplit(match, time.Now())
-			if err != nil {
-				log.Printf("Failed to publish match video split to STEMtv: %s", err.Error())
-			}
-		}()
-	}
-
 	http.Redirect(w, r, "/match_play", 302)
 }
 
@@ -529,6 +503,32 @@ func CommitMatchScore(match *Match, matchResult *MatchResult, loadToShowBuffer b
 		if err != nil {
 			return err
 		}
+	}
+
+	if eventSettings.TbaPublishingEnabled && match.Type != "practice" {
+		// Publish asynchronously to The Blue Alliance.
+		go func() {
+			err = PublishMatches()
+			if err != nil {
+				log.Printf("Failed to publish matches: %s", err.Error())
+			}
+			if match.Type == "qualification" {
+				err = PublishRankings()
+				if err != nil {
+					log.Printf("Failed to publish rankings: %s", err.Error())
+				}
+			}
+		}()
+	}
+
+	if eventSettings.StemTvPublishingEnabled && match.Type != "practice" {
+		// Publish asynchronously to STEMtv.
+		go func() {
+			err = PublishMatchVideoSplit(match, time.Now())
+			if err != nil {
+				log.Printf("Failed to publish match video split to STEMtv: %s", err.Error())
+			}
+		}()
 	}
 
 	// Back up the database, but don't error out if it fails.
