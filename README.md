@@ -2,7 +2,7 @@ Cheesy Arena
 ============
 A field management system that just works.
 
-##Key features
+## Key features
 Check out a [video overview](http://video.team254.com/watch/Z5ZWI2cDqsvVe--AjHhePAHlOhLK8MT0) of Cheesy Arena's functionality.
 
 **For participants and spectators:**
@@ -22,10 +22,10 @@ Check out a [video overview](http://video.team254.com/watch/Z5ZWI2cDqsvVe--AjHhe
 * Streamlined realtime score entry
 * Reports, results, and logs can be viewed from any computer
 
-##License
+## License
 Teams may use Cheesy Arena freely for practice, scrimmages, and off-season events. See [LICENSE](LICENSE) for more details.
 
-##Installation and use
+## Installation and use
 **Via binaries:**
 
 1. Download the [latest release](https://github.com/Team254/cheesy-arena/releases) for OS X or Windows
@@ -47,7 +47,7 @@ Teams may use Cheesy Arena freely for practice, scrimmages, and off-season event
 
 Set the IP address of the computer running Cheesy Arena to 10.0.100.5. Driver stations will broadcast their presence on the network to this hardcoded address so that the FMS does not need to discover them by some other method.
 
-##Under the hood
+## Under the hood
 Cheesy Arena is written using [Go](http://golang.org), a relatively new language developed by Google. Go excels in the areas of concurrency, networking, performance, and portability, which makes it ideal for a field management system.
 
 Cheesy Arena is implemented as a web server, with all human interaction done via browser. The graphical interfaces are implemented in HTML, JavaScript, and CSS. There are many advantages to this approach &ndash; development of new graphical elements is rapid, and no software needs to be installed other than on the server. Client web pages send commands and receive updates using WebSockets.
@@ -64,7 +64,7 @@ Due to the prohibitive cost of the LEDs and LED controllers used on official fie
 ## Advanced networking
 See the [Advanced Networking wiki page](https://github.com/Team254/cheesy-arena/wiki/Advanced-Networking) for instructions on what equipment to obtain and how to configure it in order to support advanced network security.
 
-##Contributing
+## Contributing
 Cheesy Arena is far from finished! You can help by:
 
 * Checking out the [TODO list](TODO.md), writing a missing feature, and sending a pull request
@@ -72,7 +72,7 @@ Cheesy Arena is far from finished! You can help by:
 * Contributing documentation to the [wiki](https://github.com/Team254/cheesy-arena/wiki)
 * Sending baked goods to Pat
 
-##Acknowledgements
+## Acknowledgements
 [Several folks](https://github.com/Team254/cheesy-arena/graphs/contributors) have contributed pull requests. Thanks!
 
 In addition, the following individuals have contributed to make Cheesy Arena a reality:
