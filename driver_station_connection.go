@@ -12,9 +12,11 @@ import (
 	"time"
 )
 
+// FMS uses 1121 for sending UDP packets, and FMS Lite uses 1120. Using 1121
+// seems to work just fine and doesn't prompt to let FMS take control.
 const (
 	driverStationTcpListenPort     = 1750
-	driverStationUdpSendPort       = 1120
+	driverStationUdpSendPort       = 1121
 	driverStationUdpReceivePort    = 1160
 	driverStationTcpLinkTimeoutSec = 5
 	driverStationUdpLinkTimeoutSec = 1
