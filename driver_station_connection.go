@@ -12,9 +12,11 @@ import (
 	"time"
 )
 
+// FMS uses 1121 for sending UDP packets, and FMS Lite uses 1120. Using 1121
+// seems to work just fine and doesn't prompt to let FMS take control.
 const (
 	driverStationTcpListenPort     = 1750
-	driverStationUdpSendPort       = 1120
+	driverStationUdpSendPort       = 1121
 	driverStationUdpReceivePort    = 1160
 	driverStationTcpLinkTimeoutSec = 5
 	driverStationUdpLinkTimeoutSec = 1
@@ -282,19 +284,20 @@ func ListenForDriverStations() {
 		teamId := int(packet[3])<<8 + int(packet[4])
 
 		// Check to see if the team is supposed to be on the field, and notify the DS accordingly.
+		assignedStation := mainArena.getAssignedAllianceStation(teamId)
+		if assignedStation == "" {
+			log.Printf("Rejecting connection from Team %d, who is not in the current match, soon.", teamId)
+			go func() {
+				// Wait a second and then close it so it doesn't chew up bandwidth constantly trying to reconnect.
+				time.Sleep(time.Second)
+				tcpConn.Close()
+			}()
+			continue
+		}
 		var assignmentPacket [5]byte
 		assignmentPacket[0] = 0  // Packet size
 		assignmentPacket[1] = 3  // Packet size
 		assignmentPacket[2] = 25 // Packet type
-		assignedStation := mainArena.getAssignedAllianceStation(teamId)
-		if assignedStation == "" {
-			log.Printf("Rejecting connection from Team %d, who is not in the current match.", teamId)
-			assignmentPacket[3] = 0
-			assignmentPacket[4] = 2
-			tcpConn.Write(assignmentPacket[:])
-			tcpConn.Close()
-			continue
-		}
 		log.Printf("Accepting connection from Team %d in station %s.", teamId, assignedStation)
 		assignmentPacket[3] = allianceStationPositionMap[assignedStation]
 		assignmentPacket[4] = 0
