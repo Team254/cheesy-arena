@@ -44,6 +44,7 @@ func TestRankingsApi(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
+	eventSettings, _ = db.GetEventSettings()
 
 	// Test that empty rankings produces an empty array.
 	recorder := getHttpResponse("/api/rankings")
@@ -59,8 +60,8 @@ func TestRankingsApi(t *testing.T) {
 	assert.Equal(t, 0, len(rankingsData.Rankings))
 	assert.Equal(t, "", rankingsData.HighestPlayedMatch)
 
-	ranking1 := RankingWithNickname{Ranking{1114, 2, 18, 625, 90, 554, 9, 0.254, 3, 2, 1, 0, 10}, "Simbots"}
-	ranking2 := RankingWithNickname{Ranking{254, 1, 20, 625, 90, 554, 10, 0.254, 1, 2, 3, 0, 10}, "ChezyPof"}
+	ranking1 := RankingWithNickname{Ranking{1114, 2, 18, 700, 625, 90, 554, 9, 0.254, 3, 2, 1, 0, 10}, "Simbots"}
+	ranking2 := RankingWithNickname{Ranking{254, 1, 20, 700, 625, 90, 554, 10, 0.254, 1, 2, 3, 0, 10}, "ChezyPof"}
 	db.CreateRanking(&ranking1.Ranking)
 	db.CreateRanking(&ranking2.Ranking)
 	db.CreateMatch(&Match{Type: "qualification", DisplayName: "29", Status: "complete"})

@@ -12,19 +12,20 @@ import (
 )
 
 type Ranking struct {
-	TeamId               int
-	Rank                 int
-	RankingPoints        int
-	AutoPoints           int
-	ScaleChallengePoints int
-	GoalPoints           int
-	DefensePoints        int
-	Random               float64
-	Wins                 int
-	Losses               int
-	Ties                 int
-	Disqualifications    int
-	Played               int
+	TeamId            int
+	Rank              int
+	RankingPoints     int
+	MatchPoints       int
+	AutoPoints        int
+	RotorPoints       int
+	TakeoffPoints     int
+	PressurePoints    int
+	Random            float64
+	Wins              int
+	Losses            int
+	Ties              int
+	Disqualifications int
+	Played            int
 }
 
 type Rankings []*Ranking
@@ -215,18 +216,19 @@ func addMatchResultToRankings(rankings map[int]*Ranking, teamId int, matchResult
 	} else {
 		ranking.Losses += 1
 	}
-	if ownScore.Breached {
+	if ownScore.PressureGoalReached {
 		ranking.RankingPoints += 1
 	}
-	if ownScore.Captured {
+	if ownScore.RotorGoalReached {
 		ranking.RankingPoints += 1
 	}
 
 	// Assign tiebreaker points.
+	ranking.MatchPoints += ownScore.Score
 	ranking.AutoPoints += ownScore.AutoPoints
-	ranking.ScaleChallengePoints += ownScore.ScaleChallengePoints
-	ranking.GoalPoints += ownScore.GoalPoints
-	ranking.DefensePoints += ownScore.DefensePoints
+	ranking.RotorPoints += ownScore.RotorPoints
+	ranking.TakeoffPoints += ownScore.TakeoffPoints
+	ranking.PressurePoints += ownScore.PressurePoints
 
 	// Store a random value to be used as the last tiebreaker if necessary.
 	ranking.Random = rand.Float64()
@@ -253,19 +255,22 @@ func (rankings Rankings) Less(i, j int) bool {
 
 	// Use cross-multiplication to keep it in integer math.
 	if a.RankingPoints*b.Played == b.RankingPoints*a.Played {
-		if a.AutoPoints*b.Played == b.AutoPoints*a.Played {
-			if a.ScaleChallengePoints*b.Played == b.ScaleChallengePoints*a.Played {
-				if a.GoalPoints*b.Played == b.GoalPoints*a.Played {
-					if a.DefensePoints*b.Played == b.DefensePoints*a.Played {
-						return a.Random > b.Random
+		if a.MatchPoints*b.Played == b.MatchPoints*a.Played {
+			if a.AutoPoints*b.Played == b.AutoPoints*a.Played {
+				if a.RotorPoints*b.Played == b.RotorPoints*a.Played {
+					if a.TakeoffPoints*b.Played == b.TakeoffPoints*a.Played {
+						if a.PressurePoints*b.Played == b.PressurePoints*a.Played {
+							return a.Random > b.Random
+						}
+						return a.PressurePoints*b.Played > b.PressurePoints*a.Played
 					}
-					return a.DefensePoints*b.Played > b.DefensePoints*a.Played
+					return a.TakeoffPoints*b.Played > b.TakeoffPoints*a.Played
 				}
-				return a.GoalPoints*b.Played > b.GoalPoints*a.Played
+				return a.RotorPoints*b.Played > b.RotorPoints*a.Played
 			}
-			return a.ScaleChallengePoints*b.Played > b.ScaleChallengePoints*a.Played
+			return a.AutoPoints*b.Played > b.AutoPoints*a.Played
 		}
-		return a.AutoPoints*b.Played > b.AutoPoints*a.Played
+		return a.MatchPoints*b.Played > b.MatchPoints*a.Played
 	}
 	return a.RankingPoints*b.Played > b.RankingPoints*a.Played
 }

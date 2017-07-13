@@ -22,9 +22,6 @@ CREATE TABLE event_settings (
   tbadownloadenabled bool,
   adminpassword VARCHAR(255),
   readerpassword VARCHAR(255),
-  reddefenselightsaddress VARCHAR(255),
-  bluedefenselightsaddress VARCHAR(255),
-  initialtowerstrength int,
   stemtvpublishingenabled bool,
   stemtveventcode VARCHAR(16)
 );

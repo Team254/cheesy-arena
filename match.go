@@ -34,21 +34,7 @@ type Match struct {
 	Status           string
 	StartedAt        time.Time
 	Winner           string
-	RedDefense1      string
-	RedDefense2      string
-	RedDefense3      string
-	RedDefense4      string
-	RedDefense5      string
-	BlueDefense1     string
-	BlueDefense2     string
-	BlueDefense3     string
-	BlueDefense4     string
-	BlueDefense5     string
 }
-
-var placeableDefenses = []string{"CDF", "M", "R", "RW", "RT"}
-var defenseNames = map[string]string{"LB": "Low Bar", "CDF": "Cheval de Frise", "M": "Moat",
-	"R": "Ramparts", "RW": "Rock Wall", "RT": "Rough Terrain"}
 
 func (database *Database) CreateMatch(match *Match) error {
 	return database.matchMap.Insert(match)

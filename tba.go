@@ -313,12 +313,15 @@ func PublishRankings() error {
 	// Build a JSON object of TBA-format rankings.
 	breakdowns := []string{"RP", "Auto", "Scale/Challenge", "Goal", "Defense", "W-L-T"}
 	tbaRankings := make([]TbaRanking, len(rankings))
-	for i, ranking := range rankings {
-		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.RankingPoints,
-			ranking.AutoPoints, ranking.ScaleChallengePoints, ranking.GoalPoints, ranking.DefensePoints,
-			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
-			ranking.Played}
-	}
+	// TODO(patrick): Update for 2017.
+	/*
+		for i, ranking := range rankings {
+			tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.RankingPoints,
+				ranking.AutoPoints, ranking.ScaleChallengePoints, ranking.GoalPoints, ranking.DefensePoints,
+				fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
+				ranking.Played}
+		}
+	*/
 	jsonBody, err := json.Marshal(map[string]interface{}{"breakdowns": breakdowns, "rankings": tbaRankings})
 	if err != nil {
 		return err
@@ -416,59 +419,60 @@ func getTbaRequest(url string) (*http.Response, error) {
 }
 
 func createTbaScoringBreakdown(match *Match, matchResult *MatchResult, alliance string) *TbaScoreBreakdown {
-	tbaDefenseNames := map[string]string{"CDF": "A_ChevalDeFrise", "M": "B_Moat", "R": "B_Ramparts",
-		"RW": "D_RockWall", "RT": "D_RoughTerrain"}
-	var score *Score
-	var opponentScore *Score
-	var scoreSummary *ScoreSummary
 	var breakdown TbaScoreBreakdown
-	if alliance == "red" {
-		score = &matchResult.RedScore
-		opponentScore = &matchResult.BlueScore
-		scoreSummary = matchResult.RedScoreSummary()
-		breakdown.Position2 = tbaDefenseNames[match.RedDefense2]
-		breakdown.Position3 = tbaDefenseNames[match.RedDefense3]
-		breakdown.Position4 = tbaDefenseNames[match.RedDefense4]
-		breakdown.Position5 = tbaDefenseNames[match.RedDefense5]
-	} else {
-		score = &matchResult.BlueScore
-		opponentScore = &matchResult.RedScore
-		scoreSummary = matchResult.BlueScoreSummary()
-		breakdown.Position2 = tbaDefenseNames[match.BlueDefense2]
-		breakdown.Position3 = tbaDefenseNames[match.BlueDefense3]
-		breakdown.Position4 = tbaDefenseNames[match.BlueDefense4]
-		breakdown.Position5 = tbaDefenseNames[match.BlueDefense5]
-	}
-	breakdown.TeleopBouldersLow = score.LowGoals
-	breakdown.TeleopBouldersHigh = score.HighGoals
-	breakdown.TeleopTowerCaptured = scoreSummary.Captured
-	breakdown.TeleopDefensesBreached = scoreSummary.Breached
-	breakdown.Position1Crossings = score.AutoDefensesCrossed[0] + score.DefensesCrossed[0]
-	breakdown.Position2Crossings = score.AutoDefensesCrossed[1] + score.DefensesCrossed[1]
-	breakdown.Position3Crossings = score.AutoDefensesCrossed[2] + score.DefensesCrossed[2]
-	breakdown.Position4Crossings = score.AutoDefensesCrossed[3] + score.DefensesCrossed[3]
-	breakdown.Position5Crossings = score.AutoDefensesCrossed[4] + score.DefensesCrossed[4]
-	breakdown.AutoPoints = scoreSummary.AutoPoints
-	breakdown.AutoReachPoints = 2 * score.AutoDefensesReached
-	for _, crossings := range score.AutoDefensesCrossed {
-		breakdown.AutoCrossingPoints += 10 * crossings
-	}
-	breakdown.AutoBoulderPoints = 5*score.AutoLowGoals + 10*score.AutoHighGoals
-	for _, crossings := range score.DefensesCrossed {
-		breakdown.TeleopCrossingPoints += 5 * crossings
-	}
-	breakdown.TeleopBoulderPoints = 2*score.LowGoals + 5*score.HighGoals
-	breakdown.TeleopChallengePoints = 5 * score.Challenges
-	breakdown.TeleopScalePoints = 15 * score.Scales
-	if match.Type == "elimination" {
-		if scoreSummary.Breached {
-			breakdown.BreachPoints = 20
+	// TODO(patrick): Update for 2017.
+	/*
+		var score *Score
+		var opponentScore *Score
+		var scoreSummary *ScoreSummary
+		if alliance == "red" {
+			score = &matchResult.RedScore
+			opponentScore = &matchResult.BlueScore
+			scoreSummary = matchResult.RedScoreSummary()
+			breakdown.Position2 = tbaDefenseNames[match.RedDefense2]
+			breakdown.Position3 = tbaDefenseNames[match.RedDefense3]
+			breakdown.Position4 = tbaDefenseNames[match.RedDefense4]
+			breakdown.Position5 = tbaDefenseNames[match.RedDefense5]
+		} else {
+			score = &matchResult.BlueScore
+			opponentScore = &matchResult.RedScore
+			scoreSummary = matchResult.BlueScoreSummary()
+			breakdown.Position2 = tbaDefenseNames[match.BlueDefense2]
+			breakdown.Position3 = tbaDefenseNames[match.BlueDefense3]
+			breakdown.Position4 = tbaDefenseNames[match.BlueDefense4]
+			breakdown.Position5 = tbaDefenseNames[match.BlueDefense5]
 		}
-		if scoreSummary.Captured {
-			breakdown.CapturePoints = 25
+		breakdown.TeleopBouldersLow = score.LowGoals
+		breakdown.TeleopBouldersHigh = score.HighGoals
+		breakdown.TeleopTowerCaptured = scoreSummary.Captured
+		breakdown.TeleopDefensesBreached = scoreSummary.Breached
+		breakdown.Position1Crossings = score.AutoDefensesCrossed[0] + score.DefensesCrossed[0]
+		breakdown.Position2Crossings = score.AutoDefensesCrossed[1] + score.DefensesCrossed[1]
+		breakdown.Position3Crossings = score.AutoDefensesCrossed[2] + score.DefensesCrossed[2]
+		breakdown.Position4Crossings = score.AutoDefensesCrossed[3] + score.DefensesCrossed[3]
+		breakdown.Position5Crossings = score.AutoDefensesCrossed[4] + score.DefensesCrossed[4]
+		breakdown.AutoPoints = scoreSummary.AutoPoints
+		breakdown.AutoReachPoints = 2 * score.AutoDefensesReached
+		for _, crossings := range score.AutoDefensesCrossed {
+			breakdown.AutoCrossingPoints += 10 * crossings
 		}
-	}
-	breakdown.FoulPoints = 5 * len(opponentScore.Fouls)
-	breakdown.TotalPoints = scoreSummary.Score
+		breakdown.AutoBoulderPoints = 5*score.AutoLowGoals + 10*score.AutoHighGoals
+		for _, crossings := range score.DefensesCrossed {
+			breakdown.TeleopCrossingPoints += 5 * crossings
+		}
+		breakdown.TeleopBoulderPoints = 2*score.LowGoals + 5*score.HighGoals
+		breakdown.TeleopChallengePoints = 5 * score.Challenges
+		breakdown.TeleopScalePoints = 15 * score.Scales
+		if match.Type == "elimination" {
+			if scoreSummary.Breached {
+				breakdown.BreachPoints = 20
+			}
+			if scoreSummary.Captured {
+				breakdown.CapturePoints = 25
+			}
+		}
+		breakdown.FoulPoints = 5 * len(opponentScore.Fouls)
+		breakdown.TotalPoints = scoreSummary.Score
+	*/
 	return &breakdown
 }

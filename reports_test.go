@@ -13,17 +13,19 @@ func TestRankingsCsvReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
-	ranking1 := Ranking{1114, 2, 18, 625, 90, 554, 10, 0.254, 3, 2, 1, 0, 10}
-	ranking2 := Ranking{254, 1, 20, 625, 90, 554, 10, 0.254, 1, 2, 3, 0, 10}
+	eventSettings, _ = db.GetEventSettings()
+
+	ranking1 := Ranking{1114, 2, 18, 625, 90, 554, 10, 50, 0.254, 3, 2, 1, 0, 10}
+	ranking2 := Ranking{254, 1, 20, 625, 90, 554, 10, 50, 0.254, 1, 2, 3, 0, 10}
 	db.CreateRanking(&ranking1)
 	db.CreateRanking(&ranking2)
 
 	recorder := getHttpResponse("/reports/csv/rankings")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.HeaderMap["Content-Type"][0])
-	expectedBody := "Rank,TeamId,RankingPoints,AutoPoints,ScaleChallengePoints,GoalPoints,DefensePoints," +
-		"Wins,Losses,Ties,Disqualifications,Played\n1,254,20,625,90,554,10,1,2,3,0,10\n2,1114,18,625,90," +
-		"554,10,3,2,1,0,10\n\n"
+	expectedBody := "Rank,TeamId,RankingPoints,MatchPoints,AutoPoints,RotorPoints,TakeoffPoints,PressurePoints," +
+		"Wins,Losses,Ties,Disqualifications,Played\n1,254,20,625,90,554,10,50,1,2,3,0,10\n2,1114,18,625,90," +
+		"554,10,50,3,2,1,0,10\n\n"
 	assert.Equal(t, expectedBody, recorder.Body.String())
 }
 
@@ -32,8 +34,9 @@ func TestRankingsPdfReport(t *testing.T) {
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
 	eventSettings, _ = db.GetEventSettings()
-	ranking1 := Ranking{1114, 2, 18, 625, 90, 554, 10, 0.254, 3, 2, 1, 0, 10}
-	ranking2 := Ranking{254, 1, 20, 625, 90, 554, 10, 0.254, 3, 2, 1, 0, 10}
+
+	ranking1 := Ranking{1114, 2, 18, 625, 90, 554, 10, 50, 0.254, 3, 2, 1, 0, 10}
+	ranking2 := Ranking{254, 1, 20, 625, 90, 554, 10, 50, 0.254, 3, 2, 1, 0, 10}
 	db.CreateRanking(&ranking1)
 	db.CreateRanking(&ranking2)
 
@@ -47,6 +50,8 @@ func TestScheduleCsvReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
+	eventSettings, _ = db.GetEventSettings()
+
 	match1 := Match{Type: "qualification", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
 	match2 := Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
@@ -61,11 +66,9 @@ func TestScheduleCsvReport(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.HeaderMap["Content-Type"][0])
 	expectedBody := "Match,Type,Time,Red1,Red1IsSurrogate,Red2,Red2IsSurrogate,Red3,Red3IsSurrogate,Blue1," +
-		"Blue1IsSurrogate,Blue2,Blue2IsSurrogate,Blue3,Blue3IsSurrogate,RedDefense1,RedDefense2," +
-		"RedDefense3,RedDefense4,RedDefense5,BlueDefense1,BlueDefense2,BlueDefense3,BlueDefense4," +
-		"BlueDefense5\n1,qualification,1969-12-31 16:00:00 -0800 PST,1,false,2,false,3,false,4,true,5,true," +
-		"6,true,,,,,,,,,,\n2,qualification,1969-12-31 16:10:00 -0800 PST,7,true,8,true,9,true,10,false,11,false,12," +
-		"false,,,,,,,,,,\n\n"
+		"Blue1IsSurrogate,Blue2,Blue2IsSurrogate,Blue3,Blue3IsSurrogate\n1,qualification," +
+		"1969-12-31 16:00:00 -0800 PST,1,false,2,false,3,false,4,true,5,true,6,true\n2,qualification," +
+		"1969-12-31 16:10:00 -0800 PST,7,true,8,true,9,true,10,false,11,false,12,false\n\n"
 	assert.Equal(t, expectedBody, recorder.Body.String())
 }
 
@@ -74,6 +77,7 @@ func TestSchedulePdfReport(t *testing.T) {
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
 	eventSettings, _ = db.GetEventSettings()
+
 	match := Match{Type: "practice", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
 	db.CreateMatch(&match)
@@ -91,6 +95,8 @@ func TestTeamsCsvReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
+	eventSettings, _ = db.GetEventSettings()
+
 	team1 := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
 	team2 := Team{Id: 1114, Name: "GM", Nickname: "Simbotics", City: "St. Catharines", StateProv: "ON",
@@ -112,6 +118,7 @@ func TestTeamsPdfReport(t *testing.T) {
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
 	eventSettings, _ = db.GetEventSettings()
+
 	team := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
 	db.CreateTeam(&team)
@@ -126,6 +133,8 @@ func TestWpaKeysCsvReport(t *testing.T) {
 	clearDb()
 	defer clearDb()
 	db, _ = OpenDatabase(testDbPath)
+	eventSettings, _ = db.GetEventSettings()
+
 	team1 := Team{Id: 254, WpaKey: "12345678"}
 	team2 := Team{Id: 1114, WpaKey: "9876543210"}
 	db.CreateTeam(&team1)

@@ -103,10 +103,11 @@ func (lights *Lights) Setup() error {
 
 func (lights *Lights) SetupConnections() error {
 	lights.connections = make(map[string]*net.Conn)
-	if err := lights.connect(RED_DEFENSE, eventSettings.RedDefenseLightsAddress); err != nil {
+	// TODO(patrick): Update for 2017.
+	if err := lights.connect(RED_DEFENSE, ""); err != nil {
 		return err
 	}
-	if err := lights.connect(BLUE_DEFENSE, eventSettings.BlueDefenseLightsAddress); err != nil {
+	if err := lights.connect(BLUE_DEFENSE, ""); err != nil {
 		return err
 	}
 	lights.newConnections = true

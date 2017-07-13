@@ -73,7 +73,6 @@ type Arena struct {
 	allianceSelectionNotifier      *Notifier
 	lowerThirdNotifier             *Notifier
 	reloadDisplaysNotifier         *Notifier
-	defenseSelectionNotifier       *Notifier
 	audienceDisplayScreen          string
 	allianceStationDisplays        map[string]string
 	allianceStationDisplayScreen   string
@@ -84,12 +83,6 @@ type Arena struct {
 	lights                         Lights
 	muteMatchSounds                bool
 	fieldReset                     bool
-}
-
-type RealtimeScoreFields struct {
-	Score            int
-	TowerStrength    int
-	DefensesStrength [5]int
 }
 
 var mainArena Arena // Named thusly to avoid polluting the global namespace with something more generic.
@@ -128,7 +121,6 @@ func (arena *Arena) Setup() {
 	arena.allianceSelectionNotifier = NewNotifier()
 	arena.lowerThirdNotifier = NewNotifier()
 	arena.reloadDisplaysNotifier = NewNotifier()
-	arena.defenseSelectionNotifier = NewNotifier()
 
 	arena.lights.Setup()
 
@@ -228,7 +220,6 @@ func (arena *Arena) LoadMatch(match *Match) error {
 	arena.realtimeScoreNotifier.Notify(nil)
 	arena.allianceStationDisplayScreen = "match"
 	arena.allianceStationDisplayNotifier.Notify(nil)
-	arena.defenseSelectionNotifier.Notify(nil)
 
 	return nil
 }
@@ -525,17 +516,6 @@ func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
 	return scoreSummary(&realtimeScore.CurrentScore, opponentFouls, mainArena.currentMatch.Type).Score
 }
 
-// Calculates the integer score, tower strength, and defenses strength for the given realtime snapshot.
-func (realtimeScore *RealtimeScore) ScoreFields(opponentFouls []Foul) *RealtimeScoreFields {
-	scoreSummary := scoreSummary(&realtimeScore.CurrentScore, opponentFouls, mainArena.currentMatch.Type)
-	var defensesStrength [5]int
-	for i := 0; i < 5; i++ {
-		defensesStrength[i] = 2 - realtimeScore.CurrentScore.AutoDefensesCrossed[i] -
-			realtimeScore.CurrentScore.DefensesCrossed[i]
-	}
-	return &RealtimeScoreFields{scoreSummary.Score, scoreSummary.TowerStrength, defensesStrength}
-}
-
 // Manipulates the arena LED lighting based on the current state of the match.
 func (arena *Arena) handleLighting() {
 	switch arena.MatchState {
@@ -546,9 +526,7 @@ func (arena *Arena) handleLighting() {
 	case TELEOP_PERIOD:
 		fallthrough
 	case ENDGAME_PERIOD:
-		redScoreFields := arena.redRealtimeScore.ScoreFields(arena.blueRealtimeScore.CurrentScore.Fouls)
-		blueScoreFields := arena.blueRealtimeScore.ScoreFields(arena.redRealtimeScore.CurrentScore.Fouls)
-		arena.lights.SetDefenses(redScoreFields.DefensesStrength, blueScoreFields.DefensesStrength)
+		break
 	case POST_MATCH:
 		if mainArena.fieldReset {
 			arena.lights.SetFieldReset()

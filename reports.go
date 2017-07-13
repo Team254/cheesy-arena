@@ -53,8 +53,8 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Rank": 13, "Team": 23, "RP": 20, "Auto": 20, "SC": 21, "Goal": 20,
-		"Defense": 20, "W-L-T": 20, "DQ": 20, "Played": 20}
+	colWidths := map[string]float64{"Rank": 13, "Team": 23, "RP": 20, "Match": 20, "Auto": 20, "Rotor": 21,
+		"Touchpad": 20, "Pressure": 20, "W-L-T": 20, "DQ": 20, "Played": 20}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -67,10 +67,11 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	pdf.CellFormat(colWidths["Rank"], rowHeight, "Rank", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["RP"], rowHeight, "RB", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Auto"], rowHeight, "Auto", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["SC"], rowHeight, "Scale/Chal.", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Goal"], rowHeight, "Goal", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Defense", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Rotor"], rowHeight, "Rotor", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Takeoff"], rowHeight, "Takeoff", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Pressure"], rowHeight, "Pressure", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["W-L-T"], rowHeight, "W-L-T", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["DQ"], rowHeight, "DQ", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Played"], rowHeight, "Played", "1", 1, "C", true, 0, "")
@@ -81,10 +82,11 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		pdf.SetFont("Arial", "", 10)
 		pdf.CellFormat(colWidths["Team"], rowHeight, strconv.Itoa(ranking.TeamId), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["RP"], rowHeight, strconv.Itoa(ranking.RankingPoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Match"], rowHeight, strconv.Itoa(ranking.MatchPoints), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["Auto"], rowHeight, strconv.Itoa(ranking.AutoPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["SC"], rowHeight, strconv.Itoa(ranking.ScaleChallengePoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Goal"], rowHeight, strconv.Itoa(ranking.GoalPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, strconv.Itoa(ranking.DefensePoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Rotor"], rowHeight, strconv.Itoa(ranking.RotorPoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Takeoff"], rowHeight, strconv.Itoa(ranking.TakeoffPoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Pressure"], rowHeight, strconv.Itoa(ranking.PressurePoints), "1", 0, "C", false, 0, "")
 		record := fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties)
 		pdf.CellFormat(colWidths["W-L-T"], rowHeight, record, "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["DQ"], rowHeight, strconv.Itoa(ranking.Disqualifications), "1", 0, "C", false, 0, "")
@@ -225,68 +227,6 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	if vars["type"] != "elimination" {
 		// Render some summary info at the bottom.
 		pdf.CellFormat(195, 10, fmt.Sprintf("Matches Per Team: %d", matchesPerTeam), "", 1, "L", false, 0, "")
-	}
-
-	// Write out the PDF file as the HTTP response.
-	w.Header().Set("Content-Type", "application/pdf")
-	err = pdf.Output(w)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-}
-
-// Generates a PDF-formatted report of the defenses schedule.
-func DefensesPdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
-		return
-	}
-
-	vars := mux.Vars(r)
-	matches, err := db.GetMatchesByType(vars["type"])
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-
-	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Type": 25, "Match": 15, "Defense": 15.5}
-	rowHeight := 6.5
-
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
-	pdf.AddPage()
-
-	// Render table header row.
-	pdf.SetFont("Arial", "B", 10)
-	pdf.SetFillColor(220, 220, 220)
-	pdf.CellFormat(195, rowHeight, "Defenses Schedule - "+eventSettings.Name, "", 1, "C", false, 0, "")
-	pdf.CellFormat(colWidths["Type"], rowHeight, "Type", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 1", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 2", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 3", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 4", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Red 5", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 1", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 2", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 3", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 4", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Defense"], rowHeight, "Blue 5", "1", 1, "C", true, 0, "")
-	pdf.SetFont("Arial", "", 10)
-	for _, match := range matches {
-		// Render match defenses row.
-		pdf.CellFormat(colWidths["Type"], rowHeight, match.CapitalizedType(), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Match"], rowHeight, match.DisplayName, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense1, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense2, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense3, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense4, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.RedDefense5, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense1, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense2, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense3, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense4, "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Defense"], rowHeight, match.BlueDefense5, "1", 1, "C", false, 0, "")
 	}
 
 	// Write out the PDF file as the HTTP response.

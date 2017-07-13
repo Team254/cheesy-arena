@@ -11,7 +11,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"text/template"
 )
 
@@ -80,7 +79,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Send the various notifications immediately upon connection.
 	data := struct {
-		Score *RealtimeScore
+		Score         *RealtimeScore
 		AutoCommitted bool
 	}{*score, autoCommitted}
 	err = websocket.Write("score", data)
@@ -140,111 +139,36 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		switch messageType {
-		case "defenseCrossed":
-			position, ok := data.(string)
-			if !ok {
-				websocket.WriteError("Defense position is not a string.")
-				continue
-			}
-			intPosition, err := strconv.Atoi(position)
-			if err != nil {
-				websocket.WriteError(err.Error())
-				continue
-			}
-			if (*score).CurrentScore.AutoDefensesCrossed[intPosition-1]+
-				(*score).CurrentScore.DefensesCrossed[intPosition-1] < 2 {
-				if !autoCommitted {
-					(*score).CurrentScore.AutoDefensesCrossed[intPosition-1]++
-				} else {
-					(*score).CurrentScore.DefensesCrossed[intPosition-1]++
+		case "mobility":
+			if !autoCommitted {
+				if (*score).CurrentScore.AutoMobility < 3 {
+					(*score).CurrentScore.AutoMobility++
 				}
 			}
-		case "undoDefenseCrossed":
-			position, ok := data.(string)
-			if !ok {
-				websocket.WriteError("Defense position is not a string.")
-				continue
-			}
-			intPosition, err := strconv.Atoi(position)
-			if err != nil {
-				websocket.WriteError(err.Error())
-				continue
-			}
+		case "undoMobility":
 			if !autoCommitted {
-				if (*score).CurrentScore.AutoDefensesCrossed[intPosition-1] > 0 {
-					(*score).CurrentScore.AutoDefensesCrossed[intPosition-1]--
+				if (*score).CurrentScore.AutoMobility > 0 {
+					(*score).CurrentScore.AutoMobility--
+				}
+			}
+		case "gear":
+			if !autoCommitted {
+				if (*score).CurrentScore.AutoGears < 3 && (*score).CurrentScore.AutoGears+(*score).CurrentScore.Gears < 13 {
+					(*score).CurrentScore.AutoGears++
 				}
 			} else {
-				if (*score).CurrentScore.DefensesCrossed[intPosition-1] > 0 {
-					(*score).CurrentScore.DefensesCrossed[intPosition-1]--
+				if (*score).CurrentScore.AutoGears+(*score).CurrentScore.Gears < 13 {
+					(*score).CurrentScore.Gears++
 				}
 			}
-		case "autoDefenseReached":
+		case "undoGear":
 			if !autoCommitted {
-				if (*score).CurrentScore.AutoDefensesReached < 3 {
-					(*score).CurrentScore.AutoDefensesReached++
-				}
-			}
-		case "undoAutoDefenseReached":
-			if !autoCommitted {
-				if (*score).CurrentScore.AutoDefensesReached > 0 {
-					(*score).CurrentScore.AutoDefensesReached--
-				}
-			}
-		case "highGoal":
-			if !autoCommitted {
-				(*score).CurrentScore.AutoHighGoals++
-			} else {
-				(*score).CurrentScore.HighGoals++
-			}
-		case "undoHighGoal":
-			if !autoCommitted {
-				if (*score).CurrentScore.AutoHighGoals > 0 {
-					(*score).CurrentScore.AutoHighGoals--
+				if (*score).CurrentScore.AutoGears > 0 {
+					(*score).CurrentScore.AutoGears--
 				}
 			} else {
-				if (*score).CurrentScore.HighGoals > 0 {
-					(*score).CurrentScore.HighGoals--
-				}
-			}
-		case "lowGoal":
-			if !autoCommitted {
-				(*score).CurrentScore.AutoLowGoals++
-			} else {
-				(*score).CurrentScore.LowGoals++
-			}
-		case "undoLowGoal":
-			if !autoCommitted {
-				if (*score).CurrentScore.AutoLowGoals > 0 {
-					(*score).CurrentScore.AutoLowGoals--
-				}
-			} else {
-				if (*score).CurrentScore.LowGoals > 0 {
-					(*score).CurrentScore.LowGoals--
-				}
-			}
-		case "challenge":
-			if autoCommitted {
-				if (*score).CurrentScore.Challenges < 3 {
-					(*score).CurrentScore.Challenges++
-				}
-			}
-		case "undoChallenge":
-			if autoCommitted {
-				if (*score).CurrentScore.Challenges > 0 {
-					(*score).CurrentScore.Challenges--
-				}
-			}
-		case "scale":
-			if autoCommitted {
-				if (*score).CurrentScore.Scales < 3 {
-					(*score).CurrentScore.Scales++
-				}
-			}
-		case "undoScale":
-			if autoCommitted {
-				if (*score).CurrentScore.Scales > 0 {
-					(*score).CurrentScore.Scales--
+				if (*score).CurrentScore.Gears > 0 {
+					(*score).CurrentScore.Gears--
 				}
 			}
 		case "commit":
@@ -272,7 +196,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Send out the score again after handling the command, as it most likely changed as a result.
 		data = struct {
-			Score *RealtimeScore
+			Score         *RealtimeScore
 			AutoCommitted bool
 		}{*score, autoCommitted}
 		err = websocket.Write("score", data)

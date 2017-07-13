@@ -32,17 +32,16 @@ type MatchResultDb struct {
 }
 
 type Score struct {
-	AutoDefensesReached int
-	AutoDefensesCrossed [5]int
-	AutoLowGoals        int
-	AutoHighGoals       int
-	DefensesCrossed     [5]int
-	LowGoals            int
-	HighGoals           int
-	Challenges          int
-	Scales              int
-	Fouls               []Foul
-	ElimDq              bool
+	AutoMobility int
+	AutoGears    int
+	AutoFuelLow  int
+	AutoFuelHigh int
+	Gears        int
+	FuelLow      int
+	FuelHigh     int
+	Takeoffs     int
+	Fouls        []Foul
+	ElimDq       bool
 }
 
 type Foul struct {
@@ -53,17 +52,16 @@ type Foul struct {
 }
 
 type ScoreSummary struct {
-	AutoPoints           int
-	DefensePoints        int
-	GoalPoints           int
-	ScaleChallengePoints int
-	TeleopPoints         int
-	FoulPoints           int
-	BonusPoints          int
-	Score                int
-	Breached             bool
-	Captured             bool
-	TowerStrength        int
+	AutoMobilityPoints  int
+	AutoPoints          int
+	RotorPoints         int
+	TakeoffPoints       int
+	PressurePoints      int
+	BonusPoints         int
+	FoulPoints          int
+	Score               int
+	PressureGoalReached bool
+	RotorGoalReached    bool
 }
 
 // Returns a new match result object with empty slices instead of nil.
@@ -163,58 +161,42 @@ func scoreSummary(score *Score, opponentFouls []Foul, matchType string) *ScoreSu
 	}
 
 	// Calculate autonomous score.
-	autoDefensePoints := 0
-	for _, defense := range score.AutoDefensesCrossed {
-		autoDefensePoints += 10 * defense
-	}
-	autoGoalPoints := 5*score.AutoLowGoals + 10*score.AutoHighGoals
-	summary.AutoPoints = 2*score.AutoDefensesReached + autoDefensePoints + autoGoalPoints
+	summary.AutoMobilityPoints = 5 * score.AutoMobility
+	autoRotors := numRotors(score.AutoGears)
+	summary.AutoPoints = summary.AutoMobilityPoints + 60*autoRotors + score.AutoFuelHigh +
+		score.AutoFuelLow/3
 
 	// Calculate teleop score.
-	teleopDefensePoints := 0
-	for _, defense := range score.DefensesCrossed {
-		teleopDefensePoints += 5 * defense
-	}
-	summary.ScaleChallengePoints = 5*score.Challenges + 15*score.Scales
-	teleopGoalPoints := 2*score.LowGoals + 5*score.HighGoals
-
-	// Calculate tower strength.
-	numTechFouls := 0
-	for _, foul := range score.Fouls {
-		if foul.IsTechnical {
-			numTechFouls++
-		}
-	}
-	summary.TowerStrength = eventSettings.InitialTowerStrength + numTechFouls - score.AutoLowGoals -
-		score.AutoHighGoals - score.LowGoals - score.HighGoals
+	teleopRotors := numRotors(score.AutoGears+score.Gears) - autoRotors
+	summary.RotorPoints = 60*autoRotors + 40*teleopRotors
+	summary.TakeoffPoints = 50 * score.Takeoffs
+	summary.PressurePoints = (9*score.AutoFuelHigh + 3*score.AutoFuelLow + 3*score.FuelHigh + score.FuelLow) / 9
 
 	// Calculate bonuses.
-	summary.BonusPoints = 0
-	numDefensesDamaged := 0
-	for i := 0; i < 5; i++ {
-		if score.AutoDefensesCrossed[i]+score.DefensesCrossed[i] == 2 {
-			numDefensesDamaged++
-		}
-	}
-	if numDefensesDamaged >= 4 {
-		summary.Breached = true
+	if summary.PressurePoints >= 40 {
+		summary.PressureGoalReached = true
 		if matchType == "elimination" {
 			summary.BonusPoints += 20
 		}
 	}
-	if score.Challenges+score.Scales == 3 && summary.TowerStrength <= 0 {
-		summary.Captured = true
+	if autoRotors+teleopRotors == 4 {
+		summary.RotorGoalReached = true
 		if matchType == "elimination" {
-			summary.BonusPoints += 25
+			summary.BonusPoints += 100
 		}
 	}
-	summary.TeleopPoints = teleopDefensePoints + teleopGoalPoints + summary.ScaleChallengePoints +
-		summary.BonusPoints
 
-	summary.FoulPoints = 5 * len(opponentFouls)
-	summary.DefensePoints = autoDefensePoints + teleopDefensePoints
-	summary.GoalPoints = autoGoalPoints + teleopGoalPoints
-	summary.Score = summary.AutoPoints + summary.TeleopPoints + summary.FoulPoints
+	// Calculate penalty points.
+	for _, foul := range opponentFouls {
+		if foul.IsTechnical {
+			summary.FoulPoints += 25
+		} else {
+			summary.FoulPoints += 5
+		}
+	}
+
+	summary.Score = summary.AutoMobilityPoints + summary.RotorPoints + summary.TakeoffPoints + summary.PressurePoints +
+		summary.BonusPoints + summary.FoulPoints
 
 	return summary
 }
@@ -264,4 +246,15 @@ func (matchResultDb *MatchResultDb) deserialize() (*MatchResult, error) {
 		return nil, err
 	}
 	return &matchResult, nil
+}
+
+// Returns the number of completed rotors given the number of gears installed.
+func numRotors(numGears int) int {
+	rotorGears := []int{1, 3, 7, 13}
+	for rotors, gears := range rotorGears {
+		if numGears < gears {
+			return rotors
+		}
+	}
+	return len(rotorGears)
 }

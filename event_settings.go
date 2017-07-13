@@ -27,9 +27,6 @@ type EventSettings struct {
 	BandwidthMonitoringEnabled bool
 	AdminPassword              string
 	ReaderPassword             string
-	RedDefenseLightsAddress    string
-	BlueDefenseLightsAddress   string
-	InitialTowerStrength       int
 	StemTvPublishingEnabled    bool
 	StemTvEventCode            string
 }
@@ -48,9 +45,6 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.SelectionRound2Order = "L"
 		eventSettings.SelectionRound3Order = ""
 		eventSettings.TBADownloadEnabled = true
-
-		// Game-specific default settings.
-		eventSettings.InitialTowerStrength = 10
 
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {

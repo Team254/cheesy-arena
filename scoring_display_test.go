@@ -60,70 +60,59 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "matchTime")
 
 	// Send a match worth of scoring commands in.
-	redWs.Write("defenseCrossed", "2")
-	blueWs.Write("autoDefenseReached", nil)
-	redWs.Write("highGoal", nil)
-	redWs.Write("highGoal", nil)
-	redWs.Write("lowGoal", nil)
-	redWs.Write("defenseCrossed", "5")
-	blueWs.Write("defenseCrossed", "1")
-	redWs.Write("undoHighGoal", nil)
+	redWs.Write("gear", nil)
+	blueWs.Write("gear", nil)
+	redWs.Write("mobility", nil)
+	redWs.Write("gear", nil)
+	redWs.Write("undoGear", nil)
+	blueWs.Write("mobility", nil)
+	blueWs.Write("mobility", nil)
+	blueWs.Write("mobility", nil)
+	blueWs.Write("mobility", nil)
+	blueWs.Write("undoMobility", nil)
 	redWs.Write("commit", nil)
-	blueWs.Write("autoDefenseReached", nil)
 	blueWs.Write("commit", nil)
 	redWs.Write("uncommitAuto", nil)
-	redWs.Write("autoDefenseReached", nil)
-	redWs.Write("defenseCrossed", "2")
+	redWs.Write("gear", nil)
 	redWs.Write("commit", nil)
-	for i := 0; i < 11; i++ {
+	for i := 0; i < 8; i++ {
+		readWebsocketType(t, redWs, "score")
+	}
+	for i := 0; i < 7; i++ {
+		readWebsocketType(t, blueWs, "score")
+	}
+
+	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoMobility)
+	assert.Equal(t, 2, mainArena.redRealtimeScore.CurrentScore.AutoGears)
+	assert.Equal(t, 1, mainArena.blueRealtimeScore.CurrentScore.AutoGears)
+	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.AutoMobility)
+
+	redWs.Write("gear", nil)
+	blueWs.Write("gear", nil)
+	redWs.Write("gear", nil)
+	redWs.Write("gear", nil)
+	redWs.Write("gear", nil)
+	blueWs.Write("gear", nil)
+	blueWs.Write("gear", nil)
+	blueWs.Write("undoGear", nil)
+	redWs.Write("gear", nil)
+	redWs.Write("undoGear", nil)
+	redWs.Write("mobility", nil)
+	for i := 0; i < 7; i++ {
 		readWebsocketType(t, redWs, "score")
 	}
 	for i := 0; i < 4; i++ {
 		readWebsocketType(t, blueWs, "score")
 	}
 
-	assert.Equal(t, [5]int{0, 2, 0, 0, 1}, mainArena.redRealtimeScore.CurrentScore.AutoDefensesCrossed)
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoDefensesReached)
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoHighGoals)
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoLowGoals)
-	assert.Equal(t, [5]int{1, 0, 0, 0, 0}, mainArena.blueRealtimeScore.CurrentScore.AutoDefensesCrossed)
-	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.AutoDefensesReached)
-
-	redWs.Write("defenseCrossed", "2")
-	blueWs.Write("autoDefenseReached", nil)
-	redWs.Write("highGoal", nil)
-	redWs.Write("highGoal", nil)
-	redWs.Write("lowGoal", nil)
-	redWs.Write("defenseCrossed", "5")
-	blueWs.Write("defenseCrossed", "3")
-	blueWs.Write("challenge", nil)
-	blueWs.Write("scale", nil)
-	blueWs.Write("undoChallenge", nil)
-	redWs.Write("challenge", nil)
-	redWs.Write("defenseCrossed", "3")
-	redWs.Write("undoHighGoal", nil)
-	for i := 0; i < 8; i++ {
-		readWebsocketType(t, redWs, "score")
-	}
-	for i := 0; i < 5; i++ {
-		readWebsocketType(t, blueWs, "score")
-	}
-
 	// Make sure auto scores haven't changed in teleop.
-	assert.Equal(t, [5]int{0, 2, 0, 0, 1}, mainArena.redRealtimeScore.CurrentScore.AutoDefensesCrossed)
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoDefensesReached)
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoHighGoals)
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoLowGoals)
-	assert.Equal(t, [5]int{1, 0, 0, 0, 0}, mainArena.blueRealtimeScore.CurrentScore.AutoDefensesCrossed)
-	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.AutoDefensesReached)
+	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoMobility)
+	assert.Equal(t, 2, mainArena.redRealtimeScore.CurrentScore.AutoGears)
+	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.AutoMobility)
+	assert.Equal(t, 1, mainArena.blueRealtimeScore.CurrentScore.AutoGears)
 
-	assert.Equal(t, [5]int{0, 0, 1, 0, 1}, mainArena.redRealtimeScore.CurrentScore.DefensesCrossed)
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.HighGoals)
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.LowGoals)
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.Challenges)
-	assert.Equal(t, [5]int{0, 0, 1, 0, 0}, mainArena.blueRealtimeScore.CurrentScore.DefensesCrossed)
-	assert.Equal(t, 0, mainArena.blueRealtimeScore.CurrentScore.Challenges)
-	assert.Equal(t, 1, mainArena.blueRealtimeScore.CurrentScore.Scales)
+	assert.Equal(t, 4, mainArena.redRealtimeScore.CurrentScore.Gears)
+	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.Gears)
 
 	// Test committing logic.
 	redWs.Write("commitMatch", nil)

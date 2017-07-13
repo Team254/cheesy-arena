@@ -66,15 +66,6 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.BandwidthMonitoringEnabled = r.PostFormValue("bandwidthMonitoringEnabled") == "on"
 	eventSettings.AdminPassword = r.PostFormValue("adminPassword")
 	eventSettings.ReaderPassword = r.PostFormValue("readerPassword")
-	eventSettings.RedDefenseLightsAddress = r.PostFormValue("redDefenseLightsAddress")
-	eventSettings.BlueDefenseLightsAddress = r.PostFormValue("blueDefenseLightsAddress")
-
-	initialTowerStrength, _ := strconv.Atoi(r.PostFormValue("initialTowerStrength"))
-	if initialTowerStrength < 1 {
-		renderSettings(w, r, "Initial tower strength must be at least 1.")
-		return
-	}
-	eventSettings.InitialTowerStrength = initialTowerStrength
 
 	err := db.SaveEventSettings(eventSettings)
 	if err != nil {

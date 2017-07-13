@@ -18,34 +18,15 @@ func FtaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Retrieve the next few matches to show which defenses they will require.
-	numUpcomingMatches := 3
-	matches, err := db.GetMatchesByType(mainArena.currentMatch.Type)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	var upcomingMatches []Match
-	for _, match := range matches {
-		if match.Status != "complete" {
-			upcomingMatches = append(upcomingMatches, match)
-			if len(upcomingMatches) == numUpcomingMatches {
-				break
-			}
-		}
-	}
-
 	template := template.New("").Funcs(templateHelpers)
-	_, err = template.ParseFiles("templates/fta_display.html", "templates/base.html")
+	_, err := template.ParseFiles("templates/fta_display.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 	data := struct {
 		*EventSettings
-		UpcomingMatches []Match
-		DefenseNames    map[string]string
-	}{eventSettings, upcomingMatches, defenseNames}
+	}{eventSettings}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -66,8 +47,6 @@ func FtaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	robotStatusListener := mainArena.robotStatusNotifier.Listen()
 	defer close(robotStatusListener)
-	defenseSelectionListener := mainArena.defenseSelectionNotifier.Listen()
-	defer close(defenseSelectionListener)
 	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
 	defer close(reloadDisplaysListener)
 
@@ -90,12 +69,6 @@ func FtaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "status"
 				message = mainArena
-			case _, ok := <-defenseSelectionListener:
-				if !ok {
-					return
-				}
-				messageType = "reload"
-				message = nil
 			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return
