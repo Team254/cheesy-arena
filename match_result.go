@@ -148,7 +148,7 @@ func (matchResult *MatchResult) CorrectEliminationScore() {
 		}
 	}
 
-	// No elimination tiebreakers in 2016 Chezy Champs rules.
+	// No elimination tiebreakers in 2017 Chezy Champs rules.
 }
 
 // Calculates and returns the summary fields used for ranking and display.
