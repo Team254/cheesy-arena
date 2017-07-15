@@ -32,24 +32,15 @@ var renderResults = function(alliance) {
   $("#" + alliance + "Score").html(scoreContent);
 
   // Set the values of the form fields from the JSON results data.
-  $("input[name=" + alliance + "AutoDefense1Crossings]").val(result.score.AutoDefensesCrossed[0]);
-  $("input[name=" + alliance + "AutoDefense2Crossings]").val(result.score.AutoDefensesCrossed[1]);
-  $("input[name=" + alliance + "AutoDefense3Crossings]").val(result.score.AutoDefensesCrossed[2]);
-  $("input[name=" + alliance + "AutoDefense4Crossings]").val(result.score.AutoDefensesCrossed[3]);
-  $("input[name=" + alliance + "AutoDefense5Crossings]").val(result.score.AutoDefensesCrossed[4]);
-  $("input[name=" + alliance + "AutoDefensesReached]").val(result.score.AutoDefensesReached);
-  $("input[name=" + alliance + "AutoHighGoals]").val(result.score.AutoHighGoals);
-  $("input[name=" + alliance + "AutoLowGoals]").val(result.score.AutoLowGoals);
+  $("input[name=" + alliance + "AutoMobility]").val(result.score.AutoMobility);
+  $("input[name=" + alliance + "AutoGears]").val(result.score.AutoGears);
+  $("input[name=" + alliance + "AutoFuelLow]").val(result.score.AutoFuelLow);
+  $("input[name=" + alliance + "AutoFuelHigh]").val(result.score.AutoFuelHigh);
 
-  $("input[name=" + alliance + "Defense1Crossings]").val(result.score.DefensesCrossed[0]);
-  $("input[name=" + alliance + "Defense2Crossings]").val(result.score.DefensesCrossed[1]);
-  $("input[name=" + alliance + "Defense3Crossings]").val(result.score.DefensesCrossed[2]);
-  $("input[name=" + alliance + "Defense4Crossings]").val(result.score.DefensesCrossed[3]);
-  $("input[name=" + alliance + "Defense5Crossings]").val(result.score.DefensesCrossed[4]);
-  $("input[name=" + alliance + "HighGoals]").val(result.score.HighGoals);
-  $("input[name=" + alliance + "LowGoals]").val(result.score.LowGoals);
-  $("input[name=" + alliance + "Challenges]").val(result.score.Challenges);
-  $("input[name=" + alliance + "Scales]").val(result.score.Scales);
+  $("input[name=" + alliance + "Gears]").val(result.score.Gears);
+  $("input[name=" + alliance + "FuelLow]").val(result.score.FuelLow);
+  $("input[name=" + alliance + "FuelHigh]").val(result.score.FuelHigh);
+  $("input[name=" + alliance + "Takeoffs]").val(result.score.Takeoffs);
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
@@ -75,25 +66,14 @@ var updateResults = function(alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.AutoDefensesCrossed = [];
-  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense1Crossings"]));
-  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense2Crossings"]));
-  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense3Crossings"]));
-  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense4Crossings"]));
-  result.score.AutoDefensesCrossed.push(parseInt(formData[alliance + "AutoDefense5Crossings"]));
-  result.score.AutoDefensesReached = parseInt(formData[alliance + "AutoDefensesReached"]);
-  result.score.AutoHighGoals = parseInt(formData[alliance + "AutoHighGoals"]);
-  result.score.AutoLowGoals = parseInt(formData[alliance + "AutoLowGoals"]);
-  result.score.DefensesCrossed = [];
-  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense1Crossings"]));
-  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense2Crossings"]));
-  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense3Crossings"]));
-  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense4Crossings"]));
-  result.score.DefensesCrossed.push(parseInt(formData[alliance + "Defense5Crossings"]));
-  result.score.HighGoals = parseInt(formData[alliance + "HighGoals"]);
-  result.score.LowGoals = parseInt(formData[alliance + "LowGoals"]);
-  result.score.Challenges = parseInt(formData[alliance + "Challenges"]);
-  result.score.Scales = parseInt(formData[alliance + "Scales"]);
+  result.score.AutoMobility = parseInt(formData[alliance + "AutoMobility"]);
+  result.score.AutoGears = parseInt(formData[alliance + "AutoGears"]);
+  result.score.AutoFuelLow = parseInt(formData[alliance + "AutoFuelLow"]);
+  result.score.AutoFuelHigh = parseInt(formData[alliance + "AutoFuelHigh"]);
+  result.score.Gears = parseInt(formData[alliance + "Gears"]);
+  result.score.FuelLow = parseInt(formData[alliance + "FuelLow"]);
+  result.score.FuelHigh = parseInt(formData[alliance + "FuelHigh"]);
+  result.score.Takeoffs = parseInt(formData[alliance + "Takeoffs"]);
 
   result.score.Fouls = [];
   for (var i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {
