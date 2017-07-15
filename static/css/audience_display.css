@@ -126,12 +126,12 @@ html {
 }
 #logo {
   position: relative;
-  top: 50px;
-  height: 35px;
+  top: 30px;
+  height: 85px;
 }
 #matchTime {
   position: relative;
-  top: 35px;
+  top: 6px;
   height: 60px;
   color: #222;
   font-family: "FuturaLTBold";
@@ -202,8 +202,8 @@ html {
 }
 #blindsLogo {
   position: relative;
-  top: 110px;
-  height: 75px;
+  top: 55px;
+  height: 200px;
 }
 #finalScore {
   position: fixed;
@@ -359,8 +359,8 @@ html {
   font-size: 3.5em;
 }
 #allianceSelectionTable img {
-  width: 7em;
-  margin: 0.75em;
+  width: 4em;
+  margin: 0.3em;
 }
 #allianceSelectionTable tr:nth-child(even) {
   background-color: #eee;
