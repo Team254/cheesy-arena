@@ -7,65 +7,55 @@
 {{define "title"}}Scoring{{end}}
 {{define "body"}}
 <div class="row">
-  <div class="col-lg-12 well well-{{.Alliance}}">
-    <div class="text-center" id="waitingMessage" style="display: none;">
-      <h3>Waiting for the next match...</h3>
-    </div>
+  <div class="text-center" id="waitingMessage" style="display: none;">
+    <h3>Waiting for the next match...</h3>
+  </div>
+  <div id="autoScoring" class="col-lg-12 well well-{{.Alliance}}" style="display: none;">
     <div class="col-lg-6">
-      <div id="autoCommands" style="display: none;">
+      <div>
         <h2>Autonomous Period</h2>
         <p>Use the following keyboard shortcuts:</p>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">1-5</div>
-          <div class="col-lg-8 scoring-comment">Defense crossed +</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">m/M</div>
+          <div class="col-lg-8 scoring-comment">Robot mobility +/-</div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">Shift+1-5</div>
-          <div class="col-lg-8 scoring-comment">Defense crossed -</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">r/R</div>
-          <div class="col-lg-8 scoring-comment">Defenses reached +/-</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">h/H</div>
-          <div class="col-lg-8 scoring-comment">High goals +/-</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">l/L</div>
-          <div class="col-lg-8 scoring-comment">Low goals +/-</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">g/G</div>
+          <div class="col-lg-8 scoring-comment">Gears +/-</div>
         </div>
         <div class="row">
           <div class="col-lg-3 col-lg-offset-1 scoring">Enter</div>
           <div class="col-lg-8 scoring-comment">Commit autonomous score</div>
         </div>
       </div>
-      <div id="teleopCommands" style="display: none;">
+    </div>
+    <div class="col-lg-6">
+      <div>
+        <h2>Autonomous Score</h2>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Robot mobility</div>
+          <div class="col-lg-2 scoring-comment" id="autoMobility"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Gears</div>
+          <div class="col-lg-2 scoring-comment" id="autoGears"></div>
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Rotors</div>
+          <div class="col-lg-2 scoring-comment" id="autoRotors"></div>
+        </div>
+        <h3 class="text-center scoring-message">Press Enter to commit autonomous score</h3>
+      </div>
+    </div>
+  </div>
+  <div id="teleopScoring" class="col-lg-12 well well-{{.Alliance}}" style="display: none;">
+    <div class="col-lg-6">
+      <div>
         <h2>Teleoperated Period</h2>
         <p>Use the following keyboard shortcuts:</p>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">1-5</div>
-          <div class="col-lg-8 scoring-comment">Defense crossed +</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">Shift+1-5</div>
-          <div class="col-lg-8 scoring-comment">Defense crossed -</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">h/H</div>
-          <div class="col-lg-8 scoring-comment">High goals +/-</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">l/L</div>
-          <div class="col-lg-8 scoring-comment">Low goals +/-</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">c/C</div>
-          <div class="col-lg-8 scoring-comment">Challenges +/-</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">s/S</div>
-          <div class="col-lg-8 scoring-comment">Scales +/-</div>
+          <div class="col-lg-3 col-lg-offset-1 scoring">g/G</div>
+          <div class="col-lg-8 scoring-comment">Gears +/-</div>
         </div>
         <div class="row">
           <div class="col-lg-3 col-lg-offset-1 scoring">a</div>
@@ -74,85 +64,17 @@
       </div>
     </div>
     <div class="col-lg-6">
-      <div id="autoScore" style="display: none;">
-        <h2>Autonomous Score</h2>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Defense crossings</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 1</div>
-          <div class="col-lg-2 scoring-comment" id="autoDefense1Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 2</div>
-          <div class="col-lg-2 scoring-comment" id="autoDefense2Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 3</div>
-          <div class="col-lg-2 scoring-comment" id="autoDefense3Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 4</div>
-          <div class="col-lg-2 scoring-comment" id="autoDefense4Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 5</div>
-          <div class="col-lg-2 scoring-comment" id="autoDefense5Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Defenses reached</div>
-          <div class="col-lg-2 scoring-comment" id="autoDefensesReached"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">High goals</div>
-          <div class="col-lg-2 scoring-comment" id="autoHighGoals"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Low goals</div>
-          <div class="col-lg-2 scoring-comment" id="autoLowGoals"></div>
-        </div>
-        <h3 class="text-center scoring-message">Press Enter to commit autonomous score</h3>
-      </div>
-      <div id="teleopScore" style="display: none;">
+      <div>
         <h2>Teleoperated Score</h2>
         <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Defense crossings</div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Total Gears</div>
+          <div class="col-lg-7 scoring-comment">
+            <span id="totalGears"></span> (<span id="teleopAutoGears"></span> from auto)
+          </div>
         </div>
         <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 1</div>
-          <div class="col-lg-4 scoring-comment" id="defense1Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 2</div>
-          <div class="col-lg-4 scoring-comment" id="defense2Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 3</div>
-          <div class="col-lg-4 scoring-comment" id="defense3Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 4</div>
-          <div class="col-lg-4 scoring-comment" id="defense4Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-2 scoring-comment">Position 5</div>
-          <div class="col-lg-4 scoring-comment" id="defense5Crossings"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">High goals</div>
-          <div class="col-lg-2 scoring-comment" id="highGoals"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Low goals</div>
-          <div class="col-lg-2 scoring-comment" id="lowGoals"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Challenges</div>
-          <div class="col-lg-2 scoring-comment" id="challenges"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Scales</div>
-          <div class="col-lg-2 scoring-comment" id="scales"></div>
+          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Rotors</div>
+          <div class="col-lg-2 scoring-comment" id="totalRotors"></div>
         </div>
       </div>
     </div>

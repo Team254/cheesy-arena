@@ -10,46 +10,29 @@ var scoreCommitted = false;
 var handleScore = function(data) {
   // Update autonomous period values.
   var score = data.Score.CurrentScore;
-  $("#autoDefense1Crossings").text(score.AutoDefensesCrossed[0]);
-  $("#autoDefense2Crossings").text(score.AutoDefensesCrossed[1]);
-  $("#autoDefense3Crossings").text(score.AutoDefensesCrossed[2]);
-  $("#autoDefense4Crossings").text(score.AutoDefensesCrossed[3]);
-  $("#autoDefense5Crossings").text(score.AutoDefensesCrossed[4]);
-  $("#autoDefensesReached").text(score.AutoDefensesReached);
-  $("#autoHighGoals").text(score.AutoHighGoals);
-  $("#autoLowGoals").text(score.AutoLowGoals);
+  $("#autoMobility").text(score.AutoMobility);
+  $("#autoGears").text(score.AutoGears);
+  $("#autoRotors").text(data.ScoreSummary.Rotors);
 
   // Update teleoperated period values.
-  $("#defense1Crossings").text(score.DefensesCrossed[0] + " (" + score.AutoDefensesCrossed[0] + " in auto)");
-  $("#defense2Crossings").text(score.DefensesCrossed[1] + " (" + score.AutoDefensesCrossed[1] + " in auto)");
-  $("#defense3Crossings").text(score.DefensesCrossed[2] + " (" + score.AutoDefensesCrossed[2] + " in auto)");
-  $("#defense4Crossings").text(score.DefensesCrossed[3] + " (" + score.AutoDefensesCrossed[3] + " in auto)");
-  $("#defense5Crossings").text(score.DefensesCrossed[4] + " (" + score.AutoDefensesCrossed[4] + " in auto)");
-  $("#highGoals").text(score.HighGoals);
-  $("#lowGoals").text(score.LowGoals);
-  $("#challenges").text(score.Challenges);
-  $("#scales").text(score.Scales);
+  $("#teleopAutoGears").text(score.AutoGears);
+  $("#totalGears").text(score.AutoGears + score.Gears);
+  $("#totalRotors").text(data.ScoreSummary.Rotors);
 
   // Update component visibility.
   if (!data.AutoCommitted) {
-    $("#autoCommands").show();
-    $("#autoScore").show();
-    $("#teleopCommands").hide();
-    $("#teleopScore").hide();
+    $("#autoScoring").fadeTo(0, 1);
+    $("#teleopScoring").hide();
     $("#waitingMessage").hide();
     scoreCommitted = false;
   } else if (!data.Score.TeleopCommitted) {
-    $("#autoCommands").hide();
-    $("#autoScore").hide();
-    $("#teleopCommands").show();
-    $("#teleopScore").show();
+    $("#autoScoring").fadeTo(0, 0.25);
+    $("#teleopScoring").show();
     $("#waitingMessage").hide();
     scoreCommitted = false;
   } else {
-    $("#autoCommands").hide();
-    $("#autoScore").hide();
-    $("#teleopCommands").hide();
-    $("#teleopScore").hide();
+    $("#autoScoring").hide();
+    $("#teleopScoring").hide();
     $("#commitMatchScore").hide();
     $("#waitingMessage").show();
     scoreCommitted = true;
@@ -60,57 +43,17 @@ var handleScore = function(data) {
 var handleKeyPress = function(event) {
   var key = String.fromCharCode(event.keyCode);
   switch (key) {
-    case "1":
-    case "2":
-    case "3":
-    case "4":
-    case "5":
-      websocket.send("defenseCrossed", key);
+    case "m":
+      websocket.send("mobility");
       break;
-    case "!":
-      websocket.send("undoDefenseCrossed", "1");
+    case "M":
+      websocket.send("undoMobility");
       break;
-    case "@":
-      websocket.send("undoDefenseCrossed", "2");
+    case "g":
+      websocket.send("gear");
       break;
-    case "#":
-      websocket.send("undoDefenseCrossed", "3");
-      break;
-    case "$":
-      websocket.send("undoDefenseCrossed", "4");
-      break;
-    case "%":
-      websocket.send("undoDefenseCrossed", "5");
-      break;
-    case "r":
-      websocket.send("autoDefenseReached");
-      break;
-    case "R":
-      websocket.send("undoAutoDefenseReached");
-      break;
-    case "h":
-      websocket.send("highGoal");
-      break;
-    case "H":
-      websocket.send("undoHighGoal");
-      break;
-    case "l":
-      websocket.send("lowGoal");
-      break;
-    case "L":
-      websocket.send("undoLowGoal");
-      break;
-    case "c":
-      websocket.send("challenge");
-      break;
-    case "C":
-      websocket.send("undoChallenge");
-      break;
-    case "s":
-      websocket.send("scale");
-      break;
-    case "S":
-      websocket.send("undoScale");
+    case "G":
+      websocket.send("undoGear");
       break;
     case "\r":
       websocket.send("commit");

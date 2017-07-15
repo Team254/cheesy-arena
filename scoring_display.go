@@ -56,10 +56,13 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var score **RealtimeScore
+	var opponentScore **RealtimeScore
 	if alliance == "red" {
 		score = &mainArena.redRealtimeScore
+		opponentScore = &mainArena.blueRealtimeScore
 	} else {
 		score = &mainArena.blueRealtimeScore
+		opponentScore = &mainArena.redRealtimeScore
 	}
 	autoCommitted := false
 
@@ -80,8 +83,9 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	// Send the various notifications immediately upon connection.
 	data := struct {
 		Score         *RealtimeScore
+		ScoreSummary  *ScoreSummary
 		AutoCommitted bool
-	}{*score, autoCommitted}
+	}{*score, (*score).ScoreSummary((*opponentScore).CurrentScore.Fouls), autoCommitted}
 	err = websocket.Write("score", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -103,8 +107,8 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				if !ok {
 					return
 				}
-				messageType = "score"
-				message = *score
+				messageType = "reload"
+				message = nil
 			case matchTimeSec, ok := <-matchTimeListener:
 				if !ok {
 					return
@@ -197,8 +201,9 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		// Send out the score again after handling the command, as it most likely changed as a result.
 		data = struct {
 			Score         *RealtimeScore
+			ScoreSummary  *ScoreSummary
 			AutoCommitted bool
-		}{*score, autoCommitted}
+		}{*score, (*score).ScoreSummary((*opponentScore).CurrentScore.Fouls), autoCommitted}
 		err = websocket.Write("score", data)
 		if err != nil {
 			log.Printf("Websocket error: %s", err)

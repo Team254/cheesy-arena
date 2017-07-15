@@ -62,6 +62,7 @@ type ScoreSummary struct {
 	Score               int
 	PressureGoalReached bool
 	RotorGoalReached    bool
+	Rotors              int
 }
 
 // Returns a new match result object with empty slices instead of nil.
@@ -168,6 +169,7 @@ func scoreSummary(score *Score, opponentFouls []Foul, matchType string) *ScoreSu
 
 	// Calculate teleop score.
 	teleopRotors := numRotors(score.AutoGears+score.Gears) - autoRotors
+	summary.Rotors = autoRotors + teleopRotors
 	summary.RotorPoints = 60*autoRotors + 40*teleopRotors
 	summary.TakeoffPoints = 50 * score.Takeoffs
 	summary.PressurePoints = (9*score.AutoFuelHigh + 3*score.AutoFuelLow + 3*score.FuelHigh + score.FuelLow) / 9

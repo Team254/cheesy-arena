@@ -7,7 +7,6 @@ var websocket;
 
 // Sends a websocket message to save the text for the given lower third.
 var saveLowerThird = function(button) {
-console.log(button.form.topText.value);
   websocket.send("saveLowerThird", constructLowerThird(button));
 };
 

@@ -126,8 +126,8 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	// Load another match to reset the results.
 	mainArena.ResetMatch()
 	mainArena.LoadTestMatch()
-	readWebsocketType(t, redWs, "score")
-	readWebsocketType(t, blueWs, "score")
+	readWebsocketType(t, redWs, "reload")
+	readWebsocketType(t, blueWs, "reload")
 	assert.Equal(t, *NewRealtimeScore(), *mainArena.redRealtimeScore)
 	assert.Equal(t, *NewRealtimeScore(), *mainArena.blueRealtimeScore)
 }

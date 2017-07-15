@@ -511,9 +511,14 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	arena.lastDsPacketTime = time.Now()
 }
 
+// Calculates the score summary for the given realtime snapshot.
+func (realtimeScore *RealtimeScore) ScoreSummary(opponentFouls []Foul) *ScoreSummary {
+	return scoreSummary(&realtimeScore.CurrentScore, opponentFouls, mainArena.currentMatch.Type)
+}
+
 // Calculates the integer score value for the given realtime snapshot.
 func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
-	return scoreSummary(&realtimeScore.CurrentScore, opponentFouls, mainArena.currentMatch.Type).Score
+	return realtimeScore.ScoreSummary(opponentFouls).Score
 }
 
 // Manipulates the arena LED lighting based on the current state of the match.
