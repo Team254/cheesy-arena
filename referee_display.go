@@ -20,12 +20,12 @@ type Rule struct {
 	IsTechnical bool
 }
 
-var rules = []Rule{{"G4", false}, {"G11", false}, {"G12", false}, {"G12-1", false}, {"G13", false},
-	{"G14", false}, {"G15", false}, {"G16", false}, {"G17", false}, {"G18", false}, {"G19-1", false},
-	{"G20", false}, {"G20", true}, {"G21", true}, {"G22", false}, {"G23", false}, {"G24", false},
-	{"G26", false}, {"G26", true}, {"G27", true}, {"G33", false}, {"G34", false}, {"G36", false},
-	{"G37", false}, {"G38", false}, {"G39", true}, {"G40", true}, {"G40-1", true}, {"G41", true},
-	{"G42", false}, {"G43", false}, {"G44", false}, {"G45", false}}
+var rules = []Rule{{"S08", false}, {"C08", false}, {"C11", false}, {"G04", false}, {"G05", false},
+	{"G08", false}, {"G09", false}, {"G11", false}, {"G11", true}, {"G12", false}, {"G13", true},
+	{"G15", false}, {"G17", false}, {"G20", false}, {"G22", false}, {"G23", false}, {"G26", true},
+	{"G27", false}, {"G27", true}, {"A01", false}, {"A02", false}, {"A04", false}, {"A04", true},
+	{"A05", true}, {"H06", false}, {"H07", false}, {"H08", false}, {"H11", false}, {"H11", true},
+	{"H12", true}, {"H13", false}}
 
 // Renders the referee interface for assigning fouls.
 func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
