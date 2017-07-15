@@ -53,8 +53,8 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Rank": 13, "Team": 23, "RP": 20, "Match": 20, "Auto": 20, "Rotor": 21,
-		"Touchpad": 20, "Pressure": 20, "W-L-T": 20, "DQ": 20, "Played": 20}
+	colWidths := map[string]float64{"Rank": 13, "Team": 21, "RP": 18, "Match": 18, "Auto": 18, "Rotor": 18,
+		"Takeoff": 18, "Pressure": 18, "W-L-T": 18, "DQ": 18, "Played": 18}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -66,7 +66,7 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	pdf.CellFormat(195, rowHeight, "Team Standings - "+eventSettings.Name, "", 1, "C", false, 0, "")
 	pdf.CellFormat(colWidths["Rank"], rowHeight, "Rank", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["RP"], rowHeight, "RB", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["RP"], rowHeight, "RP", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Auto"], rowHeight, "Auto", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Rotor"], rowHeight, "Rotor", "1", 0, "C", true, 0, "")
