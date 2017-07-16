@@ -34,7 +34,7 @@ func TestMatchesApi(t *testing.T) {
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(matchesData)) {
 		assert.Equal(t, match1.Id, matchesData[0].Match.Id)
-		assert.Equal(t, matchResult1, *(matchesData[0].Result))
+		assert.Equal(t, matchResult1, matchesData[0].Result.MatchResult)
 		assert.Equal(t, match2.Id, matchesData[1].Match.Id)
 		assert.Nil(t, matchesData[1].Result)
 	}

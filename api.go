@@ -11,9 +11,15 @@ import (
 	"net/http"
 )
 
+type MatchResultWithSummary struct {
+	MatchResult
+	RedSummary  *ScoreSummary
+	BlueSummary *ScoreSummary
+}
+
 type MatchWithResult struct {
 	Match
-	Result *MatchResult
+	Result *MatchResultWithSummary
 }
 
 type RankingWithNickname struct {
@@ -42,7 +48,13 @@ func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
 			handleWebErr(w, err)
 			return
 		}
-		matchesWithResults[i].Result = matchResult
+		var matchResultWithSummary *MatchResultWithSummary
+		if matchResult != nil {
+			matchResultWithSummary = &MatchResultWithSummary{MatchResult: *matchResult}
+			matchResultWithSummary.RedSummary = matchResult.RedScoreSummary()
+			matchResultWithSummary.BlueSummary = matchResult.BlueScoreSummary()
+		}
+		matchesWithResults[i].Result = matchResultWithSummary
 	}
 
 	jsonData, err := json.MarshalIndent(matchesWithResults, "", "  ")
