@@ -94,10 +94,13 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data = struct {
-		RedScore  int
-		BlueScore int
-	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+		RedScore         *Score
+		BlueScore        *Score
+		RedScoreSummary  *ScoreSummary
+		BlueScoreSummary *ScoreSummary
+	}{&mainArena.redRealtimeScore.CurrentScore, &mainArena.blueRealtimeScore.CurrentScore,
+		mainArena.redRealtimeScore.ScoreSummary(mainArena.blueRealtimeScore.CurrentScore.Fouls),
+		mainArena.blueRealtimeScore.ScoreSummary(mainArena.redRealtimeScore.CurrentScore.Fouls)}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -154,10 +157,13 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "realtimeScore"
 				message = struct {
-					RedScore  int
-					BlueScore int
-				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+					RedScore         *Score
+					BlueScore        *Score
+					RedScoreSummary  *ScoreSummary
+					BlueScoreSummary *ScoreSummary
+				}{&mainArena.redRealtimeScore.CurrentScore, &mainArena.blueRealtimeScore.CurrentScore,
+					mainArena.redRealtimeScore.ScoreSummary(mainArena.blueRealtimeScore.CurrentScore.Fouls),
+					mainArena.blueRealtimeScore.ScoreSummary(mainArena.redRealtimeScore.CurrentScore.Fouls)}
 			case _, ok := <-scorePostedListener:
 				if !ok {
 					return

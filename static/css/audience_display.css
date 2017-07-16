@@ -38,12 +38,12 @@ html {
   vertical-align: middle;
 }
 #redTeams {
-  float: right;
-  border-left: 1px solid #222;
-}
-#blueTeams {
   float: left;
   border-right: 1px solid #222;
+}
+#blueTeams {
+  float: right;
+  border-left: 1px solid #222;
 }
 .score {
   width: 0px;
@@ -99,30 +99,14 @@ html {
 .score-fields {
   float: left;
   width: 20%;
-  padding-top: 10px;
+  height: 100%;
+  line-height: 29px;
   text-align: center;
-  opacity: 0;
-}
-.tower {
-  font-size: 20px;
+  display: table;
+  font-size: 23px;
   font-family: "FuturaLTBold";
   color: #fff;
-}
-.defense {
-  font-size: 0;
-}
-.defense>progress {
-  width: 20px;
-  height: 6px;
-  margin: 2px 0;
-  -webkit-appearance: none;
-}
-.defense>progress::-webkit-progress-bar {
-  background-color: rgba(0, 0, 0, 0);
-  border: 1px solid white;
-}
-.defense>progress::-webkit-progress-value {
-  background-color: #fff;
+  opacity: 0;
 }
 #logo {
   position: relative;
@@ -208,8 +192,8 @@ html {
 #finalScore {
   position: fixed;
   width: 800px;
-  height: 495px;
-  top: 0;
+  height: 550px;
+  top: 65px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -222,7 +206,7 @@ html {
 .final-score {
   float: left;
   width: 50%;
-  height: 44%;
+  height: 38%;
   line-height: 200px;
   border-bottom: 2px solid #333;
   color: #fff;
@@ -243,7 +227,7 @@ html {
 .final-teams {
   float: left;
   width: 50%;
-  height: 11%;
+  height: 9%;
   line-height: 50px;
   text-align: center;
   color: #fff;
@@ -262,7 +246,7 @@ html {
 .final-breakdown {
   float: left;
   width: 33%;
-  height: 34%;
+  height: 44%;
   padding: 0px 20px;
   display: table;
   text-align: center;
@@ -286,7 +270,7 @@ html {
 #finalEventMatchInfo {
   clear: both;
   width: 100%;
-  height: 11%;
+  height: 9%;
   line-height: 50px;
   padding: 0px 25px;
   font-family: "FuturaLT";
@@ -408,4 +392,12 @@ html {
   display: none;
   font-family: "FuturaLTBold";
   line-height: 87px;
+}
+.score-icon {
+  position: relative;
+  top: -4px;
+  height: 23px;
+}
+.score-icon-right {
+  -webkit-transform: scaleX(-1);
 }

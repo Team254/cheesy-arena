@@ -16,40 +16,48 @@
   <body style="background-color: {{.EventSettings.DisplayBackgroundColor}};">
     <div id="centering">
       <div id="matchOverlay">
-        <div class="teams" id="blueTeams">
-          <span class="valign-cell">
-            <span id="blueTeam1"></span><br />
-            <span id="blueTeam2"></span><br />
-            <span id="blueTeam3"></span>
-          </span>
-        </div>
-        <div class="score" id="blueScore">
-          <div class="score-fields">
-            <div class="tower" id="blueTower">&nbsp;</div>
-            <div class="defense"><progress max="2" value="2" id="blueDefense5"></progress></div>
-            <div class="defense"><progress max="2" value="2" id="blueDefense4"></progress></div>
-            <div class="defense"><progress max="2" value="2" id="blueDefense3"></progress></div>
-            <div class="defense"><progress max="2" value="2" id="blueDefense2"></progress></div>
-            <div class="defense"><progress max="2" value="2" id="blueDefense1"></progress></div>
-          </div>
-          <div class="score-number" id="blueScoreNumber">&nbsp;</div>
-        </div>
-        <div class="score" id="redScore">
-          <div class="score-fields pull-right">
-            <div class="tower" id="redTower">&nbsp;</div>
-            <div class="defense"><progress max="2" value="2" id="redDefense1"></progress></div>
-            <div class="defense"><progress max="2" value="2" id="redDefense2"></progress></div>
-            <div class="defense"><progress max="2" value="2" id="redDefense3"></progress></div>
-            <div class="defense"><progress max="2" value="2" id="redDefense4"></progress></div>
-            <div class="defense"><progress max="2" value="2" id="redDefense5"></progress></div>
-          </div>
-          <div class="score-number pull-right" id="redScoreNumber">&nbsp;</div>
-        </div>
         <div class="teams" id="redTeams">
           <span class="valign-cell">
             <span id="redTeam1"></span><br />
             <span id="redTeam2"></span><br />
             <span id="redTeam3"></span>
+          </span>
+        </div>
+        <div class="score" id="redScore">
+          <div class="score-fields">
+            <span class="valign-cell">
+              <img class="score-icon" src="/static/img/pressure.svg" /><br />
+              <img class="score-icon" src="/static/img/rotor.svg" /><br />
+              <img class="score-icon" src="/static/img/takeoff.svg" />
+            </span>
+            <span class="valign-cell">
+              <span id="redPressurePoints"></span><br />
+              <span id="redRotors"></span><br />
+              <span id="redTakeoffs"></span>
+            </span>
+          </div>
+          <div class="score-number" id="redScoreNumber">&nbsp;</div>
+        </div>
+        <div class="score" id="blueScore">
+          <div class="score-fields pull-right">
+            <span class="valign-cell">
+              <span id="bluePressurePoints"></span><br />
+              <span id="blueRotors"></span><br />
+              <span id="blueTakeoffs"></span>
+            </span>
+            <span class="valign-cell">
+              <img class="score-icon score-icon-right" src="/static/img/pressure.svg" /><br />
+              <img class="score-icon score-icon-right" src="/static/img/rotor.svg" /><br />
+              <img class="score-icon score-icon-right" src="/static/img/takeoff.svg" />
+            </span>
+          </div>
+          <div class="score-number pull-right" id="blueScoreNumber">&nbsp;</div>
+        </div>
+        <div class="teams" id="blueTeams">
+          <span class="valign-cell">
+            <span id="blueTeam1"></span><br />
+            <span id="blueTeam2"></span><br />
+            <span id="blueTeam3"></span>
           </span>
         </div>
         <div id="eventMatchInfo">
@@ -87,23 +95,27 @@
         </div>
         <div class="final-breakdown" id="redFinalBreakdown">
           <span class="valign-cell">
-            <span id="redFinalAuto"></span><br />
-            <span id="redFinalTeleop"></span><br />
-            <span id="redFinalFoul"></span><br />
-            <span id="redFinalBreached"></span><br />
-            <span id="redFinalCaptured"></span><br />
+            <span id="redFinalAutoMobilityPoints"></span><br />
+            <span id="redFinalPressurePoints"></span><br />
+            <span id="redFinalRotorPoints"></span><br />
+            <span id="redFinalTakeoffPoints"></span><br />
+            <span id="redFinalFoulPoints"></span><br />
+            <span id="redFinalPressureGoalReached"></span><br />
+            <span id="redFinalRotorGoalReached"></span><br />
           </span>
         </div>
         <div class="final-breakdown" id="centerFinalBreakdown">
-          <span class="valign-cell">Autonomous<br />Teleoperated<br />Foul<br />Breached<br />Captured</span>
+          <span class="valign-cell">Auto Mobility<br />Pressure<br />Rotor<br />Ready for Takeoff<br />Foul<br />Pressure Bonus<br />Rotor Bonus</span>
         </div>
         <div class="final-breakdown" id="blueFinalBreakdown">
           <span class="valign-cell">
-            <span id="blueFinalAuto"></span><br />
-            <span id="blueFinalTeleop"></span><br />
-            <span id="blueFinalFoul"></span><br />
-            <span id="blueFinalBreached"></span><br />
-            <span id="blueFinalCaptured"></span><br />
+            <span id="blueFinalAutoMobilityPoints"></span><br />
+            <span id="blueFinalPressurePoints"></span><br />
+            <span id="blueFinalRotorPoints"></span><br />
+            <span id="blueFinalTakeoffPoints"></span><br />
+            <span id="blueFinalFoulPoints"></span><br />
+            <span id="blueFinalPressureGoalReached"></span><br />
+            <span id="blueFinalRotorGoalReached"></span><br />
           </span>
         </div>
         <div id="finalEventMatchInfo">

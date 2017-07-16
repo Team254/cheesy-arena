@@ -52,14 +52,14 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScoreNumber").text(data.RedScoreFields.Score);
-  $("#redTower").text(data.RedScoreFields.TowerStrength);
-  $("#blueScoreNumber").text(data.BlueScoreFields.Score);
-  $("#blueTower").text(data.BlueScoreFields.TowerStrength);
-  for (var i = 0; i < 5; i++) {
-    $("#redDefense" + (i + 1)).attr("value", data.RedScoreFields.DefensesStrength[i]);
-    $("#blueDefense" + (i + 1)).attr("value", data.BlueScoreFields.DefensesStrength[i]);
-  }
+  $("#redScoreNumber").text(data.RedScoreSummary.Score);
+  $("#redPressurePoints").text(data.RedScoreSummary.PressurePoints);
+  $("#redRotors").text(data.RedScoreSummary.Rotors);
+  $("#redTakeoffs").text(data.RedScore.Takeoffs);
+  $("#blueScoreNumber").text(data.BlueScoreSummary.Score);
+  $("#bluePressurePoints").text(data.BlueScoreSummary.PressurePoints);
+  $("#blueRotors").text(data.BlueScoreSummary.Rotors);
+  $("#blueTakeoffs").text(data.BlueScore.Takeoffs);
 };
 
 // Handles a websocket message to populate the final score data.
@@ -68,24 +68,28 @@ var handleSetFinalScore = function(data) {
   $("#redFinalTeam1").text(data.Match.Red1);
   $("#redFinalTeam2").text(data.Match.Red2);
   $("#redFinalTeam3").text(data.Match.Red3);
-  $("#redFinalAuto").text(data.RedScore.AutoPoints);
-  $("#redFinalTeleop").text(data.RedScore.TeleopPoints);
-  $("#redFinalFoul").text(data.RedScore.FoulPoints);
-  $("#redFinalBreached").html(data.RedScore.Breached ? "&#x2714;" : "&#x2718;");
-  $("#redFinalBreached").attr("data-checked", data.RedScore.Breached);
-  $("#redFinalCaptured").html(data.RedScore.Captured ? "&#x2714;" : "&#x2718;");
-  $("#redFinalCaptured").attr("data-checked", data.RedScore.Captured);
+  $("#redFinalAutoMobilityPoints").text(data.RedScore.AutoMobilityPoints);
+  $("#redFinalPressurePoints").text(data.RedScore.PressurePoints);
+  $("#redFinalRotorPoints").text(data.RedScore.RotorPoints);
+  $("#redFinalTakeoffPoints").text(data.RedScore.TakeoffPoints);
+  $("#redFinalFoulPoints").text(data.RedScore.FoulPoints);
+  $("#redFinalPressureGoalReached").html(data.RedScore.PressureGoalReached ? "&#x2714;" : "&#x2718;");
+  $("#redFinalPressureGoalReached").attr("data-checked", data.RedScore.PressureGoalReached);
+  $("#redFinalRotorGoalReached").html(data.RedScore.RotorGoalReached ? "&#x2714;" : "&#x2718;");
+  $("#redFinalRotorGoalReached").attr("data-checked", data.RedScore.RotorGoalReached);
   $("#blueFinalScore").text(data.BlueScore.Score);
   $("#blueFinalTeam1").text(data.Match.Blue1);
   $("#blueFinalTeam2").text(data.Match.Blue2);
   $("#blueFinalTeam3").text(data.Match.Blue3);
-  $("#blueFinalAuto").text(data.BlueScore.AutoPoints);
-  $("#blueFinalTeleop").text(data.BlueScore.TeleopPoints);
-  $("#blueFinalFoul").text(data.BlueScore.FoulPoints);
-  $("#blueFinalBreached").html(data.BlueScore.Breached ? "&#x2714;" : "&#x2718;");
-  $("#blueFinalBreached").attr("data-checked", data.BlueScore.Breached);
-  $("#blueFinalCaptured").html(data.BlueScore.Captured ? "&#x2714;" : "&#x2718;");
-  $("#blueFinalCaptured").attr("data-checked", data.BlueScore.Captured);
+  $("#blueFinalAutoMobilityPoints").text(data.BlueScore.AutoMobilityPoints);
+  $("#blueFinalPressurePoints").text(data.BlueScore.PressurePoints);
+  $("#blueFinalRotorPoints").text(data.BlueScore.RotorPoints);
+  $("#blueFinalTakeoffPoints").text(data.BlueScore.TakeoffPoints);
+  $("#blueFinalFoulPoints").text(data.BlueScore.FoulPoints);
+  $("#blueFinalPressureGoalReached").html(data.BlueScore.PressureGoalReached ? "&#x2714;" : "&#x2718;");
+  $("#blueFinalPressureGoalReached").attr("data-checked", data.BlueScore.PressureGoalReached);
+  $("#blueFinalRotorGoalReached").html(data.BlueScore.RotorGoalReached ? "&#x2714;" : "&#x2718;");
+  $("#blueFinalRotorGoalReached").attr("data-checked", data.BlueScore.RotorGoalReached);
   $("#finalMatchName").text(data.MatchName + " " + data.Match.DisplayName);
 };
 
@@ -324,6 +328,9 @@ var transitionSponsorToScore = function(callback) {
 // Loads sponsor slide data and builds the slideshow HTML.
 var initializeSponsorDisplay = function() {
   $.getJSON("/api/sponsor_slides", function(sponsors) {
+    if (!sponsors) {
+      return;
+    }
 
     // Populate Tiles
     $.each(sponsors, function(index){
