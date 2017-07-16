@@ -26,13 +26,6 @@ var handleSetAllianceStationDisplay = function(targetScreen) {
     case "3":
       $("body").attr("data-position", "left");
       break;
-    case "T":
-      if (allianceStation[0] == "R") {
-        $("body").attr("data-position", "redTower");
-      } else {
-        $("body").attr("data-position", "blueTower");
-      }
-      break;
   }
 };
 
@@ -115,8 +108,6 @@ var handleMatchTime = function(data) {
 var handleRealtimeScore = function(data) {
   $("#redScore").text(data.RedScoreFields.Score);
   $("#blueScore").text(data.BlueScoreFields.Score);
-  $("#redTower").text(data.RedScoreFields.TowerStrength);
-  $("#blueTower").text(data.BlueScoreFields.TowerStrength);
 };
 
 $(function() {
