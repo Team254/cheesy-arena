@@ -5,7 +5,10 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -59,31 +62,12 @@ func TestPublishMatches(t *testing.T) {
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var reader bytes.Buffer
-		reader.ReadFrom(r.Body)
-		// TODO(patrick): Update for 2017.
-		/*
-			assert.Equal(t, "[{\"comp_level\":\"qm\",\"set_number\":0,\"match_number\":2,\"alliances\":{\"blue"+
-				"\":{\"score\":113,\"teams\":[\"frc10\",\"frc11\",\"frc12\"]},\"red\":{\"score\":156,\"teams\":"+
-				"[\"frc7\",\"frc8\",\"frc9\"]}},\"score_breakdown\":{\"blue\":{\"teleopBouldersLow\":3,\"teleop"+
-				"BouldersHigh\":4,\"teleopTowerCaptured\":false,\"teleopDefensesBreached\":false,\"position1cro"+
-				"ssings\":1,\"position2\":\"\",\"position2crossings\":2,\"position3\":\"\",\"position3crossings"+
-				"\":0,\"position4\":\"\",\"position4crossings\":0,\"position5\":\"\",\"position5crossings\":1,"+
-				"\"autoPoints\":22,\"autoReachPoints\":2,\"autoCrossingPoints\":10,\"autoBoulderPoints\":10,\"t"+
-				"eleopCrossingPoints\":15,\"teleopBoulderPoints\":26,\"teleopChallengePoints\":5,\"teleopScaleP"+
-				"oints\":30,\"breachPoints\":0,\"capturePoints\":0,\"foulPoints\":15,\"totalPoints\":113},\"red"+
-				"\":{\"teleopBouldersLow\":3,\"teleopBouldersHigh\":11,\"teleopTowerCaptured\":false,\"teleopDe"+
-				"fensesBreached\":true,\"position1crossings\":2,\"position2\":\"\",\"position2crossings\":2,\"p"+
-				"osition3\":\"\",\"position3crossings\":2,\"position4\":\"\",\"position4crossings\":2,\"positio"+
-				"n5\":\"\",\"position5crossings\":1,\"autoPoints\":55,\"autoReachPoints\":0,\"autoCrossingPoint"+
-				"s\":30,\"autoBoulderPoints\":25,\"teleopCrossingPoints\":30,\"teleopBoulderPoints\":61,\"teleo"+
-				"pChallengePoints\":10,\"teleopScalePoints\":0,\"breachPoints\":0,\"capturePoints\":0,\"foulPoi"+
-				"nts\":0,\"totalPoints\":156}},\"time_string\":\"4:10 PM\",\"time_utc\":\"1970-01-01T00:10:00\""+
-				"},{\"comp_level\":\"sf\",\"set_number\":2,\"match_number\":2,\"alliances\":{\"blue\":{\"score"+
-				"\":null,\"teams\":[\"frc0\",\"frc0\",\"frc0\"]},\"red\":{\"score\":null,\"teams\":[\"frc0\",\""+
-				"frc0\",\"frc0\"]}},\"score_breakdown\":null,\"time_string\":\"4:00 PM\",\"time_utc\":\"0001-01"+
-				"-01T00:00:00\"}]", reader.String())
-		*/
+		body, _ := ioutil.ReadAll(r.Body)
+		var matches []*TbaMatch
+		json.Unmarshal(body, &matches)
+		assert.Equal(t, 2, len(matches))
+		assert.Equal(t, "qm", matches[0].CompLevel)
+		assert.Equal(t, "sf", matches[1].CompLevel)
 	}))
 	defer tbaServer.Close()
 	tbaBaseUrl = tbaServer.URL
@@ -104,16 +88,12 @@ func TestPublishRankings(t *testing.T) {
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var reader bytes.Buffer
-		reader.ReadFrom(r.Body)
-		// TODO(patrick): Update for 2017.
-		/*
-			assert.Equal(t, "{\"breakdowns\":[\"RP\",\"Auto\",\"Scale/Challenge\",\"Goal\",\"Defense\",\"W-L-T"+
-				"\"],\"rankings\":[{\"team_key\":\"frc254\",\"rank\":1,\"RP\":20,\"Auto\":625,\"Scale/Challenge"+
-				"\":90,\"Goal\":554,\"Defense\":10,\"W-L-T\":\"1-2-3\",\"dqs\":0,\"played\":10},{\"team_key\":"+
-				"\"frc1114\",\"rank\":2,\"RP\":20,\"Auto\":625,\"Scale/Challenge\":90,\"Goal\":554,\"Defense\":"+
-				"10,\"W-L-T\":\"3-2-1\",\"dqs\":0,\"played\":10}]}", reader.String())
-		*/
+		body, _ := ioutil.ReadAll(r.Body)
+		var response TbaRankings
+		json.Unmarshal(body, &response)
+		assert.Equal(t, 2, len(response.Rankings))
+		assert.Equal(t, "frc254", response.Rankings[0].TeamKey)
+		assert.Equal(t, "frc1114", response.Rankings[1].TeamKey)
 	}))
 	defer tbaServer.Close()
 	tbaBaseUrl = tbaServer.URL

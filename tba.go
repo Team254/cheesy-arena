@@ -38,44 +38,49 @@ type TbaMatch struct {
 }
 
 type TbaScoreBreakdown struct {
-	TeleopBouldersLow      int    `json:"teleopBouldersLow"`
-	TeleopBouldersHigh     int    `json:"teleopBouldersHigh"`
-	TeleopTowerCaptured    bool   `json:"teleopTowerCaptured"`
-	TeleopDefensesBreached bool   `json:"teleopDefensesBreached"`
-	Position1Crossings     int    `json:"position1crossings"`
-	Position2              string `json:"position2"`
-	Position2Crossings     int    `json:"position2crossings"`
-	Position3              string `json:"position3"`
-	Position3Crossings     int    `json:"position3crossings"`
-	Position4              string `json:"position4"`
-	Position4Crossings     int    `json:"position4crossings"`
-	Position5              string `json:"position5"`
-	Position5Crossings     int    `json:"position5crossings"`
-	AutoPoints             int    `json:"autoPoints"`
-	AutoReachPoints        int    `json:"autoReachPoints"`
-	AutoCrossingPoints     int    `json:"autoCrossingPoints"`
-	AutoBoulderPoints      int    `json:"autoBoulderPoints"`
-	TeleopCrossingPoints   int    `json:"teleopCrossingPoints"`
-	TeleopBoulderPoints    int    `json:"teleopBoulderPoints"`
-	TeleopChallengePoints  int    `json:"teleopChallengePoints"`
-	TeleopScalePoints      int    `json:"teleopScalePoints"`
-	BreachPoints           int    `json:"breachPoints"`
-	CapturePoints          int    `json:"capturePoints"`
-	FoulPoints             int    `json:"foulPoints"`
-	TotalPoints            int    `json:"totalPoints"`
+	AutoFuelHigh              int  `json:"autoFuelHigh"`
+	AutoFuelLow               int  `json:"autoFuelLow"`
+	AutoFuelPoints            int  `json:"autoFuelPoints"`
+	Rotor1Auto                bool `json:"rotor1Auto"`
+	Rotor2Auto                bool `json:"rotor2Auto"`
+	AutoRotorPoints           int  `json:"autoRotorPoints"`
+	AutoMobilityPoints        int  `json:"autoMobilityPoints"`
+	AutoPoints                int  `json:"autoPoints"`
+	TeleopFuelHigh            int  `json:"teleopFuelHigh"`
+	TeleopFuelLow             int  `json:"teleopFuelLow"`
+	TeleopFuelPoints          int  `json:"teleopFuelPoints"`
+	Rotor1Engaged             bool `json:"rotor1Engaged"`
+	Rotor2Engaged             bool `json:"rotor2Engaged"`
+	Rotor3Engaged             bool `json:"rotor3Engaged"`
+	Rotor4Engaged             bool `json:"rotor4Engaged"`
+	TeleopRotorPoints         int  `json:"teleopRotorPoints"`
+	TeleopTakeoffPoints       int  `json:"teleopTakeoffPoints"`
+	TeleopPoints              int  `json:"teleopPoints"`
+	KPaRankingPointAchieved   bool `json:"kPaRankingPointAchieved"`
+	KPaBonusPoints            int  `json:"kPaBonusPoints"`
+	RotorRankingPointAchieved bool `json:"rotorRankingPointAchieved"`
+	RotorBonusPoints          int  `json:"rotorBonusPoints"`
+	FoulPoints                int  `json:"foulPoints"`
+	TotalPoints               int  `json:"totalPoints"`
 }
 
 type TbaRanking struct {
-	TeamKey        string `json:"team_key"`
-	Rank           int    `json:"rank"`
-	RP             int    `json:"RP"`
-	Auto           int    `json:"Auto"`
-	ScaleChallenge int    `json:"Scale/Challenge"`
-	Goal           int    `json:"Goal"`
-	Defense        int    `json:"Defense"`
-	WinLossTie     string `json:"W-L-T"`
-	Dqs            int    `json:"dqs"`
-	Played         int    `json:"played"`
+	TeamKey    string  `json:"team_key"`
+	Rank       int     `json:"rank"`
+	RP         float32 `json:"RP"`
+	Match      int     `json:"Match"`
+	Auto       int     `json:"Auto"`
+	Rotor      int     `json:"Rotor"`
+	Touchpad   int     `json:"Touchpad"`
+	Pressure   int     `json:"Pressure"`
+	WinLossTie string  `json:"W-L-T"`
+	Dqs        int     `json:"dqs"`
+	Played     int     `json:"played"`
+}
+
+type TbaRankings struct {
+	Breakdowns []string     `json:"breakdowns"`
+	Rankings   []TbaRanking `json:"rankings"`
 }
 
 type TbaTeam struct {
@@ -311,18 +316,16 @@ func PublishRankings() error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "Auto", "Scale/Challenge", "Goal", "Defense", "W-L-T"}
+	breakdowns := []string{"RP", "Match", "Auto", "Rotor", "Touchpad", "Pressure", "W-L-T"}
 	tbaRankings := make([]TbaRanking, len(rankings))
-	// TODO(patrick): Update for 2017.
-	/*
-		for i, ranking := range rankings {
-			tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank, ranking.RankingPoints,
-				ranking.AutoPoints, ranking.ScaleChallengePoints, ranking.GoalPoints, ranking.DefensePoints,
-				fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
-				ranking.Played}
-		}
-	*/
-	jsonBody, err := json.Marshal(map[string]interface{}{"breakdowns": breakdowns, "rankings": tbaRankings})
+	for i, ranking := range rankings {
+		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank,
+			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.MatchPoints, ranking.AutoPoints,
+			ranking.RotorPoints, ranking.TakeoffPoints, ranking.PressurePoints,
+			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
+			ranking.Played}
+	}
+	jsonBody, err := json.Marshal(TbaRankings{breakdowns, tbaRankings})
 	if err != nil {
 		return err
 	}
@@ -420,59 +423,49 @@ func getTbaRequest(url string) (*http.Response, error) {
 
 func createTbaScoringBreakdown(match *Match, matchResult *MatchResult, alliance string) *TbaScoreBreakdown {
 	var breakdown TbaScoreBreakdown
-	// TODO(patrick): Update for 2017.
-	/*
-		var score *Score
-		var opponentScore *Score
-		var scoreSummary *ScoreSummary
-		if alliance == "red" {
-			score = &matchResult.RedScore
-			opponentScore = &matchResult.BlueScore
-			scoreSummary = matchResult.RedScoreSummary()
-			breakdown.Position2 = tbaDefenseNames[match.RedDefense2]
-			breakdown.Position3 = tbaDefenseNames[match.RedDefense3]
-			breakdown.Position4 = tbaDefenseNames[match.RedDefense4]
-			breakdown.Position5 = tbaDefenseNames[match.RedDefense5]
-		} else {
-			score = &matchResult.BlueScore
-			opponentScore = &matchResult.RedScore
-			scoreSummary = matchResult.BlueScoreSummary()
-			breakdown.Position2 = tbaDefenseNames[match.BlueDefense2]
-			breakdown.Position3 = tbaDefenseNames[match.BlueDefense3]
-			breakdown.Position4 = tbaDefenseNames[match.BlueDefense4]
-			breakdown.Position5 = tbaDefenseNames[match.BlueDefense5]
+	var score *Score
+	var scoreSummary *ScoreSummary
+	if alliance == "red" {
+		score = &matchResult.RedScore
+		scoreSummary = matchResult.RedScoreSummary()
+	} else {
+		score = &matchResult.BlueScore
+		scoreSummary = matchResult.BlueScoreSummary()
+	}
+
+	breakdown.AutoFuelHigh = score.AutoFuelHigh
+	breakdown.AutoFuelLow = score.AutoFuelLow
+	breakdown.AutoFuelPoints = score.AutoFuelHigh + score.AutoFuelLow/3
+	numAutoRotors := numRotors(score.AutoGears)
+	breakdown.Rotor1Auto = numAutoRotors >= 1
+	breakdown.Rotor2Auto = numAutoRotors >= 2
+	breakdown.AutoRotorPoints = 60 * numAutoRotors
+	breakdown.AutoMobilityPoints = scoreSummary.AutoMobilityPoints
+	breakdown.AutoPoints = scoreSummary.AutoPoints
+	breakdown.TeleopFuelHigh = score.FuelHigh
+	breakdown.TeleopFuelLow = score.FuelLow
+	breakdown.TeleopFuelPoints = scoreSummary.PressurePoints - breakdown.AutoFuelPoints
+	breakdown.Rotor1Engaged = scoreSummary.Rotors >= 1
+	breakdown.Rotor2Engaged = scoreSummary.Rotors >= 2
+	breakdown.Rotor3Engaged = scoreSummary.Rotors >= 3
+	breakdown.Rotor4Engaged = scoreSummary.Rotors >= 4
+	breakdown.TeleopRotorPoints = scoreSummary.RotorPoints - breakdown.AutoRotorPoints
+	breakdown.TeleopTakeoffPoints = scoreSummary.TakeoffPoints
+	breakdown.TeleopPoints = breakdown.TeleopFuelPoints + breakdown.TeleopRotorPoints +
+		breakdown.TeleopTakeoffPoints + scoreSummary.BonusPoints
+	if match.Type == "elimination" {
+		if scoreSummary.PressureGoalReached {
+			breakdown.KPaBonusPoints = 20
 		}
-		breakdown.TeleopBouldersLow = score.LowGoals
-		breakdown.TeleopBouldersHigh = score.HighGoals
-		breakdown.TeleopTowerCaptured = scoreSummary.Captured
-		breakdown.TeleopDefensesBreached = scoreSummary.Breached
-		breakdown.Position1Crossings = score.AutoDefensesCrossed[0] + score.DefensesCrossed[0]
-		breakdown.Position2Crossings = score.AutoDefensesCrossed[1] + score.DefensesCrossed[1]
-		breakdown.Position3Crossings = score.AutoDefensesCrossed[2] + score.DefensesCrossed[2]
-		breakdown.Position4Crossings = score.AutoDefensesCrossed[3] + score.DefensesCrossed[3]
-		breakdown.Position5Crossings = score.AutoDefensesCrossed[4] + score.DefensesCrossed[4]
-		breakdown.AutoPoints = scoreSummary.AutoPoints
-		breakdown.AutoReachPoints = 2 * score.AutoDefensesReached
-		for _, crossings := range score.AutoDefensesCrossed {
-			breakdown.AutoCrossingPoints += 10 * crossings
+		if scoreSummary.RotorGoalReached {
+			breakdown.RotorBonusPoints = 100
 		}
-		breakdown.AutoBoulderPoints = 5*score.AutoLowGoals + 10*score.AutoHighGoals
-		for _, crossings := range score.DefensesCrossed {
-			breakdown.TeleopCrossingPoints += 5 * crossings
-		}
-		breakdown.TeleopBoulderPoints = 2*score.LowGoals + 5*score.HighGoals
-		breakdown.TeleopChallengePoints = 5 * score.Challenges
-		breakdown.TeleopScalePoints = 15 * score.Scales
-		if match.Type == "elimination" {
-			if scoreSummary.Breached {
-				breakdown.BreachPoints = 20
-			}
-			if scoreSummary.Captured {
-				breakdown.CapturePoints = 25
-			}
-		}
-		breakdown.FoulPoints = 5 * len(opponentScore.Fouls)
-		breakdown.TotalPoints = scoreSummary.Score
-	*/
+	} else {
+		breakdown.KPaRankingPointAchieved = scoreSummary.PressureGoalReached
+		breakdown.RotorRankingPointAchieved = scoreSummary.RotorGoalReached
+	}
+	breakdown.FoulPoints = scoreSummary.FoulPoints
+	breakdown.TotalPoints = scoreSummary.Score
+
 	return &breakdown
 }
