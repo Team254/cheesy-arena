@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Methods for configuring a Cisco Catalyst 3750 switch for team VLANs.
+// Methods for configuring a Cisco Switch 3500-series switch for team VLANs.
 
 package main
 
@@ -15,15 +15,15 @@ import (
 	"sync"
 )
 
-var catalystTelnetPort = 23
+var switchTelnetPort = 23
 
-var catalystMutex sync.Mutex
+var switchMutex sync.Mutex
 
 // Sets up wired networks for the given set of teams.
 func ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *Team) error {
 	// Make sure multiple configurations aren't being set at the same time.
-	catalystMutex.Lock()
-	defer catalystMutex.Unlock()
+	switchMutex.Lock()
+	defer switchMutex.Unlock()
 
 	// Determine what new team VLANs are needed and build the commands to set them up.
 	oldTeamVlans, err := getTeamVlans()
@@ -70,7 +70,7 @@ func ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *Team) error {
 	// Build and run the overall command to do everything in a single telnet session.
 	command := removeTeamVlansCommand + addTeamVlansCommand
 	if len(command) > 0 {
-		_, err = runCatalystConfigCommand(removeTeamVlansCommand + addTeamVlansCommand)
+		_, err = runSwitchConfigCommand(removeTeamVlansCommand + addTeamVlansCommand)
 		if err != nil {
 			return err
 		}
@@ -82,7 +82,7 @@ func ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *Team) error {
 // Returns a map of currently-configured teams to VLANs.
 func getTeamVlans() (map[int]int, error) {
 	// Get the entire config dump.
-	config, err := runCatalystCommand("show running-config\n")
+	config, err := runSwitchCommand("show running-config\n")
 	if err != nil {
 		return nil, err
 	}
@@ -107,11 +107,11 @@ func getTeamVlans() (map[int]int, error) {
 	return teamVlans, nil
 }
 
-// Logs into the Catalyst via Telnet and runs the given command in user exec mode. Reads the output and
+// Logs into the switch via Telnet and runs the given command in user exec mode. Reads the output and
 // returns it as a string.
-func runCatalystCommand(command string) (string, error) {
+func runSwitchCommand(command string) (string, error) {
 	// Open a Telnet connection to the switch.
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", eventSettings.SwitchAddress, catalystTelnetPort))
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", eventSettings.SwitchAddress, switchTelnetPort))
 	if err != nil {
 		return "", err
 	}
@@ -138,9 +138,9 @@ func runCatalystCommand(command string) (string, error) {
 	return reader.String(), nil
 }
 
-// Logs into the Catalyst via Telnet and runs the given command in global configuration mode. Reads the output
+// Logs into the switch via Telnet and runs the given command in global configuration mode. Reads the output
 // and returns it as a string.
-func runCatalystConfigCommand(command string) (string, error) {
-	return runCatalystCommand(fmt.Sprintf("config terminal\n%send\ncopy running-config startup-config\n\n",
+func runSwitchConfigCommand(command string) (string, error) {
+	return runSwitchCommand(fmt.Sprintf("config terminal\n%send\ncopy running-config startup-config\n\n",
 		command))
 }

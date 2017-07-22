@@ -154,10 +154,12 @@ func TestListenForDriverStations(t *testing.T) {
 	defer db.Close()
 	eventSettings, _ = db.GetEventSettings()
 
+	oldAddress := driverStationTcpListenAddress
 	driverStationTcpListenAddress = "127.0.0.1"
 	go ListenForDriverStations()
 	mainArena.Setup()
 	time.Sleep(time.Millisecond * 10)
+	driverStationTcpListenAddress = oldAddress // Put it back to avoid affecting other tests.
 
 	// Connect with an invalid initial packet.
 	tcpConn, err := net.Dial("tcp", "127.0.0.1:1750")

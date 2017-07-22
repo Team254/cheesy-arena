@@ -495,8 +495,8 @@ func TestSetupNetwork(t *testing.T) {
 
 	// Verify the setup ran by checking the log for the expected failure messages.
 	eventSettings.NetworkSecurityEnabled = true
-	aironetTelnetPort = 10023
-	catalystTelnetPort = 10023
+	accessPointSshPort = 10022
+	switchTelnetPort = 10023
 	mainArena.LoadMatch(&Match{Type: "test"})
 	var writer bytes.Buffer
 	log.SetOutput(&writer)
