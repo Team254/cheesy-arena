@@ -4,6 +4,7 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -22,7 +23,7 @@ func TestSetupAllianceSelection(t *testing.T) {
 	eventSettings.SelectionRound3Order = "L"
 	mainArena.Setup()
 	for i := 1; i <= 10; i++ {
-		db.CreateRanking(&Ranking{TeamId: 100 + i, Rank: i})
+		db.CreateRanking(&game.Ranking{TeamId: 100 + i, Rank: i})
 	}
 
 	// Check that there are no alliance placeholders to start.
@@ -109,7 +110,7 @@ func TestSetupAllianceSelectionErrors(t *testing.T) {
 	eventSettings, _ = db.GetEventSettings()
 	eventSettings.NumElimAlliances = 2
 	for i := 1; i <= 6; i++ {
-		db.CreateRanking(&Ranking{TeamId: 100 + i, Rank: i})
+		db.CreateRanking(&game.Ranking{TeamId: 100 + i, Rank: i})
 	}
 
 	// Start an alliance selection that is already underway.

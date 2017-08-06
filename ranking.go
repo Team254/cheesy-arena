@@ -6,51 +6,54 @@
 package main
 
 import (
-	"math/rand"
+	"encoding/json"
+	"github.com/Team254/cheesy-arena/game"
 	"sort"
 	"strconv"
 )
 
-type Ranking struct {
+type RankingDb struct {
 	TeamId            int
 	Rank              int
-	RankingPoints     int
-	MatchPoints       int
-	AutoPoints        int
-	RotorPoints       int
-	TakeoffPoints     int
-	PressurePoints    int
-	Random            float64
-	Wins              int
-	Losses            int
-	Ties              int
-	Disqualifications int
-	Played            int
+	RankingFieldsJson string
 }
 
-type Rankings []*Ranking
-
-func (database *Database) CreateRanking(ranking *Ranking) error {
-	return database.rankingMap.Insert(ranking)
+func (database *Database) CreateRanking(ranking *game.Ranking) error {
+	rankingDb, err := serializeRanking(ranking)
+	if err != nil {
+		return err
+	}
+	return database.rankingMap.Insert(rankingDb)
 }
 
-func (database *Database) GetRankingForTeam(teamId int) (*Ranking, error) {
-	ranking := new(Ranking)
-	err := database.rankingMap.Get(ranking, teamId)
+func (database *Database) GetRankingForTeam(teamId int) (*game.Ranking, error) {
+	rankingDb := new(RankingDb)
+	err := database.rankingMap.Get(rankingDb, teamId)
 	if err != nil && err.Error() == "sql: no rows in result set" {
-		ranking = nil
-		err = nil
+		return nil, nil
+	}
+	ranking, err := rankingDb.deserialize()
+	if err != nil {
+		return nil, err
 	}
 	return ranking, err
 }
 
-func (database *Database) SaveRanking(ranking *Ranking) error {
-	_, err := database.rankingMap.Update(ranking)
+func (database *Database) SaveRanking(ranking *game.Ranking) error {
+	rankingDb, err := serializeRanking(ranking)
+	if err != nil {
+		return err
+	}
+	_, err = database.rankingMap.Update(rankingDb)
 	return err
 }
 
-func (database *Database) DeleteRanking(ranking *Ranking) error {
-	_, err := database.rankingMap.Delete(ranking)
+func (database *Database) DeleteRanking(ranking *game.Ranking) error {
+	rankingDb, err := serializeRanking(ranking)
+	if err != nil {
+		return err
+	}
+	_, err = database.rankingMap.Delete(rankingDb)
 	return err
 }
 
@@ -58,9 +61,20 @@ func (database *Database) TruncateRankings() error {
 	return database.rankingMap.TruncateTables()
 }
 
-func (database *Database) GetAllRankings() ([]Ranking, error) {
-	var rankings []Ranking
-	err := database.rankingMap.Select(&rankings, "SELECT * FROM rankings ORDER BY rank")
+func (database *Database) GetAllRankings() ([]game.Ranking, error) {
+	var rankingDbs []RankingDb
+	err := database.rankingMap.Select(&rankingDbs, "SELECT * FROM rankings ORDER BY rank")
+	if err != nil {
+		return nil, err
+	}
+	var rankings []game.Ranking
+	for _, rankingDb := range rankingDbs {
+		ranking, err := rankingDb.deserialize()
+		if err != nil {
+			return nil, err
+		}
+		rankings = append(rankings, *ranking)
+	}
 	return rankings, err
 }
 
@@ -70,7 +84,7 @@ func (database *Database) CalculateRankings() error {
 	if err != nil {
 		return err
 	}
-	rankings := make(map[int]*Ranking)
+	rankings := make(map[int]*game.Ranking)
 	for _, match := range matches {
 		if match.Status != "complete" {
 			continue
@@ -112,7 +126,11 @@ func (database *Database) CalculateRankings() error {
 	}
 	for rank, ranking := range sortedRankings {
 		ranking.Rank = rank + 1
-		err = transaction.Insert(ranking)
+		rankingDb, err := serializeRanking(ranking)
+		if err != nil {
+			return err
+		}
+		err = transaction.Insert(rankingDb)
 		if err != nil {
 			return err
 		}
@@ -177,65 +195,34 @@ func (database *Database) CalculateTeamCards(matchType string) error {
 }
 
 // Incrementally accounts for the given match result in the set of rankings that are being built.
-func addMatchResultToRankings(rankings map[int]*Ranking, teamId int, matchResult *MatchResult, isRed bool) {
+func addMatchResultToRankings(rankings map[int]*game.Ranking, teamId int, matchResult *MatchResult, isRed bool) {
 	ranking := rankings[teamId]
 	if ranking == nil {
-		ranking = &Ranking{TeamId: teamId}
+		ranking = &game.Ranking{TeamId: teamId}
 		rankings[teamId] = ranking
 	}
-	ranking.Played += 1
 
-	// Don't award any points if the team was disqualified.
+	// Determine whether the team was disqualified.
 	var cards map[string]string
 	if isRed {
 		cards = matchResult.RedCards
 	} else {
 		cards = matchResult.BlueCards
 	}
+	disqualified := false
 	if card, ok := cards[strconv.Itoa(teamId)]; ok && card == "red" {
-		ranking.Disqualifications += 1
-		return
+		disqualified = true
 	}
 
-	var ownScore, opponentScore *ScoreSummary
 	if isRed {
-		ownScore = matchResult.RedScoreSummary()
-		opponentScore = matchResult.BlueScoreSummary()
+		ranking.AddScoreSummary(matchResult.RedScoreSummary(), matchResult.BlueScoreSummary(), disqualified)
 	} else {
-		ownScore = matchResult.BlueScoreSummary()
-		opponentScore = matchResult.RedScoreSummary()
+		ranking.AddScoreSummary(matchResult.BlueScoreSummary(), matchResult.RedScoreSummary(), disqualified)
 	}
-
-	// Assign ranking points and wins/losses/ties.
-	if ownScore.Score > opponentScore.Score {
-		ranking.RankingPoints += 2
-		ranking.Wins += 1
-	} else if ownScore.Score == opponentScore.Score {
-		ranking.RankingPoints += 1
-		ranking.Ties += 1
-	} else {
-		ranking.Losses += 1
-	}
-	if ownScore.PressureGoalReached {
-		ranking.RankingPoints += 1
-	}
-	if ownScore.RotorGoalReached {
-		ranking.RankingPoints += 1
-	}
-
-	// Assign tiebreaker points.
-	ranking.MatchPoints += ownScore.Score
-	ranking.AutoPoints += ownScore.AutoPoints
-	ranking.RotorPoints += ownScore.RotorPoints
-	ranking.TakeoffPoints += ownScore.TakeoffPoints
-	ranking.PressurePoints += ownScore.PressurePoints
-
-	// Store a random value to be used as the last tiebreaker if necessary.
-	ranking.Random = rand.Float64()
 }
 
-func sortRankings(rankings map[int]*Ranking) Rankings {
-	var sortedRankings Rankings
+func sortRankings(rankings map[int]*game.Ranking) game.Rankings {
+	var sortedRankings game.Rankings
 	for _, ranking := range rankings {
 		sortedRankings = append(sortedRankings, ranking)
 	}
@@ -243,39 +230,20 @@ func sortRankings(rankings map[int]*Ranking) Rankings {
 	return sortedRankings
 }
 
-// Helper function to implement the required interface for Sort.
-func (rankings Rankings) Len() int {
-	return len(rankings)
-}
-
-// Helper function to implement the required interface for Sort.
-func (rankings Rankings) Less(i, j int) bool {
-	a := rankings[i]
-	b := rankings[j]
-
-	// Use cross-multiplication to keep it in integer math.
-	if a.RankingPoints*b.Played == b.RankingPoints*a.Played {
-		if a.MatchPoints*b.Played == b.MatchPoints*a.Played {
-			if a.AutoPoints*b.Played == b.AutoPoints*a.Played {
-				if a.RotorPoints*b.Played == b.RotorPoints*a.Played {
-					if a.TakeoffPoints*b.Played == b.TakeoffPoints*a.Played {
-						if a.PressurePoints*b.Played == b.PressurePoints*a.Played {
-							return a.Random > b.Random
-						}
-						return a.PressurePoints*b.Played > b.PressurePoints*a.Played
-					}
-					return a.TakeoffPoints*b.Played > b.TakeoffPoints*a.Played
-				}
-				return a.RotorPoints*b.Played > b.RotorPoints*a.Played
-			}
-			return a.AutoPoints*b.Played > b.AutoPoints*a.Played
-		}
-		return a.MatchPoints*b.Played > b.MatchPoints*a.Played
+// Converts the nested struct MatchResult to the DB version that has JSON fields.
+func serializeRanking(ranking *game.Ranking) (*RankingDb, error) {
+	rankingDb := RankingDb{TeamId: ranking.TeamId, Rank: ranking.Rank}
+	if err := serializeHelper(&rankingDb.RankingFieldsJson, ranking.RankingFields); err != nil {
+		return nil, err
 	}
-	return a.RankingPoints*b.Played > b.RankingPoints*a.Played
+	return &rankingDb, nil
 }
 
-// Helper function to implement the required interface for Sort.
-func (rankings Rankings) Swap(i, j int) {
-	rankings[i], rankings[j] = rankings[j], rankings[i]
+// Converts the DB Ranking with JSON fields to the nested struct version.
+func (rankingDb *RankingDb) deserialize() (*game.Ranking, error) {
+	ranking := game.Ranking{TeamId: rankingDb.TeamId, Rank: rankingDb.Rank}
+	if err := json.Unmarshal([]byte(rankingDb.RankingFieldsJson), &ranking.RankingFields); err != nil {
+		return nil, err
+	}
+	return &ranking, nil
 }

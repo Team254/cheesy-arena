@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"log"
 	"net"
 	"time"
@@ -204,19 +205,19 @@ func (dsConn *DriverStationConnection) encodeControlPacket() [22]byte {
 	// Remaining number of seconds in match.
 	var matchSecondsRemaining int
 	switch mainArena.MatchState {
-	case PRE_MATCH:
+	case preMatch:
 		fallthrough
-	case START_MATCH:
+	case startMatch:
 		fallthrough
-	case AUTO_PERIOD:
-		matchSecondsRemaining = mainArena.matchTiming.AutoDurationSec - int(mainArena.MatchTimeSec())
-	case PAUSE_PERIOD:
-		matchSecondsRemaining = mainArena.matchTiming.TeleopDurationSec
-	case TELEOP_PERIOD:
+	case autoPeriod:
+		matchSecondsRemaining = game.MatchTiming.AutoDurationSec - int(mainArena.MatchTimeSec())
+	case pausePeriod:
+		matchSecondsRemaining = game.MatchTiming.TeleopDurationSec
+	case teleopPeriod:
 		fallthrough
-	case ENDGAME_PERIOD:
-		matchSecondsRemaining = mainArena.matchTiming.AutoDurationSec + mainArena.matchTiming.TeleopDurationSec +
-			mainArena.matchTiming.PauseDurationSec - int(mainArena.MatchTimeSec())
+	case endgamePeriod:
+		matchSecondsRemaining = game.MatchTiming.AutoDurationSec + game.MatchTiming.TeleopDurationSec +
+			game.MatchTiming.PauseDurationSec - int(mainArena.MatchTimeSec())
 	default:
 		matchSecondsRemaining = 0
 	}

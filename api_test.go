@@ -5,6 +5,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -24,7 +25,7 @@ func TestMatchesApi(t *testing.T) {
 	db.CreateMatch(&match2)
 	db.CreateMatch(&match3)
 	matchResult1 := buildTestMatchResult(match1.Id, 1)
-	db.CreateMatchResult(&matchResult1)
+	db.CreateMatchResult(matchResult1)
 
 	recorder := getHttpResponse("/api/matches/qualification")
 	assert.Equal(t, 200, recorder.Code)
@@ -34,7 +35,7 @@ func TestMatchesApi(t *testing.T) {
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(matchesData)) {
 		assert.Equal(t, match1.Id, matchesData[0].Match.Id)
-		assert.Equal(t, matchResult1, matchesData[0].Result.MatchResult)
+		assert.Equal(t, *matchResult1, matchesData[0].Result.MatchResult)
 		assert.Equal(t, match2.Id, matchesData[1].Match.Id)
 		assert.Nil(t, matchesData[1].Result)
 	}
@@ -60,8 +61,8 @@ func TestRankingsApi(t *testing.T) {
 	assert.Equal(t, 0, len(rankingsData.Rankings))
 	assert.Equal(t, "", rankingsData.HighestPlayedMatch)
 
-	ranking1 := RankingWithNickname{Ranking{1114, 2, 18, 700, 625, 90, 554, 9, 0.254, 3, 2, 1, 0, 10}, "Simbots"}
-	ranking2 := RankingWithNickname{Ranking{254, 1, 20, 700, 625, 90, 554, 10, 0.254, 1, 2, 3, 0, 10}, "ChezyPof"}
+	ranking1 := RankingWithNickname{*game.TestRanking2(), "Simbots"}
+	ranking2 := RankingWithNickname{*game.TestRanking1(), "ChezyPof"}
 	db.CreateRanking(&ranking1.Ranking)
 	db.CreateRanking(&ranking2.Ranking)
 	db.CreateMatch(&Match{Type: "qualification", DisplayName: "29", Status: "complete"})

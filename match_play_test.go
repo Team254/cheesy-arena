@@ -6,6 +6,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
@@ -160,19 +161,26 @@ func TestCommitMatch(t *testing.T) {
 	match.Id = 1
 	match.Type = "qualification"
 	db.CreateMatch(match)
-	matchResult = &MatchResult{MatchId: match.Id, BlueScore: Score{AutoMobility: 2}}
+	matchResult = NewMatchResult()
+	matchResult.MatchId = match.Id
+	matchResult.BlueScore = &game.Score{AutoMobility: 2}
 	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, matchResult.PlayNumber)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "B", match.Winner)
-	matchResult = &MatchResult{MatchId: match.Id, RedScore: Score{AutoMobility: 1}}
+
+	matchResult = NewMatchResult()
+	matchResult.MatchId = match.Id
+	matchResult.RedScore = &game.Score{AutoMobility: 1}
 	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, matchResult.PlayNumber)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "R", match.Winner)
-	matchResult = &MatchResult{MatchId: match.Id}
+
+	matchResult = NewMatchResult()
+	matchResult.MatchId = match.Id
 	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 3, matchResult.PlayNumber)
@@ -206,7 +214,8 @@ func TestCommitEliminationTie(t *testing.T) {
 
 	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	db.CreateMatch(match)
-	matchResult := &MatchResult{MatchId: match.Id, RedScore: Score{FuelHigh: 15, Fouls: []Foul{Foul{}}}}
+	matchResult := &MatchResult{MatchId: match.Id, RedScore: &game.Score{FuelHigh: 15, Fouls: []game.Foul{{}}},
+		BlueScore: &game.Score{}}
 	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	match, _ = db.GetMatchById(1)
@@ -233,21 +242,26 @@ func TestCommitCards(t *testing.T) {
 	db.CreateTeam(team)
 	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	db.CreateMatch(match)
-	matchResult := &MatchResult{MatchId: match.Id, BlueCards: map[string]string{"5": "yellow"}}
+	matchResult := NewMatchResult()
+	matchResult.MatchId = match.Id
+	matchResult.BlueCards = map[string]string{"5": "yellow"}
 	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	team, _ = db.GetTeamById(5)
 	assert.True(t, team.YellowCard)
 
 	// Check that editing a match result removes a yellow card from a team.
-	matchResult = &MatchResult{MatchId: match.Id}
+	matchResult = NewMatchResult()
+	matchResult.MatchId = match.Id
 	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	team, _ = db.GetTeamById(5)
 	assert.False(t, team.YellowCard)
 
 	// Check that a red card causes a yellow card to stick with a team.
-	matchResult = &MatchResult{MatchId: match.Id, BlueCards: map[string]string{"5": "red"}}
+	matchResult = NewMatchResult()
+	matchResult.MatchId = match.Id
+	matchResult.BlueCards = map[string]string{"5": "red"}
 	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	team, _ = db.GetTeamById(5)
@@ -257,7 +271,7 @@ func TestCommitCards(t *testing.T) {
 	createTestAlliances(db, 2)
 	match.Type = "elimination"
 	db.SaveMatch(match)
-	*matchResult = buildTestMatchResult(match.Id, 10)
+	matchResult = buildTestMatchResult(match.Id, 10)
 	matchResult.MatchType = match.Type
 	matchResult.RedCards = map[string]string{"1": "red"}
 	err = CommitMatchScore(match, matchResult, false)
@@ -332,7 +346,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	mainArena.AllianceStations["B3"].Bypass = true
 	ws.Write("startMatch", nil)
 	readWebsocketType(t, ws, "status")
-	assert.Equal(t, START_MATCH, mainArena.MatchState)
+	assert.Equal(t, startMatch, mainArena.MatchState)
 	ws.Write("commitResults", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "Cannot reset match")
 	ws.Write("discardResults", nil)
@@ -340,17 +354,17 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	ws.Write("abortMatch", nil)
 	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "setAudienceDisplay")
-	assert.Equal(t, POST_MATCH, mainArena.MatchState)
+	assert.Equal(t, postMatch, mainArena.MatchState)
 	mainArena.redRealtimeScore.CurrentScore.AutoMobility = 1
 	mainArena.blueRealtimeScore.CurrentScore.AutoFuelLow = 2
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
 	assert.Equal(t, 1, mainArena.savedMatchResult.RedScore.AutoMobility)
 	assert.Equal(t, 2, mainArena.savedMatchResult.BlueScore.AutoFuelLow)
-	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
+	assert.Equal(t, preMatch, mainArena.MatchState)
 	ws.Write("discardResults", nil)
 	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
-	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
+	assert.Equal(t, preMatch, mainArena.MatchState)
 
 	// Test changing the displays.
 	ws.Write("setAudienceDisplay", "logo")
@@ -426,12 +440,12 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	assert.Equal(t, 2, matchTime.MatchTimeSec)
 
 	// Check across a match state boundary.
-	mainArena.matchStartTime = time.Now().Add(-time.Duration(mainArena.matchTiming.AutoDurationSec) * time.Second)
+	mainArena.matchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.AutoDurationSec) * time.Second)
 	mainArena.Update()
 	statusReceived, matchTime = readWebsocketStatusMatchTime(t, ws)
 	assert.Equal(t, true, statusReceived)
 	assert.Equal(t, 3, matchTime.MatchState)
-	assert.Equal(t, mainArena.matchTiming.AutoDurationSec, matchTime.MatchTimeSec)
+	assert.Equal(t, game.MatchTiming.AutoDurationSec, matchTime.MatchTimeSec)
 }
 
 // Handles the status and matchTime messages arriving in either order.

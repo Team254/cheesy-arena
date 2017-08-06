@@ -10,6 +10,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -423,32 +424,32 @@ func getTbaRequest(url string) (*http.Response, error) {
 
 func createTbaScoringBreakdown(match *Match, matchResult *MatchResult, alliance string) *TbaScoreBreakdown {
 	var breakdown TbaScoreBreakdown
-	var score *Score
-	var scoreSummary *ScoreSummary
+	var score *game.Score
+	var scoreSummary *game.ScoreSummary
 	if alliance == "red" {
-		score = &matchResult.RedScore
+		score = matchResult.RedScore
 		scoreSummary = matchResult.RedScoreSummary()
 	} else {
-		score = &matchResult.BlueScore
+		score = matchResult.BlueScore
 		scoreSummary = matchResult.BlueScoreSummary()
 	}
 
 	breakdown.AutoFuelHigh = score.AutoFuelHigh
 	breakdown.AutoFuelLow = score.AutoFuelLow
 	breakdown.AutoFuelPoints = score.AutoFuelHigh + score.AutoFuelLow/3
-	numAutoRotors := numRotors(score.AutoGears)
-	breakdown.Rotor1Auto = numAutoRotors >= 1
-	breakdown.Rotor2Auto = numAutoRotors >= 2
-	breakdown.AutoRotorPoints = 60 * numAutoRotors
+	breakdown.Rotor1Auto = score.AutoRotors >= 1
+	breakdown.Rotor2Auto = score.AutoRotors >= 2
+	breakdown.AutoRotorPoints = 60 * score.AutoRotors
 	breakdown.AutoMobilityPoints = scoreSummary.AutoMobilityPoints
 	breakdown.AutoPoints = scoreSummary.AutoPoints
 	breakdown.TeleopFuelHigh = score.FuelHigh
 	breakdown.TeleopFuelLow = score.FuelLow
 	breakdown.TeleopFuelPoints = scoreSummary.PressurePoints - breakdown.AutoFuelPoints
-	breakdown.Rotor1Engaged = scoreSummary.Rotors >= 1
-	breakdown.Rotor2Engaged = scoreSummary.Rotors >= 2
-	breakdown.Rotor3Engaged = scoreSummary.Rotors >= 3
-	breakdown.Rotor4Engaged = scoreSummary.Rotors >= 4
+	totalRotors := score.AutoRotors + score.Rotors
+	breakdown.Rotor1Engaged = totalRotors >= 1
+	breakdown.Rotor2Engaged = totalRotors >= 2
+	breakdown.Rotor3Engaged = totalRotors >= 3
+	breakdown.Rotor4Engaged = totalRotors >= 4
 	breakdown.TeleopRotorPoints = scoreSummary.RotorPoints - breakdown.AutoRotorPoints
 	breakdown.TeleopTakeoffPoints = scoreSummary.TakeoffPoints
 	breakdown.TeleopPoints = breakdown.TeleopFuelPoints + breakdown.TeleopRotorPoints +

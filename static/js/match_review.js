@@ -33,11 +33,11 @@ var renderResults = function(alliance) {
 
   // Set the values of the form fields from the JSON results data.
   $("input[name=" + alliance + "AutoMobility]").val(result.score.AutoMobility);
-  $("input[name=" + alliance + "AutoGears]").val(result.score.AutoGears);
+  $("input[name=" + alliance + "AutoRotors]").val(result.score.AutoRotors);
   $("input[name=" + alliance + "AutoFuelLow]").val(result.score.AutoFuelLow);
   $("input[name=" + alliance + "AutoFuelHigh]").val(result.score.AutoFuelHigh);
 
-  $("input[name=" + alliance + "Gears]").val(result.score.Gears);
+  $("input[name=" + alliance + "Rotors]").val(result.score.Rotors);
   $("input[name=" + alliance + "FuelLow]").val(result.score.FuelLow);
   $("input[name=" + alliance + "FuelHigh]").val(result.score.FuelHigh);
   $("input[name=" + alliance + "Takeoffs]").val(result.score.Takeoffs);
@@ -45,7 +45,7 @@ var renderResults = function(alliance) {
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
       $("input[name=" + alliance + "Foul" + k + "Team][value=" + v.TeamId + "]").prop("checked", true);
-      $("input[name=" + alliance + "Foul" + k + "Rule]").val(v.Rule);
+      $("input[name=" + alliance + "Foul" + k + "RuleNumber]").val(v.RuleNumber);
       $("input[name=" + alliance + "Foul" + k + "IsTechnical]").prop("checked", v.IsTechnical);
       $("input[name=" + alliance + "Foul" + k + "Time]").val(v.TimeInMatchSec);
     });
@@ -67,10 +67,10 @@ var updateResults = function(alliance) {
   });
 
   result.score.AutoMobility = parseInt(formData[alliance + "AutoMobility"]);
-  result.score.AutoGears = parseInt(formData[alliance + "AutoGears"]);
+  result.score.AutoRotors = parseInt(formData[alliance + "AutoRotors"]);
   result.score.AutoFuelLow = parseInt(formData[alliance + "AutoFuelLow"]);
   result.score.AutoFuelHigh = parseInt(formData[alliance + "AutoFuelHigh"]);
-  result.score.Gears = parseInt(formData[alliance + "Gears"]);
+  result.score.Rotors = parseInt(formData[alliance + "Rotors"]);
   result.score.FuelLow = parseInt(formData[alliance + "FuelLow"]);
   result.score.FuelHigh = parseInt(formData[alliance + "FuelHigh"]);
   result.score.Takeoffs = parseInt(formData[alliance + "Takeoffs"]);
@@ -78,7 +78,7 @@ var updateResults = function(alliance) {
   result.score.Fouls = [];
   for (var i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {
     var prefix = alliance + "Foul" + i;
-    var foul = {TeamId: parseInt(formData[prefix + "Team"]), Rule: formData[prefix + "Rule"],
+    var foul = {TeamId: parseInt(formData[prefix + "Team"]), RuleNumber: formData[prefix + "RuleNumber"],
                 IsTechnical: formData[prefix + "IsTechnical"] == "on",
                 TimeInMatchSec: parseFloat(formData[prefix + "Time"])};
     result.score.Fouls.push(foul);

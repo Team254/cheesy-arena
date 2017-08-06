@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"io"
 	"log"
 	"net/http"
@@ -81,7 +82,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	err = websocket.Write("matchTiming", mainArena.matchTiming)
+	err = websocket.Write("matchTiming", game.MatchTiming)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -94,8 +95,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	data = struct {
 		RedScore  int
 		BlueScore int
-	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+	}{mainArena.RedScoreSummary().Score, mainArena.BlueScoreSummary().Score}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -140,8 +140,7 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				message = struct {
 					RedScore  int
 					BlueScore int
-				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+				}{mainArena.RedScoreSummary().Score, mainArena.BlueScoreSummary().Score}
 			case _, ok := <-scorePostedListener:
 				if !ok {
 					return
@@ -150,10 +149,10 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				message = struct {
 					MatchType        string
 					MatchDisplayName string
-					RedScoreSummary  *ScoreSummary
-					BlueScoreSummary *ScoreSummary
-					RedFouls         []Foul
-					BlueFouls        []Foul
+					RedScoreSummary  *game.ScoreSummary
+					BlueScoreSummary *game.ScoreSummary
+					RedFouls         []game.Foul
+					BlueFouls        []game.Foul
 					RedCards         map[string]string
 					BlueCards        map[string]string
 				}{mainArena.savedMatch.CapitalizedType(), mainArena.savedMatch.DisplayName,

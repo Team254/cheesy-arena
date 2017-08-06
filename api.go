@@ -7,14 +7,15 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 type MatchResultWithSummary struct {
 	MatchResult
-	RedSummary  *ScoreSummary
-	BlueSummary *ScoreSummary
+	RedSummary  *game.ScoreSummary
+	BlueSummary *game.ScoreSummary
 }
 
 type MatchWithResult struct {
@@ -23,7 +24,7 @@ type MatchWithResult struct {
 }
 
 type RankingWithNickname struct {
-	Ranking
+	game.Ranking
 	Nickname string
 }
 

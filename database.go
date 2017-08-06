@@ -8,6 +8,7 @@ package main
 import (
 	"bitbucket.org/liamstask/goose/lib/goose"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/jmoiron/modl"
 	_ "github.com/mattn/go-sqlite3"
@@ -100,7 +101,7 @@ func (database *Database) mapTables() {
 	database.matchResultMap.AddTableWithName(MatchResultDb{}, "match_results").SetKeys(true, "Id")
 
 	database.rankingMap = modl.NewDbMap(database.db, dialect)
-	database.rankingMap.AddTableWithName(Ranking{}, "rankings").SetKeys(false, "TeamId")
+	database.rankingMap.AddTableWithName(RankingDb{}, "rankings").SetKeys(false, "TeamId")
 
 	database.teamMap = modl.NewDbMap(database.db, dialect)
 	database.teamMap.AddTableWithName(Team{}, "teams").SetKeys(false, "Id")
@@ -113,4 +114,13 @@ func (database *Database) mapTables() {
 
 	database.sponsorSlideMap = modl.NewDbMap(database.db, dialect)
 	database.sponsorSlideMap.AddTableWithName(SponsorSlide{}, "sponsor_slides").SetKeys(true, "Id")
+}
+
+func serializeHelper(target *string, source interface{}) error {
+	bytes, err := json.Marshal(source)
+	if err != nil {
+		return err
+	}
+	*target = string(bytes)
+	return nil
 }

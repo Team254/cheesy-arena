@@ -6,6 +6,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"mime/multipart"
@@ -77,7 +78,7 @@ func TestSetupSettingsClearDb(t *testing.T) {
 	db.CreateTeam(new(Team))
 	db.CreateMatch(&Match{Type: "qualification"})
 	db.CreateMatchResult(new(MatchResult))
-	db.CreateRanking(new(Ranking))
+	db.CreateRanking(new(game.Ranking))
 	db.CreateAllianceTeam(new(AllianceTeam))
 	recorder := postHttpResponse("/setup/db/clear", "")
 	assert.Equal(t, 302, recorder.Code)

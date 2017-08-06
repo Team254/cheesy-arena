@@ -6,7 +6,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -58,7 +58,7 @@ func TestPublishMatches(t *testing.T) {
 	db.CreateMatch(&match1)
 	db.CreateMatch(&match2)
 	matchResult1 := buildTestMatchResult(match1.Id, 1)
-	db.CreateMatchResult(&matchResult1)
+	db.CreateMatchResult(matchResult1)
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -83,8 +83,8 @@ func TestPublishRankings(t *testing.T) {
 	assert.Nil(t, err)
 	defer db.Close()
 	eventSettings, _ = db.GetEventSettings()
-	db.CreateRanking(&Ranking{1114, 2, 20, 625, 90, 554, 10, 50, 0.254, 3, 2, 1, 0, 10})
-	db.CreateRanking(&Ranking{254, 1, 20, 625, 90, 554, 10, 50, 0.254, 1, 2, 3, 0, 10})
+	db.CreateRanking(game.TestRanking2())
+	db.CreateRanking(game.TestRanking1())
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

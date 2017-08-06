@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
@@ -14,18 +15,6 @@ import (
 	"strconv"
 	"text/template"
 )
-
-type Rule struct {
-	Rule        string
-	IsTechnical bool
-}
-
-var rules = []Rule{{"S08", false}, {"C08", false}, {"C11", false}, {"G04", false}, {"G05", false},
-	{"G08", false}, {"G09", false}, {"G11", false}, {"G11", true}, {"G12", false}, {"G13", true},
-	{"G15", false}, {"G17", false}, {"G20", false}, {"G22", false}, {"G23", false}, {"G26", true},
-	{"G27", false}, {"G27", true}, {"A01", false}, {"A02", false}, {"A04", false}, {"A04", true},
-	{"A05", true}, {"H06", false}, {"H07", false}, {"H08", false}, {"H11", false}, {"H11", true},
-	{"H12", true}, {"H13", false}}
 
 // Renders the referee interface for assigning fouls.
 func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -76,15 +65,15 @@ func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		Blue1            *Team
 		Blue2            *Team
 		Blue3            *Team
-		RedFouls         []Foul
-		BlueFouls        []Foul
+		RedFouls         []game.Foul
+		BlueFouls        []game.Foul
 		RedCards         map[string]string
 		BlueCards        map[string]string
-		Rules            []Rule
+		Rules            []game.Rule
 		EntryEnabled     bool
 	}{eventSettings, matchType, match.DisplayName, red1, red2, red3, blue1, blue2, blue3,
 		mainArena.redRealtimeScore.CurrentScore.Fouls, mainArena.blueRealtimeScore.CurrentScore.Fouls,
-		mainArena.redRealtimeScore.Cards, mainArena.blueRealtimeScore.Cards, rules,
+		mainArena.redRealtimeScore.Cards, mainArena.blueRealtimeScore.Cards, game.Rules,
 		!(mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted)}
 	err = template.ExecuteTemplate(w, "referee_display.html", data)
 	if err != nil {
@@ -163,8 +152,8 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Add the foul to the correct alliance's list.
-			foul := Foul{TeamId: args.TeamId, Rule: args.Rule, IsTechnical: args.IsTechnical,
-				TimeInMatchSec: mainArena.MatchTimeSec()}
+			foul := game.Foul{Rule: game.Rule{RuleNumber: args.Rule, IsTechnical: args.IsTechnical},
+				TeamId: args.TeamId, TimeInMatchSec: mainArena.MatchTimeSec()}
 			if args.Alliance == "red" {
 				mainArena.redRealtimeScore.CurrentScore.Fouls =
 					append(mainArena.redRealtimeScore.CurrentScore.Fouls, foul)
@@ -188,9 +177,9 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Remove the foul from the correct alliance's list.
-			deleteFoul := Foul{TeamId: args.TeamId, Rule: args.Rule, IsTechnical: args.IsTechnical,
-				TimeInMatchSec: args.TimeInMatchSec}
-			var fouls *[]Foul
+			deleteFoul := game.Foul{Rule: game.Rule{RuleNumber: args.Rule, IsTechnical: args.IsTechnical},
+				TeamId: args.TeamId, TimeInMatchSec: args.TimeInMatchSec}
+			var fouls *[]game.Foul
 			if args.Alliance == "red" {
 				fouls = &mainArena.redRealtimeScore.CurrentScore.Fouls
 			} else {
@@ -225,7 +214,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			cards[strconv.Itoa(args.TeamId)] = args.Card
 			continue
 		case "signalReset":
-			if mainArena.MatchState != POST_MATCH {
+			if mainArena.MatchState != postMatch {
 				// Don't allow clearing the field until the match is over.
 				continue
 			}
@@ -234,7 +223,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			mainArena.allianceStationDisplayNotifier.Notify(nil)
 			continue // Don't reload.
 		case "commitMatch":
-			if mainArena.MatchState != POST_MATCH {
+			if mainArena.MatchState != postMatch {
 				// Don't allow committing the fouls until the match is over.
 				continue
 			}

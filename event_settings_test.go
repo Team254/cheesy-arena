@@ -31,5 +31,5 @@ func TestEventSettingsReadWrite(t *testing.T) {
 	assert.Nil(t, err)
 	eventSettings2, err := db.GetEventSettings()
 	assert.Nil(t, err)
-	assert.Equal(t, *eventSettings, *eventSettings2)
+	assert.Equal(t, eventSettings, eventSettings2)
 }

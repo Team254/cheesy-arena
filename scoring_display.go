@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/gorilla/mux"
 	"io"
 	"log"
@@ -56,13 +57,13 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var score **RealtimeScore
-	var opponentScore **RealtimeScore
+	var scoreSummaryFunc func() *game.ScoreSummary
 	if alliance == "red" {
 		score = &mainArena.redRealtimeScore
-		opponentScore = &mainArena.blueRealtimeScore
+		scoreSummaryFunc = mainArena.RedScoreSummary
 	} else {
 		score = &mainArena.blueRealtimeScore
-		opponentScore = &mainArena.redRealtimeScore
+		scoreSummaryFunc = mainArena.BlueScoreSummary
 	}
 	autoCommitted := false
 
@@ -83,9 +84,9 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	// Send the various notifications immediately upon connection.
 	data := struct {
 		Score         *RealtimeScore
-		ScoreSummary  *ScoreSummary
+		ScoreSummary  *game.ScoreSummary
 		AutoCommitted bool
-	}{*score, (*score).ScoreSummary((*opponentScore).CurrentScore.Fouls), autoCommitted}
+	}{*score, scoreSummaryFunc(), autoCommitted}
 	err = websocket.Write("score", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -155,34 +156,14 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					(*score).CurrentScore.AutoMobility--
 				}
 			}
-		case "gear":
-			if !autoCommitted {
-				if (*score).CurrentScore.AutoGears < 3 && (*score).CurrentScore.AutoGears+(*score).CurrentScore.Gears < 13 {
-					(*score).CurrentScore.AutoGears++
-				}
-			} else {
-				if (*score).CurrentScore.AutoGears+(*score).CurrentScore.Gears < 13 {
-					(*score).CurrentScore.Gears++
-				}
-			}
-		case "undoGear":
-			if !autoCommitted {
-				if (*score).CurrentScore.AutoGears > 0 {
-					(*score).CurrentScore.AutoGears--
-				}
-			} else {
-				if (*score).CurrentScore.Gears > 0 {
-					(*score).CurrentScore.Gears--
-				}
-			}
 		case "commit":
-			if mainArena.MatchState != PRE_MATCH || mainArena.currentMatch.Type == "test" {
+			if mainArena.MatchState != preMatch || mainArena.currentMatch.Type == "test" {
 				autoCommitted = true
 			}
 		case "uncommitAuto":
 			autoCommitted = false
 		case "commitMatch":
-			if mainArena.MatchState != POST_MATCH {
+			if mainArena.MatchState != postMatch {
 				// Don't allow committing the score until the match is over.
 				websocket.WriteError("Cannot commit score: Match is not over.")
 				continue
@@ -201,9 +182,9 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		// Send out the score again after handling the command, as it most likely changed as a result.
 		data = struct {
 			Score         *RealtimeScore
-			ScoreSummary  *ScoreSummary
+			ScoreSummary  *game.ScoreSummary
 			AutoCommitted bool
-		}{*score, (*score).ScoreSummary((*opponentScore).CurrentScore.Fouls), autoCommitted}
+		}{*score, scoreSummaryFunc(), autoCommitted}
 		err = websocket.Write("score", data)
 		if err != nil {
 			log.Printf("Websocket error: %s", err)

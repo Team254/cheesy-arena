@@ -97,23 +97,23 @@ func TestEncodeControlPacket(t *testing.T) {
 	assert.Equal(t, byte(3), data[6])
 
 	// Check the countdown at different points during the match.
-	mainArena.MatchState = AUTO_PERIOD
+	mainArena.MatchState = autoPeriod
 	mainArena.matchStartTime = time.Now().Add(-time.Duration(4 * time.Second))
 	data = dsConn.encodeControlPacket()
 	assert.Equal(t, byte(11), data[21])
-	mainArena.MatchState = PAUSE_PERIOD
+	mainArena.MatchState = pausePeriod
 	mainArena.matchStartTime = time.Now().Add(-time.Duration(16 * time.Second))
 	data = dsConn.encodeControlPacket()
 	assert.Equal(t, byte(135), data[21])
-	mainArena.MatchState = TELEOP_PERIOD
+	mainArena.MatchState = teleopPeriod
 	mainArena.matchStartTime = time.Now().Add(-time.Duration(33 * time.Second))
 	data = dsConn.encodeControlPacket()
 	assert.Equal(t, byte(119), data[21])
-	mainArena.MatchState = ENDGAME_PERIOD
+	mainArena.MatchState = endgamePeriod
 	mainArena.matchStartTime = time.Now().Add(-time.Duration(150 * time.Second))
 	data = dsConn.encodeControlPacket()
 	assert.Equal(t, byte(2), data[21])
-	mainArena.MatchState = POST_MATCH
+	mainArena.MatchState = postMatch
 	mainArena.matchStartTime = time.Now().Add(-time.Duration(180 * time.Second))
 	data = dsConn.encodeControlPacket()
 	assert.Equal(t, byte(0), data[21])

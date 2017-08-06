@@ -7,6 +7,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/Team254/cheesy-arena/game"
 )
 
 type MatchResult struct {
@@ -14,8 +15,8 @@ type MatchResult struct {
 	MatchId    int
 	PlayNumber int
 	MatchType  string
-	RedScore   Score
-	BlueScore  Score
+	RedScore   *game.Score
+	BlueScore  *game.Score
 	RedCards   map[string]string
 	BlueCards  map[string]string
 }
@@ -31,43 +32,11 @@ type MatchResultDb struct {
 	BlueCardsJson string
 }
 
-type Score struct {
-	AutoMobility int
-	AutoGears    int
-	AutoFuelLow  int
-	AutoFuelHigh int
-	Gears        int
-	FuelLow      int
-	FuelHigh     int
-	Takeoffs     int
-	Fouls        []Foul
-	ElimDq       bool
-}
-
-type Foul struct {
-	TeamId         int
-	Rule           string
-	IsTechnical    bool
-	TimeInMatchSec float64
-}
-
-type ScoreSummary struct {
-	AutoMobilityPoints  int
-	AutoPoints          int
-	RotorPoints         int
-	TakeoffPoints       int
-	PressurePoints      int
-	BonusPoints         int
-	FoulPoints          int
-	Score               int
-	PressureGoalReached bool
-	RotorGoalReached    bool
-	Rotors              int
-}
-
 // Returns a new match result object with empty slices instead of nil.
 func NewMatchResult() *MatchResult {
 	matchResult := new(MatchResult)
+	matchResult.RedScore = new(game.Score)
+	matchResult.BlueScore = new(game.Score)
 	matchResult.RedCards = make(map[string]string)
 	matchResult.BlueCards = make(map[string]string)
 	return matchResult
@@ -126,13 +95,13 @@ func (database *Database) TruncateMatchResults() error {
 }
 
 // Calculates and returns the summary fields used for ranking and display for the red alliance.
-func (matchResult *MatchResult) RedScoreSummary() *ScoreSummary {
-	return scoreSummary(&matchResult.RedScore, matchResult.BlueScore.Fouls, matchResult.MatchType)
+func (matchResult *MatchResult) RedScoreSummary() *game.ScoreSummary {
+	return matchResult.RedScore.Summarize(matchResult.BlueScore.Fouls, matchResult.MatchType)
 }
 
 // Calculates and returns the summary fields used for ranking and display for the blue alliance.
-func (matchResult *MatchResult) BlueScoreSummary() *ScoreSummary {
-	return scoreSummary(&matchResult.BlueScore, matchResult.RedScore.Fouls, matchResult.MatchType)
+func (matchResult *MatchResult) BlueScoreSummary() *game.ScoreSummary {
+	return matchResult.BlueScore.Summarize(matchResult.RedScore.Fouls, matchResult.MatchType)
 }
 
 // Checks the score for disqualifications or a tie and adjusts it appropriately.
@@ -149,58 +118,7 @@ func (matchResult *MatchResult) CorrectEliminationScore() {
 		}
 	}
 
-	// No elimination tiebreakers in 2017 Chezy Champs rules.
-}
-
-// Calculates and returns the summary fields used for ranking and display.
-func scoreSummary(score *Score, opponentFouls []Foul, matchType string) *ScoreSummary {
-	summary := new(ScoreSummary)
-
-	// Leave the score at zero if the team was disqualified.
-	if score.ElimDq {
-		return summary
-	}
-
-	// Calculate autonomous score.
-	summary.AutoMobilityPoints = 5 * score.AutoMobility
-	autoRotors := numRotors(score.AutoGears)
-	summary.AutoPoints = summary.AutoMobilityPoints + 60*autoRotors + score.AutoFuelHigh +
-		score.AutoFuelLow/3
-
-	// Calculate teleop score.
-	teleopRotors := numRotors(score.AutoGears+score.Gears) - autoRotors
-	summary.Rotors = autoRotors + teleopRotors
-	summary.RotorPoints = 60*autoRotors + 40*teleopRotors
-	summary.TakeoffPoints = 50 * score.Takeoffs
-	summary.PressurePoints = (9*score.AutoFuelHigh + 3*score.AutoFuelLow + 3*score.FuelHigh + score.FuelLow) / 9
-
-	// Calculate bonuses.
-	if summary.PressurePoints >= 40 {
-		summary.PressureGoalReached = true
-		if matchType == "elimination" {
-			summary.BonusPoints += 20
-		}
-	}
-	if autoRotors+teleopRotors == 4 {
-		summary.RotorGoalReached = true
-		if matchType == "elimination" {
-			summary.BonusPoints += 100
-		}
-	}
-
-	// Calculate penalty points.
-	for _, foul := range opponentFouls {
-		if foul.IsTechnical {
-			summary.FoulPoints += 25
-		} else {
-			summary.FoulPoints += 5
-		}
-	}
-
-	summary.Score = summary.AutoMobilityPoints + summary.RotorPoints + summary.TakeoffPoints + summary.PressurePoints +
-		summary.BonusPoints + summary.FoulPoints
-
-	return summary
+	// No elimination tiebreakers.
 }
 
 // Converts the nested struct MatchResult to the DB version that has JSON fields.
@@ -222,15 +140,6 @@ func (matchResult *MatchResult) serialize() (*MatchResultDb, error) {
 	return &matchResultDb, nil
 }
 
-func serializeHelper(target *string, source interface{}) error {
-	bytes, err := json.Marshal(source)
-	if err != nil {
-		return err
-	}
-	*target = string(bytes)
-	return nil
-}
-
 // Converts the DB MatchResult with JSON fields to the nested struct version.
 func (matchResultDb *MatchResultDb) deserialize() (*MatchResult, error) {
 	matchResult := MatchResult{Id: matchResultDb.Id, MatchId: matchResultDb.MatchId,
@@ -248,15 +157,4 @@ func (matchResultDb *MatchResultDb) deserialize() (*MatchResult, error) {
 		return nil, err
 	}
 	return &matchResult, nil
-}
-
-// Returns the number of completed rotors given the number of gears installed.
-func numRotors(numGears int) int {
-	rotorGears := []int{1, 3, 7, 13}
-	for rotors, gears := range rotorGears {
-		if numGears < gears {
-			return rotors
-		}
-	}
-	return len(rotorGears)
 }

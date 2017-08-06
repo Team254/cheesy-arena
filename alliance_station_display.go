@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"io"
 	"log"
 	"net/http"
@@ -63,7 +64,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		station = ""
 		mainArena.allianceStationDisplays[displayId] = station
 	}
-	rankings := make(map[string]*Ranking)
+	rankings := make(map[string]*game.Ranking)
 	for _, allianceStation := range mainArena.AllianceStations {
 		if allianceStation.Team != nil {
 			rankings[strconv.Itoa(allianceStation.Team.Id)], _ = db.GetRankingForTeam(allianceStation.Team.Id)
@@ -90,7 +91,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	err = websocket.Write("matchTiming", mainArena.matchTiming)
+	err = websocket.Write("matchTiming", game.MatchTiming)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -103,7 +104,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	data = struct {
 		AllianceStation string
 		Teams           map[string]*Team
-		Rankings        map[string]*Ranking
+		Rankings        map[string]*game.Ranking
 	}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].Team,
 		"R2": mainArena.AllianceStations["R2"].Team, "R3": mainArena.AllianceStations["R3"].Team,
 		"B1": mainArena.AllianceStations["B1"].Team, "B2": mainArena.AllianceStations["B2"].Team,
@@ -116,8 +117,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	data = struct {
 		RedScore  int
 		BlueScore int
-	}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-		mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+	}{mainArena.RedScoreSummary().Score, mainArena.BlueScoreSummary().Score}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -143,7 +143,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				}
 				messageType = "setMatch"
 				station = mainArena.allianceStationDisplays[displayId]
-				rankings := make(map[string]*Ranking)
+				rankings := make(map[string]*game.Ranking)
 				for _, allianceStation := range mainArena.AllianceStations {
 					if allianceStation.Team != nil {
 						rankings[strconv.Itoa(allianceStation.Team.Id)], _ = db.GetRankingForTeam(allianceStation.Team.Id)
@@ -152,7 +152,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				message = struct {
 					AllianceStation string
 					Teams           map[string]*Team
-					Rankings        map[string]*Ranking
+					Rankings        map[string]*game.Ranking
 				}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].Team,
 					"R2": mainArena.AllianceStations["R2"].Team, "R3": mainArena.AllianceStations["R3"].Team,
 					"B1": mainArena.AllianceStations["B1"].Team, "B2": mainArena.AllianceStations["B2"].Team,
@@ -177,8 +177,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				message = struct {
 					RedScore  int
 					BlueScore int
-				}{mainArena.redRealtimeScore.Score(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-					mainArena.blueRealtimeScore.Score(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+				}{mainArena.RedScoreSummary().Score, mainArena.BlueScoreSummary().Score}
 			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return

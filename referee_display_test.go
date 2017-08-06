@@ -63,16 +63,16 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "reload")
 	if assert.Equal(t, 2, len(mainArena.redRealtimeScore.CurrentScore.Fouls)) {
 		assert.Equal(t, 256, mainArena.redRealtimeScore.CurrentScore.Fouls[0].TeamId)
-		assert.Equal(t, "G22", mainArena.redRealtimeScore.CurrentScore.Fouls[0].Rule)
+		assert.Equal(t, "G22", mainArena.redRealtimeScore.CurrentScore.Fouls[0].RuleNumber)
 		assert.Equal(t, false, mainArena.redRealtimeScore.CurrentScore.Fouls[0].IsTechnical)
 		assert.Equal(t, 0.0, mainArena.redRealtimeScore.CurrentScore.Fouls[0].TimeInMatchSec)
 		assert.Equal(t, 359, mainArena.redRealtimeScore.CurrentScore.Fouls[1].TeamId)
-		assert.Equal(t, "G22", mainArena.redRealtimeScore.CurrentScore.Fouls[1].Rule)
+		assert.Equal(t, "G22", mainArena.redRealtimeScore.CurrentScore.Fouls[1].RuleNumber)
 		assert.Equal(t, true, mainArena.redRealtimeScore.CurrentScore.Fouls[1].IsTechnical)
 	}
 	if assert.Equal(t, 1, len(mainArena.blueRealtimeScore.CurrentScore.Fouls)) {
 		assert.Equal(t, 1680, mainArena.blueRealtimeScore.CurrentScore.Fouls[0].TeamId)
-		assert.Equal(t, "G22", mainArena.blueRealtimeScore.CurrentScore.Fouls[0].Rule)
+		assert.Equal(t, "G22", mainArena.blueRealtimeScore.CurrentScore.Fouls[0].RuleNumber)
 		assert.Equal(t, true, mainArena.blueRealtimeScore.CurrentScore.Fouls[0].IsTechnical)
 		assert.Equal(t, 0.0, mainArena.blueRealtimeScore.CurrentScore.Fouls[0].TimeInMatchSec)
 	}
@@ -114,7 +114,7 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	}
 
 	// Test field reset and match committing.
-	mainArena.MatchState = POST_MATCH
+	mainArena.MatchState = postMatch
 	ws.Write("signalReset", nil)
 	time.Sleep(time.Millisecond * 10)
 	assert.Equal(t, "fieldReset", mainArena.allianceStationDisplayScreen)

@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"log"
 	"time"
 )
@@ -19,13 +20,13 @@ const (
 
 // Progression of match states.
 const (
-	PRE_MATCH      = 0
-	START_MATCH    = 1
-	AUTO_PERIOD    = 2
-	PAUSE_PERIOD   = 3
-	TELEOP_PERIOD  = 4
-	ENDGAME_PERIOD = 5
-	POST_MATCH     = 6
+	preMatch      = 0
+	startMatch    = 1
+	autoPeriod    = 2
+	pausePeriod   = 3
+	teleopPeriod  = 4
+	endgamePeriod = 5
+	postMatch     = 6
 )
 
 type AllianceStation struct {
@@ -35,16 +36,8 @@ type AllianceStation struct {
 	Team          *Team
 }
 
-// Match period timings.
-type MatchTiming struct {
-	AutoDurationSec    int
-	PauseDurationSec   int
-	TeleopDurationSec  int
-	EndgameTimeLeftSec int
-}
-
 type RealtimeScore struct {
-	CurrentScore    Score
+	CurrentScore    *game.Score
 	Cards           map[string]string
 	TeleopCommitted bool
 	FoulsCommitted  bool
@@ -54,7 +47,6 @@ type Arena struct {
 	AllianceStations               map[string]*AllianceStation
 	MatchState                     int
 	CanStartMatch                  bool
-	matchTiming                    MatchTiming
 	currentMatch                   *Match
 	redRealtimeScore               *RealtimeScore
 	blueRealtimeScore              *RealtimeScore
@@ -89,17 +81,13 @@ var mainArena Arena // Named thusly to avoid polluting the global namespace with
 
 func NewRealtimeScore() *RealtimeScore {
 	realtimeScore := new(RealtimeScore)
+	realtimeScore.CurrentScore = new(game.Score)
 	realtimeScore.Cards = make(map[string]string)
 	return realtimeScore
 }
 
 // Sets the arena to its initial state.
 func (arena *Arena) Setup() {
-	arena.matchTiming.AutoDurationSec = 15
-	arena.matchTiming.PauseDurationSec = 2
-	arena.matchTiming.TeleopDurationSec = 135
-	arena.matchTiming.EndgameTimeLeftSec = 30
-
 	arena.AllianceStations = make(map[string]*AllianceStation)
 	arena.AllianceStations["R1"] = new(AllianceStation)
 	arena.AllianceStations["R2"] = new(AllianceStation)
@@ -125,7 +113,7 @@ func (arena *Arena) Setup() {
 	arena.lights.Setup()
 
 	// Load empty match as current.
-	arena.MatchState = PRE_MATCH
+	arena.MatchState = preMatch
 	arena.LoadTestMatch()
 	arena.lastMatchState = -1
 	arena.lastMatchTimeSec = 0
@@ -133,7 +121,7 @@ func (arena *Arena) Setup() {
 	// Initialize display parameters.
 	arena.audienceDisplayScreen = "blank"
 	arena.savedMatch = &Match{}
-	arena.savedMatchResult = &MatchResult{}
+	arena.savedMatchResult = NewMatchResult()
 	arena.allianceStationDisplays = make(map[string]string)
 	arena.allianceStationDisplayScreen = "match"
 }
@@ -177,7 +165,7 @@ func (arena *Arena) AssignTeam(teamId int, station string) error {
 
 // Sets up the arena for the given match.
 func (arena *Arena) LoadMatch(match *Match) error {
-	if arena.MatchState != PRE_MATCH {
+	if arena.MatchState != preMatch {
 		return fmt.Errorf("Cannot load match while there is a match still in progress or with results pending.")
 	}
 
@@ -303,7 +291,7 @@ func (arena *Arena) SetupNetwork() {
 
 // Returns nil if the match can be started, and an error otherwise.
 func (arena *Arena) CheckCanStartMatch() error {
-	if arena.MatchState != PRE_MATCH {
+	if arena.MatchState != preMatch {
 		return fmt.Errorf("Cannot start match while there is a match still in progress or with results pending.")
 	}
 	for _, allianceStation := range arena.AllianceStations {
@@ -339,17 +327,17 @@ func (arena *Arena) StartMatch() error {
 			}
 		}
 
-		arena.MatchState = START_MATCH
+		arena.MatchState = startMatch
 	}
 	return err
 }
 
 // Kills the current match if it is underway.
 func (arena *Arena) AbortMatch() error {
-	if arena.MatchState == PRE_MATCH || arena.MatchState == POST_MATCH {
+	if arena.MatchState == preMatch || arena.MatchState == postMatch {
 		return fmt.Errorf("Cannot abort match when it is not in progress.")
 	}
-	arena.MatchState = POST_MATCH
+	arena.MatchState = postMatch
 	arena.audienceDisplayScreen = "blank"
 	arena.audienceDisplayNotifier.Notify(nil)
 	if !arena.muteMatchSounds {
@@ -360,10 +348,10 @@ func (arena *Arena) AbortMatch() error {
 
 // Clears out the match and resets the arena state unless there is a match underway.
 func (arena *Arena) ResetMatch() error {
-	if arena.MatchState != POST_MATCH && arena.MatchState != PRE_MATCH {
+	if arena.MatchState != postMatch && arena.MatchState != preMatch {
 		return fmt.Errorf("Cannot reset match while it is in progress.")
 	}
-	arena.MatchState = PRE_MATCH
+	arena.MatchState = preMatch
 	arena.AllianceStations["R1"].Bypass = false
 	arena.AllianceStations["R2"].Bypass = false
 	arena.AllianceStations["R3"].Bypass = false
@@ -376,7 +364,7 @@ func (arena *Arena) ResetMatch() error {
 
 // Returns the fractional number of seconds since the start of the match.
 func (arena *Arena) MatchTimeSec() float64 {
-	if arena.MatchState == PRE_MATCH || arena.MatchState == START_MATCH || arena.MatchState == POST_MATCH {
+	if arena.MatchState == preMatch || arena.MatchState == startMatch || arena.MatchState == postMatch {
 		return 0
 	} else {
 		return time.Since(arena.matchStartTime).Seconds()
@@ -394,11 +382,11 @@ func (arena *Arena) Update() {
 	sendDsPacket := false
 	matchTimeSec := arena.MatchTimeSec()
 	switch arena.MatchState {
-	case PRE_MATCH:
+	case preMatch:
 		auto = true
 		enabled = false
-	case START_MATCH:
-		arena.MatchState = AUTO_PERIOD
+	case startMatch:
+		arena.MatchState = autoPeriod
 		arena.matchStartTime = time.Now()
 		arena.lastMatchTimeSec = -1
 		auto = true
@@ -409,11 +397,11 @@ func (arena *Arena) Update() {
 		if !arena.muteMatchSounds {
 			arena.playSoundNotifier.Notify("match-start")
 		}
-	case AUTO_PERIOD:
+	case autoPeriod:
 		auto = true
 		enabled = true
-		if matchTimeSec >= float64(arena.matchTiming.AutoDurationSec) {
-			arena.MatchState = PAUSE_PERIOD
+		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec) {
+			arena.MatchState = pausePeriod
 			auto = false
 			enabled = false
 			sendDsPacket = true
@@ -421,11 +409,11 @@ func (arena *Arena) Update() {
 				arena.playSoundNotifier.Notify("match-end")
 			}
 		}
-	case PAUSE_PERIOD:
+	case pausePeriod:
 		auto = false
 		enabled = false
-		if matchTimeSec >= float64(arena.matchTiming.AutoDurationSec+arena.matchTiming.PauseDurationSec) {
-			arena.MatchState = TELEOP_PERIOD
+		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec) {
+			arena.MatchState = teleopPeriod
 			auto = false
 			enabled = true
 			sendDsPacket = true
@@ -433,23 +421,23 @@ func (arena *Arena) Update() {
 				arena.playSoundNotifier.Notify("match-resume")
 			}
 		}
-	case TELEOP_PERIOD:
+	case teleopPeriod:
 		auto = false
 		enabled = true
-		if matchTimeSec >= float64(arena.matchTiming.AutoDurationSec+arena.matchTiming.PauseDurationSec+
-			arena.matchTiming.TeleopDurationSec-arena.matchTiming.EndgameTimeLeftSec) {
-			arena.MatchState = ENDGAME_PERIOD
+		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
+			game.MatchTiming.TeleopDurationSec-game.MatchTiming.EndgameTimeLeftSec) {
+			arena.MatchState = endgamePeriod
 			sendDsPacket = false
 			if !arena.muteMatchSounds {
 				arena.playSoundNotifier.Notify("match-endgame")
 			}
 		}
-	case ENDGAME_PERIOD:
+	case endgamePeriod:
 		auto = false
 		enabled = true
-		if matchTimeSec >= float64(arena.matchTiming.AutoDurationSec+arena.matchTiming.PauseDurationSec+
-			arena.matchTiming.TeleopDurationSec) {
-			arena.MatchState = POST_MATCH
+		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
+			game.MatchTiming.TeleopDurationSec) {
+			arena.MatchState = postMatch
 			auto = false
 			enabled = false
 			sendDsPacket = true
@@ -511,28 +499,30 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	arena.lastDsPacketTime = time.Now()
 }
 
-// Calculates the score summary for the given realtime snapshot.
-func (realtimeScore *RealtimeScore) ScoreSummary(opponentFouls []Foul) *ScoreSummary {
-	return scoreSummary(&realtimeScore.CurrentScore, opponentFouls, mainArena.currentMatch.Type)
+// Calculates the red alliance score summary for the given realtime snapshot.
+func (arena *Arena) RedScoreSummary() *game.ScoreSummary {
+	return arena.redRealtimeScore.CurrentScore.Summarize(arena.blueRealtimeScore.CurrentScore.Fouls,
+		arena.currentMatch.Type)
 }
 
-// Calculates the integer score value for the given realtime snapshot.
-func (realtimeScore *RealtimeScore) Score(opponentFouls []Foul) int {
-	return realtimeScore.ScoreSummary(opponentFouls).Score
+// Calculates the blue alliance score summary for the given realtime snapshot.
+func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
+	return arena.blueRealtimeScore.CurrentScore.Summarize(arena.redRealtimeScore.CurrentScore.Fouls,
+		arena.currentMatch.Type)
 }
 
 // Manipulates the arena LED lighting based on the current state of the match.
 func (arena *Arena) handleLighting() {
 	switch arena.MatchState {
-	case AUTO_PERIOD:
+	case autoPeriod:
 		fallthrough
-	case PAUSE_PERIOD:
+	case pausePeriod:
 		fallthrough
-	case TELEOP_PERIOD:
+	case teleopPeriod:
 		fallthrough
-	case ENDGAME_PERIOD:
+	case endgamePeriod:
 		break
-	case POST_MATCH:
+	case postMatch:
 		if mainArena.fieldReset {
 			arena.lights.SetFieldReset()
 		} else {

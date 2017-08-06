@@ -60,11 +60,7 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "matchTime")
 
 	// Send a match worth of scoring commands in.
-	redWs.Write("gear", nil)
-	blueWs.Write("gear", nil)
 	redWs.Write("mobility", nil)
-	redWs.Write("gear", nil)
-	redWs.Write("undoGear", nil)
 	blueWs.Write("mobility", nil)
 	blueWs.Write("mobility", nil)
 	blueWs.Write("mobility", nil)
@@ -73,51 +69,33 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	redWs.Write("commit", nil)
 	blueWs.Write("commit", nil)
 	redWs.Write("uncommitAuto", nil)
-	redWs.Write("gear", nil)
 	redWs.Write("commit", nil)
-	for i := 0; i < 8; i++ {
+	for i := 0; i < 4; i++ {
 		readWebsocketType(t, redWs, "score")
 	}
-	for i := 0; i < 7; i++ {
+	for i := 0; i < 6; i++ {
 		readWebsocketType(t, blueWs, "score")
 	}
 
 	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoMobility)
-	assert.Equal(t, 2, mainArena.redRealtimeScore.CurrentScore.AutoGears)
-	assert.Equal(t, 1, mainArena.blueRealtimeScore.CurrentScore.AutoGears)
 	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.AutoMobility)
 
-	redWs.Write("gear", nil)
-	blueWs.Write("gear", nil)
-	redWs.Write("gear", nil)
-	redWs.Write("gear", nil)
-	redWs.Write("gear", nil)
-	blueWs.Write("gear", nil)
-	blueWs.Write("gear", nil)
-	blueWs.Write("undoGear", nil)
-	redWs.Write("gear", nil)
-	redWs.Write("undoGear", nil)
 	redWs.Write("mobility", nil)
-	for i := 0; i < 7; i++ {
+	for i := 0; i < 1; i++ {
 		readWebsocketType(t, redWs, "score")
 	}
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 0; i++ {
 		readWebsocketType(t, blueWs, "score")
 	}
 
 	// Make sure auto scores haven't changed in teleop.
 	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoMobility)
-	assert.Equal(t, 2, mainArena.redRealtimeScore.CurrentScore.AutoGears)
 	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.AutoMobility)
-	assert.Equal(t, 1, mainArena.blueRealtimeScore.CurrentScore.AutoGears)
-
-	assert.Equal(t, 4, mainArena.redRealtimeScore.CurrentScore.Gears)
-	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.Gears)
 
 	// Test committing logic.
 	redWs.Write("commitMatch", nil)
 	readWebsocketType(t, redWs, "error")
-	mainArena.MatchState = POST_MATCH
+	mainArena.MatchState = postMatch
 	redWs.Write("commitMatch", nil)
 	blueWs.Write("commitMatch", nil)
 	readWebsocketType(t, redWs, "score")
@@ -128,6 +106,6 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	mainArena.LoadTestMatch()
 	readWebsocketType(t, redWs, "reload")
 	readWebsocketType(t, blueWs, "reload")
-	assert.Equal(t, *NewRealtimeScore(), *mainArena.redRealtimeScore)
-	assert.Equal(t, *NewRealtimeScore(), *mainArena.blueRealtimeScore)
+	assert.Equal(t, NewRealtimeScore(), mainArena.redRealtimeScore)
+	assert.Equal(t, NewRealtimeScore(), mainArena.blueRealtimeScore)
 }

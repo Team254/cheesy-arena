@@ -11,13 +11,6 @@ var handleScore = function(data) {
   // Update autonomous period values.
   var score = data.Score.CurrentScore;
   $("#autoMobility").text(score.AutoMobility);
-  $("#autoGears").text(score.AutoGears);
-  $("#autoRotors").text(data.ScoreSummary.Rotors);
-
-  // Update teleoperated period values.
-  $("#teleopAutoGears").text(score.AutoGears);
-  $("#totalGears").text(score.AutoGears + score.Gears);
-  $("#totalRotors").text(data.ScoreSummary.Rotors);
 
   // Update component visibility.
   if (!data.AutoCommitted) {
@@ -48,12 +41,6 @@ var handleKeyPress = function(event) {
       break;
     case "M":
       websocket.send("undoMobility");
-      break;
-    case "g":
-      websocket.send("gear");
-      break;
-    case "G":
-      websocket.send("undoGear");
       break;
     case "\r":
       websocket.send("commit");

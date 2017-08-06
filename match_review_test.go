@@ -54,7 +54,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	db.CreateMatch(&match)
 	matchResult := buildTestMatchResult(match.Id, 1)
 	matchResult.MatchType = match.Type
-	db.CreateMatchResult(&matchResult)
+	db.CreateMatchResult(matchResult)
 	createTestAlliances(db, 2)
 
 	recorder := getHttpResponse("/match_review")
@@ -73,7 +73,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"AutoMobility\":3}&blueScoreJson={\"Gears\":11," +
+	postBody := "redScoreJson={\"AutoMobility\":3}&blueScoreJson={\"Rotors\":3," +
 		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 302, recorder.Code)
@@ -111,7 +111,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"AutoGears\":1}&blueScoreJson={\"FuelHigh\":30," +
+	postBody := "redScoreJson={\"AutoRotors\":1}&blueScoreJson={\"FuelHigh\":30," +
 		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 302, recorder.Code)

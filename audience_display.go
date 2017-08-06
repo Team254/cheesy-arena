@@ -6,6 +6,7 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"io"
 	"log"
 	"net/http"
@@ -69,7 +70,7 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
-	err = websocket.Write("matchTiming", mainArena.matchTiming)
+	err = websocket.Write("matchTiming", game.MatchTiming)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -94,13 +95,12 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data = struct {
-		RedScore         *Score
-		BlueScore        *Score
-		RedScoreSummary  *ScoreSummary
-		BlueScoreSummary *ScoreSummary
-	}{&mainArena.redRealtimeScore.CurrentScore, &mainArena.blueRealtimeScore.CurrentScore,
-		mainArena.redRealtimeScore.ScoreSummary(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-		mainArena.blueRealtimeScore.ScoreSummary(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+		RedScore         *game.Score
+		BlueScore        *game.Score
+		RedScoreSummary  *game.ScoreSummary
+		BlueScoreSummary *game.ScoreSummary
+	}{mainArena.redRealtimeScore.CurrentScore, mainArena.blueRealtimeScore.CurrentScore,
+		mainArena.RedScoreSummary(), mainArena.BlueScoreSummary()}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -109,8 +109,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	data = struct {
 		Match     *Match
 		MatchName string
-		RedScore  *ScoreSummary
-		BlueScore *ScoreSummary
+		RedScore  *game.ScoreSummary
+		BlueScore *game.ScoreSummary
 	}{mainArena.savedMatch, mainArena.savedMatch.CapitalizedType(),
 		mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary()}
 	err = websocket.Write("setFinalScore", data)
@@ -157,13 +157,12 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "realtimeScore"
 				message = struct {
-					RedScore         *Score
-					BlueScore        *Score
-					RedScoreSummary  *ScoreSummary
-					BlueScoreSummary *ScoreSummary
-				}{&mainArena.redRealtimeScore.CurrentScore, &mainArena.blueRealtimeScore.CurrentScore,
-					mainArena.redRealtimeScore.ScoreSummary(mainArena.blueRealtimeScore.CurrentScore.Fouls),
-					mainArena.blueRealtimeScore.ScoreSummary(mainArena.redRealtimeScore.CurrentScore.Fouls)}
+					RedScore         *game.Score
+					BlueScore        *game.Score
+					RedScoreSummary  *game.ScoreSummary
+					BlueScoreSummary *game.ScoreSummary
+				}{mainArena.redRealtimeScore.CurrentScore, mainArena.blueRealtimeScore.CurrentScore,
+					mainArena.RedScoreSummary(), mainArena.BlueScoreSummary()}
 			case _, ok := <-scorePostedListener:
 				if !ok {
 					return
@@ -172,8 +171,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				message = struct {
 					Match     *Match
 					MatchName string
-					RedScore  *ScoreSummary
-					BlueScore *ScoreSummary
+					RedScore  *game.ScoreSummary
+					BlueScore *game.ScoreSummary
 				}{mainArena.savedMatch, mainArena.savedMatch.CapitalizedType(),
 					mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary()}
 			case sound, ok := <-playSoundListener:

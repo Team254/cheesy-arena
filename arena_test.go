@@ -5,6 +5,7 @@ package main
 
 import (
 	"bytes"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
@@ -75,7 +76,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Check pre-match state and packet timing.
-	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
+	assert.Equal(t, preMatch, mainArena.MatchState)
 	mainArena.Update()
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
@@ -97,30 +98,30 @@ func TestArenaMatchFlow(t *testing.T) {
 	err = mainArena.StartMatch()
 	assert.Nil(t, err)
 	mainArena.Update()
-	assert.Equal(t, AUTO_PERIOD, mainArena.MatchState)
+	assert.Equal(t, autoPeriod, mainArena.MatchState)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Enabled)
 	mainArena.Update()
-	assert.Equal(t, AUTO_PERIOD, mainArena.MatchState)
+	assert.Equal(t, autoPeriod, mainArena.MatchState)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Enabled)
-	mainArena.matchStartTime = time.Now().Add(-time.Duration(mainArena.matchTiming.AutoDurationSec) * time.Second)
+	mainArena.matchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.AutoDurationSec) * time.Second)
 	mainArena.Update()
-	assert.Equal(t, PAUSE_PERIOD, mainArena.MatchState)
+	assert.Equal(t, pausePeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
 	mainArena.Update()
-	assert.Equal(t, PAUSE_PERIOD, mainArena.MatchState)
+	assert.Equal(t, pausePeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
-	mainArena.matchStartTime = time.Now().Add(-time.Duration(mainArena.matchTiming.AutoDurationSec+
-		mainArena.matchTiming.PauseDurationSec) * time.Second)
+	mainArena.matchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.AutoDurationSec+
+		game.MatchTiming.PauseDurationSec) * time.Second)
 	mainArena.Update()
-	assert.Equal(t, TELEOP_PERIOD, mainArena.MatchState)
+	assert.Equal(t, teleopPeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Enabled)
 	mainArena.Update()
-	assert.Equal(t, TELEOP_PERIOD, mainArena.MatchState)
+	assert.Equal(t, teleopPeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Enabled)
 
@@ -128,48 +129,48 @@ func TestArenaMatchFlow(t *testing.T) {
 	mainArena.AllianceStations["B3"].EmergencyStop = true
 	mainArena.lastDsPacketTime = mainArena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	mainArena.Update()
-	assert.Equal(t, TELEOP_PERIOD, mainArena.MatchState)
+	assert.Equal(t, teleopPeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
 	mainArena.AllianceStations["B3"].Bypass = true
 	mainArena.lastDsPacketTime = mainArena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	mainArena.Update()
-	assert.Equal(t, TELEOP_PERIOD, mainArena.MatchState)
+	assert.Equal(t, teleopPeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
 	mainArena.AllianceStations["B3"].EmergencyStop = false
 	mainArena.lastDsPacketTime = mainArena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	mainArena.Update()
-	assert.Equal(t, TELEOP_PERIOD, mainArena.MatchState)
+	assert.Equal(t, teleopPeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
 	mainArena.AllianceStations["B3"].Bypass = false
 	mainArena.lastDsPacketTime = mainArena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	mainArena.Update()
-	assert.Equal(t, TELEOP_PERIOD, mainArena.MatchState)
+	assert.Equal(t, teleopPeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Enabled)
 
 	// Check endgame and match end.
 	mainArena.matchStartTime = time.Now().
-		Add(-time.Duration(mainArena.matchTiming.AutoDurationSec+mainArena.matchTiming.PauseDurationSec+
-			mainArena.matchTiming.TeleopDurationSec-mainArena.matchTiming.EndgameTimeLeftSec) * time.Second)
+		Add(-time.Duration(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
+			game.MatchTiming.TeleopDurationSec-game.MatchTiming.EndgameTimeLeftSec) * time.Second)
 	mainArena.Update()
-	assert.Equal(t, ENDGAME_PERIOD, mainArena.MatchState)
+	assert.Equal(t, endgamePeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Enabled)
 	mainArena.Update()
-	assert.Equal(t, ENDGAME_PERIOD, mainArena.MatchState)
+	assert.Equal(t, endgamePeriod, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Enabled)
-	mainArena.matchStartTime = time.Now().Add(-time.Duration(mainArena.matchTiming.AutoDurationSec+
-		mainArena.matchTiming.PauseDurationSec+mainArena.matchTiming.TeleopDurationSec) * time.Second)
+	mainArena.matchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.AutoDurationSec+
+		game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) * time.Second)
 	mainArena.Update()
-	assert.Equal(t, POST_MATCH, mainArena.MatchState)
+	assert.Equal(t, postMatch, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
 	mainArena.Update()
-	assert.Equal(t, POST_MATCH, mainArena.MatchState)
+	assert.Equal(t, postMatch, mainArena.MatchState)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
 
@@ -177,7 +178,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	mainArena.ResetMatch()
 	mainArena.lastDsPacketTime = mainArena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	mainArena.Update()
-	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
+	assert.Equal(t, preMatch, mainArena.MatchState)
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)
 	assert.Equal(t, false, mainArena.AllianceStations["R1"].Bypass)
@@ -212,7 +213,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot reset match while")
 	}
-	mainArena.MatchState = AUTO_PERIOD
+	mainArena.MatchState = autoPeriod
 	err = mainArena.LoadMatch(new(Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
@@ -225,7 +226,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot reset match while")
 	}
-	mainArena.MatchState = PAUSE_PERIOD
+	mainArena.MatchState = pausePeriod
 	err = mainArena.LoadMatch(new(Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
@@ -238,7 +239,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot reset match while")
 	}
-	mainArena.MatchState = TELEOP_PERIOD
+	mainArena.MatchState = teleopPeriod
 	err = mainArena.LoadMatch(new(Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
@@ -251,7 +252,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot reset match while")
 	}
-	mainArena.MatchState = ENDGAME_PERIOD
+	mainArena.MatchState = endgamePeriod
 	err = mainArena.LoadMatch(new(Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
@@ -266,7 +267,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	}
 	err = mainArena.AbortMatch()
 	assert.Nil(t, err)
-	mainArena.MatchState = POST_MATCH
+	mainArena.MatchState = postMatch
 	err = mainArena.LoadMatch(new(Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
@@ -282,7 +283,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 
 	err = mainArena.ResetMatch()
 	assert.Nil(t, err)
-	assert.Equal(t, PRE_MATCH, mainArena.MatchState)
+	assert.Equal(t, preMatch, mainArena.MatchState)
 	err = mainArena.ResetMatch()
 	assert.Nil(t, err)
 	err = mainArena.LoadMatch(new(Match))
@@ -319,7 +320,7 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	}
 	err = mainArena.StartMatch()
 	assert.Nil(t, err)
-	mainArena.MatchState = PRE_MATCH
+	mainArena.MatchState = preMatch
 
 	// Check with a single team e-stopped, not linked and bypassed.
 	mainArena.AllianceStations["R1"].EmergencyStop = true
@@ -337,7 +338,7 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	err = mainArena.StartMatch()
 	assert.Nil(t, err)
 	mainArena.AllianceStations["R1"].Bypass = false
-	mainArena.MatchState = PRE_MATCH
+	mainArena.MatchState = preMatch
 
 	// Check with a team missing.
 	err = mainArena.AssignTeam(0, "R1")
@@ -349,7 +350,7 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	mainArena.AllianceStations["R1"].Bypass = true
 	err = mainArena.StartMatch()
 	assert.Nil(t, err)
-	mainArena.MatchState = PRE_MATCH
+	mainArena.MatchState = preMatch
 
 	// Check with no teams present.
 	mainArena.LoadMatch(new(Match))
@@ -465,7 +466,9 @@ func TestSubstituteTeam(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 107, mainArena.currentMatch.Red1)
 	assert.Equal(t, 107, mainArena.AllianceStations["R1"].Team.Id)
-	CommitMatchScore(mainArena.currentMatch, &MatchResult{MatchId: mainArena.currentMatch.Id}, false)
+	matchResult := NewMatchResult()
+	matchResult.MatchId = mainArena.currentMatch.Id
+	CommitMatchScore(mainArena.currentMatch, matchResult, false)
 	match2, _ := db.GetMatchById(match.Id)
 	assert.Equal(t, 107, match2.Red1)
 
