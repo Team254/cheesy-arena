@@ -17,6 +17,7 @@ type Team struct {
 	Accomplishments string
 	WpaKey          string
 	YellowCard      bool
+	OrigTeamNumber	int
 }
 
 func (database *Database) CreateTeam(team *Team) error {

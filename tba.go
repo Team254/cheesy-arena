@@ -389,7 +389,12 @@ func DeletePublishedMatches() error {
 
 // Converts an integer team number into the "frcXXXX" format TBA expects.
 func getTbaTeam(team int) string {
-	return fmt.Sprintf("frc%d", team)
+	resolved_team, _ := db.GetTeamById(team)
+	if resolved_team.OrigTeamNumber != 0 {
+		return fmt.Sprintf("frc%dB", resolved_team.OrigTeamNumber)
+	} else {
+		return fmt.Sprintf("frc%d", team)
+	}
 }
 
 // HELPERS
