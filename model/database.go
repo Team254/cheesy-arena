@@ -3,7 +3,7 @@
 //
 // Functions for manipulating the per-event SQLite datastore.
 
-package main
+package model
 
 import (
 	"bitbucket.org/liamstask/goose/lib/goose"
@@ -14,6 +14,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -22,7 +23,8 @@ const backupsDir = "db/backups"
 const migrationsDir = "db/migrations"
 
 type Database struct {
-	path             string
+	baseDir          string
+	filename         string
 	db               *sql.DB
 	eventSettingsMap *modl.DbMap
 	matchMap         *modl.DbMap
@@ -36,24 +38,26 @@ type Database struct {
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
 // migrations.
-func OpenDatabase(path string) (*Database, error) {
+func OpenDatabase(baseDir, filename string) (*Database, error) {
 	// Find and run the migrations using goose. This also auto-creates the DB.
-	dbDriver := goose.DBDriver{"sqlite3", path, "github.com/mattn/go-sqlite3", &goose.Sqlite3Dialect{}}
-	dbConf := goose.DBConf{MigrationsDir: migrationsDir, Env: "prod", Driver: dbDriver}
-	target, err := goose.GetMostRecentDBVersion(migrationsDir)
+	database := Database{baseDir: baseDir, filename: filename}
+	migrationsPath := filepath.Join(baseDir, migrationsDir)
+	dbDriver := goose.DBDriver{"sqlite3", database.GetPath(), "github.com/mattn/go-sqlite3", &goose.Sqlite3Dialect{}}
+	dbConf := goose.DBConf{MigrationsDir: migrationsPath, Env: "prod", Driver: dbDriver}
+	target, err := goose.GetMostRecentDBVersion(migrationsPath)
 	if err != nil {
 		return nil, err
 	}
-	err = goose.RunMigrations(&dbConf, migrationsDir, target)
+	err = goose.RunMigrations(&dbConf, migrationsPath, target)
 	if err != nil {
 		return nil, err
 	}
 
-	db, err := sql.Open("sqlite3", path)
+	db, err := sql.Open("sqlite3", database.GetPath())
 	if err != nil {
 		return nil, err
 	}
-	database := Database{path: path, db: db}
+	database.db = db
 	database.mapTables()
 
 	return &database, nil
@@ -64,14 +68,15 @@ func (database *Database) Close() {
 }
 
 // Creates a copy of the current database and saves it to the backups directory.
-func (database *Database) Backup(reason string) error {
-	err := os.MkdirAll(backupsDir, 0755)
+func (database *Database) Backup(eventName, reason string) error {
+	backupsPath := filepath.Join(database.baseDir, backupsDir)
+	err := os.MkdirAll(backupsPath, 0755)
 	if err != nil {
 		return err
 	}
-	filename := fmt.Sprintf("%s/%s_%s_%s.db", backupsDir, strings.Replace(eventSettings.Name, " ", "_", -1),
+	filename := fmt.Sprintf("%s/%s_%s_%s.db", backupsPath, strings.Replace(eventName, " ", "_", -1),
 		time.Now().Format("20060102150405"), reason)
-	src, err := os.Open(database.path)
+	src, err := os.Open(database.GetPath())
 	if err != nil {
 		return err
 	}
@@ -85,6 +90,10 @@ func (database *Database) Backup(reason string) error {
 		return err
 	}
 	return nil
+}
+
+func (database *Database) GetPath() string {
+	return filepath.Join(database.baseDir, database.filename)
 }
 
 // Sets up table-object associations.

@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"log"
 	"os"
 	"time"
@@ -20,7 +21,7 @@ type TeamMatchLog struct {
 }
 
 // Creates a file to log to for the given match and team.
-func NewTeamMatchLog(teamId int, match *Match) (*TeamMatchLog, error) {
+func NewTeamMatchLog(teamId int, match *model.Match) (*TeamMatchLog, error) {
 	err := os.MkdirAll(logsDir, 0755)
 	if err != nil {
 		return nil, err

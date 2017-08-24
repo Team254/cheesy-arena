@@ -4,23 +4,18 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestSetupSchedule(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	for i := 0; i < 38; i++ {
-		db.CreateTeam(&Team{Id: i + 101})
+		db.CreateTeam(&model.Team{Id: i + 101})
 	}
-	db.CreateMatch(&Match{Type: "practice", DisplayName: "1"})
+	db.CreateMatch(&model.Match{Type: "practice", DisplayName: "1"})
 
 	// Check the default setting values.
 	recorder := getHttpResponse("/setup/schedule")
@@ -53,13 +48,7 @@ func TestSetupSchedule(t *testing.T) {
 }
 
 func TestSetupScheduleErrors(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	// No teams.
 	postData := "numScheduleBlocks=1&startTime0=2014-01-01 09:00:00 AM&numMatches0=7&matchSpacingSec0=480&" +
@@ -70,7 +59,7 @@ func TestSetupScheduleErrors(t *testing.T) {
 
 	// Insufficient number of teams.
 	for i := 0; i < 17; i++ {
-		db.CreateTeam(&Team{Id: i + 101})
+		db.CreateTeam(&model.Team{Id: i + 101})
 	}
 	postData = "numScheduleBlocks=1&startTime0=2014-01-01 09:00:00 AM&numMatches0=7&matchSpacingSec0=480&" +
 		"matchType=practice"
@@ -79,7 +68,7 @@ func TestSetupScheduleErrors(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "There must be at least 18 teams to generate a schedule.")
 
 	// More matches per team than schedules exist for.
-	db.CreateTeam(&Team{Id: 118})
+	db.CreateTeam(&model.Team{Id: 118})
 	postData = "numScheduleBlocks=1&startTime0=2014-01-01 09:00:00 AM&numMatches0=700&matchSpacingSec0=480&" +
 		"matchType=practice"
 	recorder = postHttpResponse("/setup/schedule/generate", postData)
@@ -95,10 +84,10 @@ func TestSetupScheduleErrors(t *testing.T) {
 
 	// Previous schedule already exists.
 	for i := 18; i < 38; i++ {
-		db.CreateTeam(&Team{Id: i + 101})
+		db.CreateTeam(&model.Team{Id: i + 101})
 	}
-	db.CreateMatch(&Match{Type: "practice", DisplayName: "1"})
-	db.CreateMatch(&Match{Type: "practice", DisplayName: "2"})
+	db.CreateMatch(&model.Match{Type: "practice", DisplayName: "1"})
+	db.CreateMatch(&model.Match{Type: "practice", DisplayName: "2"})
 	postData = "numScheduleBlocks=1&startTime0=2014-01-01 09:00:00 AM&numMatches0=64&matchSpacingSec0=480&" +
 		"matchType=practice"
 	recorder = postHttpResponse("/setup/schedule/generate", postData)

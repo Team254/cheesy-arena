@@ -4,6 +4,7 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/model"
 	"log"
 	"math/rand"
 	"time"
@@ -11,8 +12,8 @@ import (
 
 const eventDbPath = "./event.db"
 
-var db *Database
-var eventSettings *EventSettings
+var db *model.Database
+var eventSettings *model.EventSettings
 
 // Main entry point for the application.
 func main() {
@@ -31,7 +32,7 @@ func main() {
 // Opens the database and stores a handle to it in a global variable.
 func initDb() {
 	var err error
-	db, err = OpenDatabase(eventDbPath)
+	db, err = model.OpenDatabase(".", eventDbPath)
 	checkErr(err)
 	eventSettings, err = db.GetEventSettings()
 	checkErr(err)

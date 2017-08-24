@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -422,7 +423,7 @@ func getTbaRequest(url string) (*http.Response, error) {
 	return client.Do(req)
 }
 
-func createTbaScoringBreakdown(match *Match, matchResult *MatchResult, alliance string) *TbaScoreBreakdown {
+func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResult, alliance string) *TbaScoreBreakdown {
 	var breakdown TbaScoreBreakdown
 	var score *game.Score
 	var scoreSummary *game.ScoreSummary

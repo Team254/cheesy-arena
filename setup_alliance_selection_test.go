@@ -5,23 +5,19 @@ package main
 
 import (
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestSetupAllianceSelection(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	cachedAlliances = [][]*AllianceTeam{}
+	setupTest(t)
+
+	cachedAlliances = [][]*model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	eventSettings, _ = db.GetEventSettings()
 	eventSettings.NumElimAlliances = 15
 	eventSettings.SelectionRound3Order = "L"
-	mainArena.Setup()
 	for i := 1; i <= 10; i++ {
 		db.CreateRanking(&game.Ranking{TeamId: 100 + i, Rank: i})
 	}
@@ -81,7 +77,7 @@ func TestSetupAllianceSelection(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), ">110<")
 
 	// Finalize alliance selection.
-	db.CreateTeam(&Team{Id: 254, YellowCard: true})
+	db.CreateTeam(&model.Team{Id: 254, YellowCard: true})
 	recorder = postHttpResponse("/setup/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
 	assert.Equal(t, 302, recorder.Code)
 	alliances, err := db.GetAllAlliances()
@@ -99,13 +95,9 @@ func TestSetupAllianceSelection(t *testing.T) {
 }
 
 func TestSetupAllianceSelectionErrors(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	cachedAlliances = [][]*AllianceTeam{}
+	setupTest(t)
+
+	cachedAlliances = [][]*model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	eventSettings, _ = db.GetEventSettings()
 	eventSettings.NumElimAlliances = 2
@@ -160,7 +152,7 @@ func TestSetupAllianceSelectionErrors(t *testing.T) {
 	recorder = postHttpResponse("/setup/alliance_selection", "selection0_0=asdf")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
-	cachedAlliances = [][]*AllianceTeam{}
+	cachedAlliances = [][]*model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	recorder = postHttpResponse("/setup/alliance_selection/start", "")
 	assert.Equal(t, 200, recorder.Code)
@@ -168,13 +160,9 @@ func TestSetupAllianceSelectionErrors(t *testing.T) {
 }
 
 func TestSetupAllianceSelectionAutofocus(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	cachedAlliances = [][]*AllianceTeam{}
+	setupTest(t)
+
+	cachedAlliances = [][]*model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	eventSettings, _ = db.GetEventSettings()
 	eventSettings.NumElimAlliances = 2

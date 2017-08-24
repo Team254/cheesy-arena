@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"net/http"
 	"time"
 )
@@ -18,7 +19,7 @@ const (
 
 var stemTvBaseUrl = "http://stemtv.io"
 
-func PublishMatchVideoSplit(match *Match, scoreDisplayTime time.Time) error {
+func PublishMatchVideoSplit(match *model.Match, scoreDisplayTime time.Time) error {
 	url := fmt.Sprintf("%s/event/api/v1.0/%s/%s/split/%d,%d", stemTvBaseUrl, eventSettings.StemTvEventCode,
 		match.TbaCode(), match.StartedAt.Unix()-preMatchPaddingSec,
 		scoreDisplayTime.Unix()+postScoreDisplayPaddingSec)

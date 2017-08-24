@@ -5,16 +5,14 @@ package main
 
 import (
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func TestRankingsCsvReport(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	ranking1 := game.TestRanking2()
 	ranking2 := game.TestRanking1()
@@ -31,10 +29,7 @@ func TestRankingsCsvReport(t *testing.T) {
 }
 
 func TestRankingsPdfReport(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	ranking1 := game.TestRanking2()
 	ranking2 := game.TestRanking1()
@@ -48,16 +43,13 @@ func TestRankingsPdfReport(t *testing.T) {
 }
 
 func TestScheduleCsvReport(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
-	match1 := Match{Type: "qualification", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
+	match1 := model.Match{Type: "qualification", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
-	match2 := Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
+	match2 := model.Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
 		Blue1: 10, Blue2: 11, Blue3: 12, Red1IsSurrogate: true, Red2IsSurrogate: true, Red3IsSurrogate: true}
-	match3 := Match{Type: "practice", DisplayName: "1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
+	match3 := model.Match{Type: "practice", DisplayName: "1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
 		Blue1: 3, Blue2: 2, Blue3: 1}
 	db.CreateMatch(&match1)
 	db.CreateMatch(&match2)
@@ -74,15 +66,12 @@ func TestScheduleCsvReport(t *testing.T) {
 }
 
 func TestSchedulePdfReport(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
-	match := Match{Type: "practice", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
+	match := model.Match{Type: "practice", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
 	db.CreateMatch(&match)
-	team := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
+	team := model.Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
 	db.CreateTeam(&team)
 
@@ -93,14 +82,11 @@ func TestSchedulePdfReport(t *testing.T) {
 }
 
 func TestTeamsCsvReport(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
-	team1 := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
+	team1 := model.Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
-	team2 := Team{Id: 1114, Name: "GM", Nickname: "Simbotics", City: "St. Catharines", StateProv: "ON",
+	team2 := model.Team{Id: 1114, Name: "GM", Nickname: "Simbotics", City: "St. Catharines", StateProv: "ON",
 		Country: "Canada", RookieYear: 2003, RobotName: "Simbot Evolution"}
 	db.CreateTeam(&team1)
 	db.CreateTeam(&team2)
@@ -115,12 +101,9 @@ func TestTeamsCsvReport(t *testing.T) {
 }
 
 func TestTeamsPdfReport(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
-	team := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
+	team := model.Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
 	db.CreateTeam(&team)
 
@@ -131,13 +114,10 @@ func TestTeamsPdfReport(t *testing.T) {
 }
 
 func TestWpaKeysCsvReport(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
-	team1 := Team{Id: 254, WpaKey: "12345678"}
-	team2 := Team{Id: 1114, WpaKey: "9876543210"}
+	team1 := model.Team{Id: 254, WpaKey: "12345678"}
+	team2 := model.Team{Id: 1114, WpaKey: "9876543210"}
 	db.CreateTeam(&team1)
 	db.CreateTeam(&team2)
 

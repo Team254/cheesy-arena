@@ -6,6 +6,7 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/model"
 	"io"
 	"log"
 	"net/http"
@@ -25,7 +26,7 @@ func FtaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 	}{eventSettings}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {

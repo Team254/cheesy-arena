@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package model
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -10,11 +10,7 @@ import (
 )
 
 func TestGetNonexistentMatch(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	match, err := db.GetMatchById(1114)
 	assert.Nil(t, err)
@@ -22,11 +18,7 @@ func TestGetNonexistentMatch(t *testing.T) {
 }
 
 func TestMatchCrud(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
 		5, false, 6, false, "", time.Now().UTC(), ""}
@@ -51,11 +43,7 @@ func TestMatchCrud(t *testing.T) {
 }
 
 func TestTruncateMatches(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
 		5, false, 6, false, "", time.Now().UTC(), ""}
@@ -67,11 +55,7 @@ func TestTruncateMatches(t *testing.T) {
 }
 
 func TestGetMatchesByElimRoundGroup(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	match := Match{Type: "elimination", DisplayName: "SF1-1", ElimRound: 2, ElimGroup: 1, ElimInstance: 1}
 	db.CreateMatch(&match)
@@ -96,11 +80,7 @@ func TestGetMatchesByElimRoundGroup(t *testing.T) {
 }
 
 func TestGetMatchesByType(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	match := Match{0, "qualification", "1", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
 		5, false, 6, false, "", time.Now().UTC(), ""}

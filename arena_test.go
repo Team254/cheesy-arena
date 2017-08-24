@@ -6,6 +6,7 @@ package main
 import (
 	"bytes"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
@@ -13,17 +14,12 @@ import (
 )
 
 func TestAssignTeam(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
+	setupTest(t)
+
+	team := model.Team{Id: 254}
+	err := db.CreateTeam(&team)
 	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	team := Team{Id: 254}
-	err = db.CreateTeam(&team)
-	assert.Nil(t, err)
-	err = db.CreateTeam(&Team{Id: 1114})
+	err = db.CreateTeam(&model.Team{Id: 1114})
 	assert.Nil(t, err)
 	mainArena.Setup()
 
@@ -60,17 +56,10 @@ func TestAssignTeam(t *testing.T) {
 }
 
 func TestArenaMatchFlow(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena = Arena{}
-	mainArena.Setup()
-	db.CreateTeam(&Team{Id: 254})
-	err = mainArena.AssignTeam(254, "B3")
+	setupTest(t)
+
+	db.CreateTeam(&model.Team{Id: 254})
+	err := mainArena.AssignTeam(254, "B3")
 	dummyDs := &DriverStationConnection{TeamId: 254}
 	mainArena.AllianceStations["B3"].DsConn = dummyDs
 	assert.Nil(t, err)
@@ -185,7 +174,8 @@ func TestArenaMatchFlow(t *testing.T) {
 }
 
 func TestArenaStateEnforcement(t *testing.T) {
-	mainArena.Setup()
+	setupTest(t)
+
 	mainArena.AllianceStations["R1"].Bypass = true
 	mainArena.AllianceStations["R2"].Bypass = true
 	mainArena.AllianceStations["R3"].Bypass = true
@@ -193,7 +183,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	mainArena.AllianceStations["B2"].Bypass = true
 	mainArena.AllianceStations["B3"].Bypass = true
 
-	err := mainArena.LoadMatch(new(Match))
+	err := mainArena.LoadMatch(new(model.Match))
 	assert.Nil(t, err)
 	err = mainArena.AbortMatch()
 	if assert.NotNil(t, err) {
@@ -201,7 +191,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	}
 	err = mainArena.StartMatch()
 	assert.Nil(t, err)
-	err = mainArena.LoadMatch(new(Match))
+	err = mainArena.LoadMatch(new(model.Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
 	}
@@ -214,7 +204,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 		assert.Contains(t, err.Error(), "Cannot reset match while")
 	}
 	mainArena.MatchState = autoPeriod
-	err = mainArena.LoadMatch(new(Match))
+	err = mainArena.LoadMatch(new(model.Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
 	}
@@ -227,7 +217,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 		assert.Contains(t, err.Error(), "Cannot reset match while")
 	}
 	mainArena.MatchState = pausePeriod
-	err = mainArena.LoadMatch(new(Match))
+	err = mainArena.LoadMatch(new(model.Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
 	}
@@ -240,7 +230,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 		assert.Contains(t, err.Error(), "Cannot reset match while")
 	}
 	mainArena.MatchState = teleopPeriod
-	err = mainArena.LoadMatch(new(Match))
+	err = mainArena.LoadMatch(new(model.Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
 	}
@@ -253,7 +243,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 		assert.Contains(t, err.Error(), "Cannot reset match while")
 	}
 	mainArena.MatchState = endgamePeriod
-	err = mainArena.LoadMatch(new(Match))
+	err = mainArena.LoadMatch(new(model.Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
 	}
@@ -268,7 +258,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	err = mainArena.AbortMatch()
 	assert.Nil(t, err)
 	mainArena.MatchState = postMatch
-	err = mainArena.LoadMatch(new(Match))
+	err = mainArena.LoadMatch(new(model.Match))
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot load match while")
 	}
@@ -286,28 +276,24 @@ func TestArenaStateEnforcement(t *testing.T) {
 	assert.Equal(t, preMatch, mainArena.MatchState)
 	err = mainArena.ResetMatch()
 	assert.Nil(t, err)
-	err = mainArena.LoadMatch(new(Match))
+	err = mainArena.LoadMatch(new(model.Match))
 	assert.Nil(t, err)
 }
 
 func TestMatchStartRobotLinkEnforcement(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	db.CreateTeam(&Team{Id: 101})
-	db.CreateTeam(&Team{Id: 102})
-	db.CreateTeam(&Team{Id: 103})
-	db.CreateTeam(&Team{Id: 104})
-	db.CreateTeam(&Team{Id: 105})
-	db.CreateTeam(&Team{Id: 106})
-	match := Match{Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	setupTest(t)
+
+	db.CreateTeam(&model.Team{Id: 101})
+	db.CreateTeam(&model.Team{Id: 102})
+	db.CreateTeam(&model.Team{Id: 103})
+	db.CreateTeam(&model.Team{Id: 104})
+	db.CreateTeam(&model.Team{Id: 105})
+	db.CreateTeam(&model.Team{Id: 106})
+	match := model.Match{Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	db.CreateMatch(&match)
 	mainArena.Setup()
 
-	err = mainArena.LoadMatch(&match)
+	err := mainArena.LoadMatch(&match)
 	assert.Nil(t, err)
 	mainArena.AllianceStations["R1"].DsConn = &DriverStationConnection{TeamId: 101}
 	mainArena.AllianceStations["R2"].DsConn = &DriverStationConnection{TeamId: 102}
@@ -353,7 +339,7 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	mainArena.MatchState = preMatch
 
 	// Check with no teams present.
-	mainArena.LoadMatch(new(Match))
+	mainArena.LoadMatch(new(model.Match))
 	err = mainArena.StartMatch()
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "until all robots are connected or bypassed")
@@ -375,29 +361,23 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 }
 
 func TestLoadNextMatch(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	mainArena.Setup()
+	setupTest(t)
 
-	db.CreateTeam(&Team{Id: 1114})
-	practiceMatch1 := Match{Type: "practice", DisplayName: "1"}
-	practiceMatch2 := Match{Type: "practice", DisplayName: "2", Status: "complete"}
-	practiceMatch3 := Match{Type: "practice", DisplayName: "3"}
+	db.CreateTeam(&model.Team{Id: 1114})
+	practiceMatch1 := model.Match{Type: "practice", DisplayName: "1"}
+	practiceMatch2 := model.Match{Type: "practice", DisplayName: "2", Status: "complete"}
+	practiceMatch3 := model.Match{Type: "practice", DisplayName: "3"}
 	db.CreateMatch(&practiceMatch1)
 	db.CreateMatch(&practiceMatch2)
 	db.CreateMatch(&practiceMatch3)
-	qualificationMatch1 := Match{Type: "qualification", DisplayName: "1", Status: "complete"}
-	qualificationMatch2 := Match{Type: "qualification", DisplayName: "2"}
+	qualificationMatch1 := model.Match{Type: "qualification", DisplayName: "1", Status: "complete"}
+	qualificationMatch2 := model.Match{Type: "qualification", DisplayName: "2"}
 	db.CreateMatch(&qualificationMatch1)
 	db.CreateMatch(&qualificationMatch2)
 
 	// Test match should be followed by another, empty test match.
 	assert.Equal(t, 0, mainArena.currentMatch.Id)
-	err = mainArena.SubstituteTeam(1114, "R1")
+	err := mainArena.SubstituteTeam(1114, "R1")
 	assert.Nil(t, err)
 	mainArena.currentMatch.Status = "complete"
 	err = mainArena.LoadNextMatch()
@@ -432,24 +412,18 @@ func TestLoadNextMatch(t *testing.T) {
 }
 
 func TestSubstituteTeam(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
-	db.CreateTeam(&Team{Id: 101})
-	db.CreateTeam(&Team{Id: 102})
-	db.CreateTeam(&Team{Id: 103})
-	db.CreateTeam(&Team{Id: 104})
-	db.CreateTeam(&Team{Id: 105})
-	db.CreateTeam(&Team{Id: 106})
-	db.CreateTeam(&Team{Id: 107})
+	setupTest(t)
+
+	db.CreateTeam(&model.Team{Id: 101})
+	db.CreateTeam(&model.Team{Id: 102})
+	db.CreateTeam(&model.Team{Id: 103})
+	db.CreateTeam(&model.Team{Id: 104})
+	db.CreateTeam(&model.Team{Id: 105})
+	db.CreateTeam(&model.Team{Id: 106})
+	db.CreateTeam(&model.Team{Id: 107})
 
 	// Substitute teams into test match.
-	err = mainArena.SubstituteTeam(101, "B1")
+	err := mainArena.SubstituteTeam(101, "B1")
 	assert.Nil(t, err)
 	assert.Equal(t, 101, mainArena.currentMatch.Blue1)
 	assert.Equal(t, 101, mainArena.AllianceStations["B1"].Team.Id)
@@ -459,48 +433,41 @@ func TestSubstituteTeam(t *testing.T) {
 	}
 
 	// Substitute teams into practice match. Replacement should also be persisted in the DB.
-	match := Match{Type: "practice", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	match := model.Match{Type: "practice", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	db.CreateMatch(&match)
 	mainArena.LoadMatch(&match)
 	err = mainArena.SubstituteTeam(107, "R1")
 	assert.Nil(t, err)
 	assert.Equal(t, 107, mainArena.currentMatch.Red1)
 	assert.Equal(t, 107, mainArena.AllianceStations["R1"].Team.Id)
-	matchResult := NewMatchResult()
+	matchResult := model.NewMatchResult()
 	matchResult.MatchId = mainArena.currentMatch.Id
 	CommitMatchScore(mainArena.currentMatch, matchResult, false)
 	match2, _ := db.GetMatchById(match.Id)
 	assert.Equal(t, 107, match2.Red1)
 
 	// Check that substitution is disallowed in qualification matches.
-	match = Match{Type: "qualification", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	match = model.Match{Type: "qualification", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	db.CreateMatch(&match)
 	mainArena.LoadMatch(&match)
 	err = mainArena.SubstituteTeam(107, "R1")
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Can't substitute teams for qualification matches.")
 	}
-	match = Match{Type: "elimination", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	match = model.Match{Type: "elimination", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	db.CreateMatch(&match)
 	mainArena.LoadMatch(&match)
 	assert.Nil(t, mainArena.SubstituteTeam(107, "R1"))
 }
 
 func TestSetupNetwork(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	// Verify the setup ran by checking the log for the expected failure messages.
 	eventSettings.NetworkSecurityEnabled = true
 	accessPointSshPort = 10022
 	switchTelnetPort = 10023
-	mainArena.LoadMatch(&Match{Type: "test"})
+	mainArena.LoadMatch(&model.Match{Type: "test"})
 	var writer bytes.Buffer
 	log.SetOutput(&writer)
 	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous configuration to happen.

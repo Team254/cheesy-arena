@@ -5,9 +5,9 @@ package game
 
 import (
 	"github.com/stretchr/testify/assert"
+	"math/rand"
 	"sort"
 	"testing"
-	"math/rand"
 )
 
 func TestAddScoreSummary(t *testing.T) {

@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"mime/multipart"
@@ -16,13 +17,7 @@ import (
 )
 
 func TestSetupSettings(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	// Check the default setting values.
 	recorder := getHttpResponse("/setup/settings")
@@ -49,13 +44,7 @@ func TestSetupSettings(t *testing.T) {
 }
 
 func TestSetupSettingsInvalidValues(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	// Invalid color value.
 	recorder := postHttpResponse("/setup/settings", "numAlliances=8&displayBackgroundColor=blorpy")
@@ -67,19 +56,13 @@ func TestSetupSettingsInvalidValues(t *testing.T) {
 }
 
 func TestSetupSettingsClearDb(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
-	db.CreateTeam(new(Team))
-	db.CreateMatch(&Match{Type: "qualification"})
-	db.CreateMatchResult(new(MatchResult))
+	db.CreateTeam(new(model.Team))
+	db.CreateMatch(&model.Match{Type: "qualification"})
+	db.CreateMatchResult(new(model.MatchResult))
 	db.CreateRanking(new(game.Ranking))
-	db.CreateAllianceTeam(new(AllianceTeam))
+	db.CreateAllianceTeam(new(model.AllianceTeam))
 	recorder := postHttpResponse("/setup/db/clear", "")
 	assert.Equal(t, 302, recorder.Code)
 
@@ -96,13 +79,7 @@ func TestSetupSettingsClearDb(t *testing.T) {
 }
 
 func TestSetupSettingsBackupRestoreDb(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	// Modify a parameter so that we know when the database has been restored.
 	eventSettings.Name = "Chezy Champs"
@@ -115,12 +92,7 @@ func TestSetupSettingsBackupRestoreDb(t *testing.T) {
 	backupBody := recorder.Body
 
 	// Wipe the database to reset the defaults.
-	clearDb()
-	defer clearDb()
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 	assert.NotEqual(t, "Chezy Champs", eventSettings.Name)
 
 	// Check restoring with a missing file.

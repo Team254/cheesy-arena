@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -89,7 +90,7 @@ func SaveDbHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbFile, err := os.Open(db.path)
+	dbFile, err := os.Open(db.GetPath())
 	defer dbFile.Close()
 	if err != nil {
 		handleWebErr(w, err)
@@ -128,7 +129,7 @@ func RestoreDbHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tempFile.Close()
-	tempDb, err := OpenDatabase(tempFilePath)
+	tempDb, err := model.OpenDatabase(".", tempFilePath)
 	if err != nil {
 		renderSettings(w, r, "Could not read uploaded database backup file. Please verify that it a valid "+
 			"database file.")
@@ -137,7 +138,7 @@ func RestoreDbHandler(w http.ResponseWriter, r *http.Request) {
 	tempDb.Close()
 
 	// Back up the current database.
-	err = db.Backup("pre_restore")
+	err = db.Backup(eventSettings.Name, "pre_restore")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -167,7 +168,7 @@ func ClearDbHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Back up the database.
-	err := db.Backup("pre_clear")
+	err := db.Backup(eventSettings.Name, "pre_clear")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -203,7 +204,7 @@ func renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string)
 		return
 	}
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 		ErrorMessage string
 	}{eventSettings, errorMessage}
 	err = template.ExecuteTemplate(w, "base", data)

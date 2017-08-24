@@ -11,14 +11,7 @@ import (
 )
 
 func TestAudienceDisplay(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	recorder := getHttpResponse("/displays/audience")
 	assert.Equal(t, 200, recorder.Code)
@@ -26,14 +19,7 @@ func TestAudienceDisplay(t *testing.T) {
 }
 
 func TestAudienceDisplayWebsocket(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	server, wsUrl := startTestServer()
 	defer server.Close()

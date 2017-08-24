@@ -5,24 +5,19 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestMatchReview(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
-	match1 := Match{Type: "practice", DisplayName: "1", Status: "complete", Winner: "R"}
-	match2 := Match{Type: "practice", DisplayName: "2"}
-	match3 := Match{Type: "qualification", DisplayName: "1", Status: "complete", Winner: "B"}
-	match4 := Match{Type: "elimination", DisplayName: "SF1-1", Status: "complete", Winner: "T"}
-	match5 := Match{Type: "elimination", DisplayName: "SF1-2"}
+	match1 := model.Match{Type: "practice", DisplayName: "1", Status: "complete", Winner: "R"}
+	match2 := model.Match{Type: "practice", DisplayName: "2"}
+	match3 := model.Match{Type: "qualification", DisplayName: "1", Status: "complete", Winner: "B"}
+	match4 := model.Match{Type: "elimination", DisplayName: "SF1-1", Status: "complete", Winner: "T"}
+	match5 := model.Match{Type: "elimination", DisplayName: "SF1-2"}
 	db.CreateMatch(&match1)
 	db.CreateMatch(&match2)
 	db.CreateMatch(&match3)
@@ -40,19 +35,12 @@ func TestMatchReview(t *testing.T) {
 }
 
 func TestMatchReviewEditExistingResult(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
-	match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
+	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
 		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006}
 	db.CreateMatch(&match)
-	matchResult := buildTestMatchResult(match.Id, 1)
+	matchResult := model.BuildTestMatchResult(match.Id, 1)
 	matchResult.MatchType = match.Type
 	db.CreateMatchResult(matchResult)
 	createTestAlliances(db, 2)
@@ -87,15 +75,9 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 }
 
 func TestMatchReviewCreateNewResult(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
-	match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
+	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
 		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006}
 	db.CreateMatch(&match)
 	createTestAlliances(db, 2)

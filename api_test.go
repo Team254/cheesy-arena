@@ -6,25 +6,25 @@ package main
 import (
 	"encoding/json"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func TestMatchesApi(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
-	match1 := Match{Type: "qualification", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
+	setupTest(t)
+
+	match1 := model.Match{Type: "qualification", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
-	match2 := Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
+	match2 := model.Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
 		Blue1: 10, Blue2: 11, Blue3: 12, Red1IsSurrogate: true, Red2IsSurrogate: true, Red3IsSurrogate: true}
-	match3 := Match{Type: "practice", DisplayName: "1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
+	match3 := model.Match{Type: "practice", DisplayName: "1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
 		Blue1: 3, Blue2: 2, Blue3: 1}
 	db.CreateMatch(&match1)
 	db.CreateMatch(&match2)
 	db.CreateMatch(&match3)
-	matchResult1 := buildTestMatchResult(match1.Id, 1)
+	matchResult1 := model.BuildTestMatchResult(match1.Id, 1)
 	db.CreateMatchResult(matchResult1)
 
 	recorder := getHttpResponse("/api/matches/qualification")
@@ -42,10 +42,7 @@ func TestMatchesApi(t *testing.T) {
 }
 
 func TestRankingsApi(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	// Test that empty rankings produces an empty array.
 	recorder := getHttpResponse("/api/rankings")
@@ -65,10 +62,10 @@ func TestRankingsApi(t *testing.T) {
 	ranking2 := RankingWithNickname{*game.TestRanking1(), "ChezyPof"}
 	db.CreateRanking(&ranking1.Ranking)
 	db.CreateRanking(&ranking2.Ranking)
-	db.CreateMatch(&Match{Type: "qualification", DisplayName: "29", Status: "complete"})
-	db.CreateMatch(&Match{Type: "qualification", DisplayName: "30"})
-	db.CreateTeam(&Team{Id: 254, Nickname: "ChezyPof"})
-	db.CreateTeam(&Team{Id: 1114, Nickname: "Simbots"})
+	db.CreateMatch(&model.Match{Type: "qualification", DisplayName: "29", Status: "complete"})
+	db.CreateMatch(&model.Match{Type: "qualification", DisplayName: "30"})
+	db.CreateTeam(&model.Team{Id: 254, Nickname: "ChezyPof"})
+	db.CreateTeam(&model.Team{Id: 1114, Nickname: "Simbots"})
 
 	recorder = getHttpResponse("/api/rankings")
 	assert.Equal(t, 200, recorder.Code)
@@ -83,19 +80,17 @@ func TestRankingsApi(t *testing.T) {
 }
 
 func TestSponsorSlides(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, _ = OpenDatabase(testDbPath)
+	setupTest(t)
 
-	slide1 := SponsorSlide{1, "subtitle", "line1", "line2", "image", 2}
-	slide2 := SponsorSlide{2, "Chezy Sponsaur", "Teh", "Chezy Pofs", "ejface.jpg", 54}
+	slide1 := model.SponsorSlide{1, "subtitle", "line1", "line2", "image", 2}
+	slide2 := model.SponsorSlide{2, "Chezy Sponsaur", "Teh", "Chezy Pofs", "ejface.jpg", 54}
 	db.CreateSponsorSlide(&slide1)
 	db.CreateSponsorSlide(&slide2)
 
 	recorder := getHttpResponse("/api/sponsor_slides")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "application/json", recorder.HeaderMap["Content-Type"][0])
-	var sponsorSlides []SponsorSlide
+	var sponsorSlides []model.SponsorSlide
 	err := json.Unmarshal([]byte(recorder.Body.String()), &sponsorSlides)
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(sponsorSlides)) {

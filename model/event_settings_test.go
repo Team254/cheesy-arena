@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package model
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -9,11 +9,7 @@ import (
 )
 
 func TestEventSettingsReadWrite(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	eventSettings, err := db.GetEventSettings()
 	assert.Nil(t, err)

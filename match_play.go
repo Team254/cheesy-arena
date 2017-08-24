@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
 	"io"
@@ -78,10 +79,10 @@ func MatchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	isReplay := matchResult != nil
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 		MatchesByType     map[string]MatchPlayList
 		CurrentMatchType  string
-		Match             *Match
+		Match             *model.Match
 		AllowSubstitution bool
 		IsReplay          bool
 	}{eventSettings, matchesByType, currentMatchType, mainArena.currentMatch, allowSubstitution, isReplay}
@@ -100,7 +101,7 @@ func MatchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	matchId, _ := strconv.Atoi(vars["matchId"])
-	var match *Match
+	var match *model.Match
 	var err error
 	if matchId == 0 {
 		err = mainArena.LoadTestMatch()
@@ -424,7 +425,7 @@ func MatchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Saves the given match and result to the database, supplanting any previous result for the match.
-func CommitMatchScore(match *Match, matchResult *MatchResult, loadToShowBuffer bool) error {
+func CommitMatchScore(match *model.Match, matchResult *model.MatchResult, loadToShowBuffer bool) error {
 	if match.Type == "elimination" {
 		// Adjust the score if necessary for an elimination DQ.
 		matchResult.CorrectEliminationScore()
@@ -498,7 +499,7 @@ func CommitMatchScore(match *Match, matchResult *MatchResult, loadToShowBuffer b
 
 	if match.Type == "elimination" {
 		// Generate any subsequent elimination matches.
-		_, err = db.UpdateEliminationSchedule(time.Now().Add(time.Second * elimMatchSpacingSec))
+		_, err = UpdateEliminationSchedule(db, time.Now().Add(time.Second*elimMatchSpacingSec))
 		if err != nil {
 			return err
 		}
@@ -531,7 +532,7 @@ func CommitMatchScore(match *Match, matchResult *MatchResult, loadToShowBuffer b
 	}
 
 	// Back up the database, but don't error out if it fails.
-	err = db.Backup(fmt.Sprintf("post_%s_match_%s", match.Type, match.DisplayName))
+	err = db.Backup(eventSettings.Name, fmt.Sprintf("post_%s_match_%s", match.Type, match.DisplayName))
 	if err != nil {
 		log.Println(err)
 	}
@@ -539,8 +540,8 @@ func CommitMatchScore(match *Match, matchResult *MatchResult, loadToShowBuffer b
 	return nil
 }
 
-func GetCurrentMatchResult() *MatchResult {
-	return &MatchResult{MatchId: mainArena.currentMatch.Id, MatchType: mainArena.currentMatch.Type,
+func GetCurrentMatchResult() *model.MatchResult {
+	return &model.MatchResult{MatchId: mainArena.currentMatch.Id, MatchType: mainArena.currentMatch.Type,
 		RedScore: mainArena.redRealtimeScore.CurrentScore, BlueScore: mainArena.blueRealtimeScore.CurrentScore,
 		RedCards: mainArena.redRealtimeScore.Cards, BlueCards: mainArena.blueRealtimeScore.Cards}
 }

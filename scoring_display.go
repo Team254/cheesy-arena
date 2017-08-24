@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/mux"
 	"io"
 	"log"
@@ -34,7 +35,7 @@ func ScoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 		Alliance string
 	}{eventSettings, alliance}
 	err = template.ExecuteTemplate(w, "base", data)

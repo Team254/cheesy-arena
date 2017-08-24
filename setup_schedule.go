@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -16,7 +17,7 @@ import (
 // Global vars to hold schedules that are in the process of being generated.
 var cachedMatchType string
 var cachedScheduleBlocks []ScheduleBlock
-var cachedMatches []Match
+var cachedMatches []model.Match
 var cachedTeamFirstMatches map[int]string
 
 // Shows the schedule editing page.
@@ -142,7 +143,7 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Back up the database.
-	err = db.Backup("post_scheduling")
+	err = db.Backup(eventSettings.Name, "post_scheduling")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -177,11 +178,11 @@ func renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string)
 		return
 	}
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 		MatchType        string
 		ScheduleBlocks   []ScheduleBlock
 		NumTeams         int
-		Matches          []Match
+		Matches          []model.Match
 		TeamFirstMatches map[int]string
 		ErrorMessage     string
 	}{eventSettings, cachedMatchType, cachedScheduleBlocks, len(teams), cachedMatches, cachedTeamFirstMatches,

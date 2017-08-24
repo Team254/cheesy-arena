@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/mitchellh/mapstructure"
 	"html/template"
 	"io"
@@ -31,8 +32,8 @@ func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		*EventSettings
-		LowerThirds []LowerThird
+		*model.EventSettings
+		LowerThirds []model.LowerThird
 	}{eventSettings, lowerThirds}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
@@ -68,7 +69,7 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		switch messageType {
 		case "saveLowerThird":
-			var lowerThird LowerThird
+			var lowerThird model.LowerThird
 			err = mapstructure.Decode(data, &lowerThird)
 			if err != nil {
 				websocket.WriteError(err.Error())
@@ -76,7 +77,7 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			saveLowerThird(&lowerThird)
 		case "deleteLowerThird":
-			var lowerThird LowerThird
+			var lowerThird model.LowerThird
 			err = mapstructure.Decode(data, &lowerThird)
 			if err != nil {
 				websocket.WriteError(err.Error())
@@ -88,7 +89,7 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 		case "showLowerThird":
-			var lowerThird LowerThird
+			var lowerThird model.LowerThird
 			err = mapstructure.Decode(data, &lowerThird)
 			if err != nil {
 				websocket.WriteError(err.Error())
@@ -100,7 +101,7 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			mainArena.audienceDisplayNotifier.Notify(nil)
 			continue
 		case "hideLowerThird":
-			var lowerThird LowerThird
+			var lowerThird model.LowerThird
 			err = mapstructure.Decode(data, &lowerThird)
 			if err != nil {
 				websocket.WriteError(err.Error())
@@ -139,7 +140,7 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func saveLowerThird(lowerThird *LowerThird) error {
+func saveLowerThird(lowerThird *model.LowerThird) error {
 	oldLowerThird, err := db.GetLowerThirdById(lowerThird.Id)
 	if err != nil {
 		return err

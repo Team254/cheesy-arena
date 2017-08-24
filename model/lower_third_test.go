@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package model
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -9,11 +9,7 @@ import (
 )
 
 func TestGetNonexistentLowerThird(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	lowerThird, err := db.GetLowerThirdById(1114)
 	assert.Nil(t, err)
@@ -21,11 +17,7 @@ func TestGetNonexistentLowerThird(t *testing.T) {
 }
 
 func TestLowerThirdCrud(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	lowerThird := LowerThird{0, "Top Text", "Bottom Text", 0}
 	db.CreateLowerThird(&lowerThird)
@@ -46,11 +38,7 @@ func TestLowerThirdCrud(t *testing.T) {
 }
 
 func TestTruncateLowerThirds(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	lowerThird := LowerThird{0, "Top Text", "Bottom Text", 0}
 	db.CreateLowerThird(&lowerThird)

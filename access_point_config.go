@@ -8,6 +8,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"golang.org/x/crypto/ssh"
 	"os"
 	"sync"
@@ -28,7 +29,7 @@ const (
 var accessPointMutex sync.Mutex
 
 // Sets up wireless networks for the given set of teams.
-func ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *Team) error {
+func ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
 	// Make sure multiple configurations aren't being set at the same time.
 	accessPointMutex.Lock()
 	defer accessPointMutex.Unlock()
@@ -41,9 +42,9 @@ func ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *Team) error {
 	return runAccessPointCommand(command)
 }
 
-func generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *Team) (string, error) {
+func generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *model.Team) (string, error) {
 	// Determine what new SSIDs are needed.
-	networks := make(map[int]*Team)
+	networks := make(map[int]*model.Team)
 	var err error
 	if err = addTeamNetwork(networks, red1, red1Vlan); err != nil {
 		return "", err
@@ -79,7 +80,7 @@ func generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *Team) (str
 }
 
 // Verifies the validity of the given team's WPA key and adds a network for it to the list to be configured.
-func addTeamNetwork(networks map[int]*Team, team *Team, vlan int) error {
+func addTeamNetwork(networks map[int]*model.Team, team *model.Team, vlan int) error {
 	if team == nil {
 		return nil
 	}

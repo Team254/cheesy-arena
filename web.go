@@ -8,6 +8,7 @@ package main
 import (
 	"bitbucket.org/rj/httpauth-go"
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"log"
@@ -99,7 +100,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 	}{eventSettings}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {

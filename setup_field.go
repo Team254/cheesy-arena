@@ -6,6 +6,7 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/model"
 	"html/template"
 	"net/http"
 )
@@ -22,7 +23,7 @@ func FieldGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 		AllianceStationDisplays map[string]string
 		LightsMode              string
 	}{eventSettings, mainArena.allianceStationDisplays, mainArena.lights.currentMode}

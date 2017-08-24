@@ -9,14 +9,7 @@ import (
 )
 
 func TestSetupField(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	mainArena.allianceStationDisplays["12345"] = ""
 	recorder := getHttpResponse("/setup/field")

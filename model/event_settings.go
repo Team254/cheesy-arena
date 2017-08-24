@@ -3,7 +3,7 @@
 //
 // Model and datastore read/write methods for event-level configuration.
 
-package main
+package model
 
 type EventSettings struct {
 	Id                         int

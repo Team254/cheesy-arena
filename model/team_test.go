@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package model
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -9,11 +9,7 @@ import (
 )
 
 func TestGetNonexistentTeam(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	team, err := db.GetTeamById(1114)
 	assert.Nil(t, err)
@@ -21,11 +17,7 @@ func TestGetNonexistentTeam(t *testing.T) {
 }
 
 func TestTeamCrud(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	team := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
@@ -47,11 +39,7 @@ func TestTeamCrud(t *testing.T) {
 }
 
 func TestTruncateTeams(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	team := Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
@@ -63,11 +51,7 @@ func TestTruncateTeams(t *testing.T) {
 }
 
 func TestGetAllTeams(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	teams, err := db.GetAllTeams()
 	assert.Nil(t, err)

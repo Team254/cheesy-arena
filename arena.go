@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"log"
 	"time"
 )
@@ -33,7 +34,7 @@ type AllianceStation struct {
 	DsConn        *DriverStationConnection
 	EmergencyStop bool
 	Bypass        bool
-	Team          *Team
+	Team          *model.Team
 }
 
 type RealtimeScore struct {
@@ -47,7 +48,7 @@ type Arena struct {
 	AllianceStations               map[string]*AllianceStation
 	MatchState                     int
 	CanStartMatch                  bool
-	currentMatch                   *Match
+	currentMatch                   *model.Match
 	redRealtimeScore               *RealtimeScore
 	blueRealtimeScore              *RealtimeScore
 	matchStartTime                 time.Time
@@ -70,8 +71,8 @@ type Arena struct {
 	allianceStationDisplayScreen   string
 	lastMatchState                 int
 	lastMatchTimeSec               float64
-	savedMatch                     *Match
-	savedMatchResult               *MatchResult
+	savedMatch                     *model.Match
+	savedMatchResult               *model.MatchResult
 	lights                         Lights
 	muteMatchSounds                bool
 	fieldReset                     bool
@@ -120,8 +121,8 @@ func (arena *Arena) Setup() {
 
 	// Initialize display parameters.
 	arena.audienceDisplayScreen = "blank"
-	arena.savedMatch = &Match{}
-	arena.savedMatchResult = NewMatchResult()
+	arena.savedMatch = &model.Match{}
+	arena.savedMatchResult = model.NewMatchResult()
 	arena.allianceStationDisplays = make(map[string]string)
 	arena.allianceStationDisplayScreen = "match"
 }
@@ -156,7 +157,7 @@ func (arena *Arena) AssignTeam(teamId int, station string) error {
 		return err
 	}
 	if team == nil {
-		team = &Team{Id: teamId}
+		team = &model.Team{Id: teamId}
 	}
 
 	arena.AllianceStations[station].Team = team
@@ -164,7 +165,7 @@ func (arena *Arena) AssignTeam(teamId int, station string) error {
 }
 
 // Sets up the arena for the given match.
-func (arena *Arena) LoadMatch(match *Match) error {
+func (arena *Arena) LoadMatch(match *model.Match) error {
 	if arena.MatchState != preMatch {
 		return fmt.Errorf("Cannot load match while there is a match still in progress or with results pending.")
 	}
@@ -214,7 +215,7 @@ func (arena *Arena) LoadMatch(match *Match) error {
 
 // Sets a new test match containing no teams as the current match.
 func (arena *Arena) LoadTestMatch() error {
-	return arena.LoadMatch(&Match{Type: "test"})
+	return arena.LoadMatch(&model.Match{Type: "test"})
 }
 
 // Loads the first unplayed match of the current match type.

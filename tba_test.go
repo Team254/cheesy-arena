@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -16,18 +17,13 @@ import (
 )
 
 func TestPublishTeams(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
+
 	eventSettings.TbaEventCode = "my_event_code"
 	eventSettings.TbaSecretId = "my_secret_id"
 	eventSettings.TbaSecret = "my_secret"
-	db.CreateTeam(&Team{Id: 254})
-	db.CreateTeam(&Team{Id: 1114})
+	db.CreateTeam(&model.Team{Id: 254})
+	db.CreateTeam(&model.Team{Id: 1114})
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -45,19 +41,14 @@ func TestPublishTeams(t *testing.T) {
 }
 
 func TestPublishMatches(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	match1 := Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
+	setupTest(t)
+
+	match1 := model.Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
 		Blue1: 10, Blue2: 11, Blue3: 12, Status: "complete"}
-	match2 := Match{Type: "elimination", DisplayName: "SF2-2", ElimRound: 2, ElimGroup: 2, ElimInstance: 2}
+	match2 := model.Match{Type: "elimination", DisplayName: "SF2-2", ElimRound: 2, ElimGroup: 2, ElimInstance: 2}
 	db.CreateMatch(&match1)
 	db.CreateMatch(&match2)
-	matchResult1 := buildTestMatchResult(match1.Id, 1)
+	matchResult1 := model.BuildTestMatchResult(match1.Id, 1)
 	db.CreateMatchResult(matchResult1)
 
 	// Mock the TBA server.
@@ -76,13 +67,8 @@ func TestPublishMatches(t *testing.T) {
 }
 
 func TestPublishRankings(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
+
 	db.CreateRanking(game.TestRanking2())
 	db.CreateRanking(game.TestRanking1())
 
@@ -102,14 +88,9 @@ func TestPublishRankings(t *testing.T) {
 }
 
 func TestPublishAlliances(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	buildTestAlliances(db)
+	setupTest(t)
+
+	model.BuildTestAlliances(db)
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -125,14 +106,9 @@ func TestPublishAlliances(t *testing.T) {
 }
 
 func TestPublishingErrors(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	buildTestAlliances(db)
+	setupTest(t)
+
+	model.BuildTestAlliances(db)
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

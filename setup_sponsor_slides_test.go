@@ -4,22 +4,16 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestSetupSponsorSlides(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
-	db.CreateSponsorSlide(&SponsorSlide{0, "Subtitle", "Sponsor Line 1", "Sponsor Line 2", "", 10})
-	db.CreateSponsorSlide(&SponsorSlide{0, "Subtitle", "", "", "Image.gif", 10})
+	db.CreateSponsorSlide(&model.SponsorSlide{0, "Subtitle", "Sponsor Line 1", "Sponsor Line 2", "", 10})
+	db.CreateSponsorSlide(&model.SponsorSlide{0, "Subtitle", "", "", "Image.gif", 10})
 
 	recorder := getHttpResponse("/setup/sponsor_slides")
 	assert.Equal(t, 200, recorder.Code)

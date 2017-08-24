@@ -3,7 +3,7 @@
 //
 // Model and datastore CRUD methods for team ranking data at an event.
 
-package main
+package model
 
 import (
 	"encoding/json"
@@ -185,7 +185,7 @@ func (database *Database) CalculateTeamCards(matchType string) error {
 
 	// Save the teams to the database.
 	for _, team := range teamsMap {
-		err = db.SaveTeam(&team)
+		err = database.SaveTeam(&team)
 		if err != nil {
 			return err
 		}

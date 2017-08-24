@@ -3,7 +3,7 @@
 //
 // Model and datastore CRUD methods for a team at an event.
 
-package main
+package model
 
 type Team struct {
 	Id              int

@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
@@ -57,7 +58,7 @@ func MatchReviewHandler(w http.ResponseWriter, r *http.Request) {
 		currentMatchType = "practice"
 	}
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 		MatchesByType    map[string][]MatchReviewListItem
 		CurrentMatchType string
 	}{eventSettings, matchesByType, currentMatchType}
@@ -85,15 +86,15 @@ func MatchReviewEditGetHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	matchResultJson, err := matchResult.serialize()
+	matchResultJson, err := matchResult.Serialize()
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 	data := struct {
-		*EventSettings
-		Match           *Match
-		MatchResultJson *MatchResultDb
+		*model.EventSettings
+		Match           *model.Match
+		MatchResultJson *model.MatchResultDb
 	}{eventSettings, match, matchResultJson}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
@@ -115,13 +116,13 @@ func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.ParseForm()
-	matchResultJson := MatchResultDb{Id: matchResult.Id, MatchId: match.Id, PlayNumber: matchResult.PlayNumber,
+	matchResultJson := model.MatchResultDb{Id: matchResult.Id, MatchId: match.Id, PlayNumber: matchResult.PlayNumber,
 		MatchType: matchResult.MatchType, RedScoreJson: r.PostFormValue("redScoreJson"),
 		BlueScoreJson: r.PostFormValue("blueScoreJson"), RedCardsJson: r.PostFormValue("redCardsJson"),
 		BlueCardsJson: r.PostFormValue("blueCardsJson")}
 
 	// Deserialize the JSON using the same mechanism as to store scoring information in the database.
-	matchResult, err = matchResultJson.deserialize()
+	matchResult, err = matchResultJson.Deserialize()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -147,7 +148,7 @@ func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Load the match result for the match referenced in the HTTP query string.
-func getMatchResultFromRequest(r *http.Request) (*Match, *MatchResult, bool, error) {
+func getMatchResultFromRequest(r *http.Request) (*model.Match, *model.MatchResult, bool, error) {
 	vars := mux.Vars(r)
 
 	// If editing the current match, get it from memory instead of the DB.
@@ -169,7 +170,7 @@ func getMatchResultFromRequest(r *http.Request) (*Match, *MatchResult, bool, err
 	}
 	if matchResult == nil {
 		// We're scoring a match that hasn't been played yet, but that's okay.
-		matchResult = NewMatchResult()
+		matchResult = model.NewMatchResult()
 		matchResult.MatchType = match.Type
 	}
 

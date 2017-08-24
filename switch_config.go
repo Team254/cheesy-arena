@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"net"
 	"regexp"
 	"strconv"
@@ -20,7 +21,7 @@ var switchTelnetPort = 23
 var switchMutex sync.Mutex
 
 // Sets up wired networks for the given set of teams.
-func ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *Team) error {
+func ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
 	// Make sure multiple configurations aren't being set at the same time.
 	switchMutex.Lock()
 	defer switchMutex.Unlock()
@@ -31,7 +32,7 @@ func ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *Team) error {
 		return err
 	}
 	addTeamVlansCommand := ""
-	replaceTeamVlan := func(team *Team, vlan int) {
+	replaceTeamVlan := func(team *model.Team, vlan int) {
 		if team == nil {
 			return
 		}

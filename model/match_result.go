@@ -3,7 +3,7 @@
 //
 // Model and datastore CRUD methods for the results (score and fouls) from a match at an event.
 
-package main
+package model
 
 import (
 	"encoding/json"
@@ -43,7 +43,7 @@ func NewMatchResult() *MatchResult {
 }
 
 func (database *Database) CreateMatchResult(matchResult *MatchResult) error {
-	matchResultDb, err := matchResult.serialize()
+	matchResultDb, err := matchResult.Serialize()
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (database *Database) GetMatchResultForMatch(matchId int) (*MatchResult, err
 	if len(matchResults) == 0 {
 		return nil, nil
 	}
-	matchResult, err := matchResults[0].deserialize()
+	matchResult, err := matchResults[0].Deserialize()
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (database *Database) GetMatchResultForMatch(matchId int) (*MatchResult, err
 }
 
 func (database *Database) SaveMatchResult(matchResult *MatchResult) error {
-	matchResultDb, err := matchResult.serialize()
+	matchResultDb, err := matchResult.Serialize()
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (database *Database) SaveMatchResult(matchResult *MatchResult) error {
 }
 
 func (database *Database) DeleteMatchResult(matchResult *MatchResult) error {
-	matchResultDb, err := matchResult.serialize()
+	matchResultDb, err := matchResult.Serialize()
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (matchResult *MatchResult) CorrectEliminationScore() {
 }
 
 // Converts the nested struct MatchResult to the DB version that has JSON fields.
-func (matchResult *MatchResult) serialize() (*MatchResultDb, error) {
+func (matchResult *MatchResult) Serialize() (*MatchResultDb, error) {
 	matchResultDb := MatchResultDb{Id: matchResult.Id, MatchId: matchResult.MatchId,
 		PlayNumber: matchResult.PlayNumber, MatchType: matchResult.MatchType}
 	if err := serializeHelper(&matchResultDb.RedScoreJson, matchResult.RedScore); err != nil {
@@ -141,7 +141,7 @@ func (matchResult *MatchResult) serialize() (*MatchResultDb, error) {
 }
 
 // Converts the DB MatchResult with JSON fields to the nested struct version.
-func (matchResultDb *MatchResultDb) deserialize() (*MatchResult, error) {
+func (matchResultDb *MatchResultDb) Deserialize() (*MatchResult, error) {
 	matchResult := MatchResult{Id: matchResultDb.Id, MatchId: matchResultDb.MatchId,
 		PlayNumber: matchResultDb.PlayNumber, MatchType: matchResultDb.MatchType}
 	if err := json.Unmarshal([]byte(matchResultDb.RedScoreJson), &matchResult.RedScore); err != nil {

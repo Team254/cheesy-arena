@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package model
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -9,11 +9,7 @@ import (
 )
 
 func TestGetNonexistentSponsorSlide(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	sponsorSlide, err := db.GetSponsorSlideById(1114)
 	assert.Nil(t, err)
@@ -21,11 +17,7 @@ func TestGetNonexistentSponsorSlide(t *testing.T) {
 }
 
 func TestSponsorSlideCrud(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	sponsorSlide := SponsorSlide{0, "Subtitle", "Line 1", "Line 2", "", 10}
 	db.CreateSponsorSlide(&sponsorSlide)
@@ -46,11 +38,7 @@ func TestSponsorSlideCrud(t *testing.T) {
 }
 
 func TestTruncateSponsorSlides(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	sponsorSlide := SponsorSlide{0, "Subtitle", "Line 1", "Line 2", "", 10}
 	db.CreateSponsorSlide(&sponsorSlide)

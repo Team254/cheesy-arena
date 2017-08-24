@@ -11,13 +11,7 @@ import (
 )
 
 func TestPitDisplay(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	recorder := getHttpResponse("/displays/pit")
 	assert.Equal(t, 200, recorder.Code)
@@ -25,14 +19,7 @@ func TestPitDisplay(t *testing.T) {
 }
 
 func TestPitDisplayWebsocket(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	server, wsUrl := startTestServer()
 	defer server.Close()

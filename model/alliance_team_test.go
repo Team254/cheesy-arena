@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package model
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -9,11 +9,7 @@ import (
 )
 
 func TestGetNonexistentAlliance(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	allianceTeams, err := db.GetTeamsByAlliance(1114)
 	assert.Nil(t, err)
@@ -21,11 +17,7 @@ func TestGetNonexistentAlliance(t *testing.T) {
 }
 
 func TestAllianceTeamCrud(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	allianceTeam := AllianceTeam{0, 1, 0, 254}
 	db.CreateAllianceTeam(&allianceTeam)
@@ -48,13 +40,9 @@ func TestAllianceTeamCrud(t *testing.T) {
 }
 
 func TestGetTeamsByAlliance(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
-	buildTestAlliances(db)
+	BuildTestAlliances(db)
 	allianceTeams, err := db.GetTeamsByAlliance(1)
 	assert.Nil(t, err)
 	if assert.Equal(t, 4, len(allianceTeams)) {
@@ -72,11 +60,7 @@ func TestGetTeamsByAlliance(t *testing.T) {
 }
 
 func TestTruncateAllianceTeams(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	allianceTeam := AllianceTeam{0, 1, 0, 254}
 	db.CreateAllianceTeam(&allianceTeam)
@@ -87,17 +71,13 @@ func TestTruncateAllianceTeams(t *testing.T) {
 }
 
 func TestGetAllAlliances(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	db, err := OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	db := setupTestDb(t)
 
 	alliances, err := db.GetAllAlliances()
 	assert.Nil(t, err)
 	assert.Empty(t, alliances)
 
-	buildTestAlliances(db)
+	BuildTestAlliances(db)
 	alliances, err = db.GetAllAlliances()
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(alliances)) {
@@ -112,13 +92,4 @@ func TestGetAllAlliances(t *testing.T) {
 			assert.Equal(t, 2451, alliances[1][1].TeamId)
 		}
 	}
-}
-
-func buildTestAlliances(db *Database) {
-	db.CreateAllianceTeam(&AllianceTeam{0, 2, 0, 1718})
-	db.CreateAllianceTeam(&AllianceTeam{0, 1, 3, 74})
-	db.CreateAllianceTeam(&AllianceTeam{0, 1, 1, 469})
-	db.CreateAllianceTeam(&AllianceTeam{0, 1, 0, 254})
-	db.CreateAllianceTeam(&AllianceTeam{0, 1, 2, 2848})
-	db.CreateAllianceTeam(&AllianceTeam{0, 2, 1, 2451})
 }

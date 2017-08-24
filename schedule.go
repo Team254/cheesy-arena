@@ -8,6 +8,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"math"
 	"math/rand"
 	"os"
@@ -25,7 +26,7 @@ type ScheduleBlock struct {
 }
 
 // Creates a random schedule for the given parameters and returns it as a list of matches.
-func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType string) ([]Match, error) {
+func BuildRandomSchedule(teams []model.Team, scheduleBlocks []ScheduleBlock, matchType string) ([]model.Match, error) {
 	// Load the anonymized, pre-randomized match schedule for the given number of teams and matches per team.
 	numTeams := len(teams)
 	numMatches := countMatches(scheduleBlocks)
@@ -61,7 +62,7 @@ func BuildRandomSchedule(teams []Team, scheduleBlocks []ScheduleBlock, matchType
 
 	// Generate a random permutation of the team ordering to fill into the pre-randomized schedule.
 	teamShuffle := rand.Perm(numTeams)
-	matches := make([]Match, numMatches)
+	matches := make([]model.Match, numMatches)
 	for i, anonMatch := range anonSchedule {
 		matches[i].Type = matchType
 		matches[i].DisplayName = strconv.Itoa(i + 1)

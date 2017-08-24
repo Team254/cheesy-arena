@@ -6,6 +6,7 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/model"
 	"io"
 	"log"
 	"net/http"
@@ -24,7 +25,7 @@ func PitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 	}{eventSettings}
 	err = template.Execute(w, data)
 	if err != nil {

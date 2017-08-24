@@ -3,7 +3,7 @@
 //
 // Model and datastore CRUD methods for the sponsor slideshow.
 
-package main
+package model
 
 type SponsorSlide struct {
 	Id             int

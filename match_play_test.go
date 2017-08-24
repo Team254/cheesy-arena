@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
@@ -17,19 +18,13 @@ import (
 )
 
 func TestMatchPlay(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
-	match1 := Match{Type: "practice", DisplayName: "1", Status: "complete", Winner: "R"}
-	match2 := Match{Type: "practice", DisplayName: "2"}
-	match3 := Match{Type: "qualification", DisplayName: "1", Status: "complete", Winner: "B"}
-	match4 := Match{Type: "elimination", DisplayName: "SF1-1", Status: "complete", Winner: "T"}
-	match5 := Match{Type: "elimination", DisplayName: "SF1-2"}
+	match1 := model.Match{Type: "practice", DisplayName: "1", Status: "complete", Winner: "R"}
+	match2 := model.Match{Type: "practice", DisplayName: "2"}
+	match3 := model.Match{Type: "qualification", DisplayName: "1", Status: "complete", Winner: "B"}
+	match4 := model.Match{Type: "elimination", DisplayName: "SF1-1", Status: "complete", Winner: "T"}
+	match5 := model.Match{Type: "elimination", DisplayName: "SF1-2"}
 	db.CreateMatch(&match1)
 	db.CreateMatch(&match2)
 	db.CreateMatch(&match3)
@@ -47,22 +42,15 @@ func TestMatchPlay(t *testing.T) {
 }
 
 func TestMatchPlayLoad(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
-	db.CreateTeam(&Team{Id: 101})
-	db.CreateTeam(&Team{Id: 102})
-	db.CreateTeam(&Team{Id: 103})
-	db.CreateTeam(&Team{Id: 104})
-	db.CreateTeam(&Team{Id: 105})
-	db.CreateTeam(&Team{Id: 106})
-	match := Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 101,
+	db.CreateTeam(&model.Team{Id: 101})
+	db.CreateTeam(&model.Team{Id: 102})
+	db.CreateTeam(&model.Team{Id: 103})
+	db.CreateTeam(&model.Team{Id: 104})
+	db.CreateTeam(&model.Team{Id: 105})
+	db.CreateTeam(&model.Team{Id: 106})
+	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 101,
 		Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	db.CreateMatch(&match)
 	recorder := getHttpResponse("/match_play")
@@ -100,24 +88,17 @@ func TestMatchPlayLoad(t *testing.T) {
 }
 
 func TestMatchPlayShowResult(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	recorder := getHttpResponse("/match_play/1/show_result")
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Invalid match")
-	match := Match{Type: "qualification", DisplayName: "1", Status: "complete"}
+	match := model.Match{Type: "qualification", DisplayName: "1", Status: "complete"}
 	db.CreateMatch(&match)
 	recorder = getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "No result found")
-	db.CreateMatchResult(&MatchResult{MatchId: match.Id})
+	db.CreateMatchResult(&model.MatchResult{MatchId: match.Id})
 	recorder = getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
 	assert.Equal(t, 302, recorder.Code)
 	assert.Equal(t, match.Id, mainArena.savedMatch.Id)
@@ -125,13 +106,7 @@ func TestMatchPlayShowResult(t *testing.T) {
 }
 
 func TestMatchPlayErrors(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	// Load an invalid match.
 	recorder := getHttpResponse("/match_play/1114/load")
@@ -140,18 +115,11 @@ func TestMatchPlayErrors(t *testing.T) {
 }
 
 func TestCommitMatch(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	// Committing test match should do nothing.
-	match := &Match{Id: 0, Type: "test", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
-	err = CommitMatchScore(match, &MatchResult{MatchId: match.Id}, false)
+	match := &model.Match{Id: 0, Type: "test", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	err := CommitMatchScore(match, &model.MatchResult{MatchId: match.Id}, false)
 	assert.Nil(t, err)
 	matchResult, err := db.GetMatchResultForMatch(match.Id)
 	assert.Nil(t, err)
@@ -161,7 +129,7 @@ func TestCommitMatch(t *testing.T) {
 	match.Id = 1
 	match.Type = "qualification"
 	db.CreateMatch(match)
-	matchResult = NewMatchResult()
+	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.BlueScore = &game.Score{AutoMobility: 2}
 	err = CommitMatchScore(match, matchResult, false)
@@ -170,7 +138,7 @@ func TestCommitMatch(t *testing.T) {
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "B", match.Winner)
 
-	matchResult = NewMatchResult()
+	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.RedScore = &game.Score{AutoMobility: 1}
 	err = CommitMatchScore(match, matchResult, false)
@@ -179,7 +147,7 @@ func TestCommitMatch(t *testing.T) {
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "R", match.Winner)
 
-	matchResult = NewMatchResult()
+	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
@@ -203,20 +171,13 @@ func TestCommitMatch(t *testing.T) {
 }
 
 func TestCommitEliminationTie(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
-	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
+	match := &model.Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	db.CreateMatch(match)
-	matchResult := &MatchResult{MatchId: match.Id, RedScore: &game.Score{FuelHigh: 15, Fouls: []game.Foul{{}}},
+	matchResult := &model.MatchResult{MatchId: match.Id, RedScore: &game.Score{FuelHigh: 15, Fouls: []game.Foul{{}}},
 		BlueScore: &game.Score{}}
-	err = CommitMatchScore(match, matchResult, false)
+	err := CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	match, _ = db.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner)
@@ -228,30 +189,23 @@ func TestCommitEliminationTie(t *testing.T) {
 }
 
 func TestCommitCards(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	// Check that a yellow card sticks with a team.
-	team := &Team{Id: 5}
+	team := &model.Team{Id: 5}
 	db.CreateTeam(team)
-	match := &Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
+	match := &model.Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	db.CreateMatch(match)
-	matchResult := NewMatchResult()
+	matchResult := model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.BlueCards = map[string]string{"5": "yellow"}
-	err = CommitMatchScore(match, matchResult, false)
+	err := CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	team, _ = db.GetTeamById(5)
 	assert.True(t, team.YellowCard)
 
 	// Check that editing a match result removes a yellow card from a team.
-	matchResult = NewMatchResult()
+	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	err = CommitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
@@ -259,7 +213,7 @@ func TestCommitCards(t *testing.T) {
 	assert.False(t, team.YellowCard)
 
 	// Check that a red card causes a yellow card to stick with a team.
-	matchResult = NewMatchResult()
+	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.BlueCards = map[string]string{"5": "red"}
 	err = CommitMatchScore(match, matchResult, false)
@@ -271,7 +225,7 @@ func TestCommitCards(t *testing.T) {
 	createTestAlliances(db, 2)
 	match.Type = "elimination"
 	db.SaveMatch(match)
-	matchResult = buildTestMatchResult(match.Id, 10)
+	matchResult = model.BuildTestMatchResult(match.Id, 10)
 	matchResult.MatchType = match.Type
 	matchResult.RedCards = map[string]string{"1": "red"}
 	err = CommitMatchScore(match, matchResult, false)
@@ -281,15 +235,7 @@ func TestCommitCards(t *testing.T) {
 }
 
 func TestMatchPlayWebsocketCommands(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	db.CreateTeam(&Team{Id: 254})
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	server, wsUrl := startTestServer()
 	defer server.Close()
@@ -376,15 +322,9 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 }
 
 func TestMatchPlayWebsocketNotifications(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	db.CreateTeam(&Team{Id: 254})
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
+
+	db.CreateTeam(&model.Team{Id: 254})
 
 	server, wsUrl := startTestServer()
 	defer server.Close()

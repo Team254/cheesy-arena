@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"log"
 	"net"
 	"time"
@@ -135,7 +136,7 @@ func (dsConn *DriverStationConnection) Close() {
 }
 
 // Called at the start of the match to allow for driver station initialization.
-func (dsConn *DriverStationConnection) signalMatchStart(match *Match) error {
+func (dsConn *DriverStationConnection) signalMatchStart(match *model.Match) error {
 	// Zero out missed packet count and begin logging.
 	dsConn.missedPacketOffset = dsConn.MissedPacketCount
 	var err error

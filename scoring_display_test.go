@@ -11,14 +11,7 @@ import (
 )
 
 func TestScoringDisplay(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	recorder := getHttpResponse("/displays/scoring/invalidalliance")
 	assert.Equal(t, 500, recorder.Code)
@@ -31,18 +24,11 @@ func TestScoringDisplay(t *testing.T) {
 }
 
 func TestScoringDisplayWebsocket(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	server, wsUrl := startTestServer()
 	defer server.Close()
-	_, _, err = websocket.DefaultDialer.Dial(wsUrl+"/displays/scoring/blorpy/websocket", nil)
+	_, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/scoring/blorpy/websocket", nil)
 	assert.NotNil(t, err)
 	redConn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/scoring/red/websocket", nil)
 	assert.Nil(t, err)

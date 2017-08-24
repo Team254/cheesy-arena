@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -20,7 +21,7 @@ type RankedTeam struct {
 }
 
 // Global vars to hold the alliances that are in the process of being selected.
-var cachedAlliances [][]*AllianceTeam
+var cachedAlliances [][]*model.AllianceTeam
 var cachedRankedTeams []*RankedTeam
 
 // Shows the alliance selection page.
@@ -103,15 +104,15 @@ func AllianceSelectionStartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a blank alliance set matching the event configuration.
-	cachedAlliances = make([][]*AllianceTeam, eventSettings.NumElimAlliances)
+	cachedAlliances = make([][]*model.AllianceTeam, eventSettings.NumElimAlliances)
 	teamsPerAlliance := 3
 	if eventSettings.SelectionRound3Order != "" {
 		teamsPerAlliance = 4
 	}
 	for i := 0; i < eventSettings.NumElimAlliances; i++ {
-		cachedAlliances[i] = make([]*AllianceTeam, teamsPerAlliance)
+		cachedAlliances[i] = make([]*model.AllianceTeam, teamsPerAlliance)
 		for j := 0; j < teamsPerAlliance; j++ {
-			cachedAlliances[i][j] = &AllianceTeam{AllianceId: i + 1, PickPosition: j}
+			cachedAlliances[i][j] = &model.AllianceTeam{AllianceId: i + 1, PickPosition: j}
 		}
 	}
 
@@ -141,7 +142,7 @@ func AllianceSelectionResetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cachedAlliances = [][]*AllianceTeam{}
+	cachedAlliances = [][]*model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	mainArena.allianceSelectionNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
@@ -187,7 +188,7 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate the first round of elimination matches.
-	_, err = db.UpdateEliminationSchedule(startTime)
+	_, err = UpdateEliminationSchedule(db, startTime)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -201,7 +202,7 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Back up the database.
-	err = db.Backup("post_alliance_selection")
+	err = db.Backup(eventSettings.Name, "post_alliance_selection")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -232,8 +233,8 @@ func renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessag
 	}
 	nextRow, nextCol := determineNextCell()
 	data := struct {
-		*EventSettings
-		Alliances    [][]*AllianceTeam
+		*model.EventSettings
+		Alliances    [][]*model.AllianceTeam
 		RankedTeams  []*RankedTeam
 		NextRow      int
 		NextCol      int

@@ -6,6 +6,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
@@ -14,7 +15,7 @@ import (
 
 func TestConfigureSwitch(t *testing.T) {
 	switchTelnetPort = 9050
-	eventSettings = &EventSettings{SwitchAddress: "127.0.0.1", SwitchPassword: "password"}
+	eventSettings = &model.EventSettings{SwitchAddress: "127.0.0.1", SwitchPassword: "password"}
 	var command string
 
 	// Should do nothing if current configuration is blank.
@@ -33,7 +34,7 @@ func TestConfigureSwitch(t *testing.T) {
 	// Should configure new teams and leave existing ones alone if still needed.
 	switchTelnetPort += 1
 	mockTelnet(t, switchTelnetPort, "interface Vlan50\nip address 10.2.54.61\n", &command)
-	assert.Nil(t, ConfigureTeamEthernet(nil, &Team{Id: 1114}, nil, nil, &Team{Id: 254}, nil))
+	assert.Nil(t, ConfigureTeamEthernet(nil, &model.Team{Id: 1114}, nil, nil, &model.Team{Id: 254}, nil))
 	assert.Equal(t, "password\nenable\npassword\nterminal length 0\nconfig terminal\n"+
 		"ip dhcp excluded-address 10.11.14.1 10.11.14.100\nno ip dhcp pool dhcp20\nip dhcp pool dhcp20\n"+
 		"network 10.11.14.0 255.255.255.0\ndefault-router 10.11.14.61\nlease 7\nno access-list 120\n"+

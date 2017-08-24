@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"io"
 	"log"
 	"net/http"
@@ -35,7 +36,7 @@ func AllianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 		DisplayId string
 	}{eventSettings, displayId}
 	err = template.ExecuteTemplate(w, "alliance_station_display.html", data)
@@ -103,9 +104,9 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	}
 	data = struct {
 		AllianceStation string
-		Teams           map[string]*Team
+		Teams           map[string]*model.Team
 		Rankings        map[string]*game.Ranking
-	}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].Team,
+	}{station, map[string]*model.Team{"R1": mainArena.AllianceStations["R1"].Team,
 		"R2": mainArena.AllianceStations["R2"].Team, "R3": mainArena.AllianceStations["R3"].Team,
 		"B1": mainArena.AllianceStations["B1"].Team, "B2": mainArena.AllianceStations["B2"].Team,
 		"B3": mainArena.AllianceStations["B3"].Team}, rankings}
@@ -146,14 +147,15 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				rankings := make(map[string]*game.Ranking)
 				for _, allianceStation := range mainArena.AllianceStations {
 					if allianceStation.Team != nil {
-						rankings[strconv.Itoa(allianceStation.Team.Id)], _ = db.GetRankingForTeam(allianceStation.Team.Id)
+						rankings[strconv.Itoa(allianceStation.Team.Id)], _ =
+							db.GetRankingForTeam(allianceStation.Team.Id)
 					}
 				}
 				message = struct {
 					AllianceStation string
-					Teams           map[string]*Team
+					Teams           map[string]*model.Team
 					Rankings        map[string]*game.Ranking
-				}{station, map[string]*Team{"R1": mainArena.AllianceStations["R1"].Team,
+				}{station, map[string]*model.Team{"R1": mainArena.AllianceStations["R1"].Team,
 					"R2": mainArena.AllianceStations["R2"].Team, "R3": mainArena.AllianceStations["R3"].Team,
 					"B1": mainArena.AllianceStations["B1"].Team, "B2": mainArena.AllianceStations["B2"].Team,
 					"B3": mainArena.AllianceStations["B3"].Team}, rankings}

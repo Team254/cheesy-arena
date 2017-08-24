@@ -8,6 +8,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/dchest/uniuri"
 	"github.com/gorilla/mux"
 	"html/template"
@@ -105,8 +106,8 @@ func TeamEditGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		*EventSettings
-		*Team
+		*model.EventSettings
+		*model.Team
 	}{eventSettings, team}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
@@ -239,8 +240,8 @@ func renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) 
 		return
 	}
 	data := struct {
-		*EventSettings
-		Teams            []Team
+		*model.EventSettings
+		Teams            []model.Team
 		ShowErrorMessage bool
 	}{eventSettings, teams, showErrorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
@@ -260,9 +261,9 @@ func canModifyTeamList() bool {
 }
 
 // Returns the data for the given team number.
-func getOfficialTeamInfo(teamId int) (*Team, error) {
+func getOfficialTeamInfo(teamId int) (*model.Team, error) {
 	// Create the team variable that stores the result
-	var team Team
+	var team model.Team
 
 	// If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
 	if eventSettings.TBADownloadEnabled {
@@ -273,7 +274,7 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 
 		// Check if the result is valid.  If a team is not found, just return a basic team
 		if tbaTeam.TeamNumber == 0 {
-			team = Team{Id: teamId}
+			team = model.Team{Id: teamId}
 		} else {
 			robotName, err := getRobotNameFromTba(teamId, time.Now().Year())
 			if err != nil {
@@ -295,13 +296,13 @@ func getOfficialTeamInfo(teamId int) (*Team, error) {
 			}
 
 			// Use those variables to make a team object
-			team = Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname, City: tbaTeam.Locality,
+			team = model.Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname, City: tbaTeam.Locality,
 				StateProv: tbaTeam.Reigon, Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear,
 				RobotName: robotName, Accomplishments: accomplishmentsBuffer.String()}
 		}
 	} else {
 		// If team grab is disabled, just use the team number
-		team = Team{Id: teamId}
+		team = model.Team{Id: teamId}
 	}
 
 	// Return the team object

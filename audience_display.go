@@ -7,6 +7,7 @@ package main
 
 import (
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"io"
 	"log"
 	"net/http"
@@ -27,7 +28,7 @@ func AudienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 	}{eventSettings}
 	err = template.ExecuteTemplate(w, "audience_display.html", data)
 	if err != nil {
@@ -86,7 +87,7 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data = struct {
-		Match     *Match
+		Match     *model.Match
 		MatchName string
 	}{mainArena.currentMatch, mainArena.currentMatch.CapitalizedType()}
 	err = websocket.Write("setMatch", data)
@@ -107,7 +108,7 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data = struct {
-		Match     *Match
+		Match     *model.Match
 		MatchName string
 		RedScore  *game.ScoreSummary
 		BlueScore *game.ScoreSummary
@@ -142,7 +143,7 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "setMatch"
 				message = struct {
-					Match     *Match
+					Match     *model.Match
 					MatchName string
 				}{mainArena.currentMatch, mainArena.currentMatch.CapitalizedType()}
 			case matchTimeSec, ok := <-matchTimeListener:
@@ -169,7 +170,7 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 				messageType = "setFinalScore"
 				message = struct {
-					Match     *Match
+					Match     *model.Match
 					MatchName string
 					RedScore  *game.ScoreSummary
 					BlueScore *game.ScoreSummary

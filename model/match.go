@@ -3,7 +3,7 @@
 //
 // Model and datastore CRUD methods for a match at an event.
 
-package main
+package model
 
 import (
 	"fmt"
@@ -35,6 +35,8 @@ type Match struct {
 	StartedAt        time.Time
 	Winner           string
 }
+
+var ElimRoundNames = map[int]string{1: "F", 2: "SF", 4: "QF", 8: "EF"}
 
 func (database *Database) CreateMatch(match *Match) error {
 	return database.matchMap.Insert(match)
@@ -104,7 +106,7 @@ func (match *Match) TbaCode() string {
 	if match.Type == "qualification" {
 		return fmt.Sprintf("qm%s", match.DisplayName)
 	} else if match.Type == "elimination" {
-		return fmt.Sprintf("%s%dm%d", strings.ToLower(elimRoundNames[match.ElimRound]), match.ElimGroup,
+		return fmt.Sprintf("%s%dm%d", strings.ToLower(ElimRoundNames[match.ElimRound]), match.ElimGroup,
 			match.ElimInstance)
 	}
 	return ""

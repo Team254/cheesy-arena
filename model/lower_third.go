@@ -3,7 +3,7 @@
 //
 // Model and datastore CRUD methods for the text on a lower third slide.
 
-package main
+package model
 
 type LowerThird struct {
 	Id           int

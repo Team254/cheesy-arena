@@ -4,6 +4,7 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -12,13 +13,8 @@ import (
 )
 
 func TestPublishMatchVideoSplit(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
+
 	eventSettings.StemTvEventCode = "my_event_code"
 
 	// Mock the STEMtv server.
@@ -29,7 +25,7 @@ func TestPublishMatchVideoSplit(t *testing.T) {
 	stemTvBaseUrl = stemTvServer.URL
 
 	matchStartedTime, _ := time.Parse("2006-01-02 15:04:05 -0700", "2001-02-03 04:05:06 -0400")
-	match := &Match{Type: "qualification", DisplayName: "254", StartedAt: matchStartedTime}
+	match := &model.Match{Type: "qualification", DisplayName: "254", StartedAt: matchStartedTime}
 	scoreDisplayTime, _ := time.Parse("2006-01-02 15:04:05 -0700", "2001-02-03 04:08:00 -0400")
 	assert.Nil(t, PublishMatchVideoSplit(match, scoreDisplayTime))
 }

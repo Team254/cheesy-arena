@@ -8,18 +8,19 @@ package main
 import (
 	"encoding/json"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 type MatchResultWithSummary struct {
-	MatchResult
+	model.MatchResult
 	RedSummary  *game.ScoreSummary
 	BlueSummary *game.ScoreSummary
 }
 
 type MatchWithResult struct {
-	Match
+	model.Match
 	Result *MatchResultWithSummary
 }
 

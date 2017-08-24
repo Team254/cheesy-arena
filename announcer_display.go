@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"io"
 	"log"
 	"net/http"
@@ -27,7 +28,7 @@ func AnnouncerDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		*EventSettings
+		*model.EventSettings
 	}{eventSettings}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
@@ -67,12 +68,12 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	data = struct {
 		MatchType        string
 		MatchDisplayName string
-		Red1             *Team
-		Red2             *Team
-		Red3             *Team
-		Blue1            *Team
-		Blue2            *Team
-		Blue3            *Team
+		Red1             *model.Team
+		Red2             *model.Team
+		Red3             *model.Team
+		Blue1            *model.Team
+		Blue2            *model.Team
+		Blue3            *model.Team
 	}{mainArena.currentMatch.CapitalizedType(), mainArena.currentMatch.DisplayName,
 		mainArena.AllianceStations["R1"].Team, mainArena.AllianceStations["R2"].Team,
 		mainArena.AllianceStations["R3"].Team, mainArena.AllianceStations["B1"].Team,
@@ -116,12 +117,12 @@ func AnnouncerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				message = struct {
 					MatchType        string
 					MatchDisplayName string
-					Red1             *Team
-					Red2             *Team
-					Red3             *Team
-					Blue1            *Team
-					Blue2            *Team
-					Blue3            *Team
+					Red1             *model.Team
+					Red2             *model.Team
+					Red3             *model.Team
+					Blue1            *model.Team
+					Blue2            *model.Team
+					Blue3            *model.Team
 				}{mainArena.currentMatch.CapitalizedType(), mainArena.currentMatch.DisplayName,
 					mainArena.AllianceStations["R1"].Team, mainArena.AllianceStations["R2"].Team,
 					mainArena.AllianceStations["R3"].Team, mainArena.AllianceStations["B1"].Team,

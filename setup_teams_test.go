@@ -5,6 +5,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -12,13 +13,7 @@ import (
 )
 
 func TestSetupTeams(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	// Check that there are no teams to start.
 	recorder := getHttpResponse("/setup/teams")
@@ -119,15 +114,10 @@ func TestSetupTeams(t *testing.T) {
 }
 
 func TestSetupTeamsDisallowModification(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	db.CreateTeam(&Team{Id: 254, Nickname: "The Cheesy Poofs"})
-	db.CreateMatch(&Match{Type: "qualification"})
+	setupTest(t)
+
+	db.CreateTeam(&model.Team{Id: 254, Nickname: "The Cheesy Poofs"})
+	db.CreateMatch(&model.Match{Type: "qualification"})
 
 	// Disallow adding teams.
 	recorder := postHttpResponse("/setup/teams", "teamNumbers=33")
@@ -157,12 +147,7 @@ func TestSetupTeamsDisallowModification(t *testing.T) {
 }
 
 func TestSetupTeamsBadReqest(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
+	setupTest(t)
 
 	recorder := getHttpResponse("/setup/teams/254/edit")
 	assert.Equal(t, 400, recorder.Code)
@@ -176,17 +161,12 @@ func TestSetupTeamsBadReqest(t *testing.T) {
 }
 
 func TestSetupTeamsWpaKeys(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
+
 	eventSettings.NetworkSecurityEnabled = true
 
-	team1 := &Team{Id: 254, WpaKey: "aaaaaaaa"}
-	team2 := &Team{Id: 1114}
+	team1 := &model.Team{Id: 254, WpaKey: "aaaaaaaa"}
+	team2 := &model.Team{Id: 1114}
 	db.CreateTeam(team1)
 	db.CreateTeam(team2)
 
@@ -213,13 +193,8 @@ func TestSetupTeamsWpaKeys(t *testing.T) {
 }
 
 func TestSetupTeamsPublish(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
+
 	tbaBaseUrl = "fakeurl"
 	eventSettings.TbaPublishingEnabled = true
 

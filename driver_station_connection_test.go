@@ -11,14 +11,7 @@ import (
 )
 
 func TestEncodeControlPacket(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
-	mainArena.Setup()
+	setupTest(t)
 
 	tcpConn := setupFakeTcpConnection(t)
 	defer tcpConn.Close()
@@ -146,13 +139,7 @@ func TestDecodeStatusPacket(t *testing.T) {
 }
 
 func TestListenForDriverStations(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	oldAddress := driverStationTcpListenAddress
 	driverStationTcpListenAddress = "127.0.0.1"

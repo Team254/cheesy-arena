@@ -3,7 +3,7 @@
 //
 // Model and datastore CRUD methods for an alliance-team association.
 
-package main
+package model
 
 type AllianceTeam struct {
 	Id           int

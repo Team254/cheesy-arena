@@ -6,6 +6,7 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/model"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -28,8 +29,8 @@ func SponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := struct {
-		*EventSettings
-		SponsorSlides []SponsorSlide
+		*model.EventSettings
+		SponsorSlides []model.SponsorSlide
 	}{eventSettings, sponsorSlides}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
@@ -59,7 +60,7 @@ func SponsorSlidesPostHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		displayTimeSec, _ := strconv.Atoi(r.PostFormValue("displayTimeSec"))
 		if sponsorSlide == nil {
-			sponsorSlide = &SponsorSlide{Subtitle: r.PostFormValue("subtitle"),
+			sponsorSlide = &model.SponsorSlide{Subtitle: r.PostFormValue("subtitle"),
 				Line1: r.PostFormValue("line1"), Line2: r.PostFormValue("line2"),
 				Image: r.PostFormValue("image"), DisplayTimeSec: displayTimeSec}
 			err = db.CreateSponsorSlide(sponsorSlide)

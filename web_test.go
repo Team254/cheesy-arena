@@ -12,13 +12,7 @@ import (
 )
 
 func TestIndex(t *testing.T) {
-	clearDb()
-	defer clearDb()
-	var err error
-	db, err = OpenDatabase(testDbPath)
-	assert.Nil(t, err)
-	defer db.Close()
-	eventSettings, _ = db.GetEventSettings()
+	setupTest(t)
 
 	recorder := getHttpResponse("/")
 	assert.Equal(t, 200, recorder.Code)
