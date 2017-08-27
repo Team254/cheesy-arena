@@ -60,12 +60,13 @@ func TestArenaMatchFlow(t *testing.T) {
 
 	db.CreateTeam(&model.Team{Id: 254})
 	err := mainArena.AssignTeam(254, "B3")
+	assert.Nil(t, err)
 	dummyDs := &DriverStationConnection{TeamId: 254}
 	mainArena.AllianceStations["B3"].DsConn = dummyDs
-	assert.Nil(t, err)
 
 	// Check pre-match state and packet timing.
 	assert.Equal(t, preMatch, mainArena.MatchState)
+	mainArena.lastDsPacketTime = mainArena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	mainArena.Update()
 	assert.Equal(t, true, mainArena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, mainArena.AllianceStations["B3"].DsConn.Enabled)

@@ -1,23 +1,23 @@
 // Copyright 2017 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+//
+// Helper methods for use in tests in this package and others.
 
 package main
 
 import (
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/partner"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 )
 
-const testDbPath = "test.db"
-
 func setupTest(t *testing.T) {
-	os.Remove(testDbPath)
+	db = model.SetupTestDb(t, "main", ".")
 	var err error
-	db, err = model.OpenDatabase(".", testDbPath)
-	assert.Nil(t, err)
 	eventSettings, err = db.GetEventSettings()
 	assert.Nil(t, err)
+	tbaClient = partner.NewTbaClient(eventSettings.TbaEventCode, eventSettings.TbaSecretId, eventSettings.TbaSecret)
+	stemTvClient = partner.NewStemTvClient(eventSettings.StemTvEventCode)
 	mainArena.Setup()
 }

@@ -193,7 +193,7 @@ func TeamsPublishHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := PublishTeams()
+	err := tbaClient.PublishTeams(db)
 	if err != nil {
 		http.Error(w, "Failed to publish teams: "+err.Error(), 500)
 		return
@@ -267,7 +267,7 @@ func getOfficialTeamInfo(teamId int) (*model.Team, error) {
 
 	// If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
 	if eventSettings.TBADownloadEnabled {
-		tbaTeam, err := getTeamFromTba(teamId)
+		tbaTeam, err := tbaClient.GetTeam(teamId)
 		if err != nil {
 			return nil, err
 		}
@@ -276,12 +276,12 @@ func getOfficialTeamInfo(teamId int) (*model.Team, error) {
 		if tbaTeam.TeamNumber == 0 {
 			team = model.Team{Id: teamId}
 		} else {
-			robotName, err := getRobotNameFromTba(teamId, time.Now().Year())
+			robotName, err := tbaClient.GetRobotName(teamId, time.Now().Year())
 			if err != nil {
 				return nil, err
 			}
 
-			recentAwards, err := getTeamAwardsFromTba(teamId)
+			recentAwards, err := tbaClient.GetTeamAwards(teamId)
 			if err != nil {
 				return nil, err
 			}

@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package partner
 
 import (
 	"bytes"
@@ -17,13 +17,10 @@ import (
 )
 
 func TestPublishTeams(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	eventSettings.TbaEventCode = "my_event_code"
-	eventSettings.TbaSecretId = "my_secret_id"
-	eventSettings.TbaSecret = "my_secret"
-	db.CreateTeam(&model.Team{Id: 254})
-	db.CreateTeam(&model.Team{Id: 1114})
+	database.CreateTeam(&model.Team{Id: 254})
+	database.CreateTeam(&model.Team{Id: 1114})
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,21 +32,22 @@ func TestPublishTeams(t *testing.T) {
 		assert.Equal(t, "f5c022fde6d1186ea0719fe28ab6cc63", r.Header["X-Tba-Auth-Sig"][0])
 	}))
 	defer tbaServer.Close()
-	tbaBaseUrl = tbaServer.URL
+	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
+	client.BaseUrl = tbaServer.URL
 
-	assert.Nil(t, PublishTeams())
+	assert.Nil(t, client.PublishTeams(database))
 }
 
 func TestPublishMatches(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
 	match1 := model.Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
 		Blue1: 10, Blue2: 11, Blue3: 12, Status: "complete"}
 	match2 := model.Match{Type: "elimination", DisplayName: "SF2-2", ElimRound: 2, ElimGroup: 2, ElimInstance: 2}
-	db.CreateMatch(&match1)
-	db.CreateMatch(&match2)
+	database.CreateMatch(&match1)
+	database.CreateMatch(&match2)
 	matchResult1 := model.BuildTestMatchResult(match1.Id, 1)
-	db.CreateMatchResult(matchResult1)
+	database.CreateMatchResult(matchResult1)
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -61,16 +59,17 @@ func TestPublishMatches(t *testing.T) {
 		assert.Equal(t, "sf", matches[1].CompLevel)
 	}))
 	defer tbaServer.Close()
-	tbaBaseUrl = tbaServer.URL
+	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
+	client.BaseUrl = tbaServer.URL
 
-	assert.Nil(t, PublishMatches())
+	assert.Nil(t, client.PublishMatches(database))
 }
 
 func TestPublishRankings(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	db.CreateRanking(game.TestRanking2())
-	db.CreateRanking(game.TestRanking1())
+	database.CreateRanking(game.TestRanking2())
+	database.CreateRanking(game.TestRanking1())
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -82,15 +81,16 @@ func TestPublishRankings(t *testing.T) {
 		assert.Equal(t, "frc1114", response.Rankings[1].TeamKey)
 	}))
 	defer tbaServer.Close()
-	tbaBaseUrl = tbaServer.URL
+	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
+	client.BaseUrl = tbaServer.URL
 
-	assert.Nil(t, PublishRankings())
+	assert.Nil(t, client.PublishRankings(database))
 }
 
 func TestPublishAlliances(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	model.BuildTestAlliances(db)
+	model.BuildTestAlliances(database)
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,25 +100,31 @@ func TestPublishAlliances(t *testing.T) {
 			reader.String())
 	}))
 	defer tbaServer.Close()
-	tbaBaseUrl = tbaServer.URL
+	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
+	client.BaseUrl = tbaServer.URL
 
-	assert.Nil(t, PublishAlliances())
+	assert.Nil(t, client.PublishAlliances(database))
 }
 
 func TestPublishingErrors(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	model.BuildTestAlliances(db)
+	model.BuildTestAlliances(database)
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "oh noes", 500)
 	}))
 	defer tbaServer.Close()
-	tbaBaseUrl = tbaServer.URL
+	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
+	client.BaseUrl = tbaServer.URL
 
-	assert.NotNil(t, PublishTeams())
-	assert.NotNil(t, PublishMatches())
-	assert.NotNil(t, PublishRankings())
-	assert.NotNil(t, PublishAlliances())
+	assert.NotNil(t, client.PublishTeams(database))
+	assert.NotNil(t, client.PublishMatches(database))
+	assert.NotNil(t, client.PublishRankings(database))
+	assert.NotNil(t, client.PublishAlliances(database))
+}
+
+func setupTestDb(t *testing.T) *model.Database {
+	return model.SetupTestDb(t, "partner", "..")
 }

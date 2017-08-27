@@ -3,7 +3,7 @@
 //
 // Methods for publishing data to and retrieving data from The Blue Alliance.
 
-package main
+package partner
 
 import (
 	"bytes"
@@ -17,17 +17,15 @@ import (
 	"strconv"
 )
 
-// Distinct endpoints are necessary for testing.
-var tbaBaseUrl = "https://www.thebluealliance.com"
-var tbaTeamBaseUrl = tbaBaseUrl
-var tbaTeamRobotsBaseUrl = tbaBaseUrl
-var tbaTeamAwardsBaseUrl = tbaBaseUrl
-var tbaEventBaseUrl = tbaBaseUrl
+type TbaClient struct {
+	BaseUrl         string
+	eventCode       string
+	secretId        string
+	secret          string
+	eventNamesCache map[string]string
+}
 
-// Cache of event codes to names.
-var tbaEventNames = make(map[string]string)
-
-// MODELS
+const tbaBaseUrl = "https://www.thebluealliance.com"
 
 type TbaMatch struct {
 	CompLevel      string                        `json:"comp_level"`
@@ -114,10 +112,14 @@ type TbaEvent struct {
 	Name string `json:"name"`
 }
 
-// DATA RETRIEVAL
-func getTeamFromTba(teamNumber int) (*TbaTeam, error) {
-	url := fmt.Sprintf("%s/api/v2/team/%s", tbaTeamBaseUrl, getTbaTeam(teamNumber))
-	resp, err := getTbaRequest(url)
+func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
+	return &TbaClient{BaseUrl: tbaBaseUrl, eventCode: eventCode, secretId: secretId, secret: secret,
+		eventNamesCache: make(map[string]string)}
+}
+
+func (client *TbaClient) GetTeam(teamNumber int) (*TbaTeam, error) {
+	path := fmt.Sprintf("/api/v2/team/%s", getTbaTeam(teamNumber))
+	resp, err := client.getRequest(path)
 	if err != nil {
 		return nil, err
 	}
@@ -135,9 +137,9 @@ func getTeamFromTba(teamNumber int) (*TbaTeam, error) {
 	return &teamData, err
 }
 
-func getRobotNameFromTba(teamNumber int, year int) (string, error) {
-	url := fmt.Sprintf("%s/api/v2/team/frc%d/history/robots", tbaTeamRobotsBaseUrl, teamNumber)
-	resp, err := getTbaRequest(url)
+func (client *TbaClient) GetRobotName(teamNumber int, year int) (string, error) {
+	path := fmt.Sprintf("/api/v2/team/%s/history/robots", getTbaTeam(teamNumber))
+	resp, err := client.getRequest(path)
 	if err != nil {
 		return "", err
 	}
@@ -160,9 +162,9 @@ func getRobotNameFromTba(teamNumber int, year int) (string, error) {
 	return "", nil
 }
 
-func getTeamAwardsFromTba(teamNumber int) ([]*TbaAward, error) {
-	url := fmt.Sprintf("%s/api/v2/team/%s/history/awards", tbaTeamAwardsBaseUrl, getTbaTeam(teamNumber))
-	resp, err := getTbaRequest(url)
+func (client *TbaClient) GetTeamAwards(teamNumber int) ([]*TbaAward, error) {
+	path := fmt.Sprintf("/api/v2/team/%s/history/awards", getTbaTeam(teamNumber))
+	resp, err := client.getRequest(path)
 	if err != nil {
 		return nil, err
 	}
@@ -181,46 +183,21 @@ func getTeamAwardsFromTba(teamNumber int) ([]*TbaAward, error) {
 	}
 
 	for _, award := range awards {
-		if _, ok := tbaEventNames[award.EventKey]; !ok {
-			tbaEventNames[award.EventKey], err = getEventNameFromTba(award.EventKey)
+		if _, ok := client.eventNamesCache[award.EventKey]; !ok {
+			client.eventNamesCache[award.EventKey], err = client.getEventName(award.EventKey)
 			if err != nil {
 				return nil, err
 			}
 		}
-		award.EventName = tbaEventNames[award.EventKey]
+		award.EventName = client.eventNamesCache[award.EventKey]
 	}
 
 	return awards, nil
 }
 
-func getEventNameFromTba(eventCode string) (string, error) {
-	url := fmt.Sprintf("%s/api/v2/event/%s", tbaEventBaseUrl, eventCode)
-	resp, err := getTbaRequest(url)
-	if err != nil {
-		return "", err
-	}
-
-	// Get the response and handle errors
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	var event TbaEvent
-	err = json.Unmarshal(body, &event)
-	if err != nil {
-		return "", err
-	}
-
-	return event.Name, err
-}
-
-// PUBLISHING
-
 // Uploads the event team list to The Blue Alliance.
-func PublishTeams() error {
-	teams, err := db.GetAllTeams()
+func (client *TbaClient) PublishTeams(database *model.Database) error {
+	teams, err := database.GetAllTeams()
 	if err != nil {
 		return err
 	}
@@ -235,7 +212,7 @@ func PublishTeams() error {
 		return err
 	}
 
-	resp, err := postTbaRequest("team_list", "update", jsonBody)
+	resp, err := client.postRequest("team_list", "update", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -248,12 +225,12 @@ func PublishTeams() error {
 }
 
 // Uploads the qualification and elimination match schedule and results to The Blue Alliance.
-func PublishMatches() error {
-	qualMatches, err := db.GetMatchesByType("qualification")
+func (client *TbaClient) PublishMatches(database *model.Database) error {
+	qualMatches, err := database.GetMatchesByType("qualification")
 	if err != nil {
 		return err
 	}
-	elimMatches, err := db.GetMatchesByType("elimination")
+	elimMatches, err := database.GetMatchesByType("elimination")
 	if err != nil {
 		return err
 	}
@@ -271,7 +248,7 @@ func PublishMatches() error {
 
 		// Fill in scores if the match has been played.
 		if match.Status == "complete" {
-			matchResult, err := db.GetMatchResultForMatch(match.Id)
+			matchResult, err := database.GetMatchResultForMatch(match.Id)
 			if err != nil {
 				return err
 			}
@@ -298,7 +275,7 @@ func PublishMatches() error {
 		return err
 	}
 
-	resp, err := postTbaRequest("matches", "update", jsonBody)
+	resp, err := client.postRequest("matches", "update", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -311,8 +288,8 @@ func PublishMatches() error {
 }
 
 // Uploads the team standings to The Blue Alliance.
-func PublishRankings() error {
-	rankings, err := db.GetAllRankings()
+func (client *TbaClient) PublishRankings(database *model.Database) error {
+	rankings, err := database.GetAllRankings()
 	if err != nil {
 		return err
 	}
@@ -332,7 +309,7 @@ func PublishRankings() error {
 		return err
 	}
 
-	resp, err := postTbaRequest("rankings", "update", jsonBody)
+	resp, err := client.postRequest("rankings", "update", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -345,8 +322,8 @@ func PublishRankings() error {
 }
 
 // Uploads the alliances selection results to The Blue Alliance.
-func PublishAlliances() error {
-	alliances, err := db.GetAllAlliances()
+func (client *TbaClient) PublishAlliances(database *model.Database) error {
+	alliances, err := database.GetAllAlliances()
 	if err != nil {
 		return err
 	}
@@ -363,7 +340,7 @@ func PublishAlliances() error {
 		return err
 	}
 
-	resp, err := postTbaRequest("alliance_selections", "update", jsonBody)
+	resp, err := client.postRequest("alliance_selections", "update", jsonBody)
 	if err != nil {
 		return err
 	}
@@ -376,8 +353,8 @@ func PublishAlliances() error {
 }
 
 // Clears out the existing match data on The Blue Alliance for the event.
-func DeletePublishedMatches() error {
-	resp, err := postTbaRequest("matches", "delete_all", []byte(eventSettings.TbaEventCode))
+func (client *TbaClient) DeletePublishedMatches() error {
+	resp, err := client.postRequest("matches", "delete_all", []byte(client.eventCode))
 	if err != nil {
 		return err
 	}
@@ -389,38 +366,61 @@ func DeletePublishedMatches() error {
 	return nil
 }
 
+func (client *TbaClient) getEventName(eventCode string) (string, error) {
+	path := fmt.Sprintf("/api/v2/event/%s", eventCode)
+	resp, err := client.getRequest(path)
+	if err != nil {
+		return "", err
+	}
+
+	// Get the response and handle errors
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var event TbaEvent
+	err = json.Unmarshal(body, &event)
+	if err != nil {
+		return "", err
+	}
+
+	return event.Name, err
+}
+
 // Converts an integer team number into the "frcXXXX" format TBA expects.
 func getTbaTeam(team int) string {
 	return fmt.Sprintf("frc%d", team)
 }
 
-// HELPERS
+// Sends a GET request to the TBA API.
+func (client *TbaClient) getRequest(path string) (*http.Response, error) {
+	url := client.BaseUrl + path
 
-// Signs the request and sends it to the TBA API.
-func postTbaRequest(resource string, action string, body []byte) (*http.Response, error) {
-	path := fmt.Sprintf("/api/trusted/v1/event/%s/%s/%s", eventSettings.TbaEventCode, resource, action)
-	signature := fmt.Sprintf("%x", md5.Sum(append([]byte(eventSettings.TbaSecret+path), body...)))
-
-	client := &http.Client{}
-	request, err := http.NewRequest("POST", fmt.Sprintf("%s%s", tbaBaseUrl, path), bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Add("X-TBA-Auth-Id", eventSettings.TbaSecretId)
-	request.Header.Add("X-TBA-Auth-Sig", signature)
-	return client.Do(request)
-}
-
-// Sends a GET request to the TBA API
-func getTbaRequest(url string) (*http.Response, error) {
-	// Make an HTTP GET request with the TBA auth headers
-	client := &http.Client{}
+	// Make an HTTP GET request with the TBA auth headers.
+	httpClient := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("X-TBA-App-Id", "cheesy-arena:cheesy-fms:v0.1")
-	return client.Do(req)
+	return httpClient.Do(req)
+}
+
+// Signs the request and sends it to the TBA API.
+func (client *TbaClient) postRequest(resource string, action string, body []byte) (*http.Response, error) {
+	path := fmt.Sprintf("/api/trusted/v1/event/%s/%s/%s", client.eventCode, resource, action)
+	signature := fmt.Sprintf("%x", md5.Sum(append([]byte(client.secret+path), body...)))
+
+	httpClient := &http.Client{}
+	request, err := http.NewRequest("POST", client.BaseUrl+path, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Add("X-TBA-Auth-Id", client.secretId)
+	request.Header.Add("X-TBA-Auth-Sig", signature)
+	return httpClient.Do(request)
 }
 
 func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResult, alliance string) *TbaScoreBreakdown {

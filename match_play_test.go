@@ -156,8 +156,8 @@ func TestCommitMatch(t *testing.T) {
 	assert.Equal(t, "T", match.Winner)
 
 	// Verify TBA and STEMtv publishing by checking the log for the expected failure messages.
-	tbaBaseUrl = "fakeurl"
-	stemTvBaseUrl = "fakeurl"
+	tbaClient.BaseUrl = "fakeUrl"
+	stemTvClient.BaseUrl = "fakeUrl"
 	eventSettings.TbaPublishingEnabled = true
 	eventSettings.StemTvPublishingEnabled = true
 	var writer bytes.Buffer

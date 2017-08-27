@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -33,12 +34,14 @@ func TestSetupTeams(t *testing.T) {
 		"country_name": "USA",
 		"nickname": "The Cheesy Poofs"
 	}`
-	teamInfoServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, teamInfoBody)
-	}))
-	defer teamInfoServer.Close()
-	tbaTeamBaseUrl = teamInfoServer.URL
-
+	teamRobotsBody := `{
+		"2017": {
+			"team_key": "frc33",
+			"name": "Buzz 22",
+			"key": "frc33_2017",
+			"year": 2017
+		}
+	}`
 	teamAwardsBody := `[{
 		"event_key": "2014cmp",
 		"award_type": 1,
@@ -63,18 +66,22 @@ func TestSetupTeams(t *testing.T) {
 		],
 		"year": 2014
 	}]`
-	teamAwardsServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, teamAwardsBody)
-	}))
-	defer teamAwardsServer.Close()
-	tbaTeamAwardsBaseUrl = teamAwardsServer.URL
-
 	eventBody := `{ "name": "Championship" }`
-	eventServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, eventBody)
+	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.RequestURI, "history/robots") {
+			fmt.Fprintln(w, teamRobotsBody)
+		} else if strings.Contains(r.RequestURI, "history/awards") {
+			fmt.Fprintln(w, teamAwardsBody)
+		} else if strings.Contains(r.RequestURI, "team") {
+			fmt.Fprintln(w, teamInfoBody)
+		} else if strings.Contains(r.RequestURI, "event") {
+			fmt.Fprintln(w, eventBody)
+		} else {
+			http.Error(w, "Unexpected request during test", 500)
+		}
 	}))
-	defer eventServer.Close()
-	tbaEventBaseUrl = eventServer.URL
+	defer tbaServer.Close()
+	tbaClient.BaseUrl = tbaServer.URL
 
 	// Add some teams.
 	recorder = postHttpResponse("/setup/teams", "teamNumbers=254\r\nnotateam\r\n1114\r\n")
@@ -195,7 +202,7 @@ func TestSetupTeamsWpaKeys(t *testing.T) {
 func TestSetupTeamsPublish(t *testing.T) {
 	setupTest(t)
 
-	tbaBaseUrl = "fakeurl"
+	tbaClient.BaseUrl = "fakeurl"
 	eventSettings.TbaPublishingEnabled = true
 
 	recorder := postHttpResponse("/setup/teams/publish", "")

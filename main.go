@@ -5,6 +5,7 @@ package main
 
 import (
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/partner"
 	"log"
 	"math/rand"
 	"time"
@@ -14,11 +15,15 @@ const eventDbPath = "./event.db"
 
 var db *model.Database
 var eventSettings *model.EventSettings
+var tbaClient *partner.TbaClient
+var stemTvClient *partner.StemTvClient
 
 // Main entry point for the application.
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	initDb()
+	tbaClient = partner.NewTbaClient(eventSettings.TbaEventCode, eventSettings.TbaSecretId, eventSettings.TbaSecret)
+	stemTvClient = partner.NewStemTvClient(eventSettings.StemTvEventCode)
 
 	// Run the webserver and DS packet listener in goroutines and use the main one for the arena state machine.
 	go ServeWebInterface()

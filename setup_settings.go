@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/partner"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -80,6 +81,10 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+
+	// Refresh the partner clients in case they changed.
+	tbaClient = partner.NewTbaClient(eventSettings.TbaEventCode, eventSettings.TbaSecretId, eventSettings.TbaSecret)
+	stemTvClient = partner.NewStemTvClient(eventSettings.StemTvEventCode)
 
 	http.Redirect(w, r, "/setup/settings", 302)
 }

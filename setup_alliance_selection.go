@@ -210,12 +210,12 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 
 	if eventSettings.TbaPublishingEnabled {
 		// Publish alliances and schedule to The Blue Alliance.
-		err = PublishAlliances()
+		err = tbaClient.PublishAlliances(db)
 		if err != nil {
 			renderAllianceSelection(w, r, fmt.Sprintf("Failed to publish alliances: %s", err.Error()))
 			return
 		}
-		err = PublishMatches()
+		err = tbaClient.PublishMatches(db)
 		if err != nil {
 			renderAllianceSelection(w, r, fmt.Sprintf("Failed to publish matches: %s", err.Error()))
 			return

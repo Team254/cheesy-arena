@@ -5,12 +5,8 @@ package model
 
 import (
 	"github.com/stretchr/testify/assert"
-	"os"
-	"path/filepath"
 	"testing"
 )
-
-const testDbPath = "test.db"
 
 func TestOpenUnreachableDatabase(t *testing.T) {
 	_, err := OpenDatabase("..", "nonexistentdir/test.db")
@@ -18,8 +14,5 @@ func TestOpenUnreachableDatabase(t *testing.T) {
 }
 
 func setupTestDb(t *testing.T) *Database {
-	os.Remove(filepath.Join("..", testDbPath))
-	db, err := OpenDatabase("..", testDbPath)
-	assert.Nil(t, err)
-	return db
+	return SetupTestDb(t, "model", "..")
 }

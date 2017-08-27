@@ -99,12 +99,12 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 func ScheduleRepublishPostHandler(w http.ResponseWriter, r *http.Request) {
 	if eventSettings.TbaPublishingEnabled {
 		// Publish schedule to The Blue Alliance.
-		err := DeletePublishedMatches()
+		err := tbaClient.DeletePublishedMatches()
 		if err != nil {
 			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
 			return
 		}
-		err = PublishMatches()
+		err = tbaClient.PublishMatches(db)
 		if err != nil {
 			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
 			return
@@ -151,12 +151,12 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	if eventSettings.TbaPublishingEnabled && cachedMatchType != "practice" {
 		// Publish schedule to The Blue Alliance.
-		err = DeletePublishedMatches()
+		err = tbaClient.DeletePublishedMatches()
 		if err != nil {
 			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
 			return
 		}
-		err = PublishMatches()
+		err = tbaClient.PublishMatches(db)
 		if err != nil {
 			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
 			return

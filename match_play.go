@@ -508,12 +508,12 @@ func CommitMatchScore(match *model.Match, matchResult *model.MatchResult, loadTo
 	if eventSettings.TbaPublishingEnabled && match.Type != "practice" {
 		// Publish asynchronously to The Blue Alliance.
 		go func() {
-			err = PublishMatches()
+			err = tbaClient.PublishMatches(db)
 			if err != nil {
 				log.Printf("Failed to publish matches: %s", err.Error())
 			}
 			if match.Type == "qualification" {
-				err = PublishRankings()
+				err = tbaClient.PublishRankings(db)
 				if err != nil {
 					log.Printf("Failed to publish rankings: %s", err.Error())
 				}
@@ -524,7 +524,7 @@ func CommitMatchScore(match *model.Match, matchResult *model.MatchResult, loadTo
 	if eventSettings.StemTvPublishingEnabled && match.Type != "practice" {
 		// Publish asynchronously to STEMtv.
 		go func() {
-			err = PublishMatchVideoSplit(match, time.Now())
+			err = stemTvClient.PublishMatchVideoSplit(match, time.Now())
 			if err != nil {
 				log.Printf("Failed to publish match video split to STEMtv: %s", err.Error())
 			}

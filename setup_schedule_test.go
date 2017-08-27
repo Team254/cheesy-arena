@@ -34,7 +34,7 @@ func TestSetupSchedule(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "2014-01-03 16:54:00") // Last match of third block.
 
 	// Save schedule and check that it is published to TBA.
-	tbaBaseUrl = "fakeurl"
+	tbaClient.BaseUrl = "fakeUrl"
 	eventSettings.TbaPublishingEnabled = true
 	recorder = postHttpResponse("/setup/schedule/save", "")
 	matches, err := db.GetMatchesByType("qualification")
