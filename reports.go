@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/gorilla/mux"
 	"github.com/jung-kurt/gofpdf"
 	"net/http"
@@ -148,7 +149,7 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	matchesPerTeam := 0
 	if len(teams) > 0 {
-		matchesPerTeam = len(matches) * teamsPerMatch / len(teams)
+		matchesPerTeam = len(matches) * tournament.TeamsPerMatch / len(teams)
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.

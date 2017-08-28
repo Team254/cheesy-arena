@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -43,7 +44,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	matchResult := model.BuildTestMatchResult(match.Id, 1)
 	matchResult.MatchType = match.Type
 	db.CreateMatchResult(matchResult)
-	createTestAlliances(db, 2)
+	tournament.CreateTestAlliances(db, 2)
 
 	recorder := getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
@@ -80,7 +81,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
 		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006}
 	db.CreateMatch(&match)
-	createTestAlliances(db, 2)
+	tournament.CreateTestAlliances(db, 2)
 
 	recorder := getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)

@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package tournament
 
 import (
 	"github.com/Team254/cheesy-arena/model"
@@ -11,25 +11,25 @@ import (
 )
 
 func TestEliminationScheduleInitial(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	createTestAlliances(db, 2)
-	_, err := UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 2)
+	_, err := UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err := db.GetMatchesByType("elimination")
+	matches, err := database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 3, len(matches)) {
 		assertMatch(t, matches[0], "F-1", 1, 2)
 		assertMatch(t, matches[1], "F-2", 1, 2)
 		assertMatch(t, matches[2], "F-3", 1, 2)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 3)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 3)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
 		assertMatch(t, matches[0], "SF2-1", 2, 3)
@@ -39,13 +39,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[4], "F-2", 1, 0)
 		assertMatch(t, matches[5], "F-3", 1, 0)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 4)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 4)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
 		assertMatch(t, matches[0], "SF1-1", 1, 4)
@@ -55,13 +55,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[4], "SF1-3", 1, 4)
 		assertMatch(t, matches[5], "SF2-3", 2, 3)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 5)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 5)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 9, len(matches)) {
 		assertMatch(t, matches[0], "QF2-1", 4, 5)
@@ -74,13 +74,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[7], "SF1-3", 1, 0)
 		assertMatch(t, matches[8], "SF2-3", 2, 3)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 6)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 6)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 12, len(matches)) {
 		assertMatch(t, matches[0], "QF2-1", 4, 5)
@@ -96,13 +96,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[10], "SF1-3", 1, 0)
 		assertMatch(t, matches[11], "SF2-3", 2, 0)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 7)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 7)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 12, len(matches)) {
 		assertMatch(t, matches[0], "QF2-1", 4, 5)
@@ -118,13 +118,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[10], "SF1-2", 1, 0)
 		assertMatch(t, matches[11], "SF1-3", 1, 0)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 8)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 8)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 12, len(matches)) {
 		assertMatch(t, matches[0], "QF1-1", 1, 8)
@@ -140,13 +140,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[10], "QF3-3", 2, 7)
 		assertMatch(t, matches[11], "QF4-3", 3, 6)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 9)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 9)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 15, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -165,13 +165,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[13], "QF3-3", 2, 7)
 		assertMatch(t, matches[14], "QF4-3", 3, 6)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 10)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 10)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 18, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -193,13 +193,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[16], "QF3-3", 2, 0)
 		assertMatch(t, matches[17], "QF4-3", 3, 6)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 11)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 11)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 21, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -224,13 +224,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[19], "QF3-3", 2, 0)
 		assertMatch(t, matches[20], "QF4-3", 3, 0)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 12)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 12)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 24, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -258,13 +258,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[22], "QF3-3", 2, 0)
 		assertMatch(t, matches[23], "QF4-3", 3, 0)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 13)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 13)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 24, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -292,13 +292,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[22], "QF3-3", 2, 0)
 		assertMatch(t, matches[23], "QF4-3", 3, 0)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 14)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 14)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 24, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -326,13 +326,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[22], "QF1-3", 1, 0)
 		assertMatch(t, matches[23], "QF3-3", 2, 0)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 15)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 15)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 24, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -360,13 +360,13 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[22], "QF1-2", 1, 0)
 		assertMatch(t, matches[23], "QF1-3", 1, 0)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 
-	createTestAlliances(db, 16)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 16)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 24, len(matches)) {
 		assertMatch(t, matches[0], "EF1-1", 1, 16)
@@ -394,113 +394,113 @@ func TestEliminationScheduleInitial(t *testing.T) {
 		assertMatch(t, matches[22], "EF7-3", 3, 14)
 		assertMatch(t, matches[23], "EF8-3", 6, 11)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
 }
 
 func TestEliminationScheduleErrors(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	createTestAlliances(db, 1)
-	_, err := UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 1)
+	_, err := UpdateEliminationSchedule(database, time.Unix(0, 0))
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "Must have at least 2 alliances", err.Error())
 	}
-	db.TruncateAllianceTeams()
+	database.TruncateAllianceTeams()
 
-	createTestAlliances(db, 17)
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 17)
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "Round of depth 32 is not supported", err.Error())
 	}
-	db.TruncateAllianceTeams()
+	database.TruncateAllianceTeams()
 
-	db.CreateAllianceTeam(&model.AllianceTeam{0, 1, 0, 1})
-	db.CreateAllianceTeam(&model.AllianceTeam{0, 1, 1, 2})
-	db.CreateAllianceTeam(&model.AllianceTeam{0, 2, 0, 3})
-	db.CreateAllianceTeam(&model.AllianceTeam{0, 2, 1, 4})
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	database.CreateAllianceTeam(&model.AllianceTeam{0, 1, 0, 1})
+	database.CreateAllianceTeam(&model.AllianceTeam{0, 1, 1, 2})
+	database.CreateAllianceTeam(&model.AllianceTeam{0, 2, 0, 3})
+	database.CreateAllianceTeam(&model.AllianceTeam{0, 2, 1, 4})
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "Alliances must consist of at least 3 teams", err.Error())
 	}
-	db.TruncateAllianceTeams()
+	database.TruncateAllianceTeams()
 }
 
 func TestEliminationSchedulePopulatePartialMatch(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
 	// Final should be updated after semifinal is concluded.
-	createTestAlliances(db, 3)
-	UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "SF2-1", "B")
-	scoreMatch(db, "SF2-2", "B")
-	_, err := UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 3)
+	UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "SF2-1", "B")
+	scoreMatch(database, "SF2-2", "B")
+	_, err := UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err := db.GetMatchesByType("elimination")
+	matches, err := database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 5, len(matches)) {
 		assertMatch(t, matches[2], "F-1", 1, 3)
 		assertMatch(t, matches[3], "F-2", 1, 3)
 		assertMatch(t, matches[4], "F-3", 1, 3)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
-	db.TruncateMatchResults()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
+	database.TruncateMatchResults()
 
 	// Final should be generated and populated as both semifinals conclude.
-	createTestAlliances(db, 4)
-	UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "SF2-1", "R")
-	scoreMatch(db, "SF2-2", "R")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 4)
+	UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "SF2-1", "R")
+	scoreMatch(database, "SF2-2", "R")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 8, len(matches)) {
 		assertMatch(t, matches[5], "F-1", 0, 2)
 		assertMatch(t, matches[6], "F-2", 0, 2)
 		assertMatch(t, matches[7], "F-3", 0, 2)
 	}
-	scoreMatch(db, "SF1-1", "R")
-	scoreMatch(db, "SF1-2", "R")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "SF1-1", "R")
+	scoreMatch(database, "SF1-2", "R")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 7, len(matches)) {
 		assertMatch(t, matches[4], "F-1", 1, 2)
 		assertMatch(t, matches[5], "F-2", 1, 2)
 		assertMatch(t, matches[6], "F-3", 1, 2)
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
-	db.TruncateMatchResults()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
+	database.TruncateMatchResults()
 }
 
 func TestEliminationScheduleCreateNextRound(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	createTestAlliances(db, 4)
-	UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "SF1-1", "B")
-	_, err := UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 4)
+	UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "SF1-1", "B")
+	_, err := UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, _ := db.GetMatchesByType("elimination")
+	matches, _ := database.GetMatchesByType("elimination")
 	assert.Equal(t, 6, len(matches))
-	scoreMatch(db, "SF2-1", "B")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "SF2-1", "B")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 6, len(matches))
-	scoreMatch(db, "SF1-2", "B")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "SF1-2", "B")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 8, len(matches))
-	scoreMatch(db, "SF2-2", "B")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "SF2-2", "B")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	if assert.Equal(t, 7, len(matches)) {
 		assertMatch(t, matches[4], "F-1", 4, 3)
 		assertMatch(t, matches[5], "F-2", 4, 3)
@@ -509,122 +509,122 @@ func TestEliminationScheduleCreateNextRound(t *testing.T) {
 }
 
 func TestEliminationScheduleDetermineWinner(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
 	// Round with one tie and a sweep.
-	createTestAlliances(db, 2)
-	UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "F-1", "T")
-	winner, err := UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 2)
+	UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "F-1", "T")
+	winner, err := UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 	assert.Empty(t, winner)
-	matches, _ := db.GetMatchesByType("elimination")
+	matches, _ := database.GetMatchesByType("elimination")
 	assert.Equal(t, 3, len(matches))
-	scoreMatch(db, "F-2", "B")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-2", "B")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 	assert.Empty(t, winner)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 3, len(matches))
-	scoreMatch(db, "F-3", "B")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-3", "B")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	if assert.Nil(t, err) {
 		if assert.Equal(t, 3, len(winner)) {
 			assert.Equal(t, 2, winner[0].TeamId)
 		}
 	}
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 3, len(matches))
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
-	db.TruncateMatchResults()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
+	database.TruncateMatchResults()
 
 	// Round with one tie and a split.
-	createTestAlliances(db, 2)
-	UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "F-1", "R")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 2)
+	UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "F-1", "R")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 	assert.Empty(t, winner)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 3, len(matches))
-	scoreMatch(db, "F-2", "T")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-2", "T")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 	assert.Empty(t, winner)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 3, len(matches))
-	scoreMatch(db, "F-3", "B")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-3", "B")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 	assert.Empty(t, winner)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 4, len(matches))
 	assert.Equal(t, "F-4", matches[3].DisplayName)
-	scoreMatch(db, "F-4", "T")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-4", "T")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 	assert.Empty(t, winner)
-	scoreMatch(db, "F-5", "R")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-5", "R")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	if assert.Nil(t, err) {
 		if assert.Equal(t, 3, len(winner)) {
 			assert.Equal(t, 1, winner[0].TeamId)
 		}
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
-	db.TruncateMatchResults()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
+	database.TruncateMatchResults()
 
 	// Round with two ties.
-	createTestAlliances(db, 2)
-	UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "F-1", "T")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 2)
+	UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "F-1", "T")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 	assert.Empty(t, winner)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 3, len(matches))
-	scoreMatch(db, "F-2", "B")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-2", "B")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 	assert.Empty(t, winner)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 3, len(matches))
-	scoreMatch(db, "F-3", "T")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-3", "T")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 	assert.Empty(t, winner)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	assert.Equal(t, 5, len(matches))
 	assert.Equal(t, "F-4", matches[3].DisplayName)
 	assert.Equal(t, "F-5", matches[4].DisplayName)
-	scoreMatch(db, "F-4", "B")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-4", "B")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	if assert.Nil(t, err) {
 		if assert.Equal(t, 3, len(winner)) {
 			assert.Equal(t, 2, winner[0].TeamId)
 		}
 	}
-	db.TruncateAllianceTeams()
-	db.TruncateMatches()
-	db.TruncateMatchResults()
+	database.TruncateAllianceTeams()
+	database.TruncateMatches()
+	database.TruncateMatchResults()
 
 	// Round with repeated ties.
-	createTestAlliances(db, 2)
-	UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "F-1", "T")
-	scoreMatch(db, "F-2", "T")
-	scoreMatch(db, "F-3", "T")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "F-4", "T")
-	scoreMatch(db, "F-5", "T")
-	scoreMatch(db, "F-6", "T")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "F-7", "R")
-	scoreMatch(db, "F-8", "B")
-	scoreMatch(db, "F-9", "R")
-	winner, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 2)
+	UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "F-1", "T")
+	scoreMatch(database, "F-2", "T")
+	scoreMatch(database, "F-3", "T")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "F-4", "T")
+	scoreMatch(database, "F-5", "T")
+	scoreMatch(database, "F-6", "T")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "F-7", "R")
+	scoreMatch(database, "F-8", "B")
+	scoreMatch(database, "F-9", "R")
+	winner, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	if assert.Nil(t, err) {
 		if assert.Equal(t, 3, len(winner)) {
 			assert.Equal(t, 1, winner[0].TeamId)
@@ -633,42 +633,42 @@ func TestEliminationScheduleDetermineWinner(t *testing.T) {
 }
 
 func TestEliminationScheduleRemoveUnneededMatches(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	createTestAlliances(db, 2)
-	UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "F-1", "R")
-	scoreMatch(db, "F-2", "R")
-	_, err := UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 2)
+	UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "F-1", "R")
+	scoreMatch(database, "F-2", "R")
+	_, err := UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, _ := db.GetMatchesByType("elimination")
+	matches, _ := database.GetMatchesByType("elimination")
 	assert.Equal(t, 2, len(matches))
 
 	// Check that the deleted match is recreated if the score is changed.
-	scoreMatch(db, "F-2", "B")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "F-2", "B")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, _ = db.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType("elimination")
 	if assert.Equal(t, 3, len(matches)) {
 		assert.Equal(t, "F-3", matches[2].DisplayName)
 	}
 }
 
 func TestEliminationScheduleChangePreviousRoundResult(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	createTestAlliances(db, 4)
-	_, err := UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 4)
+	_, err := UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	scoreMatch(db, "SF2-1", "R")
-	scoreMatch(db, "SF2-2", "B")
-	scoreMatch(db, "SF2-3", "R")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "SF2-1", "R")
+	scoreMatch(database, "SF2-2", "B")
+	scoreMatch(database, "SF2-3", "R")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	scoreMatch(db, "SF2-3", "B")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "SF2-3", "B")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err := db.GetMatchesByType("elimination")
+	matches, err := database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 9, len(matches)) {
 		assertMatch(t, matches[6], "F-1", 0, 3)
@@ -676,17 +676,17 @@ func TestEliminationScheduleChangePreviousRoundResult(t *testing.T) {
 		assertMatch(t, matches[8], "F-3", 0, 3)
 	}
 
-	scoreMatch(db, "SF1-1", "R")
-	scoreMatch(db, "SF1-2", "R")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "SF1-1", "R")
+	scoreMatch(database, "SF1-2", "R")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	scoreMatch(db, "SF1-2", "B")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "SF1-2", "B")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	scoreMatch(db, "SF1-3", "B")
-	_, err = UpdateEliminationSchedule(db, time.Unix(0, 0))
+	scoreMatch(database, "SF1-3", "B")
+	_, err = UpdateEliminationSchedule(database, time.Unix(0, 0))
 	assert.Nil(t, err)
-	matches, err = db.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 9, len(matches)) {
 		assertMatch(t, matches[6], "F-1", 4, 3)
@@ -696,23 +696,23 @@ func TestEliminationScheduleChangePreviousRoundResult(t *testing.T) {
 }
 
 func TestEliminationScheduleUnscoredMatch(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	createTestAlliances(db, 2)
-	UpdateEliminationSchedule(db, time.Unix(0, 0))
-	scoreMatch(db, "F-1", "blorpy")
-	_, err := UpdateEliminationSchedule(db, time.Unix(0, 0))
+	CreateTestAlliances(database, 2)
+	UpdateEliminationSchedule(database, time.Unix(0, 0))
+	scoreMatch(database, "F-1", "blorpy")
+	_, err := UpdateEliminationSchedule(database, time.Unix(0, 0))
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "Completed match 1 has invalid winner 'blorpy'", err.Error())
 	}
 }
 
 func TestEliminationScheduleTiming(t *testing.T) {
-	setupTest(t)
+	database := setupTestDb(t)
 
-	createTestAlliances(db, 4)
-	UpdateEliminationSchedule(db, time.Unix(1000, 0))
-	matches, err := db.GetMatchesByType("elimination")
+	CreateTestAlliances(database, 4)
+	UpdateEliminationSchedule(database, time.Unix(1000, 0))
+	matches, err := database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
 		assert.True(t, time.Unix(1000, 0).Equal(matches[0].Time))
@@ -722,10 +722,10 @@ func TestEliminationScheduleTiming(t *testing.T) {
 		assert.True(t, time.Unix(3400, 0).Equal(matches[4].Time))
 		assert.True(t, time.Unix(4000, 0).Equal(matches[5].Time))
 	}
-	scoreMatch(db, "SF1-1", "R")
-	scoreMatch(db, "SF1-3", "B")
-	UpdateEliminationSchedule(db, time.Unix(5000, 0))
-	matches, err = db.GetMatchesByType("elimination")
+	scoreMatch(database, "SF1-1", "R")
+	scoreMatch(database, "SF1-3", "B")
+	UpdateEliminationSchedule(database, time.Unix(5000, 0))
+	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
 		assert.True(t, time.Unix(1000, 0).Equal(matches[0].Time))
@@ -737,23 +737,15 @@ func TestEliminationScheduleTiming(t *testing.T) {
 	}
 }
 
-func createTestAlliances(db *model.Database, allianceCount int) {
-	for i := 1; i <= allianceCount; i++ {
-		db.CreateAllianceTeam(&model.AllianceTeam{0, i, 0, i})
-		db.CreateAllianceTeam(&model.AllianceTeam{0, i, 1, i})
-		db.CreateAllianceTeam(&model.AllianceTeam{0, i, 2, i})
-	}
-}
-
 func assertMatch(t *testing.T, match model.Match, displayName string, redAlliance int, blueAlliance int) {
 	assert.Equal(t, displayName, match.DisplayName)
 	assert.Equal(t, redAlliance, match.Red1)
 	assert.Equal(t, blueAlliance, match.Blue1)
 }
 
-func scoreMatch(db *model.Database, displayName string, winner string) {
-	match, _ := db.GetMatchByName("elimination", displayName)
+func scoreMatch(database *model.Database, displayName string, winner string) {
+	match, _ := database.GetMatchByName("elimination", displayName)
 	match.Status = "complete"
 	match.Winner = winner
-	db.SaveMatch(match)
+	database.SaveMatch(match)
 }

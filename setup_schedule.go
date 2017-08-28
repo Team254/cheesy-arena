@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -16,7 +17,7 @@ import (
 
 // Global vars to hold schedules that are in the process of being generated.
 var cachedMatchType string
-var cachedScheduleBlocks []ScheduleBlock
+var cachedScheduleBlocks []tournament.ScheduleBlock
 var cachedMatches []model.Match
 var cachedTeamFirstMatches map[int]string
 
@@ -30,7 +31,7 @@ func ScheduleGetHandler(w http.ResponseWriter, r *http.Request) {
 		tomorrow := time.Now().AddDate(0, 0, 1)
 		location, _ := time.LoadLocation("Local")
 		startTime := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 9, 0, 0, 0, location)
-		cachedScheduleBlocks = append(cachedScheduleBlocks, ScheduleBlock{startTime, 10, 360})
+		cachedScheduleBlocks = append(cachedScheduleBlocks, tournament.ScheduleBlock{startTime, 10, 360})
 		cachedMatchType = "practice"
 	}
 	renderSchedule(w, r, "")
@@ -67,7 +68,7 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 			"a schedule.", len(teams)))
 		return
 	}
-	matches, err := BuildRandomSchedule(teams, scheduleBlocks, r.PostFormValue("matchType"))
+	matches, err := tournament.BuildRandomSchedule(teams, scheduleBlocks, r.PostFormValue("matchType"))
 	if err != nil {
 		renderSchedule(w, r, fmt.Sprintf("Error generating schedule: %s.", err.Error()))
 		return
@@ -180,7 +181,7 @@ func renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string)
 	data := struct {
 		*model.EventSettings
 		MatchType        string
-		ScheduleBlocks   []ScheduleBlock
+		ScheduleBlocks   []tournament.ScheduleBlock
 		NumTeams         int
 		Matches          []model.Match
 		TeamFirstMatches map[int]string
@@ -195,13 +196,13 @@ func renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string)
 }
 
 // Converts the post form variables into a slice of schedule blocks.
-func getScheduleBlocks(r *http.Request) ([]ScheduleBlock, error) {
+func getScheduleBlocks(r *http.Request) ([]tournament.ScheduleBlock, error) {
 	numScheduleBlocks, err := strconv.Atoi(r.PostFormValue("numScheduleBlocks"))
 	if err != nil {
-		return []ScheduleBlock{}, err
+		return []tournament.ScheduleBlock{}, err
 	}
 	var returnErr error
-	scheduleBlocks := make([]ScheduleBlock, numScheduleBlocks)
+	scheduleBlocks := make([]tournament.ScheduleBlock, numScheduleBlocks)
 	location, _ := time.LoadLocation("Local")
 	for i := 0; i < numScheduleBlocks; i++ {
 		scheduleBlocks[i].StartTime, err = time.ParseInLocation("2006-01-02 03:04:05 PM",

@@ -3,7 +3,7 @@
 //
 // Functions for creating and updating the elimination match schedule.
 
-package main
+package tournament
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const elimMatchSpacingSec = 600
+const ElimMatchSpacingSec = 600
 
 // Incrementally creates any elimination matches that can be created, based on the results of alliance
 // selection or prior elimination rounds. Returns the winning alliance once it has been determined.
@@ -36,7 +36,7 @@ func UpdateEliminationSchedule(database *model.Database, startTime time.Time) ([
 		if match.Status == "complete" {
 			continue
 		}
-		match.Time = startTime.Add(time.Duration(matchIndex*elimMatchSpacingSec) * time.Second)
+		match.Time = startTime.Add(time.Duration(matchIndex*ElimMatchSpacingSec) * time.Second)
 		database.SaveMatch(&match)
 		matchIndex++
 	}

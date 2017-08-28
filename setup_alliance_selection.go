@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -188,14 +189,14 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate the first round of elimination matches.
-	_, err = UpdateEliminationSchedule(db, startTime)
+	_, err = tournament.UpdateEliminationSchedule(db, startTime)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
 	// Reset yellow cards.
-	err = db.CalculateTeamCards("elimination")
+	err = tournament.CalculateTeamCards(db, "elimination")
 	if err != nil {
 		handleWebErr(w, err)
 		return

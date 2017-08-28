@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
@@ -222,7 +223,7 @@ func TestCommitCards(t *testing.T) {
 	assert.True(t, team.YellowCard)
 
 	// Check that a red card in eliminations zeroes out the score.
-	createTestAlliances(db, 2)
+	tournament.CreateTestAlliances(db, 2)
 	match.Type = "elimination"
 	db.SaveMatch(match)
 	matchResult = model.BuildTestMatchResult(match.Id, 10)

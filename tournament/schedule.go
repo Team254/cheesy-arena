@@ -3,7 +3,7 @@
 //
 // Functions for creating practice and qualification match schedules.
 
-package main
+package tournament
 
 import (
 	"encoding/csv"
@@ -16,8 +16,9 @@ import (
 	"time"
 )
 
-const schedulesDir = "schedules"
-const teamsPerMatch = 6
+var schedulesDir = "schedules"
+
+const TeamsPerMatch = 6
 
 type ScheduleBlock struct {
 	StartTime       time.Time
@@ -30,10 +31,10 @@ func BuildRandomSchedule(teams []model.Team, scheduleBlocks []ScheduleBlock, mat
 	// Load the anonymized, pre-randomized match schedule for the given number of teams and matches per team.
 	numTeams := len(teams)
 	numMatches := countMatches(scheduleBlocks)
-	matchesPerTeam := int(float32(numMatches*teamsPerMatch) / float32(numTeams))
+	matchesPerTeam := int(float32(numMatches*TeamsPerMatch) / float32(numTeams))
 
 	// Adjust the number of matches to remove any excess from non-perfect block scheduling.
-	numMatches = int(math.Ceil(float64(numTeams) * float64(matchesPerTeam) / teamsPerMatch))
+	numMatches = int(math.Ceil(float64(numTeams) * float64(matchesPerTeam) / TeamsPerMatch))
 
 	file, err := os.Open(fmt.Sprintf("%s/%d_%d.csv", schedulesDir, numTeams, matchesPerTeam))
 	if err != nil {

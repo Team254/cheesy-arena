@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
 	"io"
@@ -486,12 +487,12 @@ func CommitMatchScore(match *model.Match, matchResult *model.MatchResult, loadTo
 
 	if match.Type != "practice" {
 		// Regenerate the residual yellow cards that teams may carry.
-		db.CalculateTeamCards(match.Type)
+		tournament.CalculateTeamCards(db, match.Type)
 	}
 
 	if match.Type == "qualification" {
 		// Recalculate all the rankings.
-		err = db.CalculateRankings()
+		err = tournament.CalculateRankings(db)
 		if err != nil {
 			return err
 		}
@@ -499,7 +500,7 @@ func CommitMatchScore(match *model.Match, matchResult *model.MatchResult, loadTo
 
 	if match.Type == "elimination" {
 		// Generate any subsequent elimination matches.
-		_, err = UpdateEliminationSchedule(db, time.Now().Add(time.Second*elimMatchSpacingSec))
+		_, err = tournament.UpdateEliminationSchedule(db, time.Now().Add(time.Second*tournament.ElimMatchSpacingSec))
 		if err != nil {
 			return err
 		}

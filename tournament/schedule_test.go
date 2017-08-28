@@ -1,9 +1,10 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package tournament
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
@@ -11,6 +12,11 @@ import (
 	"testing"
 	"time"
 )
+
+func TestMain(m *testing.M) {
+	schedulesDir = "../schedules"
+	os.Exit(m.Run())
+}
 
 func TestNonExistentSchedule(t *testing.T) {
 	teams := make([]model.Team, 6)
@@ -23,8 +29,9 @@ func TestNonExistentSchedule(t *testing.T) {
 }
 
 func TestMalformedSchedule(t *testing.T) {
-	scheduleFile, _ := os.Create("schedules/6_1.csv")
-	defer os.Remove("schedules/6_1.csv")
+	filename := fmt.Sprintf("%s/6_1.csv", schedulesDir)
+	scheduleFile, _ := os.Create(filename)
+	defer os.Remove(filename)
 	scheduleFile.WriteString("1,0,2,0,3,0,4,0,5,0,6,0\n6,0,5,0,4,0,3,0,2,0,1,0\n")
 	scheduleFile.Close()
 	teams := make([]model.Team, 6)
@@ -35,8 +42,8 @@ func TestMalformedSchedule(t *testing.T) {
 		assert.Equal(t, expectedErr, err.Error())
 	}
 
-	os.Remove("schedules/6_1.csv")
-	scheduleFile, _ = os.Create("schedules/6_1.csv")
+	os.Remove(filename)
+	scheduleFile, _ = os.Create(filename)
 	scheduleFile.WriteString("1,0,asdf,0,3,0,4,0,5,0,6,0\n")
 	scheduleFile.Close()
 	_, err = BuildRandomSchedule(teams, scheduleBlocks, "test")

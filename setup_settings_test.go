@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"mime/multipart"
@@ -72,7 +73,7 @@ func TestSetupSettingsClearDb(t *testing.T) {
 	assert.Empty(t, matches)
 	rankings, _ := db.GetAllRankings()
 	assert.Empty(t, rankings)
-	db.CalculateRankings()
+	tournament.CalculateRankings(db)
 	assert.Empty(t, rankings)
 	alliances, _ := db.GetAllAlliances()
 	assert.Empty(t, alliances)
