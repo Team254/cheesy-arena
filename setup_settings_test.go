@@ -18,10 +18,10 @@ import (
 )
 
 func TestSetupSettings(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	// Check the default setting values.
-	recorder := getHttpResponse("/setup/settings")
+	recorder := web.getHttpResponse("/setup/settings")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Untitled Event")
 	assert.Contains(t, recorder.Body.String(), "UE")
@@ -30,10 +30,10 @@ func TestSetupSettings(t *testing.T) {
 	assert.NotContains(t, recorder.Body.String(), "tbaPublishingEnabled\" checked")
 
 	// Change the settings and check the response.
-	recorder = postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&displayBackgroundColor=#ff00ff&"+
+	recorder = web.postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&displayBackgroundColor=#ff00ff&"+
 		"numElimAlliances=16&tbaPublishingEnabled=on&tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec")
 	assert.Equal(t, 302, recorder.Code)
-	recorder = getHttpResponse("/setup/settings")
+	recorder = web.getHttpResponse("/setup/settings")
 	assert.Contains(t, recorder.Body.String(), "Chezy Champs")
 	assert.Contains(t, recorder.Body.String(), "CC")
 	assert.Contains(t, recorder.Body.String(), "#ff00ff")
@@ -45,74 +45,75 @@ func TestSetupSettings(t *testing.T) {
 }
 
 func TestSetupSettingsInvalidValues(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	// Invalid color value.
-	recorder := postHttpResponse("/setup/settings", "numAlliances=8&displayBackgroundColor=blorpy")
+	recorder := web.postHttpResponse("/setup/settings", "numAlliances=8&displayBackgroundColor=blorpy")
 	assert.Contains(t, recorder.Body.String(), "must be a valid hex color value")
 
 	// Invalid number of alliances.
-	recorder = postHttpResponse("/setup/settings", "numAlliances=1&displayBackgroundColor=#000")
+	recorder = web.postHttpResponse("/setup/settings", "numAlliances=1&displayBackgroundColor=#000")
 	assert.Contains(t, recorder.Body.String(), "must be between 2 and 16")
 }
 
 func TestSetupSettingsClearDb(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	db.CreateTeam(new(model.Team))
-	db.CreateMatch(&model.Match{Type: "qualification"})
-	db.CreateMatchResult(new(model.MatchResult))
-	db.CreateRanking(new(game.Ranking))
-	db.CreateAllianceTeam(new(model.AllianceTeam))
-	recorder := postHttpResponse("/setup/db/clear", "")
+	web.arena.Database.CreateTeam(new(model.Team))
+	web.arena.Database.CreateMatch(&model.Match{Type: "qualification"})
+	web.arena.Database.CreateMatchResult(new(model.MatchResult))
+	web.arena.Database.CreateRanking(new(game.Ranking))
+	web.arena.Database.CreateAllianceTeam(new(model.AllianceTeam))
+	recorder := web.postHttpResponse("/setup/db/clear", "")
 	assert.Equal(t, 302, recorder.Code)
 
-	teams, _ := db.GetAllTeams()
+	teams, _ := web.arena.Database.GetAllTeams()
 	assert.NotEmpty(t, teams)
-	matches, _ := db.GetMatchesByType("qualification")
+	matches, _ := web.arena.Database.GetMatchesByType("qualification")
 	assert.Empty(t, matches)
-	rankings, _ := db.GetAllRankings()
+	rankings, _ := web.arena.Database.GetAllRankings()
 	assert.Empty(t, rankings)
-	tournament.CalculateRankings(db)
+	tournament.CalculateRankings(web.arena.Database)
 	assert.Empty(t, rankings)
-	alliances, _ := db.GetAllAlliances()
+	alliances, _ := web.arena.Database.GetAllAlliances()
 	assert.Empty(t, alliances)
 }
 
 func TestSetupSettingsBackupRestoreDb(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	// Modify a parameter so that we know when the database has been restored.
-	eventSettings.Name = "Chezy Champs"
-	db.SaveEventSettings(eventSettings)
+	web.arena.EventSettings.Name = "Chezy Champs"
+	web.arena.Database.SaveEventSettings(web.arena.EventSettings)
 
 	// Back up the database.
-	recorder := getHttpResponse("/setup/db/save")
+	recorder := web.getHttpResponse("/setup/db/save")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "application/octet-stream", recorder.HeaderMap["Content-Type"][0])
 	backupBody := recorder.Body
 
 	// Wipe the database to reset the defaults.
-	setupTest(t)
-	assert.NotEqual(t, "Chezy Champs", eventSettings.Name)
+	web = setupTestWeb(t)
+	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
 
 	// Check restoring with a missing file.
-	recorder = postHttpResponse("/setup/db/restore", "")
+	recorder = web.postHttpResponse("/setup/db/restore", "")
 	assert.Contains(t, recorder.Body.String(), "No database backup file was specified")
-	assert.NotEqual(t, "Chezy Champs", eventSettings.Name)
+	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
 
 	// Check restoring with a corrupt file.
-	recorder = postFileHttpResponse("/setup/db/restore", "databaseFile", bytes.NewBufferString("invalid"))
+	recorder = web.postFileHttpResponse("/setup/db/restore", "databaseFile",
+		bytes.NewBufferString("invalid"))
 	assert.Contains(t, recorder.Body.String(), "Could not read uploaded database backup file")
-	assert.NotEqual(t, "Chezy Champs", eventSettings.Name)
+	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
 
 	// Check restoring with the backup retrieved before.
-	recorder = postFileHttpResponse("/setup/db/restore", "databaseFile", backupBody)
+	recorder = web.postFileHttpResponse("/setup/db/restore", "databaseFile", backupBody)
 	fmt.Println(recorder.Body.String())
-	assert.Equal(t, "Chezy Champs", eventSettings.Name)
+	assert.Equal(t, "Chezy Champs", web.arena.EventSettings.Name)
 }
 
-func postFileHttpResponse(path string, paramName string, file *bytes.Buffer) *httptest.ResponseRecorder {
+func (web *Web) postFileHttpResponse(path string, paramName string, file *bytes.Buffer) *httptest.ResponseRecorder {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	part, _ := writer.CreateFormFile(paramName, "file.ext")
@@ -121,6 +122,6 @@ func postFileHttpResponse(path string, paramName string, file *bytes.Buffer) *ht
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", path, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
-	newHandler().ServeHTTP(recorder, req)
+	web.newHandler().ServeHTTP(recorder, req)
 	return recorder
 }

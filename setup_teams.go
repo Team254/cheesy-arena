@@ -21,22 +21,22 @@ import (
 const wpaKeyLength = 8
 
 // Shows the team list.
-func TeamsGetHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) teamsGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	renderTeams(w, r, false)
+	web.renderTeams(w, r, false)
 }
 
 // Adds teams to the team list.
-func TeamsPostHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	if !canModifyTeamList() {
-		renderTeams(w, r, true)
+	if !web.canModifyTeamList() {
+		web.renderTeams(w, r, true)
 		return
 	}
 
@@ -49,12 +49,12 @@ func TeamsPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, teamNumber := range teamNumbers {
-		team, err := getOfficialTeamInfo(teamNumber)
+		team, err := web.getOfficialTeamInfo(teamNumber)
 		if err != nil {
 			handleWebErr(w, err)
 			return
 		}
-		err = db.CreateTeam(team)
+		err = web.arena.Database.CreateTeam(team)
 		if err != nil {
 			handleWebErr(w, err)
 			return
@@ -64,17 +64,17 @@ func TeamsPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Clears the team list.
-func TeamsClearHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) teamsClearHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	if !canModifyTeamList() {
-		renderTeams(w, r, true)
+	if !web.canModifyTeamList() {
+		web.renderTeams(w, r, true)
 		return
 	}
 
-	err := db.TruncateTeams()
+	err := web.arena.Database.TruncateTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -83,14 +83,14 @@ func TeamsClearHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Shows the page to edit a team's fields.
-func TeamEditGetHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) teamEditGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
 	vars := mux.Vars(r)
 	teamId, _ := strconv.Atoi(vars["id"])
-	team, err := db.GetTeamById(teamId)
+	team, err := web.arena.Database.GetTeamById(teamId)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -108,7 +108,7 @@ func TeamEditGetHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 		*model.Team
-	}{eventSettings, team}
+	}{web.arena.EventSettings, team}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -117,14 +117,14 @@ func TeamEditGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Updates a team's fields.
-func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) teamEditPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
 	vars := mux.Vars(r)
 	teamId, _ := strconv.Atoi(vars["id"])
-	team, err := db.GetTeamById(teamId)
+	team, err := web.arena.Database.GetTeamById(teamId)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -142,14 +142,14 @@ func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	team.RookieYear, _ = strconv.Atoi(r.PostFormValue("rookieYear"))
 	team.RobotName = r.PostFormValue("robotName")
 	team.Accomplishments = r.PostFormValue("accomplishments")
-	if eventSettings.NetworkSecurityEnabled {
+	if web.arena.EventSettings.NetworkSecurityEnabled {
 		team.WpaKey = r.PostFormValue("wpaKey")
 		if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
 			handleWebErr(w, fmt.Errorf("WPA key must be between 8 and 63 characters."))
 			return
 		}
 	}
-	err = db.SaveTeam(team)
+	err = web.arena.Database.SaveTeam(team)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -158,19 +158,19 @@ func TeamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Removes a team from the team list.
-func TeamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) teamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	if !canModifyTeamList() {
-		renderTeams(w, r, true)
+	if !web.canModifyTeamList() {
+		web.renderTeams(w, r, true)
 		return
 	}
 
 	vars := mux.Vars(r)
 	teamId, _ := strconv.Atoi(vars["id"])
-	team, err := db.GetTeamById(teamId)
+	team, err := web.arena.Database.GetTeamById(teamId)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -179,7 +179,7 @@ func TeamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error: No such team: %d", teamId), 400)
 		return
 	}
-	err = db.DeleteTeam(team)
+	err = web.arena.Database.DeleteTeam(team)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -188,12 +188,12 @@ func TeamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Publishes the team list to the web.
-func TeamsPublishHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) teamsPublishHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	err := tbaClient.PublishTeams(db)
+	err := web.arena.TbaClient.PublishTeams(web.arena.Database)
 	if err != nil {
 		http.Error(w, "Failed to publish teams: "+err.Error(), 500)
 		return
@@ -202,8 +202,8 @@ func TeamsPublishHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Generates random WPA keys and saves them to the team models.
-func TeamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
@@ -212,7 +212,7 @@ func TeamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Request) {
 		generateAllKeys = all[0] == "true"
 	}
 
-	teams, err := db.GetAllTeams()
+	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -220,15 +220,15 @@ func TeamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Request) {
 	for _, team := range teams {
 		if len(team.WpaKey) == 0 || generateAllKeys {
 			team.WpaKey = uniuri.NewLen(wpaKeyLength)
-			db.SaveTeam(&team)
+			web.arena.Database.SaveTeam(&team)
 		}
 	}
 
 	http.Redirect(w, r, "/setup/teams", 302)
 }
 
-func renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) {
-	teams, err := db.GetAllTeams()
+func (web *Web) renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) {
+	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -243,7 +243,7 @@ func renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) 
 		*model.EventSettings
 		Teams            []model.Team
 		ShowErrorMessage bool
-	}{eventSettings, teams, showErrorMessage}
+	}{web.arena.EventSettings, teams, showErrorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -252,8 +252,8 @@ func renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) 
 }
 
 // Returns true if it is safe to change the team list (i.e. no matches/results exist yet).
-func canModifyTeamList() bool {
-	matches, err := db.GetMatchesByType("qualification")
+func (web *Web) canModifyTeamList() bool {
+	matches, err := web.arena.Database.GetMatchesByType("qualification")
 	if err != nil || len(matches) > 0 {
 		return false
 	}
@@ -261,13 +261,13 @@ func canModifyTeamList() bool {
 }
 
 // Returns the data for the given team number.
-func getOfficialTeamInfo(teamId int) (*model.Team, error) {
+func (web *Web) getOfficialTeamInfo(teamId int) (*model.Team, error) {
 	// Create the team variable that stores the result
 	var team model.Team
 
 	// If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
-	if eventSettings.TBADownloadEnabled {
-		tbaTeam, err := tbaClient.GetTeam(teamId)
+	if web.arena.EventSettings.TBADownloadEnabled {
+		tbaTeam, err := web.arena.TbaClient.GetTeam(teamId)
 		if err != nil {
 			return nil, err
 		}
@@ -276,12 +276,12 @@ func getOfficialTeamInfo(teamId int) (*model.Team, error) {
 		if tbaTeam.TeamNumber == 0 {
 			team = model.Team{Id: teamId}
 		} else {
-			robotName, err := tbaClient.GetRobotName(teamId, time.Now().Year())
+			robotName, err := web.arena.TbaClient.GetRobotName(teamId, time.Now().Year())
 			if err != nil {
 				return nil, err
 			}
 
-			recentAwards, err := tbaClient.GetTeamAwards(teamId)
+			recentAwards, err := web.arena.TbaClient.GetTeamAwards(teamId)
 			if err != nil {
 				return nil, err
 			}

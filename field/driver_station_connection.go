@@ -3,7 +3,7 @@
 //
 // Model and methods for interacting with a team's Driver Station.
 
-package main
+package field
 
 import (
 	"fmt"
@@ -52,7 +52,7 @@ var allianceStationPositionMap = map[string]byte{"R1": 0, "R2": 1, "R3": 2, "B1"
 var driverStationTcpListenAddress = "10.0.100.5" // The DS will try to connect to this address only.
 
 // Opens a UDP connection for communicating to the driver station.
-func NewDriverStationConnection(teamId int, allianceStation string, tcpConn net.Conn) (*DriverStationConnection, error) {
+func newDriverStationConnection(teamId int, allianceStation string, tcpConn net.Conn) (*DriverStationConnection, error) {
 	ipAddress, _, err := net.SplitHostPort(tcpConn.RemoteAddr().String())
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func NewDriverStationConnection(teamId int, allianceStation string, tcpConn net.
 }
 
 // Loops indefinitely to read packets and update connection status.
-func ListenForDsUdpPackets() {
+func (arena *Arena) listenForDsUdpPackets() {
 	udpAddress, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf(":%d", driverStationUdpReceivePort))
 	listener, err := net.ListenUDP("udp4", udpAddress)
 	if err != nil {
@@ -82,7 +82,7 @@ func ListenForDsUdpPackets() {
 		teamId := int(data[4])<<8 + int(data[5])
 
 		var dsConn *DriverStationConnection
-		for _, allianceStation := range mainArena.AllianceStations {
+		for _, allianceStation := range arena.AllianceStations {
 			if allianceStation.Team != nil && allianceStation.Team.Id == teamId {
 				dsConn = allianceStation.DsConn
 				break
@@ -105,8 +105,8 @@ func ListenForDsUdpPackets() {
 }
 
 // Sends a control packet to the Driver Station and checks for timeout conditions.
-func (dsConn *DriverStationConnection) Update() error {
-	err := dsConn.sendControlPacket()
+func (dsConn *DriverStationConnection) update(arena *Arena) error {
+	err := dsConn.sendControlPacket(arena)
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (dsConn *DriverStationConnection) Update() error {
 	return nil
 }
 
-func (dsConn *DriverStationConnection) Close() {
+func (dsConn *DriverStationConnection) close() {
 	if dsConn.log != nil {
 		dsConn.log.Close()
 	}
@@ -145,7 +145,7 @@ func (dsConn *DriverStationConnection) signalMatchStart(match *model.Match) erro
 }
 
 // Serializes the control information into a packet.
-func (dsConn *DriverStationConnection) encodeControlPacket() [22]byte {
+func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byte {
 	var packet [22]byte
 
 	// Packet number, stored big-endian in two bytes.
@@ -174,7 +174,7 @@ func (dsConn *DriverStationConnection) encodeControlPacket() [22]byte {
 	packet[5] = allianceStationPositionMap[dsConn.AllianceStation]
 
 	// Match information.
-	match := mainArena.currentMatch
+	match := arena.CurrentMatch
 	if match.Type == "practice" {
 		packet[6] = 1
 	} else if match.Type == "qualification" {
@@ -205,20 +205,20 @@ func (dsConn *DriverStationConnection) encodeControlPacket() [22]byte {
 
 	// Remaining number of seconds in match.
 	var matchSecondsRemaining int
-	switch mainArena.MatchState {
-	case preMatch:
+	switch arena.MatchState {
+	case PreMatch:
 		fallthrough
-	case startMatch:
+	case StartMatch:
 		fallthrough
-	case autoPeriod:
-		matchSecondsRemaining = game.MatchTiming.AutoDurationSec - int(mainArena.MatchTimeSec())
-	case pausePeriod:
+	case AutoPeriod:
+		matchSecondsRemaining = game.MatchTiming.AutoDurationSec - int(arena.MatchTimeSec())
+	case PausePeriod:
 		matchSecondsRemaining = game.MatchTiming.TeleopDurationSec
-	case teleopPeriod:
+	case TeleopPeriod:
 		fallthrough
-	case endgamePeriod:
+	case EndgamePeriod:
 		matchSecondsRemaining = game.MatchTiming.AutoDurationSec + game.MatchTiming.TeleopDurationSec +
-			game.MatchTiming.PauseDurationSec - int(mainArena.MatchTimeSec())
+			game.MatchTiming.PauseDurationSec - int(arena.MatchTimeSec())
 	default:
 		matchSecondsRemaining = 0
 	}
@@ -232,8 +232,8 @@ func (dsConn *DriverStationConnection) encodeControlPacket() [22]byte {
 }
 
 // Builds and sends the next control packet to the Driver Station.
-func (dsConn *DriverStationConnection) sendControlPacket() error {
-	packet := dsConn.encodeControlPacket()
+func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena) error {
+	packet := dsConn.encodeControlPacket(arena)
 	if dsConn.udpConn != nil {
 		_, err := dsConn.udpConn.Write(packet[:])
 		if err != nil {
@@ -254,7 +254,7 @@ func (dsConn *DriverStationConnection) decodeStatusPacket(data [36]byte) {
 }
 
 // Listens for TCP connection requests to Cheesy Arena from driver stations.
-func ListenForDriverStations() {
+func (arena *Arena) listenForDriverStations() {
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", driverStationTcpListenAddress, driverStationTcpListenPort))
 	if err != nil {
 		log.Printf("Error opening driver station TCP socket: %v", err.Error())
@@ -286,7 +286,7 @@ func ListenForDriverStations() {
 		teamId := int(packet[3])<<8 + int(packet[4])
 
 		// Check to see if the team is supposed to be on the field, and notify the DS accordingly.
-		assignedStation := mainArena.getAssignedAllianceStation(teamId)
+		assignedStation := arena.getAssignedAllianceStation(teamId)
 		if assignedStation == "" {
 			log.Printf("Rejecting connection from Team %d, who is not in the current match, soon.", teamId)
 			go func() {
@@ -305,33 +305,33 @@ func ListenForDriverStations() {
 		assignmentPacket[4] = 0
 		_, err = tcpConn.Write(assignmentPacket[:])
 		if err != nil {
-			log.Println("Error sending driver station assignment packet: %v", err)
+			log.Printf("Error sending driver station assignment packet: %v", err)
 			tcpConn.Close()
 			continue
 		}
 
-		dsConn, err := NewDriverStationConnection(teamId, assignedStation, tcpConn)
+		dsConn, err := newDriverStationConnection(teamId, assignedStation, tcpConn)
 		if err != nil {
-			log.Println("Error registering driver station connection: %v", err)
+			log.Printf("Error registering driver station connection: %v", err)
 			tcpConn.Close()
 			continue
 		}
-		mainArena.AllianceStations[assignedStation].DsConn = dsConn
+		arena.AllianceStations[assignedStation].DsConn = dsConn
 
 		// Spin up a goroutine to handle further TCP communication with this driver station.
-		go dsConn.handleTcpConnection()
+		go dsConn.handleTcpConnection(arena)
 	}
 }
 
-func (dsConn *DriverStationConnection) handleTcpConnection() {
+func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 	buffer := make([]byte, maxTcpPacketBytes)
 	for {
 		dsConn.tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationTcpLinkTimeoutSec))
 		_, err := dsConn.tcpConn.Read(buffer)
 		if err != nil {
-			log.Printf("Error reading from connection for Team %d: %v\n", dsConn.TeamId, err.Error())
-			dsConn.Close()
-			mainArena.AllianceStations[dsConn.AllianceStation].DsConn = nil
+			log.Printf("Error reading from connection for Team %d: %v", dsConn.TeamId, err)
+			dsConn.close()
+			arena.AllianceStations[dsConn.AllianceStation].DsConn = nil
 			break
 		}
 
@@ -347,7 +347,7 @@ func (dsConn *DriverStationConnection) handleTcpConnection() {
 		}
 
 		// Log the packet if the match is in progress.
-		matchTimeSec := mainArena.MatchTimeSec()
+		matchTimeSec := arena.MatchTimeSec()
 		if matchTimeSec > 0 && dsConn.log != nil {
 			dsConn.log.LogDsPacket(matchTimeSec, packetType, dsConn)
 		}

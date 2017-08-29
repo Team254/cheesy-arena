@@ -19,5 +19,5 @@ func CreateTestAlliances(database *model.Database, allianceCount int) {
 }
 
 func setupTestDb(t *testing.T) *model.Database {
-	return model.SetupTestDb(t, "tournament", "..")
+	return model.SetupTestDb(t, "tournament")
 }

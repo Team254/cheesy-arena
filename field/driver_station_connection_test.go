@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package field
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -11,15 +11,15 @@ import (
 )
 
 func TestEncodeControlPacket(t *testing.T) {
-	setupTest(t)
+	arena := setupTestArena(t)
 
 	tcpConn := setupFakeTcpConnection(t)
 	defer tcpConn.Close()
-	dsConn, err := NewDriverStationConnection(254, "R1", tcpConn)
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn)
 	assert.Nil(t, err)
-	defer dsConn.Close()
+	defer dsConn.close()
 
-	data := dsConn.encodeControlPacket()
+	data := dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(0), data[5])
 	assert.Equal(t, byte(0), data[6])
 	assert.Equal(t, byte(0), data[20])
@@ -27,109 +27,111 @@ func TestEncodeControlPacket(t *testing.T) {
 
 	// Check the different alliance station values.
 	dsConn.AllianceStation = "R2"
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(1), data[5])
 	dsConn.AllianceStation = "R3"
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(2), data[5])
 	dsConn.AllianceStation = "B1"
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(3), data[5])
 	dsConn.AllianceStation = "B2"
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(4), data[5])
 	dsConn.AllianceStation = "B3"
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(5), data[5])
 
 	// Check packet count rollover.
 	dsConn.packetCount = 255
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(0), data[0])
 	assert.Equal(t, byte(255), data[1])
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(1), data[0])
 	assert.Equal(t, byte(0), data[1])
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(1), data[0])
 	assert.Equal(t, byte(1), data[1])
 	dsConn.packetCount = 65535
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(255), data[0])
 	assert.Equal(t, byte(255), data[1])
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(0), data[0])
 	assert.Equal(t, byte(0), data[1])
 
 	// Check different robot statuses.
 	dsConn.Auto = true
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(2), data[3])
 
 	dsConn.Enabled = true
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(6), data[3])
 
 	dsConn.Auto = false
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(4), data[3])
 
 	dsConn.EmergencyStop = true
-	data = dsConn.encodeControlPacket()
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(132), data[3])
 
 	// Check different match types.
-	mainArena.currentMatch.Type = "practice"
-	data = dsConn.encodeControlPacket()
+	arena.CurrentMatch.Type = "practice"
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(1), data[6])
-	mainArena.currentMatch.Type = "qualification"
-	data = dsConn.encodeControlPacket()
+	arena.CurrentMatch.Type = "qualification"
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(2), data[6])
-	mainArena.currentMatch.Type = "elimination"
-	data = dsConn.encodeControlPacket()
+	arena.CurrentMatch.Type = "elimination"
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(3), data[6])
 
 	// Check the countdown at different points during the match.
-	mainArena.MatchState = autoPeriod
-	mainArena.matchStartTime = time.Now().Add(-time.Duration(4 * time.Second))
-	data = dsConn.encodeControlPacket()
+	arena.MatchState = AutoPeriod
+	arena.MatchStartTime = time.Now().Add(-time.Duration(4 * time.Second))
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(11), data[21])
-	mainArena.MatchState = pausePeriod
-	mainArena.matchStartTime = time.Now().Add(-time.Duration(16 * time.Second))
-	data = dsConn.encodeControlPacket()
+	arena.MatchState = PausePeriod
+	arena.MatchStartTime = time.Now().Add(-time.Duration(16 * time.Second))
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(135), data[21])
-	mainArena.MatchState = teleopPeriod
-	mainArena.matchStartTime = time.Now().Add(-time.Duration(33 * time.Second))
-	data = dsConn.encodeControlPacket()
+	arena.MatchState = TeleopPeriod
+	arena.MatchStartTime = time.Now().Add(-time.Duration(33 * time.Second))
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(119), data[21])
-	mainArena.MatchState = endgamePeriod
-	mainArena.matchStartTime = time.Now().Add(-time.Duration(150 * time.Second))
-	data = dsConn.encodeControlPacket()
+	arena.MatchState = EndgamePeriod
+	arena.MatchStartTime = time.Now().Add(-time.Duration(150 * time.Second))
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(2), data[21])
-	mainArena.MatchState = postMatch
-	mainArena.matchStartTime = time.Now().Add(-time.Duration(180 * time.Second))
-	data = dsConn.encodeControlPacket()
+	arena.MatchState = PostMatch
+	arena.MatchStartTime = time.Now().Add(-time.Duration(180 * time.Second))
+	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(0), data[21])
 }
 
 func TestSendControlPacket(t *testing.T) {
+	arena := setupTestArena(t)
+
 	tcpConn := setupFakeTcpConnection(t)
 	defer tcpConn.Close()
-	dsConn, err := NewDriverStationConnection(254, "R1", tcpConn)
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn)
 	assert.Nil(t, err)
-	defer dsConn.Close()
+	defer dsConn.close()
 
 	// No real way of checking this since the destination IP is remote, so settle for there being no errors.
-	err = dsConn.sendControlPacket()
+	err = dsConn.sendControlPacket(arena)
 	assert.Nil(t, err)
 }
 
 func TestDecodeStatusPacket(t *testing.T) {
 	tcpConn := setupFakeTcpConnection(t)
 	defer tcpConn.Close()
-	dsConn, err := NewDriverStationConnection(254, "R1", tcpConn)
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn)
 	assert.Nil(t, err)
-	defer dsConn.Close()
+	defer dsConn.close()
 
 	data := [36]byte{22, 28, 103, 19, 192, 0, 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0}
@@ -139,12 +141,11 @@ func TestDecodeStatusPacket(t *testing.T) {
 }
 
 func TestListenForDriverStations(t *testing.T) {
-	setupTest(t)
+	arena := setupTestArena(t)
 
 	oldAddress := driverStationTcpListenAddress
 	driverStationTcpListenAddress = "127.0.0.1"
-	go ListenForDriverStations()
-	mainArena.Setup()
+	go arena.listenForDriverStations()
 	time.Sleep(time.Millisecond * 10)
 	driverStationTcpListenAddress = oldAddress // Put it back to avoid affecting other tests.
 
@@ -171,7 +172,7 @@ func TestListenForDriverStations(t *testing.T) {
 	}
 
 	// Connect as a team in the current match.
-	mainArena.AssignTeam(1503, "B2")
+	arena.assignTeam(1503, "B2")
 	tcpConn, err = net.Dial("tcp", "127.0.0.1:1750")
 	if assert.Nil(t, err) {
 		defer tcpConn.Close()
@@ -183,7 +184,7 @@ func TestListenForDriverStations(t *testing.T) {
 		assert.Equal(t, [5]byte{0, 3, 25, 4, 0}, dataReceived)
 
 		time.Sleep(time.Millisecond * 10)
-		dsConn := mainArena.AllianceStations["B2"].DsConn
+		dsConn := arena.AllianceStations["B2"].DsConn
 		if assert.NotNil(t, dsConn) {
 			assert.Equal(t, 1503, dsConn.TeamId)
 			assert.Equal(t, "B2", dsConn.AllianceStation)

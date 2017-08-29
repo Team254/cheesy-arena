@@ -14,8 +14,8 @@ import (
 )
 
 // Renders the pit display which shows scrolling rankings.
-func PitDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) pitDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
@@ -26,7 +26,7 @@ func PitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := struct {
 		*model.EventSettings
-	}{eventSettings}
+	}{web.arena.EventSettings}
 	err = template.Execute(w, data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -35,8 +35,8 @@ func PitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for the pit display, used only to force reloads remotely.
-func PitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) pitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
@@ -47,7 +47,7 @@ func PitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer websocket.Close()
 
-	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
 	defer close(reloadDisplaysListener)
 
 	// Spin off a goroutine to listen for notifications and pass them on through the websocket.

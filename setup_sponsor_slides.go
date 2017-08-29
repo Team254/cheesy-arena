@@ -13,8 +13,8 @@ import (
 )
 
 // Shows the sponsor slides configuration page.
-func SponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) sponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
@@ -23,7 +23,7 @@ func SponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	sponsorSlides, err := db.GetAllSponsorSlides()
+	sponsorSlides, err := web.arena.Database.GetAllSponsorSlides()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -31,7 +31,7 @@ func SponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 		SponsorSlides []model.SponsorSlide
-	}{eventSettings, sponsorSlides}
+	}{web.arena.EventSettings, sponsorSlides}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -40,19 +40,19 @@ func SponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Saves the new or modified sponsor slides to the database.
-func SponsorSlidesPostHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) sponsorSlidesPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
 	sponsorSlideId, _ := strconv.Atoi(r.PostFormValue("id"))
-	sponsorSlide, err := db.GetSponsorSlideById(sponsorSlideId)
+	sponsorSlide, err := web.arena.Database.GetSponsorSlideById(sponsorSlideId)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 	if r.PostFormValue("action") == "delete" {
-		err := db.DeleteSponsorSlide(sponsorSlide)
+		err := web.arena.Database.DeleteSponsorSlide(sponsorSlide)
 		if err != nil {
 			handleWebErr(w, err)
 			return
@@ -63,14 +63,14 @@ func SponsorSlidesPostHandler(w http.ResponseWriter, r *http.Request) {
 			sponsorSlide = &model.SponsorSlide{Subtitle: r.PostFormValue("subtitle"),
 				Line1: r.PostFormValue("line1"), Line2: r.PostFormValue("line2"),
 				Image: r.PostFormValue("image"), DisplayTimeSec: displayTimeSec}
-			err = db.CreateSponsorSlide(sponsorSlide)
+			err = web.arena.Database.CreateSponsorSlide(sponsorSlide)
 		} else {
 			sponsorSlide.Subtitle = r.PostFormValue("subtitle")
 			sponsorSlide.Line1 = r.PostFormValue("line1")
 			sponsorSlide.Line2 = r.PostFormValue("line2")
 			sponsorSlide.Image = r.PostFormValue("image")
 			sponsorSlide.DisplayTimeSec = displayTimeSec
-			err = db.SaveSponsorSlide(sponsorSlide)
+			err = web.arena.Database.SaveSponsorSlide(sponsorSlide)
 		}
 		if err != nil {
 			handleWebErr(w, err)

@@ -26,22 +26,22 @@ type MatchReviewListItem struct {
 }
 
 // Shows the match review interface.
-func MatchReviewHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) matchReviewHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
-	practiceMatches, err := buildMatchReviewList("practice")
+	practiceMatches, err := web.buildMatchReviewList("practice")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	qualificationMatches, err := buildMatchReviewList("qualification")
+	qualificationMatches, err := web.buildMatchReviewList("qualification")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	eliminationMatches, err := buildMatchReviewList("elimination")
+	eliminationMatches, err := web.buildMatchReviewList("elimination")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -61,7 +61,7 @@ func MatchReviewHandler(w http.ResponseWriter, r *http.Request) {
 		*model.EventSettings
 		MatchesByType    map[string][]MatchReviewListItem
 		CurrentMatchType string
-	}{eventSettings, matchesByType, currentMatchType}
+	}{web.arena.EventSettings, matchesByType, currentMatchType}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -70,12 +70,12 @@ func MatchReviewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Shows the page to edit the results for a match.
-func MatchReviewEditGetHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) matchReviewEditGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	match, matchResult, _, err := getMatchResultFromRequest(r)
+	match, matchResult, _, err := web.getMatchResultFromRequest(r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -95,7 +95,7 @@ func MatchReviewEditGetHandler(w http.ResponseWriter, r *http.Request) {
 		*model.EventSettings
 		Match           *model.Match
 		MatchResultJson *model.MatchResultDb
-	}{eventSettings, match, matchResultJson}
+	}{web.arena.EventSettings, match, matchResultJson}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -104,12 +104,12 @@ func MatchReviewEditGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Updates the results for a match.
-func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) matchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	match, matchResult, isCurrent, err := getMatchResultFromRequest(r)
+	match, matchResult, isCurrent, err := web.getMatchResultFromRequest(r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -130,14 +130,14 @@ func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	if isCurrent {
 		// If editing the current match, just save it back to memory.
-		mainArena.redRealtimeScore.CurrentScore = matchResult.RedScore
-		mainArena.blueRealtimeScore.CurrentScore = matchResult.BlueScore
-		mainArena.redRealtimeScore.Cards = matchResult.RedCards
-		mainArena.blueRealtimeScore.Cards = matchResult.BlueCards
+		web.arena.RedRealtimeScore.CurrentScore = matchResult.RedScore
+		web.arena.BlueRealtimeScore.CurrentScore = matchResult.BlueScore
+		web.arena.RedRealtimeScore.Cards = matchResult.RedCards
+		web.arena.BlueRealtimeScore.Cards = matchResult.BlueCards
 
 		http.Redirect(w, r, "/match_play", 302)
 	} else {
-		err = CommitMatchScore(match, matchResult, false)
+		err = web.commitMatchScore(match, matchResult, false)
 		if err != nil {
 			handleWebErr(w, err)
 			return
@@ -148,23 +148,23 @@ func MatchReviewEditPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Load the match result for the match referenced in the HTTP query string.
-func getMatchResultFromRequest(r *http.Request) (*model.Match, *model.MatchResult, bool, error) {
+func (web *Web) getMatchResultFromRequest(r *http.Request) (*model.Match, *model.MatchResult, bool, error) {
 	vars := mux.Vars(r)
 
 	// If editing the current match, get it from memory instead of the DB.
 	if vars["matchId"] == "current" {
-		return mainArena.currentMatch, GetCurrentMatchResult(), true, nil
+		return web.arena.CurrentMatch, web.getCurrentMatchResult(), true, nil
 	}
 
 	matchId, _ := strconv.Atoi(vars["matchId"])
-	match, err := db.GetMatchById(matchId)
+	match, err := web.arena.Database.GetMatchById(matchId)
 	if err != nil {
 		return nil, nil, false, err
 	}
 	if match == nil {
 		return nil, nil, false, fmt.Errorf("Error: No such match: %d", matchId)
 	}
-	matchResult, err := db.GetMatchResultForMatch(matchId)
+	matchResult, err := web.arena.Database.GetMatchResultForMatch(matchId)
 	if err != nil {
 		return nil, nil, false, err
 	}
@@ -178,8 +178,8 @@ func getMatchResultFromRequest(r *http.Request) (*model.Match, *model.MatchResul
 }
 
 // Constructs the list of matches to display in the match review interface.
-func buildMatchReviewList(matchType string) ([]MatchReviewListItem, error) {
-	matches, err := db.GetMatchesByType(matchType)
+func (web *Web) buildMatchReviewList(matchType string) ([]MatchReviewListItem, error) {
+	matches, err := web.arena.Database.GetMatchesByType(matchType)
 	if err != nil {
 		return []MatchReviewListItem{}, err
 	}
@@ -197,7 +197,7 @@ func buildMatchReviewList(matchType string) ([]MatchReviewListItem, error) {
 		matchReviewList[i].Time = match.Time.Local().Format("Mon 1/02 03:04 PM")
 		matchReviewList[i].RedTeams = []int{match.Red1, match.Red2, match.Red3}
 		matchReviewList[i].BlueTeams = []int{match.Blue1, match.Blue2, match.Blue3}
-		matchResult, err := db.GetMatchResultForMatch(match.Id)
+		matchResult, err := web.arena.Database.GetMatchResultForMatch(match.Id)
 		if err != nil {
 			return []MatchReviewListItem{}, err
 		}

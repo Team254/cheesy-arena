@@ -8,92 +8,55 @@ package main
 import (
 	"bitbucket.org/rj/httpauth-go"
 	"fmt"
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
-	"sync"
 	"text/template"
 )
 
-const httpPort = 8080
-const adminUser = "admin"
-const readerUser = "reader"
+const (
+	adminUser  = "admin"
+	readerUser = "reader"
+)
 
-var websocketUpgrader = websocket.Upgrader{ReadBufferSize: 1024, WriteBufferSize: 2014}
-var adminAuth = httpauth.NewBasic("Cheesy Arena", checkAdminPassword, nil)
-var readerAuth = httpauth.NewBasic("Cheesy Arena", checkReaderPassword, nil)
+type Web struct {
+	arena           *field.Arena
+	adminAuth       *httpauth.Basic
+	readerAuth      *httpauth.Basic
+	templateHelpers template.FuncMap
+}
 
-// Helper functions that can be used inside templates.
-var templateHelpers = template.FuncMap{
-	// Allows sub-templates to be invoked with multiple arguments.
-	"dict": func(values ...interface{}) (map[string]interface{}, error) {
-		if len(values)%2 != 0 {
-			return nil, fmt.Errorf("Invalid dict call.")
-		}
-		dict := make(map[string]interface{}, len(values)/2)
-		for i := 0; i < len(values); i += 2 {
-			key, ok := values[i].(string)
-			if !ok {
-				return nil, fmt.Errorf("Dict keys must be strings.")
+func NewWeb(arena *field.Arena) *Web {
+	web := &Web{arena: arena}
+	web.adminAuth = httpauth.NewBasic("Cheesy Arena", web.checkAdminPassword, nil)
+	web.readerAuth = httpauth.NewBasic("Cheesy Arena", web.checkReaderPassword, nil)
+
+	// Helper functions that can be used inside templates.
+	web.templateHelpers = template.FuncMap{
+		// Allows sub-templates to be invoked with multiple arguments.
+		"dict": func(values ...interface{}) (map[string]interface{}, error) {
+			if len(values)%2 != 0 {
+				return nil, fmt.Errorf("Invalid dict call.")
 			}
-			dict[key] = values[i+1]
-		}
-		return dict, nil
-	},
-}
-
-// Wraps the Gorilla Websocket module so that we can define additional functions on it.
-type Websocket struct {
-	conn       *websocket.Conn
-	writeMutex *sync.Mutex
-}
-
-type WebsocketMessage struct {
-	Type string      `json:"type"`
-	Data interface{} `json:"data"`
-}
-
-// Upgrades the given HTTP request to a websocket connection.
-func NewWebsocket(w http.ResponseWriter, r *http.Request) (*Websocket, error) {
-	conn, err := websocketUpgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return nil, err
+			dict := make(map[string]interface{}, len(values)/2)
+			for i := 0; i < len(values); i += 2 {
+				key, ok := values[i].(string)
+				if !ok {
+					return nil, fmt.Errorf("Dict keys must be strings.")
+				}
+				dict[key] = values[i+1]
+			}
+			return dict, nil
+		},
 	}
-	return &Websocket{conn, new(sync.Mutex)}, nil
-}
 
-func (websocket *Websocket) Close() {
-	websocket.conn.Close()
-}
-
-func (websocket *Websocket) Read() (string, interface{}, error) {
-	var message WebsocketMessage
-	err := websocket.conn.ReadJSON(&message)
-	return message.Type, message.Data, err
-}
-
-func (websocket *Websocket) Write(messageType string, data interface{}) error {
-	websocket.writeMutex.Lock()
-	defer websocket.writeMutex.Unlock()
-	return websocket.conn.WriteJSON(WebsocketMessage{messageType, data})
-}
-
-func (websocket *Websocket) WriteError(errorMessage string) error {
-	websocket.writeMutex.Lock()
-	defer websocket.writeMutex.Unlock()
-	return websocket.conn.WriteJSON(WebsocketMessage{"error", errorMessage})
-}
-
-func (websocket *Websocket) ShowDialog(message string) error {
-	websocket.writeMutex.Lock()
-	defer websocket.writeMutex.Unlock()
-	return websocket.conn.WriteJSON(WebsocketMessage{"dialog", message})
+	return web
 }
 
 // Serves the root page of Cheesy Arena.
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) indexHandler(w http.ResponseWriter, r *http.Request) {
 	template, err := template.ParseFiles("templates/index.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -101,7 +64,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := struct {
 		*model.EventSettings
-	}{eventSettings}
+	}{web.arena.EventSettings}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -110,119 +73,118 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Starts the webserver and blocks, waiting on requests. Does not return until the application exits.
-func ServeWebInterface() {
+func (web *Web) ServeWebInterface(port int) {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
-	http.Handle("/", newHandler())
-	log.Printf("Serving HTTP requests on port %d", httpPort)
+	http.Handle("/", web.newHandler())
+	log.Printf("Serving HTTP requests on port %d", port)
 
 	// Start Server
-	http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil)
+	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
 
 // Returns true if the given user is authorized for admin operations. Used for HTTP Basic Auth.
-func UserIsAdmin(w http.ResponseWriter, r *http.Request) bool {
-	if eventSettings.AdminPassword == "" {
+func (web *Web) userIsAdmin(w http.ResponseWriter, r *http.Request) bool {
+	if web.arena.EventSettings.AdminPassword == "" {
 		// Disable auth if there is no password configured.
 		return true
 	}
-	if adminAuth.Authorize(r) == "" {
-		adminAuth.NotifyAuthRequired(w, r)
+	if web.adminAuth.Authorize(r) == "" {
+		web.adminAuth.NotifyAuthRequired(w, r)
 		return false
 	}
 	return true
 }
 
 // Returns true if the given user is authorized for read-only operations. Used for HTTP Basic Auth.
-func UserIsReader(w http.ResponseWriter, r *http.Request) bool {
-	if eventSettings.ReaderPassword == "" {
+func (web *Web) userIsReader(w http.ResponseWriter, r *http.Request) bool {
+	if web.arena.EventSettings.ReaderPassword == "" {
 		// Disable auth if there is no password configured.
 		return true
 	}
-	if readerAuth.Authorize(r) == "" {
-		readerAuth.NotifyAuthRequired(w, r)
+	if web.readerAuth.Authorize(r) == "" {
+		web.readerAuth.NotifyAuthRequired(w, r)
 		return false
 	}
 	return true
 }
 
-func checkAdminPassword(user, password string) bool {
-	return user == adminUser && password == eventSettings.AdminPassword
+func (web *Web) checkAdminPassword(user, password string) bool {
+	return user == adminUser && password == web.arena.EventSettings.AdminPassword
 }
 
-func checkReaderPassword(user, password string) bool {
+func (web *Web) checkReaderPassword(user, password string) bool {
 	if user == readerUser {
-		return password == eventSettings.ReaderPassword
+		return password == web.arena.EventSettings.ReaderPassword
 	}
 
 	// The admin role also has read permissions.
-	return checkAdminPassword(user, password)
+	return web.checkAdminPassword(user, password)
 }
 
 // Sets up the mapping between URLs and handlers.
-func newHandler() http.Handler {
+func (web *Web) newHandler() http.Handler {
 	router := mux.NewRouter()
-	router.HandleFunc("/setup/settings", SettingsGetHandler).Methods("GET")
-	router.HandleFunc("/setup/settings", SettingsPostHandler).Methods("POST")
-	router.HandleFunc("/setup/db/save", SaveDbHandler).Methods("GET")
-	router.HandleFunc("/setup/db/restore", RestoreDbHandler).Methods("POST")
-	router.HandleFunc("/setup/db/clear", ClearDbHandler).Methods("POST")
-	router.HandleFunc("/setup/teams", TeamsGetHandler).Methods("GET")
-	router.HandleFunc("/setup/teams", TeamsPostHandler).Methods("POST")
-	router.HandleFunc("/setup/teams/clear", TeamsClearHandler).Methods("POST")
-	router.HandleFunc("/setup/teams/{id}/edit", TeamEditGetHandler).Methods("GET")
-	router.HandleFunc("/setup/teams/{id}/edit", TeamEditPostHandler).Methods("POST")
-	router.HandleFunc("/setup/teams/{id}/delete", TeamDeletePostHandler).Methods("POST")
-	router.HandleFunc("/setup/teams/publish", TeamsPublishHandler).Methods("POST")
-	router.HandleFunc("/setup/teams/generate_wpa_keys", TeamsGenerateWpaKeysHandler).Methods("GET")
-	router.HandleFunc("/setup/schedule", ScheduleGetHandler).Methods("GET")
-	router.HandleFunc("/setup/schedule/generate", ScheduleGeneratePostHandler).Methods("POST")
-	router.HandleFunc("/setup/schedule/republish", ScheduleRepublishPostHandler).Methods("POST")
-	router.HandleFunc("/setup/schedule/save", ScheduleSavePostHandler).Methods("POST")
-	router.HandleFunc("/setup/alliance_selection", AllianceSelectionGetHandler).Methods("GET")
-	router.HandleFunc("/setup/alliance_selection", AllianceSelectionPostHandler).Methods("POST")
-	router.HandleFunc("/setup/alliance_selection/start", AllianceSelectionStartHandler).Methods("POST")
-	router.HandleFunc("/setup/alliance_selection/reset", AllianceSelectionResetHandler).Methods("POST")
-	router.HandleFunc("/setup/alliance_selection/finalize", AllianceSelectionFinalizeHandler).Methods("POST")
-	router.HandleFunc("/setup/field", FieldGetHandler).Methods("GET")
-	router.HandleFunc("/setup/field", FieldPostHandler).Methods("POST")
-	router.HandleFunc("/setup/field/reload_displays", FieldReloadDisplaysHandler).Methods("GET")
-	router.HandleFunc("/setup/field/lights", FieldLightsPostHandler).Methods("POST")
-	router.HandleFunc("/setup/lower_thirds", LowerThirdsGetHandler).Methods("GET")
-	router.HandleFunc("/setup/lower_thirds/websocket", LowerThirdsWebsocketHandler).Methods("GET")
-	router.HandleFunc("/setup/sponsor_slides", SponsorSlidesGetHandler).Methods("GET")
-	router.HandleFunc("/setup/sponsor_slides", SponsorSlidesPostHandler).Methods("POST")
-	router.HandleFunc("/api/sponsor_slides", SponsorSlidesApiHandler).Methods("GET")
-	router.HandleFunc("/match_play", MatchPlayHandler).Methods("GET")
-	router.HandleFunc("/match_play/{matchId}/load", MatchPlayLoadHandler).Methods("GET")
-	router.HandleFunc("/match_play/{matchId}/show_result", MatchPlayShowResultHandler).Methods("GET")
-	router.HandleFunc("/match_play/websocket", MatchPlayWebsocketHandler).Methods("GET")
-	router.HandleFunc("/match_review", MatchReviewHandler).Methods("GET")
-	router.HandleFunc("/match_review/{matchId}/edit", MatchReviewEditGetHandler).Methods("GET")
-	router.HandleFunc("/match_review/{matchId}/edit", MatchReviewEditPostHandler).Methods("POST")
-	router.HandleFunc("/reports/csv/rankings", RankingsCsvReportHandler).Methods("GET")
-	router.HandleFunc("/reports/pdf/rankings", RankingsPdfReportHandler).Methods("GET")
-	router.HandleFunc("/reports/csv/schedule/{type}", ScheduleCsvReportHandler).Methods("GET")
-	router.HandleFunc("/reports/pdf/schedule/{type}", SchedulePdfReportHandler).Methods("GET")
-	router.HandleFunc("/reports/csv/teams", TeamsCsvReportHandler).Methods("GET")
-	router.HandleFunc("/reports/pdf/teams", TeamsPdfReportHandler).Methods("GET")
-	router.HandleFunc("/reports/csv/wpa_keys", WpaKeysCsvReportHandler).Methods("GET")
-	router.HandleFunc("/displays/audience", AudienceDisplayHandler).Methods("GET")
-	router.HandleFunc("/displays/audience/websocket", AudienceDisplayWebsocketHandler).Methods("GET")
-	router.HandleFunc("/displays/pit", PitDisplayHandler).Methods("GET")
-	router.HandleFunc("/displays/pit/websocket", PitDisplayWebsocketHandler).Methods("GET")
-	router.HandleFunc("/displays/announcer", AnnouncerDisplayHandler).Methods("GET")
-	router.HandleFunc("/displays/announcer/websocket", AnnouncerDisplayWebsocketHandler).Methods("GET")
-	router.HandleFunc("/displays/scoring/{alliance}", ScoringDisplayHandler).Methods("GET")
-	router.HandleFunc("/displays/scoring/{alliance}/websocket", ScoringDisplayWebsocketHandler).Methods("GET")
-	router.HandleFunc("/displays/referee", RefereeDisplayHandler).Methods("GET")
-	router.HandleFunc("/displays/referee/websocket", RefereeDisplayWebsocketHandler).Methods("GET")
-	router.HandleFunc("/displays/alliance_station", AllianceStationDisplayHandler).Methods("GET")
-	router.HandleFunc("/displays/alliance_station/websocket", AllianceStationDisplayWebsocketHandler).Methods("GET")
-	router.HandleFunc("/displays/fta", FtaDisplayHandler).Methods("GET")
-	router.HandleFunc("/displays/fta/websocket", FtaDisplayWebsocketHandler).Methods("GET")
-	router.HandleFunc("/api/matches/{type}", MatchesApiHandler).Methods("GET")
-	router.HandleFunc("/api/rankings", RankingsApiHandler).Methods("GET")
-	router.HandleFunc("/", IndexHandler).Methods("GET")
+	router.HandleFunc("/setup/settings", web.settingsGetHandler).Methods("GET")
+	router.HandleFunc("/setup/settings", web.settingsPostHandler).Methods("POST")
+	router.HandleFunc("/setup/db/save", web.saveDbHandler).Methods("GET")
+	router.HandleFunc("/setup/db/restore", web.restoreDbHandler).Methods("POST")
+	router.HandleFunc("/setup/db/clear", web.clearDbHandler).Methods("POST")
+	router.HandleFunc("/setup/teams", web.teamsGetHandler).Methods("GET")
+	router.HandleFunc("/setup/teams", web.teamsPostHandler).Methods("POST")
+	router.HandleFunc("/setup/teams/clear", web.teamsClearHandler).Methods("POST")
+	router.HandleFunc("/setup/teams/{id}/edit", web.teamEditGetHandler).Methods("GET")
+	router.HandleFunc("/setup/teams/{id}/edit", web.teamEditPostHandler).Methods("POST")
+	router.HandleFunc("/setup/teams/{id}/delete", web.teamDeletePostHandler).Methods("POST")
+	router.HandleFunc("/setup/teams/publish", web.teamsPublishHandler).Methods("POST")
+	router.HandleFunc("/setup/teams/generate_wpa_keys", web.teamsGenerateWpaKeysHandler).Methods("GET")
+	router.HandleFunc("/setup/schedule", web.scheduleGetHandler).Methods("GET")
+	router.HandleFunc("/setup/schedule/generate", web.scheduleGeneratePostHandler).Methods("POST")
+	router.HandleFunc("/setup/schedule/republish", web.scheduleRepublishPostHandler).Methods("POST")
+	router.HandleFunc("/setup/schedule/save", web.scheduleSavePostHandler).Methods("POST")
+	router.HandleFunc("/setup/alliance_selection", web.allianceSelectionGetHandler).Methods("GET")
+	router.HandleFunc("/setup/alliance_selection", web.allianceSelectionPostHandler).Methods("POST")
+	router.HandleFunc("/setup/alliance_selection/start", web.allianceSelectionStartHandler).Methods("POST")
+	router.HandleFunc("/setup/alliance_selection/reset", web.allianceSelectionResetHandler).Methods("POST")
+	router.HandleFunc("/setup/alliance_selection/finalize", web.allianceSelectionFinalizeHandler).Methods("POST")
+	router.HandleFunc("/setup/field", web.fieldGetHandler).Methods("GET")
+	router.HandleFunc("/setup/field", web.fieldPostHandler).Methods("POST")
+	router.HandleFunc("/setup/field/reload_displays", web.fieldReloadDisplaysHandler).Methods("GET")
+	router.HandleFunc("/setup/lower_thirds", web.lowerThirdsGetHandler).Methods("GET")
+	router.HandleFunc("/setup/lower_thirds/websocket", web.lowerThirdsWebsocketHandler).Methods("GET")
+	router.HandleFunc("/setup/sponsor_slides", web.sponsorSlidesGetHandler).Methods("GET")
+	router.HandleFunc("/setup/sponsor_slides", web.sponsorSlidesPostHandler).Methods("POST")
+	router.HandleFunc("/api/matches/{type}", web.matchesApiHandler).Methods("GET")
+	router.HandleFunc("/api/rankings", web.rankingsApiHandler).Methods("GET")
+	router.HandleFunc("/api/sponsor_slides", web.sponsorSlidesApiHandler).Methods("GET")
+	router.HandleFunc("/match_play", web.matchPlayHandler).Methods("GET")
+	router.HandleFunc("/match_play/{matchId}/load", web.matchPlayLoadHandler).Methods("GET")
+	router.HandleFunc("/match_play/{matchId}/show_result", web.matchPlayShowResultHandler).Methods("GET")
+	router.HandleFunc("/match_play/websocket", web.matchPlayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/match_review", web.matchReviewHandler).Methods("GET")
+	router.HandleFunc("/match_review/{matchId}/edit", web.matchReviewEditGetHandler).Methods("GET")
+	router.HandleFunc("/match_review/{matchId}/edit", web.matchReviewEditPostHandler).Methods("POST")
+	router.HandleFunc("/reports/csv/rankings", web.rankingsCsvReportHandler).Methods("GET")
+	router.HandleFunc("/reports/pdf/rankings", web.rankingsPdfReportHandler).Methods("GET")
+	router.HandleFunc("/reports/csv/schedule/{type}", web.scheduleCsvReportHandler).Methods("GET")
+	router.HandleFunc("/reports/pdf/schedule/{type}", web.schedulePdfReportHandler).Methods("GET")
+	router.HandleFunc("/reports/csv/teams", web.teamsCsvReportHandler).Methods("GET")
+	router.HandleFunc("/reports/pdf/teams", web.teamsPdfReportHandler).Methods("GET")
+	router.HandleFunc("/reports/csv/wpa_keys", web.wpaKeysCsvReportHandler).Methods("GET")
+	router.HandleFunc("/displays/audience", web.audienceDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/audience/websocket", web.audienceDisplayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/displays/pit", web.pitDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/pit/websocket", web.pitDisplayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/displays/announcer", web.announcerDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/announcer/websocket", web.announcerDisplayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/displays/scoring/{alliance}", web.scoringDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/scoring/{alliance}/websocket", web.scoringDisplayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/displays/referee", web.refereeDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/referee/websocket", web.refereeDisplayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/displays/alliance_station", web.allianceStationDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/alliance_station/websocket", web.allianceStationDisplayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/displays/fta", web.ftaDisplayHandler).Methods("GET")
+	router.HandleFunc("/displays/fta/websocket", web.ftaDisplayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/", web.indexHandler).Methods("GET")
 	return router
 }
 

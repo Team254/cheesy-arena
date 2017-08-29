@@ -12,31 +12,31 @@ import (
 )
 
 func TestIndex(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	recorder := getHttpResponse("/")
+	recorder := web.getHttpResponse("/")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Home - Untitled Event - Cheesy Arena")
 }
 
-func getHttpResponse(path string) *httptest.ResponseRecorder {
+func (web *Web) getHttpResponse(path string) *httptest.ResponseRecorder {
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", path, nil)
-	newHandler().ServeHTTP(recorder, req)
+	web.newHandler().ServeHTTP(recorder, req)
 	return recorder
 }
 
-func postHttpResponse(path string, body string) *httptest.ResponseRecorder {
+func (web *Web) postHttpResponse(path string, body string) *httptest.ResponseRecorder {
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", path, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
-	newHandler().ServeHTTP(recorder, req)
+	web.newHandler().ServeHTTP(recorder, req)
 	return recorder
 }
 
 // Starts a real local HTTP server that can be used by more sophisticated tests.
-func startTestServer() (*httptest.Server, string) {
-	server := httptest.NewServer(newHandler())
+func (web *Web) startTestServer() (*httptest.Server, string) {
+	server := httptest.NewServer(web.newHandler())
 	return server, "ws" + server.URL[len("http"):]
 }
 

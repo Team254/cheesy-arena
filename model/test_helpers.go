@@ -14,12 +14,11 @@ import (
 	"testing"
 )
 
-const testDbPath = "%s_test.db"
-
-func SetupTestDb(t *testing.T, uniqueName, baseDir string) *Database {
-	dbPath := fmt.Sprintf(testDbPath, uniqueName)
-	os.Remove(filepath.Join(baseDir, dbPath))
-	database, err := OpenDatabase(baseDir, dbPath)
+func SetupTestDb(t *testing.T, uniqueName string) *Database {
+	BaseDir = ".."
+	dbPath := fmt.Sprintf("%s_test.db", uniqueName)
+	os.Remove(filepath.Join(BaseDir, dbPath))
+	database, err := OpenDatabase(dbPath)
 	assert.Nil(t, err)
 	return database
 }

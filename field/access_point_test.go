@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package main
+package field
 
 import (
 	"github.com/Team254/cheesy-arena/model"
@@ -11,6 +11,8 @@ import (
 )
 
 func TestConfigureAccessPoint(t *testing.T) {
+	templatesPath = ".."
+
 	radioRe := regexp.MustCompile("option device 'radio0'")
 	ssidRe := regexp.MustCompile("option ssid '([-\\w ]+)'")
 	wpaKeyRe := regexp.MustCompile("option key '([-\\w ]+)'")

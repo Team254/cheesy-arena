@@ -26,22 +26,22 @@ var cachedAlliances [][]*model.AllianceTeam
 var cachedRankedTeams []*RankedTeam
 
 // Shows the alliance selection page.
-func AllianceSelectionGetHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) allianceSelectionGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	renderAllianceSelection(w, r, "")
+	web.renderAllianceSelection(w, r, "")
 }
 
 // Updates the cache with the latest input from the client.
-func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	if !canModifyAllianceSelection() {
-		renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
+	if !web.canModifyAllianceSelection() {
+		web.renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
 		return
 	}
 
@@ -60,14 +60,14 @@ func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				teamId, err := strconv.Atoi(teamString)
 				if err != nil {
-					renderAllianceSelection(w, r, fmt.Sprintf("Invalid team number value '%s'.", teamString))
+					web.renderAllianceSelection(w, r, fmt.Sprintf("Invalid team number value '%s'.", teamString))
 					return
 				}
 				found := false
 				for _, team := range newRankedTeams {
 					if team.TeamId == teamId {
 						if team.Picked {
-							renderAllianceSelection(w, r, fmt.Sprintf("Team %d is already part of an alliance.", teamId))
+							web.renderAllianceSelection(w, r, fmt.Sprintf("Team %d is already part of an alliance.", teamId))
 							return
 						}
 						found = true
@@ -77,7 +77,7 @@ func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 				if !found {
-					renderAllianceSelection(w, r, fmt.Sprintf("Team %d is not present at this event.", teamId))
+					web.renderAllianceSelection(w, r, fmt.Sprintf("Team %d is not present at this event.", teamId))
 					return
 				}
 			}
@@ -85,32 +85,32 @@ func AllianceSelectionPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	cachedRankedTeams = newRankedTeams
 
-	mainArena.allianceSelectionNotifier.Notify(nil)
+	web.arena.AllianceSelectionNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
 }
 
 // Sets up the empty alliances and populates the ranked team list.
-func AllianceSelectionStartHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
 	if len(cachedAlliances) != 0 {
-		renderAllianceSelection(w, r, "Can't start alliance selection when it is already in progress.")
+		web.renderAllianceSelection(w, r, "Can't start alliance selection when it is already in progress.")
 		return
 	}
-	if !canModifyAllianceSelection() {
-		renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
+	if !web.canModifyAllianceSelection() {
+		web.renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
 		return
 	}
 
 	// Create a blank alliance set matching the event configuration.
-	cachedAlliances = make([][]*model.AllianceTeam, eventSettings.NumElimAlliances)
+	cachedAlliances = make([][]*model.AllianceTeam, web.arena.EventSettings.NumElimAlliances)
 	teamsPerAlliance := 3
-	if eventSettings.SelectionRound3Order != "" {
+	if web.arena.EventSettings.SelectionRound3Order != "" {
 		teamsPerAlliance = 4
 	}
-	for i := 0; i < eventSettings.NumElimAlliances; i++ {
+	for i := 0; i < web.arena.EventSettings.NumElimAlliances; i++ {
 		cachedAlliances[i] = make([]*model.AllianceTeam, teamsPerAlliance)
 		for j := 0; j < teamsPerAlliance; j++ {
 			cachedAlliances[i][j] = &model.AllianceTeam{AllianceId: i + 1, PickPosition: j}
@@ -118,7 +118,7 @@ func AllianceSelectionStartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Populate the ranked list of teams.
-	rankings, err := db.GetAllRankings()
+	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -128,42 +128,42 @@ func AllianceSelectionStartHandler(w http.ResponseWriter, r *http.Request) {
 		cachedRankedTeams[i] = &RankedTeam{i + 1, ranking.TeamId, false}
 	}
 
-	mainArena.allianceSelectionNotifier.Notify(nil)
+	web.arena.AllianceSelectionNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
 }
 
 // Resets the alliance selection process back to the starting point.
-func AllianceSelectionResetHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	if !canModifyAllianceSelection() {
-		renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
+	if !web.canModifyAllianceSelection() {
+		web.renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
 		return
 	}
 
 	cachedAlliances = [][]*model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
-	mainArena.allianceSelectionNotifier.Notify(nil)
+	web.arena.AllianceSelectionNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
 }
 
 // Saves the selected alliances to the database and generates the first round of elimination matches.
-func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	if !canModifyAllianceSelection() {
-		renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
+	if !web.canModifyAllianceSelection() {
+		web.renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
 		return
 	}
 
 	location, _ := time.LoadLocation("Local")
 	startTime, err := time.ParseInLocation("2006-01-02 03:04:05 PM", r.PostFormValue("startTime"), location)
 	if err != nil {
-		renderAllianceSelection(w, r, "Must specify a valid start time for the playoff rounds.")
+		web.renderAllianceSelection(w, r, "Must specify a valid start time for the playoff rounds.")
 		return
 	}
 
@@ -171,7 +171,7 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	for _, alliance := range cachedAlliances {
 		for _, team := range alliance {
 			if team.TeamId <= 0 {
-				renderAllianceSelection(w, r, "Can't finalize alliance selection until all spots have been filled.")
+				web.renderAllianceSelection(w, r, "Can't finalize alliance selection until all spots have been filled.")
 				return
 			}
 		}
@@ -180,7 +180,7 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	// Save alliances to the database.
 	for _, alliance := range cachedAlliances {
 		for _, team := range alliance {
-			err := db.CreateAllianceTeam(team)
+			err := web.arena.Database.CreateAllianceTeam(team)
 			if err != nil {
 				handleWebErr(w, err)
 				return
@@ -189,36 +189,36 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate the first round of elimination matches.
-	_, err = tournament.UpdateEliminationSchedule(db, startTime)
+	_, err = tournament.UpdateEliminationSchedule(web.arena.Database, startTime)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
 	// Reset yellow cards.
-	err = tournament.CalculateTeamCards(db, "elimination")
+	err = tournament.CalculateTeamCards(web.arena.Database, "elimination")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
 	// Back up the database.
-	err = db.Backup(eventSettings.Name, "post_alliance_selection")
+	err = web.arena.Database.Backup(web.arena.EventSettings.Name, "post_alliance_selection")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	if eventSettings.TbaPublishingEnabled {
+	if web.arena.EventSettings.TbaPublishingEnabled {
 		// Publish alliances and schedule to The Blue Alliance.
-		err = tbaClient.PublishAlliances(db)
+		err = web.arena.TbaClient.PublishAlliances(web.arena.Database)
 		if err != nil {
-			renderAllianceSelection(w, r, fmt.Sprintf("Failed to publish alliances: %s", err.Error()))
+			web.renderAllianceSelection(w, r, fmt.Sprintf("Failed to publish alliances: %s", err.Error()))
 			return
 		}
-		err = tbaClient.PublishMatches(db)
+		err = web.arena.TbaClient.PublishMatches(web.arena.Database)
 		if err != nil {
-			renderAllianceSelection(w, r, fmt.Sprintf("Failed to publish matches: %s", err.Error()))
+			web.renderAllianceSelection(w, r, fmt.Sprintf("Failed to publish matches: %s", err.Error()))
 			return
 		}
 	}
@@ -226,13 +226,13 @@ func AllianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/setup/alliance_selection", 302)
 }
 
-func renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
+func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
 	template, err := template.ParseFiles("templates/setup_alliance_selection.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	nextRow, nextCol := determineNextCell()
+	nextRow, nextCol := web.determineNextCell()
 	data := struct {
 		*model.EventSettings
 		Alliances    [][]*model.AllianceTeam
@@ -240,7 +240,7 @@ func renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessag
 		NextRow      int
 		NextCol      int
 		ErrorMessage string
-	}{eventSettings, cachedAlliances, cachedRankedTeams, nextRow, nextCol, errorMessage}
+	}{web.arena.EventSettings, cachedAlliances, cachedRankedTeams, nextRow, nextCol, errorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -249,8 +249,8 @@ func renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessag
 }
 
 // Returns true if it is safe to change the alliance selection (i.e. no elimination matches exist yet).
-func canModifyAllianceSelection() bool {
-	matches, err := db.GetMatchesByType("elimination")
+func (web *Web) canModifyAllianceSelection() bool {
+	matches, err := web.arena.Database.GetMatchesByType("elimination")
 	if err != nil || len(matches) > 0 {
 		return false
 	}
@@ -258,7 +258,7 @@ func canModifyAllianceSelection() bool {
 }
 
 // Returns the row and column of the next alliance selection spot that should have keyboard autofocus.
-func determineNextCell() (int, int) {
+func (web *Web) determineNextCell() (int, int) {
 	// Check the first two columns.
 	for i, alliance := range cachedAlliances {
 		if alliance[0].TeamId == 0 {
@@ -270,7 +270,7 @@ func determineNextCell() (int, int) {
 	}
 
 	// Check the third column.
-	if eventSettings.SelectionRound2Order == "F" {
+	if web.arena.EventSettings.SelectionRound2Order == "F" {
 		for i, alliance := range cachedAlliances {
 			if alliance[2].TeamId == 0 {
 				return i, 2
@@ -285,13 +285,13 @@ func determineNextCell() (int, int) {
 	}
 
 	// Check the fourth column.
-	if eventSettings.SelectionRound3Order == "F" {
+	if web.arena.EventSettings.SelectionRound3Order == "F" {
 		for i, alliance := range cachedAlliances {
 			if alliance[3].TeamId == 0 {
 				return i, 3
 			}
 		}
-	} else if eventSettings.SelectionRound3Order == "L" {
+	} else if web.arena.EventSettings.SelectionRound3Order == "L" {
 		for i := len(cachedAlliances) - 1; i >= 0; i-- {
 			if cachedAlliances[i][3].TeamId == 0 {
 				return i, 3

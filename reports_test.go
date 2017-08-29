@@ -12,14 +12,14 @@ import (
 )
 
 func TestRankingsCsvReport(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	ranking1 := game.TestRanking2()
 	ranking2 := game.TestRanking1()
-	db.CreateRanking(ranking1)
-	db.CreateRanking(ranking2)
+	web.arena.Database.CreateRanking(ranking1)
+	web.arena.Database.CreateRanking(ranking2)
 
-	recorder := getHttpResponse("/reports/csv/rankings")
+	recorder := web.getHttpResponse("/reports/csv/rankings")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.HeaderMap["Content-Type"][0])
 	expectedBody := "Rank,TeamId,RankingPoints,MatchPoints,AutoPoints,RotorPoints,TakeoffPoints,PressurePoints,Wins," +
@@ -29,21 +29,21 @@ func TestRankingsCsvReport(t *testing.T) {
 }
 
 func TestRankingsPdfReport(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	ranking1 := game.TestRanking2()
 	ranking2 := game.TestRanking1()
-	db.CreateRanking(ranking1)
-	db.CreateRanking(ranking2)
+	web.arena.Database.CreateRanking(ranking1)
+	web.arena.Database.CreateRanking(ranking2)
 
 	// Can't really parse the PDF content and check it, so just check that what's sent back is a PDF.
-	recorder := getHttpResponse("/reports/pdf/rankings")
+	recorder := web.getHttpResponse("/reports/pdf/rankings")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "application/pdf", recorder.HeaderMap["Content-Type"][0])
 }
 
 func TestScheduleCsvReport(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	match1 := model.Match{Type: "qualification", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
@@ -51,11 +51,11 @@ func TestScheduleCsvReport(t *testing.T) {
 		Blue1: 10, Blue2: 11, Blue3: 12, Red1IsSurrogate: true, Red2IsSurrogate: true, Red3IsSurrogate: true}
 	match3 := model.Match{Type: "practice", DisplayName: "1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
 		Blue1: 3, Blue2: 2, Blue3: 1}
-	db.CreateMatch(&match1)
-	db.CreateMatch(&match2)
-	db.CreateMatch(&match3)
+	web.arena.Database.CreateMatch(&match1)
+	web.arena.Database.CreateMatch(&match2)
+	web.arena.Database.CreateMatch(&match3)
 
-	recorder := getHttpResponse("/reports/csv/schedule/qualification")
+	recorder := web.getHttpResponse("/reports/csv/schedule/qualification")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.HeaderMap["Content-Type"][0])
 	expectedBody := "Match,Type,Time,Red1,Red1IsSurrogate,Red2,Red2IsSurrogate,Red3,Red3IsSurrogate,Blue1," +
@@ -66,32 +66,32 @@ func TestScheduleCsvReport(t *testing.T) {
 }
 
 func TestSchedulePdfReport(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	match := model.Match{Type: "practice", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
-	db.CreateMatch(&match)
+	web.arena.Database.CreateMatch(&match)
 	team := model.Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
-	db.CreateTeam(&team)
+	web.arena.Database.CreateTeam(&team)
 
 	// Can't really parse the PDF content and check it, so just check that what's sent back is a PDF.
-	recorder := getHttpResponse("/reports/pdf/schedule/practice")
+	recorder := web.getHttpResponse("/reports/pdf/schedule/practice")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "application/pdf", recorder.HeaderMap["Content-Type"][0])
 }
 
 func TestTeamsCsvReport(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	team1 := model.Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
 	team2 := model.Team{Id: 1114, Name: "GM", Nickname: "Simbotics", City: "St. Catharines", StateProv: "ON",
 		Country: "Canada", RookieYear: 2003, RobotName: "Simbot Evolution"}
-	db.CreateTeam(&team1)
-	db.CreateTeam(&team2)
+	web.arena.Database.CreateTeam(&team1)
+	web.arena.Database.CreateTeam(&team2)
 
-	recorder := getHttpResponse("/reports/csv/teams")
+	recorder := web.getHttpResponse("/reports/csv/teams")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.HeaderMap["Content-Type"][0])
 	expectedBody := "Number,Name,Nickname,City,StateProv,Country,RookieYear,RobotName\n254,\"NASA\"," +
@@ -101,27 +101,27 @@ func TestTeamsCsvReport(t *testing.T) {
 }
 
 func TestTeamsPdfReport(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	team := model.Team{Id: 254, Name: "NASA", Nickname: "The Cheesy Poofs", City: "San Jose", StateProv: "CA",
 		Country: "USA", RookieYear: 1999, RobotName: "Barrage"}
-	db.CreateTeam(&team)
+	web.arena.Database.CreateTeam(&team)
 
 	// Can't really parse the PDF content and check it, so just check that what's sent back is a PDF.
-	recorder := getHttpResponse("/reports/pdf/teams")
+	recorder := web.getHttpResponse("/reports/pdf/teams")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "application/pdf", recorder.HeaderMap["Content-Type"][0])
 }
 
 func TestWpaKeysCsvReport(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
 	team1 := model.Team{Id: 254, WpaKey: "12345678"}
 	team2 := model.Team{Id: 1114, WpaKey: "9876543210"}
-	db.CreateTeam(&team1)
-	db.CreateTeam(&team2)
+	web.arena.Database.CreateTeam(&team1)
+	web.arena.Database.CreateTeam(&team2)
 
-	recorder := getHttpResponse("/reports/csv/wpa_keys")
+	recorder := web.getHttpResponse("/reports/csv/wpa_keys")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/csv", recorder.HeaderMap["Content-Type"][0])
 	assert.Equal(t, "attachment; filename=wpa_keys.csv", recorder.HeaderMap["Content-Disposition"][0])

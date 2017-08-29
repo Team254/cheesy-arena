@@ -11,17 +11,17 @@ import (
 )
 
 func TestPitDisplay(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	recorder := getHttpResponse("/displays/pit")
+	recorder := web.getHttpResponse("/displays/pit")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Pit Display - Untitled Event - Cheesy Arena")
 }
 
 func TestPitDisplayWebsocket(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	server, wsUrl := startTestServer()
+	server, wsUrl := web.startTestServer()
 	defer server.Close()
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/pit/websocket", nil)
 	assert.Nil(t, err)
@@ -29,7 +29,7 @@ func TestPitDisplayWebsocket(t *testing.T) {
 	ws := &Websocket{conn, new(sync.Mutex)}
 
 	// Check forced reloading as that is the only purpose the pit websocket serves.
-	recorder := getHttpResponse("/setup/field/reload_displays")
+	recorder := web.getHttpResponse("/setup/field/reload_displays")
 	assert.Equal(t, 302, recorder.Code)
 	readWebsocketType(t, ws, "reload")
 }

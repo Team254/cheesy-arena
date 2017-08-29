@@ -22,8 +22,9 @@ import (
 const backupsDir = "db/backups"
 const migrationsDir = "db/migrations"
 
+var BaseDir = "." // Mutable for testing
+
 type Database struct {
-	baseDir          string
 	filename         string
 	db               *sql.DB
 	eventSettingsMap *modl.DbMap
@@ -38,10 +39,10 @@ type Database struct {
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
 // migrations.
-func OpenDatabase(baseDir, filename string) (*Database, error) {
+func OpenDatabase(filename string) (*Database, error) {
 	// Find and run the migrations using goose. This also auto-creates the DB.
-	database := Database{baseDir: baseDir, filename: filename}
-	migrationsPath := filepath.Join(baseDir, migrationsDir)
+	database := Database{filename: filename}
+	migrationsPath := filepath.Join(BaseDir, migrationsDir)
 	dbDriver := goose.DBDriver{"sqlite3", database.GetPath(), "github.com/mattn/go-sqlite3", &goose.Sqlite3Dialect{}}
 	dbConf := goose.DBConf{MigrationsDir: migrationsPath, Env: "prod", Driver: dbDriver}
 	target, err := goose.GetMostRecentDBVersion(migrationsPath)
@@ -69,7 +70,7 @@ func (database *Database) Close() {
 
 // Creates a copy of the current database and saves it to the backups directory.
 func (database *Database) Backup(eventName, reason string) error {
-	backupsPath := filepath.Join(database.baseDir, backupsDir)
+	backupsPath := filepath.Join(BaseDir, backupsDir)
 	err := os.MkdirAll(backupsPath, 0755)
 	if err != nil {
 		return err
@@ -93,7 +94,7 @@ func (database *Database) Backup(eventName, reason string) error {
 }
 
 func (database *Database) GetPath() string {
-	return filepath.Join(database.baseDir, database.filename)
+	return filepath.Join(BaseDir, database.filename)
 }
 
 // Sets up table-object associations.

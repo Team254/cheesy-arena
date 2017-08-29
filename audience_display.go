@@ -15,12 +15,12 @@ import (
 )
 
 // Renders the audience display to be chroma keyed over the video feed.
-func AudienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) audienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
-	template := template.New("").Funcs(templateHelpers)
+	template := template.New("").Funcs(web.templateHelpers)
 	_, err := template.ParseFiles("templates/audience_display.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -29,7 +29,7 @@ func AudienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := struct {
 		*model.EventSettings
-	}{eventSettings}
+	}{web.arena.EventSettings}
 	err = template.ExecuteTemplate(w, "audience_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -38,8 +38,8 @@ func AudienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for the audience display client to receive status updates.
-func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
@@ -50,23 +50,23 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer websocket.Close()
 
-	audienceDisplayListener := mainArena.audienceDisplayNotifier.Listen()
+	audienceDisplayListener := web.arena.AudienceDisplayNotifier.Listen()
 	defer close(audienceDisplayListener)
-	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
+	matchLoadTeamsListener := web.arena.MatchLoadTeamsNotifier.Listen()
 	defer close(matchLoadTeamsListener)
-	matchTimeListener := mainArena.matchTimeNotifier.Listen()
+	matchTimeListener := web.arena.MatchTimeNotifier.Listen()
 	defer close(matchTimeListener)
-	realtimeScoreListener := mainArena.realtimeScoreNotifier.Listen()
+	realtimeScoreListener := web.arena.RealtimeScoreNotifier.Listen()
 	defer close(realtimeScoreListener)
-	scorePostedListener := mainArena.scorePostedNotifier.Listen()
+	scorePostedListener := web.arena.ScorePostedNotifier.Listen()
 	defer close(scorePostedListener)
-	playSoundListener := mainArena.playSoundNotifier.Listen()
+	playSoundListener := web.arena.PlaySoundNotifier.Listen()
 	defer close(playSoundListener)
-	allianceSelectionListener := mainArena.allianceSelectionNotifier.Listen()
+	allianceSelectionListener := web.arena.AllianceSelectionNotifier.Listen()
 	defer close(allianceSelectionListener)
-	lowerThirdListener := mainArena.lowerThirdNotifier.Listen()
+	lowerThirdListener := web.arena.LowerThirdNotifier.Listen()
 	defer close(lowerThirdListener)
-	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
 	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
@@ -76,12 +76,12 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	err = websocket.Write("matchTime", MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)})
+	err = websocket.Write("matchTime", MatchTimeMessage{web.arena.MatchState, int(web.arena.LastMatchTimeSec)})
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	err = websocket.Write("setAudienceDisplay", mainArena.audienceDisplayScreen)
+	err = websocket.Write("setAudienceDisplay", web.arena.AudienceDisplayScreen)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -89,7 +89,7 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	data = struct {
 		Match     *model.Match
 		MatchName string
-	}{mainArena.currentMatch, mainArena.currentMatch.CapitalizedType()}
+	}{web.arena.CurrentMatch, web.arena.CurrentMatch.CapitalizedType()}
 	err = websocket.Write("setMatch", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -100,8 +100,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		BlueScore        *game.Score
 		RedScoreSummary  *game.ScoreSummary
 		BlueScoreSummary *game.ScoreSummary
-	}{mainArena.redRealtimeScore.CurrentScore, mainArena.blueRealtimeScore.CurrentScore,
-		mainArena.RedScoreSummary(), mainArena.BlueScoreSummary()}
+	}{web.arena.RedRealtimeScore.CurrentScore, web.arena.BlueRealtimeScore.CurrentScore,
+		web.arena.RedScoreSummary(), web.arena.BlueScoreSummary()}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -112,8 +112,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		MatchName string
 		RedScore  *game.ScoreSummary
 		BlueScore *game.ScoreSummary
-	}{mainArena.savedMatch, mainArena.savedMatch.CapitalizedType(),
-		mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary()}
+	}{web.arena.SavedMatch, web.arena.SavedMatch.CapitalizedType(),
+		web.arena.SavedMatchResult.RedScoreSummary(), web.arena.SavedMatchResult.BlueScoreSummary()}
 	err = websocket.Write("setFinalScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -136,7 +136,7 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				messageType = "setAudienceDisplay"
-				message = mainArena.audienceDisplayScreen
+				message = web.arena.AudienceDisplayScreen
 			case _, ok := <-matchLoadTeamsListener:
 				if !ok {
 					return
@@ -145,13 +145,13 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				message = struct {
 					Match     *model.Match
 					MatchName string
-				}{mainArena.currentMatch, mainArena.currentMatch.CapitalizedType()}
+				}{web.arena.CurrentMatch, web.arena.CurrentMatch.CapitalizedType()}
 			case matchTimeSec, ok := <-matchTimeListener:
 				if !ok {
 					return
 				}
 				messageType = "matchTime"
-				message = MatchTimeMessage{mainArena.MatchState, matchTimeSec.(int)}
+				message = MatchTimeMessage{web.arena.MatchState, matchTimeSec.(int)}
 			case _, ok := <-realtimeScoreListener:
 				if !ok {
 					return
@@ -162,8 +162,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					BlueScore        *game.Score
 					RedScoreSummary  *game.ScoreSummary
 					BlueScoreSummary *game.ScoreSummary
-				}{mainArena.redRealtimeScore.CurrentScore, mainArena.blueRealtimeScore.CurrentScore,
-					mainArena.RedScoreSummary(), mainArena.BlueScoreSummary()}
+				}{web.arena.RedRealtimeScore.CurrentScore, web.arena.BlueRealtimeScore.CurrentScore,
+					web.arena.RedScoreSummary(), web.arena.BlueScoreSummary()}
 			case _, ok := <-scorePostedListener:
 				if !ok {
 					return
@@ -174,8 +174,8 @@ func AudienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					MatchName string
 					RedScore  *game.ScoreSummary
 					BlueScore *game.ScoreSummary
-				}{mainArena.savedMatch, mainArena.savedMatch.CapitalizedType(),
-					mainArena.savedMatchResult.RedScoreSummary(), mainArena.savedMatchResult.BlueScoreSummary()}
+				}{web.arena.SavedMatch, web.arena.SavedMatch.CapitalizedType(),
+					web.arena.SavedMatchResult.RedScoreSummary(), web.arena.SavedMatchResult.BlueScoreSummary()}
 			case sound, ok := <-playSoundListener:
 				if !ok {
 					return

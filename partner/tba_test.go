@@ -126,5 +126,5 @@ func TestPublishingErrors(t *testing.T) {
 }
 
 func setupTestDb(t *testing.T) *model.Database {
-	return model.SetupTestDb(t, "partner", "..")
+	return model.SetupTestDb(t, "partner")
 }

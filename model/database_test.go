@@ -9,10 +9,10 @@ import (
 )
 
 func TestOpenUnreachableDatabase(t *testing.T) {
-	_, err := OpenDatabase("..", "nonexistentdir/test.db")
+	_, err := OpenDatabase("nonexistentdir/test.db")
 	assert.NotNil(t, err)
 }
 
 func setupTestDb(t *testing.T) *Database {
-	return SetupTestDb(t, "model", "..")
+	return SetupTestDb(t, "model")
 }

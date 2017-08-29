@@ -8,7 +8,6 @@ package main
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/partner"
 	"html/template"
 	"io"
 	"io/ioutil"
@@ -21,31 +20,32 @@ import (
 )
 
 // Shows the event settings editing page.
-func SettingsGetHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) settingsGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	renderSettings(w, r, "")
+	web.renderSettings(w, r, "")
 }
 
 // Saves the event settings.
-func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
+	eventSettings := web.arena.EventSettings
 	eventSettings.Name = r.PostFormValue("name")
 	eventSettings.Code = r.PostFormValue("code")
 	match, _ := regexp.MatchString("^#([0-9A-Fa-f]{3}){1,2}$", r.PostFormValue("displayBackgroundColor"))
 	if !match {
-		renderSettings(w, r, "Display background color must be a valid hex color value.")
+		web.renderSettings(w, r, "Display background color must be a valid hex color value.")
 		return
 	}
 	eventSettings.DisplayBackgroundColor = r.PostFormValue("displayBackgroundColor")
 	numAlliances, _ := strconv.Atoi(r.PostFormValue("numElimAlliances"))
 	if numAlliances < 2 || numAlliances > 16 {
-		renderSettings(w, r, "Number of alliances must be between 2 and 16.")
+		web.renderSettings(w, r, "Number of alliances must be between 2 and 16.")
 		return
 	}
 
@@ -69,53 +69,49 @@ func SettingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.AdminPassword = r.PostFormValue("adminPassword")
 	eventSettings.ReaderPassword = r.PostFormValue("readerPassword")
 
-	err := db.SaveEventSettings(eventSettings)
+	err := web.arena.Database.SaveEventSettings(eventSettings)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	// Set up the light controller connections again in case the address changed.
-	err = mainArena.lights.SetupConnections()
+	// Refresh the arena in case any of the settings changed.
+	err = web.arena.LoadSettings()
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-
-	// Refresh the partner clients in case they changed.
-	tbaClient = partner.NewTbaClient(eventSettings.TbaEventCode, eventSettings.TbaSecretId, eventSettings.TbaSecret)
-	stemTvClient = partner.NewStemTvClient(eventSettings.StemTvEventCode)
 
 	http.Redirect(w, r, "/setup/settings", 302)
 }
 
 // Sends a copy of the event database file to the client as a download.
-func SaveDbHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) saveDbHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	dbFile, err := os.Open(db.GetPath())
+	dbFile, err := os.Open(web.arena.Database.GetPath())
 	defer dbFile.Close()
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	filename := fmt.Sprintf("%s-%s.db", strings.Replace(eventSettings.Name, " ", "_", -1),
+	filename := fmt.Sprintf("%s-%s.db", strings.Replace(web.arena.EventSettings.Name, " ", "_", -1),
 		time.Now().Format("20060102150405"))
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
 	http.ServeContent(w, r, "", time.Now(), dbFile)
 }
 
 // Accepts an event database file as an upload and loads it.
-func RestoreDbHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) restoreDbHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
 	file, _, err := r.FormFile("databaseFile")
 	if err != nil {
-		renderSettings(w, r, "No database backup file was specified.")
+		web.renderSettings(w, r, "No database backup file was specified.")
 		return
 	}
 
@@ -134,23 +130,23 @@ func RestoreDbHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tempFile.Close()
-	tempDb, err := model.OpenDatabase(".", tempFilePath)
+	tempDb, err := model.OpenDatabase(tempFilePath)
 	if err != nil {
-		renderSettings(w, r, "Could not read uploaded database backup file. Please verify that it a valid "+
+		web.renderSettings(w, r, "Could not read uploaded database backup file. Please verify that it a valid "+
 			"database file.")
 		return
 	}
 	tempDb.Close()
 
 	// Back up the current database.
-	err = db.Backup(eventSettings.Name, "pre_restore")
+	err = web.arena.Database.Backup(web.arena.EventSettings.Name, "pre_restore")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
 	// Replace the current database with the new one.
-	db.Close()
+	web.arena.Database.Close()
 	err = os.Remove(eventDbPath)
 	if err != nil {
 		handleWebErr(w, err)
@@ -161,40 +157,49 @@ func RestoreDbHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	initDb()
+	web.arena.Database, err = model.OpenDatabase(eventDbPath)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	err = web.arena.LoadSettings()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
 
 	http.Redirect(w, r, "/setup/settings", 302)
 }
 
 // Deletes all data except for the team list.
-func ClearDbHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) clearDbHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
 	// Back up the database.
-	err := db.Backup(eventSettings.Name, "pre_clear")
+	err := web.arena.Database.Backup(web.arena.EventSettings.Name, "pre_clear")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	err = db.TruncateMatches()
+	err = web.arena.Database.TruncateMatches()
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	err = db.TruncateMatchResults()
+	err = web.arena.Database.TruncateMatchResults()
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	err = db.TruncateRankings()
+	err = web.arena.Database.TruncateRankings()
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	err = db.TruncateAllianceTeams()
+	err = web.arena.Database.TruncateAllianceTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -202,7 +207,7 @@ func ClearDbHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/setup/settings", 302)
 }
 
-func renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string) {
+func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string) {
 	template, err := template.ParseFiles("templates/setup_settings.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -211,7 +216,7 @@ func renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string)
 	data := struct {
 		*model.EventSettings
 		ErrorMessage string
-	}{eventSettings, errorMessage}
+	}{web.arena.EventSettings, errorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)

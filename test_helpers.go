@@ -6,18 +6,11 @@
 package main
 
 import (
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/partner"
-	"github.com/stretchr/testify/assert"
+	"github.com/Team254/cheesy-arena/field"
 	"testing"
 )
 
-func setupTest(t *testing.T) {
-	db = model.SetupTestDb(t, "main", ".")
-	var err error
-	eventSettings, err = db.GetEventSettings()
-	assert.Nil(t, err)
-	tbaClient = partner.NewTbaClient(eventSettings.TbaEventCode, eventSettings.TbaSecretId, eventSettings.TbaSecret)
-	stemTvClient = partner.NewStemTvClient(eventSettings.StemTvEventCode)
-	mainArena.Setup()
+func setupTestWeb(t *testing.T) *Web {
+	arena := field.SetupTestArena(t, "web")
+	return NewWeb(arena)
 }

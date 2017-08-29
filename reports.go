@@ -16,12 +16,12 @@ import (
 )
 
 // Generates a CSV-formatted report of the qualification rankings.
-func RankingsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) rankingsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
-	rankings, err := db.GetAllRankings()
+	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -42,12 +42,12 @@ func RankingsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Generates a PDF-formatted report of the qualification rankings.
-func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
-	rankings, err := db.GetAllRankings()
+	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -64,7 +64,7 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	// Render table header row.
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
-	pdf.CellFormat(195, rowHeight, "Team Standings - "+eventSettings.Name, "", 1, "C", false, 0, "")
+	pdf.CellFormat(195, rowHeight, "Team Standings - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
 	pdf.CellFormat(colWidths["Rank"], rowHeight, "Rank", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["RP"], rowHeight, "RP", "1", 0, "C", true, 0, "")
@@ -104,13 +104,13 @@ func RankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Generates a CSV-formatted report of the match schedule.
-func ScheduleCsvReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
 	vars := mux.Vars(r)
-	matches, err := db.GetMatchesByType(vars["type"])
+	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -131,18 +131,18 @@ func ScheduleCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Generates a PDF-formatted report of the match schedule.
-func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
 	vars := mux.Vars(r)
-	matches, err := db.GetMatchesByType(vars["type"])
+	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	teams, err := db.GetAllTeams()
+	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -162,7 +162,7 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	// Render table header row.
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
-	pdf.CellFormat(195, rowHeight, "Match Schedule - "+eventSettings.Name, "", 1, "C", false, 0, "")
+	pdf.CellFormat(195, rowHeight, "Match Schedule - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
 	pdf.CellFormat(colWidths["Time"], rowHeight, "Time", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Type"], rowHeight, "Type", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
@@ -240,12 +240,12 @@ func SchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Generates a CSV-formatted report of the team list.
-func TeamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) teamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
-	teams, err := db.GetAllTeams()
+	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -266,12 +266,12 @@ func TeamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Generates a PDF-formatted report of the team list.
-func TeamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) teamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
-	teams, err := db.GetAllTeams()
+	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -287,7 +287,7 @@ func TeamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	pdf.SetFillColor(220, 220, 220)
 
 	// Render table header row.
-	pdf.CellFormat(195, rowHeight, "Team List - "+eventSettings.Name, "", 1, "C", false, 0, "")
+	pdf.CellFormat(195, rowHeight, "Team List - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
 	pdf.CellFormat(colWidths["Id"], rowHeight, "Team", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Name"], rowHeight, "Name", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Location"], rowHeight, "Location", "1", 0, "C", true, 0, "")
@@ -312,12 +312,12 @@ func TeamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Generates a CSV-formatted report of the WPA keys, for import into the radio kiosk.
-func WpaKeysCsvReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) wpaKeysCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	teams, err := db.GetAllTeams()
+	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return

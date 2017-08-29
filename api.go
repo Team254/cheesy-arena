@@ -30,13 +30,13 @@ type RankingWithNickname struct {
 }
 
 // Generates a JSON dump of the matches and results.
-func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
 	vars := mux.Vars(r)
-	matches, err := db.GetMatchesByType(vars["type"])
+	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -45,7 +45,7 @@ func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
 	matchesWithResults := make([]MatchWithResult, len(matches))
 	for i, match := range matches {
 		matchesWithResults[i].Match = match
-		matchResult, err := db.GetMatchResultForMatch(match.Id)
+		matchResult, err := web.arena.Database.GetMatchResultForMatch(match.Id)
 		if err != nil {
 			handleWebErr(w, err)
 			return
@@ -74,12 +74,12 @@ func MatchesApiHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Generates a JSON dump of the sponsor slides for use by the audience display.
-func SponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
-	sponsors, err := db.GetAllSponsorSlides()
+	sponsors, err := web.arena.Database.GetAllSponsorSlides()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -100,12 +100,12 @@ func SponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Generates a JSON dump of the qualification rankings, primarily for use by the pit display.
-func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
-	rankings, err := db.GetAllRankings()
+	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -119,7 +119,7 @@ func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get team info so that nicknames can be displayed.
-	teams, err := db.GetAllTeams()
+	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -133,7 +133,7 @@ func RankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the last match scored so we can report that on the display.
-	matches, err := db.GetMatchesByType("qualification")
+	matches, err := web.arena.Database.GetMatchesByType("qualification")
 	if err != nil {
 		handleWebErr(w, err)
 		return

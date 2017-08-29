@@ -4,6 +4,7 @@
 package main
 
 import (
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"sync"
@@ -11,22 +12,22 @@ import (
 )
 
 func TestScoringDisplay(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	recorder := getHttpResponse("/displays/scoring/invalidalliance")
+	recorder := web.getHttpResponse("/displays/scoring/invalidalliance")
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Invalid alliance")
-	recorder = getHttpResponse("/displays/scoring/red")
+	recorder = web.getHttpResponse("/displays/scoring/red")
 	assert.Equal(t, 200, recorder.Code)
-	recorder = getHttpResponse("/displays/scoring/blue")
+	recorder = web.getHttpResponse("/displays/scoring/blue")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Scoring - Untitled Event - Cheesy Arena")
 }
 
 func TestScoringDisplayWebsocket(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	server, wsUrl := startTestServer()
+	server, wsUrl := web.startTestServer()
 	defer server.Close()
 	_, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/scoring/blorpy/websocket", nil)
 	assert.NotNil(t, err)
@@ -63,8 +64,8 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 		readWebsocketType(t, blueWs, "score")
 	}
 
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoMobility)
-	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.AutoMobility)
+	assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.AutoMobility)
+	assert.Equal(t, 2, web.arena.BlueRealtimeScore.CurrentScore.AutoMobility)
 
 	redWs.Write("mobility", nil)
 	for i := 0; i < 1; i++ {
@@ -75,23 +76,23 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	}
 
 	// Make sure auto scores haven't changed in teleop.
-	assert.Equal(t, 1, mainArena.redRealtimeScore.CurrentScore.AutoMobility)
-	assert.Equal(t, 2, mainArena.blueRealtimeScore.CurrentScore.AutoMobility)
+	assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.AutoMobility)
+	assert.Equal(t, 2, web.arena.BlueRealtimeScore.CurrentScore.AutoMobility)
 
 	// Test committing logic.
 	redWs.Write("commitMatch", nil)
 	readWebsocketType(t, redWs, "error")
-	mainArena.MatchState = postMatch
+	web.arena.MatchState = field.PostMatch
 	redWs.Write("commitMatch", nil)
 	blueWs.Write("commitMatch", nil)
 	readWebsocketType(t, redWs, "score")
 	readWebsocketType(t, blueWs, "score")
 
 	// Load another match to reset the results.
-	mainArena.ResetMatch()
-	mainArena.LoadTestMatch()
+	web.arena.ResetMatch()
+	web.arena.LoadTestMatch()
 	readWebsocketType(t, redWs, "reload")
 	readWebsocketType(t, blueWs, "reload")
-	assert.Equal(t, NewRealtimeScore(), mainArena.redRealtimeScore)
-	assert.Equal(t, NewRealtimeScore(), mainArena.blueRealtimeScore)
+	assert.Equal(t, field.NewRealtimeScore(), web.arena.RedRealtimeScore)
+	assert.Equal(t, field.NewRealtimeScore(), web.arena.BlueRealtimeScore)
 }

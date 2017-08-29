@@ -3,13 +3,14 @@
 //
 // Utilities for logging packets received from team driver stations during a match.
 
-package main
+package field
 
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -22,13 +23,13 @@ type TeamMatchLog struct {
 
 // Creates a file to log to for the given match and team.
 func NewTeamMatchLog(teamId int, match *model.Match) (*TeamMatchLog, error) {
-	err := os.MkdirAll(logsDir, 0755)
+	err := os.MkdirAll(filepath.Join(model.BaseDir, logsDir), 0755)
 	if err != nil {
 		return nil, err
 	}
 
-	filename := fmt.Sprintf("%s/%s_%s_Match_%s_%d.csv", logsDir, time.Now().Format("20060102150405"),
-		match.CapitalizedType(), match.DisplayName, teamId)
+	filename := fmt.Sprintf("%s/%s_%s_Match_%s_%d.csv", filepath.Join(model.BaseDir, logsDir),
+		time.Now().Format("20060102150405"), match.CapitalizedType(), match.DisplayName, teamId)
 	logFile, err := os.Create(filename)
 	if err != nil {
 		return nil, err

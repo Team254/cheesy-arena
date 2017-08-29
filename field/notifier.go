@@ -3,7 +3,7 @@
 //
 // Publish-subscribe model for nonblocking notification of server events to websocket clients.
 
-package main
+package field
 
 import (
 	"log"

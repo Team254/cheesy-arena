@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/mux"
@@ -17,8 +18,8 @@ import (
 )
 
 // Renders the scoring interface which enables input of scores in real-time.
-func ScoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) scoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
@@ -37,7 +38,7 @@ func ScoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 		Alliance string
-	}{eventSettings, alliance}
+	}{web.arena.EventSettings, alliance}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -46,8 +47,8 @@ func ScoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for the scoring interface client to send control commands and receive status updates.
-func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) scoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
@@ -57,14 +58,14 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, fmt.Errorf("Invalid alliance '%s'.", alliance))
 		return
 	}
-	var score **RealtimeScore
+	var score **field.RealtimeScore
 	var scoreSummaryFunc func() *game.ScoreSummary
 	if alliance == "red" {
-		score = &mainArena.redRealtimeScore
-		scoreSummaryFunc = mainArena.RedScoreSummary
+		score = &web.arena.RedRealtimeScore
+		scoreSummaryFunc = web.arena.RedScoreSummary
 	} else {
-		score = &mainArena.blueRealtimeScore
-		scoreSummaryFunc = mainArena.BlueScoreSummary
+		score = &web.arena.BlueRealtimeScore
+		scoreSummaryFunc = web.arena.BlueScoreSummary
 	}
 	autoCommitted := false
 
@@ -75,16 +76,16 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer websocket.Close()
 
-	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
+	matchLoadTeamsListener := web.arena.MatchLoadTeamsNotifier.Listen()
 	defer close(matchLoadTeamsListener)
-	matchTimeListener := mainArena.matchTimeNotifier.Listen()
+	matchTimeListener := web.arena.MatchTimeNotifier.Listen()
 	defer close(matchTimeListener)
-	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
 	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
 	data := struct {
-		Score         *RealtimeScore
+		Score         *field.RealtimeScore
 		ScoreSummary  *game.ScoreSummary
 		AutoCommitted bool
 	}{*score, scoreSummaryFunc(), autoCommitted}
@@ -93,7 +94,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	err = websocket.Write("matchTime", MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)})
+	err = websocket.Write("matchTime", MatchTimeMessage{web.arena.MatchState, int(web.arena.LastMatchTimeSec)})
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -116,7 +117,7 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				messageType = "matchTime"
-				message = MatchTimeMessage{mainArena.MatchState, matchTimeSec.(int)}
+				message = MatchTimeMessage{web.arena.MatchState, matchTimeSec.(int)}
 			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return
@@ -158,13 +159,13 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		case "commit":
-			if mainArena.MatchState != preMatch || mainArena.currentMatch.Type == "test" {
+			if web.arena.MatchState != field.PreMatch || web.arena.CurrentMatch.Type == "test" {
 				autoCommitted = true
 			}
 		case "uncommitAuto":
 			autoCommitted = false
 		case "commitMatch":
-			if mainArena.MatchState != postMatch {
+			if web.arena.MatchState != field.PostMatch {
 				// Don't allow committing the score until the match is over.
 				websocket.WriteError("Cannot commit score: Match is not over.")
 				continue
@@ -172,17 +173,17 @@ func ScoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 			autoCommitted = true
 			(*score).TeleopCommitted = true
-			mainArena.scoringStatusNotifier.Notify(nil)
+			web.arena.ScoringStatusNotifier.Notify(nil)
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue
 		}
 
-		mainArena.realtimeScoreNotifier.Notify(nil)
+		web.arena.RealtimeScoreNotifier.Notify(nil)
 
 		// Send out the score again after handling the command, as it most likely changed as a result.
 		data = struct {
-			Score         *RealtimeScore
+			Score         *field.RealtimeScore
 			ScoreSummary  *game.ScoreSummary
 			AutoCommitted bool
 		}{*score, scoreSummaryFunc(), autoCommitted}

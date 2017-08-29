@@ -3,7 +3,7 @@
 //
 // Methods for monitoring team bandwidth usage across a managed switch.
 
-package main
+package field
 
 import (
 	"fmt"
@@ -25,6 +25,7 @@ const (
 )
 
 type BandwidthMonitor struct {
+	allianceStations   *map[string]*AllianceStation
 	snmpClient         *wapsnmp.WapSNMP
 	toRobotOid         wapsnmp.Oid
 	fromRobotOid       wapsnmp.Oid
@@ -34,14 +35,29 @@ type BandwidthMonitor struct {
 }
 
 // Loops indefinitely to query the managed switch via SNMP (Simple Network Management Protocol).
-func MonitorBandwidth() {
-	monitor := BandwidthMonitor{toRobotOid: wapsnmp.MustParseOid(toRobotBytesOid),
-		fromRobotOid: wapsnmp.MustParseOid(fromRobotBytesOid)}
+func (arena *Arena) monitorBandwidth() {
+	monitor := BandwidthMonitor{allianceStations: &arena.AllianceStations,
+		toRobotOid: wapsnmp.MustParseOid(toRobotBytesOid), fromRobotOid: wapsnmp.MustParseOid(fromRobotBytesOid)}
 	for {
-		if eventSettings.NetworkSecurityEnabled && eventSettings.BandwidthMonitoringEnabled {
+		if monitor.snmpClient != nil && monitor.snmpClient.Target != arena.EventSettings.SwitchAddress {
+			// Switch address has changed; must re-create the SNMP client.
+			monitor.snmpClient.Close()
+			monitor.snmpClient = nil
+		}
+
+		if monitor.snmpClient == nil {
+			var err error
+			monitor.snmpClient, err = wapsnmp.NewWapSNMP(arena.EventSettings.SwitchAddress,
+				arena.EventSettings.SwitchPassword, wapsnmp.SNMPv2c, 2*time.Second, 0)
+			if err != nil {
+				log.Printf("Error starting bandwidth monitoring: %v", err)
+			}
+		}
+
+		if arena.EventSettings.NetworkSecurityEnabled && arena.EventSettings.BandwidthMonitoringEnabled {
 			err := monitor.updateBandwidth()
 			if err != nil {
-				log.Printf("Bandwidth monitoring error: %s", err)
+				log.Printf("Bandwidth monitoring error: %v", err)
 			}
 		}
 		time.Sleep(time.Millisecond * monitoringIntervalMs)
@@ -49,21 +65,6 @@ func MonitorBandwidth() {
 }
 
 func (monitor *BandwidthMonitor) updateBandwidth() error {
-	if monitor.snmpClient != nil && monitor.snmpClient.Target != eventSettings.SwitchAddress {
-		// Switch address has changed; must re-create the SNMP client.
-		monitor.snmpClient.Close()
-		monitor.snmpClient = nil
-	}
-
-	if monitor.snmpClient == nil {
-		var err error
-		monitor.snmpClient, err = wapsnmp.NewWapSNMP(eventSettings.SwitchAddress, eventSettings.SwitchPassword,
-			wapsnmp.SNMPv2c, 2*time.Second, 0)
-		if err != nil {
-			return err
-		}
-	}
-
 	// Retrieve total number of bytes sent/received per port.
 	toRobotBytes, err := monitor.snmpClient.GetTable(monitor.toRobotOid)
 	if err != nil {
@@ -90,7 +91,7 @@ func (monitor *BandwidthMonitor) updateBandwidth() error {
 
 func (monitor *BandwidthMonitor) updateStationBandwidth(station string, port int, toRobotBytes map[string]interface{},
 	fromRobotBytes map[string]interface{}) {
-	dsConn := mainArena.AllianceStations[station].DsConn
+	dsConn := (*monitor.allianceStations)[station].DsConn
 	if dsConn == nil {
 		// No team assigned; just skip it.
 		return

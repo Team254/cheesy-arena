@@ -17,12 +17,12 @@ import (
 )
 
 // Renders the team number and status display shown above each alliance station.
-func AllianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) allianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
-	template := template.New("").Funcs(templateHelpers)
+	template := template.New("").Funcs(web.templateHelpers)
 	_, err := template.ParseFiles("templates/alliance_station_display.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -38,7 +38,7 @@ func AllianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 		DisplayId string
-	}{eventSettings, displayId}
+	}{web.arena.EventSettings, displayId}
 	err = template.ExecuteTemplate(w, "alliance_station_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -47,8 +47,8 @@ func AllianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for the alliance station display client to receive status updates.
-func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsReader(w, r) {
+func (web *Web) allianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 
@@ -60,34 +60,35 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	defer websocket.Close()
 
 	displayId := r.URL.Query()["displayId"][0]
-	station, ok := mainArena.allianceStationDisplays[displayId]
+	station, ok := web.arena.AllianceStationDisplays[displayId]
 	if !ok {
 		station = ""
-		mainArena.allianceStationDisplays[displayId] = station
+		web.arena.AllianceStationDisplays[displayId] = station
 	}
 	rankings := make(map[string]*game.Ranking)
-	for _, allianceStation := range mainArena.AllianceStations {
+	for _, allianceStation := range web.arena.AllianceStations {
 		if allianceStation.Team != nil {
-			rankings[strconv.Itoa(allianceStation.Team.Id)], _ = db.GetRankingForTeam(allianceStation.Team.Id)
+			rankings[strconv.Itoa(allianceStation.Team.Id)], _ =
+				web.arena.Database.GetRankingForTeam(allianceStation.Team.Id)
 		}
 	}
 
-	allianceStationDisplayListener := mainArena.allianceStationDisplayNotifier.Listen()
+	allianceStationDisplayListener := web.arena.AllianceStationDisplayNotifier.Listen()
 	defer close(allianceStationDisplayListener)
-	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
+	matchLoadTeamsListener := web.arena.MatchLoadTeamsNotifier.Listen()
 	defer close(matchLoadTeamsListener)
-	robotStatusListener := mainArena.robotStatusNotifier.Listen()
+	robotStatusListener := web.arena.RobotStatusNotifier.Listen()
 	defer close(robotStatusListener)
-	matchTimeListener := mainArena.matchTimeNotifier.Listen()
+	matchTimeListener := web.arena.MatchTimeNotifier.Listen()
 	defer close(matchTimeListener)
-	realtimeScoreListener := mainArena.realtimeScoreNotifier.Listen()
+	realtimeScoreListener := web.arena.RealtimeScoreNotifier.Listen()
 	defer close(realtimeScoreListener)
-	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
 	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
 	var data interface{}
-	err = websocket.Write("setAllianceStationDisplay", mainArena.allianceStationDisplayScreen)
+	err = websocket.Write("setAllianceStationDisplay", web.arena.AllianceStationDisplayScreen)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -97,7 +98,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	err = websocket.Write("matchTime", MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)})
+	err = websocket.Write("matchTime", MatchTimeMessage{web.arena.MatchState, int(web.arena.LastMatchTimeSec)})
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -106,10 +107,10 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		AllianceStation string
 		Teams           map[string]*model.Team
 		Rankings        map[string]*game.Ranking
-	}{station, map[string]*model.Team{"R1": mainArena.AllianceStations["R1"].Team,
-		"R2": mainArena.AllianceStations["R2"].Team, "R3": mainArena.AllianceStations["R3"].Team,
-		"B1": mainArena.AllianceStations["B1"].Team, "B2": mainArena.AllianceStations["B2"].Team,
-		"B3": mainArena.AllianceStations["B3"].Team}, rankings}
+	}{station, map[string]*model.Team{"R1": web.arena.AllianceStations["R1"].Team,
+		"R2": web.arena.AllianceStations["R2"].Team, "R3": web.arena.AllianceStations["R3"].Team,
+		"B1": web.arena.AllianceStations["B1"].Team, "B2": web.arena.AllianceStations["B2"].Team,
+		"B3": web.arena.AllianceStations["B3"].Team}, rankings}
 	err = websocket.Write("setMatch", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -118,7 +119,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	data = struct {
 		RedScore  int
 		BlueScore int
-	}{mainArena.RedScoreSummary().Score, mainArena.BlueScoreSummary().Score}
+	}{web.arena.RedScoreSummary().Score, web.arena.BlueScoreSummary().Score}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -135,42 +136,42 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				if !ok {
 					return
 				}
-				websocket.Write("matchTime", MatchTimeMessage{mainArena.MatchState, int(mainArena.lastMatchTimeSec)})
+				websocket.Write("matchTime", MatchTimeMessage{web.arena.MatchState, int(web.arena.LastMatchTimeSec)})
 				messageType = "setAllianceStationDisplay"
-				message = mainArena.allianceStationDisplayScreen
+				message = web.arena.AllianceStationDisplayScreen
 			case _, ok := <-matchLoadTeamsListener:
 				if !ok {
 					return
 				}
 				messageType = "setMatch"
-				station = mainArena.allianceStationDisplays[displayId]
+				station = web.arena.AllianceStationDisplays[displayId]
 				rankings := make(map[string]*game.Ranking)
-				for _, allianceStation := range mainArena.AllianceStations {
+				for _, allianceStation := range web.arena.AllianceStations {
 					if allianceStation.Team != nil {
 						rankings[strconv.Itoa(allianceStation.Team.Id)], _ =
-							db.GetRankingForTeam(allianceStation.Team.Id)
+							web.arena.Database.GetRankingForTeam(allianceStation.Team.Id)
 					}
 				}
 				message = struct {
 					AllianceStation string
 					Teams           map[string]*model.Team
 					Rankings        map[string]*game.Ranking
-				}{station, map[string]*model.Team{"R1": mainArena.AllianceStations["R1"].Team,
-					"R2": mainArena.AllianceStations["R2"].Team, "R3": mainArena.AllianceStations["R3"].Team,
-					"B1": mainArena.AllianceStations["B1"].Team, "B2": mainArena.AllianceStations["B2"].Team,
-					"B3": mainArena.AllianceStations["B3"].Team}, rankings}
+				}{station, map[string]*model.Team{"R1": web.arena.AllianceStations["R1"].Team,
+					"R2": web.arena.AllianceStations["R2"].Team, "R3": web.arena.AllianceStations["R3"].Team,
+					"B1": web.arena.AllianceStations["B1"].Team, "B2": web.arena.AllianceStations["B2"].Team,
+					"B3": web.arena.AllianceStations["B3"].Team}, rankings}
 			case _, ok := <-robotStatusListener:
 				if !ok {
 					return
 				}
 				messageType = "status"
-				message = mainArena
+				message = web.arena.GetStatus()
 			case matchTimeSec, ok := <-matchTimeListener:
 				if !ok {
 					return
 				}
 				messageType = "matchTime"
-				message = MatchTimeMessage{mainArena.MatchState, matchTimeSec.(int)}
+				message = MatchTimeMessage{web.arena.MatchState, matchTimeSec.(int)}
 			case _, ok := <-realtimeScoreListener:
 				if !ok {
 					return
@@ -179,7 +180,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				message = struct {
 					RedScore  int
 					BlueScore int
-				}{mainArena.RedScoreSummary().Score, mainArena.BlueScoreSummary().Score}
+				}{web.arena.RedScoreSummary().Score, web.arena.BlueScoreSummary().Score}
 			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return
@@ -215,7 +216,7 @@ func AllianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
-			mainArena.allianceStationDisplays[displayId] = station
+			web.arena.AllianceStationDisplays[displayId] = station
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}

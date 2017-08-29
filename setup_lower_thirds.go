@@ -16,8 +16,8 @@ import (
 )
 
 // Shows the lower third configuration page.
-func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) lowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
@@ -26,7 +26,7 @@ func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	lowerThirds, err := db.GetAllLowerThirds()
+	lowerThirds, err := web.arena.Database.GetAllLowerThirds()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -34,7 +34,7 @@ func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 		LowerThirds []model.LowerThird
-	}{eventSettings, lowerThirds}
+	}{web.arena.EventSettings, lowerThirds}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -43,8 +43,8 @@ func LowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for the lower thirds client to send control commands.
-func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
@@ -75,7 +75,7 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				websocket.WriteError(err.Error())
 				continue
 			}
-			saveLowerThird(&lowerThird)
+			web.saveLowerThird(&lowerThird)
 		case "deleteLowerThird":
 			var lowerThird model.LowerThird
 			err = mapstructure.Decode(data, &lowerThird)
@@ -83,7 +83,7 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				websocket.WriteError(err.Error())
 				continue
 			}
-			err = db.DeleteLowerThird(&lowerThird)
+			err = web.arena.Database.DeleteLowerThird(&lowerThird)
 			if err != nil {
 				websocket.WriteError(err.Error())
 				continue
@@ -95,10 +95,10 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				websocket.WriteError(err.Error())
 				continue
 			}
-			saveLowerThird(&lowerThird)
-			mainArena.lowerThirdNotifier.Notify(lowerThird)
-			mainArena.audienceDisplayScreen = "lowerThird"
-			mainArena.audienceDisplayNotifier.Notify(nil)
+			web.saveLowerThird(&lowerThird)
+			web.arena.LowerThirdNotifier.Notify(lowerThird)
+			web.arena.AudienceDisplayScreen = "lowerThird"
+			web.arena.AudienceDisplayNotifier.Notify(nil)
 			continue
 		case "hideLowerThird":
 			var lowerThird model.LowerThird
@@ -107,9 +107,9 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				websocket.WriteError(err.Error())
 				continue
 			}
-			saveLowerThird(&lowerThird)
-			mainArena.audienceDisplayScreen = "blank"
-			mainArena.audienceDisplayNotifier.Notify(nil)
+			web.saveLowerThird(&lowerThird)
+			web.arena.AudienceDisplayScreen = "blank"
+			web.arena.AudienceDisplayNotifier.Notify(nil)
 			continue
 		case "reorderLowerThird":
 			args := struct {
@@ -121,7 +121,7 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				websocket.WriteError(err.Error())
 				continue
 			}
-			err = reorderLowerThird(args.Id, args.MoveUp)
+			err = web.reorderLowerThird(args.Id, args.MoveUp)
 			if err != nil {
 				websocket.WriteError(err.Error())
 				continue
@@ -140,17 +140,17 @@ func LowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func saveLowerThird(lowerThird *model.LowerThird) error {
-	oldLowerThird, err := db.GetLowerThirdById(lowerThird.Id)
+func (web *Web) saveLowerThird(lowerThird *model.LowerThird) error {
+	oldLowerThird, err := web.arena.Database.GetLowerThirdById(lowerThird.Id)
 	if err != nil {
 		return err
 	}
 
 	// Create or update lower third.
 	if oldLowerThird == nil {
-		err = db.CreateLowerThird(lowerThird)
+		err = web.arena.Database.CreateLowerThird(lowerThird)
 	} else {
-		err = db.SaveLowerThird(lowerThird)
+		err = web.arena.Database.SaveLowerThird(lowerThird)
 	}
 	if err != nil {
 		return err
@@ -158,14 +158,14 @@ func saveLowerThird(lowerThird *model.LowerThird) error {
 	return nil
 }
 
-func reorderLowerThird(id int, moveUp bool) error {
-	lowerThird, err := db.GetLowerThirdById(id)
+func (web *Web) reorderLowerThird(id int, moveUp bool) error {
+	lowerThird, err := web.arena.Database.GetLowerThirdById(id)
 	if err != nil {
 		return err
 	}
 
 	// Get the lower third to swap positions with.
-	lowerThirds, err := db.GetAllLowerThirds()
+	lowerThirds, err := web.arena.Database.GetAllLowerThirds()
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func reorderLowerThird(id int, moveUp bool) error {
 		// The one to move is already at the limit; return an error to prevent a page reload.
 		return fmt.Errorf("Already at the limit.")
 	}
-	adjacentLowerThird, err := db.GetLowerThirdById(lowerThirds[lowerThirdIndex].Id)
+	adjacentLowerThird, err := web.arena.Database.GetLowerThirdById(lowerThirds[lowerThirdIndex].Id)
 	if err != nil {
 		return err
 	}
@@ -193,11 +193,11 @@ func reorderLowerThird(id int, moveUp bool) error {
 	// Swap their display orders and save.
 	lowerThird.DisplayOrder, adjacentLowerThird.DisplayOrder =
 		adjacentLowerThird.DisplayOrder, lowerThird.DisplayOrder
-	err = db.SaveLowerThird(lowerThird)
+	err = web.arena.Database.SaveLowerThird(lowerThird)
 	if err != nil {
 		return err
 	}
-	err = db.SaveLowerThird(adjacentLowerThird)
+	err = web.arena.Database.SaveLowerThird(adjacentLowerThird)
 	if err != nil {
 		return err
 	}

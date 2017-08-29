@@ -14,12 +14,12 @@ import (
 )
 
 // Renders the FTA diagnostic display.
-func FtaDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	template := template.New("").Funcs(templateHelpers)
+	template := template.New("").Funcs(web.templateHelpers)
 	_, err := template.ParseFiles("templates/fta_display.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -27,7 +27,7 @@ func FtaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := struct {
 		*model.EventSettings
-	}{eventSettings}
+	}{web.arena.EventSettings}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -36,7 +36,7 @@ func FtaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for the FTA display client to receive status updates.
-func FtaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) ftaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO(patrick): Enable authentication once Safari (for iPad) supports it over Websocket.
 
 	websocket, err := NewWebsocket(w, r)
@@ -46,13 +46,13 @@ func FtaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer websocket.Close()
 
-	robotStatusListener := mainArena.robotStatusNotifier.Listen()
+	robotStatusListener := web.arena.RobotStatusNotifier.Listen()
 	defer close(robotStatusListener)
-	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
 	defer close(reloadDisplaysListener)
 
 	// Send the various notifications immediately upon connection.
-	err = websocket.Write("status", mainArena)
+	err = websocket.Write("status", web.arena.GetStatus())
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -69,7 +69,7 @@ func FtaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				messageType = "status"
-				message = mainArena
+				message = web.arena.GetStatus()
 			case _, ok := <-reloadDisplaysListener:
 				if !ok {
 					return

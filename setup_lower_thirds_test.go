@@ -13,18 +13,18 @@ import (
 )
 
 func TestSetupLowerThirds(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	db.CreateLowerThird(&model.LowerThird{0, "Top Text 1", "Bottom Text 1", 0})
-	db.CreateLowerThird(&model.LowerThird{0, "Top Text 2", "Bottom Text 2", 1})
-	db.CreateLowerThird(&model.LowerThird{0, "Top Text 3", "Bottom Text 3", 2})
+	web.arena.Database.CreateLowerThird(&model.LowerThird{0, "Top Text 1", "Bottom Text 1", 0})
+	web.arena.Database.CreateLowerThird(&model.LowerThird{0, "Top Text 2", "Bottom Text 2", 1})
+	web.arena.Database.CreateLowerThird(&model.LowerThird{0, "Top Text 3", "Bottom Text 3", 2})
 
-	recorder := getHttpResponse("/setup/lower_thirds")
+	recorder := web.getHttpResponse("/setup/lower_thirds")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Top Text 1")
 	assert.Contains(t, recorder.Body.String(), "Bottom Text 2")
 
-	server, wsUrl := startTestServer()
+	server, wsUrl := web.startTestServer()
 	defer server.Close()
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/setup/lower_thirds/websocket", nil)
 	assert.Nil(t, err)
@@ -33,30 +33,30 @@ func TestSetupLowerThirds(t *testing.T) {
 
 	ws.Write("saveLowerThird", model.LowerThird{1, "Top Text 4", "Bottom Text 1", 0})
 	time.Sleep(time.Millisecond * 10) // Allow some time for the command to be processed.
-	lowerThird, _ := db.GetLowerThirdById(1)
+	lowerThird, _ := web.arena.Database.GetLowerThirdById(1)
 	assert.Equal(t, "Top Text 4", lowerThird.TopText)
 
 	ws.Write("deleteLowerThird", model.LowerThird{1, "Top Text 4", "Bottom Text 1", 0})
 	time.Sleep(time.Millisecond * 10)
-	lowerThird, _ = db.GetLowerThirdById(1)
+	lowerThird, _ = web.arena.Database.GetLowerThirdById(1)
 	assert.Nil(t, lowerThird)
 
-	assert.Equal(t, "blank", mainArena.audienceDisplayScreen)
+	assert.Equal(t, "blank", web.arena.AudienceDisplayScreen)
 	ws.Write("showLowerThird", model.LowerThird{2, "Top Text 5", "Bottom Text 1", 0})
 	time.Sleep(time.Millisecond * 10)
-	lowerThird, _ = db.GetLowerThirdById(2)
+	lowerThird, _ = web.arena.Database.GetLowerThirdById(2)
 	assert.Equal(t, "Top Text 5", lowerThird.TopText)
-	assert.Equal(t, "lowerThird", mainArena.audienceDisplayScreen)
+	assert.Equal(t, "lowerThird", web.arena.AudienceDisplayScreen)
 
 	ws.Write("hideLowerThird", model.LowerThird{2, "Top Text 6", "Bottom Text 1", 0})
 	time.Sleep(time.Millisecond * 10)
-	lowerThird, _ = db.GetLowerThirdById(2)
+	lowerThird, _ = web.arena.Database.GetLowerThirdById(2)
 	assert.Equal(t, "Top Text 6", lowerThird.TopText)
-	assert.Equal(t, "blank", mainArena.audienceDisplayScreen)
+	assert.Equal(t, "blank", web.arena.AudienceDisplayScreen)
 
 	ws.Write("reorderLowerThird", map[string]interface{}{"Id": 2, "moveUp": false})
 	time.Sleep(time.Millisecond * 100)
-	lowerThirds, _ := db.GetAllLowerThirds()
+	lowerThirds, _ := web.arena.Database.GetAllLowerThirds()
 	assert.Equal(t, 3, lowerThirds[0].Id)
 	assert.Equal(t, 2, lowerThirds[1].Id)
 }

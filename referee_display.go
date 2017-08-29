@@ -7,6 +7,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/mitchellh/mapstructure"
@@ -18,41 +19,41 @@ import (
 )
 
 // Renders the referee interface for assigning fouls.
-func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) refereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	template := template.New("").Funcs(templateHelpers)
+	template := template.New("").Funcs(web.templateHelpers)
 	_, err := template.ParseFiles("templates/referee_display.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	match := mainArena.currentMatch
+	match := web.arena.CurrentMatch
 	matchType := match.CapitalizedType()
-	red1 := mainArena.AllianceStations["R1"].Team
+	red1 := web.arena.AllianceStations["R1"].Team
 	if red1 == nil {
 		red1 = &model.Team{}
 	}
-	red2 := mainArena.AllianceStations["R2"].Team
+	red2 := web.arena.AllianceStations["R2"].Team
 	if red2 == nil {
 		red2 = &model.Team{}
 	}
-	red3 := mainArena.AllianceStations["R3"].Team
+	red3 := web.arena.AllianceStations["R3"].Team
 	if red3 == nil {
 		red3 = &model.Team{}
 	}
-	blue1 := mainArena.AllianceStations["B1"].Team
+	blue1 := web.arena.AllianceStations["B1"].Team
 	if blue1 == nil {
 		blue1 = &model.Team{}
 	}
-	blue2 := mainArena.AllianceStations["B2"].Team
+	blue2 := web.arena.AllianceStations["B2"].Team
 	if blue2 == nil {
 		blue2 = &model.Team{}
 	}
-	blue3 := mainArena.AllianceStations["B3"].Team
+	blue3 := web.arena.AllianceStations["B3"].Team
 	if blue3 == nil {
 		blue3 = &model.Team{}
 	}
@@ -72,10 +73,10 @@ func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		BlueCards        map[string]string
 		Rules            []game.Rule
 		EntryEnabled     bool
-	}{eventSettings, matchType, match.DisplayName, red1, red2, red3, blue1, blue2, blue3,
-		mainArena.redRealtimeScore.CurrentScore.Fouls, mainArena.blueRealtimeScore.CurrentScore.Fouls,
-		mainArena.redRealtimeScore.Cards, mainArena.blueRealtimeScore.Cards, game.Rules,
-		!(mainArena.redRealtimeScore.FoulsCommitted && mainArena.blueRealtimeScore.FoulsCommitted)}
+	}{web.arena.EventSettings, matchType, match.DisplayName, red1, red2, red3, blue1, blue2, blue3,
+		web.arena.RedRealtimeScore.CurrentScore.Fouls, web.arena.BlueRealtimeScore.CurrentScore.Fouls,
+		web.arena.RedRealtimeScore.Cards, web.arena.BlueRealtimeScore.Cards, game.Rules,
+		!(web.arena.RedRealtimeScore.FoulsCommitted && web.arena.BlueRealtimeScore.FoulsCommitted)}
 	err = template.ExecuteTemplate(w, "referee_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -84,7 +85,7 @@ func RefereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for the refereee interface client to send control commands and receive status updates.
-func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO(patrick): Enable authentication once Safari (for iPad) supports it over Websocket.
 
 	websocket, err := NewWebsocket(w, r)
@@ -94,9 +95,9 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer websocket.Close()
 
-	matchLoadTeamsListener := mainArena.matchLoadTeamsNotifier.Listen()
+	matchLoadTeamsListener := web.arena.MatchLoadTeamsNotifier.Listen()
 	defer close(matchLoadTeamsListener)
-	reloadDisplaysListener := mainArena.reloadDisplaysNotifier.Listen()
+	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
 	defer close(reloadDisplaysListener)
 
 	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
@@ -154,15 +155,15 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 			// Add the foul to the correct alliance's list.
 			foul := game.Foul{Rule: game.Rule{RuleNumber: args.Rule, IsTechnical: args.IsTechnical},
-				TeamId: args.TeamId, TimeInMatchSec: mainArena.MatchTimeSec()}
+				TeamId: args.TeamId, TimeInMatchSec: web.arena.MatchTimeSec()}
 			if args.Alliance == "red" {
-				mainArena.redRealtimeScore.CurrentScore.Fouls =
-					append(mainArena.redRealtimeScore.CurrentScore.Fouls, foul)
+				web.arena.RedRealtimeScore.CurrentScore.Fouls =
+					append(web.arena.RedRealtimeScore.CurrentScore.Fouls, foul)
 			} else {
-				mainArena.blueRealtimeScore.CurrentScore.Fouls =
-					append(mainArena.blueRealtimeScore.CurrentScore.Fouls, foul)
+				web.arena.BlueRealtimeScore.CurrentScore.Fouls =
+					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
 			}
-			mainArena.realtimeScoreNotifier.Notify(nil)
+			web.arena.RealtimeScoreNotifier.Notify(nil)
 		case "deleteFoul":
 			args := struct {
 				Alliance       string
@@ -182,9 +183,9 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				TeamId: args.TeamId, TimeInMatchSec: args.TimeInMatchSec}
 			var fouls *[]game.Foul
 			if args.Alliance == "red" {
-				fouls = &mainArena.redRealtimeScore.CurrentScore.Fouls
+				fouls = &web.arena.RedRealtimeScore.CurrentScore.Fouls
 			} else {
-				fouls = &mainArena.blueRealtimeScore.CurrentScore.Fouls
+				fouls = &web.arena.BlueRealtimeScore.CurrentScore.Fouls
 			}
 			for i, foul := range *fouls {
 				if foul == deleteFoul {
@@ -192,7 +193,7 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 					break
 				}
 			}
-			mainArena.realtimeScoreNotifier.Notify(nil)
+			web.arena.RealtimeScoreNotifier.Notify(nil)
 		case "card":
 			args := struct {
 				Alliance string
@@ -208,32 +209,32 @@ func RefereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 			// Set the card in the correct alliance's score.
 			var cards map[string]string
 			if args.Alliance == "red" {
-				cards = mainArena.redRealtimeScore.Cards
+				cards = web.arena.RedRealtimeScore.Cards
 			} else {
-				cards = mainArena.blueRealtimeScore.Cards
+				cards = web.arena.BlueRealtimeScore.Cards
 			}
 			cards[strconv.Itoa(args.TeamId)] = args.Card
 			continue
 		case "signalReset":
-			if mainArena.MatchState != postMatch {
+			if web.arena.MatchState != field.PostMatch {
 				// Don't allow clearing the field until the match is over.
 				continue
 			}
-			mainArena.fieldReset = true
-			mainArena.allianceStationDisplayScreen = "fieldReset"
-			mainArena.allianceStationDisplayNotifier.Notify(nil)
+			web.arena.FieldReset = true
+			web.arena.AllianceStationDisplayScreen = "fieldReset"
+			web.arena.AllianceStationDisplayNotifier.Notify(nil)
 			continue // Don't reload.
 		case "commitMatch":
-			if mainArena.MatchState != postMatch {
+			if web.arena.MatchState != field.PostMatch {
 				// Don't allow committing the fouls until the match is over.
 				continue
 			}
-			mainArena.redRealtimeScore.FoulsCommitted = true
-			mainArena.blueRealtimeScore.FoulsCommitted = true
-			mainArena.fieldReset = true
-			mainArena.allianceStationDisplayScreen = "fieldReset"
-			mainArena.allianceStationDisplayNotifier.Notify(nil)
-			mainArena.scoringStatusNotifier.Notify(nil)
+			web.arena.RedRealtimeScore.FoulsCommitted = true
+			web.arena.BlueRealtimeScore.FoulsCommitted = true
+			web.arena.FieldReset = true
+			web.arena.AllianceStationDisplayScreen = "fieldReset"
+			web.arena.AllianceStationDisplayNotifier.Notify(nil)
+			web.arena.ScoringStatusNotifier.Notify(nil)
 		default:
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue

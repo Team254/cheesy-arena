@@ -11,17 +11,17 @@ import (
 )
 
 func TestAudienceDisplay(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	recorder := getHttpResponse("/displays/audience")
+	recorder := web.getHttpResponse("/displays/audience")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Audience Display - Untitled Event - Cheesy Arena")
 }
 
 func TestAudienceDisplayWebsocket(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	server, wsUrl := startTestServer()
+	server, wsUrl := web.startTestServer()
 	defer server.Close()
 	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/audience/websocket", nil)
 	assert.Nil(t, err)
@@ -38,16 +38,16 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "allianceSelection")
 
 	// Run through a match cycle.
-	mainArena.matchLoadTeamsNotifier.Notify(nil)
+	web.arena.MatchLoadTeamsNotifier.Notify(nil)
 	readWebsocketType(t, ws, "setMatch")
-	mainArena.AllianceStations["R1"].Bypass = true
-	mainArena.AllianceStations["R2"].Bypass = true
-	mainArena.AllianceStations["R3"].Bypass = true
-	mainArena.AllianceStations["B1"].Bypass = true
-	mainArena.AllianceStations["B2"].Bypass = true
-	mainArena.AllianceStations["B3"].Bypass = true
-	mainArena.StartMatch()
-	mainArena.Update()
+	web.arena.AllianceStations["R1"].Bypass = true
+	web.arena.AllianceStations["R2"].Bypass = true
+	web.arena.AllianceStations["R3"].Bypass = true
+	web.arena.AllianceStations["B1"].Bypass = true
+	web.arena.AllianceStations["B2"].Bypass = true
+	web.arena.AllianceStations["B3"].Bypass = true
+	web.arena.StartMatch()
+	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 3)
 	screen, ok := messages["setAudienceDisplay"]
 	if assert.True(t, ok) {
@@ -59,14 +59,14 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	}
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)
-	mainArena.realtimeScoreNotifier.Notify(nil)
+	web.arena.RealtimeScoreNotifier.Notify(nil)
 	readWebsocketType(t, ws, "realtimeScore")
-	mainArena.scorePostedNotifier.Notify(nil)
+	web.arena.ScorePostedNotifier.Notify(nil)
 	readWebsocketType(t, ws, "setFinalScore")
 
 	// Test other overlays.
-	mainArena.allianceSelectionNotifier.Notify(nil)
+	web.arena.AllianceSelectionNotifier.Notify(nil)
 	readWebsocketType(t, ws, "allianceSelection")
-	mainArena.lowerThirdNotifier.Notify(nil)
+	web.arena.LowerThirdNotifier.Notify(nil)
 	readWebsocketType(t, ws, "lowerThird")
 }

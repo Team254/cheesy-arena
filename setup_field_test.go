@@ -9,21 +9,24 @@ import (
 )
 
 func TestSetupField(t *testing.T) {
-	setupTest(t)
+	web := setupTestWeb(t)
 
-	mainArena.allianceStationDisplays["12345"] = ""
-	recorder := getHttpResponse("/setup/field")
+	web.arena.AllianceStationDisplays["12345"] = ""
+	recorder := web.getHttpResponse("/setup/field")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "12345")
 	assert.NotContains(t, recorder.Body.String(), "selected")
 
-	recorder = postHttpResponse("/setup/field", "displayId=12345&allianceStation=B1")
+	recorder = web.postHttpResponse("/setup/field", "displayId=12345&allianceStation=B1")
 	assert.Equal(t, 302, recorder.Code)
-	recorder = getHttpResponse("/setup/field")
+	recorder = web.getHttpResponse("/setup/field")
 	assert.Contains(t, recorder.Body.String(), "12345")
 	assert.Contains(t, recorder.Body.String(), "selected")
 
-	recorder = postHttpResponse("/setup/field/lights", "mode=strobe")
-	assert.Equal(t, 302, recorder.Code)
-	assert.Equal(t, "strobe", mainArena.lights.currentMode)
+	// TODO(patrick): Replace with PLC mode.
+	/*
+		recorder = web.postHttpResponse("/setup/field/lights", "mode=strobe")
+		assert.Equal(t, 302, recorder.Code)
+		assert.Equal(t, "strobe", web.arena.Lights.currentMode)
+	*/
 }

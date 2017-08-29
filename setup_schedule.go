@@ -22,8 +22,8 @@ var cachedMatches []model.Match
 var cachedTeamFirstMatches map[int]string
 
 // Shows the schedule editing page.
-func ScheduleGetHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) scheduleGetHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
@@ -34,12 +34,12 @@ func ScheduleGetHandler(w http.ResponseWriter, r *http.Request) {
 		cachedScheduleBlocks = append(cachedScheduleBlocks, tournament.ScheduleBlock{startTime, 10, 360})
 		cachedMatchType = "practice"
 	}
-	renderSchedule(w, r, "")
+	web.renderSchedule(w, r, "")
 }
 
 // Generates the schedule and presents it for review without saving it to the database.
-func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
@@ -48,29 +48,29 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 	scheduleBlocks, err := getScheduleBlocks(r)
 	cachedScheduleBlocks = scheduleBlocks // Show the same blocks even if there is an error.
 	if err != nil {
-		renderSchedule(w, r, "Incomplete or invalid schedule block parameters specified.")
+		web.renderSchedule(w, r, "Incomplete or invalid schedule block parameters specified.")
 		return
 	}
 
 	// Build the schedule.
-	teams, err := db.GetAllTeams()
+	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 	if len(teams) == 0 {
-		renderSchedule(w, r, "No team list is configured. Set up the list of teams at the event before "+
+		web.renderSchedule(w, r, "No team list is configured. Set up the list of teams at the event before "+
 			"generating the schedule.")
 		return
 	}
 	if len(teams) < 18 {
-		renderSchedule(w, r, fmt.Sprintf("There are only %d teams. There must be at least 18 teams to generate "+
+		web.renderSchedule(w, r, fmt.Sprintf("There are only %d teams. There must be at least 18 teams to generate "+
 			"a schedule.", len(teams)))
 		return
 	}
 	matches, err := tournament.BuildRandomSchedule(teams, scheduleBlocks, r.PostFormValue("matchType"))
 	if err != nil {
-		renderSchedule(w, r, fmt.Sprintf("Error generating schedule: %s.", err.Error()))
+		web.renderSchedule(w, r, fmt.Sprintf("Error generating schedule: %s.", err.Error()))
 		return
 	}
 	cachedMatches = matches
@@ -97,15 +97,15 @@ func ScheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Publishes the schedule in the database to TBA
-func ScheduleRepublishPostHandler(w http.ResponseWriter, r *http.Request) {
-	if eventSettings.TbaPublishingEnabled {
+func (web *Web) scheduleRepublishPostHandler(w http.ResponseWriter, r *http.Request) {
+	if web.arena.EventSettings.TbaPublishingEnabled {
 		// Publish schedule to The Blue Alliance.
-		err := tbaClient.DeletePublishedMatches()
+		err := web.arena.TbaClient.DeletePublishedMatches()
 		if err != nil {
 			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
 			return
 		}
-		err = tbaClient.PublishMatches(db)
+		err = web.arena.TbaClient.PublishMatches(web.arena.Database)
 		if err != nil {
 			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
 			return
@@ -119,24 +119,24 @@ func ScheduleRepublishPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Saves the generated schedule to the database.
-func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
-	if !UserIsAdmin(w, r) {
+func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	existingMatches, err := db.GetMatchesByType(cachedMatchType)
+	existingMatches, err := web.arena.Database.GetMatchesByType(cachedMatchType)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 	if len(existingMatches) > 0 {
-		renderSchedule(w, r, fmt.Sprintf("Can't save schedule because a schedule of %d %s matches already "+
+		web.renderSchedule(w, r, fmt.Sprintf("Can't save schedule because a schedule of %d %s matches already "+
 			"exists. Clear it first on the Settings page.", len(existingMatches), cachedMatchType))
 		return
 	}
 
 	for _, match := range cachedMatches {
-		err = db.CreateMatch(&match)
+		err = web.arena.Database.CreateMatch(&match)
 		if err != nil {
 			handleWebErr(w, err)
 			return
@@ -144,20 +144,20 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Back up the database.
-	err = db.Backup(eventSettings.Name, "post_scheduling")
+	err = web.arena.Database.Backup(web.arena.EventSettings.Name, "post_scheduling")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	if eventSettings.TbaPublishingEnabled && cachedMatchType != "practice" {
+	if web.arena.EventSettings.TbaPublishingEnabled && cachedMatchType != "practice" {
 		// Publish schedule to The Blue Alliance.
-		err = tbaClient.DeletePublishedMatches()
+		err = web.arena.TbaClient.DeletePublishedMatches()
 		if err != nil {
 			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
 			return
 		}
-		err = tbaClient.PublishMatches(db)
+		err = web.arena.TbaClient.PublishMatches(web.arena.Database)
 		if err != nil {
 			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
 			return
@@ -167,8 +167,8 @@ func ScheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/setup/schedule", 302)
 }
 
-func renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string) {
-	teams, err := db.GetAllTeams()
+func (web *Web) renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string) {
+	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -186,7 +186,7 @@ func renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string)
 		Matches          []model.Match
 		TeamFirstMatches map[int]string
 		ErrorMessage     string
-	}{eventSettings, cachedMatchType, cachedScheduleBlocks, len(teams), cachedMatches, cachedTeamFirstMatches,
+	}{web.arena.EventSettings, cachedMatchType, cachedScheduleBlocks, len(teams), cachedMatches, cachedTeamFirstMatches,
 		errorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
