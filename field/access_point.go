@@ -27,8 +27,6 @@ const (
 	blue3Vlan = 60
 )
 
-var templatesPath = "."
-
 type AccessPoint struct {
 	address  string
 	port     int
@@ -101,7 +99,7 @@ func generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *model.Team
 	}
 
 	// Generate the config file to be uploaded to the AP.
-	template, err := template.ParseFiles(filepath.Join(templatesPath, "templates/access_point.cfg"))
+	template, err := template.ParseFiles(filepath.Join(model.BaseDir, "templates/access_point.cfg"))
 	if err != nil {
 		return "", err
 	}

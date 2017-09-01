@@ -11,7 +11,7 @@ import (
 )
 
 func TestConfigureAccessPoint(t *testing.T) {
-	templatesPath = ".."
+	model.BaseDir = ".."
 
 	radioRe := regexp.MustCompile("option device 'radio0'")
 	ssidRe := regexp.MustCompile("option ssid '([-\\w ]+)'")

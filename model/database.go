@@ -25,7 +25,7 @@ const migrationsDir = "db/migrations"
 var BaseDir = "." // Mutable for testing
 
 type Database struct {
-	filename         string
+	Path             string
 	db               *sql.DB
 	eventSettingsMap *modl.DbMap
 	matchMap         *modl.DbMap
@@ -41,9 +41,9 @@ type Database struct {
 // migrations.
 func OpenDatabase(filename string) (*Database, error) {
 	// Find and run the migrations using goose. This also auto-creates the DB.
-	database := Database{filename: filename}
+	database := Database{Path: filename}
 	migrationsPath := filepath.Join(BaseDir, migrationsDir)
-	dbDriver := goose.DBDriver{"sqlite3", database.GetPath(), "github.com/mattn/go-sqlite3", &goose.Sqlite3Dialect{}}
+	dbDriver := goose.DBDriver{"sqlite3", database.Path, "github.com/mattn/go-sqlite3", &goose.Sqlite3Dialect{}}
 	dbConf := goose.DBConf{MigrationsDir: migrationsPath, Env: "prod", Driver: dbDriver}
 	target, err := goose.GetMostRecentDBVersion(migrationsPath)
 	if err != nil {
@@ -54,7 +54,7 @@ func OpenDatabase(filename string) (*Database, error) {
 		return nil, err
 	}
 
-	db, err := sql.Open("sqlite3", database.GetPath())
+	db, err := sql.Open("sqlite3", database.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (database *Database) Backup(eventName, reason string) error {
 	}
 	filename := fmt.Sprintf("%s/%s_%s_%s.db", backupsPath, strings.Replace(eventName, " ", "_", -1),
 		time.Now().Format("20060102150405"), reason)
-	src, err := os.Open(database.GetPath())
+	src, err := os.Open(database.Path)
 	if err != nil {
 		return err
 	}
@@ -91,10 +91,6 @@ func (database *Database) Backup(eventName, reason string) error {
 		return err
 	}
 	return nil
-}
-
-func (database *Database) GetPath() string {
-	return filepath.Join(BaseDir, database.filename)
 }
 
 // Sets up table-object associations.

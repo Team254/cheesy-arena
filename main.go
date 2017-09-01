@@ -5,6 +5,7 @@ package main
 
 import (
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/web"
 	"log"
 	"math/rand"
 	"time"
@@ -23,7 +24,7 @@ func main() {
 	}
 
 	// Start the web server in a separate goroutine.
-	web := NewWeb(arena)
+	web := web.NewWeb(arena)
 	go web.ServeWebInterface(httpPort)
 
 	// Run the arena state machine in the main thread.

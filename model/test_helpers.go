@@ -16,8 +16,8 @@ import (
 
 func SetupTestDb(t *testing.T, uniqueName string) *Database {
 	BaseDir = ".."
-	dbPath := fmt.Sprintf("%s_test.db", uniqueName)
-	os.Remove(filepath.Join(BaseDir, dbPath))
+	dbPath := filepath.Join(BaseDir, fmt.Sprintf("%s_test.db", uniqueName))
+	os.Remove(dbPath)
 	database, err := OpenDatabase(dbPath)
 	assert.Nil(t, err)
 	return database

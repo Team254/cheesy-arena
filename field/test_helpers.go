@@ -15,14 +15,14 @@ import (
 )
 
 func SetupTestArena(t *testing.T, uniqueName string) *Arena {
-	dbPath := fmt.Sprintf("%s_test.db", uniqueName)
-	os.Remove(filepath.Join(model.BaseDir, dbPath))
+	model.BaseDir = ".."
+	dbPath := filepath.Join(model.BaseDir, fmt.Sprintf("%s_test.db", uniqueName))
+	os.Remove(dbPath)
 	arena, err := NewArena(dbPath)
 	assert.Nil(t, err)
 	return arena
 }
 
 func setupTestArena(t *testing.T) *Arena {
-	model.BaseDir = ".."
 	return SetupTestArena(t, "field")
 }

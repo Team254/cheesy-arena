@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
 
 func TestMain(m *testing.M) {
-	schedulesDir = "../schedules"
 	os.Exit(m.Run())
 }
 
@@ -29,7 +29,7 @@ func TestNonExistentSchedule(t *testing.T) {
 }
 
 func TestMalformedSchedule(t *testing.T) {
-	filename := fmt.Sprintf("%s/6_1.csv", schedulesDir)
+	filename := fmt.Sprintf("%s/6_1.csv", filepath.Join(model.BaseDir, schedulesDir))
 	scheduleFile, _ := os.Create(filename)
 	defer os.Remove(filename)
 	scheduleFile.WriteString("1,0,2,0,3,0,4,0,5,0,6,0\n6,0,5,0,4,0,3,0,2,0,1,0\n")

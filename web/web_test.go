@@ -1,0 +1,76 @@
+// Copyright 2014 Team 254. All Rights Reserved.
+// Author: pat@patfairbank.com (Patrick Fairbank)
+
+package web
+
+import (
+	"github.com/Team254/cheesy-arena/field"
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+)
+
+func TestIndex(t *testing.T) {
+	web := setupTestWeb(t)
+
+	recorder := web.getHttpResponse("/")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Home - Untitled Event - Cheesy Arena")
+}
+
+func (web *Web) getHttpResponse(path string) *httptest.ResponseRecorder {
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", path, nil)
+	web.newHandler().ServeHTTP(recorder, req)
+	return recorder
+}
+
+func (web *Web) postHttpResponse(path string, body string) *httptest.ResponseRecorder {
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", path, strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+	web.newHandler().ServeHTTP(recorder, req)
+	return recorder
+}
+
+// Starts a real local HTTP server that can be used by more sophisticated tests.
+func (web *Web) startTestServer() (*httptest.Server, string) {
+	server := httptest.NewServer(web.newHandler())
+	return server, "ws" + server.URL[len("http"):]
+}
+
+// Receives the next websocket message and asserts that it is an error.
+func readWebsocketError(t *testing.T, ws *Websocket) string {
+	messageType, data, err := ws.Read()
+	if assert.Nil(t, err) && assert.Equal(t, "error", messageType) {
+		return data.(string)
+	}
+	return "error"
+}
+
+// Receives the next websocket message and asserts that it is of the given type.
+func readWebsocketType(t *testing.T, ws *Websocket, expectedMessageType string) interface{} {
+	messageType, message, err := ws.Read()
+	if assert.Nil(t, err) {
+		assert.Equal(t, expectedMessageType, messageType)
+	}
+	return message
+}
+
+func readWebsocketMultiple(t *testing.T, ws *Websocket, count int) map[string]interface{} {
+	messages := make(map[string]interface{})
+	for i := 0; i < count; i++ {
+		messageType, message, err := ws.Read()
+		if assert.Nil(t, err) {
+			messages[messageType] = message
+		}
+	}
+	return messages
+}
+
+func setupTestWeb(t *testing.T) *Web {
+	arena := field.SetupTestArena(t, "web")
+	return NewWeb(arena)
+}

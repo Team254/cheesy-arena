@@ -8,7 +8,6 @@ package model
 type EventSettings struct {
 	Id                         int
 	Name                       string
-	Code                       string
 	DisplayBackgroundColor     string
 	NumElimAlliances           int
 	SelectionRound2Order       string
@@ -39,7 +38,6 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 	if err != nil {
 		// Database record doesn't exist yet; create it now.
 		eventSettings.Name = "Untitled Event"
-		eventSettings.Code = "UE"
 		eventSettings.DisplayBackgroundColor = "#00ff00"
 		eventSettings.NumElimAlliances = 8
 		eventSettings.SelectionRound2Order = "L"
