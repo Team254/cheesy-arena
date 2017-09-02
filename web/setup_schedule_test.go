@@ -27,7 +27,7 @@ func TestSetupSchedule(t *testing.T) {
 		"startTime1=2014-01-02 09:56:00 AM&numMatches1=17&matchSpacingSec1=420&startTime2=2014-01-03 01:00:00 PM&" +
 		"numMatches2=40&matchSpacingSec2=360&matchType=qualification"
 	recorder = web.postHttpResponse("/setup/schedule/generate", postData)
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/schedule")
 	assert.Contains(t, recorder.Body.String(), "2014-01-01 09:48:00") // Last match of first block.
 	assert.Contains(t, recorder.Body.String(), "2014-01-02 11:48:00") // Last match of second block.
@@ -91,7 +91,7 @@ func TestSetupScheduleErrors(t *testing.T) {
 	postData = "numScheduleBlocks=1&startTime0=2014-01-01 09:00:00 AM&numMatches0=64&matchSpacingSec0=480&" +
 		"matchType=practice"
 	recorder = web.postHttpResponse("/setup/schedule/generate", postData)
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.postHttpResponse("/setup/schedule/save", postData)
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "schedule of 2 practice matches already exists")

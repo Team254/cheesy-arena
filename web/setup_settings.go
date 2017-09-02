@@ -80,7 +80,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 302)
+	http.Redirect(w, r, "/setup/settings", 303)
 }
 
 // Sends a copy of the event database file to the client as a download.
@@ -166,7 +166,7 @@ func (web *Web) restoreDbHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 302)
+	http.Redirect(w, r, "/setup/settings", 303)
 }
 
 // Deletes all data except for the team list.
@@ -202,7 +202,7 @@ func (web *Web) clearDbHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	http.Redirect(w, r, "/setup/settings", 302)
+	http.Redirect(w, r, "/setup/settings", 303)
 }
 
 func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string) {

@@ -92,7 +92,7 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 	}
 	cachedTeamFirstMatches = teamFirstMatches
 
-	http.Redirect(w, r, "/setup/schedule", 302)
+	http.Redirect(w, r, "/setup/schedule", 303)
 }
 
 // Publishes the schedule in the database to TBA
@@ -114,7 +114,7 @@ func (web *Web) scheduleRepublishPostHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	http.Redirect(w, r, "/setup/schedule", 302)
+	http.Redirect(w, r, "/setup/schedule", 303)
 }
 
 // Saves the generated schedule to the database.
@@ -163,7 +163,7 @@ func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	http.Redirect(w, r, "/setup/schedule", 302)
+	http.Redirect(w, r, "/setup/schedule", 303)
 }
 
 func (web *Web) renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string) {

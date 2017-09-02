@@ -85,7 +85,7 @@ func TestSetupTeams(t *testing.T) {
 
 	// Add some teams.
 	recorder = web.postHttpResponse("/setup/teams", "teamNumbers=254\r\nnotateam\r\n1114\r\n")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/teams")
 	assert.Contains(t, recorder.Body.String(), "2 teams")
 	assert.Contains(t, recorder.Body.String(), "The Cheesy Poofs")
@@ -93,7 +93,7 @@ func TestSetupTeams(t *testing.T) {
 
 	// Add another team.
 	recorder = web.postHttpResponse("/setup/teams", "teamNumbers=33")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/teams")
 	assert.Contains(t, recorder.Body.String(), "3 teams")
 	assert.Contains(t, recorder.Body.String(), "33")
@@ -103,19 +103,19 @@ func TestSetupTeams(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "The Cheesy Poofs")
 	recorder = web.postHttpResponse("/setup/teams/254/edit", "nickname=Teh Chezy Pofs")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/teams")
 	assert.Contains(t, recorder.Body.String(), "Teh Chezy Pofs")
 
 	// Delete a team.
 	recorder = web.postHttpResponse("/setup/teams/1114/delete", "")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/teams")
 	assert.Contains(t, recorder.Body.String(), "2 teams")
 
 	// Test clearing all teams.
 	recorder = web.postHttpResponse("/setup/teams/clear", "")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/teams")
 	assert.Contains(t, recorder.Body.String(), "0 teams")
 }
@@ -146,7 +146,7 @@ func TestSetupTeamsDisallowModification(t *testing.T) {
 
 	// Allow editing a team.
 	recorder = web.postHttpResponse("/setup/teams/254/edit", "nickname=Teh Chezy Pofs")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/teams")
 	assert.NotContains(t, recorder.Body.String(), "can't modify")
 	assert.Contains(t, recorder.Body.String(), "1 teams")
@@ -178,14 +178,14 @@ func TestSetupTeamsWpaKeys(t *testing.T) {
 	web.arena.Database.CreateTeam(team2)
 
 	recorder := web.getHttpResponse("/setup/teams/generate_wpa_keys?all=false")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	team1, _ = web.arena.Database.GetTeamById(254)
 	team2, _ = web.arena.Database.GetTeamById(1114)
 	assert.Equal(t, "aaaaaaaa", team1.WpaKey)
 	assert.Equal(t, 8, len(team2.WpaKey))
 
 	recorder = web.getHttpResponse("/setup/teams/generate_wpa_keys?all=true")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	team1, _ = web.arena.Database.GetTeamById(254)
 	team3, _ := web.arena.Database.GetTeamById(1114)
 	assert.NotEqual(t, "aaaaaaaa", team1.WpaKey)

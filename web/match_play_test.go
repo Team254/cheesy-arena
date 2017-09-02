@@ -66,7 +66,7 @@ func TestMatchPlayLoad(t *testing.T) {
 
 	// Load the match and check for the team numbers again.
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_play/%d/load", match.Id))
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/match_play")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "101")
@@ -78,7 +78,7 @@ func TestMatchPlayLoad(t *testing.T) {
 
 	// Load a test match.
 	recorder = web.getHttpResponse("/match_play/0/load")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/match_play")
 	assert.Equal(t, 200, recorder.Code)
 	assert.NotContains(t, recorder.Body.String(), "101")
@@ -102,7 +102,7 @@ func TestMatchPlayShowResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "No result found")
 	web.arena.Database.CreateMatchResult(&model.MatchResult{MatchId: match.Id})
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	assert.Equal(t, match.Id, web.arena.SavedMatch.Id)
 	assert.Equal(t, match.Id, web.arena.SavedMatchResult.MatchId)
 }

@@ -18,7 +18,7 @@ func TestSetupField(t *testing.T) {
 	assert.NotContains(t, recorder.Body.String(), "selected")
 
 	recorder = web.postHttpResponse("/setup/field", "displayId=12345&allianceStation=B1")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/field")
 	assert.Contains(t, recorder.Body.String(), "12345")
 	assert.Contains(t, recorder.Body.String(), "selected")
@@ -26,7 +26,7 @@ func TestSetupField(t *testing.T) {
 	// TODO(patrick): Replace with PLC mode.
 	/*
 		recorder = web.postHttpResponse("/setup/field/lights", "mode=strobe")
-		assert.Equal(t, 302, recorder.Code)
+		assert.Equal(t, 303, recorder.Code)
 		assert.Equal(t, "strobe", web.arena.Lights.currentMode)
 	*/
 }

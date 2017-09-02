@@ -65,7 +65,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	postBody := "redScoreJson={\"AutoMobility\":3}&blueScoreJson={\"Rotors\":3," +
 		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")
@@ -97,7 +97,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	postBody := "redScoreJson={\"AutoRotors\":1}&blueScoreJson={\"FuelHigh\":30," +
 		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")

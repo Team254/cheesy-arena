@@ -30,7 +30,7 @@ func TestSetupSettings(t *testing.T) {
 	// Change the settings and check the response.
 	recorder = web.postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&displayBackgroundColor=#ff00ff&"+
 		"numElimAlliances=16&tbaPublishingEnabled=on&tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/settings")
 	assert.Contains(t, recorder.Body.String(), "Chezy Champs")
 	assert.Contains(t, recorder.Body.String(), "#ff00ff")
@@ -62,7 +62,7 @@ func TestSetupSettingsClearDb(t *testing.T) {
 	web.arena.Database.CreateRanking(new(game.Ranking))
 	web.arena.Database.CreateAllianceTeam(new(model.AllianceTeam))
 	recorder := web.postHttpResponse("/setup/db/clear", "")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 
 	teams, _ := web.arena.Database.GetAllTeams()
 	assert.NotEmpty(t, teams)

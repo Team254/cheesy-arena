@@ -42,7 +42,7 @@ func (web *Web) fieldPostHandler(w http.ResponseWriter, r *http.Request) {
 	allianceStation := r.PostFormValue("allianceStation")
 	web.arena.AllianceStationDisplays[displayId] = allianceStation
 	web.arena.MatchLoadTeamsNotifier.Notify(nil)
-	http.Redirect(w, r, "/setup/field", 302)
+	http.Redirect(w, r, "/setup/field", 303)
 }
 
 // Force-reloads all the websocket-connected displays.
@@ -52,5 +52,5 @@ func (web *Web) fieldReloadDisplaysHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	web.arena.ReloadDisplaysNotifier.Notify(nil)
-	http.Redirect(w, r, "/setup/field", 302)
+	http.Redirect(w, r, "/setup/field", 303)
 }

@@ -59,7 +59,7 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	http.Redirect(w, r, "/setup/teams", 302)
+	http.Redirect(w, r, "/setup/teams", 303)
 }
 
 // Clears the team list.
@@ -78,7 +78,7 @@ func (web *Web) teamsClearHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	http.Redirect(w, r, "/setup/teams", 302)
+	http.Redirect(w, r, "/setup/teams", 303)
 }
 
 // Shows the page to edit a team's fields.
@@ -153,7 +153,7 @@ func (web *Web) teamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	http.Redirect(w, r, "/setup/teams", 302)
+	http.Redirect(w, r, "/setup/teams", 303)
 }
 
 // Removes a team from the team list.
@@ -183,7 +183,7 @@ func (web *Web) teamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	http.Redirect(w, r, "/setup/teams", 302)
+	http.Redirect(w, r, "/setup/teams", 303)
 }
 
 // Publishes the team list to the web.
@@ -197,7 +197,7 @@ func (web *Web) teamsPublishHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to publish teams: "+err.Error(), 500)
 		return
 	}
-	http.Redirect(w, r, "/setup/teams", 302)
+	http.Redirect(w, r, "/setup/teams", 303)
 }
 
 // Generates random WPA keys and saves them to the team models.
@@ -223,7 +223,7 @@ func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	http.Redirect(w, r, "/setup/teams", 302)
+	http.Redirect(w, r, "/setup/teams", 303)
 }
 
 func (web *Web) renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) {

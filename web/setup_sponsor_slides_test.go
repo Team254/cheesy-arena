@@ -21,14 +21,14 @@ func TestSetupSponsorSlides(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "Image.gif")
 
 	recorder = web.postHttpResponse("/setup/sponsor_slides", "action=delete&id=1")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/sponsor_slides")
 	assert.Equal(t, 200, recorder.Code)
 	assert.NotContains(t, recorder.Body.String(), "Sponsor Line 1")
 	assert.Contains(t, recorder.Body.String(), "Image.gif")
 
 	recorder = web.postHttpResponse("/setup/sponsor_slides", "action=save&line2=Sponsor Line 2 revised")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/sponsor_slides")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Sponsor Line 2 revised")
@@ -36,7 +36,7 @@ func TestSetupSponsorSlides(t *testing.T) {
 	assert.NotNil(t, sponsorSlide)
 
 	recorder = web.postHttpResponse("/setup/sponsor_slides", "action=save&image=Image2.gif&id=2")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/sponsor_slides")
 	assert.Equal(t, 200, recorder.Code)
 	assert.NotContains(t, recorder.Body.String(), "Image.gif")

@@ -30,6 +30,6 @@ func TestPitDisplayWebsocket(t *testing.T) {
 
 	// Check forced reloading as that is the only purpose the pit websocket serves.
 	recorder := web.getHttpResponse("/setup/field/reload_displays")
-	assert.Equal(t, 302, recorder.Code)
+	assert.Equal(t, 303, recorder.Code)
 	readWebsocketType(t, ws, "reload")
 }
