@@ -11,6 +11,8 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"log"
 	"net"
+	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -296,13 +298,31 @@ func (arena *Arena) listenForDriverStations() {
 			}()
 			continue
 		}
+
+		// Read the team number from the IP address to check for a station mismatch.
+		stationStatus := byte(0)
+		teamRe := regexp.MustCompile("\\d+\\.(\\d+)\\.(\\d+)\\.")
+		ipAddress, _, err := net.SplitHostPort(tcpConn.RemoteAddr().String())
+		teamDigits := teamRe.FindStringSubmatch(ipAddress)
+		teamDigit1, _ := strconv.Atoi(teamDigits[1])
+		teamDigit2, _ := strconv.Atoi(teamDigits[2])
+		stationTeamId := teamDigit1*100 + teamDigit2
+		if stationTeamId != teamId {
+			wrongAssignedStation := arena.getAssignedAllianceStation(stationTeamId)
+			if wrongAssignedStation != "" {
+				// The team is supposed to be in this match, but is plugged into the wrong station.
+				log.Printf("Team %d is in incorrect station %s.", teamId, wrongAssignedStation)
+				stationStatus = 1
+			}
+		}
+
 		var assignmentPacket [5]byte
 		assignmentPacket[0] = 0  // Packet size
 		assignmentPacket[1] = 3  // Packet size
 		assignmentPacket[2] = 25 // Packet type
 		log.Printf("Accepting connection from Team %d in station %s.", teamId, assignedStation)
 		assignmentPacket[3] = allianceStationPositionMap[assignedStation]
-		assignmentPacket[4] = 0
+		assignmentPacket[4] = stationStatus
 		_, err = tcpConn.Write(assignmentPacket[:])
 		if err != nil {
 			log.Printf("Error sending driver station assignment packet: %v", err)
