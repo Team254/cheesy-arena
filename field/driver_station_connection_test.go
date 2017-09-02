@@ -89,6 +89,25 @@ func TestEncodeControlPacket(t *testing.T) {
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(3), data[6])
 
+	// Check match numbers.
+	arena.CurrentMatch.Type = "practice"
+	arena.CurrentMatch.DisplayName = "42"
+	data = dsConn.encodeControlPacket(arena)
+	assert.Equal(t, byte(0), data[7])
+	assert.Equal(t, byte(42), data[8])
+	arena.CurrentMatch.Type = "qualification"
+	arena.CurrentMatch.DisplayName = "258"
+	data = dsConn.encodeControlPacket(arena)
+	assert.Equal(t, byte(1), data[7])
+	assert.Equal(t, byte(2), data[8])
+	arena.CurrentMatch.Type = "elimination"
+	arena.CurrentMatch.ElimRound = 8
+	arena.CurrentMatch.ElimGroup = 5
+	arena.CurrentMatch.ElimInstance = 2
+	data = dsConn.encodeControlPacket(arena)
+	assert.Equal(t, byte(3), data[7])
+	assert.Equal(t, byte(84), data[8])
+
 	// Check the countdown at different points during the match.
 	arena.MatchState = AutoPeriod
 	arena.MatchStartTime = time.Now().Add(-time.Duration(4 * time.Second))

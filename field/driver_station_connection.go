@@ -175,7 +175,7 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	// Alliance station.
 	packet[5] = allianceStationPositionMap[dsConn.AllianceStation]
 
-	// Match information.
+	// Match type.
 	match := arena.CurrentMatch
 	if match.Type == "practice" {
 		packet[6] = 1
@@ -186,10 +186,21 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	} else {
 		packet[6] = 0
 	}
-	// TODO(patrick): Implement if it ever becomes necessary; the official FMS has a different concept of
-	// match numbers so it's hard to translate.
-	packet[7] = 0 // Match number
-	packet[8] = 1 // Match number
+
+	// Match number.
+	if match.Type == "practice" || match.Type == "qualification" {
+		matchNumber, _ := strconv.Atoi(match.DisplayName)
+		packet[7] = byte(matchNumber >> 8)
+		packet[8] = byte(matchNumber & 0xff)
+	} else if match.Type == "elimination" {
+		// E.g. Quarter-final 3, match 1 will be numbered 431.
+		matchNumber := match.ElimRound*100 + match.ElimGroup*10 + match.ElimInstance
+		packet[7] = byte(matchNumber >> 8)
+		packet[8] = byte(matchNumber & 0xff)
+	} else {
+		packet[7] = 0
+		packet[8] = 1
+	}
 	packet[9] = 1 // Match repeat number
 
 	// Current time.
