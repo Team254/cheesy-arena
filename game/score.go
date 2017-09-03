@@ -74,3 +74,20 @@ func (score *Score) Summarize(opponentFouls []Foul, matchType string) *ScoreSumm
 
 	return summary
 }
+
+func (score *Score) Equals(other *Score) bool {
+	if score.AutoMobility != other.AutoMobility || score.AutoRotors != other.AutoRotors ||
+		score.AutoFuelLow != other.AutoFuelLow || score.AutoFuelHigh != other.AutoFuelHigh ||
+		score.Rotors != other.Rotors || score.FuelLow != other.FuelLow || score.FuelHigh != other.FuelHigh ||
+		score.Takeoffs != other.Takeoffs || score.ElimDq != other.ElimDq || len(score.Fouls) != len(other.Fouls) {
+		return false
+	}
+
+	for i, foul := range score.Fouls {
+		if foul != other.Fouls[i] {
+			return false
+		}
+	}
+
+	return true
+}

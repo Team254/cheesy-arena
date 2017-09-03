@@ -71,3 +71,83 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 0, redScore.Summarize(blueScore.Fouls, "elimination").Score)
 	assert.Equal(t, 0, blueScore.Summarize(redScore.Fouls, "elimination").Score)
 }
+
+func TestScoreEquals(t *testing.T) {
+	score1 := TestScore1()
+	score2 := TestScore1()
+	assert.True(t, score1.Equals(score2))
+	assert.True(t, score2.Equals(score1))
+
+	score3 := TestScore2()
+	assert.False(t, score1.Equals(score3))
+	assert.False(t, score3.Equals(score1))
+
+	score2.AutoMobility += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.AutoRotors += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.AutoFuelLow += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.AutoFuelHigh += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.Rotors += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.FuelLow += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.FuelHigh += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.Takeoffs += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.Fouls = []Foul{}
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.Fouls[0].RuleNumber = "G1000"
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.Fouls[0].IsTechnical = !score2.Fouls[0].IsTechnical
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.Fouls[0].TeamId += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.Fouls[0].TimeInMatchSec += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.ElimDq = !score2.ElimDq
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+}

@@ -5,9 +5,16 @@
 
 package game
 
+import "time"
+
 var MatchTiming = struct {
 	AutoDurationSec    int
 	PauseDurationSec   int
 	TeleopDurationSec  int
 	EndgameTimeLeftSec int
 }{15, 2, 135, 30}
+
+func GetMatchEndTime(matchStartTime time.Time) time.Time {
+	return matchStartTime.Add(time.Duration(MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec+
+		MatchTiming.TeleopDurationSec) * time.Second)
+}
