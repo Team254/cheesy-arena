@@ -20,7 +20,7 @@ func TestSetupSchedule(t *testing.T) {
 	// Check the default setting values.
 	recorder := web.getHttpResponse("/setup/schedule")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "360") // The default match spacing.
+	assert.Contains(t, recorder.Body.String(), "addBlock();")
 
 	// Submit a schedule for generation.
 	postData := "numScheduleBlocks=3&startTime0=2014-01-01 09:00:00 AM&numMatches0=7&matchSpacingSec0=480&" +

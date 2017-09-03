@@ -27,10 +27,6 @@ func (web *Web) scheduleGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(cachedScheduleBlocks) == 0 {
-		tomorrow := time.Now().AddDate(0, 0, 1)
-		location, _ := time.LoadLocation("Local")
-		startTime := time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 9, 0, 0, 0, location)
-		cachedScheduleBlocks = append(cachedScheduleBlocks, tournament.ScheduleBlock{startTime, 10, 360})
 		cachedMatchType = "practice"
 	}
 	web.renderSchedule(w, r, "")

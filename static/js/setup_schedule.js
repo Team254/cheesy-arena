@@ -4,17 +4,22 @@
 // Client-side methods for the schedule generation page.
 
 var blockTemplate = Handlebars.compile($("#blockTemplate").html());
-var lastBlockNumber = 0;
 var blockMatches = {};
 
 // Adds a new scheduling block to the page.
 var addBlock = function(startTime, numMatches, matchSpacingSec) {
+  var lastBlockNumber = getLastBlockNumber();
   if (!startTime) {
-    // Start the next block where the last one left off and use the same spacing.
-    var lastStartTime = moment(Date.parse($("#startTime" + lastBlockNumber).val()));
-    var lastNumMatches = blockMatches[lastBlockNumber];
-    matchSpacingSec = getMatchSpacingSec(lastBlockNumber);
-    startTime = moment(lastStartTime + lastNumMatches * matchSpacingSec * 1000);
+    if ($.isEmptyObject(blockMatches)) {
+      matchSpacingSec = 360;
+      startTime = moment().add(1, "hour").startOf("hour");
+    } else {
+      // Start the next block where the last one left off and use the same spacing.
+      var lastStartTime = moment($("#startTime" + lastBlockNumber).val(), "YYYY-MM-DD hh:mm:ss A");
+      var lastNumMatches = blockMatches[lastBlockNumber];
+      matchSpacingSec = getMatchSpacingSec(lastBlockNumber);
+      startTime = moment(lastStartTime + lastNumMatches * matchSpacingSec * 1000);
+    }
     numMatches = 10;
   }
   var endTime = moment(startTime + numMatches * matchSpacingSec * 1000);
@@ -31,8 +36,8 @@ var addBlock = function(startTime, numMatches, matchSpacingSec) {
 
 // Updates the per-block and global schedule statistics.
 var updateBlock = function(blockNumber) {
-  var startTime = moment(Date.parse($("#startTime" + blockNumber).val()));
-  var endTime = moment(Date.parse($("#endTime" + blockNumber).val()));
+  var startTime = moment($("#startTime" + blockNumber).val(), "YYYY-MM-DD hh:mm:ss A");
+  var endTime = moment($("#endTime" + blockNumber).val(), "YYYY-MM-DD hh:mm:ss A");
   var matchSpacingSec = getMatchSpacingSec(blockNumber);
   var numMatches = Math.floor((endTime - startTime) / matchSpacingSec / 1000);
   var actualEndTime = moment(startTime + numMatches * matchSpacingSec * 1000).format("hh:mm:ss A");
@@ -96,4 +101,15 @@ var generateSchedule = function() {
 var getMatchSpacingSec = function(blockNumber) {
   var matchSpacingMinSec = $("#matchSpacingMinSec" + blockNumber).val().split(":");
   return parseInt(matchSpacingMinSec[0]) * 60 + parseInt(matchSpacingMinSec[1]);
+};
+
+var getLastBlockNumber = function() {
+  var max = 0;
+  $.each(blockMatches, function(k, v) {
+    var number = parseInt(k);
+    if (number > max) {
+      max = number;
+    }
+  });
+  return max;
 };
