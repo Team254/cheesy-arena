@@ -17,6 +17,11 @@ import (
 	"strconv"
 )
 
+const (
+	tbaBaseUrl = "https://www.thebluealliance.com"
+	tbaAuthKey = "MAApv9MCuKY9MSFkXLuzTSYBCdosboxDq8Q3ujUE2Mn8PD3Nmv64uczu5Lvy0NQ3"
+)
+
 type TbaClient struct {
 	BaseUrl         string
 	eventCode       string
@@ -24,8 +29,6 @@ type TbaClient struct {
 	secret          string
 	eventNamesCache map[string]string
 }
-
-const tbaBaseUrl = "https://www.thebluealliance.com"
 
 type TbaMatch struct {
 	CompLevel      string                        `json:"comp_level"`
@@ -84,27 +87,24 @@ type TbaRankings struct {
 }
 
 type TbaTeam struct {
-	Website    string `json:"website"`
-	Name       string `json:"name"`
-	Locality   string `json:"locality"`
-	RookieYear int    `json:"rookie_year"`
-	Reigon     string `json:"region"`
 	TeamNumber int    `json:"team_number"`
-	Location   string `json:"location"`
-	Key        string `json:"key"`
-	Country    string `json:"country_name"`
+	Name       string `json:"name"`
 	Nickname   string `json:"nickname"`
+	City       string `json:"city"`
+	StateProv  string `json:"state_prov"`
+	Country    string `json:"country"`
+	RookieYear int    `json:"rookie_year"`
 }
 
 type TbaRobot struct {
-	Name string `json:"name"`
+	RobotName string `json:"robot_name"`
+	Year      int    `json:"year"`
 }
 
 type TbaAward struct {
 	Name      string `json:"name"`
 	EventKey  string `json:"event_key"`
 	Year      int    `json:"year"`
-	AwardType int    `json:"award_type"`
 	EventName string
 }
 
@@ -118,7 +118,7 @@ func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
 }
 
 func (client *TbaClient) GetTeam(teamNumber int) (*TbaTeam, error) {
-	path := fmt.Sprintf("/api/v2/team/%s", getTbaTeam(teamNumber))
+	path := fmt.Sprintf("/api/v3/team/%s", getTbaTeam(teamNumber))
 	resp, err := client.getRequest(path)
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (client *TbaClient) GetTeam(teamNumber int) (*TbaTeam, error) {
 }
 
 func (client *TbaClient) GetRobotName(teamNumber int, year int) (string, error) {
-	path := fmt.Sprintf("/api/v2/team/%s/history/robots", getTbaTeam(teamNumber))
+	path := fmt.Sprintf("/api/v3/team/%s/robots", getTbaTeam(teamNumber))
 	resp, err := client.getRequest(path)
 	if err != nil {
 		return "", err
@@ -151,19 +151,21 @@ func (client *TbaClient) GetRobotName(teamNumber int, year int) (string, error) 
 		return "", err
 	}
 
-	var robots map[string]TbaRobot
+	var robots []*TbaRobot
 	err = json.Unmarshal(body, &robots)
 	if err != nil {
 		return "", err
 	}
-	if robotName, ok := robots[strconv.Itoa(year)]; ok {
-		return robotName.Name, nil
+	for _, robot := range robots {
+		if robot.Year == year {
+			return robot.RobotName, nil
+		}
 	}
 	return "", nil
 }
 
 func (client *TbaClient) GetTeamAwards(teamNumber int) ([]*TbaAward, error) {
-	path := fmt.Sprintf("/api/v2/team/%s/history/awards", getTbaTeam(teamNumber))
+	path := fmt.Sprintf("/api/v3/team/%s/awards", getTbaTeam(teamNumber))
 	resp, err := client.getRequest(path)
 	if err != nil {
 		return nil, err
@@ -367,7 +369,7 @@ func (client *TbaClient) DeletePublishedMatches() error {
 }
 
 func (client *TbaClient) getEventName(eventCode string) (string, error) {
-	path := fmt.Sprintf("/api/v2/event/%s", eventCode)
+	path := fmt.Sprintf("/api/v3/event/%s", eventCode)
 	resp, err := client.getRequest(path)
 	if err != nil {
 		return "", err
@@ -404,7 +406,7 @@ func (client *TbaClient) getRequest(path string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("X-TBA-App-Id", "cheesy-arena:cheesy-fms:v0.1")
+	req.Header.Set("X-TBA-Auth-Key", tbaAuthKey)
 	return httpClient.Do(req)
 }
 

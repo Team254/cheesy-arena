@@ -25,23 +25,23 @@ func TestSetupTeams(t *testing.T) {
 	teamInfoBody := `{
 		"website": "http://www.team254.com",
 		"name": "NASA Ames Research Center",
-		"locality": "San Jose",
+		"city": "San Jose",
 		"rookie_year": 1999,
-		"region": "CA",
+		"state_prov": "CA",
 		"team_number": 254,
 		"location": "San Jose, CA, USA",
 		"key": "frc254",
-		"country_name": "USA",
+		"country": "USA",
 		"nickname": "The Cheesy Poofs"
 	}`
-	teamRobotsBody := `{
-		"2017": {
+	teamRobotsBody := `[
+		{
 			"team_key": "frc33",
 			"name": "Buzz 22",
 			"key": "frc33_2017",
 			"year": 2017
 		}
-	}`
+	]`
 	teamAwardsBody := `[{
 		"event_key": "2014cmp",
 		"award_type": 1,
@@ -68,9 +68,9 @@ func TestSetupTeams(t *testing.T) {
 	}]`
 	eventBody := `{ "name": "Championship" }`
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.RequestURI, "history/robots") {
+		if strings.Contains(r.RequestURI, "robots") {
 			fmt.Fprintln(w, teamRobotsBody)
-		} else if strings.Contains(r.RequestURI, "history/awards") {
+		} else if strings.Contains(r.RequestURI, "awards") {
 			fmt.Fprintln(w, teamAwardsBody)
 		} else if strings.Contains(r.RequestURI, "team") {
 			fmt.Fprintln(w, teamInfoBody)

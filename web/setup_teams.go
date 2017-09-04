@@ -264,7 +264,6 @@ func (web *Web) getOfficialTeamInfo(teamId int) (*model.Team, error) {
 	// Create the team variable that stores the result
 	var team model.Team
 
-	// If team info download is enabled, download the current teams data (caching isn't easy with the new paging system in the api)
 	if web.arena.EventSettings.TBADownloadEnabled {
 		tbaTeam, err := web.arena.TbaClient.GetTeam(teamId)
 		if err != nil {
@@ -287,16 +286,18 @@ func (web *Web) getOfficialTeamInfo(teamId int) (*model.Team, error) {
 
 			var accomplishmentsBuffer bytes.Buffer
 
-			// Generate accomplishments string
-			for _, award := range recentAwards {
+			// Generate string of recent awards in reverse chronological order.
+			for i := len(recentAwards) - 1; i >= 0; i-- {
+				award := recentAwards[i]
 				if time.Now().Year()-award.Year <= 2 {
-					accomplishmentsBuffer.WriteString(fmt.Sprintf("<p>%d %s - %s</p>", award.Year, award.EventName, award.Name))
+					accomplishmentsBuffer.WriteString(fmt.Sprintf("<p>%d %s - %s</p>", award.Year, award.EventName,
+						award.Name))
 				}
 			}
 
 			// Use those variables to make a team object
-			team = model.Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname, City: tbaTeam.Locality,
-				StateProv: tbaTeam.Reigon, Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear,
+			team = model.Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname, City: tbaTeam.City,
+				StateProv: tbaTeam.StateProv, Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear,
 				RobotName: robotName, Accomplishments: accomplishmentsBuffer.String()}
 		}
 	} else {
