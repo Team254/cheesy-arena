@@ -39,7 +39,6 @@ Cheesy Arena To-Do List
 * Generate more schedules and find an automated way to evaluate them
 * Clean up sponsor carousel JavaScript and make it load new slides asynchronously without needing a reload of the audience display page
 * Refactor websockets to reduce code repetition between displays with similar functions
-* Refactor to reduce usage of global variables
 * Show non-modal dialog with websocket-returned errors
 * JavaScript unit testing
 * Fix Handlebars and golang html/template confict

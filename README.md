@@ -56,10 +56,13 @@ SQLite3 is used as the datastore, and making backups or transferring data from o
 
 Schedule generation is fast because pregenerated schedules are included with the code. Each schedule contains a certain number of matches per team for placeholder teams 1 through N, so generating the actual match schedule becomes a simple exercise in permuting the mapping of real teams to placeholder teams. The pregenerated schedules are checked into this repository and can be vetted in advance of any events for deviations from the randomness (and other) requirements.
 
-Cheesy Arena includes support for, but doesn't require, networking hardware similar to that used in official FRC events. Teams are issued their own SSIDs and WPA keys, and when connected to Cheesy Arena are isolated to a VLAN which prevents any communication other than between the driver station, robot, and event server. The network hardware is configured via Telnet commands for the new set of teams when each mach is loaded.
+Cheesy Arena includes support for, but doesn't require, networking hardware similar to that used in official FRC events. Teams are issued their own SSIDs and WPA keys, and when connected to Cheesy Arena are isolated to a VLAN which prevents any communication other than between the driver station, robot, and event server. The network hardware is configured via SSH and Telnet commands for the new set of teams when each mach is loaded.
+
+## PLC integration
+Cheesy Arena has the ability to integrate with an Allen-Bradley PLC setup similar to the one that FIRST uses, to read field sensors and control lights and motors. The PLC hardware travels with the Chezy Champs field.
 
 ## LED hardware
-Due to the prohibitive cost of the LEDs and LED controllers used on official fields, a custom solution was developed for Chezy Champs using consumer-grade LED strips and embedded microcontrollers. The bill of materials, control board schematics, and embedded source code will be provided in an upcoming release.
+Due to the prohibitive cost of the LEDs and LED controllers used on official fields, a custom solution was developed for Chezy Champs using consumer-grade LED strips and embedded microcontrollers.
 
 ## Advanced networking
 See the [Advanced Networking wiki page](https://github.com/Team254/cheesy-arena/wiki/Advanced-Networking) for instructions on what equipment to obtain and how to configure it in order to support advanced network security.
