@@ -37,65 +37,106 @@
   </div>
   <div class="col-lg-4">
     <div class="well">
-      <form class="" action="/setup/field/lights" method="POST">
-        Light Control
+      <legend>PLC</legend>
+      <form class="" action="/setup/field/test" method="POST">
         <div class="form-group">
           <div class="radio">
             <label>
-              <input type="radio" name="mode" value="off" onclick="this.form.submit()"
-                  {{if eq .LightsMode "off"}}checked{{end}}>Off
+              <input type="radio" name="mode" value="" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode ""}}checked{{end}}>Off
             </label>
           </div>
           <div class="radio">
             <label>
-              <input type="radio" name="mode" value="all_white" onclick="this.form.submit()"
-                  {{if eq .LightsMode "all_white"}}checked{{end}}>All White
+              <input type="radio" name="mode" value="boiler" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "boiler"}}checked{{end}}>Boilers On
             </label>
           </div>
           <div class="radio">
             <label>
-              <input type="radio" name="mode" value="all_red" onclick="this.form.submit()"
-                  {{if eq .LightsMode "all_red"}}checked{{end}}>All Red
+              <input type="radio" name="mode" value="rotor1" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "rotor1"}}checked{{end}}>1 Rotor/Touchpad 1 On
             </label>
           </div>
           <div class="radio">
             <label>
-              <input type="radio" name="mode" value="all_blue" onclick="this.form.submit()"
-                  {{if eq .LightsMode "all_blue"}}checked{{end}}>All Blue
+              <input type="radio" name="mode" value="rotor2" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "rotor2"}}checked{{end}}>2 Rotors/Touchpad 2 On
             </label>
           </div>
           <div class="radio">
             <label>
-              <input type="radio" name="mode" value="all_green" onclick="this.form.submit()"
-                  {{if eq .LightsMode "all_green"}}checked{{end}}>All Green
+              <input type="radio" name="mode" value="rotor3" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "rotor3"}}checked{{end}}>3 Rotors/Touchpad 3 On
             </label>
           </div>
           <div class="radio">
             <label>
-              <input type="radio" name="mode" value="strobe" onclick="this.form.submit()"
-                  {{if eq .LightsMode "strobe"}}checked{{end}}>Strobe
+              <input type="radio" name="mode" value="rotor4" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "rotor4"}}checked{{end}}>4 Rotors On
             </label>
           </div>
           <div class="radio">
             <label>
-              <input type="radio" name="mode" value="fade_red" onclick="this.form.submit()"
-                  {{if eq .LightsMode "fade_red"}}checked{{end}}>Fade Red
+              <input type="radio" name="mode" value="red" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "red"}}checked{{end}}>All Red On
             </label>
           </div>
           <div class="radio">
             <label>
-              <input type="radio" name="mode" value="fade_blue" onclick="this.form.submit()"
-                  {{if eq .LightsMode "fade_blue"}}checked{{end}}>Fade Blue
+              <input type="radio" name="mode" value="blue" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "blue"}}checked{{end}}>All Blue On
             </label>
           </div>
           <div class="radio">
             <label>
-              <input type="radio" name="mode" value="fade_red_blue" onclick="this.form.submit()"
-                  {{if eq .LightsMode "fade_red_blue"}}checked{{end}}>Fade Red/Blue
+              <input type="radio" name="mode" value="flash" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "flash"}}checked{{end}}>Flash Touchpads
             </label>
           </div>
         </div>
       </form>
+      <div class="row">
+        <div class="col-lg-4">
+          <table>
+            <tr>
+              <th>Inputs</th>
+            </tr>
+            {{range $i, $value := .Inputs}}
+            <tr>
+              <td>{{$i}}</td>
+              <td>{{$value}}</td>
+            </tr>
+            {{end}}
+          </table>
+        </div>
+        <div class="col-lg-4">
+          <table>
+            <tr>
+              <th>Counters</th>
+            </tr>
+            {{range $i, $value := .Counters}}
+            <tr>
+              <td>{{$i}}</td>
+              <td>{{$value}}</td>
+            </tr>
+            {{end}}
+          </table>
+        </div>
+        <div class="col-lg-4">
+          <table>
+            <tr>
+              <th>Coils</th>
+            </tr>
+            {{range $i, $value := .Coils}}
+            <tr>
+              <td>{{$i}}</td>
+              <td>{{$value}}</td>
+            </tr>
+            {{end}}
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>

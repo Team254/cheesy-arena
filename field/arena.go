@@ -36,6 +36,7 @@ type Arena struct {
 	EventSettings                  *model.EventSettings
 	accessPoint                    *AccessPoint
 	networkSwitch                  *NetworkSwitch
+	Plc                            Plc
 	TbaClient                      *partner.TbaClient
 	StemTvClient                   *partner.StemTvClient
 	AllianceStations               map[string]*AllianceStation
@@ -54,6 +55,8 @@ type Arena struct {
 	AllianceStationDisplays        map[string]string
 	AllianceStationDisplayScreen   string
 	MuteMatchSounds                bool
+	FieldTestMode                  string
+	matchAborted                   bool
 	matchStateNotifier             *Notifier
 	MatchTimeNotifier              *Notifier
 	RobotStatusNotifier            *Notifier
@@ -73,13 +76,15 @@ type ArenaStatus struct {
 	AllianceStations map[string]*AllianceStation
 	MatchState       int
 	CanStartMatch    bool
+	PlcIsHealthy     bool
+	FieldEstop       bool
 }
 
 type AllianceStation struct {
-	DsConn        *DriverStationConnection
-	EmergencyStop bool
-	Bypass        bool
-	Team          *model.Team
+	DsConn *DriverStationConnection
+	Estop  bool
+	Bypass bool
+	Team   *model.Team
 }
 
 // Creates the arena and sets it to its initial state.
@@ -145,6 +150,7 @@ func (arena *Arena) LoadSettings() error {
 	// Initialize the components that depend on settings.
 	arena.accessPoint = NewAccessPoint(settings.ApAddress, settings.ApUsername, settings.ApPassword)
 	arena.networkSwitch = NewNetworkSwitch(settings.SwitchAddress, settings.SwitchPassword)
+	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.StemTvClient = partner.NewStemTvClient(settings.StemTvEventCode)
 
@@ -285,6 +291,7 @@ func (arena *Arena) AbortMatch() error {
 		return fmt.Errorf("Cannot abort match when it is not in progress.")
 	}
 	arena.MatchState = PostMatch
+	arena.matchAborted = true
 	arena.AudienceDisplayScreen = "blank"
 	arena.AudienceDisplayNotifier.Notify(nil)
 	if !arena.MuteMatchSounds {
@@ -299,6 +306,7 @@ func (arena *Arena) ResetMatch() error {
 		return fmt.Errorf("Cannot reset match while it is in progress.")
 	}
 	arena.MatchState = PreMatch
+	arena.matchAborted = false
 	arena.AllianceStations["R1"].Bypass = false
 	arena.AllianceStations["R2"].Bypass = false
 	arena.AllianceStations["R3"].Bypass = false
@@ -342,6 +350,8 @@ func (arena *Arena) Update() {
 		if !arena.MuteMatchSounds {
 			arena.PlaySoundNotifier.Notify("match-start")
 		}
+		arena.FieldTestMode = ""
+		arena.Plc.ResetCounts()
 	case AutoPeriod:
 		auto = true
 		enabled = true
@@ -417,6 +427,10 @@ func (arena *Arena) Update() {
 		arena.sendDsPacket(auto, enabled)
 		arena.RobotStatusNotifier.Notify(nil)
 	}
+
+	// Handle field sensors/lights/motors.
+	arena.handlePlcInput()
+	arena.handlePlcOutput()
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -425,6 +439,7 @@ func (arena *Arena) Run() {
 	go arena.listenForDriverStations()
 	go arena.listenForDsUdpPackets()
 	go arena.monitorBandwidth()
+	go arena.Plc.Run()
 
 	for {
 		arena.Update()
@@ -445,7 +460,8 @@ func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
 }
 
 func (arena *Arena) GetStatus() *ArenaStatus {
-	return &ArenaStatus{arena.AllianceStations, arena.MatchState, arena.checkCanStartMatch() == nil}
+	return &ArenaStatus{arena.AllianceStations, arena.MatchState, arena.checkCanStartMatch() == nil,
+		arena.Plc.IsHealthy, arena.Plc.GetFieldEstop()}
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -513,7 +529,7 @@ func (arena *Arena) checkCanStartMatch() error {
 		return fmt.Errorf("Cannot start match while there is a match still in progress or with results pending.")
 	}
 	for _, allianceStation := range arena.AllianceStations {
-		if allianceStation.EmergencyStop {
+		if allianceStation.Estop {
 			return fmt.Errorf("Cannot start match while an emergency stop is active.")
 		}
 		if !allianceStation.Bypass {
@@ -522,6 +538,16 @@ func (arena *Arena) checkCanStartMatch() error {
 			}
 		}
 	}
+
+	if arena.EventSettings.PlcAddress != "" {
+		if !arena.Plc.IsHealthy {
+			return fmt.Errorf("Cannot start match while PLC is not healthy.")
+		}
+		if arena.Plc.GetFieldEstop() {
+			return fmt.Errorf("Cannot start match while field emergency stop is active.")
+		}
+	}
+
 	return nil
 }
 
@@ -530,7 +556,8 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 		dsConn := allianceStation.DsConn
 		if dsConn != nil {
 			dsConn.Auto = auto
-			dsConn.Enabled = enabled && !allianceStation.EmergencyStop && !allianceStation.Bypass
+			dsConn.Enabled = enabled && !allianceStation.Estop && !allianceStation.Bypass
+			dsConn.Estop = allianceStation.Estop
 			err := dsConn.update(arena)
 			if err != nil {
 				log.Printf("Unable to send driver station packet for team %d.", allianceStation.Team.Id)
@@ -550,4 +577,138 @@ func (arena *Arena) getAssignedAllianceStation(teamId int) string {
 	}
 
 	return ""
+}
+
+// Updates the score given new input information from the field PLC.
+func (arena *Arena) handlePlcInput() {
+	// Handle emergency stops.
+	if arena.Plc.GetFieldEstop() && arena.MatchTimeSec() > 0 && !arena.matchAborted {
+		arena.AbortMatch()
+	}
+	redEstops, blueEstops := arena.Plc.GetTeamEstops()
+	arena.handleEstop("R1", redEstops[0])
+	arena.handleEstop("R2", redEstops[1])
+	arena.handleEstop("R3", redEstops[2])
+	arena.handleEstop("B1", blueEstops[0])
+	arena.handleEstop("B2", blueEstops[1])
+	arena.handleEstop("B3", blueEstops[2])
+
+	matchStartTime := arena.MatchStartTime
+	currentTime := time.Now()
+	if arena.MatchState == PreMatch {
+		// Set a match start time in the future.
+		matchStartTime = currentTime.Add(time.Second)
+	}
+	matchEndTime := game.GetMatchEndTime(matchStartTime)
+	inGracePeriod := currentTime.Before(matchEndTime.Add(game.BoilerTeleopGracePeriodSec * time.Second))
+	if arena.MatchState == PostMatch && (!inGracePeriod || arena.matchAborted) {
+		// Don't do anything if we're past the end of the match, otherwise we may overwrite manual edits.
+		return
+	}
+
+	redScore := &arena.RedRealtimeScore.CurrentScore
+	oldRedScore := *redScore
+	blueScore := &arena.BlueRealtimeScore.CurrentScore
+	oldBlueScore := *blueScore
+
+	// Handle balls.
+	redLow, redHigh, blueLow, blueHigh := arena.Plc.GetBalls()
+	arena.RedRealtimeScore.boiler.UpdateState(redLow, redHigh, matchStartTime, currentTime)
+	redScore.AutoFuelLow = arena.RedRealtimeScore.boiler.AutoFuelLow
+	redScore.AutoFuelHigh = arena.RedRealtimeScore.boiler.AutoFuelHigh
+	redScore.FuelLow = arena.RedRealtimeScore.boiler.FuelLow
+	redScore.FuelHigh = arena.RedRealtimeScore.boiler.FuelHigh
+	arena.BlueRealtimeScore.boiler.UpdateState(blueLow, blueHigh, matchStartTime, currentTime)
+	blueScore.AutoFuelLow = arena.BlueRealtimeScore.boiler.AutoFuelLow
+	blueScore.AutoFuelHigh = arena.BlueRealtimeScore.boiler.AutoFuelHigh
+	blueScore.FuelLow = arena.BlueRealtimeScore.boiler.FuelLow
+	blueScore.FuelHigh = arena.BlueRealtimeScore.boiler.FuelHigh
+
+	// Handle rotors.
+	redRotors, blueRotors := arena.Plc.GetRotors()
+	arena.RedRealtimeScore.rotorSet.UpdateState(redRotors, matchStartTime, currentTime)
+	redScore.AutoRotors = arena.RedRealtimeScore.rotorSet.AutoRotors
+	redScore.Rotors = arena.RedRealtimeScore.rotorSet.Rotors
+	arena.BlueRealtimeScore.rotorSet.UpdateState(blueRotors, matchStartTime, currentTime)
+	blueScore.AutoRotors = arena.BlueRealtimeScore.rotorSet.AutoRotors
+	blueScore.Rotors = arena.BlueRealtimeScore.rotorSet.Rotors
+
+	// Handle touchpads.
+	redTouchpads, blueTouchpads := arena.Plc.GetTouchpads()
+	for i := 0; i < 3; i++ {
+		arena.RedRealtimeScore.touchpads[i].UpdateState(redTouchpads[i], currentTime)
+		arena.BlueRealtimeScore.touchpads[i].UpdateState(blueTouchpads[i], currentTime)
+	}
+	redScore.Takeoffs = game.CountTouchpads(&arena.RedRealtimeScore.touchpads, matchStartTime, currentTime)
+	blueScore.Takeoffs = game.CountTouchpads(&arena.BlueRealtimeScore.touchpads, matchStartTime, currentTime)
+
+	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
+		arena.RealtimeScoreNotifier.Notify(nil)
+	}
+}
+
+// Writes light/motor commands to the field PLC.
+func (arena *Arena) handlePlcOutput() {
+	if arena.FieldTestMode != "" {
+		// PLC output is being manually overridden.
+		if arena.FieldTestMode == "flash" {
+			arena.Plc.SetTouchpadLights([3]bool{arena.Plc.BlinkState, arena.Plc.BlinkState, arena.Plc.BlinkState},
+				[3]bool{arena.Plc.BlinkState, arena.Plc.BlinkState, arena.Plc.BlinkState})
+		}
+		return
+	}
+
+	// Handle balls.
+	matchEndTime := game.GetMatchEndTime(arena.MatchStartTime)
+	inGracePeriod := time.Now().Before(matchEndTime.Add(game.BoilerTeleopGracePeriodSec * time.Second))
+	if arena.MatchTimeSec() > 0 || arena.MatchState == PostMatch && !arena.matchAborted && inGracePeriod {
+		arena.Plc.SetBoilerMotors(true)
+	} else {
+		arena.Plc.SetBoilerMotors(false)
+	}
+
+	// Handle rotors.
+	redScore := &arena.RedRealtimeScore.CurrentScore
+	blueScore := &arena.BlueRealtimeScore.CurrentScore
+	if arena.MatchTimeSec() > 0 {
+		arena.Plc.SetRotorMotors(redScore.AutoRotors+redScore.Rotors, blueScore.AutoRotors+blueScore.Rotors)
+	} else {
+		arena.Plc.SetRotorMotors(0, 0)
+	}
+	arena.Plc.SetRotorLights(redScore.AutoRotors, blueScore.AutoRotors)
+
+	// Handle touchpads.
+	var redTouchpads, blueTouchpads [3]bool
+	currentTime := time.Now()
+	matchStartTime := arena.MatchStartTime
+	blinkStopTime := matchEndTime.Add(-time.Duration(game.MatchTiming.EndgameTimeLeftSec-2) * time.Second)
+	if arena.MatchState == EndgamePeriod && currentTime.Before(blinkStopTime) {
+		// Blink the touchpads at the endgame start point.
+		for i := 0; i < 3; i++ {
+			redTouchpads[i] = arena.Plc.BlinkState
+			blueTouchpads[i] = arena.Plc.BlinkState
+		}
+	} else {
+		if arena.MatchState == PreMatch {
+			// Allow touchpads to be triggered before a match.
+			matchStartTime = currentTime
+		}
+		for i := 0; i < 3; i++ {
+			redState := arena.RedRealtimeScore.touchpads[i].GetState(matchStartTime, currentTime)
+			redTouchpads[i] = redState == 2 || redState == 1 && arena.Plc.BlinkState
+			blueState := arena.BlueRealtimeScore.touchpads[i].GetState(matchStartTime, currentTime)
+			blueTouchpads[i] = blueState == 2 || blueState == 1 && arena.Plc.BlinkState
+		}
+	}
+	arena.Plc.SetTouchpadLights(redTouchpads, blueTouchpads)
+}
+
+func (arena *Arena) handleEstop(station string, state bool) {
+	allianceStation := arena.AllianceStations[station]
+	if state {
+		allianceStation.Estop = true
+	} else if arena.MatchTimeSec() == 0 {
+		// Don't reset the e-stop while a match is in progress.
+		allianceStation.Estop = false
+	}
 }

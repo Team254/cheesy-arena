@@ -115,7 +115,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
 
 	// Check e-stop and bypass.
-	arena.AllianceStations["B3"].EmergencyStop = true
+	arena.AllianceStations["B3"].Estop = true
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
@@ -127,7 +127,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
-	arena.AllianceStations["B3"].EmergencyStop = false
+	arena.AllianceStations["B3"].Estop = false
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
@@ -308,12 +308,12 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	arena.MatchState = PreMatch
 
 	// Check with a single team e-stopped, not linked and bypassed.
-	arena.AllianceStations["R1"].EmergencyStop = true
+	arena.AllianceStations["R1"].Estop = true
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "while an emergency stop is active")
 	}
-	arena.AllianceStations["R1"].EmergencyStop = false
+	arena.AllianceStations["R1"].Estop = false
 	arena.AllianceStations["R1"].DsConn.RobotLinked = false
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
@@ -349,12 +349,12 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].Bypass = true
-	arena.AllianceStations["B3"].EmergencyStop = true
+	arena.AllianceStations["B3"].Estop = true
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "while an emergency stop is active")
 	}
-	arena.AllianceStations["B3"].EmergencyStop = false
+	arena.AllianceStations["B3"].Estop = false
 	err = arena.StartMatch()
 	assert.Nil(t, err)
 }

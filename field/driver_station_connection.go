@@ -32,7 +32,7 @@ type DriverStationConnection struct {
 	AllianceStation           string
 	Auto                      bool
 	Enabled                   bool
-	EmergencyStop             bool
+	Estop                     bool
 	DsLinked                  bool
 	RobotLinked               bool
 	BatteryVoltage            float64
@@ -165,7 +165,7 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	if dsConn.Enabled {
 		packet[3] |= 0x04
 	}
-	if dsConn.EmergencyStop {
+	if dsConn.Estop {
 		packet[3] |= 0x80
 	}
 

@@ -87,7 +87,7 @@ var handleStatus = function(data) {
       $("#status" + station + " .battery-status").text("");
     }
 
-    if (stationStatus.EmergencyStop) {
+    if (stationStatus.Estop) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);
       $("#status" + station + " .bypass-status").text("ES");
     } else if (stationStatus.Bypass) {
@@ -127,6 +127,15 @@ var handleStatus = function(data) {
       $("#editResults").prop("disabled", false);
       break;
   }
+
+  if (data.PlcIsHealthy) {
+    $("#plcStatus").text("Connected");
+    $("#plcStatus").attr("data-ready", true);
+  } else {
+    $("#plcStatus").text("Not Connected");
+    $("#plcStatus").attr("data-ready", false);
+  }
+  $("#fieldEstop").attr("data-ready", !data.FieldEstop)
 };
 
 // Handles a websocket message to update the match time countdown.

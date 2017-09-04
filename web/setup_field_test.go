@@ -23,10 +23,7 @@ func TestSetupField(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "12345")
 	assert.Contains(t, recorder.Body.String(), "selected")
 
-	// TODO(patrick): Replace with PLC mode.
-	/*
-		recorder = web.postHttpResponse("/setup/field/lights", "mode=strobe")
-		assert.Equal(t, 303, recorder.Code)
-		assert.Equal(t, "strobe", web.arena.Lights.currentMode)
-	*/
+	recorder = web.postHttpResponse("/setup/field/test", "mode=rotor2")
+	assert.Equal(t, 303, recorder.Code)
+	assert.Equal(t, "rotor2", web.arena.FieldTestMode)
 }

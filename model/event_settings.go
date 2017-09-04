@@ -24,6 +24,7 @@ type EventSettings struct {
 	SwitchAddress              string
 	SwitchPassword             string
 	BandwidthMonitoringEnabled bool
+	PlcAddress                 string
 	AdminPassword              string
 	ReaderPassword             string
 	StemTvPublishingEnabled    bool

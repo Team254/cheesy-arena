@@ -98,7 +98,7 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 		BlueScore        *game.Score
 		RedScoreSummary  *game.ScoreSummary
 		BlueScoreSummary *game.ScoreSummary
-	}{web.arena.RedRealtimeScore.CurrentScore, web.arena.BlueRealtimeScore.CurrentScore,
+	}{&web.arena.RedRealtimeScore.CurrentScore, &web.arena.BlueRealtimeScore.CurrentScore,
 		web.arena.RedScoreSummary(), web.arena.BlueScoreSummary()}
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
@@ -160,7 +160,7 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 					BlueScore        *game.Score
 					RedScoreSummary  *game.ScoreSummary
 					BlueScoreSummary *game.ScoreSummary
-				}{web.arena.RedRealtimeScore.CurrentScore, web.arena.BlueRealtimeScore.CurrentScore,
+				}{&web.arena.RedRealtimeScore.CurrentScore, &web.arena.BlueRealtimeScore.CurrentScore,
 					web.arena.RedScoreSummary(), web.arena.BlueScoreSummary()}
 			case _, ok := <-scorePostedListener:
 				if !ok {

@@ -18,6 +18,7 @@ CREATE TABLE event_settings (
   switchaddress VARCHAR(255),
   switchpassword VARCHAR(255),
   bandwidthmonitoringenabled bool,
+  plcaddress VARCHAR(255),
   tbadownloadenabled bool,
   adminpassword VARCHAR(255),
   readerpassword VARCHAR(255),

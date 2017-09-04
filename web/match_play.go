@@ -415,7 +415,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 		}
 
 		// Send out the status again after handling the command, as it most likely changed as a result.
-		err = websocket.Write("status", web.arena)
+		err = websocket.Write("status", web.arena.GetStatus())
 		if err != nil {
 			log.Printf("Websocket error: %s", err)
 			return
@@ -541,7 +541,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 func (web *Web) getCurrentMatchResult() *model.MatchResult {
 	return &model.MatchResult{MatchId: web.arena.CurrentMatch.Id, MatchType: web.arena.CurrentMatch.Type,
-		RedScore: web.arena.RedRealtimeScore.CurrentScore, BlueScore: web.arena.BlueRealtimeScore.CurrentScore,
+		RedScore: &web.arena.RedRealtimeScore.CurrentScore, BlueScore: &web.arena.BlueRealtimeScore.CurrentScore,
 		RedCards: web.arena.RedRealtimeScore.Cards, BlueCards: web.arena.BlueRealtimeScore.Cards}
 }
 

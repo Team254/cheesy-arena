@@ -54,11 +54,11 @@ var handleMatchTime = function(data) {
 var handleRealtimeScore = function(data) {
   $("#redScoreNumber").text(data.RedScoreSummary.Score);
   $("#redPressurePoints").text(data.RedScoreSummary.PressurePoints);
-  $("#redRotors").text(data.RedScoreSummary.Rotors);
+  $("#redRotors").text(data.RedScore.AutoRotors + data.RedScore.Rotors);
   $("#redTakeoffs").text(data.RedScore.Takeoffs);
   $("#blueScoreNumber").text(data.BlueScoreSummary.Score);
   $("#bluePressurePoints").text(data.BlueScoreSummary.PressurePoints);
-  $("#blueRotors").text(data.BlueScoreSummary.Rotors);
+  $("#blueRotors").text(data.BlueScore.AutoRotors + data.BlueScore.Rotors);
   $("#blueTakeoffs").text(data.BlueScore.Takeoffs);
 };
 

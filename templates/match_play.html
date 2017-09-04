@@ -188,6 +188,13 @@
               </label>
             </div>
           </div>
+          {{if .EventSettings.PlcAddress}}
+          PLC Status
+            <p>
+              <span class="label label-scoring" id="plcStatus"></span><br />
+              <span class="label label-scoring" id="fieldEstop">E-Stop</span>
+            </p>
+          {{end}}
         </div>
       </div>
     </div>

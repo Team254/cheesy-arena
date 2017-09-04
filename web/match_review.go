@@ -129,8 +129,8 @@ func (web *Web) matchReviewEditPostHandler(w http.ResponseWriter, r *http.Reques
 
 	if isCurrent {
 		// If editing the current match, just save it back to memory.
-		web.arena.RedRealtimeScore.CurrentScore = matchResult.RedScore
-		web.arena.BlueRealtimeScore.CurrentScore = matchResult.BlueScore
+		web.arena.RedRealtimeScore.CurrentScore = *matchResult.RedScore
+		web.arena.BlueRealtimeScore.CurrentScore = *matchResult.BlueScore
 		web.arena.RedRealtimeScore.Cards = matchResult.RedCards
 		web.arena.BlueRealtimeScore.Cards = matchResult.BlueCards
 

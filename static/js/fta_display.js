@@ -50,7 +50,7 @@ var handleStatus = function(data) {
       $("#status" + station + " .packet-loss").text("");
     }
 
-    if (stationStatus.EmergencyStop) {
+    if (stationStatus.Estop) {
       $("#status" + station + " .bypass-status-fta").attr("data-status-ok", false);
       $("#status" + station + " .bypass-status-fta").text("ES");
     } else if (stationStatus.Bypass) {
