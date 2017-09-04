@@ -140,11 +140,11 @@
     <script id="allianceSelectionTemplate" type="text/x-handlebars-template">
       <table id="allianceSelectionTable">
         <tr>
-          <td colspan="4">
+          <td colspan="{{"{{numColumns}}"}}">
             <img src="/static/img/alliance-selection-logo.png" alt="logo" />
           </td>
         </tr>
-        {{"{{#each this}}"}}
+        {{"{{#each alliances}}"}}
           <tr>
             <td class="alliance-cell">{{"{{Index}}"}}</td>
             {{"{{#each this}}"}}

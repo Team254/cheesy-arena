@@ -60,8 +60,8 @@
           <div class="row">
             {{range $rule := .Rules}}
               <a class="btn btn-sm {{if $rule.IsTechnical}}btn-danger{{else}}btn-warning{{end}} btn-referee btn-rule"
-                  data-rule="{{$rule.Rule}}" data-is-technical="{{$rule.IsTechnical}}" onclick="setFoulRule(this);">
-                {{$rule.Rule}}{{if $rule.IsTechnical}}<sup>T</sup>{{end}}
+                  data-rule="{{$rule.RuleNumber}}" data-is-technical="{{$rule.IsTechnical}}" onclick="setFoulRule(this);">
+                {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>{{end}}
               </a>
             {{end}}
           </div>
@@ -99,8 +99,8 @@
 {{define "foul"}}
   <tr class="row-{{.color}}">
     <td>{{.foul.TeamId}}</td>
-    <td>{{.foul.Rule}}{{if .foul.IsTechnical}}<sup>T</sup>{{end}}</td>
-    <td><a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.Rule}}',
+    <td>{{.foul.RuleNumber}}{{if .foul.IsTechnical}}<sup>T</sup>{{end}}</td>
+    <td><a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.RuleNumber}}',
           {{.foul.IsTechnical}}, {{.foul.TimeInMatchSec}});">Delete</a></td>
   </tr>
 {{end}}

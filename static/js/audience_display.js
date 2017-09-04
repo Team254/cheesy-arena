@@ -106,10 +106,11 @@ var handlePlaySound = function(sound) {
 // Handles a websocket message to update the alliance selection screen.
 var handleAllianceSelection = function(alliances) {
   if (alliances) {
+    var numColumns = alliances[0].length + 1;
     $.each(alliances, function(k, v) {
       v.Index = k + 1;
     });
-    $("#allianceSelection").html(allianceSelectionTemplate(alliances));
+    $("#allianceSelection").html(allianceSelectionTemplate({alliances: alliances, numColumns: numColumns}));
   }
 };
 
