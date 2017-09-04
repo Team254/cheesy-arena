@@ -16,7 +16,7 @@ var sponsorTextTemplate = Handlebars.compile($("#sponsorTextTemplate").html());
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
 var centeringDown = $("#centering").css("bottom");
 var centeringUp = "0px";
-var logoUp = "10px";
+var logoUp = "20px";
 var logoDown = $("#logo").css("top");
 var scoreIn = $(".score").css("width");
 var scoreMid = "120px";
