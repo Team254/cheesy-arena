@@ -194,6 +194,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	// Reset the realtime scores.
 	arena.RedRealtimeScore = NewRealtimeScore()
 	arena.BlueRealtimeScore = NewRealtimeScore()
+	arena.Plc.ResetCounts()
 	arena.FieldReset = false
 
 	// Notify any listeners about the new match.
@@ -636,11 +637,11 @@ func (arena *Arena) handlePlcInput() {
 	// Handle touchpads.
 	redTouchpads, blueTouchpads := arena.Plc.GetTouchpads()
 	for i := 0; i < 3; i++ {
-		arena.RedRealtimeScore.touchpads[i].UpdateState(redTouchpads[i], currentTime)
-		arena.BlueRealtimeScore.touchpads[i].UpdateState(blueTouchpads[i], currentTime)
+		arena.RedRealtimeScore.touchpads[i].UpdateState(redTouchpads[i], matchStartTime, currentTime)
+		arena.BlueRealtimeScore.touchpads[i].UpdateState(blueTouchpads[i], matchStartTime, currentTime)
 	}
-	redScore.Takeoffs = game.CountTouchpads(&arena.RedRealtimeScore.touchpads, matchStartTime, currentTime)
-	blueScore.Takeoffs = game.CountTouchpads(&arena.BlueRealtimeScore.touchpads, matchStartTime, currentTime)
+	redScore.Takeoffs = game.CountTouchpads(&arena.RedRealtimeScore.touchpads, currentTime)
+	blueScore.Takeoffs = game.CountTouchpads(&arena.BlueRealtimeScore.touchpads, currentTime)
 
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
 		arena.RealtimeScoreNotifier.Notify(nil)
@@ -680,7 +681,6 @@ func (arena *Arena) handlePlcOutput() {
 	// Handle touchpads.
 	var redTouchpads, blueTouchpads [3]bool
 	currentTime := time.Now()
-	matchStartTime := arena.MatchStartTime
 	blinkStopTime := matchEndTime.Add(-time.Duration(game.MatchTiming.EndgameTimeLeftSec-2) * time.Second)
 	if arena.MatchState == EndgamePeriod && currentTime.Before(blinkStopTime) {
 		// Blink the touchpads at the endgame start point.
@@ -689,15 +689,11 @@ func (arena *Arena) handlePlcOutput() {
 			blueTouchpads[i] = arena.Plc.BlinkState
 		}
 	} else {
-		if arena.MatchState == PreMatch {
-			// Allow touchpads to be triggered before a match.
-			matchStartTime = currentTime
-		}
 		for i := 0; i < 3; i++ {
-			redState := arena.RedRealtimeScore.touchpads[i].GetState(matchStartTime, currentTime)
-			redTouchpads[i] = redState == 2 || redState == 1 && arena.Plc.BlinkState
-			blueState := arena.BlueRealtimeScore.touchpads[i].GetState(matchStartTime, currentTime)
-			blueTouchpads[i] = blueState == 2 || blueState == 1 && arena.Plc.BlinkState
+			redState := arena.RedRealtimeScore.touchpads[i].GetState(currentTime)
+			redTouchpads[i] = redState == game.Held || redState == game.Triggered && arena.Plc.BlinkState
+			blueState := arena.BlueRealtimeScore.touchpads[i].GetState(currentTime)
+			blueTouchpads[i] = blueState == game.Held || blueState == game.Triggered && arena.Plc.BlinkState
 		}
 	}
 	arena.Plc.SetTouchpadLights(redTouchpads, blueTouchpads)

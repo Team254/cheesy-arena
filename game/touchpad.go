@@ -22,11 +22,16 @@ type Touchpad struct {
 }
 
 // Updates the internal timing state of the touchpad given the current state of the sensor.
-func (touchpad *Touchpad) UpdateState(triggered bool, currentTime time.Time) {
-	if triggered && !touchpad.lastTriggered {
+func (touchpad *Touchpad) UpdateState(triggered bool, matchStartTime, currentTime time.Time) {
+	matchEndTime := GetMatchEndTime(matchStartTime)
+
+	if triggered && !touchpad.lastTriggered && currentTime.Before(matchEndTime) {
 		touchpad.triggeredTime = &currentTime
 		touchpad.untriggeredTime = nil
 	} else if !triggered && touchpad.lastTriggered {
+		if currentTime.Before(matchEndTime) || touchpad.GetState(currentTime) == Triggered {
+			touchpad.triggeredTime = nil
+		}
 		touchpad.untriggeredTime = &currentTime
 	}
 	touchpad.lastTriggered = triggered
@@ -34,31 +39,29 @@ func (touchpad *Touchpad) UpdateState(triggered bool, currentTime time.Time) {
 
 // Determines the scoring status of the touchpad. Returns 0 if not triggered, 1 if triggered but not yet for a full
 // second, and 2 if triggered and counting for points.
-func (touchpad *Touchpad) GetState(matchStartTime, currentTime time.Time) int {
-	matchEndTime := GetMatchEndTime(matchStartTime)
-
-	if touchpad.triggeredTime != nil && touchpad.triggeredTime.Before(matchEndTime) {
-		if touchpad.untriggeredTime == nil {
-			if currentTime.Sub(*touchpad.triggeredTime) >= time.Second {
+func (touchpad *Touchpad) GetState(currentTime time.Time) int {
+	if touchpad.triggeredTime != nil {
+		if touchpad.untriggeredTime != nil {
+			if touchpad.untriggeredTime.Sub(*touchpad.triggeredTime) >= time.Second {
 				return Held
 			} else {
-				return Triggered
+				return NotTriggered
 			}
-		} else if touchpad.untriggeredTime.Sub(*touchpad.triggeredTime) >= time.Second &&
-			touchpad.untriggeredTime.After(matchEndTime) {
+		}
+		if currentTime.Sub(*touchpad.triggeredTime) >= time.Second {
 			return Held
+		} else {
+			return Triggered
 		}
 	}
 
 	return NotTriggered
 }
 
-func CountTouchpads(touchpads *[3]Touchpad, matchStartTime, currentTime time.Time) int {
-	matchEndTime := GetMatchEndTime(matchStartTime)
-
+func CountTouchpads(touchpads *[3]Touchpad, currentTime time.Time) int {
 	count := 0
 	for _, touchpad := range touchpads {
-		if touchpad.GetState(matchEndTime, currentTime) == 2 {
+		if touchpad.GetState(currentTime) == Held {
 			count++
 		}
 	}

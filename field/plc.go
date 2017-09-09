@@ -13,14 +13,15 @@ import (
 )
 
 type Plc struct {
-	IsHealthy  bool
-	BlinkState bool
-	address    string
-	handler    *modbus.TCPClientHandler
-	client     modbus.Client
-	Inputs     [15]bool
-	Counters   [10]uint16
-	Coils      [24]bool
+	IsHealthy        bool
+	BlinkState       bool
+	address          string
+	handler          *modbus.TCPClientHandler
+	client           modbus.Client
+	Inputs           [15]bool
+	Counters         [10]uint16
+	Coils            [24]bool
+	resetCountCycles int
 }
 
 const (
@@ -117,9 +118,9 @@ func (plc *Plc) Run() {
 
 		startTime := time.Now()
 		isHealthy := true
+		isHealthy = isHealthy && plc.writeCoils()
 		isHealthy = isHealthy && plc.readInputs()
 		isHealthy = isHealthy && plc.readCounters()
-		isHealthy = isHealthy && plc.writeCoils()
 		if !isHealthy {
 			plc.resetConnection()
 		}
@@ -185,6 +186,7 @@ func (plc *Plc) GetTouchpads() ([3]bool, [3]bool) {
 // Resets the ball and rotor gear tooth counts to zero.
 func (plc *Plc) ResetCounts() {
 	plc.Coils[resetCounts] = true
+	plc.resetCountCycles = 0
 }
 
 func (plc *Plc) SetBoilerMotors(on bool) {
@@ -289,7 +291,11 @@ func (plc *Plc) writeCoils() bool {
 		return false
 	}
 
-	plc.Coils[resetCounts] = false // Only need to send a single pulse to reset the counters.
+	if plc.resetCountCycles > 5 {
+		plc.Coils[resetCounts] = false // Need to send a short pulse to reset the counters.
+	} else {
+		plc.resetCountCycles++
+	}
 	return true
 }
 

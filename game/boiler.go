@@ -36,7 +36,7 @@ func (boiler *Boiler) UpdateState(lowCount, highCount int, matchStartTime, curre
 		boiler.FuelLow = 0
 		boiler.FuelHigh = 0
 	} else if currentTime.Before(teleopValidityCutoff) {
-		boiler.FuelLow = lowCount
-		boiler.FuelHigh = highCount
+		boiler.FuelLow = lowCount - boiler.AutoFuelLow
+		boiler.FuelHigh = highCount - boiler.AutoFuelHigh
 	}
 }
