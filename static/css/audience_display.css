@@ -98,15 +98,28 @@ html {
 }
 .score-fields {
   float: left;
-  width: 20%;
-  height: 100%;
-  line-height: 29px;
-  text-align: center;
-  display: table;
-  font-size: 23px;
+  display: block;
+  font-size: 20px;
   font-family: "FuturaLTBold";
   color: #fff;
   opacity: 0;
+}
+.score-fields-icons {
+  line-height: 99px;
+  text-align: center;
+  width: 30px;
+}
+.score-fields-icons span {
+  display: inline-block;
+  line-height: 33px;
+}
+.score-fields-text {
+  width: 19px;
+}
+.score-fields-text span {
+  display: inline-block;
+  line-height: 34px;
+  padding: 0;
 }
 #logo {
   position: relative;

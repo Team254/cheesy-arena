@@ -24,12 +24,14 @@
           </span>
         </div>
         <div class="score" id="redScore">
-          <div class="score-fields">
+          <div class="score-fields score-fields-icons">
             <span class="valign-cell">
               <img class="score-icon" src="/static/img/pressure.svg" /><br />
               <img class="score-icon" src="/static/img/rotor.svg" /><br />
               <img class="score-icon" src="/static/img/takeoff.svg" />
             </span>
+          </div>
+          <div class="score-fields score-fields-text">
             <span class="valign-cell">
               <span id="redPressurePoints"></span><br />
               <span id="redRotors"></span><br />
@@ -39,16 +41,18 @@
           <div class="score-number" id="redScoreNumber">&nbsp;</div>
         </div>
         <div class="score" id="blueScore">
-          <div class="score-fields pull-right">
-            <span class="valign-cell">
-              <span id="bluePressurePoints"></span><br />
-              <span id="blueRotors"></span><br />
-              <span id="blueTakeoffs"></span>
-            </span>
+          <div class="score-fields score-fields-icons pull-right">
             <span class="valign-cell">
               <img class="score-icon score-icon-right" src="/static/img/pressure.svg" /><br />
               <img class="score-icon score-icon-right" src="/static/img/rotor.svg" /><br />
               <img class="score-icon score-icon-right" src="/static/img/takeoff.svg" />
+            </span>
+          </div>
+          <div class="score-fields score-fields-text pull-right" style="direction: rtl;">
+            <span class="valign-cell" style="text-align: right;">
+              <span id="bluePressurePoints"></span><br />
+              <span id="blueRotors"></span><br />
+              <span id="blueTakeoffs"></span>
             </span>
           </div>
           <div class="score-number pull-right" id="blueScoreNumber">&nbsp;</div>
