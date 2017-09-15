@@ -14,13 +14,13 @@ import (
 
 type Plc struct {
 	IsHealthy        bool
-	BlinkState       bool
 	address          string
 	handler          *modbus.TCPClientHandler
 	client           modbus.Client
 	Inputs           [15]bool
 	Counters         [10]uint16
 	Coils            [24]bool
+	cycleCounter     int
 	resetCountCycles int
 }
 
@@ -29,6 +29,7 @@ const (
 	rotorGearToothCount = 15
 	plcLoopPeriodMs     = 100
 	plcRetryIntevalSec  = 3
+	cycleCounterMax     = 96
 )
 
 // Discrete inputs
@@ -125,7 +126,10 @@ func (plc *Plc) Run() {
 			plc.resetConnection()
 		}
 		plc.IsHealthy = isHealthy
-		plc.BlinkState = !plc.BlinkState
+		plc.cycleCounter++
+		if plc.cycleCounter == cycleCounterMax {
+			plc.cycleCounter = 0
+		}
 
 		time.Sleep(time.Until(startTime.Add(time.Millisecond * plcLoopPeriodMs)))
 	}
@@ -223,6 +227,10 @@ func (plc *Plc) SetTouchpadLights(redTouchpads, blueTouchpads [3]bool) {
 	plc.Coils[blueTouchpadLight1] = blueTouchpads[0]
 	plc.Coils[blueTouchpadLight2] = blueTouchpads[1]
 	plc.Coils[blueTouchpadLight3] = blueTouchpads[2]
+}
+
+func (plc *Plc) GetCycleState(max, index, duration int) bool {
+	return plc.cycleCounter/duration%max == index
 }
 
 func (plc *Plc) connect() error {
