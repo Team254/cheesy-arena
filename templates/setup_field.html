@@ -94,6 +94,24 @@
                      {{if eq .FieldTestMode "flash"}}checked{{end}}>Flash Touchpads
             </label>
           </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="cycle" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "cycle"}}checked{{end}}>Cycle Touchpads
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="chase" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "chase"}}checked{{end}}>Chase Touchpads
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="slowChase" onclick="this.form.submit()"
+                     {{if eq .FieldTestMode "slowChase"}}checked{{end}}>Slow Chase Touchpads
+            </label>
+          </div>
         </div>
       </form>
       <div class="row">

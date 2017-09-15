@@ -653,8 +653,21 @@ func (arena *Arena) handlePlcOutput() {
 	if arena.FieldTestMode != "" {
 		// PLC output is being manually overridden.
 		if arena.FieldTestMode == "flash" {
-			arena.Plc.SetTouchpadLights([3]bool{arena.Plc.BlinkState, arena.Plc.BlinkState, arena.Plc.BlinkState},
-				[3]bool{arena.Plc.BlinkState, arena.Plc.BlinkState, arena.Plc.BlinkState})
+			blinkState := arena.Plc.GetCycleState(2, 0, 1)
+			arena.Plc.SetTouchpadLights([3]bool{blinkState, blinkState, blinkState},
+				[3]bool{blinkState, blinkState, blinkState})
+		} else if arena.FieldTestMode == "cycle" {
+			arena.Plc.SetTouchpadLights(
+				[3]bool{arena.Plc.GetCycleState(3, 0, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 2, 1)},
+				[3]bool{arena.Plc.GetCycleState(3, 0, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 2, 1)})
+		} else if arena.FieldTestMode == "chase" {
+			arena.Plc.SetTouchpadLights(
+				[3]bool{arena.Plc.GetCycleState(6, 0, 1), arena.Plc.GetCycleState(6, 1, 1), arena.Plc.GetCycleState(6, 2, 1)},
+				[3]bool{arena.Plc.GetCycleState(6, 3, 1), arena.Plc.GetCycleState(6, 4, 1), arena.Plc.GetCycleState(6, 5, 1)})
+		} else if arena.FieldTestMode == "slowChase" {
+			arena.Plc.SetTouchpadLights(
+				[3]bool{arena.Plc.GetCycleState(6, 0, 8), arena.Plc.GetCycleState(6, 1, 8), arena.Plc.GetCycleState(6, 2, 8)},
+				[3]bool{arena.Plc.GetCycleState(6, 3, 8), arena.Plc.GetCycleState(6, 4, 8), arena.Plc.GetCycleState(6, 5, 8)})
 		}
 		return
 	}
@@ -682,18 +695,19 @@ func (arena *Arena) handlePlcOutput() {
 	var redTouchpads, blueTouchpads [3]bool
 	currentTime := time.Now()
 	blinkStopTime := matchEndTime.Add(-time.Duration(game.MatchTiming.EndgameTimeLeftSec-2) * time.Second)
+	blinkState := arena.Plc.GetCycleState(2, 0, 1)
 	if arena.MatchState == EndgamePeriod && currentTime.Before(blinkStopTime) {
 		// Blink the touchpads at the endgame start point.
 		for i := 0; i < 3; i++ {
-			redTouchpads[i] = arena.Plc.BlinkState
-			blueTouchpads[i] = arena.Plc.BlinkState
+			redTouchpads[i] = blinkState
+			blueTouchpads[i] = blinkState
 		}
 	} else {
 		for i := 0; i < 3; i++ {
 			redState := arena.RedRealtimeScore.touchpads[i].GetState(currentTime)
-			redTouchpads[i] = redState == game.Held || redState == game.Triggered && arena.Plc.BlinkState
+			redTouchpads[i] = redState == game.Held || redState == game.Triggered && blinkState
 			blueState := arena.BlueRealtimeScore.touchpads[i].GetState(currentTime)
-			blueTouchpads[i] = blueState == game.Held || blueState == game.Triggered && arena.Plc.BlinkState
+			blueTouchpads[i] = blueState == game.Held || blueState == game.Triggered && blinkState
 		}
 	}
 	arena.Plc.SetTouchpadLights(redTouchpads, blueTouchpads)

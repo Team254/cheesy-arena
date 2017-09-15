@@ -109,8 +109,6 @@ func (web *Web) fieldTestPostHandler(w http.ResponseWriter, r *http.Request) {
 		web.arena.Plc.SetRotorMotors(0, 4)
 		web.arena.Plc.SetRotorLights(0, 2)
 		web.arena.Plc.SetTouchpadLights([3]bool{false, false, false}, [3]bool{true, true, true})
-	case "flash":
-		fallthrough
 	default:
 		web.arena.Plc.SetBoilerMotors(false)
 		web.arena.Plc.SetRotorMotors(0, 0)
