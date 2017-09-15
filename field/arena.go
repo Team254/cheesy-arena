@@ -626,11 +626,11 @@ func (arena *Arena) handlePlcInput() {
 	blueScore.FuelHigh = arena.BlueRealtimeScore.boiler.FuelHigh
 
 	// Handle rotors.
-	redRotors, blueRotors := arena.Plc.GetRotors()
-	arena.RedRealtimeScore.rotorSet.UpdateState(redRotors, matchStartTime, currentTime)
+	redRotor1, redOtherRotors, blueRotor1, blueOtherRotors := arena.Plc.GetRotors()
+	arena.RedRealtimeScore.rotorSet.UpdateState(redRotor1, redOtherRotors, matchStartTime, currentTime)
 	redScore.AutoRotors = arena.RedRealtimeScore.rotorSet.AutoRotors
 	redScore.Rotors = arena.RedRealtimeScore.rotorSet.Rotors
-	arena.BlueRealtimeScore.rotorSet.UpdateState(blueRotors, matchStartTime, currentTime)
+	arena.BlueRealtimeScore.rotorSet.UpdateState(blueRotor1, blueOtherRotors, matchStartTime, currentTime)
 	blueScore.AutoRotors = arena.BlueRealtimeScore.rotorSet.AutoRotors
 	blueScore.Rotors = arena.BlueRealtimeScore.rotorSet.Rotors
 

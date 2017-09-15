@@ -25,11 +25,10 @@ type Plc struct {
 }
 
 const (
-	modbusPort          = 502
-	rotorGearToothCount = 15
-	plcLoopPeriodMs     = 100
-	plcRetryIntevalSec  = 3
-	cycleCounterMax     = 96
+	modbusPort         = 502
+	plcLoopPeriodMs    = 100
+	plcRetryIntevalSec = 3
+	cycleCounterMax    = 96
 )
 
 // Discrete inputs
@@ -161,19 +160,17 @@ func (plc *Plc) GetBalls() (int, int, int, int) {
 }
 
 // Returns the state of red and blue activated rotors.
-func (plc *Plc) GetRotors() ([4]bool, [4]bool) {
-	var redRotors, blueRotors [4]bool
+func (plc *Plc) GetRotors() (bool, [3]int, bool, [3]int) {
+	var redOtherRotors, blueOtherRotors [3]int
 
-	redRotors[0] = plc.Inputs[redRotor1]
-	redRotors[1] = int(plc.Counters[redRotor2Count]) >= rotorGearToothCount
-	redRotors[2] = int(plc.Counters[redRotor3Count]) >= rotorGearToothCount
-	redRotors[3] = int(plc.Counters[redRotor4Count]) >= rotorGearToothCount
-	blueRotors[0] = plc.Inputs[blueRotor1]
-	blueRotors[1] = int(plc.Counters[blueRotor2Count]) >= rotorGearToothCount
-	blueRotors[2] = int(plc.Counters[blueRotor3Count]) >= rotorGearToothCount
-	blueRotors[3] = int(plc.Counters[blueRotor4Count]) >= rotorGearToothCount
+	redOtherRotors[0] = int(plc.Counters[redRotor2Count])
+	redOtherRotors[1] = int(plc.Counters[redRotor3Count])
+	redOtherRotors[2] = int(plc.Counters[redRotor4Count])
+	blueOtherRotors[0] = int(plc.Counters[blueRotor2Count])
+	blueOtherRotors[1] = int(plc.Counters[blueRotor3Count])
+	blueOtherRotors[2] = int(plc.Counters[blueRotor4Count])
 
-	return redRotors, blueRotors
+	return plc.Inputs[redRotor1], redOtherRotors, plc.Inputs[blueRotor1], blueOtherRotors
 }
 
 func (plc *Plc) GetTouchpads() ([3]bool, [3]bool) {
