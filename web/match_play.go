@@ -527,6 +527,10 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			if err != nil {
 				log.Printf("Failed to publish match video split to STEMtv: %s", err.Error())
 			}
+			err = web.arena.StemTvClient2.PublishMatchVideoSplit(match, time.Now())
+			if err != nil {
+				log.Printf("Failed to publish match video split to STEMtv2: %s", err.Error())
+			}
 		}()
 	}
 

@@ -39,6 +39,7 @@ type Arena struct {
 	Plc                            Plc
 	TbaClient                      *partner.TbaClient
 	StemTvClient                   *partner.StemTvClient
+	StemTvClient2                  *partner.StemTvClient
 	AllianceStations               map[string]*AllianceStation
 	CurrentMatch                   *model.Match
 	MatchState                     int
@@ -153,6 +154,8 @@ func (arena *Arena) LoadSettings() error {
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.StemTvClient = partner.NewStemTvClient(settings.StemTvEventCode)
+	arena.StemTvClient2 = partner.NewStemTvClient("2017cc2")
+	arena.StemTvClient2.BaseUrl = "http://52.20.77.69"
 
 	return nil
 }
