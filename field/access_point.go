@@ -12,7 +12,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	"os"
 	"path/filepath"
-	"sync"
 	"text/template"
 )
 
@@ -32,7 +31,6 @@ type AccessPoint struct {
 	port     int
 	username string
 	password string
-	mutex    sync.Mutex
 }
 
 func NewAccessPoint(address, username, password string) *AccessPoint {
@@ -41,10 +39,6 @@ func NewAccessPoint(address, username, password string) *AccessPoint {
 
 // Sets up wireless networks for the given set of teams.
 func (ap *AccessPoint) ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
-	// Make sure multiple configurations aren't being set at the same time.
-	ap.mutex.Lock()
-	defer ap.mutex.Unlock()
-
 	config, err := generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3)
 	if err != nil {
 		return err
