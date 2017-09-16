@@ -48,7 +48,7 @@ var handleSetMatch = function(data) {
 
       var ranking = data.Rankings[team.Id];
       if (ranking) {
-        var rankingText = ranking.Rank + "-" + ranking.QualificationAverage;
+        var rankingText = ranking.Rank;
         $("#teamRank").attr("data-alliance-bg", allianceStation[0]).text(rankingText);
       } else {
         $("#teamRank").attr("data-alliance-bg", allianceStation[0]).text("");
