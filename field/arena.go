@@ -658,15 +658,15 @@ func (arena *Arena) handlePlcOutput() {
 				[3]bool{blinkState, blinkState, blinkState})
 		} else if arena.FieldTestMode == "cycle" {
 			arena.Plc.SetTouchpadLights(
-				[3]bool{arena.Plc.GetCycleState(3, 0, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 2, 1)},
+				[3]bool{arena.Plc.GetCycleState(3, 2, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 0, 1)},
 				[3]bool{arena.Plc.GetCycleState(3, 0, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 2, 1)})
 		} else if arena.FieldTestMode == "chase" {
 			arena.Plc.SetTouchpadLights(
-				[3]bool{arena.Plc.GetCycleState(6, 0, 1), arena.Plc.GetCycleState(6, 1, 1), arena.Plc.GetCycleState(6, 2, 1)},
-				[3]bool{arena.Plc.GetCycleState(6, 3, 1), arena.Plc.GetCycleState(6, 4, 1), arena.Plc.GetCycleState(6, 5, 1)})
+				[3]bool{arena.Plc.GetCycleState(12, 2, 2), arena.Plc.GetCycleState(12, 1, 2), arena.Plc.GetCycleState(12, 0, 2)},
+				[3]bool{arena.Plc.GetCycleState(12, 3, 2), arena.Plc.GetCycleState(12, 4, 2), arena.Plc.GetCycleState(12, 5, 2)})
 		} else if arena.FieldTestMode == "slowChase" {
 			arena.Plc.SetTouchpadLights(
-				[3]bool{arena.Plc.GetCycleState(6, 0, 8), arena.Plc.GetCycleState(6, 1, 8), arena.Plc.GetCycleState(6, 2, 8)},
+				[3]bool{arena.Plc.GetCycleState(6, 2, 8), arena.Plc.GetCycleState(6, 1, 8), arena.Plc.GetCycleState(6, 0, 8)},
 				[3]bool{arena.Plc.GetCycleState(6, 3, 8), arena.Plc.GetCycleState(6, 4, 8), arena.Plc.GetCycleState(6, 5, 8)})
 		}
 		return
