@@ -31,9 +31,9 @@ type RankingWithNickname struct {
 
 // Generates a JSON dump of the matches and results.
 func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
+	/*if !web.userIsReader(w, r) {
 		return
-	}
+	}*/
 
 	vars := mux.Vars(r)
 	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
@@ -75,9 +75,9 @@ func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a JSON dump of the sponsor slides for use by the audience display.
 func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
+	/*if !web.userIsReader(w, r) {
 		return
-	}
+	}*/
 
 	sponsors, err := web.arena.Database.GetAllSponsorSlides()
 	if err != nil {
@@ -101,9 +101,9 @@ func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) 
 
 // Generates a JSON dump of the qualification rankings, primarily for use by the pit display.
 func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
+	/*if !web.userIsReader(w, r) {
 		return
-	}
+	}*/
 
 	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
