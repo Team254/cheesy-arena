@@ -108,8 +108,6 @@ func (match *Match) TbaCode() string {
 	} else if match.Type == "elimination" {
 		return fmt.Sprintf("%s%dm%d", strings.ToLower(ElimRoundNames[match.ElimRound]), match.ElimGroup,
 			match.ElimInstance)
-	} else if match.Type == "practice" {
-		return fmt.Sprintf("pm%s", match.DisplayName)
 	}
 	return ""
 }
