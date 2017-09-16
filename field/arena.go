@@ -155,7 +155,7 @@ func (arena *Arena) LoadSettings() error {
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.StemTvClient = partner.NewStemTvClient(settings.StemTvEventCode)
 	arena.StemTvClient2 = partner.NewStemTvClient("2017cc2")
-	arena.StemTvClient2.BaseUrl = "http://52.20.77.69"
+	arena.StemTvClient2.BaseUrl = "http://52.20.77.69:5000"
 
 	return nil
 }
