@@ -162,3 +162,29 @@ func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+// Generates a JSON dump of the alliances.
+func (web *Web) alliancesApiHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsReader(w, r) {
+		return
+	}
+
+	alliances, err := web.arena.Database.GetAllAlliances()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	jsonData, err := json.MarshalIndent(alliances, "", "  ")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(jsonData)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}

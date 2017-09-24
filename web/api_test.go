@@ -79,7 +79,7 @@ func TestRankingsApi(t *testing.T) {
 	assert.Equal(t, "29", rankingsData.HighestPlayedMatch)
 }
 
-func TestSponsorSlides(t *testing.T) {
+func TestSponsorSlidesApi(t *testing.T) {
 	web := setupTestWeb(t)
 
 	slide1 := model.SponsorSlide{1, "subtitle", "line1", "line2", "image", 2}
@@ -96,5 +96,30 @@ func TestSponsorSlides(t *testing.T) {
 	if assert.Equal(t, 2, len(sponsorSlides)) {
 		assert.Equal(t, slide1, sponsorSlides[0])
 		assert.Equal(t, slide2, sponsorSlides[1])
+	}
+}
+
+func TestAlliancesApi(t *testing.T) {
+	web := setupTestWeb(t)
+
+	model.BuildTestAlliances(web.arena.Database)
+
+	recorder := web.getHttpResponse("/api/alliances")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "application/json", recorder.HeaderMap["Content-Type"][0])
+	var alliances [][]model.AllianceTeam
+	err := json.Unmarshal([]byte(recorder.Body.String()), &alliances)
+	assert.Nil(t, err)
+	if assert.Equal(t, 2, len(alliances)) {
+		if assert.Equal(t, 4, len(alliances[0])) {
+			assert.Equal(t, 254, alliances[0][0].TeamId)
+			assert.Equal(t, 469, alliances[0][1].TeamId)
+			assert.Equal(t, 2848, alliances[0][2].TeamId)
+			assert.Equal(t, 74, alliances[0][3].TeamId)
+		}
+		if assert.Equal(t, 2, len(alliances[1])) {
+			assert.Equal(t, 1718, alliances[1][0].TeamId)
+			assert.Equal(t, 2451, alliances[1][1].TeamId)
+		}
 	}
 }
