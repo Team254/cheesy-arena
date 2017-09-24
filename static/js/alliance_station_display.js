@@ -47,7 +47,7 @@ var handleSetMatch = function(data) {
       $("#teamNameText").attr("data-alliance-bg", allianceStation[0]).text(team.Nickname);
 
       var ranking = data.Rankings[team.Id];
-      if (ranking) {
+      if (ranking && data.MatchType == "qualification") {
         var rankingText = ranking.Rank;
         $("#teamRank").attr("data-alliance-bg", allianceStation[0]).text(rankingText);
       } else {
@@ -69,8 +69,8 @@ var handleStatus = function(data) {
   var blink = false;
   if (stationStatus && stationStatus.Bypass) {
     $("#match").attr("data-status", "bypass");
-  } else if (stationStatus && stationStatus.DsConn) {
-    if (!stationStatus.DsConn.DsLinked) {
+  } else if (stationStatus) {
+    if (!stationStatus.DsConn || !stationStatus.DsConn.DsLinked) {
       $("#match").attr("data-status", allianceStation[0]);
     } else if (!stationStatus.DsConn.RobotLinked) {
       blink = true;

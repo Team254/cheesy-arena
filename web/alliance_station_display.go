@@ -154,10 +154,11 @@ func (web *Web) allianceStationDisplayWebsocketHandler(w http.ResponseWriter, r 
 					AllianceStation string
 					Teams           map[string]*model.Team
 					Rankings        map[string]*game.Ranking
+					MatchType       string
 				}{station, map[string]*model.Team{"R1": web.arena.AllianceStations["R1"].Team,
 					"R2": web.arena.AllianceStations["R2"].Team, "R3": web.arena.AllianceStations["R3"].Team,
 					"B1": web.arena.AllianceStations["B1"].Team, "B2": web.arena.AllianceStations["B2"].Team,
-					"B3": web.arena.AllianceStations["B3"].Team}, rankings}
+					"B3": web.arena.AllianceStations["B3"].Team}, rankings, web.arena.CurrentMatch.Type}
 			case _, ok := <-robotStatusListener:
 				if !ok {
 					return
