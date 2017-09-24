@@ -18,7 +18,7 @@ type StemTvClient struct {
 }
 
 const (
-	stemTvBaseUrl              = "http://stemtv.io"
+	stemTvBaseUrl              = "http://52.21.72.74:5000"
 	preMatchPaddingSec         = 5
 	postScoreDisplayPaddingSec = 10
 )
