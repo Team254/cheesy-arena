@@ -13,7 +13,8 @@
         <div class="row form-group">
           <div class="col-xs-3">Blue Teams</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Driver Station (Tx/Rx MB/s)">DS</div>
-          <div class="col-xs-1" data-toggle="tooltip" title="Robot Status/Time Since Last Link">R</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Radio Status">R</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Robot Status/Time Since Last Link">Rio</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Battery">Bat</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Bypassed/Disabled">Byp</div>
           <div class="col-xs-2" data-toggle="tooltip" title="Average Trip Time">Trip Time</div>
@@ -27,15 +28,16 @@
         <div class="row form-group hidden-xs">
           <div class="col-xs-3">Red Teams</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Driver Station (Tx/Rx MB/s)">DS</div>
-          <div class="col-xs-1" data-toggle="tooltip" title="Robot Status/Time Since Last Link">R</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Radio Status">R</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Robot Status/Time Since Last Link">Rio</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Battery">Bat</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Bypassed/Disabled">Byp</div>
           <div class="col-xs-2" data-toggle="tooltip" title="Average Trip Time">Trip Time</div>
           <div class="col-xs-2" data-toggle="tooltip" title="Packet Loss">Lost Pack</div>
         </div>
-        {{template "ftaTeam" dict "color" "R" "position" 3 "data" .}}
-        {{template "ftaTeam" dict "color" "R" "position" 2 "data" .}}
         {{template "ftaTeam" dict "color" "R" "position" 1 "data" .}}
+        {{template "ftaTeam" dict "color" "R" "position" 2 "data" .}}
+        {{template "ftaTeam" dict "color" "R" "position" 3 "data" .}}
       </div>
     </div>
     <br />
@@ -51,6 +53,7 @@
   <div class="col-xs-1">{{.position}} </div>
   <div class="col-xs-2"><div class="team"></div></div>
   <div class="col-xs-1 col-no-padding"><div class="ds-status"></div></div>
+  <div class="col-xs-1 col-no-padding"><div class="radio-status"></div></div>
   <div class="col-xs-1 col-no-padding"><div class="robot-status"></div></div>
   <div class="col-xs-1 col-no-padding"><div class="battery-status"></div></div>
   <div class="col-xs-1 col-no-padding"><div class="bypass-status-fta"></div></div>

@@ -34,6 +34,7 @@ type DriverStationConnection struct {
 	Enabled                   bool
 	Estop                     bool
 	DsLinked                  bool
+	RadioLinked               bool
 	RobotLinked               bool
 	BatteryVoltage            float64
 	DsRobotTripTimeMs         int
@@ -95,6 +96,7 @@ func (arena *Arena) listenForDsUdpPackets() {
 			dsConn.DsLinked = true
 			dsConn.lastPacketTime = time.Now()
 
+			dsConn.RadioLinked = data[3]&0x10 != 0
 			dsConn.RobotLinked = data[3]&0x20 != 0
 			if dsConn.RobotLinked {
 				dsConn.lastRobotLinkedTime = time.Now()
@@ -115,6 +117,7 @@ func (dsConn *DriverStationConnection) update(arena *Arena) error {
 
 	if time.Since(dsConn.lastPacketTime).Seconds() > driverStationUdpLinkTimeoutSec {
 		dsConn.DsLinked = false
+		dsConn.RadioLinked = false
 		dsConn.RobotLinked = false
 		dsConn.BatteryVoltage = 0
 		dsConn.MBpsToRobot = 0

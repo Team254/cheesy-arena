@@ -20,6 +20,7 @@ var handleStatus = function(data) {
       var dsConn = stationStatus.DsConn;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
       $("#status" + station + " .ds-status").text(dsConn.MBpsToRobot.toFixed(1) + "/" + dsConn.MBpsFromRobot.toFixed(1));
+      $("#status" + station + " .radio-status").attr("data-status-ok", dsConn.RadioLinked);
       $("#status" + station + " .robot-status").attr("data-status-ok", dsConn.RobotLinked);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
         $("#status" + station + " .robot-status").text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
@@ -40,6 +41,8 @@ var handleStatus = function(data) {
     } else {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
       $("#status" + station + " .ds-status").text("");
+      $("#status" + station + " .radio-status").attr("data-status-ok", "");
+      $("#status" + station + " .radio-status").text("");
       $("#status" + station + " .robot-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").text("");
       $("#status" + station + " .battery-status").attr("data-status-ok", "");
