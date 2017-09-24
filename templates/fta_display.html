@@ -9,26 +9,11 @@
 <div class="row">
   <div class="col-lg-12">
     <div class="row text-center">
-      <div class="col-lg-6 well well-darkblue">
-        <div class="row form-group">
-          <div class="col-xs-3">Blue Teams</div>
-          <div class="col-xs-1" data-toggle="tooltip" title="Driver Station (Tx/Rx MB/s)">DS</div>
-          <div class="col-xs-1" data-toggle="tooltip" title="Radio Status">R</div>
-          <div class="col-xs-1" data-toggle="tooltip" title="Robot Status/Time Since Last Link">Rio</div>
-          <div class="col-xs-1" data-toggle="tooltip" title="Battery">Bat</div>
-          <div class="col-xs-1" data-toggle="tooltip" title="Bypassed/Disabled">Byp</div>
-          <div class="col-xs-2" data-toggle="tooltip" title="Average Trip Time">Trip Time</div>
-          <div class="col-xs-2" data-toggle="tooltip" title="Packet Loss">Lost Pack</div>
-        </div>
-        {{template "ftaTeam" dict "color" "B" "position" 1 "data" .}}
-        {{template "ftaTeam" dict "color" "B" "position" 2 "data" .}}
-        {{template "ftaTeam" dict "color" "B" "position" 3 "data" .}}
-      </div>
       <div class="col-lg-6 well well-darkred">
-        <div class="row form-group hidden-xs">
+        <div class="row form-group">
           <div class="col-xs-3">Red Teams</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Driver Station (Tx/Rx MB/s)">DS</div>
-          <div class="col-xs-1" data-toggle="tooltip" title="Radio Status">R</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Radio Status">Rad</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Robot Status/Time Since Last Link">Rio</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Battery">Bat</div>
           <div class="col-xs-1" data-toggle="tooltip" title="Bypassed/Disabled">Byp</div>
@@ -38,6 +23,21 @@
         {{template "ftaTeam" dict "color" "R" "position" 1 "data" .}}
         {{template "ftaTeam" dict "color" "R" "position" 2 "data" .}}
         {{template "ftaTeam" dict "color" "R" "position" 3 "data" .}}
+      </div>
+      <div class="col-lg-6 well well-darkblue">
+        <div class="row form-group hidden-xs">
+          <div class="col-xs-3">Blue Teams</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Driver Station (Tx/Rx MB/s)">DS</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Radio Status">Rad</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Robot Status/Time Since Last Link">Rio</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Battery">Bat</div>
+          <div class="col-xs-1" data-toggle="tooltip" title="Bypassed/Disabled">Byp</div>
+          <div class="col-xs-2" data-toggle="tooltip" title="Average Trip Time">Trip Time</div>
+          <div class="col-xs-2" data-toggle="tooltip" title="Packet Loss">Lost Pack</div>
+        </div>
+        {{template "ftaTeam" dict "color" "B" "position" 1 "data" .}}
+        {{template "ftaTeam" dict "color" "B" "position" 2 "data" .}}
+        {{template "ftaTeam" dict "color" "B" "position" 3 "data" .}}
       </div>
     </div>
     <br />
