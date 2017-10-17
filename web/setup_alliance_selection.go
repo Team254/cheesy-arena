@@ -225,6 +225,31 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	http.Redirect(w, r, "/setup/alliance_selection", 303)
 }
 
+// Force push alliances to TBA.
+func (web *Web) allianceSelectionTbaHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	if web.canModifyAllianceSelection() {
+		web.renderAllianceSelection(w, r, "Alliance selection has not yet been finalized.")
+		return
+	}
+
+	if !web.arena.EventSettings.TbaPublishingEnabled {
+		web.renderAllianceSelection(w, r, "The Blue Alliance pushing is not enabled.")
+	}
+
+	err := web.arena.TbaClient.PublishAlliances(web.arena.Database)
+	if err != nil {
+		web.renderAllianceSelection(w, r, fmt.Sprintf("Failed to publish alliances: %s", err.Error()))
+		return
+	}
+
+	// XXX: This is not an error message
+	web.renderAllianceSelection(w, r, "Alliances successfully sent to The Blue Alliance")
+}
+
 func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
 	template, err := web.parseFiles("templates/setup_alliance_selection.html", "templates/base.html")
 	if err != nil {
@@ -234,12 +259,13 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 	nextRow, nextCol := web.determineNextCell()
 	data := struct {
 		*model.EventSettings
-		Alliances    [][]*model.AllianceTeam
-		RankedTeams  []*RankedTeam
-		NextRow      int
-		NextCol      int
-		ErrorMessage string
-	}{web.arena.EventSettings, cachedAlliances, cachedRankedTeams, nextRow, nextCol, errorMessage}
+		Alliances          [][]*model.AllianceTeam
+		RankedTeams        []*RankedTeam
+		SelectionFinalized bool
+		NextRow            int
+		NextCol            int
+		ErrorMessage       string
+	}{web.arena.EventSettings, cachedAlliances, cachedRankedTeams, !web.canModifyAllianceSelection(), nextRow, nextCol, errorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
