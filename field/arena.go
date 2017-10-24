@@ -258,6 +258,10 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 	}
 	arena.setupNetwork()
 	arena.MatchLoadTeamsNotifier.Notify(nil)
+
+	if arena.CurrentMatch.Type != "test" {
+		arena.Database.SaveMatch(arena.CurrentMatch)
+	}
 	return nil
 }
 

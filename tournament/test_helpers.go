@@ -13,8 +13,8 @@ import (
 func CreateTestAlliances(database *model.Database, allianceCount int) {
 	for i := 1; i <= allianceCount; i++ {
 		database.CreateAllianceTeam(&model.AllianceTeam{0, i, 0, i})
-		database.CreateAllianceTeam(&model.AllianceTeam{0, i, 1, i})
-		database.CreateAllianceTeam(&model.AllianceTeam{0, i, 2, i})
+		database.CreateAllianceTeam(&model.AllianceTeam{0, i, 1, 10 * i})
+		database.CreateAllianceTeam(&model.AllianceTeam{0, i, 2, 100 * i})
 	}
 }
 
