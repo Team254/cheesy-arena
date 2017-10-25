@@ -21,7 +21,7 @@ type RankedTeam struct {
 }
 
 // Global vars to hold the alliances that are in the process of being selected.
-var cachedAlliances [][]*model.AllianceTeam
+var cachedAlliances [][]model.AllianceTeam
 var cachedRankedTeams []*RankedTeam
 
 // Shows the alliance selection page.
@@ -52,10 +52,10 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 
 	// Iterate through all selections and update the alliances.
 	for i, alliance := range cachedAlliances {
-		for j, spot := range alliance {
+		for j := range alliance {
 			teamString := r.PostFormValue(fmt.Sprintf("selection%d_%d", i, j))
 			if teamString == "" {
-				spot.TeamId = 0
+				cachedAlliances[i][j].TeamId = 0
 			} else {
 				teamId, err := strconv.Atoi(teamString)
 				if err != nil {
@@ -71,7 +71,7 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 						}
 						found = true
 						team.Picked = true
-						spot.TeamId = teamId
+						cachedAlliances[i][j].TeamId = teamId
 						break
 					}
 				}
@@ -104,15 +104,15 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// Create a blank alliance set matching the event configuration.
-	cachedAlliances = make([][]*model.AllianceTeam, web.arena.EventSettings.NumElimAlliances)
+	cachedAlliances = make([][]model.AllianceTeam, web.arena.EventSettings.NumElimAlliances)
 	teamsPerAlliance := 3
 	if web.arena.EventSettings.SelectionRound3Order != "" {
 		teamsPerAlliance = 4
 	}
 	for i := 0; i < web.arena.EventSettings.NumElimAlliances; i++ {
-		cachedAlliances[i] = make([]*model.AllianceTeam, teamsPerAlliance)
+		cachedAlliances[i] = make([]model.AllianceTeam, teamsPerAlliance)
 		for j := 0; j < teamsPerAlliance; j++ {
-			cachedAlliances[i][j] = &model.AllianceTeam{AllianceId: i + 1, PickPosition: j}
+			cachedAlliances[i][j] = model.AllianceTeam{AllianceId: i + 1, PickPosition: j}
 		}
 	}
 
@@ -142,7 +142,7 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	cachedAlliances = [][]*model.AllianceTeam{}
+	cachedAlliances = [][]model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	web.arena.AllianceSelectionNotifier.Notify(nil)
 	http.Redirect(w, r, "/setup/alliance_selection", 303)
@@ -179,7 +179,7 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	// Save alliances to the database.
 	for _, alliance := range cachedAlliances {
 		for _, team := range alliance {
-			err := web.arena.Database.CreateAllianceTeam(team)
+			err := web.arena.Database.CreateAllianceTeam(&team)
 			if err != nil {
 				handleWebErr(w, err)
 				return
@@ -225,7 +225,31 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	http.Redirect(w, r, "/setup/alliance_selection", 303)
 }
 
+// Publishes the alliances to the web.
+func (web *Web) allianceSelectionPublishHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	err := web.arena.TbaClient.PublishAlliances(web.arena.Database)
+	if err != nil {
+		http.Error(w, "Failed to publish alliances: "+err.Error(), 500)
+		return
+	}
+	http.Redirect(w, r, "/setup/teams", 303)
+}
+
 func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
+	if len(cachedAlliances) == 0 && !web.canModifyAllianceSelection() {
+		// The application was restarted since the alliance selection was conducted; reload the alliances from the DB.
+		var err error
+		cachedAlliances, err = web.arena.Database.GetAllAlliances()
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+	}
+
 	template, err := web.parseFiles("templates/setup_alliance_selection.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -234,7 +258,7 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 	nextRow, nextCol := web.determineNextCell()
 	data := struct {
 		*model.EventSettings
-		Alliances    [][]*model.AllianceTeam
+		Alliances    [][]model.AllianceTeam
 		RankedTeams  []*RankedTeam
 		NextRow      int
 		NextCol      int

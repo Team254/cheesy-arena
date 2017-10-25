@@ -13,7 +13,7 @@ import (
 func TestSetupAllianceSelection(t *testing.T) {
 	web := setupTestWeb(t)
 
-	cachedAlliances = [][]*model.AllianceTeam{}
+	cachedAlliances = [][]model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.NumElimAlliances = 15
 	web.arena.EventSettings.SelectionRound3Order = "L"
@@ -96,7 +96,7 @@ func TestSetupAllianceSelection(t *testing.T) {
 func TestSetupAllianceSelectionErrors(t *testing.T) {
 	web := setupTestWeb(t)
 
-	cachedAlliances = [][]*model.AllianceTeam{}
+	cachedAlliances = [][]model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.NumElimAlliances = 2
 	for i := 1; i <= 6; i++ {
@@ -150,7 +150,7 @@ func TestSetupAllianceSelectionErrors(t *testing.T) {
 	recorder = web.postHttpResponse("/setup/alliance_selection", "selection0_0=asdf")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
-	cachedAlliances = [][]*model.AllianceTeam{}
+	cachedAlliances = [][]model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	recorder = web.postHttpResponse("/setup/alliance_selection/start", "")
 	assert.Equal(t, 200, recorder.Code)
@@ -160,7 +160,7 @@ func TestSetupAllianceSelectionErrors(t *testing.T) {
 func TestSetupAllianceSelectionAutofocus(t *testing.T) {
 	web := setupTestWeb(t)
 
-	cachedAlliances = [][]*model.AllianceTeam{}
+	cachedAlliances = [][]model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.NumElimAlliances = 2
 
@@ -247,4 +247,15 @@ func TestSetupAllianceSelectionAutofocus(t *testing.T) {
 	i, j = web.determineNextCell()
 	assert.Equal(t, -1, i)
 	assert.Equal(t, -1, j)
+}
+
+func TestSetupAllianceSelectionPublish(t *testing.T) {
+	web := setupTestWeb(t)
+
+	web.arena.TbaClient.BaseUrl = "fakeurl"
+	web.arena.EventSettings.TbaPublishingEnabled = true
+
+	recorder := web.postHttpResponse("/setup/alliance_selection/publish", "")
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Failed to publish alliances")
 }
