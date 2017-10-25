@@ -147,6 +147,7 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/setup/alliance_selection/start", web.allianceSelectionStartHandler).Methods("POST")
 	router.HandleFunc("/setup/alliance_selection/reset", web.allianceSelectionResetHandler).Methods("POST")
 	router.HandleFunc("/setup/alliance_selection/finalize", web.allianceSelectionFinalizeHandler).Methods("POST")
+	router.HandleFunc("/setup/alliance_selection/tba", web.allianceSelectionTbaHandler).Methods("POST")
 	router.HandleFunc("/setup/field", web.fieldGetHandler).Methods("GET")
 	router.HandleFunc("/setup/field", web.fieldPostHandler).Methods("POST")
 	router.HandleFunc("/setup/field/reload_displays", web.fieldReloadDisplaysHandler).Methods("GET")

@@ -15,11 +15,21 @@
   {{end}}
   {{if len .Alliances | eq 0}}
     <div class="col-lg-3">
+      {{if .SelectionFinalized}}
+        <legend>Alliance Selection</legend>
+        Alliance selection has already been finalized.
+        {{if .EventSettings.TbaPublishingEnabled}}
+        <form action="/setup/alliance_selection/tba" method="POST">
+          <button type="submit" class="btn btn-info">Publish alliances to The Blue Alliance</button>
+        </form>
+        {{end}}
+      {{else}}
       <form action="/setup/alliance_selection/start" method="POST">
         <legend>Alliance Selection</legend>
         <button type="submit" class="btn btn-info">Start Alliance Selection</button>
       </form>
     </div>
+    {{end}}
   {{else}}
     <form action="/setup/alliance_selection" method="POST">
       <div class="col-lg-3 ">
