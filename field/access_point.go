@@ -27,23 +27,36 @@ const (
 )
 
 type AccessPoint struct {
-	address  string
-	port     int
-	username string
-	password string
+	address      string
+	port         int
+	username     string
+	password     string
+	teamChannel  int
+	adminChannel int
+	adminWpaKey  string
 }
 
-func NewAccessPoint(address, username, password string) *AccessPoint {
-	return &AccessPoint{address: address, port: accessPointSshPort, username: username, password: password}
+func NewAccessPoint(address, username, password string, teamChannel, adminChannel int, adminWpaKey string) *AccessPoint {
+	return &AccessPoint{address: address, port: accessPointSshPort, username: username, password: password,
+		teamChannel: teamChannel, adminChannel: adminChannel, adminWpaKey: adminWpaKey}
 }
 
 // Sets up wireless networks for the given set of teams.
 func (ap *AccessPoint) ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
-	config, err := generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3)
+	config, err := ap.generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3)
 	if err != nil {
 		return err
 	}
 	command := fmt.Sprintf("cat <<ENDCONFIG > /etc/config/wireless && wifi radio0\n%sENDCONFIG\n", config)
+	return ap.runCommand(command)
+}
+
+func (ap *AccessPoint) ConfigureAdminWifi() error {
+	config, err := ap.generateAccessPointConfig(nil, nil, nil, nil, nil, nil)
+	if err != nil {
+		return err
+	}
+	command := fmt.Sprintf("cat <<ENDCONFIG > /etc/config/wireless && wifi radio1\n%sENDCONFIG\n", config)
 	return ap.runCommand(command)
 }
 
@@ -69,7 +82,7 @@ func (ap *AccessPoint) runCommand(command string) error {
 	return session.Run(command)
 }
 
-func generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *model.Team) (string, error) {
+func (ap *AccessPoint) generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *model.Team) (string, error) {
 	// Determine what new SSIDs are needed.
 	networks := make(map[int]*model.Team)
 	var err error
@@ -97,8 +110,14 @@ func generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *model.Team
 	if err != nil {
 		return "", err
 	}
+	data := struct {
+		Networks     map[int]*model.Team
+		TeamChannel  int
+		AdminChannel int
+		AdminWpaKey  string
+	}{networks, ap.teamChannel, ap.adminChannel, ap.adminWpaKey}
 	var configFile bytes.Buffer
-	err = template.Execute(&configFile, networks)
+	err = template.Execute(&configFile, data)
 	if err != nil {
 		return "", err
 	}

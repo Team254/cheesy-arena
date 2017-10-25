@@ -148,11 +148,17 @@ func (arena *Arena) LoadSettings() error {
 	arena.EventSettings = settings
 
 	// Initialize the components that depend on settings.
-	arena.accessPoint = NewAccessPoint(settings.ApAddress, settings.ApUsername, settings.ApPassword)
+	arena.accessPoint = NewAccessPoint(settings.ApAddress, settings.ApUsername, settings.ApPassword,
+		settings.ApTeamChannel, settings.ApAdminChannel, settings.ApAdminWpaKey)
 	arena.networkSwitch = NewNetworkSwitch(settings.SwitchAddress, settings.SwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.StemTvClient = partner.NewStemTvClient(settings.StemTvEventCode)
+
+	err = arena.accessPoint.ConfigureAdminWifi()
+	if err != nil {
+		return nil
+	}
 
 	return nil
 }

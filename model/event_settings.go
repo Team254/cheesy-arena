@@ -21,6 +21,9 @@ type EventSettings struct {
 	ApAddress                  string
 	ApUsername                 string
 	ApPassword                 string
+	ApTeamChannel              int
+	ApAdminChannel             int
+	ApAdminWpaKey              string
 	SwitchAddress              string
 	SwitchPassword             string
 	BandwidthMonitoringEnabled bool
@@ -44,6 +47,9 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.SelectionRound2Order = "L"
 		eventSettings.SelectionRound3Order = ""
 		eventSettings.TBADownloadEnabled = true
+		eventSettings.ApTeamChannel = 157
+		eventSettings.ApAdminChannel = 11
+		eventSettings.ApAdminWpaKey = "1234Five"
 
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {

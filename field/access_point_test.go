@@ -7,6 +7,7 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"regexp"
+	"strconv"
 	"testing"
 )
 
@@ -17,26 +18,31 @@ func TestConfigureAccessPoint(t *testing.T) {
 	ssidRe := regexp.MustCompile("option ssid '([-\\w ]+)'")
 	wpaKeyRe := regexp.MustCompile("option key '([-\\w ]+)'")
 	vlanRe := regexp.MustCompile("option network 'vlan(\\d+)'")
+	channelRe := regexp.MustCompile("option channel '(\\d+)'")
+	ap := AccessPoint{teamChannel: 1234, adminChannel: 4321, adminWpaKey: "blorpy"}
 
 	// Should not configure any team SSIDs if there are no teams.
-	config, _ := generateAccessPointConfig(nil, nil, nil, nil, nil, nil)
+	config, _ := ap.generateAccessPointConfig(nil, nil, nil, nil, nil, nil)
 	assert.NotContains(t, config, "option device 'radio0'")
 	ssids := ssidRe.FindAllStringSubmatch(config, -1)
 	wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
 	vlans := vlanRe.FindAllStringSubmatch(config, -1)
+	channels := channelRe.FindAllStringSubmatch(config, -1)
 	assert.Equal(t, "Cheesy Arena", ssids[0][1])
-	assert.Equal(t, "1234Five", wpaKeys[0][1])
+	assert.Equal(t, ap.adminWpaKey, wpaKeys[0][1])
 	assert.Equal(t, "100", vlans[0][1])
+	assert.Equal(t, strconv.Itoa(ap.adminChannel), channels[0][1])
+	assert.Equal(t, strconv.Itoa(ap.teamChannel), channels[1][1])
 
 	// Should configure two SSID for two teams.
-	config, _ = generateAccessPointConfig(&model.Team{Id: 254, WpaKey: "aaaaaaaa"}, nil, nil, nil, nil,
+	config, _ = ap.generateAccessPointConfig(&model.Team{Id: 254, WpaKey: "aaaaaaaa"}, nil, nil, nil, nil,
 		&model.Team{Id: 1114, WpaKey: "bbbbbbbb"})
 	assert.Equal(t, 2, len(radioRe.FindAllString(config, -1)))
 	ssids = ssidRe.FindAllStringSubmatch(config, -1)
 	wpaKeys = wpaKeyRe.FindAllStringSubmatch(config, -1)
 	vlans = vlanRe.FindAllStringSubmatch(config, -1)
 	assert.Equal(t, "Cheesy Arena", ssids[0][1])
-	assert.Equal(t, "1234Five", wpaKeys[0][1])
+	assert.Equal(t, ap.adminWpaKey, wpaKeys[0][1])
 	assert.Equal(t, "100", vlans[0][1])
 	assert.Equal(t, "254", ssids[1][1])
 	assert.Equal(t, "aaaaaaaa", wpaKeys[1][1])
@@ -46,7 +52,7 @@ func TestConfigureAccessPoint(t *testing.T) {
 	assert.Equal(t, "60", vlans[2][1])
 
 	// Should configure all SSIDs for six teams.
-	config, _ = generateAccessPointConfig(&model.Team{Id: 1, WpaKey: "11111111"},
+	config, _ = ap.generateAccessPointConfig(&model.Team{Id: 1, WpaKey: "11111111"},
 		&model.Team{Id: 2, WpaKey: "22222222"}, &model.Team{Id: 3, WpaKey: "33333333"},
 		&model.Team{Id: 4, WpaKey: "44444444"}, &model.Team{Id: 5, WpaKey: "55555555"},
 		&model.Team{Id: 6, WpaKey: "66666666"})
@@ -55,7 +61,7 @@ func TestConfigureAccessPoint(t *testing.T) {
 	wpaKeys = wpaKeyRe.FindAllStringSubmatch(config, -1)
 	vlans = vlanRe.FindAllStringSubmatch(config, -1)
 	assert.Equal(t, "Cheesy Arena", ssids[0][1])
-	assert.Equal(t, "1234Five", wpaKeys[0][1])
+	assert.Equal(t, ap.adminWpaKey, wpaKeys[0][1])
 	assert.Equal(t, "100", vlans[0][1])
 	assert.Equal(t, "1", ssids[1][1])
 	assert.Equal(t, "11111111", wpaKeys[1][1])
@@ -77,7 +83,7 @@ func TestConfigureAccessPoint(t *testing.T) {
 	assert.Equal(t, "60", vlans[6][1])
 
 	// Should reject a missing WPA key.
-	_, err := generateAccessPointConfig(&model.Team{Id: 254}, nil, nil, nil, nil, nil)
+	_, err := ap.generateAccessPointConfig(&model.Team{Id: 254}, nil, nil, nil, nil, nil)
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Invalid WPA key")
 	}

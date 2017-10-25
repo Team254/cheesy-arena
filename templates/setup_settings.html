@@ -181,6 +181,37 @@
             </div>
           </div>
           <div class="form-group">
+            <label class="col-lg-5 control-label">AP Team Channel (5GHz)</label>
+            <div class="col-lg-7">
+              <select class="form-control" name="apTeamChannel" value="{{.ApTeamChannel}}">
+                <option{{if eq .ApTeamChannel 36}} selected{{end}}>36</option>
+                <option{{if eq .ApTeamChannel 40}} selected{{end}}>40</option>
+                <option{{if eq .ApTeamChannel 44}} selected{{end}}>44</option>
+                <option{{if eq .ApTeamChannel 48}} selected{{end}}>48</option>
+                <option{{if eq .ApTeamChannel 149}} selected{{end}}>149</option>
+                <option{{if eq .ApTeamChannel 153}} selected{{end}}>153</option>
+                <option{{if eq .ApTeamChannel 157}} selected{{end}}>157</option>
+                <option{{if eq .ApTeamChannel 161}} selected{{end}}>161</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">AP Admin Channel (2.4GHz)</label>
+            <div class="col-lg-7">
+              <select class="form-control" name="apAdminChannel" value="{{.ApAdminChannel}}">
+                <option{{if eq .ApAdminChannel 1}} selected{{end}}>1</option>
+                <option{{if eq .ApAdminChannel 6}} selected{{end}}>6</option>
+                <option{{if eq .ApAdminChannel 11}} selected{{end}}>11</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">AP Admin WPA Key</label>
+            <div class="col-lg-7">
+              <input type="password" class="form-control" name="apAdminWpaKey" value="{{.ApAdminWpaKey}}">
+            </div>
+          </div>
+          <div class="form-group">
             <label class="col-lg-5 control-label">Switch Address</label>
             <div class="col-lg-7">
               <input type="text" class="form-control" name="switchAddress" value="{{.SwitchAddress}}">
