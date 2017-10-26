@@ -12,10 +12,14 @@ import (
 	"golang.org/x/crypto/ssh"
 	"os"
 	"path/filepath"
+	"sync"
 	"text/template"
+	"time"
 )
 
 const accessPointSshPort = 22
+const connectTimeoutSec = 1
+const commandTimeoutSec = 3
 
 const (
 	red1Vlan  = 10
@@ -34,6 +38,7 @@ type AccessPoint struct {
 	teamChannel  int
 	adminChannel int
 	adminWpaKey  string
+	mutex        sync.Mutex
 }
 
 func NewAccessPoint(address, username, password string, teamChannel, adminChannel int, adminWpaKey string) *AccessPoint {
@@ -43,6 +48,10 @@ func NewAccessPoint(address, username, password string, teamChannel, adminChanne
 
 // Sets up wireless networks for the given set of teams.
 func (ap *AccessPoint) ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
+	// Make sure multiple configurations aren't being set at the same time.
+	ap.mutex.Lock()
+	defer ap.mutex.Unlock()
+
 	config, err := ap.generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3)
 	if err != nil {
 		return err
@@ -65,7 +74,8 @@ func (ap *AccessPoint) runCommand(command string) error {
 	// Open an SSH connection to the AP.
 	config := &ssh.ClientConfig{User: ap.username,
 		Auth:            []ssh.AuthMethod{ssh.Password(ap.password)},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey()}
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         connectTimeoutSec * time.Second}
 	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ap.address, ap.port), config)
 	if err != nil {
 		return err
@@ -78,8 +88,17 @@ func (ap *AccessPoint) runCommand(command string) error {
 	defer conn.Close()
 	session.Stdout = os.Stdout
 
-	// Run the command. An error will be returned if the exit status is non-zero.
-	return session.Run(command)
+	// Run the command with a timeout. An error will be returned if the exit status is non-zero.
+	commandChan := make(chan error, 1)
+	go func() {
+		commandChan <- session.Run(command)
+	}()
+	select {
+	case err = <-commandChan:
+		return err
+	case <-time.After(commandTimeoutSec * time.Second):
+		return fmt.Errorf("WiFi SSH command timed out after %d seconds", commandTimeoutSec)
+	}
 }
 
 func (ap *AccessPoint) generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *model.Team) (string, error) {
