@@ -117,7 +117,7 @@ func (monitor *BandwidthMonitor) updateStationBandwidth(station string, oidIndex
 		return
 	}
 	lastToRobotBytesForPort := uint32(monitor.lastToRobotBytes[toOid].(wapsnmp.Counter))
-	dsConn.MBpsToRobot = float64(toRobotBytesForPort-lastToRobotBytesForPort) / 1024 / 1024 / secondsSinceLast
+	dsConn.MBpsToRobot = float64(toRobotBytesForPort-lastToRobotBytesForPort) / 1024 / 128 / secondsSinceLast
 
 	fromOid := monitor.fromRobotOids[oidIndex].String()
 	if _, ok := fromRobotBytes[fromOid]; !ok {
@@ -130,5 +130,5 @@ func (monitor *BandwidthMonitor) updateStationBandwidth(station string, oidIndex
 		return
 	}
 	lastFromRobotBytesForPort := uint32(monitor.lastFromRobotBytes[fromOid].(wapsnmp.Counter))
-	dsConn.MBpsFromRobot = float64(fromRobotBytesForPort-lastFromRobotBytesForPort) / 1024 / 1024 / secondsSinceLast
+	dsConn.MBpsFromRobot = float64(fromRobotBytesForPort-lastFromRobotBytesForPort) / 1024 / 128 / secondsSinceLast
 }

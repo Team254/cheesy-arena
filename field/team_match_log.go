@@ -36,7 +36,7 @@ func NewTeamMatchLog(teamId int, match *model.Match) (*TeamMatchLog, error) {
 	}
 
 	log := TeamMatchLog{log.New(logFile, "", 0), logFile}
-	log.logger.Println("matchTimeSec,packetType,teamId,allianceStation,robotLinked,auto,enabled," +
+	log.logger.Println("matchTimeSec,packetType,teamId,allianceStation,radioLinked,robotLinked,auto,enabled," +
 		"emergencyStop,batteryVoltage,missedPacketCount,dsRobotTripTimeMs")
 
 	return &log, nil
@@ -44,7 +44,7 @@ func NewTeamMatchLog(teamId int, match *model.Match) (*TeamMatchLog, error) {
 
 // Adds a line to the log when a packet is received.
 func (log *TeamMatchLog) LogDsPacket(matchTimeSec float64, packetType int, dsConn *DriverStationConnection) {
-	log.logger.Printf("%f,%d,%d,%s,%v,%v,%v,%v,%f,%d,%d", matchTimeSec, packetType, dsConn.TeamId,
+	log.logger.Printf("%f,%d,%d,%s,%v,%v,%v,%v,%v,%f,%d,%d", matchTimeSec, packetType, dsConn.TeamId,
 		dsConn.AllianceStation, dsConn.RadioLinked, dsConn.RobotLinked, dsConn.Auto, dsConn.Enabled, dsConn.Estop,
 		dsConn.BatteryVoltage, dsConn.MissedPacketCount, dsConn.DsRobotTripTimeMs)
 }
