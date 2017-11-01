@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"golang.org/x/crypto/ssh"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -18,8 +19,9 @@ import (
 )
 
 const accessPointSshPort = 22
-const connectTimeoutSec = 1
-const commandTimeoutSec = 3
+const accessPointConnectTimeoutSec = 1
+const accessPointCommandTimeoutSec = 3
+const accessPointRetryCount = 2
 
 const (
 	red1Vlan  = 10
@@ -75,29 +77,46 @@ func (ap *AccessPoint) runCommand(command string) error {
 	config := &ssh.ClientConfig{User: ap.username,
 		Auth:            []ssh.AuthMethod{ssh.Password(ap.password)},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         connectTimeoutSec * time.Second}
-	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ap.address, ap.port), config)
-	if err != nil {
-		return err
-	}
-	session, err := conn.NewSession()
-	if err != nil {
-		return err
-	}
-	defer session.Close()
-	defer conn.Close()
-	session.Stdout = os.Stdout
+		Timeout:         accessPointConnectTimeoutSec * time.Second}
 
-	// Run the command with a timeout. An error will be returned if the exit status is non-zero.
-	commandChan := make(chan error, 1)
-	go func() {
-		commandChan <- session.Run(command)
-	}()
-	select {
-	case err = <-commandChan:
-		return err
-	case <-time.After(commandTimeoutSec * time.Second):
-		return fmt.Errorf("WiFi SSH command timed out after %d seconds", commandTimeoutSec)
+	doSsh := func() error {
+		conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ap.address, ap.port), config)
+		if err != nil {
+			return err
+		}
+		session, err := conn.NewSession()
+		if err != nil {
+			return err
+		}
+		defer session.Close()
+		defer conn.Close()
+		session.Stdout = os.Stdout
+
+		// Run the command with a timeout. An error will be returned if the exit status is non-zero.
+		commandChan := make(chan error, 1)
+		go func() {
+			commandChan <- session.Run(command)
+		}()
+		select {
+		case err = <-commandChan:
+			return err
+		case <-time.After(accessPointCommandTimeoutSec * time.Second):
+			return fmt.Errorf("WiFi SSH command timed out after %d seconds", accessPointCommandTimeoutSec)
+		}
+	}
+
+	// Retry the SSH connection if it fails, sleeping between attempts.
+	attempts := accessPointRetryCount + 1
+	for {
+		err := doSsh()
+		if err == nil {
+			return nil
+		}
+		attempts--
+		if attempts <= 0 {
+			return err
+		}
+		log.Printf("WiFi configuration failed; retrying %d more times: %v", attempts, err)
 	}
 }
 
