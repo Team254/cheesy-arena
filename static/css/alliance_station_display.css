@@ -14,7 +14,7 @@ body {
   color: #fff;
 }
 body[data-mode=logo] {
-  background-color: #fff;
+  background-color: #000;
 }
 body[data-mode=fieldReset] {
   background-color: #0a3;
@@ -44,7 +44,7 @@ body[data-mode=fieldReset] .mode#fieldReset {
   bottom: 0;
   left: 0;
   right: 0;
-  width: 100%;
+  width: 80%;
   margin: auto auto;
 }
 
