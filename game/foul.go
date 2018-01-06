@@ -16,13 +16,13 @@ type Rule struct {
 	IsTechnical bool
 }
 
-// All rules from the 2017 game that carry point penalties.
-var Rules = []Rule{{"S08", false}, {"C08", false}, {"C11", false}, {"G04", false}, {"G05", false},
-	{"G08", false}, {"G09", false}, {"G11", false}, {"G11", true}, {"G12", false}, {"G13", true},
-	{"G15", false}, {"G17", false}, {"G20", false}, {"G22", false}, {"G23", false}, {"G26", true},
-	{"G27", false}, {"G27", true}, {"A01", false}, {"A02", false}, {"A04", false}, {"A04", true},
-	{"A05", true}, {"H06", false}, {"H07", false}, {"H08", false}, {"H11", false}, {"H11", true},
-	{"H12", true}, {"H13", false}}
+// All rules from the 2018 game that carry point penalties.
+var Rules = []Rule{{"S06", false}, {"C07", false}, {"C07", true}, {"G05", false}, {"G07", false},
+	{"G09", true}, {"G10", false}, {"G11", false}, {"G13", false}, {"G14", false}, {"G15", false},
+	{"G16", true}, {"G17", true}, {"G19", false}, {"G20", true}, {"G21", false}, {"G22", false},
+	{"G23", false}, {"G24", true}, {"G25", false}, {"G25", true}, {"A01", false}, {"A02", false},
+	{"A03", false}, {"A04", false}, {"A04", true}, {"A05", false}, {"H06", false}, {"H11", true},
+	{"H12", true}, {"H13", false}, {"H14", false}}
 
 func (foul *Foul) PointValue() int {
 	if foul.IsTechnical {
