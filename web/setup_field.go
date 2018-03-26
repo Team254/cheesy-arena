@@ -72,49 +72,52 @@ func (web *Web) fieldTestPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO(patrick): Update for 2018.
 	mode := r.PostFormValue("mode")
-	switch mode {
-	case "boiler":
-		web.arena.Plc.SetBoilerMotors(true)
-		web.arena.Plc.SetRotorMotors(0, 0)
-		web.arena.Plc.SetRotorLights(0, 0)
-		web.arena.Plc.SetTouchpadLights([3]bool{false, false, false}, [3]bool{false, false, false})
-	case "rotor1":
-		web.arena.Plc.SetBoilerMotors(false)
-		web.arena.Plc.SetRotorMotors(1, 1)
-		web.arena.Plc.SetRotorLights(1, 1)
-		web.arena.Plc.SetTouchpadLights([3]bool{true, false, false}, [3]bool{true, false, false})
-	case "rotor2":
-		web.arena.Plc.SetBoilerMotors(false)
-		web.arena.Plc.SetRotorMotors(2, 2)
-		web.arena.Plc.SetRotorLights(2, 2)
-		web.arena.Plc.SetTouchpadLights([3]bool{false, true, false}, [3]bool{false, true, false})
-	case "rotor3":
-		web.arena.Plc.SetBoilerMotors(false)
-		web.arena.Plc.SetRotorMotors(3, 3)
-		web.arena.Plc.SetRotorLights(2, 2)
-		web.arena.Plc.SetTouchpadLights([3]bool{false, false, true}, [3]bool{false, false, true})
-	case "rotor4":
-		web.arena.Plc.SetBoilerMotors(false)
-		web.arena.Plc.SetRotorMotors(4, 4)
-		web.arena.Plc.SetRotorLights(2, 2)
-		web.arena.Plc.SetTouchpadLights([3]bool{false, false, false}, [3]bool{false, false, false})
-	case "red":
-		web.arena.Plc.SetBoilerMotors(false)
-		web.arena.Plc.SetRotorMotors(4, 0)
-		web.arena.Plc.SetRotorLights(2, 0)
-		web.arena.Plc.SetTouchpadLights([3]bool{true, true, true}, [3]bool{false, false, false})
-	case "blue":
-		web.arena.Plc.SetBoilerMotors(false)
-		web.arena.Plc.SetRotorMotors(0, 4)
-		web.arena.Plc.SetRotorLights(0, 2)
-		web.arena.Plc.SetTouchpadLights([3]bool{false, false, false}, [3]bool{true, true, true})
-	default:
-		web.arena.Plc.SetBoilerMotors(false)
-		web.arena.Plc.SetRotorMotors(0, 0)
-		web.arena.Plc.SetRotorLights(0, 0)
-		web.arena.Plc.SetTouchpadLights([3]bool{false, false, false}, [3]bool{false, false, false})
-	}
+	/*
+		switch mode {
+		case "boiler":
+			web.arena.Plc.SetBoilerMotors(true)
+			web.arena.Plc.SetRotorMotors(0, 0)
+			web.arena.Plc.SetRotorLights(0, 0)
+			web.arena.Plc.SetTouchpadLights([3]bool{false, false, false}, [3]bool{false, false, false})
+		case "rotor1":
+			web.arena.Plc.SetBoilerMotors(false)
+			web.arena.Plc.SetRotorMotors(1, 1)
+			web.arena.Plc.SetRotorLights(1, 1)
+			web.arena.Plc.SetTouchpadLights([3]bool{true, false, false}, [3]bool{true, false, false})
+		case "rotor2":
+			web.arena.Plc.SetBoilerMotors(false)
+			web.arena.Plc.SetRotorMotors(2, 2)
+			web.arena.Plc.SetRotorLights(2, 2)
+			web.arena.Plc.SetTouchpadLights([3]bool{false, true, false}, [3]bool{false, true, false})
+		case "rotor3":
+			web.arena.Plc.SetBoilerMotors(false)
+			web.arena.Plc.SetRotorMotors(3, 3)
+			web.arena.Plc.SetRotorLights(2, 2)
+			web.arena.Plc.SetTouchpadLights([3]bool{false, false, true}, [3]bool{false, false, true})
+		case "rotor4":
+			web.arena.Plc.SetBoilerMotors(false)
+			web.arena.Plc.SetRotorMotors(4, 4)
+			web.arena.Plc.SetRotorLights(2, 2)
+			web.arena.Plc.SetTouchpadLights([3]bool{false, false, false}, [3]bool{false, false, false})
+		case "red":
+			web.arena.Plc.SetBoilerMotors(false)
+			web.arena.Plc.SetRotorMotors(4, 0)
+			web.arena.Plc.SetRotorLights(2, 0)
+			web.arena.Plc.SetTouchpadLights([3]bool{true, true, true}, [3]bool{false, false, false})
+		case "blue":
+			web.arena.Plc.SetBoilerMotors(false)
+			web.arena.Plc.SetRotorMotors(0, 4)
+			web.arena.Plc.SetRotorLights(0, 2)
+			web.arena.Plc.SetTouchpadLights([3]bool{false, false, false}, [3]bool{true, true, true})
+		default:
+			web.arena.Plc.SetBoilerMotors(false)
+			web.arena.Plc.SetRotorMotors(0, 0)
+			web.arena.Plc.SetRotorLights(0, 0)
+			web.arena.Plc.SetTouchpadLights([3]bool{false, false, false}, [3]bool{false, false, false})
+		}
+	*/
 
 	web.arena.FieldTestMode = mode
 	http.Redirect(w, r, "/setup/field", 303)

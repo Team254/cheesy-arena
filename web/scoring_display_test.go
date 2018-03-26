@@ -64,8 +64,8 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 		readWebsocketType(t, blueWs, "score")
 	}
 
-	assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.AutoMobility)
-	assert.Equal(t, 2, web.arena.BlueRealtimeScore.CurrentScore.AutoMobility)
+	assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.AutoRuns)
+	assert.Equal(t, 2, web.arena.BlueRealtimeScore.CurrentScore.AutoRuns)
 
 	redWs.Write("mobility", nil)
 	for i := 0; i < 1; i++ {
@@ -76,8 +76,8 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	}
 
 	// Make sure auto scores haven't changed in teleop.
-	assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.AutoMobility)
-	assert.Equal(t, 2, web.arena.BlueRealtimeScore.CurrentScore.AutoMobility)
+	assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.AutoRuns)
+	assert.Equal(t, 2, web.arena.BlueRealtimeScore.CurrentScore.AutoRuns)
 
 	// Test committing logic.
 	redWs.Write("commitMatch", nil)

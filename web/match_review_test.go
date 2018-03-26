@@ -49,8 +49,8 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
-	assert.Contains(t, recorder.Body.String(), "210") // The red score
-	assert.Contains(t, recorder.Body.String(), "533") // The blue score
+	assert.Contains(t, recorder.Body.String(), "169") // The red score
+	assert.Contains(t, recorder.Body.String(), "228") // The blue score
 
 	// Check response for non-existent match.
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", 12345))
@@ -62,7 +62,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"AutoMobility\":3}&blueScoreJson={\"Rotors\":3," +
+	postBody := "redScoreJson={\"AutoRuns\":3}&blueScoreJson={\"VaultCubes\":3," +
 		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
@@ -71,8 +71,8 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
-	assert.Contains(t, recorder.Body.String(), "20")  // The red score
-	assert.Contains(t, recorder.Body.String(), "120") // The blue score
+	assert.Contains(t, recorder.Body.String(), "20") // The red score
+	assert.Contains(t, recorder.Body.String(), "15") // The blue score
 }
 
 func TestMatchReviewCreateNewResult(t *testing.T) {
@@ -94,7 +94,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"AutoRotors\":1}&blueScoreJson={\"FuelHigh\":30," +
+	postBody := "redScoreJson={\"AutoOwnershipPoints\":60}&blueScoreJson={\"VaultCubes\":2," +
 		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)

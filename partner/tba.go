@@ -10,7 +10,6 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"io/ioutil"
 	"net/http"
@@ -71,14 +70,13 @@ type TbaRanking struct {
 	TeamKey    string  `json:"team_key"`
 	Rank       int     `json:"rank"`
 	RP         float32 `json:"RP"`
-	Match      int     `json:"Match"`
-	Auto       int     `json:"Auto"`
-	Rotor      int     `json:"Rotor"`
-	Touchpad   int     `json:"Touchpad"`
-	Pressure   int     `json:"Pressure"`
-	WinLossTie string  `json:"W-L-T"`
-	Dqs        int     `json:"dqs"`
-	Played     int     `json:"played"`
+	ParkClimb  int
+	Auto       int
+	Ownership  int
+	Vault      int
+	WinLossTie string `json:"W-L-T"`
+	Dqs        int    `json:"dqs"`
+	Played     int    `json:"played"`
 }
 
 type TbaRankings struct {
@@ -301,8 +299,8 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank,
-			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.MatchPoints, ranking.AutoPoints,
-			ranking.RotorPoints, ranking.TakeoffPoints, ranking.PressurePoints,
+			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.ParkClimbPoints, ranking.AutoPoints,
+			ranking.OwnershipPoints, ranking.VaultPoints,
 			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
 			ranking.Played}
 	}
@@ -427,49 +425,51 @@ func (client *TbaClient) postRequest(resource string, action string, body []byte
 
 func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResult, alliance string) *TbaScoreBreakdown {
 	var breakdown TbaScoreBreakdown
-	var score *game.Score
-	var scoreSummary *game.ScoreSummary
-	if alliance == "red" {
-		score = matchResult.RedScore
-		scoreSummary = matchResult.RedScoreSummary()
-	} else {
-		score = matchResult.BlueScore
-		scoreSummary = matchResult.BlueScoreSummary()
-	}
-
-	breakdown.AutoFuelHigh = score.AutoFuelHigh
-	breakdown.AutoFuelLow = score.AutoFuelLow
-	breakdown.AutoFuelPoints = score.AutoFuelHigh + score.AutoFuelLow/3
-	breakdown.Rotor1Auto = score.AutoRotors >= 1
-	breakdown.Rotor2Auto = score.AutoRotors >= 2
-	breakdown.AutoRotorPoints = 60 * score.AutoRotors
-	breakdown.AutoMobilityPoints = scoreSummary.AutoMobilityPoints
-	breakdown.AutoPoints = scoreSummary.AutoPoints
-	breakdown.TeleopFuelHigh = score.FuelHigh
-	breakdown.TeleopFuelLow = score.FuelLow
-	breakdown.TeleopFuelPoints = scoreSummary.PressurePoints - breakdown.AutoFuelPoints
-	totalRotors := score.AutoRotors + score.Rotors
-	breakdown.Rotor1Engaged = totalRotors >= 1
-	breakdown.Rotor2Engaged = totalRotors >= 2
-	breakdown.Rotor3Engaged = totalRotors >= 3
-	breakdown.Rotor4Engaged = totalRotors >= 4
-	breakdown.TeleopRotorPoints = scoreSummary.RotorPoints - breakdown.AutoRotorPoints
-	breakdown.TeleopTakeoffPoints = scoreSummary.TakeoffPoints
-	breakdown.TeleopPoints = breakdown.TeleopFuelPoints + breakdown.TeleopRotorPoints +
-		breakdown.TeleopTakeoffPoints + scoreSummary.BonusPoints
-	if match.Type == "elimination" {
-		if scoreSummary.PressureGoalReached {
-			breakdown.KPaBonusPoints = 20
+	// TODO(patrick): Implement for 2018.
+	/*
+		var score *game.Score
+		var scoreSummary *game.ScoreSummary
+		if alliance == "red" {
+			score = matchResult.RedScore
+			scoreSummary = matchResult.RedScoreSummary()
+		} else {
+			score = matchResult.BlueScore
+			scoreSummary = matchResult.BlueScoreSummary()
 		}
-		if scoreSummary.RotorGoalReached {
-			breakdown.RotorBonusPoints = 100
-		}
-	} else {
-		breakdown.KPaRankingPointAchieved = scoreSummary.PressureGoalReached
-		breakdown.RotorRankingPointAchieved = scoreSummary.RotorGoalReached
-	}
-	breakdown.FoulPoints = scoreSummary.FoulPoints
-	breakdown.TotalPoints = scoreSummary.Score
 
+		breakdown.AutoFuelHigh = score.AutoFuelHigh
+		breakdown.AutoFuelLow = score.AutoFuelLow
+		breakdown.AutoFuelPoints = score.AutoFuelHigh + score.AutoFuelLow/3
+		breakdown.Rotor1Auto = score.AutoRotors >= 1
+		breakdown.Rotor2Auto = score.AutoRotors >= 2
+		breakdown.AutoRotorPoints = 60 * score.AutoRotors
+		breakdown.AutoMobilityPoints = scoreSummary.AutoMobilityPoints
+		breakdown.AutoPoints = scoreSummary.AutoPoints
+		breakdown.TeleopFuelHigh = score.FuelHigh
+		breakdown.TeleopFuelLow = score.FuelLow
+		breakdown.TeleopFuelPoints = scoreSummary.PressurePoints - breakdown.AutoFuelPoints
+		totalRotors := score.AutoRotors + score.Rotors
+		breakdown.Rotor1Engaged = totalRotors >= 1
+		breakdown.Rotor2Engaged = totalRotors >= 2
+		breakdown.Rotor3Engaged = totalRotors >= 3
+		breakdown.Rotor4Engaged = totalRotors >= 4
+		breakdown.TeleopRotorPoints = scoreSummary.RotorPoints - breakdown.AutoRotorPoints
+		breakdown.TeleopTakeoffPoints = scoreSummary.TakeoffPoints
+		breakdown.TeleopPoints = breakdown.TeleopFuelPoints + breakdown.TeleopRotorPoints +
+			breakdown.TeleopTakeoffPoints + scoreSummary.BonusPoints
+		if match.Type == "elimination" {
+			if scoreSummary.PressureGoalReached {
+				breakdown.KPaBonusPoints = 20
+			}
+			if scoreSummary.RotorGoalReached {
+				breakdown.RotorBonusPoints = 100
+			}
+		} else {
+			breakdown.KPaRankingPointAchieved = scoreSummary.PressureGoalReached
+			breakdown.RotorRankingPointAchieved = scoreSummary.RotorGoalReached
+		}
+		breakdown.FoulPoints = scoreSummary.FoulPoints
+		breakdown.TotalPoints = scoreSummary.Score
+	*/
 	return &breakdown
 }

@@ -14,6 +14,14 @@ var MatchTiming = struct {
 	EndgameTimeLeftSec int
 }{15, 2, 135, 30}
 
+func GetAutoEndTime(matchStartTime time.Time) time.Time {
+	return matchStartTime.Add(time.Duration(MatchTiming.AutoDurationSec))
+}
+
+func GetTeleopStartTime(matchStartTime time.Time) time.Time {
+	return matchStartTime.Add(time.Duration(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec))
+}
+
 func GetMatchEndTime(matchStartTime time.Time) time.Time {
 	return matchStartTime.Add(time.Duration(MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec+
 		MatchTiming.TeleopDurationSec) * time.Second)

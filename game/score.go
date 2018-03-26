@@ -6,33 +6,32 @@
 package game
 
 type Score struct {
-	AutoMobility int
-	AutoRotors   int
-	AutoFuelLow  int
-	AutoFuelHigh int
-	Rotors       int
-	FuelLow      int
-	FuelHigh     int
-	Takeoffs     int
-	Fouls        []Foul
-	ElimDq       bool
+	AutoRuns               int
+	AutoEndSwitchOwnership bool
+	AutoOwnershipPoints    int
+	TeleopOwnershipPoints  int
+	VaultCubes             int
+	Levitate               bool
+	Parks                  int
+	Climbs                 int
+	Fouls                  []Foul
+	ElimDq                 bool
 }
 
 type ScoreSummary struct {
-	AutoMobilityPoints  int
-	AutoPoints          int
-	RotorPoints         int
-	TakeoffPoints       int
-	PressurePoints      int
-	BonusPoints         int
-	FoulPoints          int
-	Score               int
-	PressureGoalReached bool
-	RotorGoalReached    bool
+	AutoRunPoints   int
+	AutoPoints      int
+	OwnershipPoints int
+	VaultPoints     int
+	ParkClimbPoints int
+	FoulPoints      int
+	Score           int
+	AutoQuest       bool
+	FaceTheBoss     bool
 }
 
 // Calculates and returns the summary fields used for ranking and display.
-func (score *Score) Summarize(opponentFouls []Foul, matchType string) *ScoreSummary {
+func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	summary := new(ScoreSummary)
 
 	// Leave the score at zero if the team was disqualified.
@@ -41,27 +40,24 @@ func (score *Score) Summarize(opponentFouls []Foul, matchType string) *ScoreSumm
 	}
 
 	// Calculate autonomous score.
-	summary.AutoMobilityPoints = 5 * score.AutoMobility
-	summary.AutoPoints = summary.AutoMobilityPoints + 60*score.AutoRotors + score.AutoFuelHigh +
-		score.AutoFuelLow/3
+	summary.AutoRunPoints = 5 * score.AutoRuns
+	summary.AutoPoints = summary.AutoRunPoints + score.AutoOwnershipPoints
 
 	// Calculate teleop score.
-	summary.RotorPoints = 60*score.AutoRotors + 40*score.Rotors
-	summary.TakeoffPoints = 50 * score.Takeoffs
-	summary.PressurePoints = (9*score.AutoFuelHigh + 3*score.AutoFuelLow + 3*score.FuelHigh + score.FuelLow) / 9
+	summary.OwnershipPoints = score.AutoOwnershipPoints + score.TeleopOwnershipPoints
+	summary.VaultPoints = 5 * score.VaultCubes
+	climbs := score.Climbs
+	if score.Levitate && score.Climbs < 3 {
+		climbs++
+	}
+	summary.ParkClimbPoints = 5*score.Parks + 30*climbs
 
 	// Calculate bonuses.
-	if summary.PressurePoints >= 40 {
-		summary.PressureGoalReached = true
-		if matchType == "elimination" {
-			summary.BonusPoints += 20
-		}
+	if score.AutoRuns == 3 && score.AutoEndSwitchOwnership {
+		summary.AutoQuest = true
 	}
-	if score.AutoRotors+score.Rotors == 4 {
-		summary.RotorGoalReached = true
-		if matchType == "elimination" {
-			summary.BonusPoints += 100
-		}
+	if climbs == 3 {
+		summary.FaceTheBoss = true
 	}
 
 	// Calculate penalty points.
@@ -69,17 +65,18 @@ func (score *Score) Summarize(opponentFouls []Foul, matchType string) *ScoreSumm
 		summary.FoulPoints += foul.PointValue()
 	}
 
-	summary.Score = summary.AutoMobilityPoints + summary.RotorPoints + summary.TakeoffPoints + summary.PressurePoints +
-		summary.BonusPoints + summary.FoulPoints
+	summary.Score = summary.AutoRunPoints + summary.OwnershipPoints + summary.VaultPoints + summary.ParkClimbPoints +
+		summary.FoulPoints
 
 	return summary
 }
 
 func (score *Score) Equals(other *Score) bool {
-	if score.AutoMobility != other.AutoMobility || score.AutoRotors != other.AutoRotors ||
-		score.AutoFuelLow != other.AutoFuelLow || score.AutoFuelHigh != other.AutoFuelHigh ||
-		score.Rotors != other.Rotors || score.FuelLow != other.FuelLow || score.FuelHigh != other.FuelHigh ||
-		score.Takeoffs != other.Takeoffs || score.ElimDq != other.ElimDq || len(score.Fouls) != len(other.Fouls) {
+	if score.AutoRuns != other.AutoRuns || score.AutoEndSwitchOwnership != other.AutoEndSwitchOwnership ||
+		score.AutoOwnershipPoints != other.AutoOwnershipPoints ||
+		score.TeleopOwnershipPoints != other.TeleopOwnershipPoints || score.VaultCubes != other.VaultCubes ||
+		score.Levitate != other.Levitate || score.Parks != other.Parks || score.Climbs != other.Climbs ||
+		score.ElimDq != other.ElimDq || len(score.Fouls) != len(other.Fouls) {
 		return false
 	}
 

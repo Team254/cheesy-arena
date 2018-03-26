@@ -12,9 +12,6 @@ type RealtimeScore struct {
 	Cards           map[string]string
 	TeleopCommitted bool
 	FoulsCommitted  bool
-	boiler          game.Boiler
-	rotorSet        game.RotorSet
-	touchpads       [3]game.Touchpad
 }
 
 func NewRealtimeScore() *RealtimeScore {

@@ -70,6 +70,11 @@ type Arena struct {
 	AllianceSelectionNotifier      *Notifier
 	LowerThirdNotifier             *Notifier
 	ReloadDisplaysNotifier         *Notifier
+	scale                          *game.Seesaw
+	redSwitch                      *game.Seesaw
+	blueSwitch                     *game.Seesaw
+	redVault                       *game.Vault
+	blueVault                      *game.Vault
 }
 
 type ArenaStatus struct {
@@ -202,6 +207,12 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.BlueRealtimeScore = NewRealtimeScore()
 	arena.Plc.ResetCounts()
 	arena.FieldReset = false
+	arena.scale = new(game.Seesaw)
+	arena.redSwitch = new(game.Seesaw)
+	arena.blueSwitch = new(game.Seesaw)
+	arena.redVault = new(game.Vault)
+	arena.blueVault = new(game.Vault)
+	game.ResetPowerUps()
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadTeamsNotifier.Notify(nil)
@@ -460,14 +471,12 @@ func (arena *Arena) Run() {
 
 // Calculates the red alliance score summary for the given realtime snapshot.
 func (arena *Arena) RedScoreSummary() *game.ScoreSummary {
-	return arena.RedRealtimeScore.CurrentScore.Summarize(arena.BlueRealtimeScore.CurrentScore.Fouls,
-		arena.CurrentMatch.Type)
+	return arena.RedRealtimeScore.CurrentScore.Summarize(arena.BlueRealtimeScore.CurrentScore.Fouls)
 }
 
 // Calculates the blue alliance score summary for the given realtime snapshot.
 func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
-	return arena.BlueRealtimeScore.CurrentScore.Summarize(arena.RedRealtimeScore.CurrentScore.Fouls,
-		arena.CurrentMatch.Type)
+	return arena.BlueRealtimeScore.CurrentScore.Summarize(arena.RedRealtimeScore.CurrentScore.Fouls)
 }
 
 func (arena *Arena) GetStatus() *ArenaStatus {
@@ -604,54 +613,48 @@ func (arena *Arena) handlePlcInput() {
 	arena.handleEstop("B2", blueEstops[1])
 	arena.handleEstop("B3", blueEstops[2])
 
-	matchStartTime := arena.MatchStartTime
-	currentTime := time.Now()
-	if arena.MatchState == PreMatch {
-		// Set a match start time in the future.
-		matchStartTime = currentTime.Add(time.Second)
-	}
-	matchEndTime := game.GetMatchEndTime(matchStartTime)
-	inGracePeriod := currentTime.Before(matchEndTime.Add(game.BoilerTeleopGracePeriodSec * time.Second))
-	if arena.MatchState == PostMatch && (!inGracePeriod || arena.matchAborted) {
-		// Don't do anything if we're past the end of the match, otherwise we may overwrite manual edits.
+	if arena.MatchState == PreMatch || arena.MatchState == PostMatch {
+		// Don't do anything if we're outside the match, otherwise we may overwrite manual edits.
 		return
 	}
+	matchStartTime := arena.MatchStartTime
+	currentTime := time.Now()
+	teleopStartTime := game.GetTeleopStartTime(matchStartTime)
 
 	redScore := &arena.RedRealtimeScore.CurrentScore
 	oldRedScore := *redScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
 	oldBlueScore := *blueScore
 
-	// Handle balls.
-	redLow, redHigh, blueLow, blueHigh := arena.Plc.GetBalls()
-	arena.RedRealtimeScore.boiler.UpdateState(redLow, redHigh, matchStartTime, currentTime)
-	redScore.AutoFuelLow = arena.RedRealtimeScore.boiler.AutoFuelLow
-	redScore.AutoFuelHigh = arena.RedRealtimeScore.boiler.AutoFuelHigh
-	redScore.FuelLow = arena.RedRealtimeScore.boiler.FuelLow
-	redScore.FuelHigh = arena.RedRealtimeScore.boiler.FuelHigh
-	arena.BlueRealtimeScore.boiler.UpdateState(blueLow, blueHigh, matchStartTime, currentTime)
-	blueScore.AutoFuelLow = arena.BlueRealtimeScore.boiler.AutoFuelLow
-	blueScore.AutoFuelHigh = arena.BlueRealtimeScore.boiler.AutoFuelHigh
-	blueScore.FuelLow = arena.BlueRealtimeScore.boiler.FuelLow
-	blueScore.FuelHigh = arena.BlueRealtimeScore.boiler.FuelHigh
-
-	// Handle rotors.
-	redRotor1, redOtherRotors, blueRotor1, blueOtherRotors := arena.Plc.GetRotors()
-	arena.RedRealtimeScore.rotorSet.UpdateState(redRotor1, redOtherRotors, matchStartTime, currentTime)
-	redScore.AutoRotors = arena.RedRealtimeScore.rotorSet.AutoRotors
-	redScore.Rotors = arena.RedRealtimeScore.rotorSet.Rotors
-	arena.BlueRealtimeScore.rotorSet.UpdateState(blueRotor1, blueOtherRotors, matchStartTime, currentTime)
-	blueScore.AutoRotors = arena.BlueRealtimeScore.rotorSet.AutoRotors
-	blueScore.Rotors = arena.BlueRealtimeScore.rotorSet.Rotors
-
-	// Handle touchpads.
-	redTouchpads, blueTouchpads := arena.Plc.GetTouchpads()
-	for i := 0; i < 3; i++ {
-		arena.RedRealtimeScore.touchpads[i].UpdateState(redTouchpads[i], matchStartTime, currentTime)
-		arena.BlueRealtimeScore.touchpads[i].UpdateState(blueTouchpads[i], matchStartTime, currentTime)
+	// Handle scale and switch ownership.
+	scale, redSwitch, blueSwitch := arena.Plc.GetScaleAndSwitches()
+	arena.scale.UpdateState(scale, currentTime)
+	arena.redSwitch.UpdateState(redSwitch, currentTime)
+	arena.blueSwitch.UpdateState(blueSwitch, currentTime)
+	if arena.MatchState == AutoPeriod {
+		redScore.AutoOwnershipPoints = 2 * int(arena.redSwitch.GetRedSeconds(matchStartTime, currentTime)+
+			arena.scale.GetRedSeconds(matchStartTime, currentTime))
+		blueScore.AutoOwnershipPoints = 2 * int(arena.blueSwitch.GetBlueSeconds(matchStartTime, currentTime)+
+			arena.scale.GetBlueSeconds(matchStartTime, currentTime))
+	} else {
+		redScore.TeleopOwnershipPoints = int(arena.redSwitch.GetRedSeconds(teleopStartTime, currentTime) +
+			arena.scale.GetRedSeconds(teleopStartTime, currentTime))
+		blueScore.TeleopOwnershipPoints = int(arena.blueSwitch.GetBlueSeconds(teleopStartTime, currentTime) +
+			arena.scale.GetBlueSeconds(teleopStartTime, currentTime))
 	}
-	redScore.Takeoffs = game.CountTouchpads(&arena.RedRealtimeScore.touchpads, currentTime)
-	blueScore.Takeoffs = game.CountTouchpads(&arena.BlueRealtimeScore.touchpads, currentTime)
+
+	// Handle vaults.
+	redForceCubes, redLevitateCubes, redBoostCubes, blueForceCubes, blueLevitateCubes, blueBoostCubes :=
+		arena.Plc.GetVaults()
+	arena.redVault.UpdateCubes(redForceCubes, redLevitateCubes, redBoostCubes)
+	arena.blueVault.UpdateCubes(blueForceCubes, blueLevitateCubes, blueBoostCubes)
+	redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost := arena.Plc.GetPowerUpButtons()
+	arena.redVault.UpdateButtons(redForce, redLevitate, redBoost, currentTime)
+	arena.blueVault.UpdateButtons(blueForce, blueLevitate, blueBoost, currentTime)
+	redScore.VaultCubes = arena.redVault.GetNumCubes()
+	redScore.Levitate = arena.redVault.LevitatePlayed
+	blueScore.VaultCubes = arena.blueVault.GetNumCubes()
+	blueScore.Levitate = arena.blueVault.LevitatePlayed
 
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
 		arena.RealtimeScoreNotifier.Notify(nil)
@@ -662,65 +665,28 @@ func (arena *Arena) handlePlcInput() {
 func (arena *Arena) handlePlcOutput() {
 	if arena.FieldTestMode != "" {
 		// PLC output is being manually overridden.
-		if arena.FieldTestMode == "flash" {
-			blinkState := arena.Plc.GetCycleState(2, 0, 1)
-			arena.Plc.SetTouchpadLights([3]bool{blinkState, blinkState, blinkState},
-				[3]bool{blinkState, blinkState, blinkState})
-		} else if arena.FieldTestMode == "cycle" {
-			arena.Plc.SetTouchpadLights(
-				[3]bool{arena.Plc.GetCycleState(3, 2, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 0, 1)},
-				[3]bool{arena.Plc.GetCycleState(3, 0, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 2, 1)})
-		} else if arena.FieldTestMode == "chase" {
-			arena.Plc.SetTouchpadLights(
-				[3]bool{arena.Plc.GetCycleState(12, 2, 2), arena.Plc.GetCycleState(12, 1, 2), arena.Plc.GetCycleState(12, 0, 2)},
-				[3]bool{arena.Plc.GetCycleState(12, 3, 2), arena.Plc.GetCycleState(12, 4, 2), arena.Plc.GetCycleState(12, 5, 2)})
-		} else if arena.FieldTestMode == "slowChase" {
-			arena.Plc.SetTouchpadLights(
-				[3]bool{arena.Plc.GetCycleState(6, 2, 8), arena.Plc.GetCycleState(6, 1, 8), arena.Plc.GetCycleState(6, 0, 8)},
-				[3]bool{arena.Plc.GetCycleState(6, 3, 8), arena.Plc.GetCycleState(6, 4, 8), arena.Plc.GetCycleState(6, 5, 8)})
-		}
-		return
+		// TODO(patrick): Update for 2018.
+		/*
+			if arena.FieldTestMode == "flash" {
+				blinkState := arena.Plc.GetCycleState(2, 0, 1)
+				arena.Plc.SetTouchpadLights([3]bool{blinkState, blinkState, blinkState},
+					[3]bool{blinkState, blinkState, blinkState})
+			} else if arena.FieldTestMode == "cycle" {
+				arena.Plc.SetTouchpadLights(
+					[3]bool{arena.Plc.GetCycleState(3, 2, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 0, 1)},
+					[3]bool{arena.Plc.GetCycleState(3, 0, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 2, 1)})
+			} else if arena.FieldTestMode == "chase" {
+				arena.Plc.SetTouchpadLights(
+					[3]bool{arena.Plc.GetCycleState(12, 2, 2), arena.Plc.GetCycleState(12, 1, 2), arena.Plc.GetCycleState(12, 0, 2)},
+					[3]bool{arena.Plc.GetCycleState(12, 3, 2), arena.Plc.GetCycleState(12, 4, 2), arena.Plc.GetCycleState(12, 5, 2)})
+			} else if arena.FieldTestMode == "slowChase" {
+				arena.Plc.SetTouchpadLights(
+					[3]bool{arena.Plc.GetCycleState(6, 2, 8), arena.Plc.GetCycleState(6, 1, 8), arena.Plc.GetCycleState(6, 0, 8)},
+					[3]bool{arena.Plc.GetCycleState(6, 3, 8), arena.Plc.GetCycleState(6, 4, 8), arena.Plc.GetCycleState(6, 5, 8)})
+			}
+			return
+		*/
 	}
-
-	// Handle balls.
-	matchEndTime := game.GetMatchEndTime(arena.MatchStartTime)
-	inGracePeriod := time.Now().Before(matchEndTime.Add(game.BoilerTeleopGracePeriodSec * time.Second))
-	if arena.MatchTimeSec() > 0 || arena.MatchState == PostMatch && !arena.matchAborted && inGracePeriod {
-		arena.Plc.SetBoilerMotors(true)
-	} else {
-		arena.Plc.SetBoilerMotors(false)
-	}
-
-	// Handle rotors.
-	redScore := &arena.RedRealtimeScore.CurrentScore
-	blueScore := &arena.BlueRealtimeScore.CurrentScore
-	if arena.MatchTimeSec() > 0 {
-		arena.Plc.SetRotorMotors(redScore.AutoRotors+redScore.Rotors, blueScore.AutoRotors+blueScore.Rotors)
-	} else {
-		arena.Plc.SetRotorMotors(0, 0)
-	}
-	arena.Plc.SetRotorLights(redScore.AutoRotors, blueScore.AutoRotors)
-
-	// Handle touchpads.
-	var redTouchpads, blueTouchpads [3]bool
-	currentTime := time.Now()
-	blinkStopTime := matchEndTime.Add(-time.Duration(game.MatchTiming.EndgameTimeLeftSec-2) * time.Second)
-	blinkState := arena.Plc.GetCycleState(2, 0, 1)
-	if arena.MatchState == EndgamePeriod && currentTime.Before(blinkStopTime) {
-		// Blink the touchpads at the endgame start point.
-		for i := 0; i < 3; i++ {
-			redTouchpads[i] = blinkState
-			blueTouchpads[i] = blinkState
-		}
-	} else {
-		for i := 0; i < 3; i++ {
-			redState := arena.RedRealtimeScore.touchpads[i].GetState(currentTime)
-			redTouchpads[i] = redState == game.Held || redState == game.Triggered && blinkState
-			blueState := arena.BlueRealtimeScore.touchpads[i].GetState(currentTime)
-			blueTouchpads[i] = blueState == game.Held || blueState == game.Triggered && blinkState
-		}
-	}
-	arena.Plc.SetTouchpadLights(redTouchpads, blueTouchpads)
 }
 
 func (arena *Arena) handleEstop(station string, state bool) {

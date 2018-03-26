@@ -17,9 +17,9 @@ type Plc struct {
 	address          string
 	handler          *modbus.TCPClientHandler
 	client           modbus.Client
-	Inputs           [15]bool
-	Counters         [10]uint16
-	Coils            [24]bool
+	Inputs           [37]bool
+	Counters         [0]uint16
+	Coils            [8]bool
 	cycleCounter     int
 	resetCountCycles int
 }
@@ -34,60 +34,55 @@ const (
 // Discrete inputs
 const (
 	fieldEstop = iota
+	scaleNear
+	scaleFar
 	redEstop1
 	redEstop2
 	redEstop3
-	redRotor1
-	redTouchpad1
-	redTouchpad2
-	redTouchpad3
+	redSwitchNear
+	redSwitchFar
+	redForceCube1
+	redForceCube2
+	redForceCube3
+	redForceButton
+	redLevitateCube1
+	redLevitateCube2
+	redLevitateCube3
+	redLevitateButton
+	redBoostCube1
+	redBoostCube2
+	redBoostCube3
+	redBoostButton
 	blueEstop1
 	blueEstop2
 	blueEstop3
-	blueRotor1
-	blueTouchpad1
-	blueTouchpad2
-	blueTouchpad3
+	blueSwitchNear
+	blueSwitchFar
+	blueForceCube1
+	blueForceCube2
+	blueForceCube3
+	blueForceButton
+	blueLevitate1
+	blueLevitate2
+	blueLevitate3
+	blueLevitateButton
+	blueBoostCube1
+	blueBoostCube2
+	blueBoostCube3
+	blueBoostButton
 )
 
 // 16-bit registers
-const (
-	redRotor2Count = iota
-	redRotor3Count
-	redRotor4Count
-	redLowBoilerCount
-	redHighBoilerCount
-	blueRotor2Count
-	blueRotor3Count
-	blueRotor4Count
-	blueLowBoilerCount
-	blueHighBoilerCount
-)
+const ()
 
 // Coils
 const (
-	redSerializer = iota
-	redBallLift
-	redRotorMotor1
-	redRotorMotor2
-	redRotorMotor3
-	redRotorMotor4
-	redAutoLight1
-	redAutoLight2
-	redTouchpadLight1
-	redTouchpadLight2
-	redTouchpadLight3
-	blueSerializer
-	blueBallLift
-	blueRotorMotor1
-	blueRotorMotor2
-	blueRotorMotor3
-	blueRotorMotor4
-	blueAutoLight1
-	blueAutoLight2
-	blueTouchpadLight1
-	blueTouchpadLight2
-	blueTouchpadLight3
+	redForceLight = iota
+	redLevitateLight
+	redBoostLight
+	blueForceLight
+	blueLevitateLight
+	blueBoostLight
 	resetCounts
 	heartbeat
 )
@@ -153,77 +148,66 @@ func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 	return redEstops, blueEstops
 }
 
-// Returns the count of the red and blue low and high boilers.
-func (plc *Plc) GetBalls() (int, int, int, int) {
-	return int(plc.Counters[redLowBoilerCount]), int(plc.Counters[redHighBoilerCount]),
-		int(plc.Counters[blueLowBoilerCount]), int(plc.Counters[blueHighBoilerCount])
+// Returns the state of the scale and the red and blue switches.
+func (plc *Plc) GetScaleAndSwitches() ([2]bool, [2]bool, [2]bool) {
+	var scale, redSwitch, blueSwitch [2]bool
+
+	scale[0] = plc.Inputs[scaleNear]
+	scale[1] = plc.Inputs[scaleFar]
+	redSwitch[0] = plc.Inputs[redSwitchNear]
+	redSwitch[1] = plc.Inputs[redSwitchFar]
+	blueSwitch[0] = plc.Inputs[blueSwitchNear]
+	blueSwitch[1] = plc.Inputs[blueSwitchFar]
+
+	return scale, redSwitch, blueSwitch
 }
 
-// Returns the state of red and blue activated rotors.
-func (plc *Plc) GetRotors() (bool, [3]int, bool, [3]int) {
-	var redOtherRotors, blueOtherRotors [3]int
+// Returns the state of the red and blue vault power cube sensors.
+func (plc *Plc) GetVaults() ([3]bool, [3]bool, [3]bool, [3]bool, [3]bool, [3]bool) {
+	var redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost [3]bool
 
-	redOtherRotors[0] = int(plc.Counters[redRotor2Count])
-	redOtherRotors[1] = int(plc.Counters[redRotor3Count])
-	redOtherRotors[2] = int(plc.Counters[redRotor4Count])
-	blueOtherRotors[0] = int(plc.Counters[blueRotor2Count])
-	blueOtherRotors[1] = int(plc.Counters[blueRotor3Count])
-	blueOtherRotors[2] = int(plc.Counters[blueRotor4Count])
+	redForce[0] = plc.Inputs[redForceCube1]
+	redForce[1] = plc.Inputs[redForceCube2]
+	redForce[2] = plc.Inputs[redForceCube3]
+	redLevitate[0] = plc.Inputs[redLevitateCube1]
+	redLevitate[1] = plc.Inputs[redLevitateCube2]
+	redLevitate[2] = plc.Inputs[redLevitateCube3]
+	redBoost[0] = plc.Inputs[redBoostCube1]
+	redBoost[1] = plc.Inputs[redBoostCube2]
+	redBoost[2] = plc.Inputs[redBoostCube3]
+	blueForce[0] = plc.Inputs[blueForceCube1]
+	blueForce[1] = plc.Inputs[blueForceCube2]
+	blueForce[2] = plc.Inputs[blueForceCube3]
+	blueLevitate[0] = plc.Inputs[blueLevitate1]
+	blueLevitate[1] = plc.Inputs[blueLevitate2]
+	blueLevitate[2] = plc.Inputs[blueLevitate3]
+	blueBoost[0] = plc.Inputs[blueBoostCube1]
+	blueBoost[1] = plc.Inputs[blueBoostCube2]
+	blueBoost[2] = plc.Inputs[blueBoostCube3]
 
-	return plc.Inputs[redRotor1], redOtherRotors, plc.Inputs[blueRotor1], blueOtherRotors
+	return redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost
 }
 
-func (plc *Plc) GetTouchpads() ([3]bool, [3]bool) {
-	var redTouchpads, blueTouchpads [3]bool
-	redTouchpads[0] = plc.Inputs[redTouchpad1]
-	redTouchpads[1] = plc.Inputs[redTouchpad2]
-	redTouchpads[2] = plc.Inputs[redTouchpad3]
-	blueTouchpads[0] = plc.Inputs[blueTouchpad1]
-	blueTouchpads[1] = plc.Inputs[blueTouchpad2]
-	blueTouchpads[2] = plc.Inputs[blueTouchpad3]
-	return redTouchpads, blueTouchpads
+// Returns the state of the red and blue power up buttons on the vaults.
+func (plc *Plc) GetPowerUpButtons() (bool, bool, bool, bool, bool, bool) {
+	return plc.Inputs[redForceButton], plc.Inputs[redLevitateButton], plc.Inputs[redBoostButton],
+		plc.Inputs[blueForceButton], plc.Inputs[blueLevitateButton], plc.Inputs[blueBoostButton]
 }
 
-// Resets the ball and rotor gear tooth counts to zero.
+// Resets the counter counts to zero.
 func (plc *Plc) ResetCounts() {
 	plc.Coils[resetCounts] = true
 	plc.resetCountCycles = 0
 }
 
-func (plc *Plc) SetBoilerMotors(on bool) {
-	plc.Coils[redSerializer] = on
-	plc.Coils[redBallLift] = on
-	plc.Coils[blueSerializer] = on
-	plc.Coils[blueBallLift] = on
-}
-
-// Turns on/off the rotor motors based on how many rotors each alliance has.
-func (plc *Plc) SetRotorMotors(redRotors, blueRotors int) {
-	plc.Coils[redRotorMotor1] = redRotors >= 1
-	plc.Coils[redRotorMotor2] = redRotors >= 2
-	plc.Coils[redRotorMotor3] = redRotors >= 3
-	plc.Coils[redRotorMotor4] = redRotors == 4
-	plc.Coils[blueRotorMotor1] = blueRotors >= 1
-	plc.Coils[blueRotorMotor2] = blueRotors >= 2
-	plc.Coils[blueRotorMotor3] = blueRotors >= 3
-	plc.Coils[blueRotorMotor4] = blueRotors == 4
-}
-
-// Turns on/off the auto rotor lights based on how many auto rotors each alliance has.
-func (plc *Plc) SetRotorLights(redAutoRotors, blueAutoRotors int) {
-	plc.Coils[redAutoLight1] = redAutoRotors >= 1
-	plc.Coils[redAutoLight2] = redAutoRotors == 2
-	plc.Coils[blueAutoLight1] = blueAutoRotors >= 1
-	plc.Coils[blueAutoLight2] = blueAutoRotors == 2
-}
-
-func (plc *Plc) SetTouchpadLights(redTouchpads, blueTouchpads [3]bool) {
-	plc.Coils[redTouchpadLight1] = redTouchpads[0]
-	plc.Coils[redTouchpadLight2] = redTouchpads[1]
-	plc.Coils[redTouchpadLight3] = redTouchpads[2]
-	plc.Coils[blueTouchpadLight1] = blueTouchpads[0]
-	plc.Coils[blueTouchpadLight2] = blueTouchpads[1]
-	plc.Coils[blueTouchpadLight3] = blueTouchpads[2]
+// Sets the state of the lights inside the power up buttons on the vaults.
+func (plc *Plc) SetPowerUpLights(redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost bool) {
+	plc.Coils[redForceLight] = redForce
+	plc.Coils[redLevitateLight] = redLevitate
+	plc.Coils[redBoostLight] = redBoost
+	plc.Coils[blueForceLight] = blueForce
+	plc.Coils[blueLevitateLight] = blueLevitate
+	plc.Coils[blueBoostLight] = blueBoost
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {
@@ -255,6 +239,10 @@ func (plc *Plc) resetConnection() {
 }
 
 func (plc *Plc) readInputs() bool {
+	if len(plc.Inputs) == 0 {
+		return true
+	}
+
 	inputs, err := plc.client.ReadDiscreteInputs(0, uint16(len(plc.Inputs)))
 	if err != nil {
 		log.Printf("PLC error reading inputs: %v", err)
@@ -270,6 +258,10 @@ func (plc *Plc) readInputs() bool {
 }
 
 func (plc *Plc) readCounters() bool {
+	if len(plc.Counters) == 0 {
+		return true
+	}
+
 	registers, err := plc.client.ReadHoldingRegisters(0, uint16(len(plc.Counters)))
 	if err != nil {
 		log.Printf("PLC error reading registers: %v", err)

@@ -9,11 +9,10 @@ import "math/rand"
 
 type RankingFields struct {
 	RankingPoints     int
-	MatchPoints       int
+	ParkClimbPoints   int
 	AutoPoints        int
-	RotorPoints       int
-	TakeoffPoints     int
-	PressurePoints    int
+	OwnershipPoints   int
+	VaultPoints       int
 	Random            float64
 	Wins              int
 	Losses            int
@@ -49,19 +48,18 @@ func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentSco
 	} else {
 		fields.Losses += 1
 	}
-	if ownScore.PressureGoalReached {
+	if ownScore.AutoQuest {
 		fields.RankingPoints += 1
 	}
-	if ownScore.RotorGoalReached {
+	if ownScore.FaceTheBoss {
 		fields.RankingPoints += 1
 	}
 
 	// Assign tiebreaker points.
-	fields.MatchPoints += ownScore.Score
+	fields.ParkClimbPoints += ownScore.ParkClimbPoints
 	fields.AutoPoints += ownScore.AutoPoints
-	fields.RotorPoints += ownScore.RotorPoints
-	fields.TakeoffPoints += ownScore.TakeoffPoints
-	fields.PressurePoints += ownScore.PressurePoints
+	fields.OwnershipPoints += ownScore.OwnershipPoints
+	fields.VaultPoints += ownScore.VaultPoints
 
 	// Store a random value to be used as the last tiebreaker if necessary.
 	fields.Random = rand.Float64()
@@ -79,22 +77,19 @@ func (rankings Rankings) Less(i, j int) bool {
 
 	// Use cross-multiplication to keep it in integer math.
 	if a.RankingPoints*b.Played == b.RankingPoints*a.Played {
-		if a.MatchPoints*b.Played == b.MatchPoints*a.Played {
+		if a.ParkClimbPoints*b.Played == b.ParkClimbPoints*a.Played {
 			if a.AutoPoints*b.Played == b.AutoPoints*a.Played {
-				if a.RotorPoints*b.Played == b.RotorPoints*a.Played {
-					if a.TakeoffPoints*b.Played == b.TakeoffPoints*a.Played {
-						if a.PressurePoints*b.Played == b.PressurePoints*a.Played {
-							return a.Random > b.Random
-						}
-						return a.PressurePoints*b.Played > b.PressurePoints*a.Played
+				if a.OwnershipPoints*b.Played == b.OwnershipPoints*a.Played {
+					if a.VaultPoints*b.Played == b.VaultPoints*a.Played {
+						return a.Random > b.Random
 					}
-					return a.TakeoffPoints*b.Played > b.TakeoffPoints*a.Played
+					return a.VaultPoints*b.Played > b.VaultPoints*a.Played
 				}
-				return a.RotorPoints*b.Played > b.RotorPoints*a.Played
+				return a.OwnershipPoints*b.Played > b.OwnershipPoints*a.Played
 			}
 			return a.AutoPoints*b.Played > b.AutoPoints*a.Played
 		}
-		return a.MatchPoints*b.Played > b.MatchPoints*a.Played
+		return a.ParkClimbPoints*b.Played > b.ParkClimbPoints*a.Played
 	}
 	return a.RankingPoints*b.Played > b.RankingPoints*a.Played
 }

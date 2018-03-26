@@ -12,64 +12,50 @@ func TestScoreSummary(t *testing.T) {
 	redScore := TestScore1()
 	blueScore := TestScore2()
 
-	redSummary := redScore.Summarize(blueScore.Fouls, "qualification")
-	assert.Equal(t, 0, redSummary.AutoMobilityPoints)
-	assert.Equal(t, 80, redSummary.AutoPoints)
-	assert.Equal(t, 100, redSummary.RotorPoints)
-	assert.Equal(t, 50, redSummary.TakeoffPoints)
-	assert.Equal(t, 40, redSummary.PressurePoints)
-	assert.Equal(t, 0, redSummary.BonusPoints)
+	redSummary := redScore.Summarize(blueScore.Fouls)
+	assert.Equal(t, 5, redSummary.AutoRunPoints)
+	assert.Equal(t, 17, redSummary.AutoPoints)
+	assert.Equal(t, 59, redSummary.OwnershipPoints)
+	assert.Equal(t, 15, redSummary.VaultPoints)
+	assert.Equal(t, 90, redSummary.ParkClimbPoints)
 	assert.Equal(t, 0, redSummary.FoulPoints)
-	assert.Equal(t, 190, redSummary.Score)
-	assert.Equal(t, true, redSummary.PressureGoalReached)
-	assert.Equal(t, false, redSummary.RotorGoalReached)
+	assert.Equal(t, 169, redSummary.Score)
+	assert.Equal(t, false, redSummary.AutoQuest)
+	assert.Equal(t, true, redSummary.FaceTheBoss)
 
-	blueSummary := blueScore.Summarize(redScore.Fouls, "qualification")
-	assert.Equal(t, 10, blueSummary.AutoMobilityPoints)
-	assert.Equal(t, 133, blueSummary.AutoPoints)
-	assert.Equal(t, 200, blueSummary.RotorPoints)
-	assert.Equal(t, 150, blueSummary.TakeoffPoints)
-	assert.Equal(t, 18, blueSummary.PressurePoints)
-	assert.Equal(t, 0, blueSummary.BonusPoints)
+	blueSummary := blueScore.Summarize(redScore.Fouls)
+	assert.Equal(t, 15, blueSummary.AutoRunPoints)
+	assert.Equal(t, 35, blueSummary.AutoPoints)
+	assert.Equal(t, 93, blueSummary.OwnershipPoints)
+	assert.Equal(t, 30, blueSummary.VaultPoints)
+	assert.Equal(t, 35, blueSummary.ParkClimbPoints)
 	assert.Equal(t, 55, blueSummary.FoulPoints)
-	assert.Equal(t, 433, blueSummary.Score)
-	assert.Equal(t, false, blueSummary.PressureGoalReached)
-	assert.Equal(t, true, blueSummary.RotorGoalReached)
+	assert.Equal(t, 228, blueSummary.Score)
+	assert.Equal(t, true, blueSummary.AutoQuest)
+	assert.Equal(t, false, blueSummary.FaceTheBoss)
 
-	// Test pressure boundary conditions.
-	redScore.AutoFuelHigh = 19
-	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls, "qualification").PressureGoalReached)
-	redScore.FuelLow = 18
-	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls, "qualification").PressureGoalReached)
-	redScore.AutoFuelLow = 1
-	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls, "qualification").PressureGoalReached)
-	redScore.FuelHigh = 56
-	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls, "qualification").PressureGoalReached)
+	// Test Auto Quest boundary conditions.
+	blueScore.AutoEndSwitchOwnership = false
+	assert.Equal(t, false, blueScore.Summarize(redScore.Fouls).AutoQuest)
+	blueScore.AutoEndSwitchOwnership = true
+	blueScore.AutoRuns = 2
+	assert.Equal(t, false, blueScore.Summarize(redScore.Fouls).AutoQuest)
 
-	// Test rotor boundary conditions.
-	blueScore.AutoRotors = 1
-	assert.Equal(t, false, blueScore.Summarize(blueScore.Fouls, "qualification").RotorGoalReached)
-	blueScore.Rotors = 3
-	assert.Equal(t, true, blueScore.Summarize(blueScore.Fouls, "qualification").RotorGoalReached)
-
-	// Test elimination bonus.
-	redSummary = redScore.Summarize(blueScore.Fouls, "elimination")
-	blueSummary = blueScore.Summarize(redScore.Fouls, "elimination")
-	assert.Equal(t, 20, redSummary.BonusPoints)
-	assert.Equal(t, 210, redSummary.Score)
-	assert.Equal(t, 100, blueSummary.BonusPoints)
-	assert.Equal(t, 513, blueSummary.Score)
-	redScore.Rotors = 3
-	redSummary = redScore.Summarize(blueScore.Fouls, "elimination")
-	assert.Equal(t, 120, redSummary.BonusPoints)
-	assert.Equal(t, 0, redScore.Summarize(blueScore.Fouls, "qualification").BonusPoints)
-	assert.Equal(t, 0, blueScore.Summarize(blueScore.Fouls, "qualification").BonusPoints)
+	// Test Face the Boss boundary conditions.
+	redScore.Levitate = false
+	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).FaceTheBoss)
+	redScore.Climbs = 3
+	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls).FaceTheBoss)
+	redScore.Climbs = 1
+	redScore.Parks = 2
+	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).FaceTheBoss)
 
 	// Test elimination disqualification.
 	redScore.ElimDq = true
+	assert.Equal(t, 0, redScore.Summarize(blueScore.Fouls).Score)
+	assert.NotEqual(t, 0, blueScore.Summarize(blueScore.Fouls).Score)
 	blueScore.ElimDq = true
-	assert.Equal(t, 0, redScore.Summarize(blueScore.Fouls, "elimination").Score)
-	assert.Equal(t, 0, blueScore.Summarize(redScore.Fouls, "elimination").Score)
+	assert.Equal(t, 0, blueScore.Summarize(redScore.Fouls).Score)
 }
 
 func TestScoreEquals(t *testing.T) {
@@ -82,42 +68,42 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score1.Equals(score3))
 	assert.False(t, score3.Equals(score1))
 
-	score2.AutoMobility += 1
+	score2.AutoRuns += 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoRotors += 1
+	score2.AutoEndSwitchOwnership = !score2.AutoEndSwitchOwnership
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoFuelLow += 1
+	score2.AutoOwnershipPoints += 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoFuelHigh += 1
+	score2.TeleopOwnershipPoints += 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.Rotors += 1
+	score2.VaultCubes += 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.FuelLow += 1
+	score2.Levitate = !score2.Levitate
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.FuelHigh += 1
+	score2.Parks += 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.Takeoffs += 1
+	score2.Climbs += 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
