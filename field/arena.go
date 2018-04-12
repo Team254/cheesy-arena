@@ -24,11 +24,12 @@ const (
 const (
 	PreMatch      = 0
 	StartMatch    = 1
-	AutoPeriod    = 2
-	PausePeriod   = 3
-	TeleopPeriod  = 4
-	EndgamePeriod = 5
-	PostMatch     = 6
+	WarmupPeriod  = 2
+	AutoPeriod    = 3
+	PausePeriod   = 4
+	TeleopPeriod  = 5
+	EndgamePeriod = 6
+	PostMatch     = 7
 )
 
 type Arena struct {
@@ -83,6 +84,7 @@ type ArenaStatus struct {
 	CanStartMatch    bool
 	PlcIsHealthy     bool
 	FieldEstop       bool
+	GameSpecificData string
 }
 
 type AllianceStation struct {
@@ -286,7 +288,12 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 func (arena *Arena) StartMatch() error {
 	err := arena.checkCanStartMatch()
 	if err == nil {
-		// Save the match start time to the database for posterity.
+		// Generate game-specific data or allow manual input for test matches.
+		if arena.CurrentMatch.Type != "test" || !game.IsValidGameSpecificData(arena.CurrentMatch.GameSpecificData) {
+			arena.CurrentMatch.GameSpecificData = game.GenerateGameSpecificData()
+		}
+
+		// Save the match start time and game-specifc data to the database for posterity.
 		arena.CurrentMatch.StartedAt = time.Now()
 		if arena.CurrentMatch.Type != "test" {
 			arena.Database.SaveMatch(arena.CurrentMatch)
@@ -361,23 +368,35 @@ func (arena *Arena) Update() {
 		auto = true
 		enabled = false
 	case StartMatch:
-		arena.MatchState = AutoPeriod
+		arena.MatchState = WarmupPeriod
 		arena.MatchStartTime = time.Now()
 		arena.LastMatchTimeSec = -1
 		auto = true
-		enabled = true
-		sendDsPacket = true
+		enabled = false
 		arena.AudienceDisplayScreen = "match"
 		arena.AudienceDisplayNotifier.Notify(nil)
-		if !arena.MuteMatchSounds {
-			arena.PlaySoundNotifier.Notify("match-start")
-		}
 		arena.FieldTestMode = ""
 		arena.Plc.ResetCounts()
+		arena.sendGameSpecificDataPacket()
+		if !arena.MuteMatchSounds {
+			arena.PlaySoundNotifier.Notify("match-warmup")
+		}
+	case WarmupPeriod:
+		auto = true
+		enabled = false
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec) {
+			arena.MatchState = AutoPeriod
+			auto = true
+			enabled = true
+			sendDsPacket = true
+			if !arena.MuteMatchSounds {
+				arena.PlaySoundNotifier.Notify("match-start")
+			}
+		}
 	case AutoPeriod:
 		auto = true
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) {
 			arena.MatchState = PausePeriod
 			auto = false
 			enabled = false
@@ -389,7 +408,8 @@ func (arena *Arena) Update() {
 	case PausePeriod:
 		auto = false
 		enabled = false
-		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
+			game.MatchTiming.PauseDurationSec) {
 			arena.MatchState = TeleopPeriod
 			auto = false
 			enabled = true
@@ -401,8 +421,8 @@ func (arena *Arena) Update() {
 	case TeleopPeriod:
 		auto = false
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-			game.MatchTiming.TeleopDurationSec-game.MatchTiming.EndgameTimeLeftSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
+			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec-game.MatchTiming.EndgameTimeLeftSec) {
 			arena.MatchState = EndgamePeriod
 			sendDsPacket = false
 			if !arena.MuteMatchSounds {
@@ -412,8 +432,8 @@ func (arena *Arena) Update() {
 	case EndgamePeriod:
 		auto = false
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-			game.MatchTiming.TeleopDurationSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
+			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) {
 			arena.MatchState = PostMatch
 			auto = false
 			enabled = false
@@ -481,7 +501,7 @@ func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
 
 func (arena *Arena) GetStatus() *ArenaStatus {
 	return &ArenaStatus{arena.AllianceStations, arena.MatchState, arena.checkCanStartMatch() == nil,
-		arena.Plc.IsHealthy, arena.Plc.GetFieldEstop()}
+		arena.Plc.IsHealthy, arena.Plc.GetFieldEstop(), arena.CurrentMatch.GameSpecificData}
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -581,6 +601,19 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 			err := dsConn.update(arena)
 			if err != nil {
 				log.Printf("Unable to send driver station packet for team %d.", allianceStation.Team.Id)
+			}
+		}
+	}
+	arena.lastDsPacketTime = time.Now()
+}
+
+func (arena *Arena) sendGameSpecificDataPacket() {
+	for _, allianceStation := range arena.AllianceStations {
+		dsConn := allianceStation.DsConn
+		if dsConn != nil {
+			err := dsConn.sendGameSpecificDataPacket(arena.CurrentMatch.GameSpecificData)
+			if err != nil {
+				log.Printf("Error sending game-specific data packet to Team %d: %v", dsConn.TeamId, err)
 			}
 		}
 	}

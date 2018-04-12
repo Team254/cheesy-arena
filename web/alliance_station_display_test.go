@@ -4,6 +4,8 @@
 package web
 
 import (
+	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"sync"
@@ -59,7 +61,11 @@ func TestAllianceStationDisplayWebsocket(t *testing.T) {
 	web.arena.AllianceStations["B3"].Bypass = true
 	web.arena.StartMatch()
 	web.arena.Update()
+	readWebsocketType(t, ws, "matchTime")
+	web.arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
+	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 2)
+	fmt.Println(messages)
 	_, ok := messages["status"]
 	assert.True(t, ok)
 	_, ok = messages["matchTime"]

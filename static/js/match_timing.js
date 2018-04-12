@@ -6,11 +6,12 @@
 var matchStates = {
   0: "PRE_MATCH",
   1: "START_MATCH",
-  2: "AUTO_PERIOD",
-  3: "PAUSE_PERIOD",
-  4: "TELEOP_PERIOD",
-  5: "ENDGAME_PERIOD",
-  6: "POST_MATCH"
+  2: "WARMUP_PERIOD",
+  3: "AUTO_PERIOD",
+  4: "PAUSE_PERIOD",
+  5: "TELEOP_PERIOD",
+  6: "ENDGAME_PERIOD",
+  7: "POST_MATCH"
 };
 var matchTiming;
 
@@ -28,6 +29,9 @@ var translateMatchTime = function(data, callback) {
       matchStateText = "PRE-MATCH";
       break;
     case "START_MATCH":
+    case "WARMUP_PERIOD":
+      matchStateText = "WARMUP";
+      break;
     case "AUTO_PERIOD":
       matchStateText = "AUTONOMOUS";
       break;
@@ -49,14 +53,15 @@ var translateMatchTime = function(data, callback) {
 var getCountdown = function(matchState, matchTimeSec) {
   switch (matchStates[matchState]) {
     case "PRE_MATCH":
-      return matchTiming.AutoDurationSec;
     case "START_MATCH":
+    case "WARMUP_PERIOD":
+          return matchTiming.AutoDurationSec;
     case "AUTO_PERIOD":
-      return matchTiming.AutoDurationSec - matchTimeSec;
+      return matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec - matchTimeSec;
     case "TELEOP_PERIOD":
     case "ENDGAME_PERIOD":
-      return matchTiming.TeleopDurationSec + matchTiming.AutoDurationSec + matchTiming.PauseDurationSec -
-          matchTimeSec;
+      return matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec + matchTiming.TeleopDurationSec +
+          matchTiming.PauseDurationSec - matchTimeSec;
     default:
       return 0;
   }

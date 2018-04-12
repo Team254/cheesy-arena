@@ -18,7 +18,8 @@ var toggleBypass = function(station) {
 
 // Sends a websocket message to start the match.
 var startMatch = function() {
-  websocket.send("startMatch", { muteMatchSounds: $("#muteMatchSounds").prop("checked") });
+  websocket.send("startMatch",
+      { muteMatchSounds: $("#muteMatchSounds").prop("checked"), gameSpecificData: $("#gameSpecificData").val() });
 };
 
 // Sends a websocket message to abort the match.
@@ -135,7 +136,11 @@ var handleStatus = function(data) {
     $("#plcStatus").text("Not Connected");
     $("#plcStatus").attr("data-ready", false);
   }
-  $("#fieldEstop").attr("data-ready", !data.FieldEstop)
+  $("#fieldEstop").attr("data-ready", !data.FieldEstop);
+
+  if (matchStates[data.MatchState] != "PRE_MATCH") {
+    $("#gameSpecificData").val(data.GameSpecificData);
+  }
 };
 
 // Handles a websocket message to update the match time countdown.

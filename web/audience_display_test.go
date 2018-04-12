@@ -55,7 +55,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	}
 	sound, ok := messages["playSound"]
 	if assert.True(t, ok) {
-		assert.Equal(t, "match-start", sound)
+		assert.Equal(t, "match-warmup", sound)
 	}
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)

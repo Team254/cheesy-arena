@@ -351,43 +351,47 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.AllianceStations["B3"].Bypass = true
 	web.arena.StartMatch()
 	web.arena.Update()
-	messages := readWebsocketMultiple(t, ws, 4)
-	statusReceived, matchTime := getStatusMatchTime(t, messages)
-	assert.Equal(t, true, statusReceived)
-	assert.Equal(t, 2, matchTime.MatchState)
-	assert.Equal(t, 0, matchTime.MatchTimeSec)
-	_, ok := messages["setAudienceDisplay"]
+	messages := readWebsocketMultiple(t, ws, 3)
+	_, ok := messages["matchTime"]
+	assert.True(t, ok)
+	_, ok = messages["setAudienceDisplay"]
 	assert.True(t, ok)
 	_, ok = messages["setAllianceStationDisplay"]
+	web.arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
+	web.arena.Update()
+	messages = readWebsocketMultiple(t, ws, 2)
+	statusReceived, matchTime := getStatusMatchTime(t, messages)
+	assert.Equal(t, true, statusReceived)
+	assert.Equal(t, 3, matchTime.MatchState)
+	assert.Equal(t, 3, matchTime.MatchTimeSec)
 	assert.True(t, ok)
 	web.arena.ScoringStatusNotifier.Notify(nil)
 	readWebsocketType(t, ws, "scoringStatus")
 
 	// Should get a tick notification when an integer second threshold is crossed.
-	web.arena.MatchStartTime = time.Now().Add(-time.Second + 10*time.Millisecond) // Not crossed yet
-	web.arena.Update()
 	web.arena.MatchStartTime = time.Now().Add(-time.Second - 10*time.Millisecond) // Crossed
 	web.arena.Update()
+	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
+	assert.Nil(t, err)
+	assert.Equal(t, 3, matchTime.MatchState)
+	assert.Equal(t, 1, matchTime.MatchTimeSec)
 	web.arena.MatchStartTime = time.Now().Add(-2*time.Second + 10*time.Millisecond) // Not crossed yet
 	web.arena.Update()
 	web.arena.MatchStartTime = time.Now().Add(-2*time.Second - 10*time.Millisecond) // Crossed
 	web.arena.Update()
 	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
 	assert.Nil(t, err)
-	assert.Equal(t, 2, matchTime.MatchState)
-	assert.Equal(t, 1, matchTime.MatchTimeSec)
-	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
-	assert.Nil(t, err)
-	assert.Equal(t, 2, matchTime.MatchState)
+	assert.Equal(t, 3, matchTime.MatchState)
 	assert.Equal(t, 2, matchTime.MatchTimeSec)
 
 	// Check across a match state boundary.
-	web.arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.AutoDurationSec) * time.Second)
+	web.arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
+		game.MatchTiming.AutoDurationSec) * time.Second)
 	web.arena.Update()
 	statusReceived, matchTime = readWebsocketStatusMatchTime(t, ws)
 	assert.Equal(t, true, statusReceived)
-	assert.Equal(t, 3, matchTime.MatchState)
-	assert.Equal(t, game.MatchTiming.AutoDurationSec, matchTime.MatchTimeSec)
+	assert.Equal(t, 4, matchTime.MatchState)
+	assert.Equal(t, game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec, matchTime.MatchTimeSec)
 }
 
 // Handles the status and matchTime messages arriving in either order.
