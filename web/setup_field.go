@@ -30,7 +30,7 @@ func (web *Web) fieldGetHandler(w http.ResponseWriter, r *http.Request) {
 		Counters                []uint16
 		Coils                   []bool
 	}{web.arena.EventSettings, web.arena.AllianceStationDisplays, web.arena.FieldTestMode, web.arena.Plc.Inputs[:],
-		web.arena.Plc.Counters[:], web.arena.Plc.Coils[:]}
+		web.arena.Plc.Registers[:], web.arena.Plc.Coils[:]}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)

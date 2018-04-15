@@ -13,15 +13,14 @@ import (
 )
 
 type Plc struct {
-	IsHealthy        bool
-	address          string
-	handler          *modbus.TCPClientHandler
-	client           modbus.Client
-	Inputs           [37]bool
-	Counters         [0]uint16
-	Coils            [8]bool
-	cycleCounter     int
-	resetCountCycles int
+	IsHealthy    bool
+	address      string
+	handler      *modbus.TCPClientHandler
+	client       modbus.Client
+	Inputs       [inputCount]bool
+	Registers    [registerCount]uint16
+	Coils        [coilCount]bool
+	cycleCounter int
 }
 
 const (
@@ -34,57 +33,58 @@ const (
 // Discrete inputs
 const (
 	fieldEstop = iota
-	scaleNear
-	scaleFar
 	redEstop1
 	redEstop2
 	redEstop3
-	redSwitchNear
-	redSwitchFar
-	redForceCube1
-	redForceCube2
-	redForceCube3
-	redForceButton
-	redLevitateCube1
-	redLevitateCube2
-	redLevitateCube3
-	redLevitateButton
-	redBoostCube1
-	redBoostCube2
-	redBoostCube3
-	redBoostButton
 	blueEstop1
 	blueEstop2
 	blueEstop3
+	redConnected1
+	redConnected2
+	redConnected3
+	blueConnected1
+	blueConnected2
+	blueConnected3
+	scaleNear
+	scaleFar
+	redSwitchNear
+	redSwitchFar
 	blueSwitchNear
 	blueSwitchFar
-	blueForceCube1
-	blueForceCube2
-	blueForceCube3
-	blueForceButton
-	blueLevitate1
-	blueLevitate2
-	blueLevitate3
-	blueLevitateButton
-	blueBoostCube1
-	blueBoostCube2
-	blueBoostCube3
-	blueBoostButton
+	redForceActivate
+	redLevitateActivate
+	redBoostActivate
+	blueForceActivate
+	blueLevitateActivate
+	blueBoostActivate
+	inputCount
 )
 
 // 16-bit registers
-const ()
+const (
+	red1Bandwidth = iota
+	red2Bandwidth
+	red3Bandwidth
+	blue1Bandwidth
+	blue2Bandwidth
+	blue3Bandwidth
+	redForceDistance
+	redLevitateDistance
+	redBoostDistance
+	blueForceDistance
+	blueLevitateDistance
+	blueBoostDistance
+	registerCount
+)
 
 // Coils
 const (
-	redForceLight = iota
-	redLevitateLight
-	redBoostLight
-	blueForceLight
-	blueLevitateLight
-	blueBoostLight
-	resetCounts
-	heartbeat
+	heartbeat = iota
+	stackLightGreen
+	stackLightOrange
+	stackLightRed
+	stackLightBlue
+	coilCount
 )
 
 func (plc *Plc) SetAddress(address string) {
@@ -163,51 +163,15 @@ func (plc *Plc) GetScaleAndSwitches() ([2]bool, [2]bool, [2]bool) {
 }
 
 // Returns the state of the red and blue vault power cube sensors.
-func (plc *Plc) GetVaults() ([3]bool, [3]bool, [3]bool, [3]bool, [3]bool, [3]bool) {
-	var redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost [3]bool
-
-	redForce[0] = plc.Inputs[redForceCube1]
-	redForce[1] = plc.Inputs[redForceCube2]
-	redForce[2] = plc.Inputs[redForceCube3]
-	redLevitate[0] = plc.Inputs[redLevitateCube1]
-	redLevitate[1] = plc.Inputs[redLevitateCube2]
-	redLevitate[2] = plc.Inputs[redLevitateCube3]
-	redBoost[0] = plc.Inputs[redBoostCube1]
-	redBoost[1] = plc.Inputs[redBoostCube2]
-	redBoost[2] = plc.Inputs[redBoostCube3]
-	blueForce[0] = plc.Inputs[blueForceCube1]
-	blueForce[1] = plc.Inputs[blueForceCube2]
-	blueForce[2] = plc.Inputs[blueForceCube3]
-	blueLevitate[0] = plc.Inputs[blueLevitate1]
-	blueLevitate[1] = plc.Inputs[blueLevitate2]
-	blueLevitate[2] = plc.Inputs[blueLevitate3]
-	blueBoost[0] = plc.Inputs[blueBoostCube1]
-	blueBoost[1] = plc.Inputs[blueBoostCube2]
-	blueBoost[2] = plc.Inputs[blueBoostCube3]
-
-	return redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost
+func (plc *Plc) GetVaults() (uint16, uint16, uint16, uint16, uint16, uint16) {
+	return plc.Registers[redForceDistance], plc.Registers[redLevitateDistance], plc.Registers[redBoostDistance],
+		plc.Registers[blueForceDistance], plc.Registers[blueLevitateDistance], plc.Registers[blueBoostDistance]
 }
 
 // Returns the state of the red and blue power up buttons on the vaults.
 func (plc *Plc) GetPowerUpButtons() (bool, bool, bool, bool, bool, bool) {
-	return plc.Inputs[redForceButton], plc.Inputs[redLevitateButton], plc.Inputs[redBoostButton],
-		plc.Inputs[blueForceButton], plc.Inputs[blueLevitateButton], plc.Inputs[blueBoostButton]
-}
-
-// Resets the counter counts to zero.
-func (plc *Plc) ResetCounts() {
-	plc.Coils[resetCounts] = true
-	plc.resetCountCycles = 0
-}
-
-// Sets the state of the lights inside the power up buttons on the vaults.
-func (plc *Plc) SetPowerUpLights(redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost bool) {
-	plc.Coils[redForceLight] = redForce
-	plc.Coils[redLevitateLight] = redLevitate
-	plc.Coils[redBoostLight] = redBoost
-	plc.Coils[blueForceLight] = blueForce
-	plc.Coils[blueLevitateLight] = blueLevitate
-	plc.Coils[blueBoostLight] = blueBoost
+	return plc.Inputs[redForceActivate], plc.Inputs[redLevitateActivate], plc.Inputs[redBoostActivate],
+		plc.Inputs[blueForceActivate], plc.Inputs[blueLevitateActivate], plc.Inputs[blueBoostActivate]
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {
@@ -258,22 +222,22 @@ func (plc *Plc) readInputs() bool {
 }
 
 func (plc *Plc) readCounters() bool {
-	if len(plc.Counters) == 0 {
+	if len(plc.Registers) == 0 {
 		return true
 	}
 
-	registers, err := plc.client.ReadHoldingRegisters(0, uint16(len(plc.Counters)))
+	registers, err := plc.client.ReadHoldingRegisters(0, uint16(len(plc.Registers)))
 	if err != nil {
 		log.Printf("PLC error reading registers: %v", err)
 		return false
 	}
-	if len(registers)/2 < len(plc.Counters) {
+	if len(registers)/2 < len(plc.Registers) {
 		log.Printf("Insufficient length of PLC counters: got %d bytes, expected %d words.", len(registers),
-			len(plc.Counters))
+			len(plc.Registers))
 		return false
 	}
 
-	copy(plc.Counters[:], byteToUint(registers, len(plc.Counters)))
+	copy(plc.Registers[:], byteToUint(registers, len(plc.Registers)))
 	return true
 }
 
@@ -288,11 +252,6 @@ func (plc *Plc) writeCoils() bool {
 		return false
 	}
 
-	if plc.resetCountCycles > 5 {
-		plc.Coils[resetCounts] = false // Need to send a short pulse to reset the counters.
-	} else {
-		plc.resetCountCycles++
-	}
 	return true
 }
 

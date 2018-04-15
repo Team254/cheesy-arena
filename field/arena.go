@@ -207,7 +207,6 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	// Reset the realtime scores.
 	arena.RedRealtimeScore = NewRealtimeScore()
 	arena.BlueRealtimeScore = NewRealtimeScore()
-	arena.Plc.ResetCounts()
 	arena.FieldReset = false
 	arena.scale = new(game.Seesaw)
 	arena.redSwitch = new(game.Seesaw)
@@ -376,7 +375,6 @@ func (arena *Arena) Update() {
 		arena.AudienceDisplayScreen = "match"
 		arena.AudienceDisplayNotifier.Notify(nil)
 		arena.FieldTestMode = ""
-		arena.Plc.ResetCounts()
 		arena.sendGameSpecificDataPacket()
 		if !arena.MuteMatchSounds {
 			arena.PlaySoundNotifier.Notify("match-warmup")
@@ -677,10 +675,10 @@ func (arena *Arena) handlePlcInput() {
 	}
 
 	// Handle vaults.
-	redForceCubes, redLevitateCubes, redBoostCubes, blueForceCubes, blueLevitateCubes, blueBoostCubes :=
+	redForceDistance, redLevitateDistance, redBoostDistance, blueForceDistance, blueLevitateDistance, blueBoostDistance :=
 		arena.Plc.GetVaults()
-	arena.redVault.UpdateCubes(redForceCubes, redLevitateCubes, redBoostCubes)
-	arena.blueVault.UpdateCubes(blueForceCubes, blueLevitateCubes, blueBoostCubes)
+	arena.redVault.UpdateCubes(redForceDistance, redLevitateDistance, redBoostDistance)
+	arena.blueVault.UpdateCubes(blueForceDistance, blueLevitateDistance, blueBoostDistance)
 	redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost := arena.Plc.GetPowerUpButtons()
 	arena.redVault.UpdateButtons(redForce, redLevitate, redBoost, currentTime)
 	arena.blueVault.UpdateButtons(blueForce, blueLevitate, blueBoost, currentTime)
