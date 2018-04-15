@@ -23,7 +23,7 @@ func TestSetupField(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "12345")
 	assert.Contains(t, recorder.Body.String(), "selected")
 
-	recorder = web.postHttpResponse("/setup/field/test", "mode=rotor2")
+	recorder = web.postHttpResponse("/setup/field/test", "mode=1")
 	assert.Equal(t, 303, recorder.Code)
-	assert.Equal(t, "rotor2", web.arena.FieldTestMode)
+	assert.Equal(t, 1, web.arena.RedSwitchLedStrip.Mode)
 }

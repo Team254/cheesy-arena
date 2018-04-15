@@ -7,7 +7,7 @@
 {{define "title"}}Field Configuration{{end}}
 {{define "body"}}
 <div class="row">
-  <div class="col-lg-4 col-lg-offset-2">
+  <div class="col-lg-4">
     <div class="well">
       <legend>Alliance Station Displays</legend>
       {{range $displayId, $station := .AllianceStationDisplays}}
@@ -38,82 +38,6 @@
   <div class="col-lg-4">
     <div class="well">
       <legend>PLC</legend>
-      <form class="" action="/setup/field/test" method="POST">
-        <div class="form-group">
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode ""}}checked{{end}}>Off
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="boiler" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "boiler"}}checked{{end}}>Boilers On
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="rotor1" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "rotor1"}}checked{{end}}>1 Rotor/Touchpad 1 On
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="rotor2" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "rotor2"}}checked{{end}}>2 Rotors/Touchpad 2 On
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="rotor3" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "rotor3"}}checked{{end}}>3 Rotors/Touchpad 3 On
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="rotor4" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "rotor4"}}checked{{end}}>4 Rotors On
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="red" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "red"}}checked{{end}}>All Red On
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="blue" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "blue"}}checked{{end}}>All Blue On
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="flash" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "flash"}}checked{{end}}>Flash Touchpads
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="cycle" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "cycle"}}checked{{end}}>Cycle Touchpads
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="chase" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "chase"}}checked{{end}}>Chase Touchpads
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="slowChase" onclick="this.form.submit()"
-                     {{if eq .FieldTestMode "slowChase"}}checked{{end}}>Slow Chase Touchpads
-            </label>
-          </div>
-        </div>
-      </form>
       <div class="row">
         <div class="col-lg-4">
           <table>
@@ -155,6 +79,69 @@
           </table>
         </div>
       </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="well">
+      <legend>LEDs</legend>
+      <form class="" action="/setup/field/test" method="POST">
+        <div class="form-group">
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="0" onclick="this.form.submit()"
+                     {{if eq .LedMode 0}}checked{{end}}>Off
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="1" onclick="this.form.submit()"
+                     {{if eq .LedMode 1}}checked{{end}}>Red
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="2" onclick="this.form.submit()"
+                     {{if eq .LedMode 2}}checked{{end}}>Green
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="3" onclick="this.form.submit()"
+                     {{if eq .LedMode 3}}checked{{end}}>Blue
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="4" onclick="this.form.submit()"
+                     {{if eq .LedMode 4}}checked{{end}}>White
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="5" onclick="this.form.submit()"
+                     {{if eq .LedMode 5}}checked{{end}}>Chase
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="6" onclick="this.form.submit()"
+                     {{if eq .LedMode 6}}checked{{end}}>Warmup
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="7" onclick="this.form.submit()"
+                     {{if eq .LedMode 7}}checked{{end}}>Random
+            </label>
+          </div>
+          <div class="radio">
+            <label>
+              <input type="radio" name="mode" value="8" onclick="this.form.submit()"
+                     {{if eq .LedMode 8}}checked{{end}}>Fade
+            </label>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 </div>

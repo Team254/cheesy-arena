@@ -8,6 +8,7 @@ package field
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/partner"
 	"log"
@@ -56,7 +57,6 @@ type Arena struct {
 	AllianceStationDisplays        map[string]string
 	AllianceStationDisplayScreen   string
 	MuteMatchSounds                bool
-	FieldTestMode                  string
 	matchAborted                   bool
 	matchStateNotifier             *Notifier
 	MatchTimeNotifier              *Notifier
@@ -71,6 +71,7 @@ type Arena struct {
 	AllianceSelectionNotifier      *Notifier
 	LowerThirdNotifier             *Notifier
 	ReloadDisplaysNotifier         *Notifier
+	RedSwitchLedStrip              *led.LedStrip
 	scale                          *game.Seesaw
 	redSwitch                      *game.Seesaw
 	blueSwitch                     *game.Seesaw
@@ -142,6 +143,12 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.SavedMatchResult = model.NewMatchResult()
 	arena.AllianceStationDisplays = make(map[string]string)
 	arena.AllianceStationDisplayScreen = "match"
+
+	// Initialize LEDs.
+	arena.RedSwitchLedStrip, err = led.NewLedStrip("10.0.0.30", 1, 150)
+	if err != nil {
+		return nil, err
+	}
 
 	return arena, nil
 }
@@ -374,8 +381,8 @@ func (arena *Arena) Update() {
 		enabled = false
 		arena.AudienceDisplayScreen = "match"
 		arena.AudienceDisplayNotifier.Notify(nil)
-		arena.FieldTestMode = ""
 		arena.sendGameSpecificDataPacket()
+		arena.RedSwitchLedStrip.SetMode(led.WarmupMode)
 		if !arena.MuteMatchSounds {
 			arena.PlaySoundNotifier.Notify("match-warmup")
 		}
@@ -471,6 +478,8 @@ func (arena *Arena) Update() {
 	// Handle field sensors/lights/motors.
 	arena.handlePlcInput()
 	arena.handlePlcOutput()
+
+	arena.RedSwitchLedStrip.Update()
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -694,30 +703,7 @@ func (arena *Arena) handlePlcInput() {
 
 // Writes light/motor commands to the field PLC.
 func (arena *Arena) handlePlcOutput() {
-	if arena.FieldTestMode != "" {
-		// PLC output is being manually overridden.
-		// TODO(patrick): Update for 2018.
-		/*
-			if arena.FieldTestMode == "flash" {
-				blinkState := arena.Plc.GetCycleState(2, 0, 1)
-				arena.Plc.SetTouchpadLights([3]bool{blinkState, blinkState, blinkState},
-					[3]bool{blinkState, blinkState, blinkState})
-			} else if arena.FieldTestMode == "cycle" {
-				arena.Plc.SetTouchpadLights(
-					[3]bool{arena.Plc.GetCycleState(3, 2, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 0, 1)},
-					[3]bool{arena.Plc.GetCycleState(3, 0, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 2, 1)})
-			} else if arena.FieldTestMode == "chase" {
-				arena.Plc.SetTouchpadLights(
-					[3]bool{arena.Plc.GetCycleState(12, 2, 2), arena.Plc.GetCycleState(12, 1, 2), arena.Plc.GetCycleState(12, 0, 2)},
-					[3]bool{arena.Plc.GetCycleState(12, 3, 2), arena.Plc.GetCycleState(12, 4, 2), arena.Plc.GetCycleState(12, 5, 2)})
-			} else if arena.FieldTestMode == "slowChase" {
-				arena.Plc.SetTouchpadLights(
-					[3]bool{arena.Plc.GetCycleState(6, 2, 8), arena.Plc.GetCycleState(6, 1, 8), arena.Plc.GetCycleState(6, 0, 8)},
-					[3]bool{arena.Plc.GetCycleState(6, 3, 8), arena.Plc.GetCycleState(6, 4, 8), arena.Plc.GetCycleState(6, 5, 8)})
-			}
-			return
-		*/
-	}
+	// TODO(patrick): Update for 2018.
 }
 
 func (arena *Arena) handleEstop(station string, state bool) {
