@@ -7,6 +7,7 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"net/http"
 	"strconv"
@@ -23,15 +24,21 @@ func (web *Web) fieldGetHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+	plc := web.arena.Plc
 	data := struct {
 		*model.EventSettings
 		AllianceStationDisplays map[string]string
 		Inputs                  []bool
-		Counters                []uint16
+		InputNames              []string
+		Registers               []uint16
+		RegisterNames           []string
 		Coils                   []bool
-		LedMode                 int
-	}{web.arena.EventSettings, web.arena.AllianceStationDisplays, web.arena.Plc.Inputs[:],
-		web.arena.Plc.Registers[:], web.arena.Plc.Coils[:], web.arena.RedSwitchLedStrip.Mode}
+		CoilNames               []string
+		CurrentLedMode          led.Mode
+		LedModeNames            map[led.Mode]string
+	}{web.arena.EventSettings, web.arena.AllianceStationDisplays, plc.Inputs[:], plc.GetInputNames(), plc.Registers[:],
+		plc.GetRegisterNames(), plc.Coils[:], plc.GetCoilNames(), web.arena.RedSwitchLedStrip.CurrentMode,
+		led.ModeNames}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -74,7 +81,7 @@ func (web *Web) fieldTestPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mode, _ := strconv.Atoi(r.PostFormValue("mode"))
-	web.arena.RedSwitchLedStrip.SetMode(mode)
+	web.arena.RedSwitchLedStrip.SetMode(led.Mode(mode))
 
 	http.Redirect(w, r, "/setup/field", 303)
 }

@@ -22,29 +22,31 @@ const (
 )
 
 // Progression of match states.
+type MatchState int
+
 const (
-	PreMatch      = 0
-	StartMatch    = 1
-	WarmupPeriod  = 2
-	AutoPeriod    = 3
-	PausePeriod   = 4
-	TeleopPeriod  = 5
-	EndgamePeriod = 6
-	PostMatch     = 7
+	PreMatch MatchState = iota
+	StartMatch
+	WarmupPeriod
+	AutoPeriod
+	PausePeriod
+	TeleopPeriod
+	EndgamePeriod
+	PostMatch
 )
 
 type Arena struct {
-	Database                       *model.Database
-	EventSettings                  *model.EventSettings
-	accessPoint                    *AccessPoint
-	networkSwitch                  *NetworkSwitch
-	Plc                            Plc
-	TbaClient                      *partner.TbaClient
-	StemTvClient                   *partner.StemTvClient
-	AllianceStations               map[string]*AllianceStation
-	CurrentMatch                   *model.Match
-	MatchState                     int
-	lastMatchState                 int
+	Database         *model.Database
+	EventSettings    *model.EventSettings
+	accessPoint      *AccessPoint
+	networkSwitch    *NetworkSwitch
+	Plc              Plc
+	TbaClient        *partner.TbaClient
+	StemTvClient     *partner.StemTvClient
+	AllianceStations map[string]*AllianceStation
+	CurrentMatch     *model.Match
+	MatchState
+	lastMatchState                 MatchState
 	MatchStartTime                 time.Time
 	LastMatchTimeSec               float64
 	RedRealtimeScore               *RealtimeScore
@@ -81,7 +83,7 @@ type Arena struct {
 
 type ArenaStatus struct {
 	AllianceStations map[string]*AllianceStation
-	MatchState       int
+	MatchState
 	CanStartMatch    bool
 	PlcIsHealthy     bool
 	FieldEstop       bool

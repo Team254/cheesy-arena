@@ -12,21 +12,25 @@ import (
 const powerUpDurationSec = 10
 
 // Power up type/effect enum.
+type effect int
+
 const (
-	force = iota
+	force effect = iota
 	boost
 )
 
 // Power up state enum.
+type state int
+
 const (
-	queued = iota
+	queued state = iota
 	active
 	expired
 )
 
 type PowerUp struct {
-	alliance  int
-	kind      int
+	alliance
+	effect
 	level     int
 	startTime time.Time
 }
@@ -37,7 +41,7 @@ func ResetPowerUps() {
 	powerUpUses = powerUpUses[:0]
 }
 
-func (powerUp *PowerUp) GetState(currentTime time.Time) int {
+func (powerUp *PowerUp) GetState(currentTime time.Time) state {
 	if powerUp.startTime.After(currentTime) {
 		return queued
 	}

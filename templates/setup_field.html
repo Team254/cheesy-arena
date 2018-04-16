@@ -7,7 +7,7 @@
 {{define "title"}}Field Configuration{{end}}
 {{define "body"}}
 <div class="row">
-  <div class="col-lg-4">
+  <div class="col-lg-3">
     <div class="well">
       <legend>Alliance Station Displays</legend>
       {{range $displayId, $station := .AllianceStationDisplays}}
@@ -35,44 +35,44 @@
       </div>
     </div>
   </div>
-  <div class="col-lg-4">
+  <div class="col-lg-7">
     <div class="well">
       <legend>PLC</legend>
       <div class="row">
         <div class="col-lg-4">
-          <table>
+          <table class="table">
             <tr>
-              <th>Inputs</th>
+              <th colspan="2">Inputs</th>
             </tr>
             {{range $i, $value := .Inputs}}
             <tr>
-              <td>{{$i}}</td>
+              <td>{{index $.InputNames $i}}</td>
               <td>{{$value}}</td>
             </tr>
             {{end}}
           </table>
         </div>
         <div class="col-lg-4">
-          <table>
+          <table class="table">
             <tr>
-              <th>Counters</th>
+              <th colspan="2">Registers</th>
             </tr>
-            {{range $i, $value := .Counters}}
+            {{range $i, $value := .Registers}}
             <tr>
-              <td>{{$i}}</td>
+              <td>{{index $.RegisterNames $i}}</td>
               <td>{{$value}}</td>
             </tr>
             {{end}}
           </table>
         </div>
         <div class="col-lg-4">
-          <table>
+          <table class="table">
             <tr>
-              <th>Coils</th>
+              <th colspan="2">Coils</th>
             </tr>
             {{range $i, $value := .Coils}}
             <tr>
-              <td>{{$i}}</td>
+              <td>{{index $.CoilNames $i}}</td>
               <td>{{$value}}</td>
             </tr>
             {{end}}
@@ -81,65 +81,19 @@
       </div>
     </div>
   </div>
-  <div class="col-lg-4">
+  <div class="col-lg-2">
     <div class="well">
       <legend>LEDs</legend>
       <form class="" action="/setup/field/test" method="POST">
         <div class="form-group">
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="0" onclick="this.form.submit()"
-                     {{if eq .LedMode 0}}checked{{end}}>Off
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="1" onclick="this.form.submit()"
-                     {{if eq .LedMode 1}}checked{{end}}>Red
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="2" onclick="this.form.submit()"
-                     {{if eq .LedMode 2}}checked{{end}}>Green
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="3" onclick="this.form.submit()"
-                     {{if eq .LedMode 3}}checked{{end}}>Blue
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="4" onclick="this.form.submit()"
-                     {{if eq .LedMode 4}}checked{{end}}>White
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="5" onclick="this.form.submit()"
-                     {{if eq .LedMode 5}}checked{{end}}>Chase
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="6" onclick="this.form.submit()"
-                     {{if eq .LedMode 6}}checked{{end}}>Warmup
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="7" onclick="this.form.submit()"
-                     {{if eq .LedMode 7}}checked{{end}}>Random
-            </label>
-          </div>
-          <div class="radio">
-            <label>
-              <input type="radio" name="mode" value="8" onclick="this.form.submit()"
-                     {{if eq .LedMode 8}}checked{{end}}>Fade
-            </label>
-          </div>
+          {{range $i, $name := .LedModeNames}}
+            <div class="radio">
+              <label>
+                <input type="radio" name="mode" value="{{$i}}" onclick="this.form.submit()"
+                       {{if eq $.CurrentLedMode $i}}checked{{end}}>{{$name}}
+              </label>
+            </div>
+          {{end}}
         </div>
       </form>
     </div>

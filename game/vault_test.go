@@ -75,7 +75,7 @@ func TestVaultForce(t *testing.T) {
 	vault.UpdateButtons(true, false, false, time.Now())
 	if assert.NotNil(t, vault.ForcePowerUp) {
 		assert.Equal(t, blueAlliance, vault.ForcePowerUp.alliance)
-		assert.Equal(t, force, vault.ForcePowerUp.kind)
+		assert.Equal(t, force, vault.ForcePowerUp.effect)
 		assert.Equal(t, 1, vault.ForcePowerUp.level)
 	}
 
@@ -86,7 +86,7 @@ func TestVaultForce(t *testing.T) {
 	vault.UpdateButtons(true, false, false, time.Now())
 	if assert.NotNil(t, vault.ForcePowerUp) {
 		assert.Equal(t, redAlliance, vault.ForcePowerUp.alliance)
-		assert.Equal(t, force, vault.ForcePowerUp.kind)
+		assert.Equal(t, force, vault.ForcePowerUp.effect)
 		assert.Equal(t, 2, vault.ForcePowerUp.level)
 	}
 
@@ -98,7 +98,7 @@ func TestVaultForce(t *testing.T) {
 	assert.NotNil(t, vault.ForcePowerUp)
 	if assert.NotNil(t, vault.ForcePowerUp) {
 		assert.Equal(t, blueAlliance, vault.ForcePowerUp.alliance)
-		assert.Equal(t, force, vault.ForcePowerUp.kind)
+		assert.Equal(t, force, vault.ForcePowerUp.effect)
 		assert.Equal(t, 3, vault.ForcePowerUp.level)
 	}
 
@@ -124,7 +124,7 @@ func TestVaultBoost(t *testing.T) {
 	vault.UpdateButtons(false, false, true, time.Now())
 	if assert.NotNil(t, vault.BoostPowerUp) {
 		assert.Equal(t, blueAlliance, vault.BoostPowerUp.alliance)
-		assert.Equal(t, boost, vault.BoostPowerUp.kind)
+		assert.Equal(t, boost, vault.BoostPowerUp.effect)
 		assert.Equal(t, 1, vault.BoostPowerUp.level)
 	}
 
@@ -135,7 +135,7 @@ func TestVaultBoost(t *testing.T) {
 	vault.UpdateButtons(false, false, true, time.Now())
 	if assert.NotNil(t, vault.BoostPowerUp) {
 		assert.Equal(t, redAlliance, vault.BoostPowerUp.alliance)
-		assert.Equal(t, boost, vault.BoostPowerUp.kind)
+		assert.Equal(t, boost, vault.BoostPowerUp.effect)
 		assert.Equal(t, 2, vault.BoostPowerUp.level)
 	}
 
@@ -147,7 +147,7 @@ func TestVaultBoost(t *testing.T) {
 	assert.NotNil(t, vault.BoostPowerUp)
 	if assert.NotNil(t, vault.BoostPowerUp) {
 		assert.Equal(t, blueAlliance, vault.BoostPowerUp.alliance)
-		assert.Equal(t, boost, vault.BoostPowerUp.kind)
+		assert.Equal(t, boost, vault.BoostPowerUp.effect)
 		assert.Equal(t, 3, vault.BoostPowerUp.level)
 	}
 

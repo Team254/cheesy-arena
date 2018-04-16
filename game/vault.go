@@ -10,7 +10,7 @@ import (
 )
 
 type Vault struct {
-	alliance         int
+	alliance         alliance
 	numForceCubes    int
 	numLevitateCubes int
 	numBoostCubes    int
@@ -33,12 +33,12 @@ func (vault *Vault) UpdateButtons(forceButton, levitateButton, boostButton bool,
 	}
 
 	if forceButton && vault.numForceCubes > 0 && vault.ForcePowerUp == nil {
-		vault.ForcePowerUp = maybeActivatePowerUp(&PowerUp{kind: force, alliance: vault.alliance,
+		vault.ForcePowerUp = maybeActivatePowerUp(&PowerUp{effect: force, alliance: vault.alliance,
 			level: vault.numForceCubes}, currentTime)
 	}
 
 	if boostButton && vault.numBoostCubes > 0 && vault.BoostPowerUp == nil {
-		vault.BoostPowerUp = maybeActivatePowerUp(&PowerUp{kind: boost, alliance: vault.alliance,
+		vault.BoostPowerUp = maybeActivatePowerUp(&PowerUp{effect: boost, alliance: vault.alliance,
 			level: vault.numBoostCubes}, currentTime)
 	}
 }

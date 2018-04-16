@@ -19,8 +19,10 @@ const (
 )
 
 // LED sequence modes
+type Mode int
+
 const (
-	OffMode = iota
+	OffMode Mode = iota
 	RedMode
 	GreenMode
 	BlueMode
@@ -31,9 +33,23 @@ const (
 	FadeMode
 )
 
+var ModeNames = map[Mode]string{
+	OffMode:    "Off",
+	RedMode:    "Red",
+	GreenMode:  "Green",
+	BlueMode:   "Blue",
+	WhiteMode:  "White",
+	ChaseMode:  "Chase",
+	WarmupMode: "Warmup",
+	RandomMode: "Random",
+	FadeMode:   "Fade",
+}
+
 // Color RGB mappings
+type color int
+
 const (
-	red = iota
+	red color = iota
 	orange
 	yellow
 	green
@@ -43,20 +59,21 @@ const (
 	white
 	black
 )
-var colors = [][3]byte{
-	{255, 0, 0},     // Red
-	{255, 50, 0},    // Orange
-	{255, 255, 0},   // Yellow
-	{0, 255, 0},     // Green
-	{0, 100, 100},   // Teal
-	{0, 0, 255},     // Blue
-	{100, 0, 100},   // Purple
-	{255, 255, 255}, // White
-	{0, 0, 0},       // Black
+
+var colors = map[color][3]byte{
+	red:    {255, 0, 0},
+	orange: {255, 50, 0},
+	yellow: {255, 255, 0},
+	green:  {0, 255, 0},
+	teal:   {0, 100, 100},
+	blue:   {0, 0, 255},
+	purple: {100, 0, 100},
+	white:  {255, 255, 255},
+	black:  {0, 0, 0},
 }
 
 type LedStrip struct {
-	Mode           int
+	CurrentMode    Mode
 	conn           net.Conn
 	pixels         [][3]byte
 	oldPixels      [][3]byte
@@ -82,8 +99,8 @@ func NewLedStrip(controllerAddress string, dmxUniverse int, numPixels int) (*Led
 }
 
 // Sets the current LED sequence mode and resets the intra-sequence counter to the beginning.
-func (strip *LedStrip) SetMode(mode int) {
-	strip.Mode = mode
+func (strip *LedStrip) SetMode(mode Mode) {
+	strip.CurrentMode = mode
 	strip.counter = 0
 }
 
@@ -91,7 +108,7 @@ func (strip *LedStrip) SetMode(mode int) {
 // loop.
 func (strip *LedStrip) Update() error {
 	// Determine the pixel values.
-	switch strip.Mode {
+	switch strip.CurrentMode {
 	case RedMode:
 		strip.updateSingleColorMode(red)
 	case GreenMode:
@@ -259,7 +276,7 @@ func (strip *LedStrip) updateOffMode() {
 	}
 }
 
-func (strip *LedStrip) updateSingleColorMode(color int) {
+func (strip *LedStrip) updateSingleColorMode(color color) {
 	for i := 0; i < len(strip.pixels); i++ {
 		strip.pixels[i] = colors[color]
 	}
@@ -269,7 +286,7 @@ func (strip *LedStrip) updateChaseMode() {
 	if strip.counter == len(colors)*len(strip.pixels) {
 		strip.counter = 0
 	}
-	color := strip.counter / len(strip.pixels)
+	color := color(strip.counter / len(strip.pixels))
 	pixelIndex := strip.counter % len(strip.pixels)
 	strip.pixels[pixelIndex] = colors[color]
 }
@@ -299,7 +316,7 @@ func (strip *LedStrip) updateRandomMode() {
 		return
 	}
 	for i := 0; i < len(strip.pixels); i++ {
-		strip.pixels[i] = colors[rand.Intn(len(colors))]
+		strip.pixels[i] = colors[color(rand.Intn(len(colors)))]
 	}
 }
 
@@ -332,7 +349,7 @@ func (strip *LedStrip) updateFadeMode() {
 }
 
 // Interpolates between the two colors based on the given fraction.
-func getFadeColor(fromColor, toColor, numerator, denominator int) [3]byte {
+func getFadeColor(fromColor, toColor color, numerator, denominator int) [3]byte {
 	from := colors[fromColor]
 	to := colors[toColor]
 	var fadeColor [3]byte

@@ -31,8 +31,10 @@ const (
 )
 
 // Discrete inputs
+type input int
+
 const (
-	fieldEstop = iota
+	fieldEstop input = iota
 	redEstop1
 	redEstop2
 	redEstop3
@@ -61,8 +63,10 @@ const (
 )
 
 // 16-bit registers
+type register int
+
 const (
-	red1Bandwidth = iota
+	red1Bandwidth register = iota
 	red2Bandwidth
 	red3Bandwidth
 	blue1Bandwidth
@@ -78,8 +82,10 @@ const (
 )
 
 // Coils
+type coil int
+
 const (
-	heartbeat = iota
+	heartbeat coil = iota
 	stackLightGreen
 	stackLightOrange
 	stackLightRed
@@ -176,6 +182,30 @@ func (plc *Plc) GetPowerUpButtons() (bool, bool, bool, bool, bool, bool) {
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {
 	return plc.cycleCounter/duration%max == index
+}
+
+func (plc *Plc) GetInputNames() []string {
+	inputNames := make([]string, inputCount)
+	for i := range plc.Inputs {
+		inputNames[i] = input(i).String()
+	}
+	return inputNames
+}
+
+func (plc *Plc) GetRegisterNames() []string {
+	registerNames := make([]string, registerCount)
+	for i := range plc.Registers {
+		registerNames[i] = register(i).String()
+	}
+	return registerNames
+}
+
+func (plc *Plc) GetCoilNames() []string {
+	coilNames := make([]string, coilCount)
+	for i := range plc.Coils {
+		coilNames[i] = coil(i).String()
+	}
+	return coilNames
 }
 
 func (plc *Plc) connect() error {

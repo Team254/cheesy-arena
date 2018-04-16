@@ -9,21 +9,23 @@ import (
 	"time"
 )
 
+type alliance int
+
 const (
-	neitherAlliance = iota
+	neitherAlliance alliance = iota
 	redAlliance
 	blueAlliance
 )
 
 type Seesaw struct {
-	kind       int
+	kind       alliance // Red or blue indicates that it is a switch; neither indicates the scale.
 	nearIsRed  bool
 	ownerships []*Ownership
 }
 
 type Ownership struct {
 	seesaw    *Seesaw
-	ownedBy   int
+	ownedBy   alliance
 	startTime time.Time
 	endTime   *time.Time
 }
@@ -40,7 +42,7 @@ func (seesaw *Seesaw) UpdateState(state [2]bool, currentTime time.Time) {
 
 	// Check if there is an active force power up for this seesaw.
 	currentPowerUp := getActivePowerUp(currentTime)
-	if currentPowerUp != nil && currentPowerUp.kind == force &&
+	if currentPowerUp != nil && currentPowerUp.effect == force &&
 		(seesaw.kind == neitherAlliance && currentPowerUp.level >= 2 ||
 			(seesaw.kind == currentPowerUp.alliance && (currentPowerUp.level == 1 || currentPowerUp.level == 3))) {
 		ownedBy = currentPowerUp.alliance
@@ -88,7 +90,7 @@ func (seesaw *Seesaw) getCurrentOwnership() *Ownership {
 	return nil
 }
 
-func (seesaw *Seesaw) getAllianceSeconds(ownedBy int, startTime, endTime time.Time) float64 {
+func (seesaw *Seesaw) getAllianceSeconds(ownedBy alliance, startTime, endTime time.Time) float64 {
 	var seconds float64
 	for _, ownership := range seesaw.ownerships {
 		if ownership.ownedBy == ownedBy {
@@ -120,7 +122,7 @@ func (ownership *Ownership) getSeconds(startTime, endTime time.Time, ignoreBoost
 	// Find the boost power up applicable to this seesaw and alliance, if it exists.
 	var boostPowerUp *PowerUp
 	for _, powerUp := range powerUpUses {
-		if powerUp.kind == boost && ownership.ownedBy == powerUp.alliance {
+		if powerUp.effect == boost && ownership.ownedBy == powerUp.alliance {
 			if ownership.seesaw.kind == neitherAlliance && powerUp.level >= 2 ||
 				ownership.seesaw.kind != neitherAlliance && (powerUp.level == 1 || powerUp.level == 3) {
 				boostPowerUp = powerUp

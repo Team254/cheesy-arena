@@ -74,7 +74,7 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	err = websocket.Write("matchTime", MatchTimeMessage{web.arena.MatchState, int(web.arena.LastMatchTimeSec)})
+	err = websocket.Write("matchTime", MatchTimeMessage{int(web.arena.MatchState), int(web.arena.LastMatchTimeSec)})
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -149,7 +149,7 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 					return
 				}
 				messageType = "matchTime"
-				message = MatchTimeMessage{web.arena.MatchState, matchTimeSec.(int)}
+				message = MatchTimeMessage{int(web.arena.MatchState), matchTimeSec.(int)}
 			case _, ok := <-realtimeScoreListener:
 				if !ok {
 					return
