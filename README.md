@@ -3,8 +3,6 @@ Cheesy Arena
 A field management system that just works.
 
 ## Key features
-Check out a [video overview](http://video.team254.com/watch/Z5ZWI2cDqsvVe--AjHhePAHlOhLK8MT0) of Cheesy Arena's functionality.
-
 **For participants and spectators:**
 
 * Same network isolation and security as the official FIRST FMS
