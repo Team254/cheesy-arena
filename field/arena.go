@@ -327,13 +327,13 @@ func (arena *Arena) AbortMatch() error {
 	if arena.MatchState == PreMatch || arena.MatchState == PostMatch {
 		return fmt.Errorf("Cannot abort match when it is not in progress.")
 	}
+	if !arena.MuteMatchSounds && arena.MatchState != WarmupPeriod {
+		arena.PlaySoundNotifier.Notify("match-abort")
+	}
 	arena.MatchState = PostMatch
 	arena.matchAborted = true
 	arena.AudienceDisplayScreen = "blank"
 	arena.AudienceDisplayNotifier.Notify(nil)
-	if !arena.MuteMatchSounds {
-		arena.PlaySoundNotifier.Notify("match-abort")
-	}
 	return nil
 }
 
