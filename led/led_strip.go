@@ -29,20 +29,36 @@ const (
 	WhiteMode
 	ChaseMode
 	WarmupMode
+	Warmup2Mode
+	Warmup3Mode
+	Warmup4Mode
+	OwnedMode
+	ForceMode
+	BoostMode
 	RandomMode
 	FadeMode
+	GradientMode
+	BlinkMode
 )
 
 var ModeNames = map[Mode]string{
-	OffMode:    "Off",
-	RedMode:    "Red",
-	GreenMode:  "Green",
-	BlueMode:   "Blue",
-	WhiteMode:  "White",
-	ChaseMode:  "Chase",
-	WarmupMode: "Warmup",
-	RandomMode: "Random",
-	FadeMode:   "Fade",
+	OffMode:      "Off",
+	RedMode:      "Red",
+	GreenMode:    "Green",
+	BlueMode:     "Blue",
+	WhiteMode:    "White",
+	ChaseMode:    "Chase",
+	WarmupMode:   "Warmup",
+	Warmup2Mode:  "Warmup Purple",
+	Warmup3Mode:  "Warmup Sneaky",
+	Warmup4Mode:  "Warmup Gradient",
+	OwnedMode:    "Owned",
+	ForceMode:    "Force",
+	BoostMode:    "Boost",
+	RandomMode:   "Random",
+	FadeMode:     "Fade",
+	GradientMode: "Gradient",
+	BlinkMode: "Blink",
 }
 
 // Color RGB mappings
@@ -58,18 +74,26 @@ const (
 	purple
 	white
 	black
+	purpleRed
+	purpleBlue
+	dimRed
+	dimBlue
 )
 
 var colors = map[color][3]byte{
-	red:    {255, 0, 0},
-	orange: {255, 50, 0},
-	yellow: {255, 255, 0},
-	green:  {0, 255, 0},
-	teal:   {0, 100, 100},
-	blue:   {0, 0, 255},
-	purple: {100, 0, 100},
-	white:  {255, 255, 255},
-	black:  {0, 0, 0},
+	red:        {255, 0, 0},
+	orange:     {255, 50, 0},
+	yellow:     {255, 255, 0},
+	green:      {0, 255, 0},
+	teal:       {0, 100, 100},
+	blue:       {0, 0, 255},
+	purple:     {100, 0, 100},
+	white:      {255, 255, 255},
+	black:      {0, 0, 0},
+	purpleRed:  {200, 0, 50},
+	purpleBlue: {50, 0, 200},
+	dimRed:     {100, 0, 0},
+	dimBlue:    {0, 0, 100},
 }
 
 type LedStrip struct {
@@ -121,10 +145,26 @@ func (strip *LedStrip) Update() error {
 		strip.updateChaseMode()
 	case WarmupMode:
 		strip.updateWarmupMode()
+	case Warmup2Mode:
+		strip.updateWarmup2Mode()
+	case Warmup3Mode:
+		strip.updateWarmup3Mode()
+	case Warmup4Mode:
+		strip.updateWarmup4Mode()
+	case OwnedMode:
+		strip.updateOwnedMode()
+	case ForceMode:
+		strip.updateForceMode()
+	case BoostMode:
+		strip.updateBoostMode()
 	case RandomMode:
 		strip.updateRandomMode()
 	case FadeMode:
 		strip.updateFadeMode()
+	case GradientMode:
+		strip.updateGradientMode()
+	case BlinkMode:
+		strip.updateBlinkMode()
 	default:
 		strip.updateOffMode()
 	}
@@ -311,12 +351,118 @@ func (strip *LedStrip) updateWarmupMode() {
 	}
 }
 
+func (strip *LedStrip) updateWarmup2Mode() {
+	startCounter := 100
+	endCounter := 250
+	if strip.counter < startCounter {
+		// Show solid purple to start.
+		for i := 0; i < len(strip.pixels); i++ {
+			strip.pixels[i] = colors[purple]
+		}
+	} else if strip.counter <= endCounter {
+		for i := 0; i < len(strip.pixels); i++ {
+			strip.pixels[i] = getFadeColor(purple, red, strip.counter-startCounter, endCounter-startCounter)
+		}
+	} else {
+		// MaintainPrevent the counter from rolling over.
+		strip.counter = endCounter
+	}
+}
+
+func (strip *LedStrip) updateWarmup3Mode() {
+	startCounter := 50
+	middleCounter := 225
+	endCounter := 250
+	if strip.counter < startCounter {
+		// Show solid purple to start.
+		for i := 0; i < len(strip.pixels); i++ {
+			strip.pixels[i] = colors[purple]
+		}
+	} else if strip.counter < middleCounter {
+		for i := 0; i < len(strip.pixels); i++ {
+			strip.pixels[i] = getFadeColor(purple, purpleBlue, strip.counter-startCounter, middleCounter-startCounter)
+		}
+	} else if strip.counter <= endCounter {
+		for i := 0; i < len(strip.pixels); i++ {
+			strip.pixels[i] = getFadeColor(purpleBlue, red, strip.counter-middleCounter, endCounter-middleCounter)
+		}
+	} else {
+		// Maintain the current value and prevent the counter from rolling over.
+		strip.counter = endCounter
+	}
+}
+
+func (strip *LedStrip) updateWarmup4Mode() {
+	startOffset := 50
+	middleCounter := 100
+	for i := 0; i < len(strip.pixels); i++ {
+		strip.pixels[len(strip.pixels) - i - 1] = getGradientColor(i+strip.counter+startOffset, 75)
+	}
+	if strip.counter >= middleCounter {
+		for i := 0; i < len(strip.pixels); i++ {
+			if i < strip.counter - middleCounter {
+				strip.pixels[i] = colors[red]
+			}
+		}
+	}
+}
+
+func (strip *LedStrip) updateOwnedMode() {
+	speedDivisor := 30
+	pixelSpacing := 4
+	if strip.counter%speedDivisor != 0 {
+		return
+	}
+	for i := 0; i < len(strip.pixels); i++ {
+		if i%pixelSpacing == strip.counter/speedDivisor%pixelSpacing {
+			strip.pixels[i] = colors[red]
+		} else {
+			strip.pixels[i] = colors[black]
+		}
+	}
+}
+
+func (strip *LedStrip) updateForceMode() {
+	speedDivisor := 30
+	pixelSpacing := 7
+	if strip.counter%speedDivisor != 0 {
+		return
+	}
+	for i := 0; i < len(strip.pixels); i++ {
+		switch (i + strip.counter/speedDivisor) % pixelSpacing {
+		case 2:
+			fallthrough
+		case 4:
+			strip.pixels[i] = colors[red]
+		case 3:
+			strip.pixels[i] = colors[dimBlue]
+		default:
+			strip.pixels[i] = colors[black]
+		}
+	}
+}
+
+func (strip *LedStrip) updateBoostMode() {
+	speedDivisor := 4
+	pixelSpacing := 4
+	if strip.counter%speedDivisor != 0 {
+		return
+	}
+	for i := 0; i < len(strip.pixels); i++ {
+		if i%pixelSpacing == strip.counter/speedDivisor%pixelSpacing {
+			strip.pixels[i] = colors[blue]
+		} else {
+			strip.pixels[i] = colors[black]
+		}
+	}
+}
+
 func (strip *LedStrip) updateRandomMode() {
 	if strip.counter%10 != 0 {
 		return
 	}
 	for i := 0; i < len(strip.pixels); i++ {
-		strip.pixels[i] = colors[color(rand.Intn(len(colors)))]
+		strip.pixels[i] = colors[color(rand.Intn(int(black)))] // Ignore colors listed after white.
 	}
 }
 
@@ -348,6 +494,23 @@ func (strip *LedStrip) updateFadeMode() {
 	}
 }
 
+func (strip *LedStrip) updateGradientMode() {
+	for i := 0; i < len(strip.pixels); i++ {
+		strip.pixels[len(strip.pixels) - i - 1] = getGradientColor(i+strip.counter, 75)
+	}
+}
+
+func (strip *LedStrip) updateBlinkMode() {
+	divisor := 10
+	for i := 0; i < len(strip.pixels); i++ {
+		if strip.counter % divisor < divisor / 2 {
+			strip.pixels[i] = colors[white]
+		} else {
+			strip.pixels[i] = colors[black]
+		}
+	}
+}
+
 // Interpolates between the two colors based on the given fraction.
 func getFadeColor(fromColor, toColor color, numerator, denominator int) [3]byte {
 	from := colors[fromColor]
@@ -357,4 +520,16 @@ func getFadeColor(fromColor, toColor color, numerator, denominator int) [3]byte 
 		fadeColor[i] = byte(int(from[i]) + numerator*(int(to[i])-int(from[i]))/denominator)
 	}
 	return fadeColor
+}
+
+// Calculates the value of a single pixel in a gradient.
+func getGradientColor(offset, numPixels int) [3]byte {
+	offset %= numPixels
+	if 3*offset < numPixels {
+		return getFadeColor(red, green, 3*offset, numPixels)
+	} else if 3*offset < 2*numPixels {
+		return getFadeColor(green, blue, 3*offset-numPixels, numPixels)
+	} else {
+		return getFadeColor(blue, red, 3*offset-2*numPixels, numPixels)
+	}
 }
