@@ -53,8 +53,8 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Rank": 13, "Team": 21, "RP": 18, "Park/Climb": 18, "Auto": 18, "Ownership": 18,
-		"Vault": 18, "W-L-T": 18, "DQ": 18, "Played": 18}
+	colWidths := map[string]float64{"Rank": 13, "Team": 20, "RP": 20, "Park/Climb": 21, "Auto": 20, "Ownership": 21,
+		"Vault": 20, "W-L-T": 21, "DQ": 20, "Played": 20}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -69,8 +69,8 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	pdf.CellFormat(colWidths["RP"], rowHeight, "RP", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Park/Climb"], rowHeight, "Park/Climb", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Auto"], rowHeight, "Auto", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Ownership"], rowHeight, "Rotor", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Vault"], rowHeight, "Takeoff", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Ownership"], rowHeight, "Ownership", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Vault"], rowHeight, "Vault", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["W-L-T"], rowHeight, "W-L-T", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["DQ"], rowHeight, "DQ", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Played"], rowHeight, "Played", "1", 1, "C", true, 0, "")
