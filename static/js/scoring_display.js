@@ -10,7 +10,8 @@ var scoreCommitted = false;
 var handleScore = function(data) {
   // Update autonomous period values.
   var score = data.Score.CurrentScore;
-  $("#autoMobility").text(score.AutoMobility);
+  $("#autoRuns").text(score.AutoRuns);
+  $("#climbs").text(score.Climbs);
 
   // Update component visibility.
   if (!data.AutoCommitted) {
@@ -36,11 +37,17 @@ var handleScore = function(data) {
 var handleKeyPress = function(event) {
   var key = String.fromCharCode(event.keyCode);
   switch (key) {
-    case "m":
-      websocket.send("mobility");
+    case "r":
+      websocket.send("autoRun");
       break;
-    case "M":
-      websocket.send("undoMobility");
+    case "R":
+      websocket.send("undoAutoRun");
+      break;
+    case "c":
+      websocket.send("climb");
+      break;
+    case "C":
+      websocket.send("undoClimb");
       break;
     case "\r":
       websocket.send("commit");

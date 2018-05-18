@@ -145,16 +145,28 @@ func (web *Web) scoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 		}
 
 		switch messageType {
-		case "mobility":
+		case "autoRun":
 			if !autoCommitted {
 				if (*score).CurrentScore.AutoRuns < 3 {
 					(*score).CurrentScore.AutoRuns++
 				}
 			}
-		case "undoMobility":
+		case "undoAutoRun":
 			if !autoCommitted {
 				if (*score).CurrentScore.AutoRuns > 0 {
 					(*score).CurrentScore.AutoRuns--
+				}
+			}
+		case "climb":
+			if autoCommitted {
+				if (*score).CurrentScore.Climbs < 3 {
+					(*score).CurrentScore.Climbs++
+				}
+			}
+		case "undoClimb":
+			if autoCommitted {
+				if (*score).CurrentScore.Climbs > 0 {
+					(*score).CurrentScore.Climbs--
 				}
 			}
 		case "commit":
