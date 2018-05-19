@@ -7,6 +7,7 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestSetupSchedule(t *testing.T) {
@@ -42,9 +43,10 @@ func TestSetupSchedule(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "Failed to delete published matches")
 	assert.Nil(t, err)
 	assert.Equal(t, 64, len(matches))
-	assert.Equal(t, int64(1388595600), matches[0].Time.Unix())
-	assert.Equal(t, int64(1388685360), matches[7].Time.Unix())
-	assert.Equal(t, int64(1388782800), matches[24].Time.Unix())
+	location, _ := time.LoadLocation("Local")
+	assert.Equal(t, time.Date(2014, 1, 1, 9, 0, 0, 0, location).Unix(), matches[0].Time.Unix())
+	assert.Equal(t, time.Date(2014, 1, 2, 9, 56, 0, 0, location).Unix(), matches[7].Time.Unix())
+	assert.Equal(t, time.Date(2014, 1, 3, 13, 0, 0, 0, location).Unix(), matches[24].Time.Unix())
 }
 
 func TestSetupScheduleErrors(t *testing.T) {

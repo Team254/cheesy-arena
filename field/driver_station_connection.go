@@ -74,7 +74,7 @@ func (arena *Arena) listenForDsUdpPackets() {
 	udpAddress, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf(":%d", driverStationUdpReceivePort))
 	listener, err := net.ListenUDP("udp4", udpAddress)
 	if err != nil {
-		log.Fatalln("Error opening driver station UDP socket: %v", err.Error())
+		log.Fatalf("Error opening driver station UDP socket: %v", err)
 	}
 	log.Printf("Listening for driver stations on UDP port %d\n", driverStationUdpReceivePort)
 

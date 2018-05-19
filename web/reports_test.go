@@ -45,9 +45,11 @@ func TestRankingsPdfReport(t *testing.T) {
 func TestScheduleCsvReport(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match1 := model.Match{Type: "qualification", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
+	match1Time := time.Unix(0, 0)
+	match1 := model.Match{Type: "qualification", DisplayName: "1", Time: match1Time, Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
-	match2 := model.Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
+	match2Time := time.Unix(600, 0)
+	match2 := model.Match{Type: "qualification", DisplayName: "2", Time: match2Time, Red1: 7, Red2: 8, Red3: 9,
 		Blue1: 10, Blue2: 11, Blue3: 12, Red1IsSurrogate: true, Red2IsSurrogate: true, Red3IsSurrogate: true}
 	match3 := model.Match{Type: "practice", DisplayName: "1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
 		Blue1: 3, Blue2: 2, Blue3: 1}
@@ -59,9 +61,9 @@ func TestScheduleCsvReport(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.HeaderMap["Content-Type"][0])
 	expectedBody := "Match,Type,Time,Red1,Red1IsSurrogate,Red2,Red2IsSurrogate,Red3,Red3IsSurrogate,Blue1," +
-		"Blue1IsSurrogate,Blue2,Blue2IsSurrogate,Blue3,Blue3IsSurrogate\n1,qualification," +
-		"1969-12-31 16:00:00 -0800 PST,1,false,2,false,3,false,4,true,5,true,6,true\n2,qualification," +
-		"1969-12-31 16:10:00 -0800 PST,7,true,8,true,9,true,10,false,11,false,12,false\n\n"
+		"Blue1IsSurrogate,Blue2,Blue2IsSurrogate,Blue3,Blue3IsSurrogate\n1,qualification," + match1Time.String() +
+		",1,false,2,false,3,false,4,true,5,true,6,true\n2,qualification," + match2Time.String() +
+		",7,true,8,true,9,true,10,false,11,false,12,false\n\n"
 	assert.Equal(t, expectedBody, recorder.Body.String())
 }
 
