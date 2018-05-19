@@ -58,7 +58,7 @@ var ModeNames = map[Mode]string{
 	RandomMode:   "Random",
 	FadeMode:     "Fade",
 	GradientMode: "Gradient",
-	BlinkMode: "Blink",
+	BlinkMode:    "Blink",
 }
 
 // Color RGB mappings
@@ -396,11 +396,11 @@ func (strip *LedStrip) updateWarmup4Mode() {
 	startOffset := 50
 	middleCounter := 100
 	for i := 0; i < len(strip.pixels); i++ {
-		strip.pixels[len(strip.pixels) - i - 1] = getGradientColor(i+strip.counter+startOffset, 75)
+		strip.pixels[len(strip.pixels)-i-1] = getGradientColor(i+strip.counter+startOffset, 75)
 	}
 	if strip.counter >= middleCounter {
 		for i := 0; i < len(strip.pixels); i++ {
-			if i < strip.counter - middleCounter {
+			if i < strip.counter-middleCounter {
 				strip.pixels[i] = colors[red]
 			}
 		}
@@ -496,14 +496,14 @@ func (strip *LedStrip) updateFadeMode() {
 
 func (strip *LedStrip) updateGradientMode() {
 	for i := 0; i < len(strip.pixels); i++ {
-		strip.pixels[len(strip.pixels) - i - 1] = getGradientColor(i+strip.counter, 75)
+		strip.pixels[len(strip.pixels)-i-1] = getGradientColor(i+strip.counter, 75)
 	}
 }
 
 func (strip *LedStrip) updateBlinkMode() {
 	divisor := 10
 	for i := 0; i < len(strip.pixels); i++ {
-		if strip.counter % divisor < divisor / 2 {
+		if strip.counter%divisor < divisor/2 {
 			strip.pixels[i] = colors[white]
 		} else {
 			strip.pixels[i] = colors[black]
