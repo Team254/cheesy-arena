@@ -34,6 +34,23 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, true, blueSummary.AutoQuest)
 	assert.Equal(t, false, blueSummary.FaceTheBoss)
 
+	// Test park/climb limits.
+	redScore.Levitate = false
+	redScore.Climbs = 3
+	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
+	redScore.Levitate = true
+	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
+	redScore.Climbs = 4
+	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
+	redScore.Climbs = 50
+	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
+	redScore.Parks = 2
+	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
+	redScore.Parks = 25
+	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
+	redScore.Climbs = 0
+	assert.Equal(t, 40, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
+
 	// Test Auto Quest boundary conditions.
 	blueScore.AutoEndSwitchOwnership = false
 	assert.Equal(t, false, blueScore.Summarize(redScore.Fouls).AutoQuest)

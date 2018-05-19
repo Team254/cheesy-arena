@@ -7,13 +7,13 @@ package game
 
 type Score struct {
 	AutoRuns               int
-	AutoEndSwitchOwnership bool
 	AutoOwnershipPoints    int
+	AutoEndSwitchOwnership bool
 	TeleopOwnershipPoints  int
 	VaultCubes             int
 	Levitate               bool
-	Parks                  int
 	Climbs                 int
+	Parks                  int
 	Fouls                  []Foul
 	ElimDq                 bool
 }
@@ -47,10 +47,17 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	summary.OwnershipPoints = score.AutoOwnershipPoints + score.TeleopOwnershipPoints
 	summary.VaultPoints = 5 * score.VaultCubes
 	climbs := score.Climbs
+	if climbs > 3 {
+		climbs = 3
+	}
 	if score.Levitate && score.Climbs < 3 {
 		climbs++
 	}
-	summary.ParkClimbPoints = 5*score.Parks + 30*climbs
+	parks := score.Parks
+	if parks+climbs > 3 {
+		parks = 3 - climbs
+	}
+	summary.ParkClimbPoints = 5*parks + 30*climbs
 
 	// Calculate bonuses.
 	if score.AutoRuns == 3 && score.AutoEndSwitchOwnership {
