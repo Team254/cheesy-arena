@@ -1,4 +1,4 @@
-Cheesy Arena
+Cheesy Arena [![Build Status](https://travis-ci.org/Team254/cheesy-arena.svg?branch=master)](https://travis-ci.org/Team254/cheesy-arena)
 ============
 A field management system that just works.
 
