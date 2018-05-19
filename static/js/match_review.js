@@ -32,15 +32,15 @@ var renderResults = function(alliance) {
   $("#" + alliance + "Score").html(scoreContent);
 
   // Set the values of the form fields from the JSON results data.
-  $("input[name=" + alliance + "AutoMobility]").val(result.score.AutoMobility);
-  $("input[name=" + alliance + "AutoRotors]").val(result.score.AutoRotors);
-  $("input[name=" + alliance + "AutoFuelLow]").val(result.score.AutoFuelLow);
-  $("input[name=" + alliance + "AutoFuelHigh]").val(result.score.AutoFuelHigh);
+  $("input[name=" + alliance + "AutoRuns]").val(result.score.AutoRuns);
+  $("input[name=" + alliance + "AutoOwnershipPoints]").val(result.score.AutoOwnershipPoints);
+  $("input[name=" + alliance + "AutoEndSwitchOwnership]").prop("checked", result.score.AutoEndSwitchOwnership);
 
-  $("input[name=" + alliance + "Rotors]").val(result.score.Rotors);
-  $("input[name=" + alliance + "FuelLow]").val(result.score.FuelLow);
-  $("input[name=" + alliance + "FuelHigh]").val(result.score.FuelHigh);
-  $("input[name=" + alliance + "Takeoffs]").val(result.score.Takeoffs);
+  $("input[name=" + alliance + "TeleopOwnershipPoints]").val(result.score.TeleopOwnershipPoints);
+  $("input[name=" + alliance + "VaultCubes]").val(result.score.VaultCubes);
+  $("input[name=" + alliance + "Levitate]").prop("checked", result.score.Levitate);
+  $("input[name=" + alliance + "Climbs]").val(result.score.Climbs);
+  $("input[name=" + alliance + "Parks]").val(result.score.Parks);
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
@@ -66,20 +66,20 @@ var updateResults = function(alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.AutoMobility = parseInt(formData[alliance + "AutoMobility"]);
-  result.score.AutoRotors = parseInt(formData[alliance + "AutoRotors"]);
-  result.score.AutoFuelLow = parseInt(formData[alliance + "AutoFuelLow"]);
-  result.score.AutoFuelHigh = parseInt(formData[alliance + "AutoFuelHigh"]);
-  result.score.Rotors = parseInt(formData[alliance + "Rotors"]);
-  result.score.FuelLow = parseInt(formData[alliance + "FuelLow"]);
-  result.score.FuelHigh = parseInt(formData[alliance + "FuelHigh"]);
-  result.score.Takeoffs = parseInt(formData[alliance + "Takeoffs"]);
+  result.score.AutoRuns = parseInt(formData[alliance + "AutoRuns"]);
+  result.score.AutoOwnershipPoints = parseInt(formData[alliance + "AutoOwnershipPoints"]);
+  result.score.AutoEndSwitchOwnership = formData[alliance + "AutoEndSwitchOwnership"] === "on";
+  result.score.TeleopOwnershipPoints = parseInt(formData[alliance + "TeleopOwnershipPoints"]);
+  result.score.VaultCubes = parseInt(formData[alliance + "VaultCubes"]);
+  result.score.Levitate = formData[alliance + "Levitate"] === "on";
+  result.score.Climbs = parseInt(formData[alliance + "Climbs"]);
+  result.score.Parks = parseInt(formData[alliance + "Parks"]);
 
   result.score.Fouls = [];
   for (var i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {
     var prefix = alliance + "Foul" + i;
     var foul = {TeamId: parseInt(formData[prefix + "Team"]), RuleNumber: formData[prefix + "RuleNumber"],
-                IsTechnical: formData[prefix + "IsTechnical"] == "on",
+                IsTechnical: formData[prefix + "IsTechnical"] === "on",
                 TimeInMatchSec: parseFloat(formData[prefix + "Time"])};
     result.score.Fouls.push(foul);
   }
