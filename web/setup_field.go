@@ -37,7 +37,7 @@ func (web *Web) fieldGetHandler(w http.ResponseWriter, r *http.Request) {
 		CurrentLedMode          led.Mode
 		LedModeNames            map[led.Mode]string
 	}{web.arena.EventSettings, web.arena.AllianceStationDisplays, plc.Inputs[:], plc.GetInputNames(), plc.Registers[:],
-		plc.GetRegisterNames(), plc.Coils[:], plc.GetCoilNames(), web.arena.RedSwitchLedStrip.CurrentMode,
+		plc.GetRegisterNames(), plc.Coils[:], plc.GetCoilNames(), web.arena.ScaleLeds.GetCurrentMode(),
 		led.ModeNames}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
@@ -81,7 +81,10 @@ func (web *Web) fieldTestPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mode, _ := strconv.Atoi(r.PostFormValue("mode"))
-	web.arena.RedSwitchLedStrip.SetMode(led.Mode(mode))
+	ledMode := led.Mode(mode)
+	web.arena.ScaleLeds.SetMode(ledMode, ledMode)
+	web.arena.RedSwitchLeds.SetMode(ledMode, ledMode)
+	web.arena.BlueSwitchLeds.SetMode(ledMode, ledMode)
 
 	http.Redirect(w, r, "/setup/field", 303)
 }

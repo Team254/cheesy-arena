@@ -70,6 +70,9 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.PlcAddress = r.PostFormValue("plcAddress")
 	eventSettings.AdminPassword = r.PostFormValue("adminPassword")
 	eventSettings.ReaderPassword = r.PostFormValue("readerPassword")
+	eventSettings.ScaleLedAddress = r.PostFormValue("scaleLedAddress")
+	eventSettings.RedSwitchLedAddress = r.PostFormValue("redSwitchLedAddress")
+	eventSettings.BlueSwitchLedAddress = r.PostFormValue("blueSwitchLedAddress")
 
 	err := web.arena.Database.SaveEventSettings(eventSettings)
 	if err != nil {

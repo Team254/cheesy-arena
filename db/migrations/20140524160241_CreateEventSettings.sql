@@ -26,7 +26,10 @@ CREATE TABLE event_settings (
   adminpassword VARCHAR(255),
   readerpassword VARCHAR(255),
   stemtvpublishingenabled bool,
-  stemtveventcode VARCHAR(16)
+  stemtveventcode VARCHAR(16),
+  scaleledaddress VARCHAR(255),
+  redswitchledaddress VARCHAR(255),
+  blueswitchledaddress VARCHAR(255)
 );
 
 -- +goose Down

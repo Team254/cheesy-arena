@@ -25,5 +25,5 @@ func TestSetupField(t *testing.T) {
 
 	recorder = web.postHttpResponse("/setup/field/test", "mode=1")
 	assert.Equal(t, 303, recorder.Code)
-	assert.Equal(t, 1, int(web.arena.RedSwitchLedStrip.CurrentMode))
+	assert.Equal(t, 1, int(web.arena.ScaleLeds.GetCurrentMode()))
 }

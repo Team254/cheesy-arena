@@ -73,7 +73,9 @@ type Arena struct {
 	AllianceSelectionNotifier      *Notifier
 	LowerThirdNotifier             *Notifier
 	ReloadDisplaysNotifier         *Notifier
-	RedSwitchLedStrip              *led.LedStrip
+	ScaleLeds                      led.Controller
+	RedSwitchLeds                  led.Controller
+	BlueSwitchLeds                 led.Controller
 	scale                          *game.Seesaw
 	redSwitch                      *game.Seesaw
 	blueSwitch                     *game.Seesaw
@@ -146,12 +148,6 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.AllianceStationDisplays = make(map[string]string)
 	arena.AllianceStationDisplayScreen = "match"
 
-	// Initialize LEDs.
-	arena.RedSwitchLedStrip, err = led.NewLedStrip("10.0.0.30", 1, 150)
-	if err != nil {
-		return nil, err
-	}
-
 	return arena, nil
 }
 
@@ -171,9 +167,21 @@ func (arena *Arena) LoadSettings() error {
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.StemTvClient = partner.NewStemTvClient(settings.StemTvEventCode)
 
-	err = arena.accessPoint.ConfigureAdminWifi()
-	if err != nil {
-		return nil
+	if arena.EventSettings.NetworkSecurityEnabled {
+		if err = arena.accessPoint.ConfigureAdminWifi(); err != nil {
+			return err
+		}
+	}
+
+	// Initialize LEDs.
+	if err = arena.ScaleLeds.SetAddress(settings.ScaleLedAddress); err != nil {
+		return err
+	}
+	if err = arena.RedSwitchLeds.SetAddress(settings.RedSwitchLedAddress); err != nil {
+		return err
+	}
+	if err = arena.BlueSwitchLeds.SetAddress(settings.BlueSwitchLedAddress); err != nil {
+		return err
 	}
 
 	return nil
@@ -223,6 +231,14 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.redVault = new(game.Vault)
 	arena.blueVault = new(game.Vault)
 	game.ResetPowerUps()
+
+	// Set a consistent initial value for field element sidedness.
+	arena.scale.SetSidedness(true)
+	arena.redSwitch.SetSidedness(true)
+	arena.blueSwitch.SetSidedness(true)
+	arena.ScaleLeds.SetSidedness(true)
+	arena.RedSwitchLeds.SetSidedness(true)
+	arena.BlueSwitchLeds.SetSidedness(true)
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadTeamsNotifier.Notify(nil)
@@ -300,6 +316,16 @@ func (arena *Arena) StartMatch() error {
 		if arena.CurrentMatch.Type != "test" || !game.IsValidGameSpecificData(arena.CurrentMatch.GameSpecificData) {
 			arena.CurrentMatch.GameSpecificData = game.GenerateGameSpecificData()
 		}
+
+		// Configure the field elements with the game-specific data.
+		switchNearIsRed := arena.CurrentMatch.GameSpecificData[0] == 'L'
+		scaleNearIsRed := arena.CurrentMatch.GameSpecificData[1] == 'L'
+		arena.scale.SetSidedness(scaleNearIsRed)
+		arena.redSwitch.SetSidedness(switchNearIsRed)
+		arena.blueSwitch.SetSidedness(switchNearIsRed)
+		arena.ScaleLeds.SetSidedness(scaleNearIsRed)
+		arena.RedSwitchLeds.SetSidedness(switchNearIsRed)
+		arena.BlueSwitchLeds.SetSidedness(switchNearIsRed)
 
 		// Save the match start time and game-specifc data to the database for posterity.
 		arena.CurrentMatch.StartedAt = time.Now()
@@ -384,7 +410,9 @@ func (arena *Arena) Update() {
 		arena.AudienceDisplayScreen = "match"
 		arena.AudienceDisplayNotifier.Notify(nil)
 		arena.sendGameSpecificDataPacket()
-		arena.RedSwitchLedStrip.SetMode(led.WarmupMode)
+		arena.ScaleLeds.SetMode(led.WarmupMode, led.WarmupMode)
+		arena.RedSwitchLeds.SetMode(led.WarmupMode, led.WarmupMode)
+		arena.BlueSwitchLeds.SetMode(led.WarmupMode, led.WarmupMode)
 		if !arena.MuteMatchSounds {
 			arena.PlaySoundNotifier.Notify("match-warmup")
 		}
@@ -481,7 +509,9 @@ func (arena *Arena) Update() {
 	arena.handlePlcInput()
 	arena.handlePlcOutput()
 
-	arena.RedSwitchLedStrip.Update()
+	arena.ScaleLeds.Update()
+	arena.RedSwitchLeds.Update()
+	arena.BlueSwitchLeds.Update()
 }
 
 // Loops indefinitely to track and update the arena components.

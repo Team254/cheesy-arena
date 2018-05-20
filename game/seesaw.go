@@ -32,7 +32,7 @@ type Ownership struct {
 
 // Sets which side of the scale or switch belongs to which alliance. A value of true indicates that the side nearest the
 // scoring table is red.
-func (seesaw *Seesaw) SetRandomization(nearIsRed bool) {
+func (seesaw *Seesaw) SetSidedness(nearIsRed bool) {
 	seesaw.nearIsRed = nearIsRed
 }
 

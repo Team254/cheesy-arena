@@ -32,7 +32,7 @@ func TestSecondCounting(t *testing.T) {
 	ResetPowerUps()
 
 	redSwitch := &Seesaw{kind: redAlliance}
-	redSwitch.SetRandomization(true)
+	redSwitch.SetSidedness(true)
 
 	// Test that there is no accumulation before the start of the match.
 	redSwitch.UpdateState([2]bool{true, false}, timeAfterStart(-20))
@@ -70,9 +70,9 @@ func TestForce(t *testing.T) {
 	ResetPowerUps()
 
 	blueSwitch := &Seesaw{kind: blueAlliance}
-	blueSwitch.SetRandomization(true)
+	blueSwitch.SetSidedness(true)
 	scale := &Seesaw{kind: neitherAlliance}
-	scale.SetRandomization(true)
+	scale.SetSidedness(true)
 
 	// Force switch only.
 	blueSwitch.UpdateState([2]bool{true, false}, timeAfterStart(0))
@@ -115,9 +115,9 @@ func TestBoost(t *testing.T) {
 	ResetPowerUps()
 
 	blueSwitch := &Seesaw{kind: blueAlliance}
-	blueSwitch.SetRandomization(true)
+	blueSwitch.SetSidedness(true)
 	scale := &Seesaw{kind: neitherAlliance}
-	scale.SetRandomization(false)
+	scale.SetSidedness(false)
 
 	// Test within continuous ownership period.
 	blueSwitch.UpdateState([2]bool{false, true}, timeAfterStart(20))

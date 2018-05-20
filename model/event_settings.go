@@ -32,6 +32,9 @@ type EventSettings struct {
 	ReaderPassword             string
 	StemTvPublishingEnabled    bool
 	StemTvEventCode            string
+	ScaleLedAddress            string
+	RedSwitchLedAddress        string
+	BlueSwitchLedAddress       string
 }
 
 const eventSettingsId = 0
