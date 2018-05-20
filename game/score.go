@@ -40,12 +40,20 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	}
 
 	// Calculate autonomous score.
-	summary.AutoRunPoints = 5 * score.AutoRuns
+	autoRuns := score.AutoRuns
+	if autoRuns > 3 {
+		autoRuns = 3
+	}
+	summary.AutoRunPoints = 5 * autoRuns
 	summary.AutoPoints = summary.AutoRunPoints + score.AutoOwnershipPoints
 
 	// Calculate teleop score.
 	summary.OwnershipPoints = score.AutoOwnershipPoints + score.TeleopOwnershipPoints
-	summary.VaultPoints = 5 * score.VaultCubes
+	vaultCubes := score.VaultCubes
+	if vaultCubes > 9 {
+		vaultCubes = 9
+	}
+	summary.VaultPoints = 5 * vaultCubes
 	climbs := score.Climbs
 	if climbs > 3 {
 		climbs = 3
@@ -60,7 +68,7 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	summary.ParkClimbPoints = 5*parks + 30*climbs
 
 	// Calculate bonuses.
-	if score.AutoRuns == 3 && score.AutoEndSwitchOwnership {
+	if autoRuns == 3 && score.AutoEndSwitchOwnership {
 		summary.AutoQuest = true
 	}
 	if climbs == 3 {

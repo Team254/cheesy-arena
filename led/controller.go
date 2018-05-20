@@ -7,7 +7,6 @@ package led
 
 import (
 	"fmt"
-	"log"
 	"net"
 )
 
@@ -210,7 +209,6 @@ func createBlankPacket(numPixels int) []byte {
 }
 
 func (controller *Controller) sendPacket(dmxUniverse int) error {
-	log.Printf("Sending packet for universe %d\n", dmxUniverse)
 	// Update non-static packet fields.
 	controller.packet[111]++
 	controller.packet[113] = byte(dmxUniverse >> 8)

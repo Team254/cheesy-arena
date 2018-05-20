@@ -53,11 +53,11 @@ var handleMatchTime = function(data) {
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
   $("#redScoreNumber").text(data.RedScoreSummary.Score);
-  $("#redPressurePoints").text(data.RedScoreSummary.PressurePoints);
+  $("#redOwnershipPoints").text(data.RedScoreSummary.OwnershipPoints);
   $("#redRotors").text(data.RedScore.AutoRotors + data.RedScore.Rotors);
   $("#redTakeoffs").text(data.RedScore.Takeoffs);
   $("#blueScoreNumber").text(data.BlueScoreSummary.Score);
-  $("#bluePressurePoints").text(data.BlueScoreSummary.PressurePoints);
+  $("#blueOwnershipPoints").text(data.BlueScoreSummary.OwnershipPoints);
   $("#blueRotors").text(data.BlueScore.AutoRotors + data.BlueScore.Rotors);
   $("#blueTakeoffs").text(data.BlueScore.Takeoffs);
 };
@@ -68,28 +68,28 @@ var handleSetFinalScore = function(data) {
   $("#redFinalTeam1").text(data.Match.Red1);
   $("#redFinalTeam2").text(data.Match.Red2);
   $("#redFinalTeam3").text(data.Match.Red3);
-  $("#redFinalAutoMobilityPoints").text(data.RedScore.AutoMobilityPoints);
-  $("#redFinalPressurePoints").text(data.RedScore.PressurePoints);
-  $("#redFinalRotorPoints").text(data.RedScore.RotorPoints);
-  $("#redFinalTakeoffPoints").text(data.RedScore.TakeoffPoints);
+  $("#redFinalAutoRunPoints").text(data.RedScore.AutoRunPoints);
+  $("#redFinalOwnershipPoints").text(data.RedScore.OwnershipPoints);
+  $("#redFinalVaultPoints").text(data.RedScore.VaultPoints);
+  $("#redFinalParkClimbPoints").text(data.RedScore.ParkClimbPoints);
   $("#redFinalFoulPoints").text(data.RedScore.FoulPoints);
-  $("#redFinalPressureGoalReached").html(data.RedScore.PressureGoalReached ? "&#x2714;" : "&#x2718;");
-  $("#redFinalPressureGoalReached").attr("data-checked", data.RedScore.PressureGoalReached);
-  $("#redFinalRotorGoalReached").html(data.RedScore.RotorGoalReached ? "&#x2714;" : "&#x2718;");
-  $("#redFinalRotorGoalReached").attr("data-checked", data.RedScore.RotorGoalReached);
+  $("#redFinalAutoQuest").html(data.RedScore.AutoQuest ? "&#x2714;" : "&#x2718;");
+  $("#redFinalAutoQuest").attr("data-checked", data.RedScore.AutoQuest);
+  $("#redFinalFaceTheBoss").html(data.RedScore.FaceTheBoss ? "&#x2714;" : "&#x2718;");
+  $("#redFinalFaceTheBoss").attr("data-checked", data.RedScore.FaceTheBoss);
   $("#blueFinalScore").text(data.BlueScore.Score);
   $("#blueFinalTeam1").text(data.Match.Blue1);
   $("#blueFinalTeam2").text(data.Match.Blue2);
   $("#blueFinalTeam3").text(data.Match.Blue3);
-  $("#blueFinalAutoMobilityPoints").text(data.BlueScore.AutoMobilityPoints);
-  $("#blueFinalPressurePoints").text(data.BlueScore.PressurePoints);
-  $("#blueFinalRotorPoints").text(data.BlueScore.RotorPoints);
-  $("#blueFinalTakeoffPoints").text(data.BlueScore.TakeoffPoints);
+  $("#blueFinalAutoRunPoints").text(data.BlueScore.AutoRunPoints);
+  $("#blueFinalOwnershipPoints").text(data.BlueScore.OwnershipPoints);
+  $("#blueFinalVaultPoints").text(data.BlueScore.VaultPoints);
+  $("#blueFinalParkClimbPoints").text(data.BlueScore.ParkClimbPoints);
   $("#blueFinalFoulPoints").text(data.BlueScore.FoulPoints);
-  $("#blueFinalPressureGoalReached").html(data.BlueScore.PressureGoalReached ? "&#x2714;" : "&#x2718;");
-  $("#blueFinalPressureGoalReached").attr("data-checked", data.BlueScore.PressureGoalReached);
-  $("#blueFinalRotorGoalReached").html(data.BlueScore.RotorGoalReached ? "&#x2714;" : "&#x2718;");
-  $("#blueFinalRotorGoalReached").attr("data-checked", data.BlueScore.RotorGoalReached);
+  $("#blueFinalAutoQuest").html(data.BlueScore.AutoQuest ? "&#x2714;" : "&#x2718;");
+  $("#blueFinalAutoQuest").attr("data-checked", data.BlueScore.AutoQuest);
+  $("#blueFinalFaceTheBoss").html(data.BlueScore.FaceTheBoss ? "&#x2714;" : "&#x2718;");
+  $("#blueFinalFaceTheBoss").attr("data-checked", data.BlueScore.FaceTheBoss);
   $("#finalMatchName").text(data.MatchName + " " + data.Match.DisplayName);
 };
 
