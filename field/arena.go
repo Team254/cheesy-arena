@@ -94,6 +94,7 @@ type ArenaStatus struct {
 
 type AllianceStation struct {
 	DsConn *DriverStationConnection
+	Astop  bool
 	Estop  bool
 	Bypass bool
 	Team   *model.Team
@@ -635,7 +636,7 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 		dsConn := allianceStation.DsConn
 		if dsConn != nil {
 			dsConn.Auto = auto
-			dsConn.Enabled = enabled && !allianceStation.Estop && !allianceStation.Bypass
+			dsConn.Enabled = enabled && !allianceStation.Estop && !allianceStation.Astop && !allianceStation.Bypass
 			dsConn.Estop = allianceStation.Estop
 			err := dsConn.update(arena)
 			if err != nil {
@@ -741,9 +742,18 @@ func (arena *Arena) handlePlcOutput() {
 func (arena *Arena) handleEstop(station string, state bool) {
 	allianceStation := arena.AllianceStations[station]
 	if state {
-		allianceStation.Estop = true
-	} else if arena.MatchTimeSec() == 0 {
-		// Don't reset the e-stop while a match is in progress.
-		allianceStation.Estop = false
+		if arena.MatchState == AutoPeriod {
+			allianceStation.Astop = true
+		} else {
+			allianceStation.Estop = true
+		}
+	} else {
+		if arena.MatchState != AutoPeriod {
+			allianceStation.Astop = false
+		}
+		if arena.MatchTimeSec() == 0 {
+			// Don't reset the e-stop while a match is in progress.
+			allianceStation.Estop = false
+		}
 	}
 }
