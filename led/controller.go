@@ -11,15 +11,13 @@ import (
 )
 
 const (
-	port               = 5568
-	sourceName         = "Cheesy Arena"
-	packetTimeoutSec   = 1
-	numPixels          = 150
-	pixelDataOffset    = 126
-	nearStrip1Universe = 1
-	nearStrip2Universe = 2
-	farStrip1Universe  = 3
-	farStrip2Universe  = 4
+	port              = 5568
+	sourceName        = "Cheesy Arena"
+	packetTimeoutSec  = 1
+	numPixels         = 150
+	pixelDataOffset   = 126
+	nearStripUniverse = 1
+	farStripUniverse  = 2
 )
 
 type Controller struct {
@@ -88,13 +86,11 @@ func (controller *Controller) Update() error {
 	// Send packets if the pixel values have changed.
 	if controller.nearStrip.shouldSendPacket() {
 		controller.nearStrip.populatePacketPixels(controller.packet[pixelDataOffset:])
-		controller.sendPacket(nearStrip1Universe)
-		controller.sendPacket(nearStrip2Universe)
+		controller.sendPacket(nearStripUniverse)
 	}
 	if controller.farStrip.shouldSendPacket() {
 		controller.farStrip.populatePacketPixels(controller.packet[pixelDataOffset:])
-		controller.sendPacket(farStrip1Universe)
-		controller.sendPacket(farStrip2Universe)
+		controller.sendPacket(farStripUniverse)
 	}
 
 	return nil
