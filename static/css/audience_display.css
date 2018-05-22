@@ -344,6 +344,28 @@ html {
   height: 100%;
   right: 3em;
 }
+
+#allianceRankingsCentering {
+  position: absolute;
+  height: 100%;
+  left: 3em;
+}
+
+#allianceRankings {
+  background-color: #fff;
+  padding: .5em 1em;
+  border: 2px solid #222;
+  font-size: 2em;
+  color: #222;
+  font-family: "FuturaLT";
+  -webkit-column-count: 4;
+  -moz-column-count: 4;
+  column-count: 4;
+  -webkit-column-gap: 1em;
+  -moz-column-gap: 1em;
+  column-gap: 1em;
+}
+
 #allianceSelection {
   display: table-cell;
   vertical-align: middle;

@@ -117,7 +117,11 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	err = websocket.Write("allianceSelection", cachedAlliances)
+	data = struct {
+		Alliances [][]*model.AllianceTeam
+		Rankings  []*RankedTeam
+	}{cachedAlliances, cachedRankedTeams}
+	err = websocket.Write("allianceSelection", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
 		return
@@ -185,7 +189,10 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 					return
 				}
 				messageType = "allianceSelection"
-				message = cachedAlliances
+				message = struct {
+					Alliances [][]*model.AllianceTeam
+					Rankings  []*RankedTeam
+				}{cachedAlliances, cachedRankedTeams}
 			case lowerThird, ok := <-lowerThirdListener:
 				if !ok {
 					return
