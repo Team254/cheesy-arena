@@ -12,22 +12,34 @@ import (
 func TestVaultNumCubes(t *testing.T) {
 	// TODO(patrick): Update with real values once there is a physical setup to test with.
 	vault := Vault{}
-	assert.Equal(t, 0, vault.GetNumCubes())
+	assert.Equal(t, 0, vault.ForceCubes)
+	assert.Equal(t, 0, vault.LevitateCubes)
+	assert.Equal(t, 0, vault.BoostCubes)
 
 	vault.UpdateCubes(1000, 0, 0)
-	assert.Equal(t, 1, vault.GetNumCubes())
+	assert.Equal(t, 1, vault.ForceCubes)
+	assert.Equal(t, 0, vault.LevitateCubes)
+	assert.Equal(t, 0, vault.BoostCubes)
 
 	vault.UpdateCubes(0, 1000, 1000)
-	assert.Equal(t, 2, vault.GetNumCubes())
+	assert.Equal(t, 0, vault.ForceCubes)
+	assert.Equal(t, 1, vault.LevitateCubes)
+	assert.Equal(t, 1, vault.BoostCubes)
 
 	vault.UpdateCubes(0, 0, 2000)
-	assert.Equal(t, 2, vault.GetNumCubes())
+	assert.Equal(t, 0, vault.ForceCubes)
+	assert.Equal(t, 0, vault.LevitateCubes)
+	assert.Equal(t, 2, vault.BoostCubes)
 
 	vault.UpdateCubes(2000, 2000, 3000)
-	assert.Equal(t, 7, vault.GetNumCubes())
+	assert.Equal(t, 2, vault.ForceCubes)
+	assert.Equal(t, 2, vault.LevitateCubes)
+	assert.Equal(t, 3, vault.BoostCubes)
 
 	vault.UpdateCubes(3000, 3000, 3000)
-	assert.Equal(t, 9, vault.GetNumCubes())
+	assert.Equal(t, 3, vault.ForceCubes)
+	assert.Equal(t, 3, vault.LevitateCubes)
+	assert.Equal(t, 3, vault.BoostCubes)
 }
 
 func TestVaultLevitate(t *testing.T) {

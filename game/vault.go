@@ -10,42 +10,37 @@ import (
 )
 
 type Vault struct {
-	alliance         alliance
-	numForceCubes    int
-	numLevitateCubes int
-	numBoostCubes    int
-	LevitatePlayed   bool
-	ForcePowerUp     *PowerUp
-	BoostPowerUp     *PowerUp
+	alliance       alliance
+	ForceCubes     int
+	LevitateCubes  int
+	BoostCubes     int
+	LevitatePlayed bool
+	ForcePowerUp   *PowerUp
+	BoostPowerUp   *PowerUp
 }
 
 // Updates the state of the vault given the state of the individual power cube sensors.
 func (vault *Vault) UpdateCubes(forceDistance, levitateDistance, boostDistance uint16) {
-	vault.numForceCubes = countCubes(forceDistance)
-	vault.numLevitateCubes = countCubes(levitateDistance)
-	vault.numBoostCubes = countCubes(boostDistance)
+	vault.ForceCubes = countCubes(forceDistance)
+	vault.LevitateCubes = countCubes(levitateDistance)
+	vault.BoostCubes = countCubes(boostDistance)
 }
 
 // Updates the state of the vault given the state of the power up buttons.
 func (vault *Vault) UpdateButtons(forceButton, levitateButton, boostButton bool, currentTime time.Time) {
-	if levitateButton && vault.numLevitateCubes == 3 && !vault.LevitatePlayed {
+	if levitateButton && vault.LevitateCubes == 3 && !vault.LevitatePlayed {
 		vault.LevitatePlayed = true
 	}
 
-	if forceButton && vault.numForceCubes > 0 && vault.ForcePowerUp == nil {
+	if forceButton && vault.ForceCubes > 0 && vault.ForcePowerUp == nil {
 		vault.ForcePowerUp = maybeActivatePowerUp(&PowerUp{effect: force, alliance: vault.alliance,
-			level: vault.numForceCubes}, currentTime)
+			level: vault.ForceCubes}, currentTime)
 	}
 
-	if boostButton && vault.numBoostCubes > 0 && vault.BoostPowerUp == nil {
+	if boostButton && vault.BoostCubes > 0 && vault.BoostPowerUp == nil {
 		vault.BoostPowerUp = maybeActivatePowerUp(&PowerUp{effect: boost, alliance: vault.alliance,
-			level: vault.numBoostCubes}, currentTime)
+			level: vault.BoostCubes}, currentTime)
 	}
-}
-
-// Returns the total count of power cubes that have been placed in the vault.
-func (vault *Vault) GetNumCubes() int {
-	return vault.numForceCubes + vault.numLevitateCubes + vault.numBoostCubes
 }
 
 func countCubes(distance uint16) int {

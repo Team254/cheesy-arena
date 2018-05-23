@@ -10,8 +10,12 @@ type Score struct {
 	AutoOwnershipPoints    int
 	AutoEndSwitchOwnership bool
 	TeleopOwnershipPoints  int
-	VaultCubes             int
-	Levitate               bool
+	ForceCubes             int
+	ForcePlayed            bool
+	LevitateCubes          int
+	LevitatePlayed         bool
+	BoostCubes             int
+	BoostPlayed            bool
 	Climbs                 int
 	Parks                  int
 	Fouls                  []Foul
@@ -49,16 +53,24 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 
 	// Calculate teleop score.
 	summary.OwnershipPoints = score.AutoOwnershipPoints + score.TeleopOwnershipPoints
-	vaultCubes := score.VaultCubes
-	if vaultCubes > 9 {
-		vaultCubes = 9
+	forceCubes := score.ForceCubes
+	if forceCubes > 3 {
+		forceCubes = 3
 	}
-	summary.VaultPoints = 5 * vaultCubes
+	levitateCubes := score.LevitateCubes
+	if levitateCubes > 3 {
+		levitateCubes = 3
+	}
+	boostCubes := score.BoostCubes
+	if boostCubes > 3 {
+		boostCubes = 3
+	}
+	summary.VaultPoints = 5 * (forceCubes + levitateCubes + boostCubes)
 	climbs := score.Climbs
 	if climbs > 3 {
 		climbs = 3
 	}
-	if score.Levitate && score.Climbs < 3 {
+	if score.LevitatePlayed && score.Climbs < 3 {
 		climbs++
 	}
 	parks := score.Parks
@@ -89,8 +101,10 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 func (score *Score) Equals(other *Score) bool {
 	if score.AutoRuns != other.AutoRuns || score.AutoEndSwitchOwnership != other.AutoEndSwitchOwnership ||
 		score.AutoOwnershipPoints != other.AutoOwnershipPoints ||
-		score.TeleopOwnershipPoints != other.TeleopOwnershipPoints || score.VaultCubes != other.VaultCubes ||
-		score.Levitate != other.Levitate || score.Parks != other.Parks || score.Climbs != other.Climbs ||
+		score.TeleopOwnershipPoints != other.TeleopOwnershipPoints || score.ForceCubes != other.ForceCubes ||
+		score.ForcePlayed != other.ForcePlayed || score.LevitateCubes != other.LevitateCubes ||
+		score.LevitatePlayed != other.LevitatePlayed || score.BoostCubes != other.BoostCubes ||
+		score.BoostPlayed != other.BoostPlayed || score.Parks != other.Parks || score.Climbs != other.Climbs ||
 		score.ElimDq != other.ElimDq || len(score.Fouls) != len(other.Fouls) {
 		return false
 	}

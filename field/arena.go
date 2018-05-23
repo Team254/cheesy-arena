@@ -724,10 +724,12 @@ func (arena *Arena) handlePlcInput() {
 	redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost := arena.Plc.GetPowerUpButtons()
 	arena.redVault.UpdateButtons(redForce, redLevitate, redBoost, currentTime)
 	arena.blueVault.UpdateButtons(blueForce, blueLevitate, blueBoost, currentTime)
-	redScore.VaultCubes = arena.redVault.GetNumCubes()
-	redScore.Levitate = arena.redVault.LevitatePlayed
-	blueScore.VaultCubes = arena.blueVault.GetNumCubes()
-	blueScore.Levitate = arena.blueVault.LevitatePlayed
+	redScore.ForceCubes, redScore.ForcePlayed = arena.redVault.ForceCubes, arena.redVault.ForcePowerUp != nil
+	redScore.LevitateCubes, redScore.LevitatePlayed = arena.redVault.LevitateCubes, arena.redVault.LevitatePlayed
+	redScore.BoostCubes, redScore.BoostPlayed = arena.redVault.BoostCubes, arena.redVault.BoostPowerUp != nil
+	blueScore.ForceCubes, blueScore.ForcePlayed = arena.blueVault.ForceCubes, arena.blueVault.ForcePowerUp != nil
+	blueScore.LevitateCubes, blueScore.LevitatePlayed = arena.blueVault.LevitateCubes, arena.blueVault.LevitatePlayed
+	blueScore.BoostCubes, blueScore.BoostPlayed = arena.blueVault.BoostCubes, arena.blueVault.BoostPowerUp != nil
 
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
 		arena.RealtimeScoreNotifier.Notify(nil)

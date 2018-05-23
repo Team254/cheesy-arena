@@ -37,8 +37,12 @@ var renderResults = function(alliance) {
   $("input[name=" + alliance + "AutoEndSwitchOwnership]").prop("checked", result.score.AutoEndSwitchOwnership);
 
   $("input[name=" + alliance + "TeleopOwnershipPoints]").val(result.score.TeleopOwnershipPoints);
-  $("input[name=" + alliance + "VaultCubes]").val(result.score.VaultCubes);
-  $("input[name=" + alliance + "Levitate]").prop("checked", result.score.Levitate);
+  $("input[name=" + alliance + "ForceCubes]").val(result.score.ForceCubes);
+  $("input[name=" + alliance + "ForcePlayed]").prop("checked", result.score.ForcePlayed);
+  $("input[name=" + alliance + "LevitateCubes]").val(result.score.LevitateCubes);
+  $("input[name=" + alliance + "LevitatePlayed]").prop("checked", result.score.LevitatePlayed);
+  $("input[name=" + alliance + "BoostCubes]").val(result.score.BoostCubes);
+  $("input[name=" + alliance + "BoostPlayed]").prop("checked", result.score.BoostPlayed);
   $("input[name=" + alliance + "Climbs]").val(result.score.Climbs);
   $("input[name=" + alliance + "Parks]").val(result.score.Parks);
 
@@ -70,8 +74,12 @@ var updateResults = function(alliance) {
   result.score.AutoOwnershipPoints = parseInt(formData[alliance + "AutoOwnershipPoints"]);
   result.score.AutoEndSwitchOwnership = formData[alliance + "AutoEndSwitchOwnership"] === "on";
   result.score.TeleopOwnershipPoints = parseInt(formData[alliance + "TeleopOwnershipPoints"]);
-  result.score.VaultCubes = parseInt(formData[alliance + "VaultCubes"]);
-  result.score.Levitate = formData[alliance + "Levitate"] === "on";
+  result.score.ForceCubes = parseInt(formData[alliance + "ForceCubes"]);
+  result.score.ForcePlayed = formData[alliance + "ForcePlayed"] === "on";
+  result.score.LevitateCubes = parseInt(formData[alliance + "LevitateCubes"]);
+  result.score.LevitatePlayed = formData[alliance + "LevitatePlayed"] === "on";
+  result.score.BoostCubes = parseInt(formData[alliance + "BoostCubes"]);
+  result.score.BoostPlayed = formData[alliance + "BoostPlayed"] === "on";
   result.score.Climbs = parseInt(formData[alliance + "Climbs"]);
   result.score.Parks = parseInt(formData[alliance + "Parks"]);
 

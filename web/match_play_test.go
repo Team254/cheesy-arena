@@ -177,7 +177,7 @@ func TestCommitEliminationTie(t *testing.T) {
 
 	match := &model.Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	web.arena.Database.CreateMatch(match)
-	matchResult := &model.MatchResult{MatchId: match.Id, RedScore: &game.Score{VaultCubes: 1, Fouls: []game.Foul{{}}},
+	matchResult := &model.MatchResult{MatchId: match.Id, RedScore: &game.Score{ForceCubes: 1, Fouls: []game.Foul{{}}},
 		BlueScore: &game.Score{}}
 	err := web.commitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
@@ -304,11 +304,11 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "setAudienceDisplay")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
 	web.arena.RedRealtimeScore.CurrentScore.AutoRuns = 1
-	web.arena.BlueRealtimeScore.CurrentScore.VaultCubes = 2
+	web.arena.BlueRealtimeScore.CurrentScore.BoostCubes = 2
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
 	assert.Equal(t, 1, web.arena.SavedMatchResult.RedScore.AutoRuns)
-	assert.Equal(t, 2, web.arena.SavedMatchResult.BlueScore.VaultCubes)
+	assert.Equal(t, 2, web.arena.SavedMatchResult.BlueScore.BoostCubes)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)
 	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay

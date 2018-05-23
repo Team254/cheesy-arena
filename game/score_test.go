@@ -37,12 +37,12 @@ func TestScoreSummary(t *testing.T) {
 	// Test limits on fields with a natural cap.
 	blueScore.AutoRuns = 5
 	assert.Equal(t, 15, blueScore.Summarize(redScore.Fouls).AutoRunPoints)
-	redScore.VaultCubes = 20
-	assert.Equal(t, 45, redScore.Summarize(blueScore.Fouls).VaultPoints)
-	redScore.Levitate = false
+	redScore.ForceCubes = 20
+	assert.Equal(t, 30, redScore.Summarize(blueScore.Fouls).VaultPoints)
+	redScore.LevitatePlayed = false
 	redScore.Climbs = 3
 	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
-	redScore.Levitate = true
+	redScore.LevitatePlayed = true
 	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
 	redScore.Climbs = 4
 	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
@@ -64,7 +64,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, false, blueScore.Summarize(redScore.Fouls).AutoQuest)
 
 	// Test Face the Boss boundary conditions.
-	redScore.Levitate = false
+	redScore.LevitatePlayed = false
 	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).FaceTheBoss)
 	redScore.Climbs = 3
 	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls).FaceTheBoss)
@@ -110,12 +110,32 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.VaultCubes += 1
+	score2.ForceCubes += 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.Levitate = !score2.Levitate
+	score2.ForcePlayed = !score2.ForcePlayed
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.LevitateCubes += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.LevitatePlayed = !score2.LevitatePlayed
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.BoostCubes += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.BoostPlayed = !score2.BoostPlayed
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
