@@ -53,6 +53,7 @@ type Arena struct {
 	RedRealtimeScore               *RealtimeScore
 	BlueRealtimeScore              *RealtimeScore
 	lastDsPacketTime               time.Time
+	FieldVolunteers                bool
 	FieldReset                     bool
 	AudienceDisplayScreen          string
 	SavedMatch                     *model.Match
@@ -83,6 +84,8 @@ type Arena struct {
 	RedSwitchLeds                  led.Controller
 	BlueSwitchLeds                 led.Controller
 	warmupLedMode                  led.Mode
+	lastRedAllianceReady           bool
+	lastBlueAllianceReady          bool
 }
 
 type ArenaStatus struct {
@@ -227,6 +230,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	// Reset the realtime scores.
 	arena.RedRealtimeScore = NewRealtimeScore()
 	arena.BlueRealtimeScore = NewRealtimeScore()
+	arena.FieldVolunteers = false
 	arena.FieldReset = false
 	arena.Scale = &game.Seesaw{Kind: game.NeitherAlliance}
 	arena.RedSwitch = &game.Seesaw{Kind: game.RedAlliance}
@@ -248,6 +252,13 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.RealtimeScoreNotifier.Notify(nil)
 	arena.AllianceStationDisplayScreen = "match"
 	arena.AllianceStationDisplayNotifier.Notify(nil)
+
+	// Set the initial state of the lights.
+	arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
+	arena.RedSwitchLeds.SetMode(led.RedMode, led.RedMode)
+	arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
+	arena.lastRedAllianceReady = false
+	arena.lastBlueAllianceReady = false
 
 	return nil
 }
@@ -607,15 +618,10 @@ func (arena *Arena) checkCanStartMatch() error {
 	if arena.MatchState != PreMatch {
 		return fmt.Errorf("Cannot start match while there is a match still in progress or with results pending.")
 	}
-	for _, allianceStation := range arena.AllianceStations {
-		if allianceStation.Estop {
-			return fmt.Errorf("Cannot start match while an emergency stop is active.")
-		}
-		if !allianceStation.Bypass {
-			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
-				return fmt.Errorf("Cannot start match until all robots are connected or bypassed.")
-			}
-		}
+
+	err := arena.checkAllianceStationsReady("R1", "R2", "R3", "B1", "B2", "B3")
+	if err != nil {
+		return err
 	}
 
 	if arena.EventSettings.PlcAddress != "" {
@@ -624,6 +630,22 @@ func (arena *Arena) checkCanStartMatch() error {
 		}
 		if arena.Plc.GetFieldEstop() {
 			return fmt.Errorf("Cannot start match while field emergency stop is active.")
+		}
+	}
+
+	return nil
+}
+
+func (arena *Arena) checkAllianceStationsReady(stations ...string) error {
+	for _, station := range stations {
+		allianceStation := arena.AllianceStations[station]
+		if allianceStation.Estop {
+			return fmt.Errorf("Cannot start match while an emergency stop is active.")
+		}
+		if !allianceStation.Bypass {
+			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
+				return fmt.Errorf("Cannot start match until all robots are connected or bypassed.")
+			}
 		}
 	}
 
@@ -752,6 +774,22 @@ func (arena *Arena) handlePlcOutput() {
 
 func (arena *Arena) handleLeds() {
 	switch arena.MatchState {
+	case PreMatch:
+		// Turn off each alliance switch if all teams become ready.
+		if arena.checkAllianceStationsReady("R1", "R2", "R3") == nil && !arena.lastRedAllianceReady {
+			arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
+			arena.lastRedAllianceReady = true
+		} else if arena.checkAllianceStationsReady("R1", "R2", "R3") != nil && arena.lastRedAllianceReady {
+			arena.RedSwitchLeds.SetMode(led.RedMode, led.RedMode)
+			arena.lastRedAllianceReady = false
+		}
+		if arena.checkAllianceStationsReady("B1", "B2", "B3") == nil && !arena.lastBlueAllianceReady {
+			arena.BlueSwitchLeds.SetMode(led.OffMode, led.OffMode)
+			arena.lastBlueAllianceReady = true
+		} else if arena.checkAllianceStationsReady("B1", "B2", "B3") != nil && arena.lastBlueAllianceReady {
+			arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
+			arena.lastBlueAllianceReady = false
+		}
 	case WarmupPeriod:
 		arena.ScaleLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
 		arena.RedSwitchLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
@@ -769,9 +807,15 @@ func (arena *Arena) handleLeds() {
 		arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
 		arena.BlueSwitchLeds.SetMode(led.OffMode, led.OffMode)
 	case PostMatch:
-		arena.ScaleLeds.SetMode(led.FadeSingleMode, led.FadeSingleMode)
-		arena.RedSwitchLeds.SetMode(led.FadeSingleMode, led.FadeSingleMode)
-		arena.BlueSwitchLeds.SetMode(led.FadeSingleMode, led.FadeSingleMode)
+		mode := led.FadeSingleMode
+		if arena.FieldReset {
+			mode = led.GreenMode
+		} else if arena.FieldVolunteers {
+			mode = led.PurpleMode
+		}
+		arena.ScaleLeds.SetMode(mode, mode)
+		arena.RedSwitchLeds.SetMode(mode, mode)
+		arena.BlueSwitchLeds.SetMode(mode, mode)
 	}
 
 	arena.ScaleLeds.Update()

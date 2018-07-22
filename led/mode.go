@@ -13,6 +13,7 @@ const (
 	GreenMode
 	BlueMode
 	WhiteMode
+	PurpleMode
 	ChaseMode
 	WarmupMode
 	Warmup2Mode
@@ -35,6 +36,7 @@ var ModeNames = map[Mode]string{
 	GreenMode:       "Green",
 	BlueMode:        "Blue",
 	WhiteMode:       "White",
+	PurpleMode:      "Purple",
 	ChaseMode:       "Chase",
 	WarmupMode:      "Warmup",
 	Warmup2Mode:     "Warmup Purple",

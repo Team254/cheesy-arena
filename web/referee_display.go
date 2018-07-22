@@ -213,6 +213,13 @@ func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 			}
 			cards[strconv.Itoa(args.TeamId)] = args.Card
 			continue
+		case "signalVolunteers":
+			if web.arena.MatchState != field.PostMatch {
+				// Don't allow clearing the field until the match is over.
+				continue
+			}
+			web.arena.FieldVolunteers = true
+			continue // Don't reload.
 		case "signalReset":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow clearing the field until the match is over.

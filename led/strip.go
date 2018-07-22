@@ -30,6 +30,8 @@ func (strip *strip) updatePixels() {
 		strip.updateSingleColorMode(blue)
 	case WhiteMode:
 		strip.updateSingleColorMode(white)
+	case PurpleMode:
+		strip.updateSingleColorMode(purple)
 	case ChaseMode:
 		strip.updateChaseMode()
 	case WarmupMode:
