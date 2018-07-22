@@ -31,13 +31,13 @@ func TestPowerUpActivate(t *testing.T) {
 		assert.Equal(t, timeAfterStart(45), powerUp2.startTime)
 	}
 
-	assert.Nil(t, getActivePowerUp(timeAfterStart(29.9)))
-	assert.Equal(t, powerUp1, getActivePowerUp(timeAfterStart(30.1)))
-	assert.Equal(t, powerUp1, getActivePowerUp(timeAfterStart(39.9)))
-	assert.Nil(t, getActivePowerUp(timeAfterStart(42)))
-	assert.Equal(t, powerUp2, getActivePowerUp(timeAfterStart(45.1)))
-	assert.Equal(t, powerUp2, getActivePowerUp(timeAfterStart(54.9)))
-	assert.Nil(t, getActivePowerUp(timeAfterStart(55.1)))
+	assert.Nil(t, GetActivePowerUp(timeAfterStart(29.9)))
+	assert.Equal(t, powerUp1, GetActivePowerUp(timeAfterStart(30.1)))
+	assert.Equal(t, powerUp1, GetActivePowerUp(timeAfterStart(39.9)))
+	assert.Nil(t, GetActivePowerUp(timeAfterStart(42)))
+	assert.Equal(t, powerUp2, GetActivePowerUp(timeAfterStart(45.1)))
+	assert.Equal(t, powerUp2, GetActivePowerUp(timeAfterStart(54.9)))
+	assert.Nil(t, GetActivePowerUp(timeAfterStart(55.1)))
 }
 
 func TestPowerUpQueue(t *testing.T) {
@@ -56,8 +56,8 @@ func TestPowerUpQueue(t *testing.T) {
 	powerUp3 := &PowerUp{Alliance: RedAlliance}
 	assert.NotNil(t, maybeActivatePowerUp(powerUp3, timeAfterStart(81)))
 
-	assert.Equal(t, powerUp1, getActivePowerUp(timeAfterStart(69.9)))
-	assert.Equal(t, powerUp2, getActivePowerUp(timeAfterStart(70.1)))
+	assert.Equal(t, powerUp1, GetActivePowerUp(timeAfterStart(69.9)))
+	assert.Equal(t, powerUp2, GetActivePowerUp(timeAfterStart(70.1)))
 }
 
 func timeAfterStart(sec float32) time.Time {

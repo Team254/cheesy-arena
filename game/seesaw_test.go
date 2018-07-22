@@ -32,7 +32,7 @@ func TestSecondCounting(t *testing.T) {
 	ResetPowerUps()
 
 	redSwitch := &Seesaw{Kind: RedAlliance}
-	redSwitch.SetSidedness(true)
+	redSwitch.NearIsRed = true
 
 	// Test that there is no accumulation before the start of the match.
 	redSwitch.UpdateState([2]bool{true, false}, timeAfterStart(-20))
@@ -70,14 +70,14 @@ func TestForce(t *testing.T) {
 	ResetPowerUps()
 
 	blueSwitch := &Seesaw{Kind: BlueAlliance}
-	blueSwitch.SetSidedness(true)
+	blueSwitch.NearIsRed = true
 	scale := &Seesaw{Kind: NeitherAlliance}
-	scale.SetSidedness(true)
+	scale.NearIsRed = true
 
 	// Force switch only.
 	blueSwitch.UpdateState([2]bool{true, false}, timeAfterStart(0))
 	scale.UpdateState([2]bool{true, false}, timeAfterStart(0))
-	powerUp := &PowerUp{Alliance: BlueAlliance, effect: force, level: 1}
+	powerUp := &PowerUp{Alliance: BlueAlliance, Effect: Force, Level: 1}
 	maybeActivatePowerUp(powerUp, timeAfterStart(2.5))
 	blueSwitch.UpdateState([2]bool{true, false}, timeAfterStart(2.5))
 	scale.UpdateState([2]bool{true, false}, timeAfterStart(2.5))
@@ -91,7 +91,7 @@ func TestForce(t *testing.T) {
 	assert.Equal(t, 0.0, scale.GetBlueSeconds(timeAfterStart(0), timeAfterStart(15)))
 
 	// Force scale only.
-	powerUp = &PowerUp{Alliance: BlueAlliance, effect: force, level: 2}
+	powerUp = &PowerUp{Alliance: BlueAlliance, Effect: Force, Level: 2}
 	maybeActivatePowerUp(powerUp, timeAfterStart(20))
 	blueSwitch.UpdateState([2]bool{true, false}, timeAfterStart(20))
 	scale.UpdateState([2]bool{true, false}, timeAfterStart(20))
@@ -101,7 +101,7 @@ func TestForce(t *testing.T) {
 	assert.Equal(t, 10.0, scale.GetBlueSeconds(timeAfterStart(20), timeAfterStart(40)))
 
 	// Force both switch and scale.
-	powerUp = &PowerUp{Alliance: BlueAlliance, effect: force, level: 3}
+	powerUp = &PowerUp{Alliance: BlueAlliance, Effect: Force, Level: 3}
 	maybeActivatePowerUp(powerUp, timeAfterStart(50))
 	blueSwitch.UpdateState([2]bool{true, false}, timeAfterStart(50))
 	scale.UpdateState([2]bool{true, false}, timeAfterStart(50))
@@ -115,14 +115,14 @@ func TestBoost(t *testing.T) {
 	ResetPowerUps()
 
 	blueSwitch := &Seesaw{Kind: BlueAlliance}
-	blueSwitch.SetSidedness(true)
+	blueSwitch.NearIsRed = true
 	scale := &Seesaw{Kind: NeitherAlliance}
-	scale.SetSidedness(false)
+	scale.NearIsRed = false
 
 	// Test within continuous ownership period.
 	blueSwitch.UpdateState([2]bool{false, true}, timeAfterStart(20))
 	scale.UpdateState([2]bool{true, false}, timeAfterStart(20))
-	powerUp := &PowerUp{Alliance: BlueAlliance, effect: boost, level: 2}
+	powerUp := &PowerUp{Alliance: BlueAlliance, Effect: Boost, Level: 2}
 	maybeActivatePowerUp(powerUp, timeAfterStart(25))
 	assert.Equal(t, 5.0, scale.GetBlueSeconds(timeAfterStart(0), timeAfterStart(25)))
 	assert.Equal(t, 6.0, scale.GetBlueSeconds(timeAfterStart(0), timeAfterStart(25.5)))
@@ -136,7 +136,7 @@ func TestBoost(t *testing.T) {
 	ResetPowerUps()
 	blueSwitch.UpdateState([2]bool{false, false}, timeAfterStart(44))
 	scale.UpdateState([2]bool{false, false}, timeAfterStart(44))
-	powerUp = &PowerUp{Alliance: BlueAlliance, effect: boost, level: 3}
+	powerUp = &PowerUp{Alliance: BlueAlliance, Effect: Boost, Level: 3}
 	maybeActivatePowerUp(powerUp, timeAfterStart(45))
 	assert.Equal(t, 0.0, blueSwitch.GetBlueSeconds(timeAfterStart(45), timeAfterStart(50)))
 	assert.Equal(t, 0.0, scale.GetBlueSeconds(timeAfterStart(45), timeAfterStart(50)))
@@ -151,7 +151,7 @@ func TestBoost(t *testing.T) {
 	ResetPowerUps()
 	scale.UpdateState([2]bool{false, true}, timeAfterStart(65))
 	assert.Equal(t, 5.0, scale.GetRedSeconds(timeAfterStart(65), timeAfterStart(70)))
-	powerUp = &PowerUp{Alliance: RedAlliance, effect: boost, level: 2}
+	powerUp = &PowerUp{Alliance: RedAlliance, Effect: Boost, Level: 2}
 	maybeActivatePowerUp(powerUp, timeAfterStart(70))
 	scale.UpdateState([2]bool{false, false}, timeAfterStart(72.5))
 	assert.Equal(t, 10.0, scale.GetRedSeconds(timeAfterStart(65), timeAfterStart(72.5)))
@@ -163,7 +163,7 @@ func TestBoost(t *testing.T) {
 	// Test with just the switch.
 	blueSwitch.UpdateState([2]bool{false, true}, timeAfterStart(100))
 	scale.UpdateState([2]bool{true, false}, timeAfterStart(100))
-	powerUp = &PowerUp{Alliance: BlueAlliance, effect: boost, level: 1}
+	powerUp = &PowerUp{Alliance: BlueAlliance, Effect: Boost, Level: 1}
 	maybeActivatePowerUp(powerUp, timeAfterStart(100))
 	assert.Equal(t, 20.0, blueSwitch.GetBlueSeconds(timeAfterStart(100), timeAfterStart(110)))
 	assert.Equal(t, 10.0, scale.GetBlueSeconds(timeAfterStart(100), timeAfterStart(110)))

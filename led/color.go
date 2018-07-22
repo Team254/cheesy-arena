@@ -35,6 +35,6 @@ var colors = map[color][3]byte{
 	black:      {0, 0, 0},
 	purpleRed:  {200, 0, 50},
 	purpleBlue: {50, 0, 200},
-	dimRed:     {100, 0, 0},
-	dimBlue:    {0, 0, 100},
+	dimRed:     {50, 0, 0},
+	dimBlue:    {0, 0, 50},
 }

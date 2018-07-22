@@ -19,7 +19,7 @@ const (
 
 type Seesaw struct {
 	Kind       Alliance // Red or blue indicates that it is a switch; neither indicates the scale.
-	nearIsRed  bool
+	NearIsRed  bool
 	ownerships []*Ownership
 }
 
@@ -30,27 +30,21 @@ type Ownership struct {
 	endTime   *time.Time
 }
 
-// Sets which side of the scale or switch belongs to which alliance. A value of true indicates that the side nearest the
-// scoring table is red.
-func (seesaw *Seesaw) SetSidedness(nearIsRed bool) {
-	seesaw.nearIsRed = nearIsRed
-}
-
 // Updates the internal timing state of the scale or switch given the current state of the sensors.
 func (seesaw *Seesaw) UpdateState(state [2]bool, currentTime time.Time) {
 	ownedBy := NeitherAlliance
 
 	// Check if there is an active force power up for this seesaw.
-	currentPowerUp := getActivePowerUp(currentTime)
-	if currentPowerUp != nil && currentPowerUp.effect == force &&
-		(seesaw.Kind == NeitherAlliance && currentPowerUp.level >= 2 ||
-			(seesaw.Kind == currentPowerUp.Alliance && (currentPowerUp.level == 1 || currentPowerUp.level == 3))) {
+	currentPowerUp := GetActivePowerUp(currentTime)
+	if currentPowerUp != nil && currentPowerUp.Effect == Force &&
+		(seesaw.Kind == NeitherAlliance && currentPowerUp.Level >= 2 ||
+			(seesaw.Kind == currentPowerUp.Alliance && (currentPowerUp.Level == 1 || currentPowerUp.Level == 3))) {
 		ownedBy = currentPowerUp.Alliance
 	} else {
 		// Determine current ownership from sensor state.
-		if state[0] && !state[1] && seesaw.nearIsRed || state[1] && !state[0] && !seesaw.nearIsRed {
+		if state[0] && !state[1] && seesaw.NearIsRed || state[1] && !state[0] && !seesaw.NearIsRed {
 			ownedBy = RedAlliance
-		} else if state[0] && !state[1] && !seesaw.nearIsRed || state[1] && !state[0] && seesaw.nearIsRed {
+		} else if state[0] && !state[1] && !seesaw.NearIsRed || state[1] && !state[0] && seesaw.NearIsRed {
 			ownedBy = BlueAlliance
 		}
 	}
@@ -131,9 +125,9 @@ func (ownership *Ownership) getSeconds(startTime, endTime time.Time, ignoreBoost
 	// Find the boost power up applicable to this seesaw and alliance, if it exists.
 	var boostPowerUp *PowerUp
 	for _, powerUp := range powerUpUses {
-		if powerUp.effect == boost && ownership.ownedBy == powerUp.Alliance {
-			if ownership.seesaw.Kind == NeitherAlliance && powerUp.level >= 2 ||
-				ownership.seesaw.Kind != NeitherAlliance && (powerUp.level == 1 || powerUp.level == 3) {
+		if powerUp.Effect == Boost && ownership.ownedBy == powerUp.Alliance {
+			if ownership.seesaw.Kind == NeitherAlliance && powerUp.Level >= 2 ||
+				ownership.seesaw.Kind != NeitherAlliance && (powerUp.Level == 1 || powerUp.Level == 3) {
 				boostPowerUp = powerUp
 				break
 			}

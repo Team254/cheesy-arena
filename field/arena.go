@@ -12,6 +12,7 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/partner"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -73,14 +74,15 @@ type Arena struct {
 	AllianceSelectionNotifier      *Notifier
 	LowerThirdNotifier             *Notifier
 	ReloadDisplaysNotifier         *Notifier
-	ScaleLeds                      led.Controller
-	RedSwitchLeds                  led.Controller
-	BlueSwitchLeds                 led.Controller
 	Scale                          *game.Seesaw
 	RedSwitch                      *game.Seesaw
 	BlueSwitch                     *game.Seesaw
 	RedVault                       *game.Vault
 	BlueVault                      *game.Vault
+	ScaleLeds                      led.Controller
+	RedSwitchLeds                  led.Controller
+	BlueSwitchLeds                 led.Controller
+	warmupLedMode                  led.Mode
 }
 
 type ArenaStatus struct {
@@ -234,9 +236,9 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	game.ResetPowerUps()
 
 	// Set a consistent initial value for field element sidedness.
-	arena.Scale.SetSidedness(true)
-	arena.RedSwitch.SetSidedness(true)
-	arena.BlueSwitch.SetSidedness(true)
+	arena.Scale.NearIsRed = true
+	arena.RedSwitch.NearIsRed = true
+	arena.BlueSwitch.NearIsRed = true
 	arena.ScaleLeds.SetSidedness(true)
 	arena.RedSwitchLeds.SetSidedness(true)
 	arena.BlueSwitchLeds.SetSidedness(true)
@@ -321,9 +323,9 @@ func (arena *Arena) StartMatch() error {
 		// Configure the field elements with the game-specific data.
 		switchNearIsRed := arena.CurrentMatch.GameSpecificData[0] == 'L'
 		scaleNearIsRed := arena.CurrentMatch.GameSpecificData[1] == 'L'
-		arena.Scale.SetSidedness(scaleNearIsRed)
-		arena.RedSwitch.SetSidedness(switchNearIsRed)
-		arena.BlueSwitch.SetSidedness(switchNearIsRed)
+		arena.Scale.NearIsRed = scaleNearIsRed
+		arena.RedSwitch.NearIsRed = switchNearIsRed
+		arena.BlueSwitch.NearIsRed = switchNearIsRed
 		arena.ScaleLeds.SetSidedness(scaleNearIsRed)
 		arena.RedSwitchLeds.SetSidedness(switchNearIsRed)
 		arena.BlueSwitchLeds.SetSidedness(switchNearIsRed)
@@ -411,12 +413,12 @@ func (arena *Arena) Update() {
 		arena.AudienceDisplayScreen = "match"
 		arena.AudienceDisplayNotifier.Notify(nil)
 		arena.sendGameSpecificDataPacket()
-		arena.ScaleLeds.SetMode(led.WarmupMode, led.WarmupMode)
-		arena.RedSwitchLeds.SetMode(led.WarmupMode, led.WarmupMode)
-		arena.BlueSwitchLeds.SetMode(led.WarmupMode, led.WarmupMode)
 		if !arena.MuteMatchSounds {
 			arena.PlaySoundNotifier.Notify("match-warmup")
 		}
+		// Pick an LED warmup mode at random to keep things interesting.
+		allWarmupModes := []led.Mode{led.WarmupMode, led.Warmup2Mode, led.Warmup3Mode, led.Warmup4Mode}
+		arena.warmupLedMode = allWarmupModes[rand.Intn(len(allWarmupModes))]
 	case WarmupPeriod:
 		auto = true
 		enabled = false
@@ -509,10 +511,7 @@ func (arena *Arena) Update() {
 	// Handle field sensors/lights/motors.
 	arena.handlePlcInput()
 	arena.handlePlcOutput()
-
-	arena.ScaleLeds.Update()
-	arena.RedSwitchLeds.Update()
-	arena.BlueSwitchLeds.Update()
+	arena.handleLeds()
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -749,6 +748,73 @@ func (arena *Arena) handlePlcInput() {
 // Writes light/motor commands to the field PLC.
 func (arena *Arena) handlePlcOutput() {
 	// TODO(patrick): Update for 2018.
+}
+
+func (arena *Arena) handleLeds() {
+	switch arena.MatchState {
+	case WarmupPeriod:
+		arena.ScaleLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
+		arena.RedSwitchLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
+		arena.BlueSwitchLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
+	case AutoPeriod:
+		fallthrough
+	case TeleopPeriod:
+		fallthrough
+	case EndgamePeriod:
+		handleSeesawTeleopLeds(arena.Scale, &arena.ScaleLeds)
+		handleSeesawTeleopLeds(arena.RedSwitch, &arena.RedSwitchLeds)
+		handleSeesawTeleopLeds(arena.BlueSwitch, &arena.BlueSwitchLeds)
+	case PausePeriod:
+		arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
+		arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
+		arena.BlueSwitchLeds.SetMode(led.OffMode, led.OffMode)
+	case PostMatch:
+		arena.ScaleLeds.SetMode(led.FadeSingleMode, led.FadeSingleMode)
+		arena.RedSwitchLeds.SetMode(led.FadeSingleMode, led.FadeSingleMode)
+		arena.BlueSwitchLeds.SetMode(led.FadeSingleMode, led.FadeSingleMode)
+	}
+
+	arena.ScaleLeds.Update()
+	arena.RedSwitchLeds.Update()
+	arena.BlueSwitchLeds.Update()
+}
+
+func handleSeesawTeleopLeds(seesaw *game.Seesaw, leds *led.Controller) {
+	// Assume the simplest mode to start and consider others in order of increasing complexity.
+	redMode := led.NotOwnedMode
+	blueMode := led.NotOwnedMode
+
+	// Upgrade the mode to ownership based on the physical state of the switch or scale.
+	if seesaw.GetOwnedBy() == game.RedAlliance && seesaw.Kind != game.BlueAlliance {
+		redMode = led.OwnedMode
+	} else if seesaw.GetOwnedBy() == game.BlueAlliance && seesaw.Kind != game.RedAlliance {
+		blueMode = led.OwnedMode
+	}
+
+	// Upgrade the mode if there is an applicable power up.
+	powerUp := game.GetActivePowerUp(time.Now())
+	if powerUp != nil && (seesaw.Kind == game.NeitherAlliance && powerUp.Level >= 2 ||
+		seesaw.Kind == powerUp.Alliance && (powerUp.Level == 1 || powerUp.Level == 3)) {
+		if powerUp.Effect == game.Boost {
+			if powerUp.Alliance == game.RedAlliance {
+				redMode = led.BoostMode
+			} else {
+				blueMode = led.BoostMode
+			}
+		} else {
+			if powerUp.Alliance == game.RedAlliance {
+				redMode = led.ForceMode
+			} else {
+				blueMode = led.ForceMode
+			}
+		}
+	}
+
+	if seesaw.NearIsRed {
+		leds.SetMode(redMode, blueMode)
+	} else {
+		leds.SetMode(blueMode, redMode)
+	}
 }
 
 func (arena *Arena) handleEstop(station string, state bool) {

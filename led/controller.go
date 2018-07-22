@@ -45,10 +45,14 @@ func (controller *Controller) SetAddress(address string) error {
 
 // Sets the current LED sequence mode and resets the intra-sequence counter to the beginning.
 func (controller *Controller) SetMode(nearMode, farMode Mode) {
-	controller.nearStrip.currentMode = nearMode
-	controller.nearStrip.counter = 0
-	controller.farStrip.currentMode = farMode
-	controller.farStrip.counter = 0
+	if nearMode != controller.nearStrip.currentMode {
+		controller.nearStrip.currentMode = nearMode
+		controller.nearStrip.counter = 0
+	}
+	if farMode != controller.farStrip.currentMode {
+		controller.farStrip.currentMode = farMode
+		controller.farStrip.counter = 0
+	}
 }
 
 // Returns the current mode if both sides are in the same mode, or off otherwise.

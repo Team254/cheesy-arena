@@ -35,16 +35,16 @@ func (vault *Vault) UpdateButtons(forceButton, levitateButton, boostButton bool,
 	}
 
 	if forceButton && vault.ForceCubes > 0 && vault.ForcePowerUp == nil {
-		vault.ForcePowerUp = maybeActivatePowerUp(&PowerUp{effect: force, Alliance: vault.Alliance,
-			level: vault.ForceCubes}, currentTime)
+		vault.ForcePowerUp = maybeActivatePowerUp(&PowerUp{Effect: Force, Alliance: vault.Alliance,
+			Level: vault.ForceCubes}, currentTime)
 		if vault.ForcePowerUp != nil {
 			vault.newlyPlayedPowerUp = "force"
 		}
 	}
 
 	if boostButton && vault.BoostCubes > 0 && vault.BoostPowerUp == nil {
-		vault.BoostPowerUp = maybeActivatePowerUp(&PowerUp{effect: boost, Alliance: vault.Alliance,
-			level: vault.BoostCubes}, currentTime)
+		vault.BoostPowerUp = maybeActivatePowerUp(&PowerUp{Effect: Boost, Alliance: vault.Alliance,
+			Level: vault.BoostCubes}, currentTime)
 		if vault.BoostPowerUp != nil {
 			vault.newlyPlayedPowerUp = "boost"
 		}

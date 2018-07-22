@@ -12,11 +12,11 @@ import (
 const powerUpDurationSec = 10
 
 // Power up type/effect enum.
-type effect int
+type PowerUpEffect int
 
 const (
-	force effect = iota
-	boost
+	Force PowerUpEffect = iota
+	Boost
 )
 
 // Power up state enum.
@@ -31,8 +31,8 @@ const (
 
 type PowerUp struct {
 	Alliance
-	effect
-	level     int
+	Effect    PowerUpEffect
+	Level     int
 	startTime time.Time
 }
 
@@ -57,7 +57,7 @@ func (powerUp *PowerUp) getEndTime() time.Time {
 }
 
 // Returns the current active power up, or nil if there isn't one.
-func getActivePowerUp(currentTime time.Time) *PowerUp {
+func GetActivePowerUp(currentTime time.Time) *PowerUp {
 	for _, powerUp := range powerUpUses {
 		if powerUp.GetState(currentTime) == Active {
 			return powerUp
