@@ -52,14 +52,36 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScoreNumber").text(data.RedScoreSummary.Score);
-  $("#redOwnershipPoints").text(data.RedScoreSummary.OwnershipPoints);
-  $("#redRotors").text(data.RedScore.AutoRotors + data.RedScore.Rotors);
-  $("#redTakeoffs").text(data.RedScore.Takeoffs);
-  $("#blueScoreNumber").text(data.BlueScoreSummary.Score);
-  $("#blueOwnershipPoints").text(data.BlueScoreSummary.OwnershipPoints);
-  $("#blueRotors").text(data.BlueScore.AutoRotors + data.BlueScore.Rotors);
-  $("#blueTakeoffs").text(data.BlueScore.Takeoffs);
+  $("#redScoreNumber").text(data.Red.Score);
+  $("#redForceCubesIcon").attr("data-state", data.Red.ForceState);
+  $("#redForceCubes").text(data.Red.ForceCubes).attr("data-state", data.Red.ForceState);
+  $("#redLevitateCubesIcon").attr("data-state", data.Red.LevitateState);
+  $("#redLevitateCubes").text(data.Red.LevitateCubes).attr("data-state", data.Red.LevitateState);
+  $("#redBoostCubesIcon").attr("data-state", data.Red.BoostState);
+  $("#redBoostCubes").text(data.Red.BoostCubes).attr("data-state", data.Red.BoostState);
+
+  $("#blueScoreNumber").text(data.Blue.Score);
+  $("#blueForceCubesIcon").attr("data-state", data.Blue.ForceState);
+  $("#blueForceCubes").text(data.Blue.ForceCubes).attr("data-state", data.Blue.ForceState);
+  $("#blueLevitateCubesIcon").attr("data-state", data.Blue.LevitateState);
+  $("#blueLevitateCubes").text(data.Blue.LevitateCubes).attr("data-state", data.Blue.LevitateState);
+  $("#blueBoostCubesIcon").attr("data-state", data.Blue.BoostState);
+  $("#blueBoostCubes").text(data.Blue.BoostCubes).attr("data-state", data.Blue.BoostState);
+
+  // Switch/scale indicators.
+  $("#scaleIndicator").attr("data-owned-by", data.ScaleOwnedBy);
+  $("#redSwitchIndicator").attr("data-owned-by", data.Red.SwitchOwnedBy);
+  $("#blueSwitchIndicator").attr("data-owned-by", data.Blue.SwitchOwnedBy);
+
+  // Power up progress bars.
+  if ((data.Red.ForceState === 2 || data.Red.BoostState === 2) && $("#redProgress").height() === 0) {
+    $("#redProgress").height(85);
+    $("#redProgress").transition({queue: false, height: 0}, 10000, "linear");
+  }
+  if ((data.Blue.ForceState === 2 || data.Blue.BoostState === 2) && $("#blueProgress").height() === 0) {
+    $("#blueProgress").height(85);
+    $("#blueProgress").transition({queue: false, height: 0}, 10000, "linear");
+  }
 };
 
 // Handles a websocket message to populate the final score data.
@@ -144,9 +166,10 @@ var transitionBlankToIntro = function(callback) {
 
 var transitionIntroToInMatch = function(callback) {
   $("#logo").transition({queue: false, top: "10px"}, 500, "ease");
-  $(".score").transition({queue: false, width: "250px"}, 500, "ease", function() {
+  $(".score").transition({queue: false, width: "275px"}, 500, "ease", function() {
     $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
     $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
+    $(".seesaw-indicator").transition({queue: false, opacity: 1}, 750, "ease");
     $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
   });
 };
@@ -165,10 +188,11 @@ var transitionBlankToInMatch = function(callback) {
   $("#centering").transition({queue: false, bottom: "0px"}, 500, "ease", function() {
     $(".teams").transition({queue: false, width: "65px"}, 100, "linear", function() {
       $("#logo").transition({queue: false, top: "10px"}, 500, "ease");
-      $(".score").transition({queue: false, width: "250px"}, 500, "ease", function() {
+      $(".score").transition({queue: false, width: "275px"}, 500, "ease", function() {
         $("#eventMatchInfo").show();
         $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
         $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
+        $(".seesaw-indicator").transition({queue: false, opacity: 1}, 750, "ease");
         $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
         var height = -$("#eventMatchInfo").height();
         $("#eventMatchInfo").transition({queue: false, bottom: height + "px"}, 500, "ease", callback);
@@ -180,8 +204,9 @@ var transitionBlankToInMatch = function(callback) {
 var transitionInMatchToIntro = function(callback) {
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear");
   $(".score-fields").transition({queue: false, opacity: 0}, 300, "linear");
+  $(".seesaw-indicator").transition({queue: false, opacity: 0}, 300, "linear");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
-    $("#logo").transition({queue: false, top: "30px"}, 500, "ease");
+    $("#logo").transition({queue: false, top: "35px"}, 500, "ease");
     $(".score").transition({queue: false, width: "120px"}, 500, "ease");
     $(".teams").transition({queue: false, width: "65px"}, 500, "ease", callback);
   });
@@ -191,9 +216,10 @@ var transitionInMatchToBlank = function(callback) {
   $("#eventMatchInfo").transition({queue: false, bottom: "0px"}, 500, "ease");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear");
   $(".score-fields").transition({queue: false, opacity: 0}, 300, "linear");
+  $(".seesaw-indicator").transition({queue: false, opacity: 0}, 300, "linear");
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#eventMatchInfo").hide();
-    $("#logo").transition({queue: false, top: "30px"}, 500, "ease");
+    $("#logo").transition({queue: false, top: "35px"}, 500, "ease");
     $(".score").transition({queue: false, width: "0px"}, 500, "ease");
     $(".teams").transition({queue: false, width: "40px"}, 500, "ease", function() {
       $("#centering").transition({queue: false, bottom: "-340px"}, 1000, "ease", callback);

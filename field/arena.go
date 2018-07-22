@@ -76,11 +76,11 @@ type Arena struct {
 	ScaleLeds                      led.Controller
 	RedSwitchLeds                  led.Controller
 	BlueSwitchLeds                 led.Controller
-	scale                          *game.Seesaw
-	redSwitch                      *game.Seesaw
-	blueSwitch                     *game.Seesaw
-	redVault                       *game.Vault
-	blueVault                      *game.Vault
+	Scale                          *game.Seesaw
+	RedSwitch                      *game.Seesaw
+	BlueSwitch                     *game.Seesaw
+	RedVault                       *game.Vault
+	BlueVault                      *game.Vault
 }
 
 type ArenaStatus struct {
@@ -226,17 +226,17 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.RedRealtimeScore = NewRealtimeScore()
 	arena.BlueRealtimeScore = NewRealtimeScore()
 	arena.FieldReset = false
-	arena.scale = new(game.Seesaw)
-	arena.redSwitch = new(game.Seesaw)
-	arena.blueSwitch = new(game.Seesaw)
-	arena.redVault = new(game.Vault)
-	arena.blueVault = new(game.Vault)
+	arena.Scale = &game.Seesaw{Kind: game.NeitherAlliance}
+	arena.RedSwitch = &game.Seesaw{Kind: game.RedAlliance}
+	arena.BlueSwitch = &game.Seesaw{Kind: game.BlueAlliance}
+	arena.RedVault = &game.Vault{Alliance: game.RedAlliance}
+	arena.BlueVault = &game.Vault{Alliance: game.BlueAlliance}
 	game.ResetPowerUps()
 
 	// Set a consistent initial value for field element sidedness.
-	arena.scale.SetSidedness(true)
-	arena.redSwitch.SetSidedness(true)
-	arena.blueSwitch.SetSidedness(true)
+	arena.Scale.SetSidedness(true)
+	arena.RedSwitch.SetSidedness(true)
+	arena.BlueSwitch.SetSidedness(true)
 	arena.ScaleLeds.SetSidedness(true)
 	arena.RedSwitchLeds.SetSidedness(true)
 	arena.BlueSwitchLeds.SetSidedness(true)
@@ -321,9 +321,9 @@ func (arena *Arena) StartMatch() error {
 		// Configure the field elements with the game-specific data.
 		switchNearIsRed := arena.CurrentMatch.GameSpecificData[0] == 'L'
 		scaleNearIsRed := arena.CurrentMatch.GameSpecificData[1] == 'L'
-		arena.scale.SetSidedness(scaleNearIsRed)
-		arena.redSwitch.SetSidedness(switchNearIsRed)
-		arena.blueSwitch.SetSidedness(switchNearIsRed)
+		arena.Scale.SetSidedness(scaleNearIsRed)
+		arena.RedSwitch.SetSidedness(switchNearIsRed)
+		arena.BlueSwitch.SetSidedness(switchNearIsRed)
 		arena.ScaleLeds.SetSidedness(scaleNearIsRed)
 		arena.RedSwitchLeds.SetSidedness(switchNearIsRed)
 		arena.BlueSwitchLeds.SetSidedness(switchNearIsRed)
@@ -701,35 +701,45 @@ func (arena *Arena) handlePlcInput() {
 
 	// Handle scale and switch ownership.
 	scale, redSwitch, blueSwitch := arena.Plc.GetScaleAndSwitches()
-	arena.scale.UpdateState(scale, currentTime)
-	arena.redSwitch.UpdateState(redSwitch, currentTime)
-	arena.blueSwitch.UpdateState(blueSwitch, currentTime)
+	arena.Scale.UpdateState(scale, currentTime)
+	arena.RedSwitch.UpdateState(redSwitch, currentTime)
+	arena.BlueSwitch.UpdateState(blueSwitch, currentTime)
 	if arena.MatchState == AutoPeriod {
-		redScore.AutoOwnershipPoints = 2 * int(arena.redSwitch.GetRedSeconds(matchStartTime, currentTime)+
-			arena.scale.GetRedSeconds(matchStartTime, currentTime))
-		blueScore.AutoOwnershipPoints = 2 * int(arena.blueSwitch.GetBlueSeconds(matchStartTime, currentTime)+
-			arena.scale.GetBlueSeconds(matchStartTime, currentTime))
+		redScore.AutoOwnershipPoints = 2 * int(arena.RedSwitch.GetRedSeconds(matchStartTime, currentTime)+
+			arena.Scale.GetRedSeconds(matchStartTime, currentTime))
+		blueScore.AutoOwnershipPoints = 2 * int(arena.BlueSwitch.GetBlueSeconds(matchStartTime, currentTime)+
+			arena.Scale.GetBlueSeconds(matchStartTime, currentTime))
 	} else {
-		redScore.TeleopOwnershipPoints = int(arena.redSwitch.GetRedSeconds(teleopStartTime, currentTime) +
-			arena.scale.GetRedSeconds(teleopStartTime, currentTime))
-		blueScore.TeleopOwnershipPoints = int(arena.blueSwitch.GetBlueSeconds(teleopStartTime, currentTime) +
-			arena.scale.GetBlueSeconds(teleopStartTime, currentTime))
+		redScore.TeleopOwnershipPoints = int(arena.RedSwitch.GetRedSeconds(teleopStartTime, currentTime) +
+			arena.Scale.GetRedSeconds(teleopStartTime, currentTime))
+		blueScore.TeleopOwnershipPoints = int(arena.BlueSwitch.GetBlueSeconds(teleopStartTime, currentTime) +
+			arena.Scale.GetBlueSeconds(teleopStartTime, currentTime))
 	}
 
 	// Handle vaults.
 	redForceDistance, redLevitateDistance, redBoostDistance, blueForceDistance, blueLevitateDistance, blueBoostDistance :=
 		arena.Plc.GetVaults()
-	arena.redVault.UpdateCubes(redForceDistance, redLevitateDistance, redBoostDistance)
-	arena.blueVault.UpdateCubes(blueForceDistance, blueLevitateDistance, blueBoostDistance)
+	arena.RedVault.UpdateCubes(redForceDistance, redLevitateDistance, redBoostDistance)
+	arena.BlueVault.UpdateCubes(blueForceDistance, blueLevitateDistance, blueBoostDistance)
 	redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost := arena.Plc.GetPowerUpButtons()
-	arena.redVault.UpdateButtons(redForce, redLevitate, redBoost, currentTime)
-	arena.blueVault.UpdateButtons(blueForce, blueLevitate, blueBoost, currentTime)
-	redScore.ForceCubes, redScore.ForcePlayed = arena.redVault.ForceCubes, arena.redVault.ForcePowerUp != nil
-	redScore.LevitateCubes, redScore.LevitatePlayed = arena.redVault.LevitateCubes, arena.redVault.LevitatePlayed
-	redScore.BoostCubes, redScore.BoostPlayed = arena.redVault.BoostCubes, arena.redVault.BoostPowerUp != nil
-	blueScore.ForceCubes, blueScore.ForcePlayed = arena.blueVault.ForceCubes, arena.blueVault.ForcePowerUp != nil
-	blueScore.LevitateCubes, blueScore.LevitatePlayed = arena.blueVault.LevitateCubes, arena.blueVault.LevitatePlayed
-	blueScore.BoostCubes, blueScore.BoostPlayed = arena.blueVault.BoostCubes, arena.blueVault.BoostPowerUp != nil
+	arena.RedVault.UpdateButtons(redForce, redLevitate, redBoost, currentTime)
+	arena.BlueVault.UpdateButtons(blueForce, blueLevitate, blueBoost, currentTime)
+	redScore.ForceCubes, redScore.ForcePlayed = arena.RedVault.ForceCubes, arena.RedVault.ForcePowerUp != nil
+	redScore.LevitateCubes, redScore.LevitatePlayed = arena.RedVault.LevitateCubes, arena.RedVault.LevitatePlayed
+	redScore.BoostCubes, redScore.BoostPlayed = arena.RedVault.BoostCubes, arena.RedVault.BoostPowerUp != nil
+	blueScore.ForceCubes, blueScore.ForcePlayed = arena.BlueVault.ForceCubes, arena.BlueVault.ForcePowerUp != nil
+	blueScore.LevitateCubes, blueScore.LevitatePlayed = arena.BlueVault.LevitateCubes, arena.BlueVault.LevitatePlayed
+	blueScore.BoostCubes, blueScore.BoostPlayed = arena.BlueVault.BoostCubes, arena.BlueVault.BoostPowerUp != nil
+
+	// Check if a power up has been newly played and trigger the accompanying sound effect if so.
+	newRedPowerUp := arena.RedVault.CheckForNewlyPlayedPowerUp()
+	if newRedPowerUp != "" && !arena.MuteMatchSounds {
+		arena.PlaySoundNotifier.Notify("match-" + newRedPowerUp)
+	}
+	newBluePowerUp := arena.BlueVault.CheckForNewlyPlayedPowerUp()
+	if newBluePowerUp != "" && !arena.MuteMatchSounds {
+		arena.PlaySoundNotifier.Notify("match-" + newBluePowerUp)
+	}
 
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
 		arena.RealtimeScoreNotifier.Notify(nil)

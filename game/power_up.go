@@ -20,16 +20,17 @@ const (
 )
 
 // Power up state enum.
-type state int
+type PowerUpState int
 
 const (
-	queued state = iota
-	active
-	expired
+	Unplayed PowerUpState = iota
+	Queued
+	Active
+	Expired
 )
 
 type PowerUp struct {
-	alliance
+	Alliance
 	effect
 	level     int
 	startTime time.Time
@@ -41,14 +42,14 @@ func ResetPowerUps() {
 	powerUpUses = powerUpUses[:0]
 }
 
-func (powerUp *PowerUp) GetState(currentTime time.Time) state {
+func (powerUp *PowerUp) GetState(currentTime time.Time) PowerUpState {
 	if powerUp.startTime.After(currentTime) {
-		return queued
+		return Queued
 	}
 	if powerUp.getEndTime().After(currentTime) {
-		return active
+		return Active
 	}
-	return expired
+	return Expired
 }
 
 func (powerUp *PowerUp) getEndTime() time.Time {
@@ -58,7 +59,7 @@ func (powerUp *PowerUp) getEndTime() time.Time {
 // Returns the current active power up, or nil if there isn't one.
 func getActivePowerUp(currentTime time.Time) *PowerUp {
 	for _, powerUp := range powerUpUses {
-		if powerUp.GetState(currentTime) == active {
+		if powerUp.GetState(currentTime) == Active {
 			return powerUp
 		}
 	}
@@ -75,10 +76,10 @@ func maybeActivatePowerUp(powerUp *PowerUp, currentTime time.Time) *PowerUp {
 	} else {
 		lastPowerUp := powerUpUses[len(powerUpUses)-1]
 		lastPowerUpState := lastPowerUp.GetState(currentTime)
-		if lastPowerUpState == expired {
+		if lastPowerUpState == Expired {
 			canActivate = true
 			powerUp.startTime = currentTime
-		} else if lastPowerUpState == active && lastPowerUp.alliance != powerUp.alliance {
+		} else if lastPowerUpState == Active && lastPowerUp.Alliance != powerUp.Alliance {
 			canActivate = true
 			powerUp.startTime = lastPowerUp.getEndTime()
 		}

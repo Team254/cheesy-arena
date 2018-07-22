@@ -26,34 +26,40 @@
         <div class="score" id="redScore">
           <div class="score-fields score-fields-icons">
             <span class="valign-cell">
-              <img class="score-icon" src="/static/img/pressure.svg" /><br />
-              <img class="score-icon" src="/static/img/rotor.svg" /><br />
-              <img class="score-icon" src="/static/img/takeoff.svg" />
+              <span class="power-up" id="redForceCubesIcon">F</span><br />
+              <span class="power-up" id="redLevitateCubesIcon">L</span><br />
+              <span class="power-up" id="redBoostCubesIcon">B</span>
             </span>
           </div>
           <div class="score-fields score-fields-text">
             <span class="valign-cell">
-              <span id="redPressurePoints"></span><br />
-              <span id="redRotors"></span><br />
-              <span id="redTakeoffs"></span>
+              <span class="power-up" id="redForceCubes"></span><br />
+              <span class="power-up" id="redLevitateCubes"></span><br />
+              <span class="power-up" id="redBoostCubes"></span>
             </span>
+          </div>
+          <div class="powerup-progress">
+            <div id="redProgress"></div>
           </div>
           <div class="score-number" id="redScoreNumber">&nbsp;</div>
         </div>
         <div class="score" id="blueScore">
           <div class="score-fields score-fields-icons pull-right">
             <span class="valign-cell">
-              <img class="score-icon score-icon-right" src="/static/img/pressure.svg" /><br />
-              <img class="score-icon score-icon-right" src="/static/img/rotor.svg" /><br />
-              <img class="score-icon score-icon-right" src="/static/img/takeoff.svg" />
+              <span class="power-up" id="blueForceCubesIcon">F</span><br />
+              <span class="power-up" id="blueLevitateCubesIcon">L</span><br />
+              <span class="power-up" id="blueBoostCubesIcon">B</span>
             </span>
           </div>
           <div class="score-fields score-fields-text pull-right" style="direction: rtl;">
             <span class="valign-cell" style="text-align: right;">
-              <span id="bluePressurePoints"></span><br />
-              <span id="blueRotors"></span><br />
-              <span id="blueTakeoffs"></span>
+              <span class="power-up" id="blueForceCubes"></span><br />
+              <span class="power-up" id="blueLevitateCubes"></span><br />
+              <span class="power-up" id="blueBoostCubes"></span>
             </span>
+          </div>
+          <div class="powerup-progress pull-right">
+            <div id="blueProgress"></div>
           </div>
           <div class="score-number pull-right" id="blueScoreNumber">&nbsp;</div>
         </div>
@@ -72,6 +78,9 @@
       <div class="text-center" id="matchCircle">
         <img id="logo" src="/static/img/game-logo.png" alt="logo" />
         <div id="matchTime"></div>
+        <div class="seesaw-indicator" id="redSwitchIndicator"></div>
+        <div class="seesaw-indicator" id="scaleIndicator"></div>
+        <div class="seesaw-indicator" id="blueSwitchIndicator"></div>
       </div>
     </div>
     <div id="blindsContainer">
@@ -163,6 +172,9 @@
     <audio id="match-end" src="/static/audio/match_end.wav" preload="auto"></audio>
     <audio id="match-abort" src="/static/audio/match_abort.mp3" preload="auto"></audio>
     <audio id="match-resume" src="/static/audio/match_resume.wav" preload="auto"></audio>
+    <audio id="match-force" src="/static/audio/match_force.wav" preload="auto"></audio>
+    <audio id="match-levitate" src="/static/audio/match_levitate.wav" preload="auto"></audio>
+    <audio id="match-boost" src="/static/audio/match_boost.wav" preload="auto"></audio>
     <audio id="match-endgame" src="/static/audio/match_endgame.wav" preload="auto"></audio>
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>

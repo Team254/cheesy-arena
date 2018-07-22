@@ -71,7 +71,7 @@ func TestVaultLevitate(t *testing.T) {
 }
 
 func TestVaultForce(t *testing.T) {
-	vault := Vault{alliance: blueAlliance}
+	vault := Vault{Alliance: BlueAlliance}
 	ResetPowerUps()
 
 	vault.UpdateCubes(0, 0, 0)
@@ -86,30 +86,30 @@ func TestVaultForce(t *testing.T) {
 	vault.UpdateCubes(1000, 0, 0)
 	vault.UpdateButtons(true, false, false, time.Now())
 	if assert.NotNil(t, vault.ForcePowerUp) {
-		assert.Equal(t, blueAlliance, vault.ForcePowerUp.alliance)
+		assert.Equal(t, BlueAlliance, vault.ForcePowerUp.Alliance)
 		assert.Equal(t, force, vault.ForcePowerUp.effect)
 		assert.Equal(t, 1, vault.ForcePowerUp.level)
 	}
 
 	// Activation with two cubes.
-	vault = Vault{alliance: redAlliance}
+	vault = Vault{Alliance: RedAlliance}
 	ResetPowerUps()
 	vault.UpdateCubes(2000, 0, 0)
 	vault.UpdateButtons(true, false, false, time.Now())
 	if assert.NotNil(t, vault.ForcePowerUp) {
-		assert.Equal(t, redAlliance, vault.ForcePowerUp.alliance)
+		assert.Equal(t, RedAlliance, vault.ForcePowerUp.Alliance)
 		assert.Equal(t, force, vault.ForcePowerUp.effect)
 		assert.Equal(t, 2, vault.ForcePowerUp.level)
 	}
 
 	// Activation with three cubes.
-	vault = Vault{alliance: blueAlliance}
+	vault = Vault{Alliance: BlueAlliance}
 	ResetPowerUps()
 	vault.UpdateCubes(3000, 0, 0)
 	vault.UpdateButtons(true, false, false, time.Now())
 	assert.NotNil(t, vault.ForcePowerUp)
 	if assert.NotNil(t, vault.ForcePowerUp) {
-		assert.Equal(t, blueAlliance, vault.ForcePowerUp.alliance)
+		assert.Equal(t, BlueAlliance, vault.ForcePowerUp.Alliance)
 		assert.Equal(t, force, vault.ForcePowerUp.effect)
 		assert.Equal(t, 3, vault.ForcePowerUp.level)
 	}
@@ -120,7 +120,7 @@ func TestVaultForce(t *testing.T) {
 }
 
 func TestVaultBoost(t *testing.T) {
-	vault := Vault{alliance: blueAlliance}
+	vault := Vault{Alliance: BlueAlliance}
 	ResetPowerUps()
 
 	vault.UpdateCubes(0, 0, 0)
@@ -135,30 +135,30 @@ func TestVaultBoost(t *testing.T) {
 	vault.UpdateCubes(0, 0, 1000)
 	vault.UpdateButtons(false, false, true, time.Now())
 	if assert.NotNil(t, vault.BoostPowerUp) {
-		assert.Equal(t, blueAlliance, vault.BoostPowerUp.alliance)
+		assert.Equal(t, BlueAlliance, vault.BoostPowerUp.Alliance)
 		assert.Equal(t, boost, vault.BoostPowerUp.effect)
 		assert.Equal(t, 1, vault.BoostPowerUp.level)
 	}
 
 	// Activation with two cubes.
-	vault = Vault{alliance: redAlliance}
+	vault = Vault{Alliance: RedAlliance}
 	ResetPowerUps()
 	vault.UpdateCubes(0, 0, 2000)
 	vault.UpdateButtons(false, false, true, time.Now())
 	if assert.NotNil(t, vault.BoostPowerUp) {
-		assert.Equal(t, redAlliance, vault.BoostPowerUp.alliance)
+		assert.Equal(t, RedAlliance, vault.BoostPowerUp.Alliance)
 		assert.Equal(t, boost, vault.BoostPowerUp.effect)
 		assert.Equal(t, 2, vault.BoostPowerUp.level)
 	}
 
 	// Activation with three cubes.
-	vault = Vault{alliance: blueAlliance}
+	vault = Vault{Alliance: BlueAlliance}
 	ResetPowerUps()
 	vault.UpdateCubes(0, 0, 3000)
 	vault.UpdateButtons(false, false, true, time.Now())
 	assert.NotNil(t, vault.BoostPowerUp)
 	if assert.NotNil(t, vault.BoostPowerUp) {
-		assert.Equal(t, blueAlliance, vault.BoostPowerUp.alliance)
+		assert.Equal(t, BlueAlliance, vault.BoostPowerUp.Alliance)
 		assert.Equal(t, boost, vault.BoostPowerUp.effect)
 		assert.Equal(t, 3, vault.BoostPowerUp.level)
 	}
@@ -166,4 +166,45 @@ func TestVaultBoost(t *testing.T) {
 	vault.UpdateCubes(0, 0, 3000)
 	vault.UpdateButtons(false, false, false, time.Now())
 	assert.NotNil(t, vault.BoostPowerUp)
+}
+
+func TestVaultMultipleActivations(t *testing.T) {
+	redVault := Vault{Alliance: RedAlliance}
+	redVault.UpdateCubes(1000, 3000, 1000)
+	blueVault := Vault{Alliance: BlueAlliance}
+	blueVault.UpdateCubes(1000, 3000, 1000)
+	ResetPowerUps()
+
+	redVault.UpdateButtons(true, false, false, timeAfterStart(0))
+	redVault.UpdateButtons(false, false, false, timeAfterStart(1))
+	if assert.NotNil(t, redVault.ForcePowerUp) {
+		assert.Equal(t, Active, redVault.ForcePowerUp.GetState(timeAfterStart(0.5)))
+	}
+	assert.Equal(t, "force", redVault.CheckForNewlyPlayedPowerUp())
+	assert.Equal(t, "", redVault.CheckForNewlyPlayedPowerUp())
+
+	redVault.UpdateButtons(false, true, false, timeAfterStart(2))
+	redVault.UpdateButtons(false, false, false, timeAfterStart(3))
+	assert.True(t, redVault.LevitatePlayed)
+	assert.Equal(t, "levitate", redVault.CheckForNewlyPlayedPowerUp())
+	assert.Equal(t, "", redVault.CheckForNewlyPlayedPowerUp())
+
+	blueVault.UpdateButtons(false, false, true, timeAfterStart(4))
+	blueVault.UpdateButtons(false, false, false, timeAfterStart(5))
+	if assert.NotNil(t, blueVault.BoostPowerUp) {
+		assert.Equal(t, Queued, blueVault.BoostPowerUp.GetState(timeAfterStart(4.5)))
+	}
+	assert.Equal(t, "boost", blueVault.CheckForNewlyPlayedPowerUp())
+	assert.Equal(t, "", blueVault.CheckForNewlyPlayedPowerUp())
+	assert.Equal(t, Expired, redVault.ForcePowerUp.GetState(timeAfterStart(11)))
+	assert.Equal(t, Active, blueVault.BoostPowerUp.GetState(timeAfterStart(11)))
+	assert.Equal(t, Expired, blueVault.BoostPowerUp.GetState(timeAfterStart(21)))
+
+	redVault.UpdateButtons(false, false, true, timeAfterStart(25))
+	redVault.UpdateButtons(false, false, false, timeAfterStart(26))
+	if assert.NotNil(t, redVault.BoostPowerUp) {
+		assert.Equal(t, Active, redVault.BoostPowerUp.GetState(timeAfterStart(25.5)))
+	}
+	assert.Equal(t, "boost", redVault.CheckForNewlyPlayedPowerUp())
+	assert.Equal(t, "", redVault.CheckForNewlyPlayedPowerUp())
 }

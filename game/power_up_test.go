@@ -13,11 +13,11 @@ var matchStartTime = time.Unix(10, 0)
 
 func TestPowerUpGetState(t *testing.T) {
 	powerUp := PowerUp{startTime: timeAfterStart(30)}
-	assert.Equal(t, queued, powerUp.GetState(timeAfterStart(25)))
-	assert.Equal(t, queued, powerUp.GetState(timeAfterStart(29.9)))
-	assert.Equal(t, active, powerUp.GetState(timeAfterStart(30.1)))
-	assert.Equal(t, active, powerUp.GetState(timeAfterStart(39.9)))
-	assert.Equal(t, expired, powerUp.GetState(timeAfterStart(40.1)))
+	assert.Equal(t, Queued, powerUp.GetState(timeAfterStart(25)))
+	assert.Equal(t, Queued, powerUp.GetState(timeAfterStart(29.9)))
+	assert.Equal(t, Active, powerUp.GetState(timeAfterStart(30.1)))
+	assert.Equal(t, Active, powerUp.GetState(timeAfterStart(39.9)))
+	assert.Equal(t, Expired, powerUp.GetState(timeAfterStart(40.1)))
 }
 
 func TestPowerUpActivate(t *testing.T) {
@@ -41,15 +41,20 @@ func TestPowerUpActivate(t *testing.T) {
 }
 
 func TestPowerUpQueue(t *testing.T) {
-	powerUp1 := &PowerUp{alliance: redAlliance}
-	maybeActivatePowerUp(powerUp1, timeAfterStart(60))
+	ResetPowerUps()
 
-	powerUp2 := &PowerUp{alliance: redAlliance}
+	powerUp1 := &PowerUp{Alliance: RedAlliance}
+	assert.NotNil(t, maybeActivatePowerUp(powerUp1, timeAfterStart(60)))
+
+	powerUp2 := &PowerUp{Alliance: RedAlliance}
 	assert.Nil(t, maybeActivatePowerUp(powerUp2, timeAfterStart(65)))
-	powerUp2.alliance = blueAlliance
+	powerUp2.Alliance = BlueAlliance
 	if assert.NotNil(t, maybeActivatePowerUp(powerUp2, timeAfterStart(65))) {
 		assert.Equal(t, timeAfterStart(70), powerUp2.startTime)
 	}
+
+	powerUp3 := &PowerUp{Alliance: RedAlliance}
+	assert.NotNil(t, maybeActivatePowerUp(powerUp3, timeAfterStart(81)))
 
 	assert.Equal(t, powerUp1, getActivePowerUp(timeAfterStart(69.9)))
 	assert.Equal(t, powerUp2, getActivePowerUp(timeAfterStart(70.1)))

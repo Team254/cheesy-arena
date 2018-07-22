@@ -11,7 +11,25 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
+
+type audienceScoreFields struct {
+	Red          *audienceAllianceScoreFields
+	Blue         *audienceAllianceScoreFields
+	ScaleOwnedBy game.Alliance
+}
+
+type audienceAllianceScoreFields struct {
+	Score         int
+	ForceCubes    int
+	LevitateCubes int
+	BoostCubes    int
+	ForceState    game.PowerUpState
+	LevitateState game.PowerUpState
+	BoostState    game.PowerUpState
+	SwitchOwnedBy game.Alliance
+}
 
 // Renders the audience display to be chroma keyed over the video feed.
 func (web *Web) audienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -93,13 +111,7 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 		log.Printf("Websocket error: %s", err)
 		return
 	}
-	data = struct {
-		RedScore         *game.Score
-		BlueScore        *game.Score
-		RedScoreSummary  *game.ScoreSummary
-		BlueScoreSummary *game.ScoreSummary
-	}{&web.arena.RedRealtimeScore.CurrentScore, &web.arena.BlueRealtimeScore.CurrentScore,
-		web.arena.RedScoreSummary(), web.arena.BlueScoreSummary()}
+	data = web.getAudienceScoreFields()
 	err = websocket.Write("realtimeScore", data)
 	if err != nil {
 		log.Printf("Websocket error: %s", err)
@@ -155,13 +167,7 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 					return
 				}
 				messageType = "realtimeScore"
-				message = struct {
-					RedScore         *game.Score
-					BlueScore        *game.Score
-					RedScoreSummary  *game.ScoreSummary
-					BlueScoreSummary *game.ScoreSummary
-				}{&web.arena.RedRealtimeScore.CurrentScore, &web.arena.BlueRealtimeScore.CurrentScore,
-					web.arena.RedScoreSummary(), web.arena.BlueScoreSummary()}
+				message = web.getAudienceScoreFields()
 			case _, ok := <-scorePostedListener:
 				if !ok {
 					return
@@ -219,4 +225,42 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 			return
 		}
 	}
+}
+
+// Constructs the data object sent to the audience display for the realtime scoring overlay.
+func (web *Web) getAudienceScoreFields() *audienceScoreFields {
+	fields := new(audienceScoreFields)
+	fields.Red = getAudienceAllianceScoreFields(&web.arena.RedRealtimeScore.CurrentScore, web.arena.RedScoreSummary(),
+		web.arena.RedVault, web.arena.RedSwitch)
+	fields.Blue = getAudienceAllianceScoreFields(&web.arena.BlueRealtimeScore.CurrentScore,
+		web.arena.BlueScoreSummary(), web.arena.BlueVault, web.arena.BlueSwitch)
+	fields.ScaleOwnedBy = web.arena.Scale.GetOwnedBy()
+	return fields
+}
+
+// Constructs the data object for one alliance sent to the audience display for the realtime scoring overlay.
+func getAudienceAllianceScoreFields(allianceScore *game.Score, allianceScoreSummary *game.ScoreSummary,
+	allianceVault *game.Vault, allianceSwitch *game.Seesaw) *audienceAllianceScoreFields {
+	fields := new(audienceAllianceScoreFields)
+	fields.Score = allianceScoreSummary.Score
+	fields.ForceCubes = allianceScore.ForceCubes
+	fields.LevitateCubes = allianceScore.LevitateCubes
+	fields.BoostCubes = allianceScore.BoostCubes
+	if allianceVault.ForcePowerUp != nil {
+		fields.ForceState = allianceVault.ForcePowerUp.GetState(time.Now())
+	} else {
+		fields.ForceState = game.Unplayed
+	}
+	if allianceVault.LevitatePlayed {
+		fields.LevitateState = game.Expired
+	} else {
+		fields.LevitateState = game.Unplayed
+	}
+	if allianceVault.BoostPowerUp != nil {
+		fields.BoostState = allianceVault.BoostPowerUp.GetState(time.Now())
+	} else {
+		fields.BoostState = game.Unplayed
+	}
+	fields.SwitchOwnedBy = allianceSwitch.GetOwnedBy()
+	return fields
 }
