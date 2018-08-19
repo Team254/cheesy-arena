@@ -156,7 +156,8 @@ func (web *Web) announcerDisplayWebsocketHandler(w http.ResponseWriter, r *http.
 					BlueCards        map[string]string
 				}{web.arena.SavedMatch.CapitalizedType(), web.arena.SavedMatch.DisplayName,
 					web.arena.SavedMatchResult.RedScoreSummary(), web.arena.SavedMatchResult.BlueScoreSummary(),
-					web.arena.SavedMatchResult.RedScore.Fouls, web.arena.SavedMatchResult.BlueScore.Fouls,
+					populateFoulDescriptions(web.arena.SavedMatchResult.RedScore.Fouls),
+					populateFoulDescriptions(web.arena.SavedMatchResult.BlueScore.Fouls),
 					web.arena.SavedMatchResult.RedCards, web.arena.SavedMatchResult.BlueCards}
 			case _, ok := <-audienceDisplayListener:
 				if !ok {
@@ -205,4 +206,17 @@ func (web *Web) announcerDisplayWebsocketHandler(w http.ResponseWriter, r *http.
 			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}
 	}
+}
+
+// Copy the description from the rules to the fouls so that they are available to the announcer.
+func populateFoulDescriptions(fouls []game.Foul) []game.Foul {
+	for i := range fouls {
+		for _, rule := range game.Rules {
+			if fouls[i].RuleNumber == rule.RuleNumber {
+				fouls[i].Description = rule.Description
+				break
+			}
+		}
+	}
+	return fouls
 }

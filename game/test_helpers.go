@@ -6,7 +6,8 @@
 package game
 
 func TestScore1() *Score {
-	fouls := []Foul{{Rule{"G22", false}, 25, 25.2}, {Rule{"G18", true}, 25, 150}, {Rule{"G20", true}, 1868, 0}}
+	fouls := []Foul{{Rule{"G22", false, ""}, 25, 25.2}, {Rule{"G18", true, ""}, 25, 150},
+		{Rule{"G20", true, ""}, 1868, 0}}
 	return &Score{1, 12, true, 47, 0, false, 3, true, 0, false, 2, 0, fouls, false}
 }
 

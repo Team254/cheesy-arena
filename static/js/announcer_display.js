@@ -56,6 +56,9 @@ var handleSetFinalScore = function(data) {
   $("#blueScoreDetails").html(matchResultTemplate({score: data.BlueScoreSummary, fouls: data.BlueFouls,
       cards: data.BlueCards}));
   $("#matchResult").modal("show");
+
+  // Activate tooltips above the foul listings.
+  $("[data-toggle=tooltip]").tooltip({"placement": "top"});
 };
 
 var postMatchResult = function(data) {

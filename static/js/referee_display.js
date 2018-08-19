@@ -95,6 +95,9 @@ var commitMatch = function() {
 };
 
 $(function() {
+  // Activate tooltips above the rule buttons.
+  $("[data-toggle=tooltip]").tooltip({"placement": "top"});
+
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/referee/websocket", {
   });

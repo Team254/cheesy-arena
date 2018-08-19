@@ -60,7 +60,8 @@
           <div class="row">
             {{range $rule := .Rules}}
               <a class="btn btn-sm {{if $rule.IsTechnical}}btn-danger{{else}}btn-warning{{end}} btn-referee btn-rule"
-                  data-rule="{{$rule.RuleNumber}}" data-is-technical="{{$rule.IsTechnical}}" onclick="setFoulRule(this);">
+                  data-rule="{{$rule.RuleNumber}}" data-is-technical="{{$rule.IsTechnical}}"
+                  onclick="setFoulRule(this);" data-toggle="tooltip" title="{{$rule.Description}}">
                 {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>{{end}}
               </a>
             {{end}}
@@ -94,6 +95,7 @@
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/cheesy-websocket.js"></script>
     <script src="/static/js/referee_display.js"></script>
   </body>
