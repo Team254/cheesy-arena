@@ -5,36 +5,36 @@
 
 package led
 
-type color int
+type Color int
 
 const (
-	red color = iota
-	orange
-	yellow
-	green
-	teal
-	blue
-	purple
-	white
-	black
-	purpleRed
-	purpleBlue
-	dimRed
-	dimBlue
+	Red Color = iota
+	Orange
+	Yellow
+	Green
+	Teal
+	Blue
+	Purple
+	White
+	Black
+	PurpleRed
+	PurpleBlue
+	DimRed
+	DimBlue
 )
 
-var colors = map[color][3]byte{
-	red:        {255, 0, 0},
-	orange:     {255, 50, 0},
-	yellow:     {255, 255, 0},
-	green:      {0, 255, 0},
-	teal:       {0, 100, 100},
-	blue:       {0, 0, 255},
-	purple:     {100, 0, 100},
-	white:      {255, 255, 255},
-	black:      {0, 0, 0},
-	purpleRed:  {200, 0, 50},
-	purpleBlue: {50, 0, 200},
-	dimRed:     {50, 0, 0},
-	dimBlue:    {0, 0, 50},
+var Colors = map[Color][3]byte{
+	Red:        {255, 0, 0},
+	Orange:     {255, 50, 0},
+	Yellow:     {255, 255, 0},
+	Green:      {0, 255, 0},
+	Teal:       {0, 100, 100},
+	Blue:       {0, 0, 255},
+	Purple:     {100, 0, 100},
+	White:      {255, 255, 255},
+	Black:      {0, 0, 0},
+	PurpleRed:  {200, 0, 50},
+	PurpleBlue: {50, 0, 200},
+	DimRed:     {50, 0, 0},
+	DimBlue:    {0, 0, 50},
 }

@@ -35,6 +35,8 @@ type EventSettings struct {
 	ScaleLedAddress            string
 	RedSwitchLedAddress        string
 	BlueSwitchLedAddress       string
+	RedVaultLedAddress         string
+	BlueVaultLedAddress        string
 }
 
 const eventSettingsId = 0

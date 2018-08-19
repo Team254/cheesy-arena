@@ -103,7 +103,7 @@ func (controller *Controller) Update() error {
 // Constructs the structure of an E1.31 data packet that can be re-used indefinitely by updating the pixel data and
 // re-sending it.
 func createBlankPacket(numPixels int) []byte {
-	size := 126 + 3*numPixels
+	size := pixelDataOffset + 3*numPixels
 	packet := make([]byte, size)
 
 	// Preamble size

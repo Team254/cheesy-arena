@@ -29,7 +29,9 @@ CREATE TABLE event_settings (
   stemtveventcode VARCHAR(16),
   scaleledaddress VARCHAR(255),
   redswitchledaddress VARCHAR(255),
-  blueswitchledaddress VARCHAR(255)
+  blueswitchledaddress VARCHAR(255),
+  redvaultledaddress VARCHAR(255),
+  bluevaultledaddress VARCHAR(255)
 );
 
 -- +goose Down

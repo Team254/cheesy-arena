@@ -9,6 +9,7 @@ import (
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/vaultled"
 	"log"
 	"net/http"
 	"strconv"
@@ -34,8 +35,11 @@ func (web *Web) fieldGetHandler(w http.ResponseWriter, r *http.Request) {
 		CoilNames               []string
 		CurrentLedMode          led.Mode
 		LedModeNames            map[led.Mode]string
+		CurrentVaultLedMode     vaultled.Mode
+		VaultLedModeNames       map[vaultled.Mode]string
 	}{web.arena.EventSettings, web.arena.AllianceStationDisplays, plc.GetInputNames(), plc.GetRegisterNames(),
-		plc.GetCoilNames(), web.arena.ScaleLeds.GetCurrentMode(), led.ModeNames}
+		plc.GetCoilNames(), web.arena.ScaleLeds.GetCurrentMode(), led.ModeNames,
+		web.arena.RedVaultLeds.CurrentForceMode, vaultled.ModeNames}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -82,6 +86,11 @@ func (web *Web) fieldTestPostHandler(w http.ResponseWriter, r *http.Request) {
 	web.arena.ScaleLeds.SetMode(ledMode, ledMode)
 	web.arena.RedSwitchLeds.SetMode(ledMode, ledMode)
 	web.arena.BlueSwitchLeds.SetMode(ledMode, ledMode)
+
+	vaultMode, _ := strconv.Atoi(r.PostFormValue("vaultMode"))
+	vaultLedMode := vaultled.Mode(vaultMode)
+	web.arena.RedVaultLeds.SetAllModes(vaultLedMode)
+	web.arena.BlueVaultLeds.SetAllModes(vaultLedMode)
 
 	http.Redirect(w, r, "/setup/field", 303)
 }

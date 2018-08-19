@@ -23,15 +23,15 @@ type strip struct {
 func (strip *strip) updatePixels() {
 	switch strip.currentMode {
 	case RedMode:
-		strip.updateSingleColorMode(red)
+		strip.updateSingleColorMode(Red)
 	case GreenMode:
-		strip.updateSingleColorMode(green)
+		strip.updateSingleColorMode(Green)
 	case BlueMode:
-		strip.updateSingleColorMode(blue)
+		strip.updateSingleColorMode(Blue)
 	case WhiteMode:
-		strip.updateSingleColorMode(white)
+		strip.updateSingleColorMode(White)
 	case PurpleMode:
-		strip.updateSingleColorMode(purple)
+		strip.updateSingleColorMode(Purple)
 	case ChaseMode:
 		strip.updateChaseMode()
 	case WarmupMode:
@@ -90,43 +90,43 @@ func (strip *strip) populatePacketPixels(pixelData []byte) {
 }
 
 // Returns the primary color (red or blue) of this strip.
-func (strip *strip) getColor() color {
+func (strip *strip) getColor() Color {
 	if strip.isRed {
-		return red
+		return Red
 	}
-	return blue
+	return Blue
 }
 
 // Returns the opposite primary color (red or blue) to this strip.
-func (strip *strip) getOppositeColor() color {
+func (strip *strip) getOppositeColor() Color {
 	if strip.isRed {
-		return blue
+		return Blue
 	}
-	return red
+	return Red
 }
 
 // Returns a color partway between purple and the primary color (red or blue) of this strip.
-func (strip *strip) getMidColor() color {
+func (strip *strip) getMidColor() Color {
 	if strip.isRed {
-		return purpleBlue
+		return PurpleBlue
 	}
-	return purpleRed
+	return PurpleRed
 }
 
 // Returns a dim version of the primary color (red or blue) of this strip.
-func (strip *strip) getDimColor() color {
+func (strip *strip) getDimColor() Color {
 	if strip.isRed {
-		return dimRed
+		return DimRed
 	}
-	return dimBlue
+	return DimBlue
 }
 
 // Returns a dim version of the opposite primary color (red or blue) of this strip.
-func (strip *strip) getDimOppositeColor() color {
+func (strip *strip) getDimOppositeColor() Color {
 	if strip.isRed {
-		return dimBlue
+		return DimBlue
 	}
-	return dimRed
+	return DimRed
 }
 
 // Returns the starting offset for the gradient mode for this strip.
@@ -139,23 +139,23 @@ func (strip *strip) getGradientStartOffset() int {
 
 func (strip *strip) updateOffMode() {
 	for i := 0; i < numPixels; i++ {
-		strip.pixels[i] = colors[black]
+		strip.pixels[i] = Colors[Black]
 	}
 }
 
-func (strip *strip) updateSingleColorMode(color color) {
+func (strip *strip) updateSingleColorMode(color Color) {
 	for i := 0; i < numPixels; i++ {
-		strip.pixels[i] = colors[color]
+		strip.pixels[i] = Colors[color]
 	}
 }
 
 func (strip *strip) updateChaseMode() {
-	if strip.counter == int(black)*numPixels { // Ignore colors listed after white.
+	if strip.counter == int(Black)*numPixels { // Ignore colors listed after white.
 		strip.counter = 0
 	}
-	color := color(strip.counter / numPixels)
+	color := Color(strip.counter / numPixels)
 	pixelIndex := strip.counter % numPixels
-	strip.pixels[pixelIndex] = colors[color]
+	strip.pixels[pixelIndex] = Colors[color]
 }
 
 func (strip *strip) updateWarmupMode() {
@@ -163,14 +163,14 @@ func (strip *strip) updateWarmupMode() {
 	if strip.counter == 0 {
 		// Show solid white to start.
 		for i := 0; i < numPixels; i++ {
-			strip.pixels[i] = colors[white]
+			strip.pixels[i] = Colors[White]
 		}
 	} else if strip.counter <= endCounter {
 		// Build to the alliance color from each side.
 		numLitPixels := numPixels / 2 * strip.counter / endCounter
 		for i := 0; i < numLitPixels; i++ {
-			strip.pixels[i] = colors[strip.getColor()]
-			strip.pixels[numPixels-i-1] = colors[strip.getColor()]
+			strip.pixels[i] = Colors[strip.getColor()]
+			strip.pixels[numPixels-i-1] = Colors[strip.getColor()]
 		}
 	} else {
 		// Prevent the counter from rolling over.
@@ -184,11 +184,11 @@ func (strip *strip) updateWarmup2Mode() {
 	if strip.counter < startCounter {
 		// Show solid purple to start.
 		for i := 0; i < numPixels; i++ {
-			strip.pixels[i] = colors[purple]
+			strip.pixels[i] = Colors[Purple]
 		}
 	} else if strip.counter <= endCounter {
 		for i := 0; i < numPixels; i++ {
-			strip.pixels[i] = getFadeColor(purple, strip.getColor(), strip.counter-startCounter,
+			strip.pixels[i] = getFadeColor(Purple, strip.getColor(), strip.counter-startCounter,
 				endCounter-startCounter)
 		}
 	} else {
@@ -204,11 +204,11 @@ func (strip *strip) updateWarmup3Mode() {
 	if strip.counter < startCounter {
 		// Show solid purple to start.
 		for i := 0; i < numPixels; i++ {
-			strip.pixels[i] = colors[purple]
+			strip.pixels[i] = Colors[Purple]
 		}
 	} else if strip.counter < middleCounter {
 		for i := 0; i < numPixels; i++ {
-			strip.pixels[i] = getFadeColor(purple, strip.getMidColor(), strip.counter-startCounter,
+			strip.pixels[i] = getFadeColor(Purple, strip.getMidColor(), strip.counter-startCounter,
 				middleCounter-startCounter)
 		}
 	} else if strip.counter <= endCounter {
@@ -230,7 +230,7 @@ func (strip *strip) updateWarmup4Mode() {
 	if strip.counter >= middleCounter {
 		for i := 0; i < numPixels; i++ {
 			if i < strip.counter-middleCounter {
-				strip.pixels[i] = colors[strip.getColor()]
+				strip.pixels[i] = Colors[strip.getColor()]
 			}
 		}
 	}
@@ -247,16 +247,16 @@ func (strip *strip) updateOwnedMode() {
 		case 0:
 			fallthrough
 		case 1:
-			strip.pixels[len(strip.pixels)-i-1] = colors[strip.getColor()]
+			strip.pixels[len(strip.pixels)-i-1] = Colors[strip.getColor()]
 		default:
-			strip.pixels[len(strip.pixels)-i-1] = colors[black]
+			strip.pixels[len(strip.pixels)-i-1] = Colors[Black]
 		}
 	}
 }
 
 func (strip *strip) updateNotOwnedMode() {
 	for i := 0; i < numPixels; i++ {
-		strip.pixels[i] = colors[strip.getDimColor()]
+		strip.pixels[i] = Colors[strip.getDimColor()]
 	}
 }
 
@@ -271,11 +271,11 @@ func (strip *strip) updateForceMode() {
 		case 2:
 			fallthrough
 		case 4:
-			strip.pixels[i] = colors[strip.getColor()]
+			strip.pixels[i] = Colors[strip.getColor()]
 		case 3:
-			strip.pixels[i] = colors[strip.getDimOppositeColor()]
+			strip.pixels[i] = Colors[strip.getDimOppositeColor()]
 		default:
-			strip.pixels[i] = colors[black]
+			strip.pixels[i] = Colors[Black]
 		}
 	}
 }
@@ -288,9 +288,9 @@ func (strip *strip) updateBoostMode() {
 	}
 	for i := 0; i < numPixels; i++ {
 		if i%pixelSpacing == strip.counter/speedDivisor%pixelSpacing {
-			strip.pixels[i] = colors[strip.getColor()]
+			strip.pixels[i] = Colors[strip.getColor()]
 		} else {
-			strip.pixels[i] = colors[black]
+			strip.pixels[i] = Colors[Black]
 		}
 	}
 }
@@ -300,7 +300,7 @@ func (strip *strip) updateRandomMode() {
 		return
 	}
 	for i := 0; i < numPixels; i++ {
-		strip.pixels[i] = colors[color(rand.Intn(int(black)))] // Ignore colors listed after white.
+		strip.pixels[i] = Colors[Color(rand.Intn(int(Black)))] // Ignore colors listed after white.
 	}
 }
 
@@ -313,21 +313,21 @@ func (strip *strip) updateFadeRedBlueMode() {
 
 	for i := 0; i < numPixels; i++ {
 		if strip.counter < holdCycles {
-			strip.pixels[i] = colors[black]
+			strip.pixels[i] = Colors[Black]
 		} else if strip.counter < holdCycles+fadeCycles {
-			strip.pixels[i] = getFadeColor(black, red, strip.counter-holdCycles, fadeCycles)
+			strip.pixels[i] = getFadeColor(Black, Red, strip.counter-holdCycles, fadeCycles)
 		} else if strip.counter < 2*holdCycles+fadeCycles {
-			strip.pixels[i] = colors[red]
+			strip.pixels[i] = Colors[Red]
 		} else if strip.counter < 2*holdCycles+2*fadeCycles {
-			strip.pixels[i] = getFadeColor(red, black, strip.counter-2*holdCycles-fadeCycles, fadeCycles)
+			strip.pixels[i] = getFadeColor(Red, Black, strip.counter-2*holdCycles-fadeCycles, fadeCycles)
 		} else if strip.counter < 3*holdCycles+2*fadeCycles {
-			strip.pixels[i] = colors[black]
+			strip.pixels[i] = Colors[Black]
 		} else if strip.counter < 3*holdCycles+3*fadeCycles {
-			strip.pixels[i] = getFadeColor(black, blue, strip.counter-3*holdCycles-2*fadeCycles, fadeCycles)
+			strip.pixels[i] = getFadeColor(Black, Blue, strip.counter-3*holdCycles-2*fadeCycles, fadeCycles)
 		} else if strip.counter < 4*holdCycles+3*fadeCycles {
-			strip.pixels[i] = colors[blue]
+			strip.pixels[i] = Colors[Blue]
 		} else if strip.counter < 4*holdCycles+4*fadeCycles {
-			strip.pixels[i] = getFadeColor(blue, black, strip.counter-4*holdCycles-3*fadeCycles, fadeCycles)
+			strip.pixels[i] = getFadeColor(Blue, Black, strip.counter-4*holdCycles-3*fadeCycles, fadeCycles)
 		}
 	}
 }
@@ -341,11 +341,11 @@ func (strip *strip) updateFadeSingleMode() {
 
 	for i := 0; i < numPixels; i++ {
 		if strip.counter < offCycles {
-			strip.pixels[i] = colors[black]
+			strip.pixels[i] = Colors[Black]
 		} else if strip.counter < offCycles+fadeCycles {
-			strip.pixels[i] = getFadeColor(black, strip.getColor(), strip.counter-offCycles, fadeCycles)
+			strip.pixels[i] = getFadeColor(Black, strip.getColor(), strip.counter-offCycles, fadeCycles)
 		} else if strip.counter < offCycles+2*fadeCycles {
-			strip.pixels[i] = getFadeColor(strip.getColor(), black, strip.counter-offCycles-fadeCycles, fadeCycles)
+			strip.pixels[i] = getFadeColor(strip.getColor(), Black, strip.counter-offCycles-fadeCycles, fadeCycles)
 		}
 	}
 }
@@ -360,17 +360,17 @@ func (strip *strip) updateBlinkMode() {
 	divisor := 10
 	for i := 0; i < numPixels; i++ {
 		if strip.counter%divisor < divisor/2 {
-			strip.pixels[i] = colors[white]
+			strip.pixels[i] = Colors[White]
 		} else {
-			strip.pixels[i] = colors[black]
+			strip.pixels[i] = Colors[Black]
 		}
 	}
 }
 
 // Interpolates between the two colors based on the given fraction.
-func getFadeColor(fromColor, toColor color, numerator, denominator int) [3]byte {
-	from := colors[fromColor]
-	to := colors[toColor]
+func getFadeColor(fromColor, toColor Color, numerator, denominator int) [3]byte {
+	from := Colors[fromColor]
+	to := Colors[toColor]
 	var fadeColor [3]byte
 	for i := 0; i < 3; i++ {
 		fadeColor[i] = byte(int(from[i]) + numerator*(int(to[i])-int(from[i]))/denominator)
@@ -382,10 +382,10 @@ func getFadeColor(fromColor, toColor color, numerator, denominator int) [3]byte 
 func getGradientColor(offset, numPixels int) [3]byte {
 	offset %= numPixels
 	if 3*offset < numPixels {
-		return getFadeColor(red, green, 3*offset, numPixels)
+		return getFadeColor(Red, Green, 3*offset, numPixels)
 	} else if 3*offset < 2*numPixels {
-		return getFadeColor(green, blue, 3*offset-numPixels, numPixels)
+		return getFadeColor(Green, Blue, 3*offset-numPixels, numPixels)
 	} else {
-		return getFadeColor(blue, red, 3*offset-2*numPixels, numPixels)
+		return getFadeColor(Blue, Red, 3*offset-2*numPixels, numPixels)
 	}
 }

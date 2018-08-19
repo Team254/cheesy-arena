@@ -11,6 +11,7 @@ import (
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/vaultled"
 	"log"
 	"math/rand"
 	"time"
@@ -83,6 +84,8 @@ type Arena struct {
 	ScaleLeds                      led.Controller
 	RedSwitchLeds                  led.Controller
 	BlueSwitchLeds                 led.Controller
+	RedVaultLeds                   vaultled.Controller
+	BlueVaultLeds                  vaultled.Controller
 	warmupLedMode                  led.Mode
 	lastRedAllianceReady           bool
 	lastBlueAllianceReady          bool
@@ -189,6 +192,12 @@ func (arena *Arena) LoadSettings() error {
 	if err = arena.BlueSwitchLeds.SetAddress(settings.BlueSwitchLedAddress); err != nil {
 		return err
 	}
+	if err = arena.RedVaultLeds.SetAddress(settings.RedVaultLedAddress); err != nil {
+		return err
+	}
+	if err = arena.BlueVaultLeds.SetAddress(settings.BlueVaultLedAddress); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -257,6 +266,8 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
 	arena.RedSwitchLeds.SetMode(led.RedMode, led.RedMode)
 	arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
+	arena.RedVaultLeds.SetAllModes(vaultled.OffMode)
+	arena.BlueVaultLeds.SetAllModes(vaultled.OffMode)
 	arena.lastRedAllianceReady = false
 	arena.lastBlueAllianceReady = false
 
@@ -807,6 +818,8 @@ func (arena *Arena) handleLeds() {
 		handleSeesawTeleopLeds(arena.Scale, &arena.ScaleLeds)
 		handleSeesawTeleopLeds(arena.RedSwitch, &arena.RedSwitchLeds)
 		handleSeesawTeleopLeds(arena.BlueSwitch, &arena.BlueSwitchLeds)
+		handleVaultTeleopLeds(arena.RedVault, &arena.RedVaultLeds)
+		handleVaultTeleopLeds(arena.BlueVault, &arena.BlueVaultLeds)
 	case PausePeriod:
 		arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
 		arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
@@ -822,11 +835,15 @@ func (arena *Arena) handleLeds() {
 		arena.ScaleLeds.SetMode(mode, mode)
 		arena.RedSwitchLeds.SetMode(mode, mode)
 		arena.BlueSwitchLeds.SetMode(mode, mode)
+		arena.RedVaultLeds.SetAllModes(vaultled.OffMode)
+		arena.BlueVaultLeds.SetAllModes(vaultled.OffMode)
 	}
 
 	arena.ScaleLeds.Update()
 	arena.RedSwitchLeds.Update()
 	arena.BlueSwitchLeds.Update()
+	arena.RedVaultLeds.Update()
+	arena.BlueVaultLeds.Update()
 }
 
 func handleSeesawTeleopLeds(seesaw *game.Seesaw, leds *led.Controller) {
@@ -864,6 +881,33 @@ func handleSeesawTeleopLeds(seesaw *game.Seesaw, leds *led.Controller) {
 		leds.SetMode(redMode, blueMode)
 	} else {
 		leds.SetMode(blueMode, redMode)
+	}
+}
+
+func handleVaultTeleopLeds(vault *game.Vault, leds *vaultled.Controller) {
+	playedMode := vaultled.RedPlayedMode
+	if vault.Alliance == game.BlueAlliance {
+		playedMode = vaultled.BluePlayedMode
+	}
+	cubesModeMap := map[int]vaultled.Mode{0: vaultled.OffMode, 1: vaultled.OneCubeMode, 2: vaultled.TwoCubeMode,
+		3: vaultled.ThreeCubeMode}
+
+	if vault.ForcePowerUp != nil {
+		leds.SetForceMode(playedMode)
+	} else {
+		leds.SetForceMode(cubesModeMap[vault.ForceCubes])
+	}
+
+	if vault.LevitatePlayed {
+		leds.SetLevitateMode(playedMode)
+	} else {
+		leds.SetLevitateMode(cubesModeMap[vault.LevitateCubes])
+	}
+
+	if vault.BoostPowerUp != nil {
+		leds.SetBoostMode(playedMode)
+	} else {
+		leds.SetBoostMode(cubesModeMap[vault.BoostCubes])
 	}
 }
 
