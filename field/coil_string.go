@@ -4,9 +4,9 @@ package field
 
 import "strconv"
 
-const _coil_name = "heartbeatstackLightGreenstackLightOrangestackLightRedstackLightBluecoilCount"
+const _coil_name = "heartbeatmatchResetstackLightGreenstackLightOrangestackLightRedstackLightBluered1EthernetDisablered2EthernetDisablered3EthernetDisableblue1EthernetDisableblue2EthernetDisableblue3EthernetDisablecoilCount"
 
-var _coil_index = [...]uint8{0, 9, 24, 40, 53, 67, 76}
+var _coil_index = [...]uint8{0, 9, 19, 34, 50, 63, 77, 96, 115, 134, 154, 174, 194, 203}
 
 func (i coil) String() string {
 	if i < 0 || i >= coil(len(_coil_index)-1) {

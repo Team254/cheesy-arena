@@ -59,14 +59,25 @@ func (vault *Vault) CheckForNewlyPlayedPowerUp() string {
 }
 
 func countCubes(distance uint16) int {
-	// TODO(patrick): Update with real values once there is a physical setup to test with.
-	if distance >= 3000 {
+	// Ed Jordan's measurements:
+	//   Empty    125
+	//   1 Short  98
+	//   1 Tall   92
+	//   2 Short  68
+	//   2 Tall   58
+	//   3 Short  43
+	//   3 Tall   26
+	if distance <= 15 {
+		// The sensor is probably disconnected or obstructed; this is too tall to be a cube stack.
+		return 0
+	}
+	if distance <= 50 {
 		return 3
 	}
-	if distance >= 2000 {
+	if distance <= 75 {
 		return 2
 	}
-	if distance >= 1000 {
+	if distance <= 105 {
 		return 1
 	}
 	return 0

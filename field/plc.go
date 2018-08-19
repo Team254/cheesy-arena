@@ -90,10 +90,17 @@ type coil int
 
 const (
 	heartbeat coil = iota
+	matchReset
 	stackLightGreen
 	stackLightOrange
 	stackLightRed
 	stackLightBlue
+	red1EthernetDisable
+	red2EthernetDisable
+	red3EthernetDisable
+	blue1EthernetDisable
+	blue2EthernetDisable
+	blue3EthernetDisable
 	coilCount
 )
 

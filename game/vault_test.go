@@ -9,6 +9,13 @@ import (
 	"time"
 )
 
+const (
+	zeroCubeDistance  = 125
+	oneCubeDistance   = 98
+	twoCubeDistance   = 58
+	threeCubeDistance = 43
+)
+
 func TestVaultNumCubes(t *testing.T) {
 	// TODO(patrick): Update with real values once there is a physical setup to test with.
 	vault := Vault{}
@@ -16,27 +23,27 @@ func TestVaultNumCubes(t *testing.T) {
 	assert.Equal(t, 0, vault.LevitateCubes)
 	assert.Equal(t, 0, vault.BoostCubes)
 
-	vault.UpdateCubes(1000, 0, 0)
+	vault.UpdateCubes(oneCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	assert.Equal(t, 1, vault.ForceCubes)
 	assert.Equal(t, 0, vault.LevitateCubes)
 	assert.Equal(t, 0, vault.BoostCubes)
 
-	vault.UpdateCubes(0, 1000, 1000)
+	vault.UpdateCubes(zeroCubeDistance, oneCubeDistance, oneCubeDistance)
 	assert.Equal(t, 0, vault.ForceCubes)
 	assert.Equal(t, 1, vault.LevitateCubes)
 	assert.Equal(t, 1, vault.BoostCubes)
 
-	vault.UpdateCubes(0, 0, 2000)
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, twoCubeDistance)
 	assert.Equal(t, 0, vault.ForceCubes)
 	assert.Equal(t, 0, vault.LevitateCubes)
 	assert.Equal(t, 2, vault.BoostCubes)
 
-	vault.UpdateCubes(2000, 2000, 3000)
+	vault.UpdateCubes(twoCubeDistance, twoCubeDistance, threeCubeDistance)
 	assert.Equal(t, 2, vault.ForceCubes)
 	assert.Equal(t, 2, vault.LevitateCubes)
 	assert.Equal(t, 3, vault.BoostCubes)
 
-	vault.UpdateCubes(3000, 3000, 3000)
+	vault.UpdateCubes(threeCubeDistance, threeCubeDistance, threeCubeDistance)
 	assert.Equal(t, 3, vault.ForceCubes)
 	assert.Equal(t, 3, vault.LevitateCubes)
 	assert.Equal(t, 3, vault.BoostCubes)
@@ -45,27 +52,27 @@ func TestVaultNumCubes(t *testing.T) {
 func TestVaultLevitate(t *testing.T) {
 	vault := Vault{}
 
-	vault.UpdateCubes(0, 0, 0)
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(false, true, false, time.Now())
 	assert.False(t, vault.LevitatePlayed)
 
-	vault.UpdateCubes(0, 1000, 0)
+	vault.UpdateCubes(zeroCubeDistance, oneCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(false, true, false, time.Now())
 	assert.False(t, vault.LevitatePlayed)
 
-	vault.UpdateCubes(0, 2000, 0)
+	vault.UpdateCubes(zeroCubeDistance, twoCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(false, true, false, time.Now())
 	assert.False(t, vault.LevitatePlayed)
 
-	vault.UpdateCubes(0, 3000, 0)
+	vault.UpdateCubes(zeroCubeDistance, threeCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(true, false, true, time.Now())
 	assert.False(t, vault.LevitatePlayed)
 
-	vault.UpdateCubes(0, 3000, 0)
+	vault.UpdateCubes(zeroCubeDistance, threeCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(false, true, false, time.Now())
 	assert.True(t, vault.LevitatePlayed)
 
-	vault.UpdateCubes(0, 3000, 0)
+	vault.UpdateCubes(zeroCubeDistance, threeCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(false, false, false, time.Now())
 	assert.True(t, vault.LevitatePlayed)
 }
@@ -74,16 +81,16 @@ func TestVaultForce(t *testing.T) {
 	vault := Vault{Alliance: BlueAlliance}
 	ResetPowerUps()
 
-	vault.UpdateCubes(0, 0, 0)
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(true, false, false, time.Now())
 	assert.Nil(t, vault.ForcePowerUp)
 
-	vault.UpdateCubes(3000, 0, 0)
+	vault.UpdateCubes(threeCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(false, true, true, time.Now())
 	assert.Nil(t, vault.ForcePowerUp)
 
 	// Activation with one cube.
-	vault.UpdateCubes(1000, 0, 0)
+	vault.UpdateCubes(oneCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(true, false, false, time.Now())
 	if assert.NotNil(t, vault.ForcePowerUp) {
 		assert.Equal(t, BlueAlliance, vault.ForcePowerUp.Alliance)
@@ -94,7 +101,7 @@ func TestVaultForce(t *testing.T) {
 	// Activation with two cubes.
 	vault = Vault{Alliance: RedAlliance}
 	ResetPowerUps()
-	vault.UpdateCubes(2000, 0, 0)
+	vault.UpdateCubes(twoCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(true, false, false, time.Now())
 	if assert.NotNil(t, vault.ForcePowerUp) {
 		assert.Equal(t, RedAlliance, vault.ForcePowerUp.Alliance)
@@ -105,7 +112,7 @@ func TestVaultForce(t *testing.T) {
 	// Activation with three cubes.
 	vault = Vault{Alliance: BlueAlliance}
 	ResetPowerUps()
-	vault.UpdateCubes(3000, 0, 0)
+	vault.UpdateCubes(threeCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(true, false, false, time.Now())
 	assert.NotNil(t, vault.ForcePowerUp)
 	if assert.NotNil(t, vault.ForcePowerUp) {
@@ -114,7 +121,7 @@ func TestVaultForce(t *testing.T) {
 		assert.Equal(t, 3, vault.ForcePowerUp.Level)
 	}
 
-	vault.UpdateCubes(3000, 0, 0)
+	vault.UpdateCubes(threeCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(false, false, false, time.Now())
 	assert.NotNil(t, vault.ForcePowerUp)
 }
@@ -123,16 +130,16 @@ func TestVaultBoost(t *testing.T) {
 	vault := Vault{Alliance: BlueAlliance}
 	ResetPowerUps()
 
-	vault.UpdateCubes(0, 0, 0)
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(false, false, true, time.Now())
 	assert.Nil(t, vault.BoostPowerUp)
 
-	vault.UpdateCubes(0, 0, 3000)
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, threeCubeDistance)
 	vault.UpdateButtons(true, true, false, time.Now())
 	assert.Nil(t, vault.BoostPowerUp)
 
 	// Activation with one cube.
-	vault.UpdateCubes(0, 0, 1000)
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, oneCubeDistance)
 	vault.UpdateButtons(false, false, true, time.Now())
 	if assert.NotNil(t, vault.BoostPowerUp) {
 		assert.Equal(t, BlueAlliance, vault.BoostPowerUp.Alliance)
@@ -143,7 +150,7 @@ func TestVaultBoost(t *testing.T) {
 	// Activation with two cubes.
 	vault = Vault{Alliance: RedAlliance}
 	ResetPowerUps()
-	vault.UpdateCubes(0, 0, 2000)
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, twoCubeDistance)
 	vault.UpdateButtons(false, false, true, time.Now())
 	if assert.NotNil(t, vault.BoostPowerUp) {
 		assert.Equal(t, RedAlliance, vault.BoostPowerUp.Alliance)
@@ -154,7 +161,7 @@ func TestVaultBoost(t *testing.T) {
 	// Activation with three cubes.
 	vault = Vault{Alliance: BlueAlliance}
 	ResetPowerUps()
-	vault.UpdateCubes(0, 0, 3000)
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, threeCubeDistance)
 	vault.UpdateButtons(false, false, true, time.Now())
 	assert.NotNil(t, vault.BoostPowerUp)
 	if assert.NotNil(t, vault.BoostPowerUp) {
@@ -163,16 +170,16 @@ func TestVaultBoost(t *testing.T) {
 		assert.Equal(t, 3, vault.BoostPowerUp.Level)
 	}
 
-	vault.UpdateCubes(0, 0, 3000)
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, threeCubeDistance)
 	vault.UpdateButtons(false, false, false, time.Now())
 	assert.NotNil(t, vault.BoostPowerUp)
 }
 
 func TestVaultMultipleActivations(t *testing.T) {
 	redVault := Vault{Alliance: RedAlliance}
-	redVault.UpdateCubes(1000, 3000, 1000)
+	redVault.UpdateCubes(oneCubeDistance, threeCubeDistance, oneCubeDistance)
 	blueVault := Vault{Alliance: BlueAlliance}
-	blueVault.UpdateCubes(1000, 3000, 1000)
+	blueVault.UpdateCubes(oneCubeDistance, threeCubeDistance, oneCubeDistance)
 	ResetPowerUps()
 
 	redVault.UpdateButtons(true, false, false, timeAfterStart(0))
