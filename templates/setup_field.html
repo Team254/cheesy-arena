@@ -44,10 +44,10 @@
             <tr>
               <th colspan="2">Inputs</th>
             </tr>
-            {{range $i, $value := .Inputs}}
+            {{range $i, $name := .InputNames}}
             <tr>
-              <td>{{index $.InputNames $i}}</td>
-              <td>{{$value}}</td>
+              <td>{{$name}}</td>
+              <td id="input{{$i}}"></td>
             </tr>
             {{end}}
           </table>
@@ -57,10 +57,10 @@
             <tr>
               <th colspan="2">Registers</th>
             </tr>
-            {{range $i, $value := .Registers}}
+            {{range $i, $name := .RegisterNames}}
             <tr>
-              <td>{{index $.RegisterNames $i}}</td>
-              <td>{{$value}}</td>
+              <td>{{$name}}</td>
+              <td id="register{{$i}}"></td>
             </tr>
             {{end}}
           </table>
@@ -70,10 +70,10 @@
             <tr>
               <th colspan="2">Coils</th>
             </tr>
-            {{range $i, $value := .Coils}}
+            {{range $i, $name := .CoilNames}}
             <tr>
-              <td>{{index $.CoilNames $i}}</td>
-              <td>{{$value}}</td>
+              <td>{{$name}}</td>
+              <td id="coil{{$i}}"></td>
             </tr>
             {{end}}
           </table>
@@ -101,4 +101,5 @@
 </div>
 {{end}}
 {{define "script"}}
+<script src="/static/js/setup_field.js"></script>
 {{end}}

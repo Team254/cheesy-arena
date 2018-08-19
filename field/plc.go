@@ -13,14 +13,18 @@ import (
 )
 
 type Plc struct {
-	IsHealthy    bool
-	address      string
-	handler      *modbus.TCPClientHandler
-	client       modbus.Client
-	Inputs       [inputCount]bool
-	Registers    [registerCount]uint16
-	Coils        [coilCount]bool
-	cycleCounter int
+	IsHealthy        bool
+	address          string
+	handler          *modbus.TCPClientHandler
+	client           modbus.Client
+	Inputs           [inputCount]bool
+	Registers        [registerCount]uint16
+	Coils            [coilCount]bool
+	oldInputs        [inputCount]bool
+	oldRegisters     [registerCount]uint16
+	oldCoils         [coilCount]bool
+	IoChangeNotifier *Notifier
+	cycleCounter     int
 }
 
 const (
@@ -100,6 +104,8 @@ func (plc *Plc) SetAddress(address string) {
 
 // Loops indefinitely to read inputs from and write outputs to PLC.
 func (plc *Plc) Run() {
+	plc.IoChangeNotifier = NewNotifier()
+
 	for {
 		if plc.handler == nil {
 			if plc.address == "" {
@@ -129,6 +135,14 @@ func (plc *Plc) Run() {
 		plc.cycleCounter++
 		if plc.cycleCounter == cycleCounterMax {
 			plc.cycleCounter = 0
+		}
+
+		// Detect any changes in input or output and notify listeners if so.
+		if plc.Inputs != plc.oldInputs || plc.Registers != plc.oldRegisters || plc.Coils != plc.oldCoils {
+			plc.IoChangeNotifier.Notify(nil)
+			plc.oldInputs = plc.Inputs
+			plc.oldRegisters = plc.Registers
+			plc.oldCoils = plc.Coils
 		}
 
 		time.Sleep(time.Until(startTime.Add(time.Millisecond * plcLoopPeriodMs)))

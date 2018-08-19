@@ -9,6 +9,7 @@ import (
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -28,17 +29,13 @@ func (web *Web) fieldGetHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 		AllianceStationDisplays map[string]string
-		Inputs                  []bool
 		InputNames              []string
-		Registers               []uint16
 		RegisterNames           []string
-		Coils                   []bool
 		CoilNames               []string
 		CurrentLedMode          led.Mode
 		LedModeNames            map[led.Mode]string
-	}{web.arena.EventSettings, web.arena.AllianceStationDisplays, plc.Inputs[:], plc.GetInputNames(), plc.Registers[:],
-		plc.GetRegisterNames(), plc.Coils[:], plc.GetCoilNames(), web.arena.ScaleLeds.GetCurrentMode(),
-		led.ModeNames}
+	}{web.arena.EventSettings, web.arena.AllianceStationDisplays, plc.GetInputNames(), plc.GetRegisterNames(),
+		plc.GetCoilNames(), web.arena.ScaleLeds.GetCurrentMode(), led.ModeNames}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -87,4 +84,55 @@ func (web *Web) fieldTestPostHandler(w http.ResponseWriter, r *http.Request) {
 	web.arena.BlueSwitchLeds.SetMode(ledMode, ledMode)
 
 	http.Redirect(w, r, "/setup/field", 303)
+}
+
+// The websocket endpoint for sending realtime updates to the field setup page.
+func (web *Web) fieldWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	websocket, err := NewWebsocket(w, r)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	defer websocket.Close()
+
+	plcIoChangeListener := web.arena.Plc.IoChangeNotifier.Listen()
+	defer close(plcIoChangeListener)
+
+	// Send the PLC status immediately upon connection.
+	data := struct {
+		Inputs    []bool
+		Registers []uint16
+		Coils     []bool
+	}{web.arena.Plc.Inputs[:], web.arena.Plc.Registers[:], web.arena.Plc.Coils[:]}
+	err = websocket.Write("plcIoChange", data)
+	if err != nil {
+		log.Printf("Websocket error: %s", err)
+		return
+	}
+
+	for {
+		var messageType string
+		var message interface{}
+		select {
+		case _, ok := <-plcIoChangeListener:
+			if !ok {
+				return
+			}
+			messageType = "plcIoChange"
+			message = struct {
+				Inputs    []bool
+				Registers []uint16
+				Coils     []bool
+			}{web.arena.Plc.Inputs[:], web.arena.Plc.Registers[:], web.arena.Plc.Coils[:]}
+		}
+		err = websocket.Write(messageType, message)
+		if err != nil {
+			// The client has probably closed the connection; nothing to do here.
+			return
+		}
+	}
 }
