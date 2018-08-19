@@ -31,7 +31,7 @@ const (
 	modbusPort         = 502
 	plcLoopPeriodMs    = 100
 	plcRetryIntevalSec = 3
-	cycleCounterMax    = 96
+	cycleCounterMax    = 100
 )
 
 // Discrete inputs
@@ -199,6 +199,13 @@ func (plc *Plc) GetVaults() (uint16, uint16, uint16, uint16, uint16, uint16) {
 func (plc *Plc) GetPowerUpButtons() (bool, bool, bool, bool, bool, bool) {
 	return plc.Inputs[redForceActivate], plc.Inputs[redLevitateActivate], plc.Inputs[redBoostActivate],
 		plc.Inputs[blueForceActivate], plc.Inputs[blueLevitateActivate], plc.Inputs[blueBoostActivate]
+}
+
+// Set the on/off state of the stack lights on the scoring table.
+func (plc *Plc) SetStackLights(red, blue, green bool) {
+	plc.Coils[stackLightRed] = red
+	plc.Coils[stackLightBlue] = blue
+	plc.Coils[stackLightGreen] = green
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {

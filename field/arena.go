@@ -775,22 +775,27 @@ func (arena *Arena) handlePlcOutput() {
 func (arena *Arena) handleLeds() {
 	switch arena.MatchState {
 	case PreMatch:
+		// Set the stack light state -- blinking green if ready, or solid alliance color(s) if not.
+		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
+		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
+		greenStackLight := redAllianceReady && blueAllianceReady && arena.Plc.GetCycleState(2, 0, 25)
+		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, greenStackLight)
+
 		// Turn off each alliance switch if all teams become ready.
-		if arena.checkAllianceStationsReady("R1", "R2", "R3") == nil && !arena.lastRedAllianceReady {
+		if redAllianceReady && !arena.lastRedAllianceReady {
 			arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
-			arena.lastRedAllianceReady = true
-		} else if arena.checkAllianceStationsReady("R1", "R2", "R3") != nil && arena.lastRedAllianceReady {
+		} else if !redAllianceReady && arena.lastRedAllianceReady {
 			arena.RedSwitchLeds.SetMode(led.RedMode, led.RedMode)
-			arena.lastRedAllianceReady = false
 		}
-		if arena.checkAllianceStationsReady("B1", "B2", "B3") == nil && !arena.lastBlueAllianceReady {
+		arena.lastRedAllianceReady = redAllianceReady
+		if blueAllianceReady && !arena.lastBlueAllianceReady {
 			arena.BlueSwitchLeds.SetMode(led.OffMode, led.OffMode)
-			arena.lastBlueAllianceReady = true
-		} else if arena.checkAllianceStationsReady("B1", "B2", "B3") != nil && arena.lastBlueAllianceReady {
+		} else if !blueAllianceReady && arena.lastBlueAllianceReady {
 			arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
-			arena.lastBlueAllianceReady = false
 		}
+		arena.lastBlueAllianceReady = blueAllianceReady
 	case WarmupPeriod:
+		arena.Plc.SetStackLights(false, false, true)
 		arena.ScaleLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
 		arena.RedSwitchLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
 		arena.BlueSwitchLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
@@ -807,6 +812,7 @@ func (arena *Arena) handleLeds() {
 		arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
 		arena.BlueSwitchLeds.SetMode(led.OffMode, led.OffMode)
 	case PostMatch:
+		arena.Plc.SetStackLights(false, false, false)
 		mode := led.FadeSingleMode
 		if arena.FieldReset {
 			mode = led.GreenMode
