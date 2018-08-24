@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"golang.org/x/crypto/ssh"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -19,7 +18,6 @@ import (
 const accessPointSshPort = 22
 const accessPointConnectTimeoutSec = 1
 const accessPointCommandTimeoutSec = 3
-const accessPointRetryCount = 2
 
 type AccessPoint struct {
 	address      string
@@ -74,44 +72,28 @@ func (ap *AccessPoint) runCommand(command string) error {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         accessPointConnectTimeoutSec * time.Second}
 
-	doSsh := func() error {
-		conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ap.address, ap.port), config)
-		if err != nil {
-			return err
-		}
-		session, err := conn.NewSession()
-		if err != nil {
-			return err
-		}
-		defer session.Close()
-		defer conn.Close()
-		session.Stdout = os.Stdout
-
-		// Run the command with a timeout. An error will be returned if the exit status is non-zero.
-		commandChan := make(chan error, 1)
-		go func() {
-			commandChan <- session.Run(command)
-		}()
-		select {
-		case err = <-commandChan:
-			return err
-		case <-time.After(accessPointCommandTimeoutSec * time.Second):
-			return fmt.Errorf("WiFi SSH command timed out after %d seconds", accessPointCommandTimeoutSec)
-		}
+	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ap.address, ap.port), config)
+	if err != nil {
+		return err
 	}
+	session, err := conn.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+	defer conn.Close()
+	session.Stdout = os.Stdout
 
-	// Retry the SSH connection if it fails, sleeping between attempts.
-	attempts := accessPointRetryCount + 1
-	for {
-		err := doSsh()
-		if err == nil {
-			return nil
-		}
-		attempts--
-		if attempts <= 0 {
-			return err
-		}
-		log.Printf("WiFi configuration failed; retrying %d more times: %v", attempts, err)
+	// Run the command with a timeout. An error will be returned if the exit status is non-zero.
+	commandChan := make(chan error, 1)
+	go func() {
+		commandChan <- session.Run(command)
+	}()
+	select {
+	case err = <-commandChan:
+		return err
+	case <-time.After(accessPointCommandTimeoutSec * time.Second):
+		return fmt.Errorf("WiFi SSH command timed out after %d seconds", accessPointCommandTimeoutSec)
 	}
 }
 

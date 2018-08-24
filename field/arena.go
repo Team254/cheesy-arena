@@ -178,7 +178,7 @@ func (arena *Arena) LoadSettings() error {
 
 	if arena.EventSettings.NetworkSecurityEnabled {
 		if err = arena.accessPoint.ConfigureAdminWifi(); err != nil {
-			return err
+			log.Printf("Failed to configure admin WiFi: %s", err.Error())
 		}
 	}
 
@@ -531,6 +531,7 @@ func (arena *Arena) Update() {
 	}
 
 	// Handle field sensors/lights/motors.
+	//arena.Plc.SimulateInput(matchTimeSec)
 	arena.handlePlcInput()
 	arena.handlePlcOutput()
 	arena.handleLeds()
