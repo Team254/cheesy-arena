@@ -733,9 +733,9 @@ func (arena *Arena) handlePlcInput() {
 
 	// Handle scale and switch ownership.
 	scale, redSwitch, blueSwitch := arena.Plc.GetScaleAndSwitches()
-	arena.Scale.UpdateState(scale, currentTime)
-	arena.RedSwitch.UpdateState(redSwitch, currentTime)
-	arena.BlueSwitch.UpdateState(blueSwitch, currentTime)
+	ownershipChanged := arena.Scale.UpdateState(scale, currentTime)
+	ownershipChanged = arena.RedSwitch.UpdateState(redSwitch, currentTime) || ownershipChanged
+	ownershipChanged = arena.BlueSwitch.UpdateState(blueSwitch, currentTime) || ownershipChanged
 	if arena.MatchState == AutoPeriod {
 		redScore.AutoOwnershipPoints = 2 * int(arena.RedSwitch.GetRedSeconds(matchStartTime, currentTime)+
 			arena.Scale.GetRedSeconds(matchStartTime, currentTime))
@@ -773,7 +773,7 @@ func (arena *Arena) handlePlcInput() {
 		arena.PlaySoundNotifier.Notify("match-" + newBluePowerUp)
 	}
 
-	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
+	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) || ownershipChanged {
 		arena.RealtimeScoreNotifier.Notify(nil)
 	}
 }
@@ -789,8 +789,9 @@ func (arena *Arena) handleLeds() {
 		// Set the stack light state -- blinking green if ready, or solid alliance color(s) if not.
 		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
-		greenStackLight := redAllianceReady && blueAllianceReady && arena.Plc.GetCycleState(2, 0, 25)
+		greenStackLight := redAllianceReady && blueAllianceReady && arena.Plc.GetCycleState(2, 0, 2)
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, greenStackLight)
+		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady)
 
 		// Turn off each alliance switch if all teams become ready.
 		if redAllianceReady && !arena.lastRedAllianceReady {

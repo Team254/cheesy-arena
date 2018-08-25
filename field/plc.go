@@ -95,6 +95,7 @@ const (
 	stackLightOrange
 	stackLightRed
 	stackLightBlue
+	stackLightBuzzer
 	red1EthernetDisable
 	red2EthernetDisable
 	red3EthernetDisable
@@ -206,6 +207,11 @@ func (plc *Plc) SetStackLights(red, blue, green bool) {
 	plc.Coils[stackLightRed] = red
 	plc.Coils[stackLightBlue] = blue
 	plc.Coils[stackLightGreen] = green
+}
+
+// Set the on/off state of the stack lights on the scoring table.
+func (plc *Plc) SetStackBuzzer(state bool) {
+	plc.Coils[stackLightBuzzer] = state
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {

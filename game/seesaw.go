@@ -30,8 +30,9 @@ type Ownership struct {
 	endTime   *time.Time
 }
 
-// Updates the internal timing state of the scale or switch given the current state of the sensors.
-func (seesaw *Seesaw) UpdateState(state [2]bool, currentTime time.Time) {
+// Updates the internal timing state of the scale or switch given the current state of the sensors. Returns true if
+// ownership has changed since the last cycle.
+func (seesaw *Seesaw) UpdateState(state [2]bool, currentTime time.Time) bool {
 	ownedBy := NeitherAlliance
 
 	// Check if there is an active force power up for this seesaw.
@@ -61,7 +62,9 @@ func (seesaw *Seesaw) UpdateState(state [2]bool, currentTime time.Time) {
 			newOwnership := &Ownership{seesaw: seesaw, ownedBy: ownedBy, startTime: currentTime}
 			seesaw.ownerships = append(seesaw.ownerships, newOwnership)
 		}
+		return true
 	}
+	return false
 }
 
 func (seesaw *Seesaw) GetOwnedBy() Alliance {
