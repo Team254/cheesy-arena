@@ -15,10 +15,8 @@ import (
 )
 
 // Global vars to hold schedules that are in the process of being generated.
-var cachedMatchType string
-var cachedScheduleBlocks []tournament.ScheduleBlock
-var cachedMatches []model.Match
-var cachedTeamFirstMatches map[int]string
+var cachedMatches = make(map[string][]model.Match)
+var cachedTeamFirstMatches = make(map[string]map[int]string)
 
 // Shows the schedule editing page.
 func (web *Web) scheduleGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,22 +24,41 @@ func (web *Web) scheduleGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(cachedScheduleBlocks) == 0 {
-		cachedMatchType = "practice"
+	matchType := getMatchType(r)
+	if matchType == "" {
+		http.Redirect(w, r, "/setup/schedule?matchType=practice", 302)
 	}
+
+	if matchType != "practice" && matchType != "qualification" {
+		handleWebErr(w, fmt.Errorf("Invalid match type '%s'.", matchType))
+		return
+	}
+
 	web.renderSchedule(w, r, "")
 }
 
-// Generates the schedule and presents it for review without saving it to the database.
+// Generates the schedule, presents it for review without saving it, and saves the schedule blocks to the database.
 func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	r.ParseForm()
-	cachedMatchType = r.PostFormValue("matchType")
+	matchType := getMatchType(r)
 	scheduleBlocks, err := getScheduleBlocks(r)
-	cachedScheduleBlocks = scheduleBlocks // Show the same blocks even if there is an error.
+	// Save blocks even if there is an error, so that any good ones are not discarded.
+	deleteBlocksErr := web.arena.Database.DeleteScheduleBlocksByMatchType(matchType)
+	if deleteBlocksErr != nil {
+		handleWebErr(w, err)
+		return
+	}
+	for _, block := range scheduleBlocks {
+		block.MatchType = matchType
+		createBlockErr := web.arena.Database.CreateScheduleBlock(&block)
+		if createBlockErr != nil {
+			handleWebErr(w, err)
+			return
+		}
+	}
 	if err != nil {
 		web.renderSchedule(w, r, "Incomplete or invalid schedule block parameters specified.")
 		return
@@ -68,7 +85,7 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 		web.renderSchedule(w, r, fmt.Sprintf("Error generating schedule: %s.", err.Error()))
 		return
 	}
-	cachedMatches = matches
+	cachedMatches[matchType] = matches
 
 	// Determine each team's first match.
 	teamFirstMatches := make(map[int]string)
@@ -86,9 +103,9 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 		checkTeam(match.Blue2)
 		checkTeam(match.Blue3)
 	}
-	cachedTeamFirstMatches = teamFirstMatches
+	cachedTeamFirstMatches[matchType] = teamFirstMatches
 
-	http.Redirect(w, r, "/setup/schedule", 303)
+	http.Redirect(w, r, "/setup/schedule?matchType="+matchType, 303)
 }
 
 // Publishes the schedule in the database to TBA
@@ -110,7 +127,7 @@ func (web *Web) scheduleRepublishPostHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	http.Redirect(w, r, "/setup/schedule", 303)
+	http.Redirect(w, r, "/setup/schedule"+getMatchType(r), 303)
 }
 
 // Saves the generated schedule to the database.
@@ -119,18 +136,19 @@ func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	existingMatches, err := web.arena.Database.GetMatchesByType(cachedMatchType)
+	matchType := getMatchType(r)
+	existingMatches, err := web.arena.Database.GetMatchesByType(matchType)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 	if len(existingMatches) > 0 {
 		web.renderSchedule(w, r, fmt.Sprintf("Can't save schedule because a schedule of %d %s matches already "+
-			"exists. Clear it first on the Settings page.", len(existingMatches), cachedMatchType))
+			"exists. Clear it first on the Settings page.", len(existingMatches), matchType))
 		return
 	}
 
-	for _, match := range cachedMatches {
+	for _, match := range cachedMatches[matchType] {
 		err = web.arena.Database.CreateMatch(&match)
 		if err != nil {
 			handleWebErr(w, err)
@@ -145,7 +163,7 @@ func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if web.arena.EventSettings.TbaPublishingEnabled && cachedMatchType != "practice" {
+	if web.arena.EventSettings.TbaPublishingEnabled && matchType != "practice" {
 		// Publish schedule to The Blue Alliance.
 		err = web.arena.TbaClient.DeletePublishedMatches()
 		if err != nil {
@@ -159,10 +177,17 @@ func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	http.Redirect(w, r, "/setup/schedule", 303)
+	http.Redirect(w, r, "/setup/schedule?matchType="+matchType, 303)
 }
 
 func (web *Web) renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string) {
+	matchType := getMatchType(r)
+	scheduleBlocks, err := web.arena.Database.GetScheduleBlocksByMatchType(matchType)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
 	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
@@ -176,13 +201,13 @@ func (web *Web) renderSchedule(w http.ResponseWriter, r *http.Request, errorMess
 	data := struct {
 		*model.EventSettings
 		MatchType        string
-		ScheduleBlocks   []tournament.ScheduleBlock
+		ScheduleBlocks   []model.ScheduleBlock
 		NumTeams         int
 		Matches          []model.Match
 		TeamFirstMatches map[int]string
 		ErrorMessage     string
-	}{web.arena.EventSettings, cachedMatchType, cachedScheduleBlocks, len(teams), cachedMatches, cachedTeamFirstMatches,
-		errorMessage}
+	}{web.arena.EventSettings, matchType, scheduleBlocks, len(teams), cachedMatches[matchType],
+		cachedTeamFirstMatches[matchType], errorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -191,13 +216,13 @@ func (web *Web) renderSchedule(w http.ResponseWriter, r *http.Request, errorMess
 }
 
 // Converts the post form variables into a slice of schedule blocks.
-func getScheduleBlocks(r *http.Request) ([]tournament.ScheduleBlock, error) {
+func getScheduleBlocks(r *http.Request) ([]model.ScheduleBlock, error) {
 	numScheduleBlocks, err := strconv.Atoi(r.PostFormValue("numScheduleBlocks"))
 	if err != nil {
-		return []tournament.ScheduleBlock{}, err
+		return []model.ScheduleBlock{}, err
 	}
 	var returnErr error
-	scheduleBlocks := make([]tournament.ScheduleBlock, numScheduleBlocks)
+	scheduleBlocks := make([]model.ScheduleBlock, numScheduleBlocks)
 	location, _ := time.LoadLocation("Local")
 	for i := 0; i < numScheduleBlocks; i++ {
 		scheduleBlocks[i].StartTime, err = time.ParseInLocation("2006-01-02 03:04:05 PM",
@@ -215,4 +240,12 @@ func getScheduleBlocks(r *http.Request) ([]tournament.ScheduleBlock, error) {
 		}
 	}
 	return scheduleBlocks, returnErr
+}
+
+func getMatchType(r *http.Request) string {
+	if matchType, ok := r.URL.Query()["matchType"]; ok {
+		return matchType[0]
+	}
+	r.ParseForm()
+	return r.PostFormValue("matchType")
 }

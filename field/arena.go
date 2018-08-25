@@ -531,7 +531,6 @@ func (arena *Arena) Update() {
 	}
 
 	// Handle field sensors/lights/motors.
-	//arena.Plc.SimulateInput(matchTimeSec)
 	arena.handlePlcInput()
 	arena.handlePlcOutput()
 	arena.handleLeds()

@@ -69,7 +69,7 @@ func (database *Database) TruncateMatches() error {
 
 func (database *Database) GetMatchByName(matchType string, displayName string) (*Match, error) {
 	var matches []Match
-	err := database.teamMap.Select(&matches, "SELECT * FROM matches WHERE type = ? AND displayname = ?",
+	err := database.matchMap.Select(&matches, "SELECT * FROM matches WHERE type = ? AND displayname = ?",
 		matchType, displayName)
 	if err != nil {
 		return nil, err
@@ -82,14 +82,14 @@ func (database *Database) GetMatchByName(matchType string, displayName string) (
 
 func (database *Database) GetMatchesByElimRoundGroup(round int, group int) ([]Match, error) {
 	var matches []Match
-	err := database.teamMap.Select(&matches, "SELECT * FROM matches WHERE type = 'elimination' AND "+
+	err := database.matchMap.Select(&matches, "SELECT * FROM matches WHERE type = 'elimination' AND "+
 		"elimround = ? AND elimgroup = ? ORDER BY eliminstance", round, group)
 	return matches, err
 }
 
 func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
 	var matches []Match
-	err := database.teamMap.Select(&matches,
+	err := database.matchMap.Select(&matches,
 		"SELECT * FROM matches WHERE type = ? ORDER BY elimround desc, eliminstance, elimgroup, id", matchType)
 	return matches, err
 }
