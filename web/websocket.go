@@ -7,6 +7,7 @@ package web
 
 import (
 	"github.com/gorilla/websocket"
+	"io"
 	"net/http"
 	"sync"
 )
@@ -33,30 +34,35 @@ func NewWebsocket(w http.ResponseWriter, r *http.Request) (*Websocket, error) {
 	return &Websocket{conn, new(sync.Mutex)}, nil
 }
 
-func (websocket *Websocket) Close() {
-	websocket.conn.Close()
+func (ws *Websocket) Close() {
+	ws.conn.Close()
 }
 
-func (websocket *Websocket) Read() (string, interface{}, error) {
+func (ws *Websocket) Read() (string, interface{}, error) {
 	var message WebsocketMessage
-	err := websocket.conn.ReadJSON(&message)
+	err := ws.conn.ReadJSON(&message)
+	if websocket.IsCloseError(err, websocket.CloseNoStatusReceived) {
+		// This error indicates that the browser terminated the connection normally; rewwrite it so that clients don't
+		// log it.
+		return "", nil, io.EOF
+	}
 	return message.Type, message.Data, err
 }
 
-func (websocket *Websocket) Write(messageType string, data interface{}) error {
-	websocket.writeMutex.Lock()
-	defer websocket.writeMutex.Unlock()
-	return websocket.conn.WriteJSON(WebsocketMessage{messageType, data})
+func (ws *Websocket) Write(messageType string, data interface{}) error {
+	ws.writeMutex.Lock()
+	defer ws.writeMutex.Unlock()
+	return ws.conn.WriteJSON(WebsocketMessage{messageType, data})
 }
 
-func (websocket *Websocket) WriteError(errorMessage string) error {
-	websocket.writeMutex.Lock()
-	defer websocket.writeMutex.Unlock()
-	return websocket.conn.WriteJSON(WebsocketMessage{"error", errorMessage})
+func (ws *Websocket) WriteError(errorMessage string) error {
+	ws.writeMutex.Lock()
+	defer ws.writeMutex.Unlock()
+	return ws.conn.WriteJSON(WebsocketMessage{"error", errorMessage})
 }
 
-func (websocket *Websocket) ShowDialog(message string) error {
-	websocket.writeMutex.Lock()
-	defer websocket.writeMutex.Unlock()
-	return websocket.conn.WriteJSON(WebsocketMessage{"dialog", message})
+func (ws *Websocket) ShowDialog(message string) error {
+	ws.writeMutex.Lock()
+	defer ws.writeMutex.Unlock()
+	return ws.conn.WriteJSON(WebsocketMessage{"dialog", message})
 }
