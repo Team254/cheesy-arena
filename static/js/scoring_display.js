@@ -12,6 +12,7 @@ var handleScore = function(data) {
   var score = data.Score.CurrentScore;
   $("#autoRuns").text(score.AutoRuns);
   $("#climbs").text(score.Climbs);
+  $("#parks").text(score.Parks);
 
   // Update component visibility.
   if (!data.AutoCommitted) {
@@ -35,27 +36,7 @@ var handleScore = function(data) {
 
 // Handles a keyboard event and sends the appropriate websocket message.
 var handleKeyPress = function(event) {
-  var key = String.fromCharCode(event.keyCode);
-  switch (key) {
-    case "r":
-      websocket.send("autoRun");
-      break;
-    case "R":
-      websocket.send("undoAutoRun");
-      break;
-    case "c":
-      websocket.send("climb");
-      break;
-    case "C":
-      websocket.send("undoClimb");
-      break;
-    case "\r":
-      websocket.send("commit");
-      break;
-    case "a":
-      websocket.send("uncommitAuto");
-      break;
-  }
+  websocket.send(String.fromCharCode(event.keyCode));
 };
 
 // Handles a websocket message to update the match status.

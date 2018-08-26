@@ -47,16 +47,16 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "matchTime")
 
 	// Send a match worth of scoring commands in.
-	redWs.Write("autoRun", nil)
-	blueWs.Write("autoRun", nil)
-	blueWs.Write("autoRun", nil)
-	blueWs.Write("autoRun", nil)
-	blueWs.Write("autoRun", nil)
-	blueWs.Write("undoAutoRun", nil)
-	redWs.Write("commit", nil)
-	blueWs.Write("commit", nil)
-	redWs.Write("uncommitAuto", nil)
-	redWs.Write("commit", nil)
+	redWs.Write("r", nil)
+	blueWs.Write("r", nil)
+	blueWs.Write("r", nil)
+	blueWs.Write("r", nil)
+	blueWs.Write("r", nil)
+	blueWs.Write("R", nil)
+	redWs.Write("\r", nil)
+	blueWs.Write("\r", nil)
+	redWs.Write("a", nil)
+	redWs.Write("\r", nil)
 	for i := 0; i < 4; i++ {
 		readWebsocketType(t, redWs, "score")
 	}
@@ -67,7 +67,7 @@ func TestScoringDisplayWebsocket(t *testing.T) {
 	assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.AutoRuns)
 	assert.Equal(t, 2, web.arena.BlueRealtimeScore.CurrentScore.AutoRuns)
 
-	redWs.Write("autoRun", nil)
+	redWs.Write("r", nil)
 	for i := 0; i < 1; i++ {
 		readWebsocketType(t, redWs, "score")
 	}

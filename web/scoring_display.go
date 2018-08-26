@@ -145,35 +145,47 @@ func (web *Web) scoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 		}
 
 		switch messageType {
-		case "autoRun":
+		case "r":
 			if !autoCommitted {
 				if (*score).CurrentScore.AutoRuns < 3 {
 					(*score).CurrentScore.AutoRuns++
 				}
 			}
-		case "undoAutoRun":
+		case "R":
 			if !autoCommitted {
 				if (*score).CurrentScore.AutoRuns > 0 {
 					(*score).CurrentScore.AutoRuns--
 				}
 			}
-		case "climb":
+		case "c":
 			if autoCommitted {
-				if (*score).CurrentScore.Climbs < 3 {
+				if (*score).CurrentScore.Climbs+(*score).CurrentScore.Parks < 3 {
 					(*score).CurrentScore.Climbs++
 				}
 			}
-		case "undoClimb":
+		case "C":
 			if autoCommitted {
 				if (*score).CurrentScore.Climbs > 0 {
 					(*score).CurrentScore.Climbs--
 				}
 			}
-		case "commit":
+		case "p":
+			if autoCommitted {
+				if (*score).CurrentScore.Climbs+(*score).CurrentScore.Parks < 3 {
+					(*score).CurrentScore.Parks++
+				}
+			}
+		case "P":
+			if autoCommitted {
+				if (*score).CurrentScore.Parks > 0 {
+					(*score).CurrentScore.Parks--
+				}
+			}
+		case "\r":
 			if web.arena.MatchState != field.PreMatch || web.arena.CurrentMatch.Type == "test" {
 				autoCommitted = true
 			}
-		case "uncommitAuto":
+		case "a":
 			autoCommitted = false
 		case "commitMatch":
 			if web.arena.MatchState != field.PostMatch {
