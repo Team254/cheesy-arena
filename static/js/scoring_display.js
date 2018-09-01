@@ -5,22 +5,30 @@
 
 var websocket;
 var scoreCommitted = false;
+var alliance;
 
 // Handles a websocket message to update the realtime scoring fields.
-var handleScore = function(data) {
+var handleRealtimeScore = function(data) {
+  var realtimeScore;
+  if (alliance === "red") {
+    realtimeScore = data.Red.RealtimeScore;
+  } else {
+    realtimeScore = data.Blue.RealtimeScore;
+  }
+
   // Update autonomous period values.
-  var score = data.Score.CurrentScore;
+  var score = realtimeScore.CurrentScore;
   $("#autoRuns").text(score.AutoRuns);
   $("#climbs").text(score.Climbs);
   $("#parks").text(score.Parks);
 
   // Update component visibility.
-  if (!data.AutoCommitted) {
+  if (!realtimeScore.AutoCommitted) {
     $("#autoScoring").fadeTo(0, 1);
     $("#teleopScoring").hide();
     $("#waitingMessage").hide();
     scoreCommitted = false;
-  } else if (!data.Score.TeleopCommitted) {
+  } else if (!realtimeScore.TeleopCommitted) {
     $("#autoScoring").fadeTo(0, 0.25);
     $("#teleopScoring").show();
     $("#waitingMessage").hide();
@@ -54,10 +62,12 @@ var commitMatchScore = function() {
 };
 
 $(function() {
+  alliance = window.location.href.split("/").slice(-1)[0];
+
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/scoring/" + alliance + "/websocket", {
-    score: function(event) { handleScore(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); }
+    matchTime: function(event) { handleMatchTime(event.data); },
+    realtimeScore: function(event) { handleRealtimeScore(event.data); }
   });
 
   $(document).keypress(handleKeyPress);

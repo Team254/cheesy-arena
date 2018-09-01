@@ -20,12 +20,8 @@ var CheesyWebsocket = function(path, events) {
     events.error = function(event) {
       // Data is just an error string.
       console.log(event.data);
+      alert(event.data);
     }
-  }
-
-  // Insert an event to show a dialog when the server wishes it.
-  events.dialog = function(event) {
-    alert(event.data);
   }
 
   // Insert an event to allow the server to force-reload the client for any display.

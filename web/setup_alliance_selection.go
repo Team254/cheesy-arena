@@ -84,7 +84,7 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 	}
 	cachedRankedTeams = newRankedTeams
 
-	web.arena.AllianceSelectionNotifier.Notify(nil)
+	web.arena.AllianceSelectionNotifier.NotifyWithMessage(cachedAlliances)
 	http.Redirect(w, r, "/setup/alliance_selection", 303)
 }
 
@@ -127,7 +127,7 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 		cachedRankedTeams[i] = &RankedTeam{i + 1, ranking.TeamId, false}
 	}
 
-	web.arena.AllianceSelectionNotifier.Notify(nil)
+	web.arena.AllianceSelectionNotifier.NotifyWithMessage(cachedAlliances)
 	http.Redirect(w, r, "/setup/alliance_selection", 303)
 }
 
@@ -144,7 +144,7 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 
 	cachedAlliances = [][]model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
-	web.arena.AllianceSelectionNotifier.Notify(nil)
+	web.arena.AllianceSelectionNotifier.NotifyWithMessage(cachedAlliances)
 	http.Redirect(w, r, "/setup/alliance_selection", 303)
 }
 

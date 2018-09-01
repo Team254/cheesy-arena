@@ -7,8 +7,7 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/model"
-	"io"
-	"log"
+	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
 )
 
@@ -39,47 +38,13 @@ func (web *Web) pitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	websocket, err := NewWebsocket(w, r)
+	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	defer websocket.Close()
+	defer ws.Close()
 
-	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
-	defer close(reloadDisplaysListener)
-
-	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
-	go func() {
-		for {
-			var messageType string
-			var message interface{}
-			select {
-			case _, ok := <-reloadDisplaysListener:
-				if !ok {
-					return
-				}
-				messageType = "reload"
-				message = nil
-			}
-			err = websocket.Write(messageType, message)
-			if err != nil {
-				// The client has probably closed the connection; nothing to do here.
-				return
-			}
-		}
-	}()
-
-	// Loop, waiting for commands and responding to them, until the client closes the connection.
-	for {
-		_, _, err := websocket.Read()
-		if err != nil {
-			if err == io.EOF {
-				// Client has closed the connection; nothing to do here.
-				return
-			}
-			log.Printf("Websocket error: %s", err)
-			return
-		}
-	}
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
+	ws.HandleNotifiers(web.arena.ReloadDisplaysNotifier)
 }

@@ -5,9 +5,9 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/gorilla/websocket"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"sync"
 	"testing"
 	"time"
 )
@@ -26,10 +26,10 @@ func TestSetupLowerThirds(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/setup/lower_thirds/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/setup/lower_thirds/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn, new(sync.Mutex)}
+	ws := websocket.NewTestWebsocket(conn)
 
 	ws.Write("saveLowerThird", model.LowerThird{1, "Top Text 4", "Bottom Text 1", 0})
 	time.Sleep(time.Millisecond * 10) // Allow some time for the command to be processed.
@@ -41,18 +41,18 @@ func TestSetupLowerThirds(t *testing.T) {
 	lowerThird, _ = web.arena.Database.GetLowerThirdById(1)
 	assert.Nil(t, lowerThird)
 
-	assert.Equal(t, "blank", web.arena.AudienceDisplayScreen)
+	assert.Equal(t, "blank", web.arena.AudienceDisplayMode)
 	ws.Write("showLowerThird", model.LowerThird{2, "Top Text 5", "Bottom Text 1", 0})
 	time.Sleep(time.Millisecond * 10)
 	lowerThird, _ = web.arena.Database.GetLowerThirdById(2)
 	assert.Equal(t, "Top Text 5", lowerThird.TopText)
-	assert.Equal(t, "lowerThird", web.arena.AudienceDisplayScreen)
+	assert.Equal(t, "lowerThird", web.arena.AudienceDisplayMode)
 
 	ws.Write("hideLowerThird", model.LowerThird{2, "Top Text 6", "Bottom Text 1", 0})
 	time.Sleep(time.Millisecond * 10)
 	lowerThird, _ = web.arena.Database.GetLowerThirdById(2)
 	assert.Equal(t, "Top Text 6", lowerThird.TopText)
-	assert.Equal(t, "blank", web.arena.AudienceDisplayScreen)
+	assert.Equal(t, "blank", web.arena.AudienceDisplayMode)
 
 	ws.Write("reorderLowerThird", map[string]interface{}{"Id": 2, "moveUp": false})
 	time.Sleep(time.Millisecond * 100)

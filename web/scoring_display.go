@@ -8,8 +8,8 @@ package web
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/field"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
 	"io"
 	"log"
@@ -58,162 +58,110 @@ func (web *Web) scoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 	var score **field.RealtimeScore
-	var scoreSummaryFunc func() *game.ScoreSummary
 	if alliance == "red" {
 		score = &web.arena.RedRealtimeScore
-		scoreSummaryFunc = web.arena.RedScoreSummary
 	} else {
 		score = &web.arena.BlueRealtimeScore
-		scoreSummaryFunc = web.arena.BlueScoreSummary
 	}
-	autoCommitted := false
 
-	websocket, err := NewWebsocket(w, r)
+	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	defer websocket.Close()
+	defer ws.Close()
 
-	matchLoadTeamsListener := web.arena.MatchLoadTeamsNotifier.Listen()
-	defer close(matchLoadTeamsListener)
-	matchTimeListener := web.arena.MatchTimeNotifier.Listen()
-	defer close(matchTimeListener)
-	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
-	defer close(reloadDisplaysListener)
-
-	// Send the various notifications immediately upon connection.
-	data := struct {
-		Score         *field.RealtimeScore
-		ScoreSummary  *game.ScoreSummary
-		AutoCommitted bool
-	}{*score, scoreSummaryFunc(), autoCommitted}
-	err = websocket.Write("score", data)
-	if err != nil {
-		log.Printf("Websocket error: %s", err)
-		return
-	}
-	err = websocket.Write("matchTime", MatchTimeMessage{int(web.arena.MatchState), int(web.arena.LastMatchTimeSec)})
-	if err != nil {
-		log.Printf("Websocket error: %s", err)
-		return
-	}
-
-	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
-	go func() {
-		for {
-			var messageType string
-			var message interface{}
-			select {
-			case _, ok := <-matchLoadTeamsListener:
-				if !ok {
-					return
-				}
-				messageType = "reload"
-				message = nil
-			case matchTimeSec, ok := <-matchTimeListener:
-				if !ok {
-					return
-				}
-				messageType = "matchTime"
-				message = MatchTimeMessage{int(web.arena.MatchState), matchTimeSec.(int)}
-			case _, ok := <-reloadDisplaysListener:
-				if !ok {
-					return
-				}
-				messageType = "reload"
-				message = nil
-			}
-			err = websocket.Write(messageType, message)
-			if err != nil {
-				// The client has probably closed the connection; nothing to do here.
-				return
-			}
-		}
-	}()
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
+	go ws.HandleNotifiers(web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
+		web.arena.ReloadDisplaysNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		messageType, data, err := websocket.Read()
+		messageType, _, err := ws.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
 				return
 			}
-			log.Printf("Websocket error: %s", err)
+			log.Println(err)
 			return
 		}
 
+		scoreChanged := false
 		switch messageType {
 		case "r":
-			if !autoCommitted {
+			if !(*score).AutoCommitted {
 				if (*score).CurrentScore.AutoRuns < 3 {
 					(*score).CurrentScore.AutoRuns++
+					scoreChanged = true
 				}
 			}
 		case "R":
-			if !autoCommitted {
+			if !(*score).AutoCommitted {
 				if (*score).CurrentScore.AutoRuns > 0 {
 					(*score).CurrentScore.AutoRuns--
+					scoreChanged = true
 				}
 			}
 		case "c":
-			if autoCommitted {
+			if (*score).AutoCommitted {
 				if (*score).CurrentScore.Climbs+(*score).CurrentScore.Parks < 3 {
 					(*score).CurrentScore.Climbs++
+					scoreChanged = true
 				}
 			}
 		case "C":
-			if autoCommitted {
+			if (*score).AutoCommitted {
 				if (*score).CurrentScore.Climbs > 0 {
 					(*score).CurrentScore.Climbs--
+					scoreChanged = true
 				}
 			}
 		case "p":
-			if autoCommitted {
+			if (*score).AutoCommitted {
 				if (*score).CurrentScore.Climbs+(*score).CurrentScore.Parks < 3 {
 					(*score).CurrentScore.Parks++
+					scoreChanged = true
 				}
 			}
 		case "P":
-			if autoCommitted {
+			if (*score).AutoCommitted {
 				if (*score).CurrentScore.Parks > 0 {
 					(*score).CurrentScore.Parks--
+					scoreChanged = true
 				}
 			}
 		case "\r":
-			if web.arena.MatchState != field.PreMatch || web.arena.CurrentMatch.Type == "test" {
-				autoCommitted = true
+			if (web.arena.MatchState != field.PreMatch || web.arena.CurrentMatch.Type == "test") &&
+				!(*score).AutoCommitted {
+				(*score).AutoCommitted = true
+				scoreChanged = true
 			}
 		case "a":
-			autoCommitted = false
+			if (*score).AutoCommitted {
+				(*score).AutoCommitted = false
+				scoreChanged = true
+			}
 		case "commitMatch":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow committing the score until the match is over.
-				websocket.WriteError("Cannot commit score: Match is not over.")
+				ws.WriteError("Cannot commit score: Match is not over.")
 				continue
 			}
 
-			autoCommitted = true
-			(*score).TeleopCommitted = true
-			web.arena.ScoringStatusNotifier.Notify(nil)
+			if !(*score).TeleopCommitted {
+				(*score).AutoCommitted = true
+				(*score).TeleopCommitted = true
+				web.arena.ScoringStatusNotifier.Notify()
+				scoreChanged = true
+			}
 		default:
-			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			// Unknown keypress; just swallow the message without doing anything.
 			continue
 		}
 
-		web.arena.RealtimeScoreNotifier.Notify(nil)
-
-		// Send out the score again after handling the command, as it most likely changed as a result.
-		data = struct {
-			Score         *field.RealtimeScore
-			ScoreSummary  *game.ScoreSummary
-			AutoCommitted bool
-		}{*score, scoreSummaryFunc(), autoCommitted}
-		err = websocket.Write("score", data)
-		if err != nil {
-			log.Printf("Websocket error: %s", err)
-			return
+		if scoreChanged {
+			web.arena.RealtimeScoreNotifier.Notify()
 		}
 	}
 }

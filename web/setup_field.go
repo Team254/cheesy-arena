@@ -10,7 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/vaultled"
-	"log"
+	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
 	"strconv"
 )
@@ -56,7 +56,7 @@ func (web *Web) fieldPostHandler(w http.ResponseWriter, r *http.Request) {
 	displayId := r.PostFormValue("displayId")
 	allianceStation := r.PostFormValue("allianceStation")
 	web.arena.AllianceStationDisplays[displayId] = allianceStation
-	web.arena.MatchLoadTeamsNotifier.Notify(nil)
+	web.arena.MatchLoadNotifier.Notify()
 	http.Redirect(w, r, "/setup/field", 303)
 }
 
@@ -66,7 +66,7 @@ func (web *Web) fieldReloadDisplaysHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	web.arena.ReloadDisplaysNotifier.Notify(nil)
+	web.arena.ReloadDisplaysNotifier.Notify()
 	http.Redirect(w, r, "/setup/field", 303)
 }
 
@@ -101,47 +101,13 @@ func (web *Web) fieldWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	websocket, err := NewWebsocket(w, r)
+	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	defer websocket.Close()
+	defer ws.Close()
 
-	plcIoChangeListener := web.arena.Plc.IoChangeNotifier.Listen()
-	defer close(plcIoChangeListener)
-
-	// Send the PLC status immediately upon connection.
-	data := struct {
-		Inputs    []bool
-		Registers []uint16
-		Coils     []bool
-	}{web.arena.Plc.Inputs[:], web.arena.Plc.Registers[:], web.arena.Plc.Coils[:]}
-	err = websocket.Write("plcIoChange", data)
-	if err != nil {
-		log.Printf("Websocket error: %s", err)
-		return
-	}
-
-	for {
-		var messageType string
-		var message interface{}
-		select {
-		case _, ok := <-plcIoChangeListener:
-			if !ok {
-				return
-			}
-			messageType = "plcIoChange"
-			message = struct {
-				Inputs    []bool
-				Registers []uint16
-				Coils     []bool
-			}{web.arena.Plc.Inputs[:], web.arena.Plc.Registers[:], web.arena.Plc.Coils[:]}
-		}
-		err = websocket.Write(messageType, message)
-		if err != nil {
-			// The client has probably closed the connection; nothing to do here.
-			return
-		}
-	}
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
+	ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier)
 }

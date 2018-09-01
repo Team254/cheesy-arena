@@ -10,11 +10,11 @@ import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
-	"github.com/gorilla/websocket"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 	"log"
-	"sync"
 	"testing"
 	"time"
 )
@@ -100,7 +100,7 @@ func TestMatchPlayShowResult(t *testing.T) {
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "No result found")
-	web.arena.Database.CreateMatchResult(&model.MatchResult{MatchId: match.Id})
+	web.arena.Database.CreateMatchResult(model.BuildTestMatchResult(match.Id, 1))
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
 	assert.Equal(t, 303, recorder.Code)
 	assert.Equal(t, match.Id, web.arena.SavedMatch.Id)
@@ -241,19 +241,19 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn, new(sync.Mutex)}
+	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
-	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "arenaStatus")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
-	readWebsocketType(t, ws, "setAudienceDisplay")
 	readWebsocketType(t, ws, "scoringStatus")
-	readWebsocketType(t, ws, "setAllianceStationDisplay")
+	readWebsocketType(t, ws, "audienceDisplayMode")
+	readWebsocketType(t, ws, "allianceStationDisplayMode")
 
 	// Test that a server-side error is communicated to the client.
 	ws.Write("nonexistenttype", nil)
@@ -265,20 +265,20 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	ws.Write("substituteTeam", map[string]interface{}{"team": 254, "position": "B5"})
 	assert.Contains(t, readWebsocketError(t, ws), "Invalid alliance station")
 	ws.Write("substituteTeam", map[string]interface{}{"team": 254, "position": "B1"})
-	readWebsocketType(t, ws, "status")
+	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, 254, web.arena.CurrentMatch.Blue1)
 	ws.Write("substituteTeam", map[string]interface{}{"team": 0, "position": "B1"})
-	readWebsocketType(t, ws, "status")
+	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, 0, web.arena.CurrentMatch.Blue1)
 	ws.Write("toggleBypass", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "Failed to parse")
 	ws.Write("toggleBypass", "R4")
 	assert.Contains(t, readWebsocketError(t, ws), "Invalid alliance station")
 	ws.Write("toggleBypass", "R3")
-	readWebsocketType(t, ws, "status")
+	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, true, web.arena.AllianceStations["R3"].Bypass)
 	ws.Write("toggleBypass", "R3")
-	readWebsocketType(t, ws, "status")
+	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, false, web.arena.AllianceStations["R3"].Bypass)
 
 	// Go through match flow.
@@ -293,15 +293,16 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
 	ws.Write("startMatch", nil)
-	readWebsocketType(t, ws, "status")
+	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, field.StartMatch, web.arena.MatchState)
 	ws.Write("commitResults", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "Cannot reset match")
 	ws.Write("discardResults", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "Cannot reset match")
 	ws.Write("abortMatch", nil)
-	readWebsocketType(t, ws, "status")
-	readWebsocketType(t, ws, "setAudienceDisplay")
+	readWebsocketType(t, ws, "arenaStatus")
+	readWebsocketType(t, ws, "audienceDisplayMode")
+	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
 	web.arena.RedRealtimeScore.CurrentScore.AutoRuns = 1
 	web.arena.BlueRealtimeScore.CurrentScore.BoostCubes = 2
@@ -316,11 +317,11 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 
 	// Test changing the displays.
 	ws.Write("setAudienceDisplay", "logo")
-	readWebsocketType(t, ws, "setAudienceDisplay")
-	assert.Equal(t, "logo", web.arena.AudienceDisplayScreen)
+	readWebsocketType(t, ws, "audienceDisplayMode")
+	assert.Equal(t, "logo", web.arena.AudienceDisplayMode)
 	ws.Write("setAllianceStationDisplay", "logo")
-	readWebsocketType(t, ws, "setAllianceStationDisplay")
-	assert.Equal(t, "logo", web.arena.AllianceStationDisplayScreen)
+	readWebsocketType(t, ws, "allianceStationDisplayMode")
+	assert.Equal(t, "logo", web.arena.AllianceStationDisplayMode)
 }
 
 func TestMatchPlayWebsocketNotifications(t *testing.T) {
@@ -330,18 +331,19 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn, new(sync.Mutex)}
+	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
-	readWebsocketType(t, ws, "status")
 	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "arenaStatus")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
-	readWebsocketType(t, ws, "setAudienceDisplay")
 	readWebsocketType(t, ws, "scoringStatus")
+	readWebsocketType(t, ws, "audienceDisplayMode")
+	readWebsocketType(t, ws, "allianceStationDisplayMode")
 
 	web.arena.AllianceStations["R1"].Bypass = true
 	web.arena.AllianceStations["R2"].Bypass = true
@@ -349,14 +351,15 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.AllianceStations["B1"].Bypass = true
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
-	web.arena.StartMatch()
+	assert.Nil(t, web.arena.StartMatch())
 	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 3)
 	_, ok := messages["matchTime"]
 	assert.True(t, ok)
-	_, ok = messages["setAudienceDisplay"]
+	_, ok = messages["audienceDisplayMode"]
 	assert.True(t, ok)
-	_, ok = messages["setAllianceStationDisplay"]
+	_, ok = messages["allianceStationDisplayMode"]
+	assert.True(t, ok)
 	web.arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
 	web.arena.Update()
 	messages = readWebsocketMultiple(t, ws, 2)
@@ -365,7 +368,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	assert.Equal(t, 3, matchTime.MatchState)
 	assert.Equal(t, 3, matchTime.MatchTimeSec)
 	assert.True(t, ok)
-	web.arena.ScoringStatusNotifier.Notify(nil)
+	web.arena.ScoringStatusNotifier.Notify()
 	readWebsocketType(t, ws, "scoringStatus")
 
 	// Should get a tick notification when an integer second threshold is crossed.
@@ -395,14 +398,14 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 }
 
 // Handles the status and matchTime messages arriving in either order.
-func readWebsocketStatusMatchTime(t *testing.T, ws *Websocket) (bool, MatchTimeMessage) {
+func readWebsocketStatusMatchTime(t *testing.T, ws *websocket.Websocket) (bool, field.MatchTimeMessage) {
 	return getStatusMatchTime(t, readWebsocketMultiple(t, ws, 2))
 }
 
-func getStatusMatchTime(t *testing.T, messages map[string]interface{}) (bool, MatchTimeMessage) {
-	_, statusReceived := messages["status"]
+func getStatusMatchTime(t *testing.T, messages map[string]interface{}) (bool, field.MatchTimeMessage) {
+	_, statusReceived := messages["arenaStatus"]
 	message, ok := messages["matchTime"]
-	var matchTime MatchTimeMessage
+	var matchTime field.MatchTimeMessage
 	if assert.True(t, ok) {
 		err := mapstructure.Decode(message, &matchTime)
 		assert.Nil(t, err)

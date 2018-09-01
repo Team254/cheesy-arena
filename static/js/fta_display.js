@@ -7,7 +7,7 @@
 var websocket;
 
 // Handles a websocket message to update the team connection status.
-var handleStatus = function(data) {
+var handleArenaStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
     if (stationStatus.Team) {
@@ -72,6 +72,6 @@ $(function() {
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/fta/websocket", {
-    status: function(event) { handleStatus(event.data); }
+    arenaStatus: function(event) { handleArenaStatus(event.data); }
   });
 });

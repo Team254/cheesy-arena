@@ -8,12 +8,17 @@ var blinkInterval;
 var currentScreen = "blank";
 var websocket;
 
+// Handles a websocket message to set which alliance station this display represents.
+var handleAllianceStation = function(station) {
+  allianceStation = station;
+}
+
 // Handles a websocket message to change which screen is displayed.
-var handleSetAllianceStationDisplay = function(targetScreen) {
+var handleAllianceStationDisplayMode = function(targetScreen) {
   currentScreen = targetScreen;
-  if (allianceStation == "") {
-    // Don't show anything if this screen hasn't been assigned a position yet.
-    targetScreen = "blank";
+  if (allianceStation === "") {
+    // Don't do anything if this screen hasn't been assigned a position yet.
+    return;
   }
   $("body").attr("data-mode", targetScreen);
   switch (allianceStation[1]) {
@@ -30,16 +35,7 @@ var handleSetAllianceStationDisplay = function(targetScreen) {
 };
 
 // Handles a websocket message to update the team to display.
-var handleSetMatch = function(data) {
-  if (allianceStation != "" && data.AllianceStation == "") {
-    // The client knows better what display this should be; let the server know.
-    websocket.send("setAllianceStation", allianceStation);
-  } else if (allianceStation != data.AllianceStation) {
-    // The server knows better what display this should be; sync up.
-    allianceStation = data.AllianceStation;
-    handleSetAllianceStationDisplay(currentScreen);
-  }
-
+var handleMatchLoad = function(data) {
   if (allianceStation != "") {
     var team = data.Teams[allianceStation];
     if (team) {
@@ -47,7 +43,7 @@ var handleSetMatch = function(data) {
       $("#teamNameText").attr("data-alliance-bg", allianceStation[0]).text(team.Nickname);
 
       var ranking = data.Rankings[team.Id];
-      if (ranking && data.MatchType == "qualification") {
+      if (ranking && data.MatchType == "Qualification") {
         var rankingText = ranking.Rank;
         $("#teamRank").attr("data-alliance-bg", allianceStation[0]).text(rankingText);
       } else {
@@ -64,7 +60,7 @@ var handleSetMatch = function(data) {
 };
 
 // Handles a websocket message to update the team connection status.
-var handleStatus = function(data) {
+var handleArenaStatus = function(data) {
   stationStatus = data.AllianceStations[allianceStation];
   var blink = false;
   if (stationStatus && stationStatus.Bypass) {
@@ -106,8 +102,8 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.RedScore);
-  $("#blueScore").text(data.BlueScore);
+  $("#redScore").text(data.Red.Score);
+  $("#blueScore").text(data.Blue.Score);
 };
 
 $(function() {
@@ -119,11 +115,12 @@ $(function() {
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/alliance_station/websocket?displayId=" + displayId, {
-    setAllianceStationDisplay: function(event) { handleSetAllianceStationDisplay(event.data); },
-    setMatch: function(event) { handleSetMatch(event.data); },
-    status: function(event) { handleStatus(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
+    allianceStation: function(event) { handleAllianceStation(event.data); },
+    allianceStationDisplayMode: function(event) { handleAllianceStationDisplayMode(event.data); },
+    arenaStatus: function(event) { handleArenaStatus(event.data); },
+    matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
+    matchTiming: function(event) { handleMatchTiming(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); }
   });
 });

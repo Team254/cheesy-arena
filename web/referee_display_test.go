@@ -5,9 +5,9 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/field"
-	"github.com/gorilla/websocket"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"sync"
 	"testing"
 	"time"
 )
@@ -25,10 +25,13 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/referee/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/referee/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn, new(sync.Mutex)}
+	ws := websocket.NewTestWebsocket(conn)
+
+	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "matchLoad")
 
 	// Test foul addition.
 	foulData := struct {
@@ -104,17 +107,17 @@ func TestRefereeDisplayWebsocket(t *testing.T) {
 	web.arena.MatchState = field.PostMatch
 	ws.Write("signalReset", nil)
 	time.Sleep(time.Millisecond * 10)
-	assert.Equal(t, "fieldReset", web.arena.AllianceStationDisplayScreen)
+	assert.Equal(t, "fieldReset", web.arena.AllianceStationDisplayMode)
 	assert.False(t, web.arena.RedRealtimeScore.FoulsCommitted)
 	assert.False(t, web.arena.BlueRealtimeScore.FoulsCommitted)
-	web.arena.AllianceStationDisplayScreen = "logo"
+	web.arena.AllianceStationDisplayMode = "logo"
 	ws.Write("commitMatch", nil)
 	readWebsocketType(t, ws, "reload")
-	assert.Equal(t, "fieldReset", web.arena.AllianceStationDisplayScreen)
+	assert.Equal(t, "fieldReset", web.arena.AllianceStationDisplayMode)
 	assert.True(t, web.arena.RedRealtimeScore.FoulsCommitted)
 	assert.True(t, web.arena.BlueRealtimeScore.FoulsCommitted)
 
 	// Should refresh the page when the next match is loaded.
-	web.arena.MatchLoadTeamsNotifier.Notify(nil)
-	readWebsocketType(t, ws, "reload")
+	web.arena.MatchLoadNotifier.Notify()
+	readWebsocketType(t, ws, "matchLoad")
 }

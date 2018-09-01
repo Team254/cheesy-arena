@@ -6,6 +6,7 @@
 var websocket;
 var foulTeamButton;
 var foulRuleButton;
+var firstMatchLoad = true;
 
 // Handles a click on a team button.
 var setFoulTeam = function(teamButton) {
@@ -94,12 +95,22 @@ var commitMatch = function() {
   websocket.send("commitMatch");
 };
 
+// Handles a websocket message to update the teams for the current match.
+var handleMatchLoad = function(data) {
+  // Since the server always sends a matchLoad message upon establishing the websocket connection, ignore the first one.
+  if (!firstMatchLoad) {
+    location.reload();
+  }
+  firstMatchLoad = false;
+};
+
 $(function() {
   // Activate tooltips above the rule buttons.
   $("[data-toggle=tooltip]").tooltip({"placement": "top"});
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/referee/websocket", {
+    matchLoad: function(event) { handleMatchLoad(event.data) }
   });
 
   clearFoul();

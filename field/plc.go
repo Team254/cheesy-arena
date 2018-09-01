@@ -7,6 +7,7 @@ package field
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/goburrow/modbus"
 	"log"
 	"time"
@@ -14,16 +15,16 @@ import (
 
 type Plc struct {
 	IsHealthy        bool
+	IoChangeNotifier *websocket.Notifier
 	address          string
 	handler          *modbus.TCPClientHandler
 	client           modbus.Client
-	Inputs           [inputCount]bool
-	Registers        [registerCount]uint16
-	Coils            [coilCount]bool
+	inputs           [inputCount]bool
+	registers        [registerCount]uint16
+	coils            [coilCount]bool
 	oldInputs        [inputCount]bool
 	oldRegisters     [registerCount]uint16
 	oldCoils         [coilCount]bool
-	IoChangeNotifier *Notifier
 	cycleCounter     int
 }
 
@@ -112,7 +113,8 @@ func (plc *Plc) SetAddress(address string) {
 
 // Loops indefinitely to read inputs from and write outputs to PLC.
 func (plc *Plc) Run() {
-	plc.IoChangeNotifier = NewNotifier()
+	// Register a notifier that listeners can subscribe to to get websocket updates about I/O value changes.
+	plc.IoChangeNotifier = websocket.NewNotifier("plcIoChange", plc.generateIoChangeMessage)
 
 	for {
 		if plc.handler == nil {
@@ -146,11 +148,11 @@ func (plc *Plc) Run() {
 		}
 
 		// Detect any changes in input or output and notify listeners if so.
-		if plc.Inputs != plc.oldInputs || plc.Registers != plc.oldRegisters || plc.Coils != plc.oldCoils {
-			plc.IoChangeNotifier.Notify(nil)
-			plc.oldInputs = plc.Inputs
-			plc.oldRegisters = plc.Registers
-			plc.oldCoils = plc.Coils
+		if plc.inputs != plc.oldInputs || plc.registers != plc.oldRegisters || plc.coils != plc.oldCoils {
+			plc.IoChangeNotifier.Notify()
+			plc.oldInputs = plc.inputs
+			plc.oldRegisters = plc.registers
+			plc.oldCoils = plc.coils
 		}
 
 		time.Sleep(time.Until(startTime.Add(time.Millisecond * plcLoopPeriodMs)))
@@ -159,19 +161,19 @@ func (plc *Plc) Run() {
 
 // Returns the state of the field emergency stop button (true if e-stop is active).
 func (plc *Plc) GetFieldEstop() bool {
-	return plc.address != "" && !plc.Inputs[fieldEstop]
+	return plc.address != "" && !plc.inputs[fieldEstop]
 }
 
 // Returns the state of the red and blue driver station emergency stop buttons (true if e-stop is active).
 func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 	var redEstops, blueEstops [3]bool
 	if plc.address != "" {
-		redEstops[0] = !plc.Inputs[redEstop1]
-		redEstops[1] = !plc.Inputs[redEstop2]
-		redEstops[2] = !plc.Inputs[redEstop3]
-		blueEstops[0] = !plc.Inputs[blueEstop1]
-		blueEstops[1] = !plc.Inputs[blueEstop2]
-		blueEstops[2] = !plc.Inputs[blueEstop3]
+		redEstops[0] = !plc.inputs[redEstop1]
+		redEstops[1] = !plc.inputs[redEstop2]
+		redEstops[2] = !plc.inputs[redEstop3]
+		blueEstops[0] = !plc.inputs[blueEstop1]
+		blueEstops[1] = !plc.inputs[blueEstop2]
+		blueEstops[2] = !plc.inputs[blueEstop3]
 	}
 	return redEstops, blueEstops
 }
@@ -180,38 +182,38 @@ func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 func (plc *Plc) GetScaleAndSwitches() ([2]bool, [2]bool, [2]bool) {
 	var scale, redSwitch, blueSwitch [2]bool
 
-	scale[0] = plc.Inputs[scaleNear]
-	scale[1] = plc.Inputs[scaleFar]
-	redSwitch[0] = plc.Inputs[redSwitchNear]
-	redSwitch[1] = plc.Inputs[redSwitchFar]
-	blueSwitch[0] = plc.Inputs[blueSwitchNear]
-	blueSwitch[1] = plc.Inputs[blueSwitchFar]
+	scale[0] = plc.inputs[scaleNear]
+	scale[1] = plc.inputs[scaleFar]
+	redSwitch[0] = plc.inputs[redSwitchNear]
+	redSwitch[1] = plc.inputs[redSwitchFar]
+	blueSwitch[0] = plc.inputs[blueSwitchNear]
+	blueSwitch[1] = plc.inputs[blueSwitchFar]
 
 	return scale, redSwitch, blueSwitch
 }
 
 // Returns the state of the red and blue vault power cube sensors.
 func (plc *Plc) GetVaults() (uint16, uint16, uint16, uint16, uint16, uint16) {
-	return plc.Registers[redForceDistance], plc.Registers[redLevitateDistance], plc.Registers[redBoostDistance],
-		plc.Registers[blueForceDistance], plc.Registers[blueLevitateDistance], plc.Registers[blueBoostDistance]
+	return plc.registers[redForceDistance], plc.registers[redLevitateDistance], plc.registers[redBoostDistance],
+		plc.registers[blueForceDistance], plc.registers[blueLevitateDistance], plc.registers[blueBoostDistance]
 }
 
 // Returns the state of the red and blue power up buttons on the vaults.
 func (plc *Plc) GetPowerUpButtons() (bool, bool, bool, bool, bool, bool) {
-	return plc.Inputs[redForceActivate], plc.Inputs[redLevitateActivate], plc.Inputs[redBoostActivate],
-		plc.Inputs[blueForceActivate], plc.Inputs[blueLevitateActivate], plc.Inputs[blueBoostActivate]
+	return plc.inputs[redForceActivate], plc.inputs[redLevitateActivate], plc.inputs[redBoostActivate],
+		plc.inputs[blueForceActivate], plc.inputs[blueLevitateActivate], plc.inputs[blueBoostActivate]
 }
 
 // Set the on/off state of the stack lights on the scoring table.
 func (plc *Plc) SetStackLights(red, blue, green bool) {
-	plc.Coils[stackLightRed] = red
-	plc.Coils[stackLightBlue] = blue
-	plc.Coils[stackLightGreen] = green
+	plc.coils[stackLightRed] = red
+	plc.coils[stackLightBlue] = blue
+	plc.coils[stackLightGreen] = green
 }
 
 // Set the on/off state of the stack lights on the scoring table.
 func (plc *Plc) SetStackBuzzer(state bool) {
-	plc.Coils[stackLightBuzzer] = state
+	plc.coils[stackLightBuzzer] = state
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {
@@ -220,7 +222,7 @@ func (plc *Plc) GetCycleState(max, index, duration int) bool {
 
 func (plc *Plc) GetInputNames() []string {
 	inputNames := make([]string, inputCount)
-	for i := range plc.Inputs {
+	for i := range plc.inputs {
 		inputNames[i] = input(i).String()
 	}
 	return inputNames
@@ -228,7 +230,7 @@ func (plc *Plc) GetInputNames() []string {
 
 func (plc *Plc) GetRegisterNames() []string {
 	registerNames := make([]string, registerCount)
-	for i := range plc.Registers {
+	for i := range plc.registers {
 		registerNames[i] = register(i).String()
 	}
 	return registerNames
@@ -236,7 +238,7 @@ func (plc *Plc) GetRegisterNames() []string {
 
 func (plc *Plc) GetCoilNames() []string {
 	coilNames := make([]string, coilCount)
-	for i := range plc.Coils {
+	for i := range plc.coils {
 		coilNames[i] = coil(i).String()
 	}
 	return coilNames
@@ -267,56 +269,64 @@ func (plc *Plc) resetConnection() {
 }
 
 func (plc *Plc) readInputs() bool {
-	if len(plc.Inputs) == 0 {
+	if len(plc.inputs) == 0 {
 		return true
 	}
 
-	inputs, err := plc.client.ReadDiscreteInputs(0, uint16(len(plc.Inputs)))
+	inputs, err := plc.client.ReadDiscreteInputs(0, uint16(len(plc.inputs)))
 	if err != nil {
 		log.Printf("PLC error reading inputs: %v", err)
 		return false
 	}
-	if len(inputs)*8 < len(plc.Inputs) {
-		log.Printf("Insufficient length of PLC inputs: got %d bytes, expected %d bits.", len(inputs), len(plc.Inputs))
+	if len(inputs)*8 < len(plc.inputs) {
+		log.Printf("Insufficient length of PLC inputs: got %d bytes, expected %d bits.", len(inputs), len(plc.inputs))
 		return false
 	}
 
-	copy(plc.Inputs[:], byteToBool(inputs, len(plc.Inputs)))
+	copy(plc.inputs[:], byteToBool(inputs, len(plc.inputs)))
 	return true
 }
 
 func (plc *Plc) readCounters() bool {
-	if len(plc.Registers) == 0 {
+	if len(plc.registers) == 0 {
 		return true
 	}
 
-	registers, err := plc.client.ReadHoldingRegisters(0, uint16(len(plc.Registers)))
+	registers, err := plc.client.ReadHoldingRegisters(0, uint16(len(plc.registers)))
 	if err != nil {
 		log.Printf("PLC error reading registers: %v", err)
 		return false
 	}
-	if len(registers)/2 < len(plc.Registers) {
+	if len(registers)/2 < len(plc.registers) {
 		log.Printf("Insufficient length of PLC counters: got %d bytes, expected %d words.", len(registers),
-			len(plc.Registers))
+			len(plc.registers))
 		return false
 	}
 
-	copy(plc.Registers[:], byteToUint(registers, len(plc.Registers)))
+	copy(plc.registers[:], byteToUint(registers, len(plc.registers)))
 	return true
 }
 
 func (plc *Plc) writeCoils() bool {
 	// Send a heartbeat to the PLC so that it can disable outputs if the connection is lost.
-	plc.Coils[heartbeat] = true
+	plc.coils[heartbeat] = true
 
-	coils := boolToByte(plc.Coils[:])
-	_, err := plc.client.WriteMultipleCoils(0, uint16(len(plc.Coils)), coils)
+	coils := boolToByte(plc.coils[:])
+	_, err := plc.client.WriteMultipleCoils(0, uint16(len(plc.coils)), coils)
 	if err != nil {
 		log.Printf("PLC error writing coils: %v", err)
 		return false
 	}
 
 	return true
+}
+
+func (plc *Plc) generateIoChangeMessage() interface{} {
+	return &struct {
+		Inputs    []bool
+		Registers []uint16
+		Coils     []bool
+	}{plc.inputs[:], plc.registers[:], plc.coils[:]}
 }
 
 func byteToBool(bytes []byte, size int) []bool {

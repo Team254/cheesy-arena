@@ -4,9 +4,9 @@
 package web
 
 import (
-	"github.com/gorilla/websocket"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"sync"
 	"testing"
 )
 
@@ -23,10 +23,10 @@ func TestPitDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/pit/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/pit/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn, new(sync.Mutex)}
+	ws := websocket.NewTestWebsocket(conn)
 
 	// Check forced reloading as that is the only purpose the pit websocket serves.
 	recorder := web.getHttpResponse("/setup/field/reload_displays")

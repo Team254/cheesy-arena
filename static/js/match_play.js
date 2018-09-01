@@ -59,7 +59,7 @@ var confirmCommit = function(isReplay) {
 };
 
 // Handles a websocket message to update the team connection status.
-var handleStatus = function(data) {
+var handleArenaStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
     if (stationStatus.DsConn) {
@@ -153,12 +153,12 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.RedScore);
-  $("#blueScore").text(data.BlueScore);
+  $("#redScore").text(data.Red.Score);
+  $("#blueScore").text(data.Blue.Score);
 };
 
 // Handles a websocket message to update the audience display screen selector.
-var handleSetAudienceDisplay = function(data) {
+var handleAudienceDisplayMode = function(data) {
   $("input[name=audienceDisplay]:checked").prop("checked", false);
   $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
 };
@@ -172,7 +172,7 @@ var handleScoringStatus = function(data) {
 };
 
 // Handles a websocket message to update the alliance station display screen selector.
-var handleSetAllianceStationDisplay = function(data) {
+var handleAllianceStationDisplayMode = function(data) {
   $("input[name=allianceStationDisplay]:checked").prop("checked", false);
   $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);
 };
@@ -183,12 +183,12 @@ $(function() {
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/match_play/websocket", {
-    status: function(event) { handleStatus(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
+    allianceStationDisplayMode: function(event) { handleAllianceStationDisplayMode(event.data); },
+    arenaStatus: function(event) { handleArenaStatus(event.data); },
+    audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
+    matchTiming: function(event) { handleMatchTiming(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    setAudienceDisplay: function(event) { handleSetAudienceDisplay(event.data); },
-    scoringStatus: function(event) { handleScoringStatus(event.data); },
-    setAllianceStationDisplay: function(event) { handleSetAllianceStationDisplay(event.data); }
+    scoringStatus: function(event) { handleScoringStatus(event.data); }
   });
 });

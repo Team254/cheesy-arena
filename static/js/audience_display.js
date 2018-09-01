@@ -10,7 +10,7 @@ var currentScreen = "blank";
 var allianceSelectionTemplate = Handlebars.compile($("#allianceSelectionTemplate").html());
 
 // Handles a websocket message to change which screen is displayed.
-var handleSetAudienceDisplay = function(targetScreen) {
+var handleAudienceDisplayMode = function(targetScreen) {
   if (targetScreen == currentScreen) {
     return;
   }
@@ -28,7 +28,7 @@ var handleSetAudienceDisplay = function(targetScreen) {
 };
 
 // Handles a websocket message to update the teams for the current match.
-var handleSetMatch = function(data) {
+var handleMatchLoad = function(data) {
   $("#redTeam1").text(data.Match.Red1)
   $("#redTeam2").text(data.Match.Red2)
   $("#redTeam3").text(data.Match.Red3)
@@ -52,21 +52,23 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
+  var redScoreBreakdown = data.Red.RealtimeScore.CurrentScore;
   $("#redScoreNumber").text(data.Red.Score);
   $("#redForceCubesIcon").attr("data-state", data.Red.ForceState);
-  $("#redForceCubes").text(data.Red.ForceCubes).attr("data-state", data.Red.ForceState);
+  $("#redForceCubes").text(redScoreBreakdown.ForceCubes).attr("data-state", data.Red.ForceState);
   $("#redLevitateCubesIcon").attr("data-state", data.Red.LevitateState);
-  $("#redLevitateCubes").text(data.Red.LevitateCubes).attr("data-state", data.Red.LevitateState);
+  $("#redLevitateCubes").text(redScoreBreakdown.LevitateCubes).attr("data-state", data.Red.LevitateState);
   $("#redBoostCubesIcon").attr("data-state", data.Red.BoostState);
-  $("#redBoostCubes").text(data.Red.BoostCubes).attr("data-state", data.Red.BoostState);
+  $("#redBoostCubes").text(redScoreBreakdown.BoostCubes).attr("data-state", data.Red.BoostState);
 
+  var blueScoreBreakdown = data.Blue.RealtimeScore.CurrentScore;
   $("#blueScoreNumber").text(data.Blue.Score);
   $("#blueForceCubesIcon").attr("data-state", data.Blue.ForceState);
-  $("#blueForceCubes").text(data.Blue.ForceCubes).attr("data-state", data.Blue.ForceState);
+  $("#blueForceCubes").text(blueScoreBreakdown.ForceCubes).attr("data-state", data.Blue.ForceState);
   $("#blueLevitateCubesIcon").attr("data-state", data.Blue.LevitateState);
-  $("#blueLevitateCubes").text(data.Blue.LevitateCubes).attr("data-state", data.Blue.LevitateState);
+  $("#blueLevitateCubes").text(blueScoreBreakdown.LevitateCubes).attr("data-state", data.Blue.LevitateState);
   $("#blueBoostCubesIcon").attr("data-state", data.Blue.BoostState);
-  $("#blueBoostCubes").text(data.Blue.BoostCubes).attr("data-state", data.Blue.BoostState);
+  $("#blueBoostCubes").text(blueScoreBreakdown.BoostCubes).attr("data-state", data.Blue.BoostState);
 
   // Switch/scale indicators.
   $("#scaleIndicator").attr("data-owned-by", data.ScaleOwnedBy);
@@ -85,33 +87,33 @@ var handleRealtimeScore = function(data) {
 };
 
 // Handles a websocket message to populate the final score data.
-var handleSetFinalScore = function(data) {
-  $("#redFinalScore").text(data.RedScore.Score);
+var handleScorePosted = function(data) {
+  $("#redFinalScore").text(data.RedScoreSummary.Score);
   $("#redFinalTeam1").text(data.Match.Red1);
   $("#redFinalTeam2").text(data.Match.Red2);
   $("#redFinalTeam3").text(data.Match.Red3);
-  $("#redFinalAutoRunPoints").text(data.RedScore.AutoRunPoints);
-  $("#redFinalOwnershipPoints").text(data.RedScore.OwnershipPoints);
-  $("#redFinalVaultPoints").text(data.RedScore.VaultPoints);
-  $("#redFinalParkClimbPoints").text(data.RedScore.ParkClimbPoints);
-  $("#redFinalFoulPoints").text(data.RedScore.FoulPoints);
-  $("#redFinalAutoQuest").html(data.RedScore.AutoQuest ? "&#x2714;" : "&#x2718;");
-  $("#redFinalAutoQuest").attr("data-checked", data.RedScore.AutoQuest);
-  $("#redFinalFaceTheBoss").html(data.RedScore.FaceTheBoss ? "&#x2714;" : "&#x2718;");
-  $("#redFinalFaceTheBoss").attr("data-checked", data.RedScore.FaceTheBoss);
-  $("#blueFinalScore").text(data.BlueScore.Score);
+  $("#redFinalAutoRunPoints").text(data.RedScoreSummary.AutoRunPoints);
+  $("#redFinalOwnershipPoints").text(data.RedScoreSummary.OwnershipPoints);
+  $("#redFinalVaultPoints").text(data.RedScoreSummary.VaultPoints);
+  $("#redFinalParkClimbPoints").text(data.RedScoreSummary.ParkClimbPoints);
+  $("#redFinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
+  $("#redFinalAutoQuest").html(data.RedScoreSummary.AutoQuest ? "&#x2714;" : "&#x2718;");
+  $("#redFinalAutoQuest").attr("data-checked", data.RedScoreSummary.AutoQuest);
+  $("#redFinalFaceTheBoss").html(data.RedScoreSummary.FaceTheBoss ? "&#x2714;" : "&#x2718;");
+  $("#redFinalFaceTheBoss").attr("data-checked", data.RedScoreSummary.FaceTheBoss);
+  $("#blueFinalScore").text(data.BlueScoreSummary.Score);
   $("#blueFinalTeam1").text(data.Match.Blue1);
   $("#blueFinalTeam2").text(data.Match.Blue2);
   $("#blueFinalTeam3").text(data.Match.Blue3);
-  $("#blueFinalAutoRunPoints").text(data.BlueScore.AutoRunPoints);
-  $("#blueFinalOwnershipPoints").text(data.BlueScore.OwnershipPoints);
-  $("#blueFinalVaultPoints").text(data.BlueScore.VaultPoints);
-  $("#blueFinalParkClimbPoints").text(data.BlueScore.ParkClimbPoints);
-  $("#blueFinalFoulPoints").text(data.BlueScore.FoulPoints);
-  $("#blueFinalAutoQuest").html(data.BlueScore.AutoQuest ? "&#x2714;" : "&#x2718;");
-  $("#blueFinalAutoQuest").attr("data-checked", data.BlueScore.AutoQuest);
-  $("#blueFinalFaceTheBoss").html(data.BlueScore.FaceTheBoss ? "&#x2714;" : "&#x2718;");
-  $("#blueFinalFaceTheBoss").attr("data-checked", data.BlueScore.FaceTheBoss);
+  $("#blueFinalAutoRunPoints").text(data.BlueScoreSummary.AutoRunPoints);
+  $("#blueFinalOwnershipPoints").text(data.BlueScoreSummary.OwnershipPoints);
+  $("#blueFinalVaultPoints").text(data.BlueScoreSummary.VaultPoints);
+  $("#blueFinalParkClimbPoints").text(data.BlueScoreSummary.ParkClimbPoints);
+  $("#blueFinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
+  $("#blueFinalAutoQuest").html(data.BlueScoreSummary.AutoQuest ? "&#x2714;" : "&#x2718;");
+  $("#blueFinalAutoQuest").attr("data-checked", data.BlueScoreSummary.AutoQuest);
+  $("#blueFinalFaceTheBoss").html(data.BlueScoreSummary.FaceTheBoss ? "&#x2714;" : "&#x2718;");
+  $("#blueFinalFaceTheBoss").attr("data-checked", data.BlueScoreSummary.FaceTheBoss);
   $("#finalMatchName").text(data.MatchName + " " + data.Match.DisplayName);
 };
 
@@ -127,7 +129,7 @@ var handlePlaySound = function(sound) {
 
 // Handles a websocket message to update the alliance selection screen.
 var handleAllianceSelection = function(alliances) {
-  if (alliances) {
+  if (alliances && alliances.length > 0) {
     var numColumns = alliances[0].length + 1;
     $.each(alliances, function(k, v) {
       v.Index = k + 1;
@@ -399,15 +401,15 @@ var initializeSponsorDisplay = function() {
 $(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {
-    setAudienceDisplay: function(event) { handleSetAudienceDisplay(event.data); },
-    setMatch: function(event) { handleSetMatch(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    setFinalScore: function(event) { handleSetFinalScore(event.data); },
-    playSound: function(event) { handlePlaySound(event.data); },
     allianceSelection: function(event) { handleAllianceSelection(event.data); },
-    lowerThird: function(event) { handleLowerThird(event.data); }
+    audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
+    lowerThird: function(event) { handleLowerThird(event.data); },
+    matchLoad: function(event) { handleMatchLoad(event.data); },
+    matchTime: function(event) { handleMatchTime(event.data); },
+    matchTiming: function(event) { handleMatchTiming(event.data); },
+    playSound: function(event) { handlePlaySound(event.data); },
+    realtimeScore: function(event) { handleRealtimeScore(event.data); },
+    scorePosted: function(event) { handleScorePosted(event.data); }
   });
 
   initializeSponsorDisplay();

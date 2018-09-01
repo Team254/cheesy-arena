@@ -10,6 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
@@ -86,54 +87,25 @@ func (web *Web) refereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO(patrick): Enable authentication once Safari (for iPad) supports it over Websocket.
 
-	websocket, err := NewWebsocket(w, r)
+	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	defer websocket.Close()
+	defer ws.Close()
 
-	matchLoadTeamsListener := web.arena.MatchLoadTeamsNotifier.Listen()
-	defer close(matchLoadTeamsListener)
-	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
-	defer close(reloadDisplaysListener)
-
-	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
-	go func() {
-		for {
-			var messageType string
-			var message interface{}
-			select {
-			case _, ok := <-matchLoadTeamsListener:
-				if !ok {
-					return
-				}
-				messageType = "reload"
-				message = nil
-			case _, ok := <-reloadDisplaysListener:
-				if !ok {
-					return
-				}
-				messageType = "reload"
-				message = nil
-			}
-			err = websocket.Write(messageType, message)
-			if err != nil {
-				// The client has probably closed the connection; nothing to do here.
-				return
-			}
-		}
-	}()
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
+	go ws.HandleNotifiers(web.arena.MatchLoadNotifier, web.arena.ReloadDisplaysNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		messageType, data, err := websocket.Read()
+		messageType, data, err := ws.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
 				return
 			}
-			log.Printf("Websocket error: %s", err)
+			log.Println(err)
 			return
 		}
 
@@ -147,7 +119,7 @@ func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 
@@ -161,7 +133,7 @@ func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 				web.arena.BlueRealtimeScore.CurrentScore.Fouls =
 					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
 			}
-			web.arena.RealtimeScoreNotifier.Notify(nil)
+			web.arena.RealtimeScoreNotifier.Notify()
 		case "deleteFoul":
 			args := struct {
 				Alliance       string
@@ -172,7 +144,7 @@ func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 
@@ -191,7 +163,7 @@ func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 					break
 				}
 			}
-			web.arena.RealtimeScoreNotifier.Notify(nil)
+			web.arena.RealtimeScoreNotifier.Notify()
 		case "card":
 			args := struct {
 				Alliance string
@@ -200,7 +172,7 @@ func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 
@@ -226,8 +198,8 @@ func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 				continue
 			}
 			web.arena.FieldReset = true
-			web.arena.AllianceStationDisplayScreen = "fieldReset"
-			web.arena.AllianceStationDisplayNotifier.Notify(nil)
+			web.arena.AllianceStationDisplayMode = "fieldReset"
+			web.arena.AllianceStationDisplayModeNotifier.Notify()
 			continue // Don't reload.
 		case "commitMatch":
 			if web.arena.MatchState != field.PostMatch {
@@ -237,18 +209,18 @@ func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 			web.arena.RedRealtimeScore.FoulsCommitted = true
 			web.arena.BlueRealtimeScore.FoulsCommitted = true
 			web.arena.FieldReset = true
-			web.arena.AllianceStationDisplayScreen = "fieldReset"
-			web.arena.AllianceStationDisplayNotifier.Notify(nil)
-			web.arena.ScoringStatusNotifier.Notify(nil)
+			web.arena.AllianceStationDisplayMode = "fieldReset"
+			web.arena.AllianceStationDisplayModeNotifier.Notify()
+			web.arena.ScoringStatusNotifier.Notify()
 		default:
-			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue
 		}
 
 		// Force a reload of the client to render the updated foul list.
-		err = websocket.Write("reload", nil)
+		err = ws.WriteNotifier(web.arena.ReloadDisplaysNotifier)
 		if err != nil {
-			log.Printf("Websocket error: %s", err)
+			log.Println(err)
 			return
 		}
 	}

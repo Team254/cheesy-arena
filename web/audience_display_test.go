@@ -4,9 +4,9 @@
 package web
 
 import (
-	"github.com/gorilla/websocket"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"sync"
 	"testing"
 )
 
@@ -23,23 +23,22 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/audience/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/audience/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn, new(sync.Mutex)}
+	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "audienceDisplayMode")
+	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
-	readWebsocketType(t, ws, "setAudienceDisplay")
-	readWebsocketType(t, ws, "setMatch")
 	readWebsocketType(t, ws, "realtimeScore")
-	readWebsocketType(t, ws, "setFinalScore")
-	readWebsocketType(t, ws, "allianceSelection")
+	readWebsocketType(t, ws, "scorePosted")
 
 	// Run through a match cycle.
-	web.arena.MatchLoadTeamsNotifier.Notify(nil)
-	readWebsocketType(t, ws, "setMatch")
+	web.arena.MatchLoadNotifier.Notify()
+	readWebsocketType(t, ws, "matchLoad")
 	web.arena.AllianceStations["R1"].Bypass = true
 	web.arena.AllianceStations["R2"].Bypass = true
 	web.arena.AllianceStations["R3"].Bypass = true
@@ -49,7 +48,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	web.arena.StartMatch()
 	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 3)
-	screen, ok := messages["setAudienceDisplay"]
+	screen, ok := messages["audienceDisplayMode"]
 	if assert.True(t, ok) {
 		assert.Equal(t, "match", screen)
 	}
@@ -59,14 +58,14 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	}
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)
-	web.arena.RealtimeScoreNotifier.Notify(nil)
+	web.arena.RealtimeScoreNotifier.Notify()
 	readWebsocketType(t, ws, "realtimeScore")
-	web.arena.ScorePostedNotifier.Notify(nil)
-	readWebsocketType(t, ws, "setFinalScore")
+	web.arena.ScorePostedNotifier.Notify()
+	readWebsocketType(t, ws, "scorePosted")
 
 	// Test other overlays.
-	web.arena.AllianceSelectionNotifier.Notify(nil)
+	web.arena.AllianceSelectionNotifier.Notify()
 	readWebsocketType(t, ws, "allianceSelection")
-	web.arena.LowerThirdNotifier.Notify(nil)
+	web.arena.LowerThirdNotifier.Notify()
 	readWebsocketType(t, ws, "lowerThird")
 }

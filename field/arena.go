@@ -46,58 +46,37 @@ type Arena struct {
 	TbaClient        *partner.TbaClient
 	StemTvClient     *partner.StemTvClient
 	AllianceStations map[string]*AllianceStation
-	CurrentMatch     *model.Match
+	ArenaNotifiers
 	MatchState
-	lastMatchState                 MatchState
-	MatchStartTime                 time.Time
-	LastMatchTimeSec               float64
-	RedRealtimeScore               *RealtimeScore
-	BlueRealtimeScore              *RealtimeScore
-	lastDsPacketTime               time.Time
-	FieldVolunteers                bool
-	FieldReset                     bool
-	AudienceDisplayScreen          string
-	SavedMatch                     *model.Match
-	SavedMatchResult               *model.MatchResult
-	AllianceStationDisplays        map[string]string
-	AllianceStationDisplayScreen   string
-	MuteMatchSounds                bool
-	matchAborted                   bool
-	matchStateNotifier             *Notifier
-	MatchTimeNotifier              *Notifier
-	RobotStatusNotifier            *Notifier
-	MatchLoadTeamsNotifier         *Notifier
-	ScoringStatusNotifier          *Notifier
-	RealtimeScoreNotifier          *Notifier
-	ScorePostedNotifier            *Notifier
-	AudienceDisplayNotifier        *Notifier
-	PlaySoundNotifier              *Notifier
-	AllianceStationDisplayNotifier *Notifier
-	AllianceSelectionNotifier      *Notifier
-	LowerThirdNotifier             *Notifier
-	ReloadDisplaysNotifier         *Notifier
-	Scale                          *game.Seesaw
-	RedSwitch                      *game.Seesaw
-	BlueSwitch                     *game.Seesaw
-	RedVault                       *game.Vault
-	BlueVault                      *game.Vault
-	ScaleLeds                      led.Controller
-	RedSwitchLeds                  led.Controller
-	BlueSwitchLeds                 led.Controller
-	RedVaultLeds                   vaultled.Controller
-	BlueVaultLeds                  vaultled.Controller
-	warmupLedMode                  led.Mode
-	lastRedAllianceReady           bool
-	lastBlueAllianceReady          bool
-}
-
-type ArenaStatus struct {
-	AllianceStations map[string]*AllianceStation
-	MatchState
-	CanStartMatch    bool
-	PlcIsHealthy     bool
-	FieldEstop       bool
-	GameSpecificData string
+	lastMatchState             MatchState
+	CurrentMatch               *model.Match
+	MatchStartTime             time.Time
+	LastMatchTimeSec           float64
+	RedRealtimeScore           *RealtimeScore
+	BlueRealtimeScore          *RealtimeScore
+	lastDsPacketTime           time.Time
+	FieldVolunteers            bool
+	FieldReset                 bool
+	AudienceDisplayMode        string
+	SavedMatch                 *model.Match
+	SavedMatchResult           *model.MatchResult
+	AllianceStationDisplays    map[string]string
+	AllianceStationDisplayMode string
+	MuteMatchSounds            bool
+	matchAborted               bool
+	Scale                      *game.Seesaw
+	RedSwitch                  *game.Seesaw
+	BlueSwitch                 *game.Seesaw
+	RedVault                   *game.Vault
+	BlueVault                  *game.Vault
+	ScaleLeds                  led.Controller
+	RedSwitchLeds              led.Controller
+	BlueSwitchLeds             led.Controller
+	RedVaultLeds               vaultled.Controller
+	BlueVaultLeds              vaultled.Controller
+	warmupLedMode              led.Mode
+	lastRedAllianceReady       bool
+	lastBlueAllianceReady      bool
 }
 
 type AllianceStation struct {
@@ -130,32 +109,20 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.AllianceStations["B2"] = new(AllianceStation)
 	arena.AllianceStations["B3"] = new(AllianceStation)
 
-	arena.matchStateNotifier = NewNotifier()
-	arena.MatchTimeNotifier = NewNotifier()
-	arena.RobotStatusNotifier = NewNotifier()
-	arena.MatchLoadTeamsNotifier = NewNotifier()
-	arena.ScoringStatusNotifier = NewNotifier()
-	arena.RealtimeScoreNotifier = NewNotifier()
-	arena.ScorePostedNotifier = NewNotifier()
-	arena.AudienceDisplayNotifier = NewNotifier()
-	arena.PlaySoundNotifier = NewNotifier()
-	arena.AllianceStationDisplayNotifier = NewNotifier()
-	arena.AllianceSelectionNotifier = NewNotifier()
-	arena.LowerThirdNotifier = NewNotifier()
-	arena.ReloadDisplaysNotifier = NewNotifier()
+	arena.configureNotifiers()
 
 	// Load empty match as current.
 	arena.MatchState = PreMatch
 	arena.LoadTestMatch()
-	arena.lastMatchState = -1
 	arena.LastMatchTimeSec = 0
+	arena.lastMatchState = -1
 
 	// Initialize display parameters.
-	arena.AudienceDisplayScreen = "blank"
+	arena.AudienceDisplayMode = "blank"
 	arena.SavedMatch = &model.Match{}
 	arena.SavedMatchResult = model.NewMatchResult()
 	arena.AllianceStationDisplays = make(map[string]string)
-	arena.AllianceStationDisplayScreen = "match"
+	arena.AllianceStationDisplayMode = "match"
 
 	return arena, nil
 }
@@ -257,10 +224,10 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.BlueSwitchLeds.SetSidedness(true)
 
 	// Notify any listeners about the new match.
-	arena.MatchLoadTeamsNotifier.Notify(nil)
-	arena.RealtimeScoreNotifier.Notify(nil)
-	arena.AllianceStationDisplayScreen = "match"
-	arena.AllianceStationDisplayNotifier.Notify(nil)
+	arena.MatchLoadNotifier.Notify()
+	arena.RealtimeScoreNotifier.Notify()
+	arena.AllianceStationDisplayMode = "match"
+	arena.AllianceStationDisplayModeNotifier.Notify()
 
 	// Set the initial state of the lights.
 	arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
@@ -325,7 +292,7 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 		arena.CurrentMatch.Blue3 = teamId
 	}
 	arena.setupNetwork()
-	arena.MatchLoadTeamsNotifier.Notify(nil)
+	arena.MatchLoadNotifier.Notify()
 
 	if arena.CurrentMatch.Type != "test" {
 		arena.Database.SaveMatch(arena.CurrentMatch)
@@ -379,12 +346,14 @@ func (arena *Arena) AbortMatch() error {
 		return fmt.Errorf("Cannot abort match when it is not in progress.")
 	}
 	if !arena.MuteMatchSounds && arena.MatchState != WarmupPeriod {
-		arena.PlaySoundNotifier.Notify("match-abort")
+		arena.PlaySoundNotifier.NotifyWithMessage("match-abort")
 	}
 	arena.MatchState = PostMatch
 	arena.matchAborted = true
-	arena.AudienceDisplayScreen = "blank"
-	arena.AudienceDisplayNotifier.Notify(nil)
+	arena.AudienceDisplayMode = "blank"
+	arena.AudienceDisplayModeNotifier.Notify()
+	arena.AllianceStationDisplayMode = "logo"
+	arena.AllianceStationDisplayModeNotifier.Notify()
 	return nil
 }
 
@@ -432,11 +401,13 @@ func (arena *Arena) Update() {
 		arena.LastMatchTimeSec = -1
 		auto = true
 		enabled = false
-		arena.AudienceDisplayScreen = "match"
-		arena.AudienceDisplayNotifier.Notify(nil)
+		arena.AudienceDisplayMode = "match"
+		arena.AudienceDisplayModeNotifier.Notify()
+		arena.AllianceStationDisplayMode = "match"
+		arena.AllianceStationDisplayModeNotifier.Notify()
 		arena.sendGameSpecificDataPacket()
 		if !arena.MuteMatchSounds {
-			arena.PlaySoundNotifier.Notify("match-warmup")
+			arena.PlaySoundNotifier.NotifyWithMessage("match-warmup")
 		}
 		// Pick an LED warmup mode at random to keep things interesting.
 		allWarmupModes := []led.Mode{led.WarmupMode, led.Warmup2Mode, led.Warmup3Mode, led.Warmup4Mode}
@@ -450,7 +421,7 @@ func (arena *Arena) Update() {
 			enabled = true
 			sendDsPacket = true
 			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.Notify("match-start")
+				arena.PlaySoundNotifier.NotifyWithMessage("match-start")
 			}
 		}
 	case AutoPeriod:
@@ -462,7 +433,7 @@ func (arena *Arena) Update() {
 			enabled = false
 			sendDsPacket = true
 			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.Notify("match-end")
+				arena.PlaySoundNotifier.NotifyWithMessage("match-end")
 			}
 		}
 	case PausePeriod:
@@ -475,7 +446,7 @@ func (arena *Arena) Update() {
 			enabled = true
 			sendDsPacket = true
 			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.Notify("match-resume")
+				arena.PlaySoundNotifier.NotifyWithMessage("match-resume")
 			}
 		}
 	case TeleopPeriod:
@@ -486,7 +457,7 @@ func (arena *Arena) Update() {
 			arena.MatchState = EndgamePeriod
 			sendDsPacket = false
 			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.Notify("match-endgame")
+				arena.PlaySoundNotifier.NotifyWithMessage("match-endgame")
 			}
 		}
 	case EndgamePeriod:
@@ -501,38 +472,32 @@ func (arena *Arena) Update() {
 			go func() {
 				// Leave the scores on the screen briefly at the end of the match.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
-				arena.AudienceDisplayScreen = "blank"
-				arena.AudienceDisplayNotifier.Notify(nil)
-				arena.AllianceStationDisplayScreen = "logo"
-				arena.AllianceStationDisplayNotifier.Notify(nil)
+				arena.AudienceDisplayMode = "blank"
+				arena.AudienceDisplayModeNotifier.Notify()
+				arena.AllianceStationDisplayMode = "logo"
+				arena.AllianceStationDisplayModeNotifier.Notify()
 			}()
 			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.Notify("match-end")
+				arena.PlaySoundNotifier.NotifyWithMessage("match-end")
 			}
 		}
 	}
 
-	// Send a notification if the match state has changed.
-	if arena.MatchState != arena.lastMatchState {
-		arena.matchStateNotifier.Notify(arena.MatchState)
-	}
-	arena.lastMatchState = arena.MatchState
-
-	// Send a match tick notification if passing an integer second threshold.
-	if int(matchTimeSec) != int(arena.LastMatchTimeSec) {
-		arena.MatchTimeNotifier.Notify(int(matchTimeSec))
+	// Send a match tick notification if passing an integer second threshold or if the match state changed.
+	if int(matchTimeSec) != int(arena.LastMatchTimeSec) || arena.MatchState != arena.lastMatchState {
+		arena.MatchTimeNotifier.Notify()
 	}
 	arena.LastMatchTimeSec = matchTimeSec
+	arena.lastMatchState = arena.MatchState
 
 	// Send a packet if at a period transition point or if it's been long enough since the last one.
 	if sendDsPacket || time.Since(arena.lastDsPacketTime).Seconds()*1000 >= dsPacketPeriodMs {
 		arena.sendDsPacket(auto, enabled)
-		arena.RobotStatusNotifier.Notify(nil)
+		arena.ArenaStatusNotifier.Notify()
 	}
 
 	// Handle field sensors/lights/motors.
 	arena.handlePlcInput()
-	arena.handlePlcOutput()
 	arena.handleLeds()
 }
 
@@ -558,11 +523,6 @@ func (arena *Arena) RedScoreSummary() *game.ScoreSummary {
 // Calculates the blue alliance score summary for the given realtime snapshot.
 func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
 	return arena.BlueRealtimeScore.CurrentScore.Summarize(arena.RedRealtimeScore.CurrentScore.Fouls)
-}
-
-func (arena *Arena) GetStatus() *ArenaStatus {
-	return &ArenaStatus{arena.AllianceStations, arena.MatchState, arena.checkCanStartMatch() == nil,
-		arena.Plc.IsHealthy, arena.Plc.GetFieldEstop(), arena.CurrentMatch.GameSpecificData}
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -766,21 +726,16 @@ func (arena *Arena) handlePlcInput() {
 	// Check if a power up has been newly played and trigger the accompanying sound effect if so.
 	newRedPowerUp := arena.RedVault.CheckForNewlyPlayedPowerUp()
 	if newRedPowerUp != "" && !arena.MuteMatchSounds {
-		arena.PlaySoundNotifier.Notify("match-" + newRedPowerUp)
+		arena.PlaySoundNotifier.NotifyWithMessage("match-" + newRedPowerUp)
 	}
 	newBluePowerUp := arena.BlueVault.CheckForNewlyPlayedPowerUp()
 	if newBluePowerUp != "" && !arena.MuteMatchSounds {
-		arena.PlaySoundNotifier.Notify("match-" + newBluePowerUp)
+		arena.PlaySoundNotifier.NotifyWithMessage("match-" + newBluePowerUp)
 	}
 
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) || ownershipChanged {
-		arena.RealtimeScoreNotifier.Notify(nil)
+		arena.RealtimeScoreNotifier.Notify()
 	}
-}
-
-// Writes light/motor commands to the field PLC.
-func (arena *Arena) handlePlcOutput() {
-	// TODO(patrick): Update for 2018.
 }
 
 func (arena *Arena) handleLeds() {
