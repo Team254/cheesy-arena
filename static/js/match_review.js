@@ -33,16 +33,20 @@ var renderResults = function(alliance) {
 
   // Set the values of the form fields from the JSON results data.
   $("input[name=" + alliance + "AutoRuns]").val(result.score.AutoRuns);
-  $("input[name=" + alliance + "AutoOwnershipPoints]").val(result.score.AutoOwnershipPoints);
+  $("input[name=" + alliance + "AutoScaleOwnershipSec]").val(result.score.AutoScaleOwnershipSec);
+  $("input[name=" + alliance + "AutoSwitchOwnershipSec]").val(result.score.AutoSwitchOwnershipSec);
   $("input[name=" + alliance + "AutoEndSwitchOwnership]").prop("checked", result.score.AutoEndSwitchOwnership);
 
-  $("input[name=" + alliance + "TeleopOwnershipPoints]").val(result.score.TeleopOwnershipPoints);
+  $("input[name=" + alliance + "TeleopScaleOwnershipSec]").val(result.score.TeleopScaleOwnershipSec);
+  $("input[name=" + alliance + "TeleopScaleBoostSec]").val(result.score.TeleopScaleBoostSec);
+  $("input[name=" + alliance + "TeleopSwitchOwnershipSec]").val(result.score.TeleopSwitchOwnershipSec);
+  $("input[name=" + alliance + "TeleopSwitchBoostSec]").val(result.score.TeleopSwitchBoostSec);
   $("input[name=" + alliance + "ForceCubes]").val(result.score.ForceCubes);
-  $("input[name=" + alliance + "ForcePlayed]").prop("checked", result.score.ForcePlayed);
+  $("input[name=" + alliance + "ForceCubesPlayed]").val(result.score.ForceCubesPlayed);
   $("input[name=" + alliance + "LevitateCubes]").val(result.score.LevitateCubes);
   $("input[name=" + alliance + "LevitatePlayed]").prop("checked", result.score.LevitatePlayed);
   $("input[name=" + alliance + "BoostCubes]").val(result.score.BoostCubes);
-  $("input[name=" + alliance + "BoostPlayed]").prop("checked", result.score.BoostPlayed);
+  $("input[name=" + alliance + "BoostCubesPlayed]").val(result.score.BoostCubesPlayed);
   $("input[name=" + alliance + "Climbs]").val(result.score.Climbs);
   $("input[name=" + alliance + "Parks]").val(result.score.Parks);
 
@@ -71,15 +75,19 @@ var updateResults = function(alliance) {
   });
 
   result.score.AutoRuns = parseInt(formData[alliance + "AutoRuns"]);
-  result.score.AutoOwnershipPoints = parseInt(formData[alliance + "AutoOwnershipPoints"]);
+  result.score.AutoScaleOwnershipSec = parseFloat(formData[alliance + "AutoScaleOwnershipSec"]);
+  result.score.AutoSwitchOwnershipSec = parseFloat(formData[alliance + "AutoSwitchOwnershipSec"]);
   result.score.AutoEndSwitchOwnership = formData[alliance + "AutoEndSwitchOwnership"] === "on";
-  result.score.TeleopOwnershipPoints = parseInt(formData[alliance + "TeleopOwnershipPoints"]);
+  result.score.TeleopScaleOwnershipSec = parseFloat(formData[alliance + "TeleopScaleOwnershipSec"]);
+  result.score.TeleopScaleBoostSec = parseFloat(formData[alliance + "TeleopScaleBoostSec"]);
+  result.score.TeleopSwitchOwnershipSec = parseFloat(formData[alliance + "TeleopSwitchOwnershipSec"]);
+  result.score.TeleopSwitchBoostSec = parseFloat(formData[alliance + "TeleopSwitchBoostSec"]);
   result.score.ForceCubes = parseInt(formData[alliance + "ForceCubes"]);
-  result.score.ForcePlayed = formData[alliance + "ForcePlayed"] === "on";
+  result.score.ForceCubesPlayed = parseInt(formData[alliance + "ForceCubesPlayed"]);
   result.score.LevitateCubes = parseInt(formData[alliance + "LevitateCubes"]);
   result.score.LevitatePlayed = formData[alliance + "LevitatePlayed"] === "on";
   result.score.BoostCubes = parseInt(formData[alliance + "BoostCubes"]);
-  result.score.BoostPlayed = formData[alliance + "BoostPlayed"] === "on";
+  result.score.BoostCubesPlayed = parseInt(formData[alliance + "BoostCubesPlayed"]);
   result.score.Climbs = parseInt(formData[alliance + "Climbs"]);
   result.score.Parks = parseInt(formData[alliance + "Parks"]);
 

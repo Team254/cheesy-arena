@@ -100,12 +100,32 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoOwnershipPoints += 1
+	score2.AutoScaleOwnershipSec += 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.TeleopOwnershipPoints += 1
+	score2.AutoSwitchOwnershipSec += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.TeleopScaleOwnershipSec += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.TeleopScaleBoostSec += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.TeleopSwitchOwnershipSec += 1
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.TeleopSwitchBoostSec += 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
@@ -115,7 +135,7 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.ForcePlayed = !score2.ForcePlayed
+	score2.ForceCubesPlayed = 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
@@ -135,7 +155,7 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.BoostPlayed = !score2.BoostPlayed
+	score2.BoostCubesPlayed = 2
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 

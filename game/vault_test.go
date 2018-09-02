@@ -47,6 +47,9 @@ func TestVaultNumCubes(t *testing.T) {
 	assert.Equal(t, 3, vault.ForceCubes)
 	assert.Equal(t, 3, vault.LevitateCubes)
 	assert.Equal(t, 3, vault.BoostCubes)
+
+	assert.Equal(t, 0, vault.ForceCubesPlayed)
+	assert.Equal(t, 0, vault.BoostCubesPlayed)
 }
 
 func TestVaultLevitate(t *testing.T) {
@@ -97,6 +100,8 @@ func TestVaultForce(t *testing.T) {
 		assert.Equal(t, Force, vault.ForcePowerUp.Effect)
 		assert.Equal(t, 1, vault.ForcePowerUp.Level)
 	}
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, zeroCubeDistance)
+	assert.Equal(t, 1, vault.ForceCubesPlayed)
 
 	// Activation with two cubes.
 	vault = Vault{Alliance: RedAlliance}
@@ -107,7 +112,10 @@ func TestVaultForce(t *testing.T) {
 		assert.Equal(t, RedAlliance, vault.ForcePowerUp.Alliance)
 		assert.Equal(t, Force, vault.ForcePowerUp.Effect)
 		assert.Equal(t, 2, vault.ForcePowerUp.Level)
+		assert.Equal(t, 2, vault.ForceCubesPlayed)
 	}
+	vault.UpdateCubes(threeCubeDistance, zeroCubeDistance, zeroCubeDistance)
+	assert.Equal(t, 2, vault.ForceCubesPlayed)
 
 	// Activation with three cubes.
 	vault = Vault{Alliance: BlueAlliance}
@@ -120,6 +128,8 @@ func TestVaultForce(t *testing.T) {
 		assert.Equal(t, Force, vault.ForcePowerUp.Effect)
 		assert.Equal(t, 3, vault.ForcePowerUp.Level)
 	}
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, zeroCubeDistance)
+	assert.Equal(t, 3, vault.ForceCubesPlayed)
 
 	vault.UpdateCubes(threeCubeDistance, zeroCubeDistance, zeroCubeDistance)
 	vault.UpdateButtons(false, false, false, time.Now())
@@ -146,6 +156,8 @@ func TestVaultBoost(t *testing.T) {
 		assert.Equal(t, Boost, vault.BoostPowerUp.Effect)
 		assert.Equal(t, 1, vault.BoostPowerUp.Level)
 	}
+	vault.UpdateCubes(zeroCubeDistance, twoCubeDistance, zeroCubeDistance)
+	assert.Equal(t, 1, vault.BoostCubesPlayed)
 
 	// Activation with two cubes.
 	vault = Vault{Alliance: RedAlliance}
@@ -157,6 +169,8 @@ func TestVaultBoost(t *testing.T) {
 		assert.Equal(t, Boost, vault.BoostPowerUp.Effect)
 		assert.Equal(t, 2, vault.BoostPowerUp.Level)
 	}
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, zeroCubeDistance)
+	assert.Equal(t, 2, vault.BoostCubesPlayed)
 
 	// Activation with three cubes.
 	vault = Vault{Alliance: BlueAlliance}
@@ -169,6 +183,8 @@ func TestVaultBoost(t *testing.T) {
 		assert.Equal(t, Boost, vault.BoostPowerUp.Effect)
 		assert.Equal(t, 3, vault.BoostPowerUp.Level)
 	}
+	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, zeroCubeDistance)
+	assert.Equal(t, 3, vault.BoostCubesPlayed)
 
 	vault.UpdateCubes(zeroCubeDistance, zeroCubeDistance, threeCubeDistance)
 	vault.UpdateButtons(false, false, false, time.Now())

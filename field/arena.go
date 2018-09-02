@@ -698,31 +698,35 @@ func (arena *Arena) handlePlcInput() {
 	ownershipChanged = arena.RedSwitch.UpdateState(redSwitch, currentTime) || ownershipChanged
 	ownershipChanged = arena.BlueSwitch.UpdateState(blueSwitch, currentTime) || ownershipChanged
 	if arena.MatchState == AutoPeriod {
-		redScore.AutoOwnershipPoints = 2 * int(arena.RedSwitch.GetRedSeconds(matchStartTime, currentTime)+
-			arena.Scale.GetRedSeconds(matchStartTime, currentTime))
-		blueScore.AutoOwnershipPoints = 2 * int(arena.BlueSwitch.GetBlueSeconds(matchStartTime, currentTime)+
-			arena.Scale.GetBlueSeconds(matchStartTime, currentTime))
+		redScore.AutoScaleOwnershipSec, _ = arena.Scale.GetRedSeconds(matchStartTime, currentTime)
+		redScore.AutoSwitchOwnershipSec, _ = arena.RedSwitch.GetRedSeconds(matchStartTime, currentTime)
+		blueScore.AutoScaleOwnershipSec, _ = arena.Scale.GetBlueSeconds(matchStartTime, currentTime)
+		blueScore.AutoSwitchOwnershipSec, _ = arena.BlueSwitch.GetBlueSeconds(matchStartTime, currentTime)
 	} else {
-		redScore.TeleopOwnershipPoints = int(arena.RedSwitch.GetRedSeconds(teleopStartTime, currentTime) +
-			arena.Scale.GetRedSeconds(teleopStartTime, currentTime))
-		blueScore.TeleopOwnershipPoints = int(arena.BlueSwitch.GetBlueSeconds(teleopStartTime, currentTime) +
-			arena.Scale.GetBlueSeconds(teleopStartTime, currentTime))
+		redScore.TeleopScaleOwnershipSec, redScore.TeleopScaleBoostSec =
+			arena.Scale.GetRedSeconds(teleopStartTime, currentTime)
+		redScore.TeleopSwitchOwnershipSec, redScore.TeleopSwitchBoostSec =
+			arena.RedSwitch.GetRedSeconds(teleopStartTime, currentTime)
+		blueScore.TeleopScaleOwnershipSec, blueScore.TeleopScaleBoostSec =
+			arena.Scale.GetBlueSeconds(teleopStartTime, currentTime)
+		blueScore.TeleopSwitchOwnershipSec, blueScore.TeleopSwitchBoostSec =
+			arena.BlueSwitch.GetBlueSeconds(teleopStartTime, currentTime)
 	}
 
 	// Handle vaults.
-	redForceDistance, redLevitateDistance, redBoostDistance, blueForceDistance, blueLevitateDistance, blueBoostDistance :=
-		arena.Plc.GetVaults()
+	redForceDistance, redLevitateDistance, redBoostDistance, blueForceDistance, blueLevitateDistance,
+		blueBoostDistance := arena.Plc.GetVaults()
 	arena.RedVault.UpdateCubes(redForceDistance, redLevitateDistance, redBoostDistance)
 	arena.BlueVault.UpdateCubes(blueForceDistance, blueLevitateDistance, blueBoostDistance)
 	redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost := arena.Plc.GetPowerUpButtons()
 	arena.RedVault.UpdateButtons(redForce, redLevitate, redBoost, currentTime)
 	arena.BlueVault.UpdateButtons(blueForce, blueLevitate, blueBoost, currentTime)
-	redScore.ForceCubes, redScore.ForcePlayed = arena.RedVault.ForceCubes, arena.RedVault.ForcePowerUp != nil
+	redScore.ForceCubes, redScore.ForceCubesPlayed = arena.RedVault.ForceCubes, arena.RedVault.ForceCubesPlayed
 	redScore.LevitateCubes, redScore.LevitatePlayed = arena.RedVault.LevitateCubes, arena.RedVault.LevitatePlayed
-	redScore.BoostCubes, redScore.BoostPlayed = arena.RedVault.BoostCubes, arena.RedVault.BoostPowerUp != nil
-	blueScore.ForceCubes, blueScore.ForcePlayed = arena.BlueVault.ForceCubes, arena.BlueVault.ForcePowerUp != nil
+	redScore.BoostCubes, redScore.BoostCubesPlayed = arena.RedVault.BoostCubes, arena.RedVault.BoostCubesPlayed
+	blueScore.ForceCubes, blueScore.ForceCubesPlayed = arena.BlueVault.ForceCubes, arena.BlueVault.ForceCubesPlayed
 	blueScore.LevitateCubes, blueScore.LevitatePlayed = arena.BlueVault.LevitateCubes, arena.BlueVault.LevitatePlayed
-	blueScore.BoostCubes, blueScore.BoostPlayed = arena.BlueVault.BoostCubes, arena.BlueVault.BoostPowerUp != nil
+	blueScore.BoostCubes, blueScore.BoostCubesPlayed = arena.BlueVault.BoostCubes, arena.BlueVault.BoostCubesPlayed
 
 	// Check if a power up has been newly played and trigger the accompanying sound effect if so.
 	newRedPowerUp := arena.RedVault.CheckForNewlyPlayedPowerUp()

@@ -12,9 +12,11 @@ import (
 type Vault struct {
 	Alliance
 	ForceCubes         int
+	ForceCubesPlayed   int
 	LevitateCubes      int
-	BoostCubes         int
 	LevitatePlayed     bool
+	BoostCubes         int
+	BoostCubesPlayed   int
 	ForcePowerUp       *PowerUp
 	BoostPowerUp       *PowerUp
 	newlyPlayedPowerUp string
@@ -38,6 +40,7 @@ func (vault *Vault) UpdateButtons(forceButton, levitateButton, boostButton bool,
 		vault.ForcePowerUp = maybeActivatePowerUp(&PowerUp{Effect: Force, Alliance: vault.Alliance,
 			Level: vault.ForceCubes}, currentTime)
 		if vault.ForcePowerUp != nil {
+			vault.ForceCubesPlayed = vault.ForceCubes
 			vault.newlyPlayedPowerUp = "force"
 		}
 	}
@@ -46,6 +49,7 @@ func (vault *Vault) UpdateButtons(forceButton, levitateButton, boostButton bool,
 		vault.BoostPowerUp = maybeActivatePowerUp(&PowerUp{Effect: Boost, Alliance: vault.Alliance,
 			Level: vault.BoostCubes}, currentTime)
 		if vault.BoostPowerUp != nil {
+			vault.BoostCubesPlayed = vault.BoostCubes
 			vault.newlyPlayedPowerUp = "boost"
 		}
 	}

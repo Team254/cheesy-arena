@@ -76,13 +76,13 @@ func (seesaw *Seesaw) GetOwnedBy() Alliance {
 	}
 }
 
-// Returns the auto and teleop period scores for the red alliance.
-func (seesaw *Seesaw) GetRedSeconds(startTime, endTime time.Time) float64 {
+// Returns the total seconds of ownership and boost score accumulation for the red alliance.
+func (seesaw *Seesaw) GetRedSeconds(startTime, endTime time.Time) (float64, float64) {
 	return seesaw.getAllianceSeconds(RedAlliance, startTime, endTime)
 }
 
-// Returns the auto and teleop period scores for the blue alliance.
-func (seesaw *Seesaw) GetBlueSeconds(startTime, endTime time.Time) float64 {
+// Returns the total seconds of ownership and boost score accumulation for the blue alliance.
+func (seesaw *Seesaw) GetBlueSeconds(startTime, endTime time.Time) (float64, float64) {
 	return seesaw.getAllianceSeconds(BlueAlliance, startTime, endTime)
 }
 
@@ -96,18 +96,20 @@ func (seesaw *Seesaw) getCurrentOwnership() *Ownership {
 	return nil
 }
 
-func (seesaw *Seesaw) getAllianceSeconds(ownedBy Alliance, startTime, endTime time.Time) float64 {
-	var seconds float64
+func (seesaw *Seesaw) getAllianceSeconds(ownedBy Alliance, startTime, endTime time.Time) (float64, float64) {
+	var ownershipSec, boostSec float64
 	for _, ownership := range seesaw.ownerships {
 		if ownership.ownedBy == ownedBy {
-			seconds += ownership.getSeconds(startTime, endTime, false)
+			ownership, boost := ownership.getSeconds(startTime, endTime)
+			ownershipSec += ownership
+			boostSec += boost
 		}
 	}
-	return seconds
+	return ownershipSec, boostSec
 }
 
-// Returns the scoring value for the ownership period, whether it is past or current.
-func (ownership *Ownership) getSeconds(startTime, endTime time.Time, ignoreBoost bool) float64 {
+// Returns the regular and boost scoring values for the ownership period, whether it is past or current.
+func (ownership *Ownership) getSeconds(startTime, endTime time.Time) (float64, float64) {
 	var ownershipStartTime, ownershipEndTime time.Time
 	if ownership.startTime.Before(startTime) {
 		ownershipStartTime = startTime
@@ -121,9 +123,9 @@ func (ownership *Ownership) getSeconds(startTime, endTime time.Time, ignoreBoost
 	}
 
 	if ownershipStartTime.After(ownershipEndTime) {
-		return 0
+		return 0, 0
 	}
-	ownershipSeconds := ownershipEndTime.Sub(ownershipStartTime).Seconds()
+	ownershipSec := ownershipEndTime.Sub(ownershipStartTime).Seconds()
 
 	// Find the boost power up applicable to this seesaw and alliance, if it exists.
 	var boostPowerUp *PowerUp
@@ -137,6 +139,7 @@ func (ownership *Ownership) getSeconds(startTime, endTime time.Time, ignoreBoost
 		}
 	}
 
+	var boostSec float64
 	if boostPowerUp != nil {
 		// Adjust for the boost.
 		var boostStartTime, boostEndTime time.Time
@@ -151,8 +154,9 @@ func (ownership *Ownership) getSeconds(startTime, endTime time.Time, ignoreBoost
 			boostEndTime = boostPowerUp.getEndTime()
 		}
 		if boostEndTime.After(boostStartTime) {
-			ownershipSeconds += boostEndTime.Sub(boostStartTime).Seconds()
+			boostSec = boostEndTime.Sub(boostStartTime).Seconds()
 		}
 	}
-	return ownershipSeconds
+
+	return ownershipSec, boostSec
 }

@@ -10,6 +10,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"io/ioutil"
 	"net/http"
@@ -40,43 +41,44 @@ type TbaMatch struct {
 }
 
 type TbaScoreBreakdown struct {
-	AutoFuelHigh              int  `json:"autoFuelHigh"`
-	AutoFuelLow               int  `json:"autoFuelLow"`
-	AutoFuelPoints            int  `json:"autoFuelPoints"`
-	Rotor1Auto                bool `json:"rotor1Auto"`
-	Rotor2Auto                bool `json:"rotor2Auto"`
-	AutoRotorPoints           int  `json:"autoRotorPoints"`
-	AutoMobilityPoints        int  `json:"autoMobilityPoints"`
-	AutoPoints                int  `json:"autoPoints"`
-	TeleopFuelHigh            int  `json:"teleopFuelHigh"`
-	TeleopFuelLow             int  `json:"teleopFuelLow"`
-	TeleopFuelPoints          int  `json:"teleopFuelPoints"`
-	Rotor1Engaged             bool `json:"rotor1Engaged"`
-	Rotor2Engaged             bool `json:"rotor2Engaged"`
-	Rotor3Engaged             bool `json:"rotor3Engaged"`
-	Rotor4Engaged             bool `json:"rotor4Engaged"`
-	TeleopRotorPoints         int  `json:"teleopRotorPoints"`
-	TeleopTakeoffPoints       int  `json:"teleopTakeoffPoints"`
-	TeleopPoints              int  `json:"teleopPoints"`
-	KPaRankingPointAchieved   bool `json:"kPaRankingPointAchieved"`
-	KPaBonusPoints            int  `json:"kPaBonusPoints"`
-	RotorRankingPointAchieved bool `json:"rotorRankingPointAchieved"`
-	RotorBonusPoints          int  `json:"rotorBonusPoints"`
-	FoulPoints                int  `json:"foulPoints"`
-	TotalPoints               int  `json:"totalPoints"`
+	AutoRunPoints            int    `json:"autoRunPoints"`
+	AutoScaleOwnershipSec    int    `json:"autoScaleOwnershipSec"`
+	AutoSwitchOwnershipSec   int    `json:"autoSwitchOwnershipSec"`
+	AutoOwnershipPoints      int    `json:"autoOwnershipPoints"`
+	AutoPoints               int    `json:"autoPoints"`
+	TeleopScaleOwnershipSec  int    `json:"teleopScaleOwnershipSec"`
+	TeleopScaleBoostSec      int    `json:"teleopScaleBoostSec"`
+	TeleopSwitchOwnershipSec int    `json:"teleopSwitchOwnershipSec"`
+	TeleopSwitchBoostSec     int    `json:"teleopSwitchBoostSec"`
+	TeleopOwnershipPoints    int    `json:"teleopOwnershipPoints"`
+	VaultForceTotal          int    `json:"vaultForceTotal"`
+	VaultForcePlayed         int    `json:"vaultForcePlayed"`
+	VaultLevitateTotal       int    `json:"vaultLevitateTotal"`
+	VaultLevitatePlayed      int    `json:"vaultLevitatePlayed"`
+	VaultBoostTotal          int    `json:"vaultBoostTotal"`
+	VaultBoostPlayed         int    `json:"vaultBoostPlayed"`
+	VaultPoints              int    `json:"vaultPoints"`
+	EndgamePoints            int    `json:"endgamePoints"`
+	TeleopPoints             int    `json:"teleopPoints"`
+	AutoQuestRankingPoint    bool   `json:"autoQuestRankingPoint"`
+	FaceTheBossRankingPoint  bool   `json:"faceTheBossRankingPoint"`
+	FoulPoints               int    `json:"foulPoints"`
+	TotalPoints              int    `json:"totalPoints"`
+	RP                       int    `json:"rp"`
+	TbaGameData              string `json:"tba_gameData"`
 }
 
 type TbaRanking struct {
-	TeamKey    string  `json:"team_key"`
-	Rank       int     `json:"rank"`
-	RP         float32 `json:"RP"`
+	TeamKey    string `json:"team_key"`
+	Rank       int    `json:"rank"`
+	RP         float32
 	ParkClimb  int
 	Auto       int
 	Ownership  int
 	Vault      int
-	WinLossTie string `json:"W-L-T"`
-	Dqs        int    `json:"dqs"`
-	Played     int    `json:"played"`
+	WinLossTie string
+	Dqs        int `json:"dqs"`
+	Played     int `json:"played"`
 }
 
 type TbaRankings struct {
@@ -295,7 +297,7 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "Match", "Auto", "Rotor", "Touchpad", "Pressure", "W-L-T"}
+	breakdowns := []string{"RP", "ParkClimb", "Auto", "Ownership", "Vault", "WinLossTie"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank,
@@ -425,51 +427,50 @@ func (client *TbaClient) postRequest(resource string, action string, body []byte
 
 func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResult, alliance string) *TbaScoreBreakdown {
 	var breakdown TbaScoreBreakdown
-	// TODO(patrick): Implement for 2018.
-	/*
-		var score *game.Score
-		var scoreSummary *game.ScoreSummary
-		if alliance == "red" {
-			score = matchResult.RedScore
-			scoreSummary = matchResult.RedScoreSummary()
-		} else {
-			score = matchResult.BlueScore
-			scoreSummary = matchResult.BlueScoreSummary()
-		}
+	var score *game.Score
+	var scoreSummary, opponentScoreSummary *game.ScoreSummary
+	if alliance == "red" {
+		score = matchResult.RedScore
+		scoreSummary = matchResult.RedScoreSummary()
+		opponentScoreSummary = matchResult.BlueScoreSummary()
+	} else {
+		score = matchResult.BlueScore
+		scoreSummary = matchResult.BlueScoreSummary()
+		opponentScoreSummary = matchResult.RedScoreSummary()
+	}
 
-		breakdown.AutoFuelHigh = score.AutoFuelHigh
-		breakdown.AutoFuelLow = score.AutoFuelLow
-		breakdown.AutoFuelPoints = score.AutoFuelHigh + score.AutoFuelLow/3
-		breakdown.Rotor1Auto = score.AutoRotors >= 1
-		breakdown.Rotor2Auto = score.AutoRotors >= 2
-		breakdown.AutoRotorPoints = 60 * score.AutoRotors
-		breakdown.AutoMobilityPoints = scoreSummary.AutoMobilityPoints
-		breakdown.AutoPoints = scoreSummary.AutoPoints
-		breakdown.TeleopFuelHigh = score.FuelHigh
-		breakdown.TeleopFuelLow = score.FuelLow
-		breakdown.TeleopFuelPoints = scoreSummary.PressurePoints - breakdown.AutoFuelPoints
-		totalRotors := score.AutoRotors + score.Rotors
-		breakdown.Rotor1Engaged = totalRotors >= 1
-		breakdown.Rotor2Engaged = totalRotors >= 2
-		breakdown.Rotor3Engaged = totalRotors >= 3
-		breakdown.Rotor4Engaged = totalRotors >= 4
-		breakdown.TeleopRotorPoints = scoreSummary.RotorPoints - breakdown.AutoRotorPoints
-		breakdown.TeleopTakeoffPoints = scoreSummary.TakeoffPoints
-		breakdown.TeleopPoints = breakdown.TeleopFuelPoints + breakdown.TeleopRotorPoints +
-			breakdown.TeleopTakeoffPoints + scoreSummary.BonusPoints
-		if match.Type == "elimination" {
-			if scoreSummary.PressureGoalReached {
-				breakdown.KPaBonusPoints = 20
-			}
-			if scoreSummary.RotorGoalReached {
-				breakdown.RotorBonusPoints = 100
-			}
-		} else {
-			breakdown.KPaRankingPointAchieved = scoreSummary.PressureGoalReached
-			breakdown.RotorRankingPointAchieved = scoreSummary.RotorGoalReached
-		}
-		breakdown.FoulPoints = scoreSummary.FoulPoints
-		breakdown.TotalPoints = scoreSummary.Score
-	*/
+	breakdown.AutoRunPoints = 5 * score.AutoRuns
+	breakdown.AutoScaleOwnershipSec = int(score.AutoScaleOwnershipSec)
+	breakdown.AutoSwitchOwnershipSec = int(score.AutoSwitchOwnershipSec)
+	breakdown.AutoOwnershipPoints = scoreSummary.AutoOwnershipPoints
+	breakdown.AutoPoints = scoreSummary.AutoPoints
+	breakdown.TeleopScaleOwnershipSec = int(score.TeleopScaleOwnershipSec)
+	breakdown.TeleopScaleBoostSec = int(score.TeleopScaleBoostSec)
+	breakdown.TeleopSwitchOwnershipSec = int(score.TeleopSwitchOwnershipSec)
+	breakdown.TeleopSwitchBoostSec = int(score.TeleopSwitchBoostSec)
+	breakdown.TeleopOwnershipPoints = scoreSummary.TeleopOwnershipPoints
+	breakdown.VaultForceTotal = score.ForceCubes
+	breakdown.VaultForcePlayed = score.ForceCubesPlayed
+	breakdown.VaultLevitateTotal = score.LevitateCubes
+	if score.LevitatePlayed {
+		breakdown.VaultLevitatePlayed = score.LevitateCubes
+	}
+	breakdown.VaultBoostTotal = score.BoostCubes
+	breakdown.VaultBoostPlayed = score.BoostCubesPlayed
+	breakdown.VaultPoints = scoreSummary.VaultPoints
+	breakdown.EndgamePoints = scoreSummary.ParkClimbPoints
+	breakdown.TeleopPoints = scoreSummary.Score - scoreSummary.AutoPoints - scoreSummary.FoulPoints
+	breakdown.AutoQuestRankingPoint = scoreSummary.AutoQuest
+	breakdown.FaceTheBossRankingPoint = scoreSummary.FaceTheBoss
+	breakdown.FoulPoints = scoreSummary.FoulPoints
+	breakdown.TotalPoints = scoreSummary.Score
+	if match.Type == "qualification" {
+		// Calculate and set the ranking points for the match.
+		var ranking game.Ranking
+		ranking.AddScoreSummary(scoreSummary, opponentScoreSummary, false)
+		breakdown.RP = ranking.RankingPoints
+	}
+	breakdown.TbaGameData = match.GameSpecificData
+
 	return &breakdown
 }

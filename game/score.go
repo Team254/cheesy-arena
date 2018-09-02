@@ -6,32 +6,38 @@
 package game
 
 type Score struct {
-	AutoRuns               int
-	AutoOwnershipPoints    int
-	AutoEndSwitchOwnership bool
-	TeleopOwnershipPoints  int
-	ForceCubes             int
-	ForcePlayed            bool
-	LevitateCubes          int
-	LevitatePlayed         bool
-	BoostCubes             int
-	BoostPlayed            bool
-	Climbs                 int
-	Parks                  int
-	Fouls                  []Foul
-	ElimDq                 bool
+	AutoRuns                 int
+	AutoSwitchOwnershipSec   float64
+	AutoScaleOwnershipSec    float64
+	AutoEndSwitchOwnership   bool
+	TeleopScaleOwnershipSec  float64
+	TeleopScaleBoostSec      float64
+	TeleopSwitchOwnershipSec float64
+	TeleopSwitchBoostSec     float64
+	ForceCubes               int
+	ForceCubesPlayed         int
+	LevitateCubes            int
+	LevitatePlayed           bool
+	BoostCubes               int
+	BoostCubesPlayed         int
+	Climbs                   int
+	Parks                    int
+	Fouls                    []Foul
+	ElimDq                   bool
 }
 
 type ScoreSummary struct {
-	AutoRunPoints   int
-	AutoPoints      int
-	OwnershipPoints int
-	VaultPoints     int
-	ParkClimbPoints int
-	FoulPoints      int
-	Score           int
-	AutoQuest       bool
-	FaceTheBoss     bool
+	AutoRunPoints         int
+	AutoOwnershipPoints   int
+	AutoPoints            int
+	TeleopOwnershipPoints int
+	OwnershipPoints       int
+	VaultPoints           int
+	ParkClimbPoints       int
+	FoulPoints            int
+	Score                 int
+	AutoQuest             bool
+	FaceTheBoss           bool
 }
 
 // Calculates and returns the summary fields used for ranking and display.
@@ -49,10 +55,13 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 		autoRuns = 3
 	}
 	summary.AutoRunPoints = 5 * autoRuns
-	summary.AutoPoints = summary.AutoRunPoints + score.AutoOwnershipPoints
+	summary.AutoOwnershipPoints = int(2 * (score.AutoScaleOwnershipSec + score.AutoSwitchOwnershipSec))
+	summary.AutoPoints = summary.AutoRunPoints + summary.AutoOwnershipPoints
 
 	// Calculate teleop score.
-	summary.OwnershipPoints = score.AutoOwnershipPoints + score.TeleopOwnershipPoints
+	summary.TeleopOwnershipPoints = int(score.TeleopScaleOwnershipSec + score.TeleopScaleBoostSec +
+		score.TeleopSwitchOwnershipSec + score.TeleopSwitchBoostSec)
+	summary.OwnershipPoints = summary.AutoOwnershipPoints + summary.TeleopOwnershipPoints
 	forceCubes := score.ForceCubes
 	if forceCubes > 3 {
 		forceCubes = 3
@@ -100,12 +109,17 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 
 func (score *Score) Equals(other *Score) bool {
 	if score.AutoRuns != other.AutoRuns || score.AutoEndSwitchOwnership != other.AutoEndSwitchOwnership ||
-		score.AutoOwnershipPoints != other.AutoOwnershipPoints ||
-		score.TeleopOwnershipPoints != other.TeleopOwnershipPoints || score.ForceCubes != other.ForceCubes ||
-		score.ForcePlayed != other.ForcePlayed || score.LevitateCubes != other.LevitateCubes ||
+		score.AutoScaleOwnershipSec != other.AutoScaleOwnershipSec ||
+		score.AutoSwitchOwnershipSec != other.AutoSwitchOwnershipSec ||
+		score.TeleopScaleOwnershipSec != other.TeleopScaleOwnershipSec ||
+		score.TeleopScaleBoostSec != other.TeleopScaleBoostSec ||
+		score.TeleopSwitchOwnershipSec != other.TeleopSwitchOwnershipSec ||
+		score.TeleopSwitchBoostSec != other.TeleopSwitchBoostSec ||
+		score.ForceCubes != other.ForceCubes ||
+		score.ForceCubesPlayed != other.ForceCubesPlayed || score.LevitateCubes != other.LevitateCubes ||
 		score.LevitatePlayed != other.LevitatePlayed || score.BoostCubes != other.BoostCubes ||
-		score.BoostPlayed != other.BoostPlayed || score.Parks != other.Parks || score.Climbs != other.Climbs ||
-		score.ElimDq != other.ElimDq || len(score.Fouls) != len(other.Fouls) {
+		score.BoostCubesPlayed != other.BoostCubesPlayed || score.Parks != other.Parks ||
+		score.Climbs != other.Climbs || score.ElimDq != other.ElimDq || len(score.Fouls) != len(other.Fouls) {
 		return false
 	}
 

@@ -94,7 +94,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"AutoOwnershipPoints\":60}&blueScoreJson={\"VaultCubes\":2," +
+	postBody := "redScoreJson={\"AutoScaleOwnershipSec\":13}&blueScoreJson={\"ForceCubes\":2,\"BoostCubes\":1," +
 		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
@@ -103,6 +103,6 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
-	assert.Contains(t, recorder.Body.String(), "65") // The red score
-	assert.Contains(t, recorder.Body.String(), "10") // The blue score
+	assert.Contains(t, recorder.Body.String(), "31") // The red score
+	assert.Contains(t, recorder.Body.String(), "15") // The blue score
 }
