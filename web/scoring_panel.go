@@ -38,7 +38,7 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 		*model.EventSettings
 		Alliance string
 	}{web.arena.EventSettings, alliance}
-	err = template.ExecuteTemplate(w, "base", data)
+	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return

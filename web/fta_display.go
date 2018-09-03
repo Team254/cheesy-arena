@@ -25,7 +25,7 @@ func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 	}{web.arena.EventSettings}
-	err = template.ExecuteTemplate(w, "base", data)
+	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
