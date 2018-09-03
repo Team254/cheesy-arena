@@ -85,7 +85,7 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 	cachedRankedTeams = newRankedTeams
 
 	web.arena.AllianceSelectionNotifier.NotifyWithMessage(cachedAlliances)
-	http.Redirect(w, r, "/setup/alliance_selection", 303)
+	http.Redirect(w, r, "/alliance_selection", 303)
 }
 
 // Sets up the empty alliances and populates the ranked team list.
@@ -128,7 +128,7 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	web.arena.AllianceSelectionNotifier.NotifyWithMessage(cachedAlliances)
-	http.Redirect(w, r, "/setup/alliance_selection", 303)
+	http.Redirect(w, r, "/alliance_selection", 303)
 }
 
 // Resets the alliance selection process back to the starting point.
@@ -145,7 +145,7 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 	cachedAlliances = [][]model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
 	web.arena.AllianceSelectionNotifier.NotifyWithMessage(cachedAlliances)
-	http.Redirect(w, r, "/setup/alliance_selection", 303)
+	http.Redirect(w, r, "/alliance_selection", 303)
 }
 
 // Saves the selected alliances to the database and generates the first round of elimination matches.
@@ -222,7 +222,7 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 		}
 	}
 
-	http.Redirect(w, r, "/setup/alliance_selection", 303)
+	http.Redirect(w, r, "/alliance_selection", 303)
 }
 
 // Publishes the alliances to the web.
@@ -236,7 +236,7 @@ func (web *Web) allianceSelectionPublishHandler(w http.ResponseWriter, r *http.R
 		http.Error(w, "Failed to publish alliances: "+err.Error(), 500)
 		return
 	}
-	http.Redirect(w, r, "/setup/teams", 303)
+	http.Redirect(w, r, "/alliance_selection", 303)
 }
 
 func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
@@ -250,7 +250,7 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 		}
 	}
 
-	template, err := web.parseFiles("templates/setup_alliance_selection.html", "templates/base.html")
+	template, err := web.parseFiles("templates/alliance_selection.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
