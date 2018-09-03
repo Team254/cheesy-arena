@@ -12,20 +12,20 @@ import (
 	"time"
 )
 
-func TestRefereeDisplay(t *testing.T) {
+func TestRefereePanel(t *testing.T) {
 	web := setupTestWeb(t)
 
-	recorder := web.getHttpResponse("/displays/referee")
+	recorder := web.getHttpResponse("/panels/referee")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Referee Display - Untitled Event - Cheesy Arena")
+	assert.Contains(t, recorder.Body.String(), "Referee Panel - Untitled Event - Cheesy Arena")
 }
 
-func TestRefereeDisplayWebsocket(t *testing.T) {
+func TestRefereePanelWebsocket(t *testing.T) {
 	web := setupTestWeb(t)
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/referee/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/referee/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
 	ws := websocket.NewTestWebsocket(conn)

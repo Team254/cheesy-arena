@@ -19,12 +19,12 @@ import (
 )
 
 // Renders the referee interface for assigning fouls.
-func (web *Web) refereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) refereePanelHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/referee_display.html")
+	template, err := web.parseFiles("templates/referee_panel.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -76,7 +76,7 @@ func (web *Web) refereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		web.arena.RedRealtimeScore.CurrentScore.Fouls, web.arena.BlueRealtimeScore.CurrentScore.Fouls,
 		web.arena.RedRealtimeScore.Cards, web.arena.BlueRealtimeScore.Cards, game.Rules,
 		!(web.arena.RedRealtimeScore.FoulsCommitted && web.arena.BlueRealtimeScore.FoulsCommitted)}
-	err = template.ExecuteTemplate(w, "referee_display.html", data)
+	err = template.ExecuteTemplate(w, "referee_panel.html", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -84,7 +84,7 @@ func (web *Web) refereeDisplayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for the refereee interface client to send control commands and receive status updates.
-func (web *Web) refereeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO(patrick): Enable authentication once Safari (for iPad) supports it over Websocket.
 
 	ws, err := websocket.NewWebsocket(w, r)

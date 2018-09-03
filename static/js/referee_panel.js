@@ -109,7 +109,7 @@ $(function() {
   $("[data-toggle=tooltip]").tooltip({"placement": "top"});
 
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/displays/referee/websocket", {
+  websocket = new CheesyWebsocket("/panels/referee/websocket", {
     matchLoad: function(event) { handleMatchLoad(event.data) }
   });
 

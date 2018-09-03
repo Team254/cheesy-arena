@@ -12,31 +12,31 @@ import (
 	"time"
 )
 
-func TestScoringDisplay(t *testing.T) {
+func TestScoringPanel(t *testing.T) {
 	web := setupTestWeb(t)
 
-	recorder := web.getHttpResponse("/displays/scoring/invalidalliance")
+	recorder := web.getHttpResponse("/panels/scoring/invalidalliance")
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Invalid alliance")
-	recorder = web.getHttpResponse("/displays/scoring/red")
+	recorder = web.getHttpResponse("/panels/scoring/red")
 	assert.Equal(t, 200, recorder.Code)
-	recorder = web.getHttpResponse("/displays/scoring/blue")
+	recorder = web.getHttpResponse("/panels/scoring/blue")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Scoring - Untitled Event - Cheesy Arena")
 }
 
-func TestScoringDisplayWebsocket(t *testing.T) {
+func TestScoringPanelWebsocket(t *testing.T) {
 	web := setupTestWeb(t)
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	_, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/scoring/blorpy/websocket", nil)
+	_, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/blorpy/websocket", nil)
 	assert.NotNil(t, err)
-	redConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/scoring/red/websocket", nil)
+	redConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/red/websocket", nil)
 	assert.Nil(t, err)
 	defer redConn.Close()
 	redWs := websocket.NewTestWebsocket(redConn)
-	blueConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/scoring/blue/websocket", nil)
+	blueConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/blue/websocket", nil)
 	assert.Nil(t, err)
 	defer blueConn.Close()
 	blueWs := websocket.NewTestWebsocket(blueConn)

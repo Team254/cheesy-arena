@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func TestSetupAllianceSelection(t *testing.T) {
+func TestAllianceSelection(t *testing.T) {
 	web := setupTestWeb(t)
 
 	cachedAlliances = [][]model.AllianceTeam{}
@@ -92,7 +92,7 @@ func TestSetupAllianceSelection(t *testing.T) {
 	assert.False(t, team.YellowCard)
 }
 
-func TestSetupAllianceSelectionErrors(t *testing.T) {
+func TestAllianceSelectionErrors(t *testing.T) {
 	web := setupTestWeb(t)
 
 	cachedAlliances = [][]model.AllianceTeam{}
@@ -156,7 +156,7 @@ func TestSetupAllianceSelectionErrors(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
 }
 
-func TestSetupAllianceSelectionAutofocus(t *testing.T) {
+func TestAllianceSelectionAutofocus(t *testing.T) {
 	web := setupTestWeb(t)
 
 	cachedAlliances = [][]model.AllianceTeam{}
@@ -248,7 +248,7 @@ func TestSetupAllianceSelectionAutofocus(t *testing.T) {
 	assert.Equal(t, -1, j)
 }
 
-func TestSetupAllianceSelectionPublish(t *testing.T) {
+func TestAllianceSelectionPublish(t *testing.T) {
 	web := setupTestWeb(t)
 
 	web.arena.TbaClient.BaseUrl = "fakeurl"

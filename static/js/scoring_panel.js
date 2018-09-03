@@ -65,7 +65,7 @@ $(function() {
   alliance = window.location.href.split("/").slice(-1)[0];
 
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/displays/scoring/" + alliance + "/websocket", {
+  websocket = new CheesyWebsocket("/panels/scoring/" + alliance + "/websocket", {
     matchTime: function(event) { handleMatchTime(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); }
   });

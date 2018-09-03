@@ -17,7 +17,7 @@ import (
 )
 
 // Renders the scoring interface which enables input of scores in real-time.
-func (web *Web) scoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
@@ -29,7 +29,7 @@ func (web *Web) scoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/scoring_display.html", "templates/base.html")
+	template, err := web.parseFiles("templates/scoring_panel.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -46,7 +46,7 @@ func (web *Web) scoringDisplayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for the scoring interface client to send control commands and receive status updates.
-func (web *Web) scoringDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}

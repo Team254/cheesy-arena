@@ -7,7 +7,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Referee Display - {{.EventSettings.Name}} - Cheesy Arena</title>
+    <title>Referee Panel - {{.EventSettings.Name}} - Cheesy Arena</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
@@ -17,7 +17,7 @@
     <link href="/static/css/lib/bootstrap-colorpicker.min.css" rel="stylesheet">
     <link href="/static/css/lib/bootstrap-datetimepicker.min.css" rel="stylesheet">
     <link href="/static/css/cheesy-arena.css" rel="stylesheet">
-    <link href="/static/css/referee_display.css" rel="stylesheet">
+    <link href="/static/css/referee_panel.css" rel="stylesheet">
   </head>
   <body>
     {{if .EntryEnabled}}
@@ -97,7 +97,7 @@
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
     <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/cheesy-websocket.js"></script>
-    <script src="/static/js/referee_display.js"></script>
+    <script src="/static/js/referee_panel.js"></script>
   </body>
 </html>
 {{define "foul"}}
