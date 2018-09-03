@@ -1,7 +1,7 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2018 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Web routes for configuring the field components.
+// Web routes for testing the field LEDs and PLC.
 
 package web
 
@@ -18,13 +18,13 @@ import (
 	"net/http"
 )
 
-// Shows the field configuration page.
-func (web *Web) fieldGetHandler(w http.ResponseWriter, r *http.Request) {
+// Shows the LED/PLC test page.
+func (web *Web) ledPlcGetHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/setup_field.html", "templates/base.html")
+	template, err := web.parseFiles("templates/setup_led_plc.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -32,14 +32,13 @@ func (web *Web) fieldGetHandler(w http.ResponseWriter, r *http.Request) {
 	plc := web.arena.Plc
 	data := struct {
 		*model.EventSettings
-		AllianceStationDisplays map[string]string
-		InputNames              []string
-		RegisterNames           []string
-		CoilNames               []string
-		LedModeNames            map[led.Mode]string
-		VaultLedModeNames       map[vaultled.Mode]string
-	}{web.arena.EventSettings, web.arena.AllianceStationDisplays, plc.GetInputNames(), plc.GetRegisterNames(),
-		plc.GetCoilNames(), led.ModeNames, vaultled.ModeNames}
+		InputNames        []string
+		RegisterNames     []string
+		CoilNames         []string
+		LedModeNames      map[led.Mode]string
+		VaultLedModeNames map[vaultled.Mode]string
+	}{web.arena.EventSettings, plc.GetInputNames(), plc.GetRegisterNames(), plc.GetCoilNames(), led.ModeNames,
+		vaultled.ModeNames}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -47,31 +46,8 @@ func (web *Web) fieldGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Updates the display-station mapping for a single display.
-func (web *Web) fieldPostHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
-		return
-	}
-
-	displayId := r.PostFormValue("displayId")
-	allianceStation := r.PostFormValue("allianceStation")
-	web.arena.AllianceStationDisplays[displayId] = allianceStation
-	web.arena.MatchLoadNotifier.Notify()
-	http.Redirect(w, r, "/setup/field", 303)
-}
-
-// Force-reloads all the websocket-connected displays.
-func (web *Web) fieldReloadDisplaysHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
-		return
-	}
-
-	web.arena.ReloadDisplaysNotifier.Notify()
-	http.Redirect(w, r, "/setup/field", 303)
-}
-
-// The websocket endpoint for sending realtime updates to the field setup page.
-func (web *Web) fieldWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+// The websocket endpoint for sending realtime updates to the LED/PLC test page.
+func (web *Web) ledPlcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}

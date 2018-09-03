@@ -1,0 +1,84 @@
+{{/*
+  Copyright 2018 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  UI for testing the LEDs and PLC connected to the field.
+*/}}
+{{define "title"}}LED and PLC Testing{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-7">
+    <div class="well">
+      <legend>PLC</legend>
+      <div class="row">
+        <div class="col-lg-4">
+          <table class="table">
+            <tr>
+              <th colspan="2">Inputs</th>
+            </tr>
+            {{range $i, $name := .InputNames}}
+            <tr>
+              <td>{{$name}}</td>
+              <td id="input{{$i}}"></td>
+            </tr>
+            {{end}}
+          </table>
+        </div>
+        <div class="col-lg-4">
+          <table class="table">
+            <tr>
+              <th colspan="2">Registers</th>
+            </tr>
+            {{range $i, $name := .RegisterNames}}
+            <tr>
+              <td>{{$name}}</td>
+              <td id="register{{$i}}"></td>
+            </tr>
+            {{end}}
+          </table>
+        </div>
+        <div class="col-lg-4">
+          <table class="table">
+            <tr>
+              <th colspan="2">Coils</th>
+            </tr>
+            {{range $i, $name := .CoilNames}}
+            <tr>
+              <td>{{$name}}</td>
+              <td id="coil{{$i}}"></td>
+            </tr>
+            {{end}}
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3">
+    <div class="well">
+      <legend>Switch/Scale LEDs</legend>
+      {{range $i, $name := .LedModeNames}}
+        <div class="radio">
+          <label>
+            <input type="radio" name="ledMode" value="{{$i}}" onclick="setLedMode();">{{$name}}
+          </label>
+        </div>
+      {{end}}
+    </div>
+  </div>
+  <div class="col-lg-2">
+    <div class="well">
+      <legend>Vault LEDs</legend>
+      {{range $i, $name := .VaultLedModeNames}}
+        <div class="radio">
+          <label>
+            <input type="radio" name="vaultLedMode" value="{{$i}}" onclick="setLedMode();">{{$name}}
+          </label>
+        </div>
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+<script src="/static/js/setup_led_plc.js"></script>
+{{end}}

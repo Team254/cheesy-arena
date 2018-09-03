@@ -37,7 +37,7 @@ var handlePlcIoChange = function(data) {
 
 $(function() {
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/setup/field/websocket", {
+  websocket = new CheesyWebsocket("/setup/led_plc/websocket", {
     ledMode: function(event) {handleLedMode(event.data); },
     plcIoChange: function(event) { handlePlcIoChange(event.data); }
   });
