@@ -73,7 +73,7 @@ var handleArenaStatus = function(data) {
         $("#status" + station + " .robot-status").text("");
       }
       var lowBatteryThreshold = 6;
-      if (matchStates[data.MatchState] == "PRE_MATCH") {
+      if (matchStates[data.MatchState] === "PRE_MATCH") {
         lowBatteryThreshold = 12;
       }
       $("#status" + station + " .battery-status").attr("data-status-ok",
@@ -138,7 +138,7 @@ var handleArenaStatus = function(data) {
   }
   $("#fieldEstop").attr("data-ready", !data.FieldEstop);
 
-  if (matchStates[data.MatchState] != "PRE_MATCH") {
+  if (matchStates[data.MatchState] !== "PRE_MATCH") {
     $("#gameSpecificData").val(data.GameSpecificData);
   }
 };

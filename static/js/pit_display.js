@@ -73,7 +73,7 @@ var cycleRankings = function() {
 
 // Updates the "Standings as of" message with the given value, or blanks it out if there is no data yet.
 var setHighestPlayedMatch = function(highestPlayedMatch) {
-  if (highestPlayedMatch == "") {
+  if (highestPlayedMatch === "") {
     $("#highestPlayedMatch").text("");
   } else {
     $("#highestPlayedMatch").text("Standings as of Qualification Match " + highestPlayedMatch);

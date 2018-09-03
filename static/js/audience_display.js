@@ -11,7 +11,7 @@ var allianceSelectionTemplate = Handlebars.compile($("#allianceSelectionTemplate
 
 // Handles a websocket message to change which screen is displayed.
 var handleAudienceDisplayMode = function(targetScreen) {
-  if (targetScreen == currentScreen) {
+  if (targetScreen === currentScreen) {
     return;
   }
 
@@ -29,12 +29,12 @@ var handleAudienceDisplayMode = function(targetScreen) {
 
 // Handles a websocket message to update the teams for the current match.
 var handleMatchLoad = function(data) {
-  $("#redTeam1").text(data.Match.Red1)
-  $("#redTeam2").text(data.Match.Red2)
-  $("#redTeam3").text(data.Match.Red3)
-  $("#blueTeam1").text(data.Match.Blue1)
-  $("#blueTeam2").text(data.Match.Blue2)
-  $("#blueTeam3").text(data.Match.Blue3)
+  $("#redTeam1").text(data.Match.Red1);
+  $("#redTeam2").text(data.Match.Red2);
+  $("#redTeam3").text(data.Match.Red3);
+  $("#blueTeam1").text(data.Match.Blue1);
+  $("#blueTeam2").text(data.Match.Blue2);
+  $("#blueTeam3").text(data.Match.Blue3);
   $("#matchName").text(data.MatchName + " " + data.Match.DisplayName);
 };
 
@@ -42,7 +42,7 @@ var handleMatchLoad = function(data) {
 var handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
     var countdownString = String(countdownSec % 60);
-    if (countdownString.length == 1) {
+    if (countdownString.length === 1) {
       countdownString = "0" + countdownString;
     }
     countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
@@ -140,7 +140,7 @@ var handleAllianceSelection = function(alliances) {
 
 // Handles a websocket message to populate and/or show/hide a lower third.
 var handleLowerThird = function(data) {
-  if (data.BottomText == "") {
+  if (data.BottomText === "") {
     $("#lowerThirdTop").hide();
     $("#lowerThirdBottom").hide();
     $("#lowerThirdSingle").text(data.TopText);
@@ -201,7 +201,7 @@ var transitionBlankToInMatch = function(callback) {
       });
     });
   });
-}
+};
 
 var transitionInMatchToIntro = function(callback) {
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear");
@@ -385,7 +385,7 @@ var initializeSponsorDisplay = function() {
 
          $('.carousel#sponsor').carousel('pause');
          t = setTimeout("$('.carousel#sponsor').carousel();", duration-1000);
-    })
+    });
 
     $('.carousel-control.right').on('click', function(){
         clearTimeout(t);   
@@ -396,7 +396,7 @@ var initializeSponsorDisplay = function() {
     });
 
   });
-}
+};
 
 $(function() {
   // Set up the websocket back to the server.

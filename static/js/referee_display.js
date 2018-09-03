@@ -33,11 +33,11 @@ var setFoulRule = function(ruleButton) {
 // Sets button styles to match the selection cached in the global variables.
 var setSelections = function() {
   $("[data-team]").each(function(i, teamButton) {
-    $(teamButton).attr("data-selected", $(teamButton).attr("data-team") == foulTeam);
+    $(teamButton).attr("data-selected", $(teamButton).attr("data-team") === foulTeam);
   });
 
   $("[data-rule]").each(function(i, ruleButton) {
-    $(ruleButton).attr("data-selected", $(ruleButton).attr("data-rule") == foulRule);
+    $(ruleButton).attr("data-selected", $(ruleButton).attr("data-rule") === foulRule);
   });
 };
 
@@ -58,7 +58,7 @@ var clearFoul = function() {
 var commitFoul = function() {
   websocket.send("addFoul", {Alliance: foulTeamButton.attr("data-alliance"),
       TeamId: parseInt(foulTeamButton.attr("data-team")), Rule: foulRuleButton.attr("data-rule"),
-      IsTechnical: foulRuleButton.attr("data-is-technical") == "true"});
+      IsTechnical: foulRuleButton.attr("data-is-technical") === "true"});
 };
 
 // Removes the foul with the given parameters from the list.
@@ -70,9 +70,9 @@ var deleteFoul = function(alliance, team, rule, isTechnical, timeSec) {
 // Cycles through no card, yellow card, and red card.
 var cycleCard = function(cardButton) {
   var newCard = "";
-  if ($(cardButton).attr("data-card") == "") {
+  if ($(cardButton).attr("data-card") === "") {
     newCard = "yellow";
-  } else if ($(cardButton).attr("data-card") == "yellow") {
+  } else if ($(cardButton).attr("data-card") === "yellow") {
     newCard = "red";
   }
   websocket.send("card", {Alliance: $(cardButton).attr("data-alliance"),

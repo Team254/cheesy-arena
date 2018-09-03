@@ -34,7 +34,7 @@ var reorderLowerThird = function(button, moveUp) {
 var constructLowerThird = function(button) {
   return { Id: parseInt(button.form.id.value), TopText: button.form.topText.value,
       BottomText: button.form.bottomText.value, DisplayOrder: parseInt(button.form.displayOrder.value) }
-}
+};
 
 $(function() {
   // Set up the websocket back to the server.

@@ -60,12 +60,12 @@ var renderResults = function(alliance) {
       $("input[name=" + alliance + "Team" + k + "Card][value=" + v + "]").prop("checked", true);
     });
   }
-}
+};
 
 // Converts the current form values back into JSON structures and caches them.
 var updateResults = function(alliance) {
   var result = allianceResults[alliance];
-  var formData = {}
+  var formData = {};
   $.each($("form").serializeArray(), function(k, v) {
     formData[v.name] = v.value;
   });
@@ -96,15 +96,15 @@ var updateResults = function(alliance) {
   $.each([result.team1, result.team2, result.team3], function(i, team) {
     result.cards[team] = formData[alliance + "Team" + team + "Card"];
   });
-}
+};
 
 // Appends a blank foul to the end of the list.
 var addFoul = function(alliance) {
   updateResults(alliance);
   var result = allianceResults[alliance];
-  result.score.Fouls.push({TeamId: 0, Rule: "", TimeInMatchSec: 0})
+  result.score.Fouls.push({TeamId: 0, Rule: "", TimeInMatchSec: 0});
   renderResults(alliance);
-}
+};
 
 // Removes the given foul from the list.
 var deleteFoul = function(alliance, index) {
@@ -112,4 +112,4 @@ var deleteFoul = function(alliance, index) {
   var result = allianceResults[alliance];
   result.score.Fouls.splice(index, 1);
   renderResults(alliance);
-}
+};

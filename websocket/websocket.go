@@ -24,7 +24,7 @@ type Websocket struct {
 	writeMutex *sync.Mutex
 }
 
-type WebsocketMessage struct {
+type Message struct {
 	Type string      `json:"type"`
 	Data interface{} `json:"data"`
 }
@@ -49,7 +49,7 @@ func (ws *Websocket) Close() error {
 }
 
 func (ws *Websocket) Read() (string, interface{}, error) {
-	var message WebsocketMessage
+	var message Message
 	err := ws.conn.ReadJSON(&message)
 	if websocket.IsCloseError(err, websocket.CloseNoStatusReceived, websocket.CloseAbnormalClosure) {
 		// This error indicates that the browser terminated the connection normally; rewrite it so that clients don't
@@ -88,7 +88,7 @@ func (ws *Websocket) ReadWithTimeout(timeout time.Duration) (string, interface{}
 func (ws *Websocket) Write(messageType string, data interface{}) error {
 	ws.writeMutex.Lock()
 	defer ws.writeMutex.Unlock()
-	err := ws.conn.WriteJSON(WebsocketMessage{messageType, data})
+	err := ws.conn.WriteJSON(Message{messageType, data})
 	if err != nil {
 		// Include the caller of this method in the error message.
 		_, file, line, _ := runtime.Caller(1)

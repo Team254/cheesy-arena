@@ -246,7 +246,7 @@
 {{define "script"}}
 <script src="/static/js/match_review.js"></script>
 <script>
-  var matchId = {{.Match.Id}}
+  var matchId = {{.Match.Id}};
   var allianceResults = {};
   allianceResults["red"] = {alliance: "red", team1: {{.Match.Red1}}, team2: {{.Match.Red2}},
       team3: {{.Match.Red3}}, score: jQuery.parseJSON('{{.MatchResultJson.RedScoreJson}}'),

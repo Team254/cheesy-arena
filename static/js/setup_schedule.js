@@ -32,7 +32,7 @@ var addBlock = function(startTime, numMatches, matchSpacingSec) {
   $("#endTimePicker" + lastBlockNumber).datetimepicker({useSeconds: true}).
       data("DateTimePicker").setDate(endTime);
   updateBlock(lastBlockNumber);
-}
+};
 
 // Updates the per-block and global schedule statistics.
 var updateBlock = function(blockNumber) {
@@ -42,7 +42,7 @@ var updateBlock = function(blockNumber) {
   var numMatches = Math.floor((endTime - startTime) / matchSpacingSec / 1000);
   var actualEndTime = moment(startTime + numMatches * matchSpacingSec * 1000).format("hh:mm:ss A");
   blockMatches[blockNumber] = numMatches;
-  if (matchSpacingSec == "" || isNaN(numMatches) || numMatches <= 0) {
+  if (matchSpacingSec === "" || isNaN(numMatches) || numMatches <= 0) {
     numMatches = "";
     actualEndTime = "";
     blockMatches[blockNumber] = 0;
@@ -51,7 +51,7 @@ var updateBlock = function(blockNumber) {
   $("#actualEndTime" + blockNumber).text(actualEndTime);
 
   updateStats();
-}
+};
 
 var updateStats = function() {
   // Update total number of matches.
@@ -85,7 +85,7 @@ var generateSchedule = function() {
     field.attr("name", name);
     field.attr("value", value);
     form.append(field);
-  }
+  };
   var i = 0;
   $.each(blockMatches, function(k, v) {
     addField("startTime" + i, $("#startTime" + k).val());

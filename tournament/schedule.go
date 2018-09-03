@@ -66,17 +66,17 @@ func BuildRandomSchedule(teams []model.Team, scheduleBlocks []model.ScheduleBloc
 		matches[i].Type = matchType
 		matches[i].DisplayName = strconv.Itoa(i + 1)
 		matches[i].Red1 = teams[teamShuffle[anonMatch[0]-1]].Id
-		matches[i].Red1IsSurrogate = (anonMatch[1] == 1)
+		matches[i].Red1IsSurrogate = anonMatch[1] == 1
 		matches[i].Red2 = teams[teamShuffle[anonMatch[2]-1]].Id
-		matches[i].Red2IsSurrogate = (anonMatch[3] == 1)
+		matches[i].Red2IsSurrogate = anonMatch[3] == 1
 		matches[i].Red3 = teams[teamShuffle[anonMatch[4]-1]].Id
-		matches[i].Red3IsSurrogate = (anonMatch[5] == 1)
+		matches[i].Red3IsSurrogate = anonMatch[5] == 1
 		matches[i].Blue1 = teams[teamShuffle[anonMatch[6]-1]].Id
-		matches[i].Blue1IsSurrogate = (anonMatch[7] == 1)
+		matches[i].Blue1IsSurrogate = anonMatch[7] == 1
 		matches[i].Blue2 = teams[teamShuffle[anonMatch[8]-1]].Id
-		matches[i].Blue2IsSurrogate = (anonMatch[9] == 1)
+		matches[i].Blue2IsSurrogate = anonMatch[9] == 1
 		matches[i].Blue3 = teams[teamShuffle[anonMatch[10]-1]].Id
-		matches[i].Blue3IsSurrogate = (anonMatch[11] == 1)
+		matches[i].Blue3IsSurrogate = anonMatch[11] == 1
 	}
 
 	// Fill in the match times.

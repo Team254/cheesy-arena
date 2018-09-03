@@ -11,7 +11,7 @@ var websocket;
 // Handles a websocket message to set which alliance station this display represents.
 var handleAllianceStation = function(station) {
   allianceStation = station;
-}
+};
 
 // Handles a websocket message to change which screen is displayed.
 var handleAllianceStationDisplayMode = function(targetScreen) {
@@ -36,14 +36,14 @@ var handleAllianceStationDisplayMode = function(targetScreen) {
 
 // Handles a websocket message to update the team to display.
 var handleMatchLoad = function(data) {
-  if (allianceStation != "") {
+  if (allianceStation !== "") {
     var team = data.Teams[allianceStation];
     if (team) {
       $("#teamNumber").text(team.Id);
       $("#teamNameText").attr("data-alliance-bg", allianceStation[0]).text(team.Nickname);
 
       var ranking = data.Rankings[team.Id];
-      if (ranking && data.MatchType == "Qualification") {
+      if (ranking && data.MatchType === "Qualification") {
         var rankingText = ranking.Rank;
         $("#teamRank").attr("data-alliance-bg", allianceStation[0]).text(rankingText);
       } else {
@@ -73,7 +73,7 @@ var handleArenaStatus = function(data) {
       if (!blinkInterval) {
         blinkInterval = setInterval(function() {
           var status = $("#match").attr("data-status");
-          $("#match").attr("data-status", (status == "") ? allianceStation[0] : "");
+          $("#match").attr("data-status", (status === "") ? allianceStation[0] : "");
         }, 250);
       }
     } else {
@@ -91,7 +91,7 @@ var handleArenaStatus = function(data) {
 var handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
     var countdownString = String(countdownSec % 60);
-    if (countdownString.length == 1) {
+    if (countdownString.length === 1) {
       countdownString = "0" + countdownString;
     }
     countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
@@ -107,7 +107,7 @@ var handleRealtimeScore = function(data) {
 };
 
 $(function() {
-  if (displayId == "") {
+  if (displayId === "") {
     displayId = Math.floor(Math.random() * 10000);
     window.location = "/displays/alliance_station?displayId=" + displayId;
   }

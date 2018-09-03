@@ -49,7 +49,7 @@ var handleKeyPress = function(event) {
 
 // Handles a websocket message to update the match status.
 var handleMatchTime = function(data) {
-  if (matchStates[data.MatchState] == "POST_MATCH" && !scoreCommitted) {
+  if (matchStates[data.MatchState] === "POST_MATCH" && !scoreCommitted) {
     $("#commitMatchScore").show();
   } else {
     $("#commitMatchScore").hide();

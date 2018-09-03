@@ -18,7 +18,7 @@ Handlebars.registerHelper("eachMapEntry", function(context, options) {
 // Handles a websocket message to hide the score dialog once the next match is being introduced.
 var handleAudienceDisplayMode = function(targetScreen) {
   // Hide the final results so that they aren't blocking the current teams when the announcer needs them most.
-  if (targetScreen == "intro" || targetScreen == "match") {
+  if (targetScreen === "intro" || targetScreen === "match") {
     $("#matchResult").modal("hide");
   }
 };
@@ -82,7 +82,7 @@ $(function() {
 
   // Make the score blink.
   setInterval(function() {
-    var blinkOn = $("#savedMatchResult").attr("data-blink") == "true";
+    var blinkOn = $("#savedMatchResult").attr("data-blink") === "true";
     $("#savedMatchResult").attr("data-blink", !blinkOn);
   }, 500);
 });
