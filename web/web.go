@@ -151,7 +151,6 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/setup/field", web.fieldGetHandler).Methods("GET")
 	router.HandleFunc("/setup/field", web.fieldPostHandler).Methods("POST")
 	router.HandleFunc("/setup/field/reload_displays", web.fieldReloadDisplaysHandler).Methods("GET")
-	router.HandleFunc("/setup/field/test", web.fieldTestPostHandler).Methods("POST")
 	router.HandleFunc("/setup/field/websocket", web.fieldWebsocketHandler).Methods("GET")
 	router.HandleFunc("/setup/lower_thirds", web.lowerThirdsGetHandler).Methods("GET")
 	router.HandleFunc("/setup/lower_thirds/websocket", web.lowerThirdsWebsocketHandler).Methods("GET")

@@ -7,7 +7,9 @@ package field
 
 import (
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/vaultled"
 	"github.com/Team254/cheesy-arena/websocket"
 	"strconv"
 	"time"
@@ -18,6 +20,7 @@ type ArenaNotifiers struct {
 	AllianceStationDisplayModeNotifier *websocket.Notifier
 	ArenaStatusNotifier                *websocket.Notifier
 	AudienceDisplayModeNotifier        *websocket.Notifier
+	LedModeNotifier                    *websocket.Notifier
 	LowerThirdNotifier                 *websocket.Notifier
 	MatchLoadNotifier                  *websocket.Notifier
 	MatchTimeNotifier                  *websocket.Notifier
@@ -26,6 +29,11 @@ type ArenaNotifiers struct {
 	ReloadDisplaysNotifier             *websocket.Notifier
 	ScorePostedNotifier                *websocket.Notifier
 	ScoringStatusNotifier              *websocket.Notifier
+}
+
+type LedModeMessage struct {
+	LedMode      led.Mode
+	VaultLedMode vaultled.Mode
 }
 
 type MatchTimeMessage struct {
@@ -50,6 +58,7 @@ func (arena *Arena) configureNotifiers() {
 	arena.ArenaStatusNotifier = websocket.NewNotifier("arenaStatus", arena.generateArenaStatusMessage)
 	arena.AudienceDisplayModeNotifier = websocket.NewNotifier("audienceDisplayMode",
 		arena.generateAudienceDisplayModeMessage)
+	arena.LedModeNotifier = websocket.NewNotifier("ledMode", arena.generateLedModeMessage)
 	arena.LowerThirdNotifier = websocket.NewNotifier("lowerThird", nil)
 	arena.MatchLoadNotifier = websocket.NewNotifier("matchLoad", arena.generateMatchLoadMessage)
 	arena.MatchTimeNotifier = websocket.NewNotifier("matchTime", arena.generateMatchTimeMessage)
@@ -78,6 +87,10 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 
 func (arena *Arena) generateAudienceDisplayModeMessage() interface{} {
 	return arena.AudienceDisplayMode
+}
+
+func (arena *Arena) generateLedModeMessage() interface{} {
+	return &LedModeMessage{arena.ScaleLeds.GetCurrentMode(), arena.RedVaultLeds.CurrentForceMode}
 }
 
 func (arena *Arena) generateMatchLoadMessage() interface{} {

@@ -109,13 +109,15 @@ const (
 func (plc *Plc) SetAddress(address string) {
 	plc.address = address
 	plc.resetConnection()
+
+	if plc.IoChangeNotifier == nil {
+		// Register a notifier that listeners can subscribe to to get websocket updates about I/O value changes.
+		plc.IoChangeNotifier = websocket.NewNotifier("plcIoChange", plc.generateIoChangeMessage)
+	}
 }
 
 // Loops indefinitely to read inputs from and write outputs to PLC.
 func (plc *Plc) Run() {
-	// Register a notifier that listeners can subscribe to to get websocket updates about I/O value changes.
-	plc.IoChangeNotifier = websocket.NewNotifier("plcIoChange", plc.generateIoChangeMessage)
-
 	for {
 		if plc.handler == nil {
 			if plc.address == "" {

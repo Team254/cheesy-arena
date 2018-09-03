@@ -84,30 +84,26 @@
   <div class="col-lg-2">
     <div class="well">
       <legend>LEDs</legend>
-      <form class="" action="/setup/field/test" method="POST">
-        <div class="form-group">
-          <label>Switch/Scale</label>
-          {{range $i, $name := .LedModeNames}}
-            <div class="radio">
-              <label>
-                <input type="radio" name="mode" value="{{$i}}" onclick="this.form.submit()"
-                       {{if eq $.CurrentLedMode $i}}checked{{end}}>{{$name}}
-              </label>
-            </div>
-          {{end}}
-        </div>
-        <div class="form-group">
-          <label>Vault</label>
-          {{range $i, $name := .VaultLedModeNames}}
-            <div class="radio">
-              <label>
-                <input type="radio" name="vaultMode" value="{{$i}}" onclick="this.form.submit()"
-                       {{if eq $.CurrentVaultLedMode $i}}checked{{end}}>{{$name}}
-              </label>
-            </div>
-          {{end}}
-        </div>
-      </form>
+      <div class="form-group">
+        <label>Switch/Scale</label>
+        {{range $i, $name := .LedModeNames}}
+          <div class="radio">
+            <label>
+              <input type="radio" name="ledMode" value="{{$i}}" onclick="setLedMode();">{{$name}}
+            </label>
+          </div>
+        {{end}}
+      </div>
+      <div class="form-group">
+        <label>Vault</label>
+        {{range $i, $name := .VaultLedModeNames}}
+          <div class="radio">
+            <label>
+              <input type="radio" name="vaultLedMode" value="{{$i}}" onclick="setLedMode();">{{$name}}
+            </label>
+          </div>
+        {{end}}
+      </div>
     </div>
   </div>
 </div>

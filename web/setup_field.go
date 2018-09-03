@@ -6,13 +6,16 @@
 package web
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/vaultled"
 	"github.com/Team254/cheesy-arena/websocket"
+	"github.com/mitchellh/mapstructure"
+	"io"
+	"log"
 	"net/http"
-	"strconv"
 )
 
 // Shows the field configuration page.
@@ -33,13 +36,10 @@ func (web *Web) fieldGetHandler(w http.ResponseWriter, r *http.Request) {
 		InputNames              []string
 		RegisterNames           []string
 		CoilNames               []string
-		CurrentLedMode          led.Mode
 		LedModeNames            map[led.Mode]string
-		CurrentVaultLedMode     vaultled.Mode
 		VaultLedModeNames       map[vaultled.Mode]string
 	}{web.arena.EventSettings, web.arena.AllianceStationDisplays, plc.GetInputNames(), plc.GetRegisterNames(),
-		plc.GetCoilNames(), web.arena.ScaleLeds.GetCurrentMode(), led.ModeNames,
-		web.arena.RedVaultLeds.CurrentForceMode, vaultled.ModeNames}
+		plc.GetCoilNames(), led.ModeNames, vaultled.ModeNames}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -70,31 +70,6 @@ func (web *Web) fieldReloadDisplaysHandler(w http.ResponseWriter, r *http.Reques
 	http.Redirect(w, r, "/setup/field", 303)
 }
 
-// Controls the field LEDs for testing or effect.
-func (web *Web) fieldTestPostHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
-		return
-	}
-
-	if web.arena.MatchState != field.PreMatch {
-		http.Error(w, "Arena must be in pre-match state", 400)
-		return
-	}
-
-	mode, _ := strconv.Atoi(r.PostFormValue("mode"))
-	ledMode := led.Mode(mode)
-	web.arena.ScaleLeds.SetMode(ledMode, ledMode)
-	web.arena.RedSwitchLeds.SetMode(ledMode, ledMode)
-	web.arena.BlueSwitchLeds.SetMode(ledMode, ledMode)
-
-	vaultMode, _ := strconv.Atoi(r.PostFormValue("vaultMode"))
-	vaultLedMode := vaultled.Mode(vaultMode)
-	web.arena.RedVaultLeds.SetAllModes(vaultLedMode)
-	web.arena.BlueVaultLeds.SetAllModes(vaultLedMode)
-
-	http.Redirect(w, r, "/setup/field", 303)
-}
-
 // The websocket endpoint for sending realtime updates to the field setup page.
 func (web *Web) fieldWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
@@ -108,6 +83,41 @@ func (web *Web) fieldWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
-	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier)
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
+	go ws.HandleNotifiers(web.arena.LedModeNotifier, web.arena.Plc.IoChangeNotifier)
+	// Loop, waiting for commands and responding to them, until the client closes the connection.
+	for {
+		messageType, data, err := ws.Read()
+		if err != nil {
+			if err == io.EOF {
+				// Client has closed the connection; nothing to do here.
+				return
+			}
+			log.Println(err)
+			return
+		}
+
+		switch messageType {
+		case "setLedMode":
+			if web.arena.MatchState != field.PreMatch {
+				ws.WriteError("Arena must be in pre-match state")
+				continue
+			}
+			var modeMessage field.LedModeMessage
+			err = mapstructure.Decode(data, &modeMessage)
+			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
+
+			web.arena.ScaleLeds.SetMode(modeMessage.LedMode, modeMessage.LedMode)
+			web.arena.RedSwitchLeds.SetMode(modeMessage.LedMode, modeMessage.LedMode)
+			web.arena.BlueSwitchLeds.SetMode(modeMessage.LedMode, modeMessage.LedMode)
+			web.arena.RedVaultLeds.SetAllModes(modeMessage.VaultLedMode)
+			web.arena.BlueVaultLeds.SetAllModes(modeMessage.VaultLedMode)
+			web.arena.LedModeNotifier.Notify()
+		default:
+			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+		}
+	}
 }
