@@ -11,6 +11,7 @@ import (
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/plc"
 	"github.com/Team254/cheesy-arena/vaultled"
 	"log"
 	"math/rand"
@@ -42,7 +43,7 @@ type Arena struct {
 	EventSettings    *model.EventSettings
 	accessPoint      *AccessPoint
 	networkSwitch    *NetworkSwitch
-	Plc              Plc
+	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
 	StemTvClient     *partner.StemTvClient
 	AllianceStations map[string]*AllianceStation

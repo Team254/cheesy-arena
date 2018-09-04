@@ -1,7 +1,7 @@
 // Copyright 2017 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package field
+package plc
 
 import (
 	"github.com/stretchr/testify/assert"

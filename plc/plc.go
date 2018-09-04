@@ -3,7 +3,7 @@
 //
 // Methods for interfacing with the field PLC.
 
-package field
+package plc
 
 import (
 	"fmt"
