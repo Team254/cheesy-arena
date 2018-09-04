@@ -20,7 +20,6 @@ CREATE TABLE event_settings (
   apadminwpakey VARCHAR(255),
   switchaddress VARCHAR(255),
   switchpassword VARCHAR(255),
-  bandwidthmonitoringenabled bool,
   plcaddress VARCHAR(255),
   tbadownloadenabled bool,
   adminpassword VARCHAR(255),

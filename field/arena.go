@@ -507,7 +507,6 @@ func (arena *Arena) Run() {
 	// Start other loops in goroutines.
 	go arena.listenForDriverStations()
 	go arena.listenForDsUdpPackets()
-	go arena.monitorBandwidth()
 	go arena.Plc.Run()
 
 	for {

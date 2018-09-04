@@ -19,7 +19,6 @@ var handleArenaStatus = function(data) {
     if (stationStatus.DsConn) {
       var dsConn = stationStatus.DsConn;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
-      $("#status" + station + " .ds-status").text(dsConn.MBpsToRobot.toFixed(1) + "/" + dsConn.MBpsFromRobot.toFixed(1));
       $("#status" + station + " .radio-status").attr("data-status-ok", dsConn.RadioLinked);
       $("#status" + station + " .robot-status").attr("data-status-ok", dsConn.RobotLinked);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {

@@ -39,8 +39,6 @@ type DriverStationConnection struct {
 	BatteryVoltage            float64
 	DsRobotTripTimeMs         int
 	MissedPacketCount         int
-	MBpsToRobot               float64
-	MBpsFromRobot             float64
 	SecondsSinceLastRobotLink float64
 	lastPacketTime            time.Time
 	lastRobotLinkedTime       time.Time
@@ -120,8 +118,6 @@ func (dsConn *DriverStationConnection) update(arena *Arena) error {
 		dsConn.RadioLinked = false
 		dsConn.RobotLinked = false
 		dsConn.BatteryVoltage = 0
-		dsConn.MBpsToRobot = 0
-		dsConn.MBpsFromRobot = 0
 	}
 	dsConn.SecondsSinceLastRobotLink = time.Since(dsConn.lastRobotLinkedTime).Seconds()
 
