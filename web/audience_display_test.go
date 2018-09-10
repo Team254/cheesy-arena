@@ -14,6 +14,12 @@ func TestAudienceDisplay(t *testing.T) {
 	web := setupTestWeb(t)
 
 	recorder := web.getHttpResponse("/displays/audience")
+	assert.Equal(t, 302, recorder.Code)
+	assert.Contains(t, recorder.Header().Get("Location"), "displayId=874")
+	assert.Contains(t, recorder.Header().Get("Location"), "background=%230f0")
+	assert.Contains(t, recorder.Header().Get("Location"), "reversed=false")
+
+	recorder = web.getHttpResponse("/displays/audience?displayId=1&background=%23000&reversed=false")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Audience Display - Untitled Event - Cheesy Arena")
 }
@@ -23,7 +29,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/audience/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/audience/websocket?displayId=1", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
 	ws := websocket.NewTestWebsocket(conn)
@@ -35,6 +41,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "scorePosted")
+	readWebsocketType(t, ws, "displayConfiguration")
 
 	// Run through a match cycle.
 	web.arena.MatchLoadNotifier.Notify()

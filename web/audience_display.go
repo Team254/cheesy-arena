@@ -6,6 +6,7 @@
 package web
 
 import (
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
@@ -16,6 +17,10 @@ import (
 // Renders the audience display to be chroma keyed over the video feed.
 func (web *Web) audienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsReader(w, r) {
+		return
+	}
+
+	if !web.enforceDisplayConfiguration(w, r, map[string]string{"background": "#0f0", "reversed": "false"}) {
 		return
 	}
 
@@ -41,6 +46,14 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	display, err := field.DisplayFromUrl(r.URL.Path, r.URL.Query())
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	web.arena.RegisterDisplay(display)
+	defer web.arena.MarkDisplayDisconnected(display)
+
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
@@ -58,5 +71,6 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
 	ws.HandleNotifiers(web.arena.AudienceDisplayModeNotifier, web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier,
 		web.arena.RealtimeScoreNotifier, web.arena.PlaySoundNotifier, web.arena.ScorePostedNotifier,
-		web.arena.AllianceSelectionNotifier, web.arena.LowerThirdNotifier, web.arena.ReloadDisplaysNotifier)
+		web.arena.AllianceSelectionNotifier, web.arena.LowerThirdNotifier, web.arena.DisplayConfigurationNotifier,
+		web.arena.ReloadDisplaysNotifier)
 }

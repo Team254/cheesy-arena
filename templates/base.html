@@ -50,8 +50,10 @@
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Panel</a>
                 <ul class="dropdown-menu">
                   <li><a href="/panels/referee">Referee</a></li>
-                  <li><a href="/panels/scoring/red">Scoring &ndash; Red</a></li>
-                  <li><a href="/panels/scoring/blue">Scoring &ndash; Blue</a></li>
+                  <li class="divider"></li>
+                  <li class="dropdown-header">Scoring</li>
+                  <li><a href="/panels/scoring/red">Red</a></li>
+                  <li><a href="/panels/scoring/blue">Blue</a></li>
                 </ul>
               </li>
               <li class="dropdown">
@@ -78,11 +80,19 @@
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Display</a>
                 <ul class="dropdown-menu">
-                  <li><a href="/displays/alliance_station">Alliance Station</a></li>
+                  <li><a href="/display">Placeholder</a></li>
                   <li><a href="/displays/announcer">Announcer</a></li>
                   <li><a href="/displays/audience">Audience</a></li>
                   <li><a href="/displays/fta">Field Monitor</a></li>
                   <li><a href="/displays/pit">Pit</a></li>
+                  <li class="divider"></li>
+                  <li class="dropdown-header">Alliance Station</li>
+                  <li><a href="/displays/alliance_station?station=R1">Red 1</a></li>
+                  <li><a href="/displays/alliance_station?station=R2">Red 2</a></li>
+                  <li><a href="/displays/alliance_station?station=R3">Red 3</a></li>
+                  <li><a href="/displays/alliance_station?station=B1">Blue 1</a></li>
+                  <li><a href="/displays/alliance_station?station=B2">Blue 2</a></li>
+                  <li><a href="/displays/alliance_station?station=B3">Blue 3</a></li>
                 </ul>
               </li>
             </ul>
@@ -142,7 +152,6 @@
   <link rel="shortcut icon" href="/static/img/favicon.ico">
   <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
   <link href="/static/css/lib/bootstrap.min.css" rel="stylesheet">
-  <link href="/static/css/lib/bootstrap-colorpicker.min.css" rel="stylesheet">
   <link href="/static/css/lib/bootstrap-datetimepicker.min.css" rel="stylesheet">
   <link href="/static/css/cheesy-arena.css" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -153,7 +162,6 @@
   <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
   <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
   <script src="/static/js/lib/bootstrap.min.js"></script>
-  <script src="/static/js/lib/bootstrap-colorpicker.min.js"></script>
   <script src="/static/js/lib/moment.min.js"></script>
   <script src="/static/js/lib/bootstrap-datetimepicker.min.js"></script>
   <script src="/static/js/lib/handlebars-1.3.0.js"></script>

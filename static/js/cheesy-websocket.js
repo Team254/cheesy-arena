@@ -15,19 +15,41 @@ var CheesyWebsocket = function(path, events) {
   }
   url += path;
 
+  // Append the page's query string to the websocket URL.
+  url += window.location.search;
+
   // Insert a default error-handling event if a custom one doesn't already exist.
   if (!events.hasOwnProperty("error")) {
     events.error = function(event) {
       // Data is just an error string.
       console.log(event.data);
       alert(event.data);
-    }
+    };
   }
+
+  // Parse the display parameters that will be present in the query string if this is a display.
+  var displayId = new URLSearchParams(window.location.search).get("displayId");
 
   // Insert an event to allow the server to force-reload the client for any display.
   events.reload = function(event) {
-    location.reload();
+    if (event.data === null || event.data === displayId) {
+      location.reload();
+    }
   };
+
+  // Insert an event to allow reconfiguration if this is a display.
+  if (!events.hasOwnProperty("displayConfiguration")) {
+    events.displayConfiguration = function (event) {
+      if (displayId in event.data.DisplayUrls) {
+        var newUrl = event.data.DisplayUrls[displayId];
+
+        // Reload the display if the configuration has changed.
+        if (newUrl !== window.location.pathname + window.location.search) {
+          window.location = newUrl;
+        }
+      }
+    };
+  }
 
   this.connect = function() {
     this.websocket = $.websocket(url, {

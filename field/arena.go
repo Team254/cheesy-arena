@@ -47,6 +47,7 @@ type Arena struct {
 	TbaClient        *partner.TbaClient
 	StemTvClient     *partner.StemTvClient
 	AllianceStations map[string]*AllianceStation
+	Displays         map[string]*Display
 	ArenaNotifiers
 	MatchState
 	lastMatchState             MatchState
@@ -61,7 +62,6 @@ type Arena struct {
 	AudienceDisplayMode        string
 	SavedMatch                 *model.Match
 	SavedMatchResult           *model.MatchResult
-	AllianceStationDisplays    map[string]string
 	AllianceStationDisplayMode string
 	MuteMatchSounds            bool
 	matchAborted               bool
@@ -110,6 +110,8 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.AllianceStations["B2"] = new(AllianceStation)
 	arena.AllianceStations["B3"] = new(AllianceStation)
 
+	arena.Displays = make(map[string]*Display)
+
 	arena.configureNotifiers()
 
 	// Load empty match as current.
@@ -122,7 +124,6 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.AudienceDisplayMode = "blank"
 	arena.SavedMatch = &model.Match{}
 	arena.SavedMatchResult = model.NewMatchResult()
-	arena.AllianceStationDisplays = make(map[string]string)
 	arena.AllianceStationDisplayMode = "match"
 
 	return arena, nil

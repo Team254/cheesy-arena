@@ -13,7 +13,7 @@ import (
 func TestPitDisplay(t *testing.T) {
 	web := setupTestWeb(t)
 
-	recorder := web.getHttpResponse("/displays/pit")
+	recorder := web.getHttpResponse("/displays/pit?displayId=1")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Pit Display - Untitled Event - Cheesy Arena")
 }
@@ -23,13 +23,15 @@ func TestPitDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/pit/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/pit/websocket?displayId=1", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
 	ws := websocket.NewTestWebsocket(conn)
 
+	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "displayConfiguration")
+
 	// Check forced reloading as that is the only purpose the pit websocket serves.
-	recorder := web.getHttpResponse("/setup/displays/reload")
-	assert.Equal(t, 303, recorder.Code)
+	web.arena.ReloadDisplaysNotifier.Notify()
 	readWebsocketType(t, ws, "reload")
 }

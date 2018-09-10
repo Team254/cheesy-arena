@@ -16,6 +16,11 @@ func TestAllianceStationDisplay(t *testing.T) {
 	web := setupTestWeb(t)
 
 	recorder := web.getHttpResponse("/displays/alliance_station")
+	assert.Equal(t, 302, recorder.Code)
+	assert.Contains(t, recorder.Header().Get("Location"), "displayId=874")
+	assert.Contains(t, recorder.Header().Get("Location"), "station=R1")
+
+	recorder = web.getHttpResponse("/displays/alliance_station?displayId=1&station=B1")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Alliance Station Display - Untitled Event - Cheesy Arena")
 }
@@ -31,13 +36,13 @@ func TestAllianceStationDisplayWebsocket(t *testing.T) {
 	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
-	readWebsocketType(t, ws, "allianceStation")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	readWebsocketType(t, ws, "arenaStatus")
 	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
+	readWebsocketType(t, ws, "displayConfiguration")
 
 	// Change to a different screen.
 	web.arena.AllianceStationDisplayMode = "logo"

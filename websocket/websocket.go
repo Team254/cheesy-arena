@@ -18,6 +18,8 @@ import (
 	"time"
 )
 
+const pingInterval = time.Second * 10
+
 // Wraps the Gorilla Websocket module so that we can define additional functions on it.
 type Websocket struct {
 	conn       *websocket.Conn
@@ -125,9 +127,22 @@ func (ws *Websocket) HandleNotifiers(notifiers ...*Notifier) {
 		}
 	}
 
+	// Add an additional case to periodically ping the websocket to detect whether the client has closed it.
+	pingCase := reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(time.Tick(pingInterval))}
+	pingIndex := len(listeners)
+	listeners = append(listeners, pingCase)
+
 	for {
 		// Block until a message is available on any of the channels.
 		chosenIndex, value, ok := reflect.Select(listeners)
+		if ok && chosenIndex == pingIndex {
+			err := ws.Write("ping", nil)
+			if err != nil {
+				// The client has probably closed the connection; bail out of the loop.
+				return
+			}
+			continue
+		}
 		if !ok {
 			log.Printf("Channel for notifier %v closed unexpectedly.", notifiers[chosenIndex])
 			return
@@ -141,7 +156,7 @@ func (ws *Websocket) HandleNotifiers(notifiers ...*Notifier) {
 		// Forward the message verbatim on to the websocket.
 		err := ws.Write(message.messageType, message.messageBody)
 		if err != nil {
-			// The client has probably closed the connection; nothing to do here.
+			// The client has probably closed the connection; bail out of the loop.
 			return
 		}
 	}

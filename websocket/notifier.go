@@ -7,6 +7,7 @@ package websocket
 
 import (
 	"log"
+	"sync"
 )
 
 // Allow the listeners to buffer a small number of notifications to streamline delivery.
@@ -16,6 +17,7 @@ type Notifier struct {
 	messageType     string
 	messageProducer func() interface{}
 	listeners       map[chan messageEnvelope]struct{} // The map is essentially a set; the value is ignored.
+	mutex           sync.Mutex
 }
 
 type messageEnvelope struct {
@@ -38,6 +40,9 @@ func (notifier *Notifier) Notify() {
 // Sends the given message to all registered listeners, and cleans up any listeners that have closed. If there is a
 // messageProducer function defined it is ignored.
 func (notifier *Notifier) NotifyWithMessage(messageBody interface{}) {
+	notifier.mutex.Lock()
+	defer notifier.mutex.Unlock()
+
 	message := messageEnvelope{messageType: notifier.messageType, messageBody: messageBody}
 	for listener := range notifier.listeners {
 		notifier.notifyListener(listener, message)
@@ -65,6 +70,9 @@ func (notifier *Notifier) notifyListener(listener chan messageEnvelope, message 
 // Registers and returns a channel that can be read from to receive notification messages. The caller is
 // responsible for closing the channel, which will cause it to be reaped from the list of listeners.
 func (notifier *Notifier) listen() chan messageEnvelope {
+	notifier.mutex.Lock()
+	defer notifier.mutex.Unlock()
+
 	listener := make(chan messageEnvelope, notifyBufferSize)
 	notifier.listeners[listener] = struct{}{}
 	return listener

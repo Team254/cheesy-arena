@@ -399,6 +399,10 @@ var initializeSponsorDisplay = function() {
 };
 
 $(function() {
+  // Read the configuration for this display from the URL query string.
+  var urlParams = new URLSearchParams(window.location.search);
+  document.body.style.backgroundColor = urlParams.get("background");
+
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {
     allianceSelection: function(event) { handleAllianceSelection(event.data); },

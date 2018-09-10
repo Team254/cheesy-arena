@@ -6,6 +6,7 @@
 package web
 
 import (
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
@@ -16,6 +17,10 @@ import (
 // Renders the announcer display which shows team info and scores for the current match.
 func (web *Web) announcerDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsReader(w, r) {
+		return
+	}
+
+	if !web.enforceDisplayConfiguration(w, r, nil) {
 		return
 	}
 
@@ -41,6 +46,14 @@ func (web *Web) announcerDisplayWebsocketHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
+	display, err := field.DisplayFromUrl(r.URL.Path, r.URL.Query())
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	web.arena.RegisterDisplay(display)
+	defer web.arena.MarkDisplayDisconnected(display)
+
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
@@ -57,5 +70,6 @@ func (web *Web) announcerDisplayWebsocketHandler(w http.ResponseWriter, r *http.
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
 	ws.HandleNotifiers(web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
-		web.arena.ScorePostedNotifier, web.arena.AudienceDisplayModeNotifier, web.arena.ReloadDisplaysNotifier)
+		web.arena.ScorePostedNotifier, web.arena.AudienceDisplayModeNotifier, web.arena.DisplayConfigurationNotifier,
+		web.arena.ReloadDisplaysNotifier)
 }

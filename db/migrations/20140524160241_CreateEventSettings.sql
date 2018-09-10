@@ -2,7 +2,6 @@
 CREATE TABLE event_settings (
   id INTEGER PRIMARY KEY,
   name VARCHAR(255),
-  displaybackgroundcolor VARCHAR(16),
   numelimalliances int,
   selectionround2order VARCHAR(1),
   selectionround3order VARCHAR(1),

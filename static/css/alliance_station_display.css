@@ -24,9 +24,6 @@ body[data-mode=fieldReset] {
 .mode {
   display: none;
 }
-body[data-mode=displayId] .mode#displayId {
-  display: block;
-}
 body[data-mode=logo] .mode#logo {
   display: block;
 }
@@ -46,21 +43,6 @@ body[data-mode=fieldReset] .mode#fieldReset {
   right: 0;
   width: 80%;
   margin: auto auto;
-}
-
-/* Display ID Mode */
-#displayId {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto auto;
-  height: 1px;
-  line-height: 1px;
-  text-align: center;
-  color: #ff0;
-  font-size: 500px;
 }
 
 /* Field Reset Mode */

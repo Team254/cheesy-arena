@@ -11,7 +11,7 @@ import (
 func TestFtaDisplay(t *testing.T) {
 	web := setupTestWeb(t)
 
-	recorder := web.getHttpResponse("/displays/fta")
+	recorder := web.getHttpResponse("/displays/fta?displayId=1")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Field Monitor - Untitled Event - Cheesy Arena")
 }

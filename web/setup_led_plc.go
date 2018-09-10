@@ -61,6 +61,7 @@ func (web *Web) ledPlcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.LedModeNotifier, web.arena.Plc.IoChangeNotifier)
+
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
 		messageType, data, err := ws.Read()

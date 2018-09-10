@@ -13,7 +13,7 @@ import (
 func TestAnnouncerDisplay(t *testing.T) {
 	web := setupTestWeb(t)
 
-	recorder := web.getHttpResponse("/displays/announcer")
+	recorder := web.getHttpResponse("/displays/announcer?displayId=1")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Announcer Display - Untitled Event - Cheesy Arena")
 }
@@ -23,7 +23,7 @@ func TestAnnouncerDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/announcer/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/announcer/websocket?displayId=1", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
 	ws := websocket.NewTestWebsocket(conn)
@@ -35,6 +35,7 @@ func TestAnnouncerDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "scorePosted")
 	readWebsocketType(t, ws, "audienceDisplayMode")
+	readWebsocketType(t, ws, "displayConfiguration")
 
 	web.arena.MatchLoadNotifier.Notify()
 	readWebsocketType(t, ws, "matchLoad")

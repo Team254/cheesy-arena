@@ -1,28 +1,32 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2018 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Web handlers for the pit rankings display.
+// Web routes for a placeholder display to be later configured by the server.
 
 package web
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
 )
 
-// Renders the pit display which shows scrolling rankings.
-func (web *Web) pitDisplayHandler(w http.ResponseWriter, r *http.Request) {
+// Shows a random ID to visually identify the display so that it can be configured on the server.
+func (web *Web) placeholderDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsReader(w, r) {
 		return
 	}
 
-	if !web.enforceDisplayConfiguration(w, r, nil) {
+	// Generate a display ID and redirect if the client doesn't already have one.
+	displayId := r.URL.Query().Get("displayId")
+	if displayId == "" {
+		http.Redirect(w, r, fmt.Sprintf(r.URL.Path+"?displayId=%s", web.arena.NextDisplayId()), 302)
 		return
 	}
 
-	template, err := web.parseFiles("templates/pit_display.html")
+	template, err := web.parseFiles("templates/placeholder_display.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -30,15 +34,15 @@ func (web *Web) pitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 	}{web.arena.EventSettings}
-	err = template.ExecuteTemplate(w, "pit_display.html", data)
+	err = template.ExecuteTemplate(w, "placeholder_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 }
 
-// The websocket endpoint for the pit display, used only to force reloads remotely.
-func (web *Web) pitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+// The websocket endpoint for sending configuration commands to the display.
+func (web *Web) placeholderDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsReader(w, r) {
 		return
 	}

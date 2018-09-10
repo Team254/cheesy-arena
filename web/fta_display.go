@@ -6,6 +6,7 @@
 package web
 
 import (
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
@@ -14,6 +15,10 @@ import (
 // Renders the FTA diagnostic display.
 func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	if !web.enforceDisplayConfiguration(w, r, nil) {
 		return
 	}
 
@@ -34,7 +39,17 @@ func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the FTA display client to receive status updates.
 func (web *Web) ftaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO(patrick): Enable authentication once Safari (for iPad) supports it over Websocket.
+	if !web.userIsReader(w, r) {
+		return
+	}
+
+	display, err := field.DisplayFromUrl(r.URL.Path, r.URL.Query())
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	web.arena.RegisterDisplay(display)
+	defer web.arena.MarkDisplayDisconnected(display)
 
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
@@ -44,5 +59,6 @@ func (web *Web) ftaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reques
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(web.arena.ArenaStatusNotifier, web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(web.arena.ArenaStatusNotifier, web.arena.DisplayConfigurationNotifier,
+		web.arena.ReloadDisplaysNotifier)
 }

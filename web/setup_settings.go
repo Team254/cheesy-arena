@@ -12,7 +12,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -35,12 +34,6 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	eventSettings := web.arena.EventSettings
 	eventSettings.Name = r.PostFormValue("name")
-	match, _ := regexp.MatchString("^#([0-9A-Fa-f]{3}){1,2}$", r.PostFormValue("displayBackgroundColor"))
-	if !match {
-		web.renderSettings(w, r, "Display background color must be a valid hex color value.")
-		return
-	}
-	eventSettings.DisplayBackgroundColor = r.PostFormValue("displayBackgroundColor")
 	numAlliances, _ := strconv.Atoi(r.PostFormValue("numElimAlliances"))
 	if numAlliances < 2 || numAlliances > 16 {
 		web.renderSettings(w, r, "Number of alliances must be between 2 and 16.")
