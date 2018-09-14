@@ -27,6 +27,10 @@ func (web *Web) sponsorSlidesGetHandler(w http.ResponseWriter, r *http.Request) 
 		handleWebErr(w, err)
 		return
 	}
+
+	// Append a blank slide to the end that can be used to add a new one.
+	sponsorSlides = append(sponsorSlides, model.SponsorSlide{DisplayTimeSec: 10})
+
 	data := struct {
 		*model.EventSettings
 		SponsorSlides []model.SponsorSlide

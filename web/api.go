@@ -85,6 +85,10 @@ func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	if sponsors == nil {
+		// Go marshals an empty slice to null, so explicitly create it so that it appears as an empty JSON array.
+		sponsors = make([]model.SponsorSlide, 0)
+	}
 	jsonData, err := json.MarshalIndent(sponsors, "", "  ")
 	if err != nil {
 		handleWebErr(w, err)

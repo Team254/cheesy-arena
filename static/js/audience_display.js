@@ -8,11 +8,17 @@ var websocket;
 var transitionMap;
 var currentScreen = "blank";
 var allianceSelectionTemplate = Handlebars.compile($("#allianceSelectionTemplate").html());
+var sponsorImageTemplate = Handlebars.compile($("#sponsorImageTemplate").html());
+var sponsorTextTemplate = Handlebars.compile($("#sponsorTextTemplate").html());
 
 // Handles a websocket message to change which screen is displayed.
 var handleAudienceDisplayMode = function(targetScreen) {
   if (targetScreen === currentScreen) {
     return;
+  }
+
+  if (targetScreen === "sponsor") {
+    initializeSponsorDisplay();
   }
 
   transitions = transitionMap[currentScreen][targetScreen];
@@ -356,22 +362,21 @@ var transitionSponsorToScore = function(callback) {
 
 // Loads sponsor slide data and builds the slideshow HTML.
 var initializeSponsorDisplay = function() {
-  $.getJSON("/api/sponsor_slides", function(sponsors) {
-    if (!sponsors) {
-      return;
-    }
+  $.getJSON("/api/sponsor_slides", function(slides) {
+    $("#sponsorContainer").empty();
 
-    // Populate Tiles
-    $.each(sponsors, function(index){
-      var active = 'active';
-      if(index)
-        active = '';
+    // Inject the HTML for each slide into the DOM.
+    $.each(slides, function(index, slide) {
+      slide.DisplayTimeMs = slide.DisplayTimeSec * 1000;
+      slide.First = index === 0;
 
-      if(sponsors[index]['Image'].length)
-        $('#sponsorContainer').append('<div class="item '+active+'" data-interval="'+sponsors[index]["DisplayTimeSec"]*1000+'"><img src="/static/img/sponsors/'+sponsors[index]['Image']+'" /><h1>'+sponsors[index]['Subtitle']+'</h1></div>');
-      else
-        $('#sponsorContainer').append('<div class="item '+active+'" data-interval="'+sponsors[index]["DisplayTimeSec"]*1000+'"><h2>'+sponsors[index]['Line1']+'<br />'+sponsors[index]['Line2']+'</h2><h1>'+sponsors[index]['Subtitle']+'</h1></div>');
-
+      var slideHtml;
+      if (slide.Image) {
+        slideHtml = sponsorImageTemplate(slide);
+      } else {
+        slideHtml = sponsorTextTemplate(slide);
+      }
+      $("#sponsorContainer").append(slideHtml);
     });
 
     // Start Carousel
@@ -415,8 +420,6 @@ $(function() {
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
     scorePosted: function(event) { handleScorePosted(event.data); }
   });
-
-  initializeSponsorDisplay();
 
   // Map how to transition from one screen to another. Missing links between screens indicate that first we
   // must transition to the blank screen and then to the target screen.

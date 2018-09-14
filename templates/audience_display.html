@@ -167,6 +167,20 @@
         {{"{{/each}}"}}
       </table>
     </script>
+    <script id="sponsorImageTemplate" type="text/x-handlebars-template">
+      <div class="item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-interval="{{"{{DisplayTimeMs}}"}}">
+        <div class="sponsor-image-container">
+          <img src="/static/img/sponsors/{{"{{Image}}"}}" />
+        </div>
+        <h1>{{"{{Subtitle}}"}}</h1>
+      </div>
+    </script>
+    <script id="sponsorTextTemplate" type="text/x-handlebars-template">
+      <div class="item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-interval="{{"{{DisplayTimeMs}}"}}">
+        <h2>{{"{{Line1}}"}}<br />{{"{{Line2}}"}}</h2>
+        <h1>{{"{{Subtitle}}"}}</h1>
+      </div>
+    </script>
     <audio id="match-warmup" src="/static/audio/match_warmup.wav" preload="auto"></audio>
     <audio id="match-start" src="/static/audio/match_start.wav" preload="auto"></audio>
     <audio id="match-end" src="/static/audio/match_end.wav" preload="auto"></audio>

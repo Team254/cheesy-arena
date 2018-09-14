@@ -369,6 +369,12 @@ html {
 #sponsor .carousel-inner, #sponsor .item {
   height: 100%;
 }
+.sponsor-image-container {
+  width: 1000px;
+  height: 500px;
+  display: table-cell;
+  vertical-align: middle;
+}
 #sponsor h1, #sponsor h2 {
   font-family: "FuturaLTBold";
   margin: 0;
@@ -386,13 +392,12 @@ html {
 }
 #sponsor h2 {
   font-size: 6em;
-  padding-top: 150px;
+  padding-top: 145px;
+  line-height: 110px;
 }
 #sponsor img {
   max-width: 800px;
-  height: 400px;
-  margin-top: 50px;
-  display: inline-block;
+  max-height: 400px;
 }
 #allianceSelectionCentering {
   position: absolute;

@@ -57,52 +57,11 @@
               <br />
               <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="delete">Delete</button>
               <br />
-              <button class="btn btn-warning" name="toggleImage">Toggle Image</button>
+              <button class="btn btn-warning" name="toggleImage">Toggle Image/Text</button>
             </div>
           </div>
         </form>
       {{end}}
-      <form class="form-horizontal" action="/setup/sponsor_slides" method="POST">
-        <div class="form-group">
-          <div class="col-lg-7">
-            <div class="form-group imagetoggle">
-              <label class="col-sm-5 control-label">Image File Name</label>
-              <div class="col-sm-7">
-                <input type="text" class="form-control" name="image" placeholder="image.svg">
-              </div>
-            </div>
-            <div class="form-group hidden imagetoggle">
-              <label class="col-sm-5 control-label">Line 1 Text</label>
-              <div class="col-sm-7">
-                <input type="text" class="form-control" name="line1" placeholder="Chezy">
-              </div>
-            </div>
-            <div class="form-group hidden imagetoggle">
-              <label class="col-sm-5 control-label">Line 2 Text</label>
-              <div class="col-sm-7">
-                <input type="text" class="form-control" name="line2" placeholder="Industries">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-5 control-label">Subtitle Text</label>
-              <div class="col-sm-7">
-                <input type="text" class="form-control" name="subtitle" placeholder="Gold Sponsor">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="col-sm-5 control-label">Display Time (s)</label>
-              <div class="col-sm-7">
-                <input type="number" class="form-control" name="displayTimeSec" placeholder="10">
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-5">
-            <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
-            <br />
-            <button class="btn btn-warning" name="toggleImage">Toggle Image</button>
-          </div>
-        </div>
-      </form>
     </div>
   </div>
 </div>
