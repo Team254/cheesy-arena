@@ -16,58 +16,58 @@
   <body>
     <div id="centering">
       <div id="matchOverlay">
-        <div class="teams" id="redTeams">
+        <div class="teams" id="leftTeams">
           <span class="valign-cell">
-            <span id="redTeam1"></span><br />
-            <span id="redTeam2"></span><br />
-            <span id="redTeam3"></span>
+            <span id="leftTeam1"></span><br />
+            <span id="leftTeam2"></span><br />
+            <span id="leftTeam3"></span>
           </span>
         </div>
-        <div class="score" id="redScore">
+        <div class="score reversible-left" id="leftScore">
           <div class="score-fields score-fields-icons">
             <span class="valign-cell">
-              <span class="power-up" id="redForceCubesIcon">F</span><br />
-              <span class="power-up" id="redLevitateCubesIcon">L</span><br />
-              <span class="power-up" id="redBoostCubesIcon">B</span>
+              <span class="power-up" id="leftForceCubesIcon">F</span><br />
+              <span class="power-up" id="leftLevitateCubesIcon">L</span><br />
+              <span class="power-up" id="leftBoostCubesIcon">B</span>
             </span>
           </div>
           <div class="score-fields score-fields-text">
             <span class="valign-cell">
-              <span class="power-up" id="redForceCubes"></span><br />
-              <span class="power-up" id="redLevitateCubes"></span><br />
-              <span class="power-up" id="redBoostCubes"></span>
+              <span class="power-up" id="leftForceCubes"></span><br />
+              <span class="power-up" id="leftLevitateCubes"></span><br />
+              <span class="power-up" id="leftBoostCubes"></span>
             </span>
           </div>
           <div class="powerup-progress">
-            <div id="redProgress"></div>
+            <div id="leftProgress"></div>
           </div>
-          <div class="score-number" id="redScoreNumber">&nbsp;</div>
+          <div class="score-number" id="leftScoreNumber">&nbsp;</div>
         </div>
-        <div class="score" id="blueScore">
+        <div class="score reversible-right" id="rightScore">
           <div class="score-fields score-fields-icons pull-right">
             <span class="valign-cell">
-              <span class="power-up" id="blueForceCubesIcon">F</span><br />
-              <span class="power-up" id="blueLevitateCubesIcon">L</span><br />
-              <span class="power-up" id="blueBoostCubesIcon">B</span>
+              <span class="power-up" id="rightForceCubesIcon">F</span><br />
+              <span class="power-up" id="rightLevitateCubesIcon">L</span><br />
+              <span class="power-up" id="rightBoostCubesIcon">B</span>
             </span>
           </div>
           <div class="score-fields score-fields-text pull-right" style="direction: rtl;">
             <span class="valign-cell" style="text-align: right;">
-              <span class="power-up" id="blueForceCubes"></span><br />
-              <span class="power-up" id="blueLevitateCubes"></span><br />
-              <span class="power-up" id="blueBoostCubes"></span>
+              <span class="power-up" id="rightForceCubes"></span><br />
+              <span class="power-up" id="rightLevitateCubes"></span><br />
+              <span class="power-up" id="rightBoostCubes"></span>
             </span>
           </div>
           <div class="powerup-progress pull-right">
-            <div id="blueProgress"></div>
+            <div id="rightProgress"></div>
           </div>
-          <div class="score-number pull-right" id="blueScoreNumber">&nbsp;</div>
+          <div class="score-number pull-right" id="rightScoreNumber">&nbsp;</div>
         </div>
-        <div class="teams" id="blueTeams">
+        <div class="teams" id="rightTeams">
           <span class="valign-cell">
-            <span id="blueTeam1"></span><br />
-            <span id="blueTeam2"></span><br />
-            <span id="blueTeam3"></span>
+            <span id="rightTeam1"></span><br />
+            <span id="rightTeam2"></span><br />
+            <span id="rightTeam3"></span>
           </span>
         </div>
         <div id="eventMatchInfo">
@@ -78,9 +78,9 @@
       <div class="text-center" id="matchCircle">
         <img id="logo" src="/static/img/game-logo.png" alt="logo" />
         <div id="matchTime"></div>
-        <div class="seesaw-indicator" id="redSwitchIndicator"></div>
+        <div class="seesaw-indicator" id="leftSwitchIndicator"></div>
         <div class="seesaw-indicator" id="scaleIndicator"></div>
-        <div class="seesaw-indicator" id="blueSwitchIndicator"></div>
+        <div class="seesaw-indicator" id="rightSwitchIndicator"></div>
       </div>
     </div>
     <div id="blindsContainer">
@@ -94,41 +94,41 @@
         <img id="blindsLogo" src="/static/img/game-logo.png" alt="logo" />
       </div>
       <div id="finalScore">
-        <div class="final-score" id="redFinalScore"></div>
-        <div class="final-score" id="blueFinalScore"></div>
-        <div class="final-teams" id="redFinalTeams">
-          <span id="redFinalTeam1"></span>
-          <span id="redFinalTeam2"></span>
-          <span id="redFinalTeam3"></span>
+        <div class="final-score reversible-left" id="leftFinalScore"></div>
+        <div class="final-score reversible-right" id="rightFinalScore"></div>
+        <div class="final-teams" id="leftFinalTeams">
+          <span id="leftFinalTeam1"></span>
+          <span id="leftFinalTeam2"></span>
+          <span id="leftFinalTeam3"></span>
         </div>
-        <div class="final-teams" id="blueFinalTeams">
-          <span id="blueFinalTeam1"></span>
-          <span id="blueFinalTeam2"></span>
-          <span id="blueFinalTeam3"></span>
+        <div class="final-teams" id="rightFinalTeams">
+          <span id="rightFinalTeam1"></span>
+          <span id="rightFinalTeam2"></span>
+          <span id="rightFinalTeam3"></span>
         </div>
-        <div class="final-breakdown" id="redFinalBreakdown">
+        <div class="final-breakdown" id="leftFinalBreakdown">
           <span class="valign-cell">
-            <span id="redFinalAutoRunPoints"></span><br />
-            <span id="redFinalOwnershipPoints"></span><br />
-            <span id="redFinalVaultPoints"></span><br />
-            <span id="redFinalParkClimbPoints"></span><br />
-            <span id="redFinalFoulPoints"></span><br />
-            <span id="redFinalAutoQuest"></span><br />
-            <span id="redFinalFaceTheBoss"></span><br />
+            <span id="leftFinalAutoRunPoints"></span><br />
+            <span id="leftFinalOwnershipPoints"></span><br />
+            <span id="leftFinalVaultPoints"></span><br />
+            <span id="leftFinalParkClimbPoints"></span><br />
+            <span id="leftFinalFoulPoints"></span><br />
+            <span id="leftFinalAutoQuest"></span><br />
+            <span id="leftFinalFaceTheBoss"></span><br />
           </span>
         </div>
         <div class="final-breakdown" id="centerFinalBreakdown">
           <span class="valign-cell">Auto Run<br />Ownership<br />Vault<br />Endgame<br />Foul<br />Auto Quest<br />Face The Boss</span>
         </div>
-        <div class="final-breakdown" id="blueFinalBreakdown">
+        <div class="final-breakdown" id="rightFinalBreakdown">
           <span class="valign-cell">
-            <span id="blueFinalAutoRunPoints"></span><br />
-            <span id="blueFinalOwnershipPoints"></span><br />
-            <span id="blueFinalVaultPoints"></span><br />
-            <span id="blueFinalParkClimbPoints"></span><br />
-            <span id="blueFinalFoulPoints"></span><br />
-            <span id="blueFinalAutoQuest"></span><br />
-            <span id="blueFinalFaceTheBoss"></span><br />
+            <span id="rightFinalAutoRunPoints"></span><br />
+            <span id="rightFinalOwnershipPoints"></span><br />
+            <span id="rightFinalVaultPoints"></span><br />
+            <span id="rightFinalParkClimbPoints"></span><br />
+            <span id="rightFinalFoulPoints"></span><br />
+            <span id="rightFinalAutoQuest"></span><br />
+            <span id="rightFinalFaceTheBoss"></span><br />
           </span>
         </div>
         <div id="finalEventMatchInfo">

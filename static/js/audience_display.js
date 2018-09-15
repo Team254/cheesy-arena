@@ -7,6 +7,8 @@
 var websocket;
 var transitionMap;
 var currentScreen = "blank";
+var redSide;
+var blueSide;
 var allianceSelectionTemplate = Handlebars.compile($("#allianceSelectionTemplate").html());
 var sponsorImageTemplate = Handlebars.compile($("#sponsorImageTemplate").html());
 var sponsorTextTemplate = Handlebars.compile($("#sponsorTextTemplate").html());
@@ -35,13 +37,13 @@ var handleAudienceDisplayMode = function(targetScreen) {
 
 // Handles a websocket message to update the teams for the current match.
 var handleMatchLoad = function(data) {
-  $("#redTeam1").text(data.Match.Red1);
-  $("#redTeam2").text(data.Match.Red2);
-  $("#redTeam3").text(data.Match.Red3);
-  $("#blueTeam1").text(data.Match.Blue1);
-  $("#blueTeam2").text(data.Match.Blue2);
-  $("#blueTeam3").text(data.Match.Blue3);
-  $("#matchName").text(data.MatchName + " " + data.Match.DisplayName);
+  $("#" + redSide + "Team1").text(data.Match.Red1);
+  $("#" + redSide + "Team2").text(data.Match.Red2);
+  $("#" + redSide + "Team3").text(data.Match.Red3);
+  $("#" + blueSide + "Team1").text(data.Match.Blue1);
+  $("#" + blueSide + "Team2").text(data.Match.Blue2);
+  $("#" + blueSide + "Team3").text(data.Match.Blue3);
+  $("#matchName").text(data.MatchType + " " + data.Match.DisplayName);
 };
 
 // Handles a websocket message to update the match time countdown.
@@ -59,68 +61,68 @@ var handleMatchTime = function(data) {
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
   var redScoreBreakdown = data.Red.RealtimeScore.CurrentScore;
-  $("#redScoreNumber").text(data.Red.Score);
-  $("#redForceCubesIcon").attr("data-state", data.Red.ForceState);
-  $("#redForceCubes").text(redScoreBreakdown.ForceCubes).attr("data-state", data.Red.ForceState);
-  $("#redLevitateCubesIcon").attr("data-state", data.Red.LevitateState);
-  $("#redLevitateCubes").text(redScoreBreakdown.LevitateCubes).attr("data-state", data.Red.LevitateState);
-  $("#redBoostCubesIcon").attr("data-state", data.Red.BoostState);
-  $("#redBoostCubes").text(redScoreBreakdown.BoostCubes).attr("data-state", data.Red.BoostState);
+  $("#" + redSide + "ScoreNumber").text(data.Red.Score);
+  $("#" + redSide + "ForceCubesIcon").attr("data-state", data.Red.ForceState);
+  $("#" + redSide + "ForceCubes").text(redScoreBreakdown.ForceCubes).attr("data-state", data.Red.ForceState);
+  $("#" + redSide + "LevitateCubesIcon").attr("data-state", data.Red.LevitateState);
+  $("#" + redSide + "LevitateCubes").text(redScoreBreakdown.LevitateCubes).attr("data-state", data.Red.LevitateState);
+  $("#" + redSide + "BoostCubesIcon").attr("data-state", data.Red.BoostState);
+  $("#" + redSide + "BoostCubes").text(redScoreBreakdown.BoostCubes).attr("data-state", data.Red.BoostState);
 
   var blueScoreBreakdown = data.Blue.RealtimeScore.CurrentScore;
-  $("#blueScoreNumber").text(data.Blue.Score);
-  $("#blueForceCubesIcon").attr("data-state", data.Blue.ForceState);
-  $("#blueForceCubes").text(blueScoreBreakdown.ForceCubes).attr("data-state", data.Blue.ForceState);
-  $("#blueLevitateCubesIcon").attr("data-state", data.Blue.LevitateState);
-  $("#blueLevitateCubes").text(blueScoreBreakdown.LevitateCubes).attr("data-state", data.Blue.LevitateState);
-  $("#blueBoostCubesIcon").attr("data-state", data.Blue.BoostState);
-  $("#blueBoostCubes").text(blueScoreBreakdown.BoostCubes).attr("data-state", data.Blue.BoostState);
+  $("#" + blueSide + "ScoreNumber").text(data.Blue.Score);
+  $("#" + blueSide + "ForceCubesIcon").attr("data-state", data.Blue.ForceState);
+  $("#" + blueSide + "ForceCubes").text(blueScoreBreakdown.ForceCubes).attr("data-state", data.Blue.ForceState);
+  $("#" + blueSide + "LevitateCubesIcon").attr("data-state", data.Blue.LevitateState);
+  $("#" + blueSide + "LevitateCubes").text(blueScoreBreakdown.LevitateCubes).attr("data-state", data.Blue.LevitateState);
+  $("#" + blueSide + "BoostCubesIcon").attr("data-state", data.Blue.BoostState);
+  $("#" + blueSide + "BoostCubes").text(blueScoreBreakdown.BoostCubes).attr("data-state", data.Blue.BoostState);
 
   // Switch/scale indicators.
   $("#scaleIndicator").attr("data-owned-by", data.ScaleOwnedBy);
-  $("#redSwitchIndicator").attr("data-owned-by", data.Red.SwitchOwnedBy);
-  $("#blueSwitchIndicator").attr("data-owned-by", data.Blue.SwitchOwnedBy);
+  $("#" + redSide + "SwitchIndicator").attr("data-owned-by", data.Red.SwitchOwnedBy);
+  $("#" + blueSide + "SwitchIndicator").attr("data-owned-by", data.Blue.SwitchOwnedBy);
 
   // Power up progress bars.
-  if ((data.Red.ForceState === 2 || data.Red.BoostState === 2) && $("#redProgress").height() === 0) {
-    $("#redProgress").height(85);
-    $("#redProgress").transition({queue: false, height: 0}, 10000, "linear");
+  if ((data.Red.ForceState === 2 || data.Red.BoostState === 2) && $("#" + redSide + "Progress").height() === 0) {
+    $("#" + redSide + "Progress").height(85);
+    $("#" + redSide + "Progress").transition({queue: false, height: 0}, 10000, "linear");
   }
-  if ((data.Blue.ForceState === 2 || data.Blue.BoostState === 2) && $("#blueProgress").height() === 0) {
-    $("#blueProgress").height(85);
-    $("#blueProgress").transition({queue: false, height: 0}, 10000, "linear");
+  if ((data.Blue.ForceState === 2 || data.Blue.BoostState === 2) && $("#" + blueSide + "Progress").height() === 0) {
+    $("#" + blueSide + "Progress").height(85);
+    $("#" + blueSide + "Progress").transition({queue: false, height: 0}, 10000, "linear");
   }
 };
 
 // Handles a websocket message to populate the final score data.
 var handleScorePosted = function(data) {
-  $("#redFinalScore").text(data.RedScoreSummary.Score);
-  $("#redFinalTeam1").text(data.Match.Red1);
-  $("#redFinalTeam2").text(data.Match.Red2);
-  $("#redFinalTeam3").text(data.Match.Red3);
-  $("#redFinalAutoRunPoints").text(data.RedScoreSummary.AutoRunPoints);
-  $("#redFinalOwnershipPoints").text(data.RedScoreSummary.OwnershipPoints);
-  $("#redFinalVaultPoints").text(data.RedScoreSummary.VaultPoints);
-  $("#redFinalParkClimbPoints").text(data.RedScoreSummary.ParkClimbPoints);
-  $("#redFinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
-  $("#redFinalAutoQuest").html(data.RedScoreSummary.AutoQuest ? "&#x2714;" : "&#x2718;");
-  $("#redFinalAutoQuest").attr("data-checked", data.RedScoreSummary.AutoQuest);
-  $("#redFinalFaceTheBoss").html(data.RedScoreSummary.FaceTheBoss ? "&#x2714;" : "&#x2718;");
-  $("#redFinalFaceTheBoss").attr("data-checked", data.RedScoreSummary.FaceTheBoss);
-  $("#blueFinalScore").text(data.BlueScoreSummary.Score);
-  $("#blueFinalTeam1").text(data.Match.Blue1);
-  $("#blueFinalTeam2").text(data.Match.Blue2);
-  $("#blueFinalTeam3").text(data.Match.Blue3);
-  $("#blueFinalAutoRunPoints").text(data.BlueScoreSummary.AutoRunPoints);
-  $("#blueFinalOwnershipPoints").text(data.BlueScoreSummary.OwnershipPoints);
-  $("#blueFinalVaultPoints").text(data.BlueScoreSummary.VaultPoints);
-  $("#blueFinalParkClimbPoints").text(data.BlueScoreSummary.ParkClimbPoints);
-  $("#blueFinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
-  $("#blueFinalAutoQuest").html(data.BlueScoreSummary.AutoQuest ? "&#x2714;" : "&#x2718;");
-  $("#blueFinalAutoQuest").attr("data-checked", data.BlueScoreSummary.AutoQuest);
-  $("#blueFinalFaceTheBoss").html(data.BlueScoreSummary.FaceTheBoss ? "&#x2714;" : "&#x2718;");
-  $("#blueFinalFaceTheBoss").attr("data-checked", data.BlueScoreSummary.FaceTheBoss);
-  $("#finalMatchName").text(data.MatchName + " " + data.Match.DisplayName);
+  $("#" + redSide + "FinalScore").text(data.RedScoreSummary.Score);
+  $("#" + redSide + "FinalTeam1").text(data.Match.Red1);
+  $("#" + redSide + "FinalTeam2").text(data.Match.Red2);
+  $("#" + redSide + "FinalTeam3").text(data.Match.Red3);
+  $("#" + redSide + "FinalAutoRunPoints").text(data.RedScoreSummary.AutoRunPoints);
+  $("#" + redSide + "FinalOwnershipPoints").text(data.RedScoreSummary.OwnershipPoints);
+  $("#" + redSide + "FinalVaultPoints").text(data.RedScoreSummary.VaultPoints);
+  $("#" + redSide + "FinalParkClimbPoints").text(data.RedScoreSummary.ParkClimbPoints);
+  $("#" + redSide + "FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
+  $("#" + redSide + "FinalAutoQuest").html(data.RedScoreSummary.AutoQuest ? "&#x2714;" : "&#x2718;");
+  $("#" + redSide + "FinalAutoQuest").attr("data-checked", data.RedScoreSummary.AutoQuest);
+  $("#" + redSide + "FinalFaceTheBoss").html(data.RedScoreSummary.FaceTheBoss ? "&#x2714;" : "&#x2718;");
+  $("#" + redSide + "FinalFaceTheBoss").attr("data-checked", data.RedScoreSummary.FaceTheBoss);
+  $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
+  $("#" + blueSide + "FinalTeam1").text(data.Match.Blue1);
+  $("#" + blueSide + "FinalTeam2").text(data.Match.Blue2);
+  $("#" + blueSide + "FinalTeam3").text(data.Match.Blue3);
+  $("#" + blueSide + "FinalAutoRunPoints").text(data.BlueScoreSummary.AutoRunPoints);
+  $("#" + blueSide + "FinalOwnershipPoints").text(data.BlueScoreSummary.OwnershipPoints);
+  $("#" + blueSide + "FinalVaultPoints").text(data.BlueScoreSummary.VaultPoints);
+  $("#" + blueSide + "FinalParkClimbPoints").text(data.BlueScoreSummary.ParkClimbPoints);
+  $("#" + blueSide + "FinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
+  $("#" + blueSide + "FinalAutoQuest").html(data.BlueScoreSummary.AutoQuest ? "&#x2714;" : "&#x2718;");
+  $("#" + blueSide + "FinalAutoQuest").attr("data-checked", data.BlueScoreSummary.AutoQuest);
+  $("#" + blueSide + "FinalFaceTheBoss").html(data.BlueScoreSummary.FaceTheBoss ? "&#x2714;" : "&#x2718;");
+  $("#" + blueSide + "FinalFaceTheBoss").attr("data-checked", data.BlueScoreSummary.FaceTheBoss);
+  $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);
 };
 
 // Handles a websocket message to play a sound to signal match start/stop/etc.
@@ -407,6 +409,16 @@ $(function() {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
   document.body.style.backgroundColor = urlParams.get("background");
+  var reversed = urlParams.get("reversed");
+  if (reversed === "true") {
+    redSide = "right";
+    blueSide = "left";
+  } else {
+    redSide = "left";
+    blueSide = "right";
+  }
+  $(".reversible-left").attr("data-reversed", reversed);
+  $(".reversible-right").attr("data-reversed", reversed);
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {
