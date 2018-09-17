@@ -43,9 +43,9 @@ func TestSetupDisplaysWebsocket(t *testing.T) {
 		"/displays/alliance_station/websocket?displayId=2&station=R2", nil)
 	defer displayConn2.Close()
 	expectedDisplay1 := &field.Display{Id: "1", Type: field.PlaceholderDisplay, Configuration: map[string]string{},
-		ConnectionCount: 1}
+		ConnectionCount: 1, IpAddress: "127.0.0.1"}
 	expectedDisplay2 := &field.Display{Id: "2", Type: field.AllianceStationDisplay,
-		Configuration: map[string]string{"station": "R2"}, ConnectionCount: 1}
+		Configuration: map[string]string{"station": "R2"}, ConnectionCount: 1, IpAddress: "127.0.0.1"}
 	message = readDisplayConfiguration(t, ws)
 	if assert.Equal(t, 2, len(message.Displays)) {
 		assert.Equal(t, expectedDisplay1, message.Displays["1"])

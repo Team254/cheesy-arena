@@ -6,7 +6,6 @@
 package web
 
 import (
-	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
@@ -43,12 +42,11 @@ func (web *Web) ftaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	display, err := field.DisplayFromUrl(r.URL.Path, r.URL.Query())
+	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	web.arena.RegisterDisplay(display)
 	defer web.arena.MarkDisplayDisconnected(display)
 
 	ws, err := websocket.NewWebsocket(w, r)

@@ -58,6 +58,7 @@ type Display struct {
 	Nickname        string
 	Type            DisplayType
 	Configuration   map[string]string
+	IpAddress       string
 	ConnectionCount int
 }
 
@@ -140,12 +141,18 @@ func (arena *Arena) RegisterDisplay(display *Display) {
 	defer displayRegistryMutex.Unlock()
 
 	existingDisplay, ok := arena.Displays[display.Id]
-	if ok {
-		display.ConnectionCount = existingDisplay.ConnectionCount + 1
+	if ok && display.Type == PlaceholderDisplay && existingDisplay.Type != PlaceholderDisplay {
+		// Don't rewrite the registered configuration if the new one is a placeholder -- if it is reconnecting after a
+		// restart, it should adopt the existing configuration.
+		arena.Displays[display.Id].ConnectionCount++
 	} else {
-		display.ConnectionCount = 1
+		if ok {
+			display.ConnectionCount = existingDisplay.ConnectionCount + 1
+		} else {
+			display.ConnectionCount = 1
+		}
+		arena.Displays[display.Id] = display
 	}
-	arena.Displays[display.Id] = display
 	arena.DisplayConfigurationNotifier.Notify()
 }
 

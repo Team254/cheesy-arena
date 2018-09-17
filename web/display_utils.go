@@ -7,8 +7,10 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/field"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 )
 
@@ -46,4 +48,22 @@ func (web *Web) enforceDisplayConfiguration(w http.ResponseWriter, r *http.Reque
 		http.Redirect(w, r, fmt.Sprintf("%s?displayId=%s%s", r.URL.Path, displayId, builder.String()), 302)
 	}
 	return allPresent
+}
+
+// Constructs, registers, and returns the display object for the given incoming websocket request.
+func (web *Web) registerDisplay(r *http.Request) (*field.Display, error) {
+	display, err := field.DisplayFromUrl(r.URL.Path, r.URL.Query())
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract the source IP address of the request and store it in the display object.
+	if ipAddress := r.Header.Get("X-Real-IP"); ipAddress != "" {
+		display.IpAddress = ipAddress
+	} else {
+		display.IpAddress = regexp.MustCompile("(.*):\\d+$").FindStringSubmatch(r.RemoteAddr)[1]
+	}
+
+	web.arena.RegisterDisplay(display)
+	return display, nil
 }

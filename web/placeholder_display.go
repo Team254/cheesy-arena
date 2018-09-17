@@ -6,8 +6,6 @@
 package web
 
 import (
-	"fmt"
-	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
@@ -19,10 +17,7 @@ func (web *Web) placeholderDisplayHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Generate a display ID and redirect if the client doesn't already have one.
-	displayId := r.URL.Query().Get("displayId")
-	if displayId == "" {
-		http.Redirect(w, r, fmt.Sprintf(r.URL.Path+"?displayId=%s", web.arena.NextDisplayId()), 302)
+	if !web.enforceDisplayConfiguration(w, r, nil) {
 		return
 	}
 
@@ -47,12 +42,11 @@ func (web *Web) placeholderDisplayWebsocketHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	display, err := field.DisplayFromUrl(r.URL.Path, r.URL.Query())
+	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	web.arena.RegisterDisplay(display)
 	defer web.arena.MarkDisplayDisconnected(display)
 
 	ws, err := websocket.NewWebsocket(w, r)
