@@ -18,7 +18,7 @@ func (web *Web) pitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !web.enforceDisplayConfiguration(w, r, nil) {
+	if !web.enforceDisplayConfiguration(w, r, map[string]string{"scrollMsPerRow": "1000"}) {
 		return
 	}
 

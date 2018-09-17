@@ -5,12 +5,11 @@
 // Client-side methods for the pit display.
 
 var websocket;
-var initial_dwell_ms = 3000;
-var scroll_ms_per_row = 700;  // How long in milliseconds it takes to scroll a height of one row.
-var static_update_interval_ms = 10000;  // How long between updates if not scrolling.
+var initialDwellMs = 3000;  // How long the display waits upon initial load before scrolling.
+var scrollMsPerRow;  // How long in milliseconds it takes to scroll a height of one row.
+var staticUpdateIntervalMs = 10000;  // How long between updates if not scrolling.
 var standingsTemplate = Handlebars.compile($("#standingsTemplate").html());
 var rankingsData;
-var rankingsIteration = 0;
 var prevHighestPlayedMatch;
 
 // Loads the JSON rankings data from the event server.
@@ -33,10 +32,10 @@ var updateStaticRankings = function() {
     setHighestPlayedMatch(rankingsData.HighestPlayedMatch);
     if ($("#rankings2").height() > $("#container").height()) {
       // Initiate scrolling.
-      setTimeout(cycleRankings, initial_dwell_ms);
+      setTimeout(cycleRankings, initialDwellMs);
     } else {
       // Rankings are too short; just update in place.
-      setTimeout(updateStaticRankings, static_update_interval_ms);
+      setTimeout(updateStaticRankings, staticUpdateIntervalMs);
     }
   });
 };
@@ -59,7 +58,7 @@ var cycleRankings = function() {
   if ($("#rankings1").height() > $("#container").height()) {
     // Kick off another scrolling animation.
     var scrollDistance = $("#rankings1").height() + parseInt($("#rankings1").css("border-bottom-width"));
-    var scrollTime = scroll_ms_per_row * $("#rankings1 tr").length;
+    var scrollTime = scrollMsPerRow * $("#rankings1 tr").length;
     $("#scroller").transition({y: -scrollDistance}, scrollTime, "linear", cycleRankings);
 
     // Set the data to be reloaded two seconds before the scrolling terminates.
@@ -67,7 +66,7 @@ var cycleRankings = function() {
     setTimeout(getRankingsData, reloadDataTime);
   } else {
     // The rankings got shorter for whatever reason, so revert to static updating.
-    setTimeout(updateStaticRankings, static_update_interval_ms);
+    setTimeout(updateStaticRankings, staticUpdateIntervalMs);
   }
 };
 
@@ -81,6 +80,10 @@ var setHighestPlayedMatch = function(highestPlayedMatch) {
 };
 
 $(function() {
+  // Read the configuration for this display from the URL query string.
+  var urlParams = new URLSearchParams(window.location.search);
+  scrollMsPerRow = urlParams.get("scrollMsPerRow");
+
   // Set up the websocket back to the server. Used only for remote forcing of reloads.
   websocket = new CheesyWebsocket("/displays/pit/websocket", {});
 
