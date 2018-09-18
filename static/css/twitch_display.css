@@ -1,0 +1,12 @@
+/*
+  Copyright 2018 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+*/
+
+html {
+  overflow: hidden;
+}
+body {
+  margin: 0;
+  background-color: #000;
+}

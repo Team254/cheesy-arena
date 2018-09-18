@@ -31,6 +31,7 @@ const (
 	AudienceDisplay
 	FieldMonitorDisplay
 	PitDisplay
+	TwitchStreamDisplay
 )
 
 var DisplayTypeNames = map[DisplayType]string{
@@ -40,6 +41,7 @@ var DisplayTypeNames = map[DisplayType]string{
 	AudienceDisplay:        "Audience",
 	FieldMonitorDisplay:    "Field Monitor",
 	PitDisplay:             "Pit",
+	TwitchStreamDisplay:    "Twitch Stream",
 }
 
 var displayTypePaths = map[DisplayType]string{
@@ -49,6 +51,7 @@ var displayTypePaths = map[DisplayType]string{
 	AudienceDisplay:        "/displays/audience",
 	FieldMonitorDisplay:    "/displays/fta",
 	PitDisplay:             "/displays/pit",
+	TwitchStreamDisplay:    "/displays/twitch",
 }
 
 var displayRegistryMutex sync.Mutex
