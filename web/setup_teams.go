@@ -295,6 +295,9 @@ func (web *Web) getOfficialTeamInfo(teamId int) (*model.Team, error) {
 				}
 			}
 
+			// Download and store the team's avatar; if there isn't one, ignore the error.
+			web.arena.TbaClient.DownloadTeamAvatar(teamId, time.Now().Year())
+
 			// Use those variables to make a team object
 			team = model.Team{Id: teamId, Name: tbaTeam.Name, Nickname: tbaTeam.Nickname, City: tbaTeam.City,
 				StateProv: tbaTeam.StateProv, Country: tbaTeam.Country, RookieYear: tbaTeam.RookieYear,

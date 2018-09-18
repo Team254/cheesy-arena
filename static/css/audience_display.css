@@ -33,6 +33,13 @@ html {
   display: table;
   font-family: "FuturaLT";
 }
+.avatars {
+  display: none;
+}
+.avatar {
+  height: 25px;
+  margin: 4px 10px 3px;
+}
 .valign-cell {
   display: table-cell;
   vertical-align: middle;
@@ -257,7 +264,7 @@ html {
 }
 #finalScore {
   position: fixed;
-  width: 800px;
+  width: 950px;
   height: 550px;
   top: 65px;
   bottom: 0;
@@ -296,14 +303,23 @@ html {
   text-align: center;
   color: #fff;
   font-family: "FuturaLT";
-  font-size: 35px;
+  font-size: 32px;
 }
 .final-teams span {
-  margin: 0px 20px;
+  margin: 0 10px;
+}
+.final-avatar {
+  height: 35px;
+  position: relative;
+  bottom: 5px;
 }
 #leftFinalTeams {
+  padding-right: 5%;
   clear: left;
   border-right: 2px solid #333;
+}
+#rightFinalTeams {
+  padding-left: 5%;
 }
 .final-breakdown {
   float: left;

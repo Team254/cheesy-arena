@@ -40,9 +40,15 @@ var handleMatchLoad = function(data) {
   $("#" + redSide + "Team1").text(data.Match.Red1);
   $("#" + redSide + "Team2").text(data.Match.Red2);
   $("#" + redSide + "Team3").text(data.Match.Red3);
+  $("#" + redSide + "Team1Avatar").attr("src", getAvatarUrl(data.Match.Red1));
+  $("#" + redSide + "Team2Avatar").attr("src", getAvatarUrl(data.Match.Red2));
+  $("#" + redSide + "Team3Avatar").attr("src", getAvatarUrl(data.Match.Red3));
   $("#" + blueSide + "Team1").text(data.Match.Blue1);
   $("#" + blueSide + "Team2").text(data.Match.Blue2);
   $("#" + blueSide + "Team3").text(data.Match.Blue3);
+  $("#" + blueSide + "Team1Avatar").attr("src", getAvatarUrl(data.Match.Blue1));
+  $("#" + blueSide + "Team2Avatar").attr("src", getAvatarUrl(data.Match.Blue2));
+  $("#" + blueSide + "Team3Avatar").attr("src", getAvatarUrl(data.Match.Blue3));
   $("#matchName").text(data.MatchType + " " + data.Match.DisplayName);
 };
 
@@ -100,6 +106,9 @@ var handleScorePosted = function(data) {
   $("#" + redSide + "FinalTeam1").text(data.Match.Red1);
   $("#" + redSide + "FinalTeam2").text(data.Match.Red2);
   $("#" + redSide + "FinalTeam3").text(data.Match.Red3);
+  $("#" + redSide + "FinalTeam1Avatar").attr("src", getAvatarUrl(data.Match.Red1));
+  $("#" + redSide + "FinalTeam2Avatar").attr("src", getAvatarUrl(data.Match.Red2));
+  $("#" + redSide + "FinalTeam3Avatar").attr("src", getAvatarUrl(data.Match.Red3));
   $("#" + redSide + "FinalAutoRunPoints").text(data.RedScoreSummary.AutoRunPoints);
   $("#" + redSide + "FinalOwnershipPoints").text(data.RedScoreSummary.OwnershipPoints);
   $("#" + redSide + "FinalVaultPoints").text(data.RedScoreSummary.VaultPoints);
@@ -113,6 +122,9 @@ var handleScorePosted = function(data) {
   $("#" + blueSide + "FinalTeam1").text(data.Match.Blue1);
   $("#" + blueSide + "FinalTeam2").text(data.Match.Blue2);
   $("#" + blueSide + "FinalTeam3").text(data.Match.Blue3);
+  $("#" + blueSide + "FinalTeam1Avatar").attr("src", getAvatarUrl(data.Match.Blue1));
+  $("#" + blueSide + "FinalTeam2Avatar").attr("src", getAvatarUrl(data.Match.Blue2));
+  $("#" + blueSide + "FinalTeam3Avatar").attr("src", getAvatarUrl(data.Match.Blue3));
   $("#" + blueSide + "FinalAutoRunPoints").text(data.BlueScoreSummary.AutoRunPoints);
   $("#" + blueSide + "FinalOwnershipPoints").text(data.BlueScoreSummary.OwnershipPoints);
   $("#" + blueSide + "FinalVaultPoints").text(data.BlueScoreSummary.VaultPoints);
@@ -163,6 +175,8 @@ var handleLowerThird = function(data) {
 };
 
 var transitionBlankToIntro = function(callback) {
+  $(".avatars").show();
+  $(".avatars").css("opacity", 1);
   $("#centering").transition({queue: false, bottom: "0px"}, 500, "ease", function() {
     $(".teams").transition({queue: false, width: "65px"}, 100, "linear", function() {
       $(".score").transition({queue: false, width: "120px"}, 500, "ease", function() {
@@ -175,6 +189,9 @@ var transitionBlankToIntro = function(callback) {
 };
 
 var transitionIntroToInMatch = function(callback) {
+  $(".avatars").transition({queue: false, opacity: 0}, 500, "ease", function() {
+    $(".avatars").hide();
+  });
   $("#logo").transition({queue: false, top: "10px"}, 500, "ease");
   $(".score").transition({queue: false, width: "275px"}, 500, "ease", function() {
     $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
@@ -189,6 +206,8 @@ var transitionIntroToBlank = function(callback) {
     $("#eventMatchInfo").hide();
     $(".score").transition({queue: false, width: "0px"}, 500, "ease");
     $(".teams").transition({queue: false, width: "40px"}, 500, "ease", function() {
+      $(".avatars").css("opacity", 0);
+      $(".avatars").hide();
       $("#centering").transition({queue: false, bottom: "-340px"}, 1000, "ease", callback);
     });
   });
@@ -218,7 +237,10 @@ var transitionInMatchToIntro = function(callback) {
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#logo").transition({queue: false, top: "35px"}, 500, "ease");
     $(".score").transition({queue: false, width: "120px"}, 500, "ease");
-    $(".teams").transition({queue: false, width: "65px"}, 500, "ease", callback);
+    $(".teams").transition({queue: false, width: "65px"}, 500, "ease", function() {
+      $(".avatars").show();
+      $(".avatars").transition({queue: false, opacity: 1}, 500, "ease", callback);
+    });
   });
 };
 
@@ -405,6 +427,10 @@ var initializeSponsorDisplay = function() {
   });
 };
 
+var getAvatarUrl = function(teamId) {
+  return "/static/img/avatars/" + teamId + ".png";
+};
+
 $(function() {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
@@ -419,6 +445,9 @@ $(function() {
   }
   $(".reversible-left").attr("data-reversed", reversed);
   $(".reversible-right").attr("data-reversed", reversed);
+
+  // Fall back to a blank avatar if one doesn't exist for the team.
+  $(".avatar, .final-avatar").attr("onerror", "this.src='" + getAvatarUrl(0) + "';");
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {

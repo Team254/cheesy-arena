@@ -8,6 +8,7 @@ package partner
 import (
 	"bytes"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
@@ -20,6 +21,7 @@ import (
 const (
 	tbaBaseUrl = "https://www.thebluealliance.com"
 	tbaAuthKey = "MAApv9MCuKY9MSFkXLuzTSYBCdosboxDq8Q3ujUE2Mn8PD3Nmv64uczu5Lvy0NQ3"
+	avatarsDir = "static/img/avatars"
 )
 
 type TbaClient struct {
@@ -119,6 +121,11 @@ type TbaEvent struct {
 	Name string `json:"name"`
 }
 
+type TbaMediaItem struct {
+	Details map[string]interface{} `json:"details"`
+	Type    string                 `json:"type"`
+}
+
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
 	return &TbaClient{BaseUrl: tbaBaseUrl, eventCode: eventCode, secretId: secretId, secret: secret,
 		eventNamesCache: make(map[string]string)}
@@ -202,6 +209,47 @@ func (client *TbaClient) GetTeamAwards(teamNumber int) ([]*TbaAward, error) {
 	}
 
 	return awards, nil
+}
+
+func (client *TbaClient) DownloadTeamAvatar(teamNumber, year int) error {
+	path := fmt.Sprintf("/api/v3/team/%s/media/%d", getTbaTeam(teamNumber), year)
+	resp, err := client.getRequest(path)
+	if err != nil {
+		return err
+	}
+
+	// Get the response and handle errors
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var mediaItems []*TbaMediaItem
+	err = json.Unmarshal(body, &mediaItems)
+	if err != nil {
+		return err
+	}
+
+	for _, item := range mediaItems {
+		if item.Type == "avatar" {
+			base64String, ok := item.Details["base64Image"].(string)
+			if !ok {
+				return fmt.Errorf("Could not interpret avatar response from TBA: %v", item)
+			}
+			avatarBytes, err := base64.StdEncoding.DecodeString(base64String)
+			if err != nil {
+				return err
+			}
+
+			// Store the avatar to disk as a PNG file.
+			avatarPath := fmt.Sprintf("%s/%d.png", avatarsDir, teamNumber)
+			ioutil.WriteFile(avatarPath, avatarBytes, 0644)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("No avatar found for team %d in year %d.", teamNumber, year)
 }
 
 // Uploads the event team list to The Blue Alliance.
