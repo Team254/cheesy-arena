@@ -34,10 +34,17 @@ type TbaMatch struct {
 	CompLevel      string                        `json:"comp_level"`
 	SetNumber      int                           `json:"set_number"`
 	MatchNumber    int                           `json:"match_number"`
-	Alliances      map[string]interface{}        `json:"alliances"`
+	Alliances      map[string]*TbaAlliance       `json:"alliances"`
 	ScoreBreakdown map[string]*TbaScoreBreakdown `json:"score_breakdown"`
 	TimeString     string                        `json:"time_string"`
 	TimeUtc        string                        `json:"time_utc"`
+}
+
+type TbaAlliance struct {
+	Teams      []string `json:"teams"`
+	Surrogates []string `json:"surrogates"`
+	Dqs        []string `json:"dqs"`
+	Score      *int     `json:"score"`
 }
 
 type TbaScoreBreakdown struct {
@@ -242,13 +249,11 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 	// Build a JSON array of TBA-format matches.
 	for i, match := range matches {
 		matchNumber, _ := strconv.Atoi(match.DisplayName)
-		redAlliance := map[string]interface{}{"teams": []string{getTbaTeam(match.Red1), getTbaTeam(match.Red2),
-			getTbaTeam(match.Red3)}, "score": nil}
-		blueAlliance := map[string]interface{}{"teams": []string{getTbaTeam(match.Blue1), getTbaTeam(match.Blue2),
-			getTbaTeam(match.Blue3)}, "score": nil}
-		var scoreBreakdown map[string]*TbaScoreBreakdown
 
 		// Fill in scores if the match has been played.
+		var scoreBreakdown map[string]*TbaScoreBreakdown
+		var redScore, blueScore *int
+		var redCards, blueCards map[string]string
 		if match.Status == "complete" {
 			matchResult, err := database.GetMatchResultForMatch(match.Id)
 			if err != nil {
@@ -258,13 +263,19 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 				scoreBreakdown = make(map[string]*TbaScoreBreakdown)
 				scoreBreakdown["red"] = createTbaScoringBreakdown(&match, matchResult, "red")
 				scoreBreakdown["blue"] = createTbaScoringBreakdown(&match, matchResult, "blue")
-				redAlliance["score"] = scoreBreakdown["red"].TotalPoints
-				blueAlliance["score"] = scoreBreakdown["blue"].TotalPoints
+				redScore = &scoreBreakdown["red"].TotalPoints
+				blueScore = &scoreBreakdown["blue"].TotalPoints
+				redCards = matchResult.RedCards
+				blueCards = matchResult.BlueCards
 			}
 		}
+		alliances := make(map[string]*TbaAlliance)
+		alliances["red"] = createTbaAlliance([3]int{match.Red1, match.Red2, match.Red3}, [3]bool{match.Red1IsSurrogate,
+			match.Red2IsSurrogate, match.Red3IsSurrogate}, redScore, redCards)
+		alliances["blue"] = createTbaAlliance([3]int{match.Blue1, match.Blue2, match.Blue3},
+			[3]bool{match.Blue1IsSurrogate, match.Blue2IsSurrogate, match.Blue3IsSurrogate}, blueScore, blueCards)
 
-		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, map[string]interface{}{"red": redAlliance,
-			"blue": blueAlliance}, scoreBreakdown, match.Time.Local().Format("3:04 PM"),
+		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, alliances, scoreBreakdown, match.Time.Local().Format("3:04 PM"),
 			match.Time.UTC().Format("2006-01-02T15:04:05")}
 		if match.Type == "elimination" {
 			tbaMatches[i].CompLevel = map[int]string{1: "f", 2: "sf", 4: "qf", 8: "ef"}[match.ElimRound]
@@ -423,6 +434,24 @@ func (client *TbaClient) postRequest(resource string, action string, body []byte
 	request.Header.Add("X-TBA-Auth-Id", client.secretId)
 	request.Header.Add("X-TBA-Auth-Sig", signature)
 	return httpClient.Do(request)
+}
+
+func createTbaAlliance(teamIds [3]int, surrogates [3]bool, score *int, cards map[string]string) *TbaAlliance {
+	alliance := TbaAlliance{Surrogates: []string{}, Dqs: []string{}, Score: score}
+	for i, teamId := range teamIds {
+		teamKey := getTbaTeam(teamId)
+		alliance.Teams = append(alliance.Teams, teamKey)
+		if surrogates[i] {
+			alliance.Surrogates = append(alliance.Surrogates, teamKey)
+		}
+		if cards != nil {
+			if card, ok := cards[strconv.Itoa(teamId)]; ok && card == "red" {
+				alliance.Dqs = append(alliance.Dqs, teamKey)
+			}
+		}
+	}
+
+	return &alliance
 }
 
 func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResult, alliance string) *TbaScoreBreakdown {

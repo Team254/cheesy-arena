@@ -127,7 +127,7 @@ func (web *Web) scheduleRepublishPostHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	http.Redirect(w, r, "/setup/schedule"+getMatchType(r), 303)
+	http.Redirect(w, r, "/setup/schedule?matchType="+getMatchType(r), 303)
 }
 
 // Saves the generated schedule to the database.
