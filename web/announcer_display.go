@@ -6,10 +6,8 @@
 package web
 
 import (
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
-	"log"
 	"net/http"
 )
 
@@ -59,15 +57,8 @@ func (web *Web) announcerDisplayWebsocketHandler(w http.ResponseWriter, r *http.
 	}
 	defer ws.Close()
 
-	// Inform the client what the match period timing parameters are configured to.
-	err = ws.Write("matchTiming", game.MatchTiming)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
-		web.arena.ScorePostedNotifier, web.arena.AudienceDisplayModeNotifier, web.arena.DisplayConfigurationNotifier,
-		web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(web.arena.MatchTimingNotifier, web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier,
+		web.arena.RealtimeScoreNotifier, web.arena.ScorePostedNotifier, web.arena.AudienceDisplayModeNotifier,
+		web.arena.DisplayConfigurationNotifier, web.arena.ReloadDisplaysNotifier)
 }

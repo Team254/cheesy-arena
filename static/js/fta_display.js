@@ -27,7 +27,8 @@ var handleArenaStatus = function(data) {
         $("#status" + station + " .robot-status").text("");
       }
       var lowBatteryThreshold = 6;
-      if (matchStates[data.MatchState] === "PRE_MATCH") {
+      if (matchStates[data.MatchState] === "PRE_MATCH" || matchStates[data.MatchState] === "TIMEOUT_ACTIVE" ||
+          matchStates[data.MatchState] === "POST_TIMEOUT") {
         lowBatteryThreshold = 12;
       }
       $("#status" + station + " .battery-status").attr("data-status-ok",

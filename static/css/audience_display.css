@@ -28,10 +28,11 @@ html {
 .teams {
   width: 40px;
   height: 100%;
-  line-height: 26px;
+  line-height: 29px;
   text-align: center;
   display: table;
   font-family: "FuturaLT";
+  font-size: 21px;
 }
 .avatars {
   display: none;

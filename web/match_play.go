@@ -7,7 +7,6 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
@@ -167,16 +166,9 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 	}
 	defer ws.Close()
 
-	// Inform the client what the match period timing parameters are configured to.
-	err = ws.Write("matchTiming", game.MatchTiming)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
-	go ws.HandleNotifiers(web.arena.ArenaStatusNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
-		web.arena.ScoringStatusNotifier, web.arena.AudienceDisplayModeNotifier,
+	go ws.HandleNotifiers(web.arena.MatchTimingNotifier, web.arena.ArenaStatusNotifier, web.arena.MatchTimeNotifier,
+		web.arena.RealtimeScoreNotifier, web.arena.ScoringStatusNotifier, web.arena.AudienceDisplayModeNotifier,
 		web.arena.AllianceStationDisplayModeNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
@@ -298,6 +290,17 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			web.arena.AllianceStationDisplayMode = screen
 			web.arena.AllianceStationDisplayModeNotifier.Notify()
 			continue
+		case "startTimeout":
+			durationSec, ok := data.(float64)
+			if !ok {
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			err = web.arena.StartTimeout(int(durationSec))
+			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue

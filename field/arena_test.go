@@ -547,3 +547,51 @@ func TestAstop(t *testing.T) {
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
 }
+
+func TestArenaTimeout(t *testing.T) {
+	arena := setupTestArena(t)
+
+	// Test regular ending of timeout.
+	timeoutDurationSec := 9
+	assert.Nil(t, arena.StartTimeout(timeoutDurationSec))
+	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
+	assert.Equal(t, TimeoutActive, arena.MatchState)
+	arena.MatchStartTime = time.Now().Add(-time.Duration(timeoutDurationSec) * time.Second)
+	arena.Update()
+	assert.Equal(t, PostTimeout, arena.MatchState)
+	arena.MatchStartTime = time.Now().Add(-time.Duration(timeoutDurationSec+postTimeoutSec) * time.Second)
+	arena.Update()
+	assert.Equal(t, PreMatch, arena.MatchState)
+
+	// Test early cancellation of timeout.
+	timeoutDurationSec = 28
+	assert.Nil(t, arena.StartTimeout(timeoutDurationSec))
+	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
+	assert.Equal(t, TimeoutActive, arena.MatchState)
+	assert.Nil(t, arena.AbortMatch())
+	arena.Update()
+	assert.Equal(t, PostTimeout, arena.MatchState)
+	arena.MatchStartTime = time.Now().Add(-time.Duration(timeoutDurationSec+postTimeoutSec) * time.Second)
+	arena.Update()
+	assert.Equal(t, PreMatch, arena.MatchState)
+
+	// Test that timeout can't be started during a match.
+	arena.AllianceStations["R1"].Bypass = true
+	arena.AllianceStations["R2"].Bypass = true
+	arena.AllianceStations["R3"].Bypass = true
+	arena.AllianceStations["B1"].Bypass = true
+	arena.AllianceStations["B2"].Bypass = true
+	arena.AllianceStations["B3"].Bypass = true
+	assert.Nil(t, arena.StartMatch())
+	arena.Update()
+	assert.NotNil(t, arena.StartTimeout(1))
+	assert.NotEqual(t, TimeoutActive, arena.MatchState)
+	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
+	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
+		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) *
+		time.Second)
+	for arena.MatchState != PostMatch {
+		arena.Update()
+		assert.NotNil(t, arena.StartTimeout(1))
+	}
+}

@@ -22,6 +22,7 @@ const (
 	arenaLoopPeriodMs     = 10
 	dsPacketPeriodMs      = 250
 	matchEndScoreDwellSec = 3
+	postTimeoutSec        = 4
 )
 
 // Progression of match states.
@@ -36,6 +37,8 @@ const (
 	TeleopPeriod
 	EndgamePeriod
 	PostMatch
+	TimeoutActive
+	PostTimeout
 )
 
 type Arena struct {
@@ -342,11 +345,18 @@ func (arena *Arena) StartMatch() error {
 	return err
 }
 
-// Kills the current match if it is underway.
+// Kills the current match or timeout if it is underway.
 func (arena *Arena) AbortMatch() error {
-	if arena.MatchState == PreMatch || arena.MatchState == PostMatch {
+	if arena.MatchState == PreMatch || arena.MatchState == PostMatch || arena.MatchState == PostTimeout {
 		return fmt.Errorf("Cannot abort match when it is not in progress.")
 	}
+
+	if arena.MatchState == TimeoutActive {
+		// Handle by advancing the timeout clock to the end and letting the regular logic deal with it.
+		arena.MatchStartTime = time.Now().Add(-time.Second * time.Duration(game.MatchTiming.TimeoutDurationSec))
+		return nil
+	}
+
 	if !arena.MuteMatchSounds && arena.MatchState != WarmupPeriod {
 		arena.PlaySoundNotifier.NotifyWithMessage("match-abort")
 	}
@@ -373,6 +383,23 @@ func (arena *Arena) ResetMatch() error {
 	arena.AllianceStations["B2"].Bypass = false
 	arena.AllianceStations["B3"].Bypass = false
 	arena.MuteMatchSounds = false
+	return nil
+}
+
+// Starts a timeout of the given duration.
+func (arena *Arena) StartTimeout(durationSec int) error {
+	if arena.MatchState != PreMatch {
+		return fmt.Errorf("Cannot start timeout while there is a match still in progress or with results pending.")
+	}
+
+	game.MatchTiming.TimeoutDurationSec = durationSec
+	arena.MatchTimingNotifier.Notify()
+	arena.MatchState = TimeoutActive
+	arena.MatchStartTime = time.Now()
+	arena.LastMatchTimeSec = -1
+	arena.AudienceDisplayMode = "timeout"
+	arena.AudienceDisplayModeNotifier.Notify()
+
 	return nil
 }
 
@@ -482,6 +509,21 @@ func (arena *Arena) Update() {
 			if !arena.MuteMatchSounds {
 				arena.PlaySoundNotifier.NotifyWithMessage("match-end")
 			}
+		}
+	case TimeoutActive:
+		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
+			arena.MatchState = PostTimeout
+			arena.PlaySoundNotifier.NotifyWithMessage("match-end")
+			go func() {
+				// Leave the timer on the screen briefly at the end of the timeout period.
+				time.Sleep(time.Second * matchEndScoreDwellSec)
+				arena.AudienceDisplayMode = "blank"
+				arena.AudienceDisplayModeNotifier.Notify()
+			}()
+		}
+	case PostTimeout:
+		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec+postTimeoutSec) {
+			arena.MatchState = PreMatch
 		}
 	}
 
@@ -679,7 +721,8 @@ func (arena *Arena) handlePlcInput() {
 	arena.handleEstop("B2", blueEstops[1])
 	arena.handleEstop("B3", blueEstops[2])
 
-	if arena.MatchState == PreMatch || arena.MatchState == PostMatch {
+	if arena.MatchState == PreMatch || arena.MatchState == PostMatch || arena.MatchState == TimeoutActive ||
+		arena.MatchState == PostTimeout {
 		// Don't do anything if we're outside the match, otherwise we may overwrite manual edits.
 		return
 	}
@@ -746,6 +789,10 @@ func (arena *Arena) handlePlcInput() {
 func (arena *Arena) handleLeds() {
 	switch arena.MatchState {
 	case PreMatch:
+		fallthrough
+	case TimeoutActive:
+		fallthrough
+	case PostTimeout:
 		// Set the stack light state -- blinking green if ready, or solid alliance color(s) if not.
 		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil

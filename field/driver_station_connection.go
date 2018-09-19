@@ -220,6 +220,10 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	switch arena.MatchState {
 	case PreMatch:
 		fallthrough
+	case TimeoutActive:
+		fallthrough
+	case PostTimeout:
+		matchSecondsRemaining = game.MatchTiming.AutoDurationSec
 	case StartMatch:
 		fallthrough
 	case AutoPeriod:

@@ -73,7 +73,8 @@ body[data-mode=fieldReset] .mode#fieldReset {
 #preMatch, #inMatch {
   display: none;
 }
-#match[data-state=PRE_MATCH] #preMatch {
+#match[data-state=PRE_MATCH] #preMatch, #match[data-state=TIMEOUT_ACTIVE] #preMatch,
+    #match[data-state=POST_TIMEOUT] #preMatch {
   display: block;
 }
 #match[data-state=WARMUP_PERIOD] #inMatch, #match[data-state=AUTO_PERIOD] #inMatch,

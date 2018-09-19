@@ -132,7 +132,8 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				}
 			}
 		case "\r":
-			if (web.arena.MatchState != field.PreMatch || web.arena.CurrentMatch.Type == "test") &&
+			if (web.arena.MatchState != field.PreMatch && web.arena.MatchState != field.TimeoutActive &&
+				web.arena.MatchState != field.PostTimeout || web.arena.CurrentMatch.Type == "test") &&
 				!(*score).AutoCommitted {
 				(*score).AutoCommitted = true
 				scoreChanged = true

@@ -76,7 +76,8 @@ func (web *Web) ledPlcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 
 		switch messageType {
 		case "setLedMode":
-			if web.arena.MatchState != field.PreMatch {
+			if web.arena.MatchState != field.PreMatch && web.arena.MatchState != field.TimeoutActive &&
+				web.arena.MatchState != field.PostTimeout {
 				ws.WriteError("Arena must be in pre-match state")
 				continue
 			}

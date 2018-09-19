@@ -11,7 +11,9 @@ var matchStates = {
   4: "PAUSE_PERIOD",
   5: "TELEOP_PERIOD",
   6: "ENDGAME_PERIOD",
-  7: "POST_MATCH"
+  7: "POST_MATCH",
+  8: "TIMEOUT_ACTIVE",
+  9: "POST_TIMEOUT"
 };
 var matchTiming;
 
@@ -45,6 +47,10 @@ var translateMatchTime = function(data, callback) {
     case "POST_MATCH":
       matchStateText = "POST-MATCH";
       break;
+    case "TIMEOUT_ACTIVE":
+    case "POST_TIMEOUT":
+      matchStateText = "TIMEOUT";
+      break;
   }
   callback(matchStates[data.MatchState], matchStateText, getCountdown(data.MatchState, data.MatchTimeSec));
 };
@@ -55,13 +61,15 @@ var getCountdown = function(matchState, matchTimeSec) {
     case "PRE_MATCH":
     case "START_MATCH":
     case "WARMUP_PERIOD":
-          return matchTiming.AutoDurationSec;
+      return matchTiming.AutoDurationSec;
     case "AUTO_PERIOD":
       return matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec - matchTimeSec;
     case "TELEOP_PERIOD":
     case "ENDGAME_PERIOD":
       return matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec + matchTiming.TeleopDurationSec +
           matchTiming.PauseDurationSec - matchTimeSec;
+    case "TIMEOUT_ACTIVE":
+      return matchTiming.TimeoutDurationSec - matchTimeSec;
     default:
       return 0;
   }

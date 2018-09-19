@@ -25,6 +25,7 @@ type ArenaNotifiers struct {
 	LowerThirdNotifier                 *websocket.Notifier
 	MatchLoadNotifier                  *websocket.Notifier
 	MatchTimeNotifier                  *websocket.Notifier
+	MatchTimingNotifier                *websocket.Notifier
 	PlaySoundNotifier                  *websocket.Notifier
 	RealtimeScoreNotifier              *websocket.Notifier
 	ReloadDisplaysNotifier             *websocket.Notifier
@@ -70,6 +71,7 @@ func (arena *Arena) configureNotifiers() {
 	arena.LowerThirdNotifier = websocket.NewNotifier("lowerThird", nil)
 	arena.MatchLoadNotifier = websocket.NewNotifier("matchLoad", arena.generateMatchLoadMessage)
 	arena.MatchTimeNotifier = websocket.NewNotifier("matchTime", arena.generateMatchTimeMessage)
+	arena.MatchTimingNotifier = websocket.NewNotifier("matchTiming", arena.generateMatchTimingMessage)
 	arena.PlaySoundNotifier = websocket.NewNotifier("playSound", nil)
 	arena.RealtimeScoreNotifier = websocket.NewNotifier("realtimeScore", arena.generateRealtimeScoreMessage)
 	arena.ReloadDisplaysNotifier = websocket.NewNotifier("reload", nil)
@@ -133,6 +135,10 @@ func (arena *Arena) generateMatchLoadMessage() interface{} {
 
 func (arena *Arena) generateMatchTimeMessage() interface{} {
 	return MatchTimeMessage{int(arena.MatchState), int(arena.MatchTimeSec())}
+}
+
+func (arena *Arena) generateMatchTimingMessage() interface{} {
+	return &game.MatchTiming
 }
 
 func (arena *Arena) generateRealtimeScoreMessage() interface{} {

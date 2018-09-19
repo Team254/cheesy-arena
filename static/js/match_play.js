@@ -47,6 +47,16 @@ var setAllianceStationDisplay = function() {
   websocket.send("setAllianceStationDisplay", $("input[name=allianceStationDisplay]:checked").val());
 };
 
+// Sends a websocket message to start the timeout.
+var startTimeout = function() {
+  var duration = $("#timeoutDuration").val().split(":");
+  var durationSec = parseFloat(duration[0]);
+  if (duration.length > 1) {
+    durationSec = durationSec * 60 + parseFloat(duration[1]);
+  }
+  websocket.send("startTimeout", durationSec);
+};
+
 var confirmCommit = function(isReplay) {
   if (isReplay || !scoreIsReady) {
     // Show the appropriate message(s) in the confirmation dialog.
@@ -72,7 +82,8 @@ var handleArenaStatus = function(data) {
         $("#status" + station + " .robot-status").text("");
       }
       var lowBatteryThreshold = 6;
-      if (matchStates[data.MatchState] === "PRE_MATCH") {
+      if (matchStates[data.MatchState] === "PRE_MATCH" || matchStates[data.MatchState] === "TIMEOUT_ACTIVE" ||
+          matchStates[data.MatchState] === "POST_TIMEOUT") {
         lowBatteryThreshold = 12;
       }
       $("#status" + station + " .battery-status").attr("data-status-ok",
@@ -107,6 +118,7 @@ var handleArenaStatus = function(data) {
       $("#commitResults").prop("disabled", true);
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
+      $("#startTimeout").prop("disabled", false);
       break;
     case "START_MATCH":
     case "AUTO_PERIOD":
@@ -118,6 +130,7 @@ var handleArenaStatus = function(data) {
       $("#commitResults").prop("disabled", true);
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
+      $("#startTimeout").prop("disabled", true);
       break;
     case "POST_MATCH":
       $("#startMatch").prop("disabled", true);
@@ -125,6 +138,23 @@ var handleArenaStatus = function(data) {
       $("#commitResults").prop("disabled", false);
       $("#discardResults").prop("disabled", false);
       $("#editResults").prop("disabled", false);
+      $("#startTimeout").prop("disabled", true);
+      break;
+    case "TIMEOUT_ACTIVE":
+      $("#startMatch").prop("disabled", true);
+      $("#abortMatch").prop("disabled", false);
+      $("#commitResults").prop("disabled", true);
+      $("#discardResults").prop("disabled", true);
+      $("#editResults").prop("disabled", true);
+      $("#startTimeout").prop("disabled", true);
+      break;
+    case "POST_TIMEOUT":
+      $("#startMatch").prop("disabled", true);
+      $("#abortMatch").prop("disabled", true);
+      $("#commitResults").prop("disabled", true);
+      $("#discardResults").prop("disabled", true);
+      $("#editResults").prop("disabled", true);
+      $("#startTimeout").prop("disabled", true);
       break;
   }
 

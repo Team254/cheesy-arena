@@ -110,8 +110,22 @@
     </div>
     <br />
     <div class="row">
-      <div class="col-lg-9 well">
-        <div class="col-lg-4">
+      <div class="col-lg-12 well">
+        <div class="col-lg-3">
+          <p>Scoring Status</p>
+          <p><span class="label label-scoring" id="refereeScoreStatus">Referee</span><br />
+            <span class="label label-scoring" id="redScoreStatus">Red Scoring</span><br />
+            <span class="label label-scoring" id="blueScoreStatus">Blue Scoring</span></p>
+          <br />
+        {{if .EventSettings.PlcAddress}}
+          <p>PLC Status</p>
+          <p>
+            <span class="label label-scoring" id="plcStatus"></span><br />
+            <span class="label label-scoring" id="fieldEstop">E-Stop</span>
+          </p>
+        {{end}}
+        </div>
+        <div class="col-lg-3">
           Audience Display
           <div class="form-group">
             <div class="radio">
@@ -150,55 +164,53 @@
                     onclick="setAudienceDisplay();">Alliance Selection
               </label>
             </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="audienceDisplay" value="timeout" onclick="setAudienceDisplay();">Timeout
+              </label>
+            </div>
           </div>
         </div>
-        <div class="col-lg-4">
-          <p>Scoring Status</p>
-          <p><span class="label label-scoring" id="refereeScoreStatus">Referee</span><br />
-          <span class="label label-scoring" id="redScoreStatus">Red Scoring</span><br />
-          <span class="label label-scoring" id="blueScoreStatus">Blue Scoring</span></p>
-          <br />
-          <p>Match Sounds</p>
-          <div class="checkbox">
-            <label>
-              <input type="checkbox" id="muteMatchSounds">
-               Mute
-            </label>
-          </div>
-        </div>
-        <div class="col-lg-4">
+        <div class="col-lg-3">
           <p>Alliance Station Display</p>
           <div class="form-group">
             <div class="radio">
               <label>
                 <input type="radio" name="allianceStationDisplay" value="blank"
-                    onclick="setAllianceStationDisplay();">Blank
+                       onclick="setAllianceStationDisplay();">Blank
               </label>
             </div>
             <div class="radio">
               <label>
                 <input type="radio" name="allianceStationDisplay" value="match"
-                    onclick="setAllianceStationDisplay();">Match
+                       onclick="setAllianceStationDisplay();">Match
               </label>
             </div>
             <div class="radio">
               <label>
                 <input type="radio" name="allianceStationDisplay" value="logo"
-                    onclick="setAllianceStationDisplay();">Logo
+                       onclick="setAllianceStationDisplay();">Logo
               </label>
             </div>
-            <br />
-            <p>Game-Specific Data</p>
-            <input type="text" id="gameSpecificData" size="10"
-                {{if eq .CurrentMatchType "qualification" }}disabled{{end}} />
           </div>
-          {{if .EventSettings.PlcAddress}}
-          PLC Status
-            <p>
-              <span class="label label-scoring" id="plcStatus"></span><br />
-              <span class="label label-scoring" id="fieldEstop">E-Stop</span>
-            </p>
-          {{end}}
+        </div>
+        <div class="col-lg-3">
+          <p>Game-Specific Data</p>
+          <input type="text" id="gameSpecificData" size="10"
+              {{if or (eq .CurrentMatchType "qualification") (eq .CurrentMatchType "elimination") }}disabled{{end}} />
+          <br /><br />
+          <p>Match Sounds</p>
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" id="muteMatchSounds">
+              Mute
+            </label>
+          </div>
+          <p>Timeout</p>
+          <input type="text" id="timeoutDuration" size="4" value="6:00" />
+          <button type="button" id="startTimeout" class="btn btn-info btn-xs" onclick="startTimeout();">
+            Start
+          </button>
         </div>
       </div>
     </div>
