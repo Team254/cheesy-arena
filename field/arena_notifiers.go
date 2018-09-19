@@ -6,6 +6,7 @@
 package field
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
@@ -156,6 +157,36 @@ func (arena *Arena) generateRealtimeScoreMessage() interface{} {
 }
 
 func (arena *Arena) generateScorePostedMessage() interface{} {
+	// For elimination matches, summarize the state of the series.
+	var seriesStatus, seriesLeader string
+	if arena.SavedMatch.Type == "elimination" {
+		matches, _ := arena.Database.GetMatchesByElimRoundGroup(arena.SavedMatch.ElimRound, arena.SavedMatch.ElimGroup)
+		var redWins, blueWins int
+		for _, match := range matches {
+			if match.Winner == "R" {
+				redWins++
+			} else if match.Winner == "B" {
+				blueWins++
+			}
+		}
+
+		if redWins == 2 {
+			seriesStatus = fmt.Sprintf("Red Wins Series %d-%d", redWins, blueWins)
+			seriesLeader = "red"
+		} else if blueWins == 2 {
+			seriesStatus = fmt.Sprintf("Blue Wins Series %d-%d", blueWins, redWins)
+			seriesLeader = "blue"
+		} else if redWins > blueWins {
+			seriesStatus = fmt.Sprintf("Red Leads Series %d-%d", redWins, blueWins)
+			seriesLeader = "red"
+		} else if blueWins > redWins {
+			seriesStatus = fmt.Sprintf("Blue Leads Series %d-%d", blueWins, redWins)
+			seriesLeader = "blue"
+		} else {
+			seriesStatus = fmt.Sprintf("Series Tied %d-%d", redWins, blueWins)
+		}
+	}
+
 	return &struct {
 		MatchType        string
 		Match            *model.Match
@@ -165,10 +196,12 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		BlueFouls        []game.Foul
 		RedCards         map[string]string
 		BlueCards        map[string]string
+		SeriesStatus     string
+		SeriesLeader     string
 	}{arena.SavedMatch.CapitalizedType(), arena.SavedMatch, arena.SavedMatchResult.RedScoreSummary(),
 		arena.SavedMatchResult.BlueScoreSummary(), populateFoulDescriptions(arena.SavedMatchResult.RedScore.Fouls),
 		populateFoulDescriptions(arena.SavedMatchResult.BlueScore.Fouls), arena.SavedMatchResult.RedCards,
-		arena.SavedMatchResult.BlueCards}
+		arena.SavedMatchResult.BlueCards, seriesStatus, seriesLeader}
 }
 
 func (arena *Arena) generateScoringStatusMessage() interface{} {

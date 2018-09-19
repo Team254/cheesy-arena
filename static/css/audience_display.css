@@ -362,6 +362,23 @@ html {
 [data-checked=false] {
   color: #e00;
 }
+.final-footer {
+  float: left;
+  width: 33.3%;
+}
+#finalSeriesStatus {
+  text-align: center;
+  min-height: 1px;
+}
+#finalSeriesStatus[data-leader="red"] {
+  color: #f66;
+}
+#finalSeriesStatus[data-leader="blue"] {
+  color: #39f;
+}
+#finalMatchName {
+  text-align: right;
+}
 #sponsor {
   position: fixed;
   width: 1000px;
