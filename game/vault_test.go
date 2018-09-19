@@ -17,7 +17,6 @@ const (
 )
 
 func TestVaultNumCubes(t *testing.T) {
-	// TODO(patrick): Update with real values once there is a physical setup to test with.
 	vault := Vault{}
 	assert.Equal(t, 0, vault.ForceCubes)
 	assert.Equal(t, 0, vault.LevitateCubes)
