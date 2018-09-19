@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 
 func TestNonExistentSchedule(t *testing.T) {
 	teams := make([]model.Team, 6)
-	scheduleBlocks := []ScheduleBlock{{time.Unix(0, 0).UTC(), 2, 60}}
+	scheduleBlocks := []model.ScheduleBlock{{0, "", time.Unix(0, 0).UTC(), 2, 60}}
 	_, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	expectedErr := "No schedule template exists for 6 teams and 2 matches"
 	if assert.NotNil(t, err) {
@@ -35,7 +35,7 @@ func TestMalformedSchedule(t *testing.T) {
 	scheduleFile.WriteString("1,0,2,0,3,0,4,0,5,0,6,0\n6,0,5,0,4,0,3,0,2,0,1,0\n")
 	scheduleFile.Close()
 	teams := make([]model.Team, 6)
-	scheduleBlocks := []ScheduleBlock{{time.Unix(0, 0).UTC(), 1, 60}}
+	scheduleBlocks := []model.ScheduleBlock{{0, "", time.Unix(0, 0).UTC(), 1, 60}}
 	_, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	expectedErr := "Schedule file contains 2 matches, expected 1"
 	if assert.NotNil(t, err) {
@@ -60,7 +60,7 @@ func TestScheduleTeams(t *testing.T) {
 	for i := 0; i < numTeams; i++ {
 		teams[i].Id = i + 101
 	}
-	scheduleBlocks := []ScheduleBlock{{time.Unix(0, 0).UTC(), 6, 60}}
+	scheduleBlocks := []model.ScheduleBlock{{0, "", time.Unix(0, 0).UTC(), 6, 60}}
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	assert.Nil(t, err)
 	assert.Equal(t, model.Match{Type: "test", DisplayName: "1", Time: time.Unix(0, 0).UTC(), Red1: 115, Red2: 111,
@@ -77,16 +77,16 @@ func TestScheduleTeams(t *testing.T) {
 		Red3: 106, Blue1: 107, Blue2: 104, Blue3: 116}, matches[5])
 
 	// Check with excess room for matches in the schedule.
-	scheduleBlocks = []ScheduleBlock{{time.Unix(0, 0).UTC(), 7, 60}}
+	scheduleBlocks = []model.ScheduleBlock{{0, "", time.Unix(0, 0).UTC(), 7, 60}}
 	matches, err = BuildRandomSchedule(teams, scheduleBlocks, "test")
 	assert.Nil(t, err)
 }
 
 func TestScheduleTiming(t *testing.T) {
 	teams := make([]model.Team, 18)
-	scheduleBlocks := []ScheduleBlock{{time.Unix(100, 0).UTC(), 10, 75},
-		{time.Unix(20000, 0).UTC(), 5, 1000},
-		{time.Unix(100000, 0).UTC(), 15, 29}}
+	scheduleBlocks := []model.ScheduleBlock{{0, "", time.Unix(100, 0).UTC(), 10, 75},
+		{0, "", time.Unix(20000, 0).UTC(), 5, 1000},
+		{0, "", time.Unix(100000, 0).UTC(), 15, 29}}
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	assert.Nil(t, err)
 	assert.Equal(t, time.Unix(100, 0).UTC(), matches[0].Time)
@@ -105,7 +105,7 @@ func TestScheduleSurrogates(t *testing.T) {
 	for i := 0; i < numTeams; i++ {
 		teams[i].Id = i + 101
 	}
-	scheduleBlocks := []ScheduleBlock{{time.Unix(0, 0).UTC(), 64, 60}}
+	scheduleBlocks := []model.ScheduleBlock{{0, "", time.Unix(0, 0).UTC(), 64, 60}}
 	matches, _ := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	for i, match := range matches {
 		if i == 13 || i == 14 {

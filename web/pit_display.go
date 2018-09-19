@@ -7,14 +7,17 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/model"
-	"io"
-	"log"
+	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
 )
 
 // Renders the pit display which shows scrolling rankings.
 func (web *Web) pitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsReader(w, r) {
+		return
+	}
+
+	if !web.enforceDisplayConfiguration(w, r, map[string]string{"scrollMsPerRow": "1000"}) {
 		return
 	}
 
@@ -39,47 +42,20 @@ func (web *Web) pitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	websocket, err := NewWebsocket(w, r)
+	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	defer websocket.Close()
+	defer web.arena.MarkDisplayDisconnected(display)
 
-	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
-	defer close(reloadDisplaysListener)
-
-	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
-	go func() {
-		for {
-			var messageType string
-			var message interface{}
-			select {
-			case _, ok := <-reloadDisplaysListener:
-				if !ok {
-					return
-				}
-				messageType = "reload"
-				message = nil
-			}
-			err = websocket.Write(messageType, message)
-			if err != nil {
-				// The client has probably closed the connection; nothing to do here.
-				return
-			}
-		}
-	}()
-
-	// Loop, waiting for commands and responding to them, until the client closes the connection.
-	for {
-		_, _, err := websocket.Read()
-		if err != nil {
-			if err == io.EOF {
-				// Client has closed the connection; nothing to do here.
-				return
-			}
-			log.Printf("Websocket error: %s", err)
-			return
-		}
+	ws, err := websocket.NewWebsocket(w, r)
+	if err != nil {
+		handleWebErr(w, err)
+		return
 	}
+	defer ws.Close()
+
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
+	ws.HandleNotifiers(web.arena.DisplayConfigurationNotifier, web.arena.ReloadDisplaysNotifier)
 }

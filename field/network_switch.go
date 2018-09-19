@@ -18,6 +18,15 @@ import (
 
 const switchTelnetPort = 23
 
+const (
+	red1Vlan  = 10
+	red2Vlan  = 20
+	red3Vlan  = 30
+	blue1Vlan = 40
+	blue2Vlan = 50
+	blue3Vlan = 60
+)
+
 type NetworkSwitch struct {
 	address  string
 	port     int

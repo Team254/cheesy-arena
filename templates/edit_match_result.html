@@ -27,47 +27,119 @@
   <div class="well well-{{"{{alliance}}"}}">
     <legend>Autonomous</legend>
     <div class="form-group">
-      <div class="col-lg-6">
-        <label class="col-lg-6 control-label">Mobility</label>
-        <div class="col-lg-4">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoMobility">
+      <div class="row">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Scale Owned Sec.</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoScaleOwnershipSec">
+          </div>
         </div>
-        <label class="col-lg-6 control-label">Rotors</label>
-        <div class="col-lg-4">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoRotors">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Auto Runs</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoRuns">
+          </div>
         </div>
       </div>
-      <div class="col-lg-6">
-        <label class="col-lg-6 control-label">Fuel High</label>
-        <div class="col-lg-4">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoFuelHigh">
+      <div class="row">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Switch Owned Sec.</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoSwitchOwnershipSec">
+          </div>
         </div>
-        <label class="col-lg-6 control-label">Fuel Low</label>
-        <div class="col-lg-4">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoFuelLow">
+        <div class="col-lg-6">
+          <label class="col-lg-9 control-label">Owned Switch at End</label>
+          <div class="col-lg-3">
+            <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}AutoEndSwitchOwnership">
+          </div>
         </div>
       </div>
     </div>
     <legend>Teleoperated</legend>
     <div class="form-group">
-      <div class="col-lg-6">
-        <label class="col-lg-6 control-label">Rotors</label>
-        <div class="col-lg-4">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Rotors">
+      <div class="row">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Scale Owned Sec.</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TeleopScaleOwnershipSec">
+          </div>
         </div>
-        <label class="col-lg-6 control-label">Takeoffs</label>
-        <div class="col-lg-4">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Takeoffs">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Scale Boost Sec.</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TeleopScaleBoostSec">
+          </div>
         </div>
       </div>
-      <div class="col-lg-6">
-        <label class="col-lg-6 control-label">Fuel High</label>
-        <div class="col-lg-4">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}FuelHigh">
+      <div class="row">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Switch Owned Sec.</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TeleopSwitchOwnershipSec">
+          </div>
         </div>
-        <label class="col-lg-6 control-label">Fuel Low</label>
-        <div class="col-lg-4">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}FuelLow">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Switch Boost Sec.</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TeleopSwitchBoostSec">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Force Cubes</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}ForceCubes">
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <label class="col-lg-9 control-label">Force Played</label>
+          <div class="col-lg-3">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}ForceCubesPlayed">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Levitate Cubes</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}LevitateCubes">
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <label class="col-lg-9 control-label">Levitate Played</label>
+          <div class="col-lg-3">
+            <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}LevitatePlayed">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Boost Cubes</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}BoostCubes">
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <label class="col-lg-9 control-label">Boost Played</label>
+          <div class="col-lg-3">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}BoostCubesPlayed">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Parks</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Parks">
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <label class="col-lg-8 control-label">Climbs</label>
+          <div class="col-lg-4">
+            <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}Climbs">
+          </div>
         </div>
       </div>
     </div>
@@ -200,7 +272,7 @@
 {{define "script"}}
 <script src="/static/js/match_review.js"></script>
 <script>
-  var matchId = {{.Match.Id}}
+  var matchId = {{.Match.Id}};
   var allianceResults = {};
   allianceResults["red"] = {alliance: "red", team1: {{.Match.Red1}}, team2: {{.Match.Red2}},
       team3: {{.Match.Red3}}, score: jQuery.parseJSON('{{.MatchResultJson.RedScoreJson}}'),

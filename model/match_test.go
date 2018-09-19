@@ -21,7 +21,7 @@ func TestMatchCrud(t *testing.T) {
 	db := setupTestDb(t)
 
 	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
-		5, false, 6, false, "", time.Now().UTC(), ""}
+		5, false, 6, false, "", time.Now().UTC(), "", ""}
 	db.CreateMatch(&match)
 	match2, err := db.GetMatchById(1)
 	assert.Nil(t, err)
@@ -46,7 +46,7 @@ func TestTruncateMatches(t *testing.T) {
 	db := setupTestDb(t)
 
 	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
-		5, false, 6, false, "", time.Now().UTC(), ""}
+		5, false, 6, false, "", time.Now().UTC(), "", ""}
 	db.CreateMatch(&match)
 	db.TruncateMatches()
 	match2, err := db.GetMatchById(1)
@@ -83,13 +83,13 @@ func TestGetMatchesByType(t *testing.T) {
 	db := setupTestDb(t)
 
 	match := Match{0, "qualification", "1", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
-		5, false, 6, false, "", time.Now().UTC(), ""}
+		5, false, 6, false, "", time.Now().UTC(), "", ""}
 	db.CreateMatch(&match)
 	match2 := Match{0, "practice", "1", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false, 5,
-		false, 6, false, "", time.Now().UTC(), ""}
+		false, 6, false, "", time.Now().UTC(), "", ""}
 	db.CreateMatch(&match2)
 	match3 := Match{0, "practice", "2", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false, 5,
-		false, 6, false, "", time.Now().UTC(), ""}
+		false, 6, false, "", time.Now().UTC(), "", ""}
 	db.CreateMatch(&match3)
 
 	matches, err := db.GetMatchesByType("test")

@@ -10,6 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
+	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
 	"io"
@@ -29,11 +30,6 @@ type MatchPlayListItem struct {
 }
 
 type MatchPlayList []MatchPlayListItem
-
-type MatchTimeMessage struct {
-	MatchState   int
-	MatchTimeSec int
-}
 
 // Global var to hold the current active tournament so that its matches are displayed by default.
 var currentMatchType string
@@ -153,7 +149,7 @@ func (web *Web) matchPlayShowResultHandler(w http.ResponseWriter, r *http.Reques
 	}
 	web.arena.SavedMatch = match
 	web.arena.SavedMatchResult = matchResult
-	web.arena.ScorePostedNotifier.Notify(nil)
+	web.arena.ScorePostedNotifier.Notify()
 
 	http.Redirect(w, r, "/match_play", 303)
 }
@@ -164,143 +160,34 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	websocket, err := NewWebsocket(w, r)
+	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	defer websocket.Close()
+	defer ws.Close()
 
-	matchTimeListener := web.arena.MatchTimeNotifier.Listen()
-	defer close(matchTimeListener)
-	realtimeScoreListener := web.arena.RealtimeScoreNotifier.Listen()
-	defer close(realtimeScoreListener)
-	robotStatusListener := web.arena.RobotStatusNotifier.Listen()
-	defer close(robotStatusListener)
-	audienceDisplayListener := web.arena.AudienceDisplayNotifier.Listen()
-	defer close(audienceDisplayListener)
-	scoringStatusListener := web.arena.ScoringStatusNotifier.Listen()
-	defer close(scoringStatusListener)
-	allianceStationDisplayListener := web.arena.AllianceStationDisplayNotifier.Listen()
-	defer close(allianceStationDisplayListener)
-
-	// Send the various notifications immediately upon connection.
-	var data interface{}
-	err = websocket.Write("status", web.arena.GetStatus())
+	// Inform the client what the match period timing parameters are configured to.
+	err = ws.Write("matchTiming", game.MatchTiming)
 	if err != nil {
-		log.Printf("Websocket error: %s", err)
-		return
-	}
-	err = websocket.Write("matchTiming", game.MatchTiming)
-	if err != nil {
-		log.Printf("Websocket error: %s", err)
-		return
-	}
-	data = MatchTimeMessage{web.arena.MatchState, int(web.arena.LastMatchTimeSec)}
-	err = websocket.Write("matchTime", data)
-	if err != nil {
-		log.Printf("Websocket error: %s", err)
-		return
-	}
-	data = struct {
-		RedScore  int
-		BlueScore int
-	}{web.arena.RedScoreSummary().Score, web.arena.BlueScoreSummary().Score}
-	err = websocket.Write("realtimeScore", data)
-	if err != nil {
-		log.Printf("Websocket error: %s", err)
-		return
-	}
-	err = websocket.Write("setAudienceDisplay", web.arena.AudienceDisplayScreen)
-	if err != nil {
-		log.Printf("Websocket error: %s", err)
-		return
-	}
-	data = struct {
-		RefereeScoreReady bool
-		RedScoreReady     bool
-		BlueScoreReady    bool
-	}{web.arena.RedRealtimeScore.FoulsCommitted && web.arena.BlueRealtimeScore.FoulsCommitted,
-		web.arena.RedRealtimeScore.TeleopCommitted, web.arena.BlueRealtimeScore.TeleopCommitted}
-	err = websocket.Write("scoringStatus", data)
-	if err != nil {
-		log.Printf("Websocket error: %s", err)
-		return
-	}
-	err = websocket.Write("setAllianceStationDisplay", web.arena.AllianceStationDisplayScreen)
-	if err != nil {
-		log.Printf("Websocket error: %s", err)
+		log.Println(err)
 		return
 	}
 
-	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
-	go func() {
-		for {
-			var messageType string
-			var message interface{}
-			select {
-			case matchTimeSec, ok := <-matchTimeListener:
-				if !ok {
-					return
-				}
-				messageType = "matchTime"
-				message = MatchTimeMessage{web.arena.MatchState, matchTimeSec.(int)}
-			case _, ok := <-realtimeScoreListener:
-				if !ok {
-					return
-				}
-				messageType = "realtimeScore"
-				message = struct {
-					RedScore  int
-					BlueScore int
-				}{web.arena.RedScoreSummary().Score, web.arena.BlueScoreSummary().Score}
-			case _, ok := <-robotStatusListener:
-				if !ok {
-					return
-				}
-				messageType = "status"
-				message = web.arena.GetStatus()
-			case _, ok := <-audienceDisplayListener:
-				if !ok {
-					return
-				}
-				messageType = "setAudienceDisplay"
-				message = web.arena.AudienceDisplayScreen
-			case _, ok := <-scoringStatusListener:
-				if !ok {
-					return
-				}
-				messageType = "scoringStatus"
-				message = struct {
-					RefereeScoreReady bool
-					RedScoreReady     bool
-					BlueScoreReady    bool
-				}{web.arena.RedRealtimeScore.FoulsCommitted && web.arena.BlueRealtimeScore.FoulsCommitted,
-					web.arena.RedRealtimeScore.TeleopCommitted, web.arena.BlueRealtimeScore.TeleopCommitted}
-			case _, ok := <-allianceStationDisplayListener:
-				if !ok {
-					return
-				}
-				messageType = "setAllianceStationDisplay"
-				message = web.arena.AllianceStationDisplayScreen
-			}
-			err = websocket.Write(messageType, message)
-			if err != nil {
-				// The client has probably closed the connection; nothing to do here.
-				return
-			}
-		}
-	}()
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
+	go ws.HandleNotifiers(web.arena.ArenaStatusNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
+		web.arena.ScoringStatusNotifier, web.arena.AudienceDisplayModeNotifier,
+		web.arena.AllianceStationDisplayModeNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		messageType, data, err := websocket.Read()
+		messageType, data, err := ws.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
 				return
 			}
-			log.Printf("Websocket error: %s", err)
+			log.Println(err)
 			return
 		}
 
@@ -312,112 +199,114 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			err = web.arena.SubstituteTeam(args.Team, args.Position)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 		case "toggleBypass":
 			station, ok := data.(string)
 			if !ok {
-				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
 			if _, ok := web.arena.AllianceStations[station]; !ok {
-				websocket.WriteError(fmt.Sprintf("Invalid alliance station '%s'.", station))
+				ws.WriteError(fmt.Sprintf("Invalid alliance station '%s'.", station))
 				continue
 			}
 			web.arena.AllianceStations[station].Bypass = !web.arena.AllianceStations[station].Bypass
 		case "startMatch":
 			args := struct {
-				MuteMatchSounds bool
+				MuteMatchSounds  bool
+				GameSpecificData string
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			web.arena.MuteMatchSounds = args.MuteMatchSounds
+			web.arena.CurrentMatch.GameSpecificData = args.GameSpecificData
 			err = web.arena.StartMatch()
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 		case "abortMatch":
 			err = web.arena.AbortMatch()
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 		case "commitResults":
 			err = web.commitCurrentMatchScore()
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			err = web.arena.ResetMatch()
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			err = web.arena.LoadNextMatch()
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
-			err = websocket.Write("reload", nil)
+			err = ws.WriteNotifier(web.arena.ReloadDisplaysNotifier)
 			if err != nil {
-				log.Printf("Websocket error: %s", err)
+				log.Println(err)
 				return
 			}
 			continue // Skip sending the status update, as the client is about to terminate and reload.
 		case "discardResults":
 			err = web.arena.ResetMatch()
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			err = web.arena.LoadNextMatch()
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
-			err = websocket.Write("reload", nil)
+			err = ws.WriteNotifier(web.arena.ReloadDisplaysNotifier)
 			if err != nil {
-				log.Printf("Websocket error: %s", err)
+				log.Println(err)
 				return
 			}
 			continue // Skip sending the status update, as the client is about to terminate and reload.
 		case "setAudienceDisplay":
 			screen, ok := data.(string)
 			if !ok {
-				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
-			web.arena.AudienceDisplayScreen = screen
-			web.arena.AudienceDisplayNotifier.Notify(nil)
+			web.arena.AudienceDisplayMode = screen
+			web.arena.AudienceDisplayModeNotifier.Notify()
 			continue
 		case "setAllianceStationDisplay":
 			screen, ok := data.(string)
 			if !ok {
-				websocket.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
-			web.arena.AllianceStationDisplayScreen = screen
-			web.arena.AllianceStationDisplayNotifier.Notify(nil)
+			web.arena.AllianceStationDisplayMode = screen
+			web.arena.AllianceStationDisplayModeNotifier.Notify()
 			continue
 		default:
-			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue
 		}
 
 		// Send out the status again after handling the command, as it most likely changed as a result.
-		err = websocket.Write("status", web.arena.GetStatus())
+		err = ws.WriteNotifier(web.arena.ArenaStatusNotifier)
 		if err != nil {
-			log.Printf("Websocket error: %s", err)
+			log.Println(err)
 			return
 		}
 	}
@@ -434,7 +323,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		// Store the result in the buffer to be shown in the audience display.
 		web.arena.SavedMatch = match
 		web.arena.SavedMatchResult = matchResult
-		web.arena.ScorePostedNotifier.Notify(nil)
+		web.arena.ScorePostedNotifier.Notify()
 	}
 
 	if match.Type == "test" {

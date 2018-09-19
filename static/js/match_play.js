@@ -18,7 +18,8 @@ var toggleBypass = function(station) {
 
 // Sends a websocket message to start the match.
 var startMatch = function() {
-  websocket.send("startMatch", { muteMatchSounds: $("#muteMatchSounds").prop("checked") });
+  websocket.send("startMatch",
+      { muteMatchSounds: $("#muteMatchSounds").prop("checked"), gameSpecificData: $("#gameSpecificData").val() });
 };
 
 // Sends a websocket message to abort the match.
@@ -58,13 +59,12 @@ var confirmCommit = function(isReplay) {
 };
 
 // Handles a websocket message to update the team connection status.
-var handleStatus = function(data) {
+var handleArenaStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
     if (stationStatus.DsConn) {
       var dsConn = stationStatus.DsConn;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
-      $("#status" + station + " .ds-status").text(dsConn.MBpsToRobot.toFixed(1) + "/" + dsConn.MBpsFromRobot.toFixed(1));
       $("#status" + station + " .robot-status").attr("data-status-ok", dsConn.RobotLinked);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
         $("#status" + station + " .robot-status").text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
@@ -72,7 +72,7 @@ var handleStatus = function(data) {
         $("#status" + station + " .robot-status").text("");
       }
       var lowBatteryThreshold = 6;
-      if (matchStates[data.MatchState] == "PRE_MATCH") {
+      if (matchStates[data.MatchState] === "PRE_MATCH") {
         lowBatteryThreshold = 12;
       }
       $("#status" + station + " .battery-status").attr("data-status-ok",
@@ -135,7 +135,11 @@ var handleStatus = function(data) {
     $("#plcStatus").text("Not Connected");
     $("#plcStatus").attr("data-ready", false);
   }
-  $("#fieldEstop").attr("data-ready", !data.FieldEstop)
+  $("#fieldEstop").attr("data-ready", !data.FieldEstop);
+
+  if (matchStates[data.MatchState] !== "PRE_MATCH") {
+    $("#gameSpecificData").val(data.GameSpecificData);
+  }
 };
 
 // Handles a websocket message to update the match time countdown.
@@ -148,12 +152,12 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.RedScore);
-  $("#blueScore").text(data.BlueScore);
+  $("#redScore").text(data.Red.Score);
+  $("#blueScore").text(data.Blue.Score);
 };
 
 // Handles a websocket message to update the audience display screen selector.
-var handleSetAudienceDisplay = function(data) {
+var handleAudienceDisplayMode = function(data) {
   $("input[name=audienceDisplay]:checked").prop("checked", false);
   $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
 };
@@ -167,7 +171,7 @@ var handleScoringStatus = function(data) {
 };
 
 // Handles a websocket message to update the alliance station display screen selector.
-var handleSetAllianceStationDisplay = function(data) {
+var handleAllianceStationDisplayMode = function(data) {
   $("input[name=allianceStationDisplay]:checked").prop("checked", false);
   $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);
 };
@@ -178,12 +182,12 @@ $(function() {
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/match_play/websocket", {
-    status: function(event) { handleStatus(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
+    allianceStationDisplayMode: function(event) { handleAllianceStationDisplayMode(event.data); },
+    arenaStatus: function(event) { handleArenaStatus(event.data); },
+    audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
+    matchTiming: function(event) { handleMatchTiming(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    setAudienceDisplay: function(event) { handleSetAudienceDisplay(event.data); },
-    scoringStatus: function(event) { handleScoringStatus(event.data); },
-    setAllianceStationDisplay: function(event) { handleSetAllianceStationDisplay(event.data); }
+    scoringStatus: function(event) { handleScoringStatus(event.data); }
   });
 });

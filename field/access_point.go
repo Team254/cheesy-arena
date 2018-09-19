@@ -6,31 +6,18 @@
 package field
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"golang.org/x/crypto/ssh"
-	"log"
 	"os"
-	"path/filepath"
+	"strings"
 	"sync"
-	"text/template"
 	"time"
 )
 
 const accessPointSshPort = 22
 const accessPointConnectTimeoutSec = 1
 const accessPointCommandTimeoutSec = 3
-const accessPointRetryCount = 2
-
-const (
-	red1Vlan  = 10
-	red2Vlan  = 20
-	red3Vlan  = 30
-	blue1Vlan = 40
-	blue2Vlan = 50
-	blue3Vlan = 60
-)
 
 type AccessPoint struct {
 	address      string
@@ -58,16 +45,22 @@ func (ap *AccessPoint) ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *
 	if err != nil {
 		return err
 	}
-	command := fmt.Sprintf("cat <<ENDCONFIG > /etc/config/wireless && wifi radio0\n%sENDCONFIG\n", config)
+	command := fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\nENDCONFIG\n", config)
 	return ap.runCommand(command)
 }
 
 func (ap *AccessPoint) ConfigureAdminWifi() error {
-	config, err := ap.generateAccessPointConfig(nil, nil, nil, nil, nil, nil)
-	if err != nil {
-		return err
+	// Make sure multiple configurations aren't being set at the same time.
+	ap.mutex.Lock()
+	defer ap.mutex.Unlock()
+
+	commands := []string{
+		fmt.Sprintf("set wireless.radio0.channel='%d'", ap.teamChannel),
+		fmt.Sprintf("set wireless.radio1.channel='%d'", ap.adminChannel),
+		fmt.Sprintf("set wireless.@wifi-iface[0].key='%s'", ap.adminWpaKey),
+		"commit wireless",
 	}
-	command := fmt.Sprintf("cat <<ENDCONFIG > /etc/config/wireless && wifi radio1\n%sENDCONFIG\n", config)
+	command := fmt.Sprintf("uci batch <<ENDCONFIG && wifi\n%s\nENDCONFIG\n", strings.Join(commands, "\n"))
 	return ap.runCommand(command)
 }
 
@@ -79,98 +72,70 @@ func (ap *AccessPoint) runCommand(command string) error {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         accessPointConnectTimeoutSec * time.Second}
 
-	doSsh := func() error {
-		conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ap.address, ap.port), config)
-		if err != nil {
-			return err
-		}
-		session, err := conn.NewSession()
-		if err != nil {
-			return err
-		}
-		defer session.Close()
-		defer conn.Close()
-		session.Stdout = os.Stdout
-
-		// Run the command with a timeout. An error will be returned if the exit status is non-zero.
-		commandChan := make(chan error, 1)
-		go func() {
-			commandChan <- session.Run(command)
-		}()
-		select {
-		case err = <-commandChan:
-			return err
-		case <-time.After(accessPointCommandTimeoutSec * time.Second):
-			return fmt.Errorf("WiFi SSH command timed out after %d seconds", accessPointCommandTimeoutSec)
-		}
+	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ap.address, ap.port), config)
+	if err != nil {
+		return err
 	}
+	session, err := conn.NewSession()
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+	defer conn.Close()
+	session.Stdout = os.Stdout
 
-	// Retry the SSH connection if it fails, sleeping between attempts.
-	attempts := accessPointRetryCount + 1
-	for {
-		err := doSsh()
-		if err == nil {
-			return nil
-		}
-		attempts--
-		if attempts <= 0 {
-			return err
-		}
-		log.Printf("WiFi configuration failed; retrying %d more times: %v", attempts, err)
+	// Run the command with a timeout. An error will be returned if the exit status is non-zero.
+	commandChan := make(chan error, 1)
+	go func() {
+		commandChan <- session.Run(command)
+	}()
+	select {
+	case err = <-commandChan:
+		return err
+	case <-time.After(accessPointCommandTimeoutSec * time.Second):
+		return fmt.Errorf("WiFi SSH command timed out after %d seconds", accessPointCommandTimeoutSec)
 	}
 }
 
 func (ap *AccessPoint) generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *model.Team) (string, error) {
 	// Determine what new SSIDs are needed.
-	networks := make(map[int]*model.Team)
+	commands := &[]string{}
 	var err error
-	if err = addTeamNetwork(networks, red1, red1Vlan); err != nil {
+	if err = addTeamConfigCommands(1, red1, commands); err != nil {
 		return "", err
 	}
-	if err = addTeamNetwork(networks, red2, red2Vlan); err != nil {
+	if err = addTeamConfigCommands(2, red2, commands); err != nil {
 		return "", err
 	}
-	if err = addTeamNetwork(networks, red3, red3Vlan); err != nil {
+	if err = addTeamConfigCommands(3, red3, commands); err != nil {
 		return "", err
 	}
-	if err = addTeamNetwork(networks, blue1, blue1Vlan); err != nil {
+	if err = addTeamConfigCommands(4, blue1, commands); err != nil {
 		return "", err
 	}
-	if err = addTeamNetwork(networks, blue2, blue2Vlan); err != nil {
+	if err = addTeamConfigCommands(5, blue2, commands); err != nil {
 		return "", err
 	}
-	if err = addTeamNetwork(networks, blue3, blue3Vlan); err != nil {
-		return "", err
-	}
-
-	// Generate the config file to be uploaded to the AP.
-	template, err := template.ParseFiles(filepath.Join(model.BaseDir, "templates/access_point.cfg"))
-	if err != nil {
-		return "", err
-	}
-	data := struct {
-		Networks     map[int]*model.Team
-		TeamChannel  int
-		AdminChannel int
-		AdminWpaKey  string
-	}{networks, ap.teamChannel, ap.adminChannel, ap.adminWpaKey}
-	var configFile bytes.Buffer
-	err = template.Execute(&configFile, data)
-	if err != nil {
+	if err = addTeamConfigCommands(6, blue3, commands); err != nil {
 		return "", err
 	}
 
-	return configFile.String(), nil
+	*commands = append(*commands, "commit wireless")
+
+	return strings.Join(*commands, "\n"), nil
 }
 
 // Verifies the validity of the given team's WPA key and adds a network for it to the list to be configured.
-func addTeamNetwork(networks map[int]*model.Team, team *model.Team, vlan int) error {
+func addTeamConfigCommands(position int, team *model.Team, commands *[]string) error {
 	if team == nil {
 		return nil
 	}
 	if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
 		return fmt.Errorf("Invalid WPA key '%s' configured for team %d.", team.WpaKey, team.Id)
 	}
-	networks[vlan] = team
+
+	*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position, team.Id),
+		fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
+
 	return nil
 }

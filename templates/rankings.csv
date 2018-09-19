@@ -1,3 +1,3 @@
-Rank,TeamId,RankingPoints,MatchPoints,AutoPoints,RotorPoints,TakeoffPoints,PressurePoints,Wins,Losses,Ties,Disqualifications,Played
-{{range $ranking := .}}{{$ranking.Rank}},{{$ranking.TeamId}},{{$ranking.RankingPoints}},{{$ranking.MatchPoints}},{{$ranking.AutoPoints}},{{$ranking.RotorPoints}},{{$ranking.TakeoffPoints}},{{$ranking.PressurePoints}},{{$ranking.Wins}},{{$ranking.Losses}},{{$ranking.Ties}},{{$ranking.Disqualifications}},{{$ranking.Played}}
+Rank,TeamId,RankingPoints,ParkClimbPoints,AutoPoints,OwnershipPoints,VaultPoints,Wins,Losses,Ties,Disqualifications,Played
+{{range $ranking := .}}{{$ranking.Rank}},{{$ranking.TeamId}},{{$ranking.RankingPoints}},{{$ranking.ParkClimbPoints}},{{$ranking.AutoPoints}},{{$ranking.OwnershipPoints}},{{$ranking.VaultPoints}},{{$ranking.Wins}},{{$ranking.Losses}},{{$ranking.Ties}},{{$ranking.Disqualifications}},{{$ranking.Played}}
 {{end}}

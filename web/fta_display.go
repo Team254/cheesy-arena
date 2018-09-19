@@ -7,14 +7,17 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/model"
-	"io"
-	"log"
+	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
 )
 
 // Renders the FTA diagnostic display.
 func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	if !web.enforceDisplayConfiguration(w, r, nil) {
 		return
 	}
 
@@ -26,7 +29,7 @@ func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 	}{web.arena.EventSettings}
-	err = template.ExecuteTemplate(w, "base", data)
+	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -35,64 +38,25 @@ func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the FTA display client to receive status updates.
 func (web *Web) ftaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO(patrick): Enable authentication once Safari (for iPad) supports it over Websocket.
+	if !web.userIsReader(w, r) {
+		return
+	}
 
-	websocket, err := NewWebsocket(w, r)
+	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	defer websocket.Close()
+	defer web.arena.MarkDisplayDisconnected(display)
 
-	robotStatusListener := web.arena.RobotStatusNotifier.Listen()
-	defer close(robotStatusListener)
-	reloadDisplaysListener := web.arena.ReloadDisplaysNotifier.Listen()
-	defer close(reloadDisplaysListener)
-
-	// Send the various notifications immediately upon connection.
-	err = websocket.Write("status", web.arena.GetStatus())
+	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
-		log.Printf("Websocket error: %s", err)
+		handleWebErr(w, err)
 		return
 	}
+	defer ws.Close()
 
-	// Spin off a goroutine to listen for notifications and pass them on through the websocket.
-	go func() {
-		for {
-			var messageType string
-			var message interface{}
-			select {
-			case _, ok := <-robotStatusListener:
-				if !ok {
-					return
-				}
-				messageType = "status"
-				message = web.arena.GetStatus()
-			case _, ok := <-reloadDisplaysListener:
-				if !ok {
-					return
-				}
-				messageType = "reload"
-				message = nil
-			}
-			err = websocket.Write(messageType, message)
-			if err != nil {
-				// The client has probably closed the connection; nothing to do here.
-				return
-			}
-		}
-	}()
-
-	// Loop, waiting for commands and responding to them, until the client closes the connection.
-	for {
-		_, _, err := websocket.Read()
-		if err != nil {
-			if err == io.EOF {
-				// Client has closed the connection; nothing to do here.
-				return
-			}
-			log.Printf("Websocket error: %s", err)
-			return
-		}
-	}
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
+	ws.HandleNotifiers(web.arena.ArenaStatusNotifier, web.arena.DisplayConfigurationNotifier,
+		web.arena.ReloadDisplaysNotifier)
 }

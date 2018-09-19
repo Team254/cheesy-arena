@@ -44,6 +44,6 @@ func (database *Database) TruncateSponsorSlides() error {
 
 func (database *Database) GetAllSponsorSlides() ([]SponsorSlide, error) {
 	var sponsorSlides []SponsorSlide
-	err := database.teamMap.Select(&sponsorSlides, "SELECT * FROM sponsor_slides ORDER BY id")
+	err := database.sponsorSlideMap.Select(&sponsorSlides, "SELECT * FROM sponsor_slides ORDER BY id")
 	return sponsorSlides, err
 }

@@ -8,9 +8,13 @@ package field
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/plc"
+	"github.com/Team254/cheesy-arena/vaultled"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -21,67 +25,64 @@ const (
 )
 
 // Progression of match states.
+type MatchState int
+
 const (
-	PreMatch      = 0
-	StartMatch    = 1
-	AutoPeriod    = 2
-	PausePeriod   = 3
-	TeleopPeriod  = 4
-	EndgamePeriod = 5
-	PostMatch     = 6
+	PreMatch MatchState = iota
+	StartMatch
+	WarmupPeriod
+	AutoPeriod
+	PausePeriod
+	TeleopPeriod
+	EndgamePeriod
+	PostMatch
 )
 
 type Arena struct {
-	Database                       *model.Database
-	EventSettings                  *model.EventSettings
-	accessPoint                    *AccessPoint
-	networkSwitch                  *NetworkSwitch
-	Plc                            Plc
-	TbaClient                      *partner.TbaClient
-	StemTvClient                   *partner.StemTvClient
-	AllianceStations               map[string]*AllianceStation
-	CurrentMatch                   *model.Match
-	MatchState                     int
-	lastMatchState                 int
-	MatchStartTime                 time.Time
-	LastMatchTimeSec               float64
-	RedRealtimeScore               *RealtimeScore
-	BlueRealtimeScore              *RealtimeScore
-	lastDsPacketTime               time.Time
-	FieldReset                     bool
-	AudienceDisplayScreen          string
-	SavedMatch                     *model.Match
-	SavedMatchResult               *model.MatchResult
-	AllianceStationDisplays        map[string]string
-	AllianceStationDisplayScreen   string
-	MuteMatchSounds                bool
-	FieldTestMode                  string
-	matchAborted                   bool
-	matchStateNotifier             *Notifier
-	MatchTimeNotifier              *Notifier
-	RobotStatusNotifier            *Notifier
-	MatchLoadTeamsNotifier         *Notifier
-	ScoringStatusNotifier          *Notifier
-	RealtimeScoreNotifier          *Notifier
-	ScorePostedNotifier            *Notifier
-	AudienceDisplayNotifier        *Notifier
-	PlaySoundNotifier              *Notifier
-	AllianceStationDisplayNotifier *Notifier
-	AllianceSelectionNotifier      *Notifier
-	LowerThirdNotifier             *Notifier
-	ReloadDisplaysNotifier         *Notifier
-}
-
-type ArenaStatus struct {
+	Database         *model.Database
+	EventSettings    *model.EventSettings
+	accessPoint      *AccessPoint
+	networkSwitch    *NetworkSwitch
+	Plc              plc.Plc
+	TbaClient        *partner.TbaClient
+	StemTvClient     *partner.StemTvClient
 	AllianceStations map[string]*AllianceStation
-	MatchState       int
-	CanStartMatch    bool
-	PlcIsHealthy     bool
-	FieldEstop       bool
+	Displays         map[string]*Display
+	ArenaNotifiers
+	MatchState
+	lastMatchState             MatchState
+	CurrentMatch               *model.Match
+	MatchStartTime             time.Time
+	LastMatchTimeSec           float64
+	RedRealtimeScore           *RealtimeScore
+	BlueRealtimeScore          *RealtimeScore
+	lastDsPacketTime           time.Time
+	FieldVolunteers            bool
+	FieldReset                 bool
+	AudienceDisplayMode        string
+	SavedMatch                 *model.Match
+	SavedMatchResult           *model.MatchResult
+	AllianceStationDisplayMode string
+	MuteMatchSounds            bool
+	matchAborted               bool
+	Scale                      *game.Seesaw
+	RedSwitch                  *game.Seesaw
+	BlueSwitch                 *game.Seesaw
+	RedVault                   *game.Vault
+	BlueVault                  *game.Vault
+	ScaleLeds                  led.Controller
+	RedSwitchLeds              led.Controller
+	BlueSwitchLeds             led.Controller
+	RedVaultLeds               vaultled.Controller
+	BlueVaultLeds              vaultled.Controller
+	warmupLedMode              led.Mode
+	lastRedAllianceReady       bool
+	lastBlueAllianceReady      bool
 }
 
 type AllianceStation struct {
 	DsConn *DriverStationConnection
+	Astop  bool
 	Estop  bool
 	Bypass bool
 	Team   *model.Team
@@ -109,32 +110,21 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.AllianceStations["B2"] = new(AllianceStation)
 	arena.AllianceStations["B3"] = new(AllianceStation)
 
-	arena.matchStateNotifier = NewNotifier()
-	arena.MatchTimeNotifier = NewNotifier()
-	arena.RobotStatusNotifier = NewNotifier()
-	arena.MatchLoadTeamsNotifier = NewNotifier()
-	arena.ScoringStatusNotifier = NewNotifier()
-	arena.RealtimeScoreNotifier = NewNotifier()
-	arena.ScorePostedNotifier = NewNotifier()
-	arena.AudienceDisplayNotifier = NewNotifier()
-	arena.PlaySoundNotifier = NewNotifier()
-	arena.AllianceStationDisplayNotifier = NewNotifier()
-	arena.AllianceSelectionNotifier = NewNotifier()
-	arena.LowerThirdNotifier = NewNotifier()
-	arena.ReloadDisplaysNotifier = NewNotifier()
+	arena.Displays = make(map[string]*Display)
+
+	arena.configureNotifiers()
 
 	// Load empty match as current.
 	arena.MatchState = PreMatch
 	arena.LoadTestMatch()
-	arena.lastMatchState = -1
 	arena.LastMatchTimeSec = 0
+	arena.lastMatchState = -1
 
 	// Initialize display parameters.
-	arena.AudienceDisplayScreen = "blank"
+	arena.AudienceDisplayMode = "blank"
 	arena.SavedMatch = &model.Match{}
 	arena.SavedMatchResult = model.NewMatchResult()
-	arena.AllianceStationDisplays = make(map[string]string)
-	arena.AllianceStationDisplayScreen = "match"
+	arena.AllianceStationDisplayMode = "match"
 
 	return arena, nil
 }
@@ -155,9 +145,27 @@ func (arena *Arena) LoadSettings() error {
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.StemTvClient = partner.NewStemTvClient(settings.StemTvEventCode)
 
-	err = arena.accessPoint.ConfigureAdminWifi()
-	if err != nil {
-		return nil
+	if arena.EventSettings.NetworkSecurityEnabled {
+		if err = arena.accessPoint.ConfigureAdminWifi(); err != nil {
+			log.Printf("Failed to configure admin WiFi: %s", err.Error())
+		}
+	}
+
+	// Initialize LEDs.
+	if err = arena.ScaleLeds.SetAddress(settings.ScaleLedAddress); err != nil {
+		return err
+	}
+	if err = arena.RedSwitchLeds.SetAddress(settings.RedSwitchLedAddress); err != nil {
+		return err
+	}
+	if err = arena.BlueSwitchLeds.SetAddress(settings.BlueSwitchLedAddress); err != nil {
+		return err
+	}
+	if err = arena.RedVaultLeds.SetAddress(settings.RedVaultLedAddress); err != nil {
+		return err
+	}
+	if err = arena.BlueVaultLeds.SetAddress(settings.BlueVaultLedAddress); err != nil {
+		return err
 	}
 
 	return nil
@@ -200,14 +208,37 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	// Reset the realtime scores.
 	arena.RedRealtimeScore = NewRealtimeScore()
 	arena.BlueRealtimeScore = NewRealtimeScore()
-	arena.Plc.ResetCounts()
+	arena.FieldVolunteers = false
 	arena.FieldReset = false
+	arena.Scale = &game.Seesaw{Kind: game.NeitherAlliance}
+	arena.RedSwitch = &game.Seesaw{Kind: game.RedAlliance}
+	arena.BlueSwitch = &game.Seesaw{Kind: game.BlueAlliance}
+	arena.RedVault = &game.Vault{Alliance: game.RedAlliance}
+	arena.BlueVault = &game.Vault{Alliance: game.BlueAlliance}
+	game.ResetPowerUps()
+
+	// Set a consistent initial value for field element sidedness.
+	arena.Scale.NearIsRed = true
+	arena.RedSwitch.NearIsRed = true
+	arena.BlueSwitch.NearIsRed = true
+	arena.ScaleLeds.SetSidedness(true)
+	arena.RedSwitchLeds.SetSidedness(true)
+	arena.BlueSwitchLeds.SetSidedness(true)
 
 	// Notify any listeners about the new match.
-	arena.MatchLoadTeamsNotifier.Notify(nil)
-	arena.RealtimeScoreNotifier.Notify(nil)
-	arena.AllianceStationDisplayScreen = "match"
-	arena.AllianceStationDisplayNotifier.Notify(nil)
+	arena.MatchLoadNotifier.Notify()
+	arena.RealtimeScoreNotifier.Notify()
+	arena.AllianceStationDisplayMode = "match"
+	arena.AllianceStationDisplayModeNotifier.Notify()
+
+	// Set the initial state of the lights.
+	arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
+	arena.RedSwitchLeds.SetMode(led.RedMode, led.RedMode)
+	arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
+	arena.RedVaultLeds.SetAllModes(vaultled.OffMode)
+	arena.BlueVaultLeds.SetAllModes(vaultled.OffMode)
+	arena.lastRedAllianceReady = false
+	arena.lastBlueAllianceReady = false
 
 	return nil
 }
@@ -263,7 +294,7 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 		arena.CurrentMatch.Blue3 = teamId
 	}
 	arena.setupNetwork()
-	arena.MatchLoadTeamsNotifier.Notify(nil)
+	arena.MatchLoadNotifier.Notify()
 
 	if arena.CurrentMatch.Type != "test" {
 		arena.Database.SaveMatch(arena.CurrentMatch)
@@ -275,7 +306,22 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 func (arena *Arena) StartMatch() error {
 	err := arena.checkCanStartMatch()
 	if err == nil {
-		// Save the match start time to the database for posterity.
+		// Generate game-specific data or allow manual input for test matches.
+		if arena.CurrentMatch.Type != "test" || !game.IsValidGameSpecificData(arena.CurrentMatch.GameSpecificData) {
+			arena.CurrentMatch.GameSpecificData = game.GenerateGameSpecificData()
+		}
+
+		// Configure the field elements with the game-specific data.
+		switchNearIsRed := arena.CurrentMatch.GameSpecificData[0] == 'L'
+		scaleNearIsRed := arena.CurrentMatch.GameSpecificData[1] == 'L'
+		arena.Scale.NearIsRed = scaleNearIsRed
+		arena.RedSwitch.NearIsRed = switchNearIsRed
+		arena.BlueSwitch.NearIsRed = switchNearIsRed
+		arena.ScaleLeds.SetSidedness(scaleNearIsRed)
+		arena.RedSwitchLeds.SetSidedness(switchNearIsRed)
+		arena.BlueSwitchLeds.SetSidedness(switchNearIsRed)
+
+		// Save the match start time and game-specifc data to the database for posterity.
 		arena.CurrentMatch.StartedAt = time.Now()
 		if arena.CurrentMatch.Type != "test" {
 			arena.Database.SaveMatch(arena.CurrentMatch)
@@ -301,13 +347,15 @@ func (arena *Arena) AbortMatch() error {
 	if arena.MatchState == PreMatch || arena.MatchState == PostMatch {
 		return fmt.Errorf("Cannot abort match when it is not in progress.")
 	}
+	if !arena.MuteMatchSounds && arena.MatchState != WarmupPeriod {
+		arena.PlaySoundNotifier.NotifyWithMessage("match-abort")
+	}
 	arena.MatchState = PostMatch
 	arena.matchAborted = true
-	arena.AudienceDisplayScreen = "blank"
-	arena.AudienceDisplayNotifier.Notify(nil)
-	if !arena.MuteMatchSounds {
-		arena.PlaySoundNotifier.Notify("match-abort")
-	}
+	arena.AudienceDisplayMode = "blank"
+	arena.AudienceDisplayModeNotifier.Notify()
+	arena.AllianceStationDisplayMode = "logo"
+	arena.AllianceStationDisplayModeNotifier.Notify()
 	return nil
 }
 
@@ -350,59 +398,75 @@ func (arena *Arena) Update() {
 		auto = true
 		enabled = false
 	case StartMatch:
-		arena.MatchState = AutoPeriod
+		arena.MatchState = WarmupPeriod
 		arena.MatchStartTime = time.Now()
 		arena.LastMatchTimeSec = -1
 		auto = true
-		enabled = true
-		sendDsPacket = true
-		arena.AudienceDisplayScreen = "match"
-		arena.AudienceDisplayNotifier.Notify(nil)
+		enabled = false
+		arena.AudienceDisplayMode = "match"
+		arena.AudienceDisplayModeNotifier.Notify()
+		arena.AllianceStationDisplayMode = "match"
+		arena.AllianceStationDisplayModeNotifier.Notify()
+		arena.sendGameSpecificDataPacket()
 		if !arena.MuteMatchSounds {
-			arena.PlaySoundNotifier.Notify("match-start")
+			arena.PlaySoundNotifier.NotifyWithMessage("match-warmup")
 		}
-		arena.FieldTestMode = ""
-		arena.Plc.ResetCounts()
+		// Pick an LED warmup mode at random to keep things interesting.
+		allWarmupModes := []led.Mode{led.WarmupMode, led.Warmup2Mode, led.Warmup3Mode, led.Warmup4Mode}
+		arena.warmupLedMode = allWarmupModes[rand.Intn(len(allWarmupModes))]
+	case WarmupPeriod:
+		auto = true
+		enabled = false
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec) {
+			arena.MatchState = AutoPeriod
+			auto = true
+			enabled = true
+			sendDsPacket = true
+			if !arena.MuteMatchSounds {
+				arena.PlaySoundNotifier.NotifyWithMessage("match-start")
+			}
+		}
 	case AutoPeriod:
 		auto = true
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) {
 			arena.MatchState = PausePeriod
 			auto = false
 			enabled = false
 			sendDsPacket = true
 			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.Notify("match-end")
+				arena.PlaySoundNotifier.NotifyWithMessage("match-end")
 			}
 		}
 	case PausePeriod:
 		auto = false
 		enabled = false
-		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
+			game.MatchTiming.PauseDurationSec) {
 			arena.MatchState = TeleopPeriod
 			auto = false
 			enabled = true
 			sendDsPacket = true
 			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.Notify("match-resume")
+				arena.PlaySoundNotifier.NotifyWithMessage("match-resume")
 			}
 		}
 	case TeleopPeriod:
 		auto = false
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-			game.MatchTiming.TeleopDurationSec-game.MatchTiming.EndgameTimeLeftSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
+			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec-game.MatchTiming.EndgameTimeLeftSec) {
 			arena.MatchState = EndgamePeriod
 			sendDsPacket = false
 			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.Notify("match-endgame")
+				arena.PlaySoundNotifier.NotifyWithMessage("match-endgame")
 			}
 		}
 	case EndgamePeriod:
 		auto = false
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-			game.MatchTiming.TeleopDurationSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
+			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) {
 			arena.MatchState = PostMatch
 			auto = false
 			enabled = false
@@ -410,38 +474,33 @@ func (arena *Arena) Update() {
 			go func() {
 				// Leave the scores on the screen briefly at the end of the match.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
-				arena.AudienceDisplayScreen = "blank"
-				arena.AudienceDisplayNotifier.Notify(nil)
-				arena.AllianceStationDisplayScreen = "logo"
-				arena.AllianceStationDisplayNotifier.Notify(nil)
+				arena.AudienceDisplayMode = "blank"
+				arena.AudienceDisplayModeNotifier.Notify()
+				arena.AllianceStationDisplayMode = "logo"
+				arena.AllianceStationDisplayModeNotifier.Notify()
 			}()
 			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.Notify("match-end")
+				arena.PlaySoundNotifier.NotifyWithMessage("match-end")
 			}
 		}
 	}
 
-	// Send a notification if the match state has changed.
-	if arena.MatchState != arena.lastMatchState {
-		arena.matchStateNotifier.Notify(arena.MatchState)
-	}
-	arena.lastMatchState = arena.MatchState
-
-	// Send a match tick notification if passing an integer second threshold.
-	if int(matchTimeSec) != int(arena.LastMatchTimeSec) {
-		arena.MatchTimeNotifier.Notify(int(matchTimeSec))
+	// Send a match tick notification if passing an integer second threshold or if the match state changed.
+	if int(matchTimeSec) != int(arena.LastMatchTimeSec) || arena.MatchState != arena.lastMatchState {
+		arena.MatchTimeNotifier.Notify()
 	}
 	arena.LastMatchTimeSec = matchTimeSec
+	arena.lastMatchState = arena.MatchState
 
 	// Send a packet if at a period transition point or if it's been long enough since the last one.
 	if sendDsPacket || time.Since(arena.lastDsPacketTime).Seconds()*1000 >= dsPacketPeriodMs {
 		arena.sendDsPacket(auto, enabled)
-		arena.RobotStatusNotifier.Notify(nil)
+		arena.ArenaStatusNotifier.Notify()
 	}
 
 	// Handle field sensors/lights/motors.
 	arena.handlePlcInput()
-	arena.handlePlcOutput()
+	arena.handleLeds()
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -449,7 +508,6 @@ func (arena *Arena) Run() {
 	// Start other loops in goroutines.
 	go arena.listenForDriverStations()
 	go arena.listenForDsUdpPackets()
-	go arena.monitorBandwidth()
 	go arena.Plc.Run()
 
 	for {
@@ -460,19 +518,12 @@ func (arena *Arena) Run() {
 
 // Calculates the red alliance score summary for the given realtime snapshot.
 func (arena *Arena) RedScoreSummary() *game.ScoreSummary {
-	return arena.RedRealtimeScore.CurrentScore.Summarize(arena.BlueRealtimeScore.CurrentScore.Fouls,
-		arena.CurrentMatch.Type)
+	return arena.RedRealtimeScore.CurrentScore.Summarize(arena.BlueRealtimeScore.CurrentScore.Fouls)
 }
 
 // Calculates the blue alliance score summary for the given realtime snapshot.
 func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
-	return arena.BlueRealtimeScore.CurrentScore.Summarize(arena.RedRealtimeScore.CurrentScore.Fouls,
-		arena.CurrentMatch.Type)
-}
-
-func (arena *Arena) GetStatus() *ArenaStatus {
-	return &ArenaStatus{arena.AllianceStations, arena.MatchState, arena.checkCanStartMatch() == nil,
-		arena.Plc.IsHealthy, arena.Plc.GetFieldEstop()}
+	return arena.BlueRealtimeScore.CurrentScore.Summarize(arena.RedRealtimeScore.CurrentScore.Fouls)
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -539,15 +590,10 @@ func (arena *Arena) checkCanStartMatch() error {
 	if arena.MatchState != PreMatch {
 		return fmt.Errorf("Cannot start match while there is a match still in progress or with results pending.")
 	}
-	for _, allianceStation := range arena.AllianceStations {
-		if allianceStation.Estop {
-			return fmt.Errorf("Cannot start match while an emergency stop is active.")
-		}
-		if !allianceStation.Bypass {
-			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
-				return fmt.Errorf("Cannot start match until all robots are connected or bypassed.")
-			}
-		}
+
+	err := arena.checkAllianceStationsReady("R1", "R2", "R3", "B1", "B2", "B3")
+	if err != nil {
+		return err
 	}
 
 	if arena.EventSettings.PlcAddress != "" {
@@ -562,16 +608,45 @@ func (arena *Arena) checkCanStartMatch() error {
 	return nil
 }
 
+func (arena *Arena) checkAllianceStationsReady(stations ...string) error {
+	for _, station := range stations {
+		allianceStation := arena.AllianceStations[station]
+		if allianceStation.Estop {
+			return fmt.Errorf("Cannot start match while an emergency stop is active.")
+		}
+		if !allianceStation.Bypass {
+			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
+				return fmt.Errorf("Cannot start match until all robots are connected or bypassed.")
+			}
+		}
+	}
+
+	return nil
+}
+
 func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	for _, allianceStation := range arena.AllianceStations {
 		dsConn := allianceStation.DsConn
 		if dsConn != nil {
 			dsConn.Auto = auto
-			dsConn.Enabled = enabled && !allianceStation.Estop && !allianceStation.Bypass
+			dsConn.Enabled = enabled && !allianceStation.Estop && !allianceStation.Astop && !allianceStation.Bypass
 			dsConn.Estop = allianceStation.Estop
 			err := dsConn.update(arena)
 			if err != nil {
 				log.Printf("Unable to send driver station packet for team %d.", allianceStation.Team.Id)
+			}
+		}
+	}
+	arena.lastDsPacketTime = time.Now()
+}
+
+func (arena *Arena) sendGameSpecificDataPacket() {
+	for _, allianceStation := range arena.AllianceStations {
+		dsConn := allianceStation.DsConn
+		if dsConn != nil {
+			err := dsConn.sendGameSpecificDataPacket(arena.CurrentMatch.GameSpecificData)
+			if err != nil {
+				log.Printf("Error sending game-specific data packet to Team %d: %v", dsConn.TeamId, err)
 			}
 		}
 	}
@@ -604,131 +679,214 @@ func (arena *Arena) handlePlcInput() {
 	arena.handleEstop("B2", blueEstops[1])
 	arena.handleEstop("B3", blueEstops[2])
 
-	matchStartTime := arena.MatchStartTime
-	currentTime := time.Now()
-	if arena.MatchState == PreMatch {
-		// Set a match start time in the future.
-		matchStartTime = currentTime.Add(time.Second)
-	}
-	matchEndTime := game.GetMatchEndTime(matchStartTime)
-	inGracePeriod := currentTime.Before(matchEndTime.Add(game.BoilerTeleopGracePeriodSec * time.Second))
-	if arena.MatchState == PostMatch && (!inGracePeriod || arena.matchAborted) {
-		// Don't do anything if we're past the end of the match, otherwise we may overwrite manual edits.
+	if arena.MatchState == PreMatch || arena.MatchState == PostMatch {
+		// Don't do anything if we're outside the match, otherwise we may overwrite manual edits.
 		return
 	}
+	matchStartTime := arena.MatchStartTime
+	currentTime := time.Now()
+	teleopStartTime := game.GetTeleopStartTime(matchStartTime)
 
 	redScore := &arena.RedRealtimeScore.CurrentScore
 	oldRedScore := *redScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
 	oldBlueScore := *blueScore
 
-	// Handle balls.
-	redLow, redHigh, blueLow, blueHigh := arena.Plc.GetBalls()
-	arena.RedRealtimeScore.boiler.UpdateState(redLow, redHigh, matchStartTime, currentTime)
-	redScore.AutoFuelLow = arena.RedRealtimeScore.boiler.AutoFuelLow
-	redScore.AutoFuelHigh = arena.RedRealtimeScore.boiler.AutoFuelHigh
-	redScore.FuelLow = arena.RedRealtimeScore.boiler.FuelLow
-	redScore.FuelHigh = arena.RedRealtimeScore.boiler.FuelHigh
-	arena.BlueRealtimeScore.boiler.UpdateState(blueLow, blueHigh, matchStartTime, currentTime)
-	blueScore.AutoFuelLow = arena.BlueRealtimeScore.boiler.AutoFuelLow
-	blueScore.AutoFuelHigh = arena.BlueRealtimeScore.boiler.AutoFuelHigh
-	blueScore.FuelLow = arena.BlueRealtimeScore.boiler.FuelLow
-	blueScore.FuelHigh = arena.BlueRealtimeScore.boiler.FuelHigh
-
-	// Handle rotors.
-	redRotor1, redOtherRotors, blueRotor1, blueOtherRotors := arena.Plc.GetRotors()
-	arena.RedRealtimeScore.rotorSet.UpdateState(redRotor1, redOtherRotors, matchStartTime, currentTime)
-	redScore.AutoRotors = arena.RedRealtimeScore.rotorSet.AutoRotors
-	redScore.Rotors = arena.RedRealtimeScore.rotorSet.Rotors
-	arena.BlueRealtimeScore.rotorSet.UpdateState(blueRotor1, blueOtherRotors, matchStartTime, currentTime)
-	blueScore.AutoRotors = arena.BlueRealtimeScore.rotorSet.AutoRotors
-	blueScore.Rotors = arena.BlueRealtimeScore.rotorSet.Rotors
-
-	// Handle touchpads.
-	redTouchpads, blueTouchpads := arena.Plc.GetTouchpads()
-	for i := 0; i < 3; i++ {
-		arena.RedRealtimeScore.touchpads[i].UpdateState(redTouchpads[i], matchStartTime, currentTime)
-		arena.BlueRealtimeScore.touchpads[i].UpdateState(blueTouchpads[i], matchStartTime, currentTime)
+	// Handle scale and switch ownership.
+	scale, redSwitch, blueSwitch := arena.Plc.GetScaleAndSwitches()
+	ownershipChanged := arena.Scale.UpdateState(scale, currentTime)
+	ownershipChanged = arena.RedSwitch.UpdateState(redSwitch, currentTime) || ownershipChanged
+	ownershipChanged = arena.BlueSwitch.UpdateState(blueSwitch, currentTime) || ownershipChanged
+	if arena.MatchState == AutoPeriod {
+		redScore.AutoScaleOwnershipSec, _ = arena.Scale.GetRedSeconds(matchStartTime, currentTime)
+		redScore.AutoSwitchOwnershipSec, _ = arena.RedSwitch.GetRedSeconds(matchStartTime, currentTime)
+		blueScore.AutoScaleOwnershipSec, _ = arena.Scale.GetBlueSeconds(matchStartTime, currentTime)
+		blueScore.AutoSwitchOwnershipSec, _ = arena.BlueSwitch.GetBlueSeconds(matchStartTime, currentTime)
+	} else {
+		redScore.TeleopScaleOwnershipSec, redScore.TeleopScaleBoostSec =
+			arena.Scale.GetRedSeconds(teleopStartTime, currentTime)
+		redScore.TeleopSwitchOwnershipSec, redScore.TeleopSwitchBoostSec =
+			arena.RedSwitch.GetRedSeconds(teleopStartTime, currentTime)
+		blueScore.TeleopScaleOwnershipSec, blueScore.TeleopScaleBoostSec =
+			arena.Scale.GetBlueSeconds(teleopStartTime, currentTime)
+		blueScore.TeleopSwitchOwnershipSec, blueScore.TeleopSwitchBoostSec =
+			arena.BlueSwitch.GetBlueSeconds(teleopStartTime, currentTime)
 	}
-	redScore.Takeoffs = game.CountTouchpads(&arena.RedRealtimeScore.touchpads, currentTime)
-	blueScore.Takeoffs = game.CountTouchpads(&arena.BlueRealtimeScore.touchpads, currentTime)
 
-	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
-		arena.RealtimeScoreNotifier.Notify(nil)
+	// Handle vaults.
+	redForceDistance, redLevitateDistance, redBoostDistance, blueForceDistance, blueLevitateDistance,
+		blueBoostDistance := arena.Plc.GetVaults()
+	arena.RedVault.UpdateCubes(redForceDistance, redLevitateDistance, redBoostDistance)
+	arena.BlueVault.UpdateCubes(blueForceDistance, blueLevitateDistance, blueBoostDistance)
+	redForce, redLevitate, redBoost, blueForce, blueLevitate, blueBoost := arena.Plc.GetPowerUpButtons()
+	arena.RedVault.UpdateButtons(redForce, redLevitate, redBoost, currentTime)
+	arena.BlueVault.UpdateButtons(blueForce, blueLevitate, blueBoost, currentTime)
+	redScore.ForceCubes, redScore.ForceCubesPlayed = arena.RedVault.ForceCubes, arena.RedVault.ForceCubesPlayed
+	redScore.LevitateCubes, redScore.LevitatePlayed = arena.RedVault.LevitateCubes, arena.RedVault.LevitatePlayed
+	redScore.BoostCubes, redScore.BoostCubesPlayed = arena.RedVault.BoostCubes, arena.RedVault.BoostCubesPlayed
+	blueScore.ForceCubes, blueScore.ForceCubesPlayed = arena.BlueVault.ForceCubes, arena.BlueVault.ForceCubesPlayed
+	blueScore.LevitateCubes, blueScore.LevitatePlayed = arena.BlueVault.LevitateCubes, arena.BlueVault.LevitatePlayed
+	blueScore.BoostCubes, blueScore.BoostCubesPlayed = arena.BlueVault.BoostCubes, arena.BlueVault.BoostCubesPlayed
+
+	// Check if a power up has been newly played and trigger the accompanying sound effect if so.
+	newRedPowerUp := arena.RedVault.CheckForNewlyPlayedPowerUp()
+	if newRedPowerUp != "" && !arena.MuteMatchSounds {
+		arena.PlaySoundNotifier.NotifyWithMessage("match-" + newRedPowerUp)
+	}
+	newBluePowerUp := arena.BlueVault.CheckForNewlyPlayedPowerUp()
+	if newBluePowerUp != "" && !arena.MuteMatchSounds {
+		arena.PlaySoundNotifier.NotifyWithMessage("match-" + newBluePowerUp)
+	}
+
+	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) || ownershipChanged {
+		arena.RealtimeScoreNotifier.Notify()
 	}
 }
 
-// Writes light/motor commands to the field PLC.
-func (arena *Arena) handlePlcOutput() {
-	if arena.FieldTestMode != "" {
-		// PLC output is being manually overridden.
-		if arena.FieldTestMode == "flash" {
-			blinkState := arena.Plc.GetCycleState(2, 0, 1)
-			arena.Plc.SetTouchpadLights([3]bool{blinkState, blinkState, blinkState},
-				[3]bool{blinkState, blinkState, blinkState})
-		} else if arena.FieldTestMode == "cycle" {
-			arena.Plc.SetTouchpadLights(
-				[3]bool{arena.Plc.GetCycleState(3, 2, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 0, 1)},
-				[3]bool{arena.Plc.GetCycleState(3, 0, 1), arena.Plc.GetCycleState(3, 1, 1), arena.Plc.GetCycleState(3, 2, 1)})
-		} else if arena.FieldTestMode == "chase" {
-			arena.Plc.SetTouchpadLights(
-				[3]bool{arena.Plc.GetCycleState(12, 2, 2), arena.Plc.GetCycleState(12, 1, 2), arena.Plc.GetCycleState(12, 0, 2)},
-				[3]bool{arena.Plc.GetCycleState(12, 3, 2), arena.Plc.GetCycleState(12, 4, 2), arena.Plc.GetCycleState(12, 5, 2)})
-		} else if arena.FieldTestMode == "slowChase" {
-			arena.Plc.SetTouchpadLights(
-				[3]bool{arena.Plc.GetCycleState(6, 2, 8), arena.Plc.GetCycleState(6, 1, 8), arena.Plc.GetCycleState(6, 0, 8)},
-				[3]bool{arena.Plc.GetCycleState(6, 3, 8), arena.Plc.GetCycleState(6, 4, 8), arena.Plc.GetCycleState(6, 5, 8)})
+func (arena *Arena) handleLeds() {
+	switch arena.MatchState {
+	case PreMatch:
+		// Set the stack light state -- blinking green if ready, or solid alliance color(s) if not.
+		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
+		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
+		greenStackLight := redAllianceReady && blueAllianceReady && arena.Plc.GetCycleState(2, 0, 2)
+		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, greenStackLight)
+		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady)
+
+		// Turn off each alliance switch if all teams become ready.
+		if redAllianceReady && !arena.lastRedAllianceReady {
+			arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
+		} else if !redAllianceReady && arena.lastRedAllianceReady {
+			arena.RedSwitchLeds.SetMode(led.RedMode, led.RedMode)
 		}
-		return
+		arena.lastRedAllianceReady = redAllianceReady
+		if blueAllianceReady && !arena.lastBlueAllianceReady {
+			arena.BlueSwitchLeds.SetMode(led.OffMode, led.OffMode)
+		} else if !blueAllianceReady && arena.lastBlueAllianceReady {
+			arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
+		}
+		arena.lastBlueAllianceReady = blueAllianceReady
+	case WarmupPeriod:
+		arena.Plc.SetStackLights(false, false, true)
+		arena.ScaleLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
+		arena.RedSwitchLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
+		arena.BlueSwitchLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
+	case AutoPeriod:
+		fallthrough
+	case TeleopPeriod:
+		fallthrough
+	case EndgamePeriod:
+		handleSeesawTeleopLeds(arena.Scale, &arena.ScaleLeds)
+		handleSeesawTeleopLeds(arena.RedSwitch, &arena.RedSwitchLeds)
+		handleSeesawTeleopLeds(arena.BlueSwitch, &arena.BlueSwitchLeds)
+		handleVaultTeleopLeds(arena.RedVault, &arena.RedVaultLeds)
+		handleVaultTeleopLeds(arena.BlueVault, &arena.BlueVaultLeds)
+	case PausePeriod:
+		arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
+		arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
+		arena.BlueSwitchLeds.SetMode(led.OffMode, led.OffMode)
+	case PostMatch:
+		arena.Plc.SetStackLights(false, false, false)
+		mode := led.FadeSingleMode
+		if arena.FieldReset {
+			mode = led.GreenMode
+		} else if arena.FieldVolunteers {
+			mode = led.PurpleMode
+		}
+		arena.ScaleLeds.SetMode(mode, mode)
+		arena.RedSwitchLeds.SetMode(mode, mode)
+		arena.BlueSwitchLeds.SetMode(mode, mode)
+		arena.RedVaultLeds.SetAllModes(vaultled.OffMode)
+		arena.BlueVaultLeds.SetAllModes(vaultled.OffMode)
 	}
 
-	// Handle balls.
-	matchEndTime := game.GetMatchEndTime(arena.MatchStartTime)
-	inGracePeriod := time.Now().Before(matchEndTime.Add(game.BoilerTeleopGracePeriodSec * time.Second))
-	if arena.MatchTimeSec() > 0 || arena.MatchState == PostMatch && !arena.matchAborted && inGracePeriod {
-		arena.Plc.SetBoilerMotors(true)
-	} else {
-		arena.Plc.SetBoilerMotors(false)
+	arena.ScaleLeds.Update()
+	arena.RedSwitchLeds.Update()
+	arena.BlueSwitchLeds.Update()
+	arena.RedVaultLeds.Update()
+	arena.BlueVaultLeds.Update()
+}
+
+func handleSeesawTeleopLeds(seesaw *game.Seesaw, leds *led.Controller) {
+	// Assume the simplest mode to start and consider others in order of increasing complexity.
+	redMode := led.NotOwnedMode
+	blueMode := led.NotOwnedMode
+
+	// Upgrade the mode to ownership based on the physical state of the switch or scale.
+	if seesaw.GetOwnedBy() == game.RedAlliance && seesaw.Kind != game.BlueAlliance {
+		redMode = led.OwnedMode
+	} else if seesaw.GetOwnedBy() == game.BlueAlliance && seesaw.Kind != game.RedAlliance {
+		blueMode = led.OwnedMode
 	}
 
-	// Handle rotors.
-	redScore := &arena.RedRealtimeScore.CurrentScore
-	blueScore := &arena.BlueRealtimeScore.CurrentScore
-	if arena.MatchTimeSec() > 0 {
-		arena.Plc.SetRotorMotors(redScore.AutoRotors+redScore.Rotors, blueScore.AutoRotors+blueScore.Rotors)
-	} else {
-		arena.Plc.SetRotorMotors(0, 0)
+	// Upgrade the mode if there is an applicable power up.
+	powerUp := game.GetActivePowerUp(time.Now())
+	if powerUp != nil && (seesaw.Kind == game.NeitherAlliance && powerUp.Level >= 2 ||
+		seesaw.Kind == powerUp.Alliance && (powerUp.Level == 1 || powerUp.Level == 3)) {
+		if powerUp.Effect == game.Boost {
+			if powerUp.Alliance == game.RedAlliance {
+				redMode = led.BoostMode
+			} else {
+				blueMode = led.BoostMode
+			}
+		} else {
+			if powerUp.Alliance == game.RedAlliance {
+				redMode = led.ForceMode
+			} else {
+				blueMode = led.ForceMode
+			}
+		}
 	}
-	arena.Plc.SetRotorLights(redScore.AutoRotors, blueScore.AutoRotors)
 
-	// Handle touchpads.
-	var redTouchpads, blueTouchpads [3]bool
-	currentTime := time.Now()
-	blinkStopTime := matchEndTime.Add(-time.Duration(game.MatchTiming.EndgameTimeLeftSec-2) * time.Second)
-	blinkState := arena.Plc.GetCycleState(2, 0, 1)
-	if arena.MatchState == EndgamePeriod && currentTime.Before(blinkStopTime) {
-		// Blink the touchpads at the endgame start point.
-		for i := 0; i < 3; i++ {
-			redTouchpads[i] = blinkState
-			blueTouchpads[i] = blinkState
-		}
+	if seesaw.NearIsRed {
+		leds.SetMode(redMode, blueMode)
 	} else {
-		for i := 0; i < 3; i++ {
-			redState := arena.RedRealtimeScore.touchpads[i].GetState(currentTime)
-			redTouchpads[i] = redState == game.Held || redState == game.Triggered && blinkState
-			blueState := arena.BlueRealtimeScore.touchpads[i].GetState(currentTime)
-			blueTouchpads[i] = blueState == game.Held || blueState == game.Triggered && blinkState
-		}
+		leds.SetMode(blueMode, redMode)
 	}
-	arena.Plc.SetTouchpadLights(redTouchpads, blueTouchpads)
+}
+
+func handleVaultTeleopLeds(vault *game.Vault, leds *vaultled.Controller) {
+	playedMode := vaultled.RedPlayedMode
+	if vault.Alliance == game.BlueAlliance {
+		playedMode = vaultled.BluePlayedMode
+	}
+	cubesModeMap := map[int]vaultled.Mode{0: vaultled.OffMode, 1: vaultled.OneCubeMode, 2: vaultled.TwoCubeMode,
+		3: vaultled.ThreeCubeMode}
+
+	if vault.ForcePowerUp != nil {
+		leds.SetForceMode(playedMode)
+	} else {
+		leds.SetForceMode(cubesModeMap[vault.ForceCubes])
+	}
+
+	if vault.LevitatePlayed {
+		leds.SetLevitateMode(playedMode)
+	} else {
+		leds.SetLevitateMode(cubesModeMap[vault.LevitateCubes])
+	}
+
+	if vault.BoostPowerUp != nil {
+		leds.SetBoostMode(playedMode)
+	} else {
+		leds.SetBoostMode(cubesModeMap[vault.BoostCubes])
+	}
 }
 
 func (arena *Arena) handleEstop(station string, state bool) {
 	allianceStation := arena.AllianceStations[station]
 	if state {
-		allianceStation.Estop = true
-	} else if arena.MatchTimeSec() == 0 {
-		// Don't reset the e-stop while a match is in progress.
-		allianceStation.Estop = false
+		if arena.MatchState == AutoPeriod {
+			allianceStation.Astop = true
+		} else {
+			allianceStation.Estop = true
+		}
+	} else {
+		if arena.MatchState != AutoPeriod {
+			allianceStation.Astop = false
+		}
+		if arena.MatchTimeSec() == 0 {
+			// Don't reset the e-stop while a match is in progress.
+			allianceStation.Estop = false
+		}
 	}
 }

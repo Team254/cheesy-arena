@@ -19,7 +19,7 @@ enable secret 5 $1$kKSW$fCMwnMdYvXui1TulfyYHN/
 no aaa new-model
 system mtu routing 1500
 ip routing
-ip dhcp excluded-address 10.0.100.1 10.0.100.100
+ip dhcp excluded-address 10.0.100.1 10.0.100.150
 !
 ip dhcp pool dhcppool
    network 10.0.100.0 255.255.255.0
@@ -44,8 +44,9 @@ vlan internal allocation policy ascending
 !
 !
 interface GigabitEthernet0/1
- switchport access vlan 100
- switchport mode access
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 100
+ switchport mode trunk
 !
 interface GigabitEthernet0/2
  switchport trunk encapsulation dot1q
@@ -53,11 +54,12 @@ interface GigabitEthernet0/2
  switchport mode trunk
 !
 interface GigabitEthernet0/3
- switchport access vlan 100
  switchport mode access
 !
 interface GigabitEthernet0/4
- switchport mode access
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 100
+ switchport mode trunk
 !
 interface GigabitEthernet0/5
  switchport access vlan 100

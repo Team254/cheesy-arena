@@ -80,8 +80,8 @@ func buildEliminationMatchSet(database *model.Database, round int, group int, nu
 			}
 
 			if len(redAlliance) >= 3 {
-				// Swap the teams around to match the positions dictated by the 2017 rules.
-				redAlliance[0], redAlliance[1], redAlliance[2] = redAlliance[2], redAlliance[0], redAlliance[1]
+				// Swap the teams around to match the positions dictated by the rules.
+				redAlliance[0], redAlliance[1], redAlliance[2] = redAlliance[1], redAlliance[0], redAlliance[2]
 			}
 		}
 		if blueAllianceNumber <= numDirectAlliances {
@@ -95,7 +95,7 @@ func buildEliminationMatchSet(database *model.Database, round int, group int, nu
 			}
 
 			if len(blueAlliance) >= 3 {
-				// Swap the teams around to match the positions dictated by the 2017 rules.
+				// Swap the teams around to match the positions dictated by the rules.
 				blueAlliance[0], blueAlliance[1], blueAlliance[2] = blueAlliance[1], blueAlliance[0], blueAlliance[2]
 			}
 		}

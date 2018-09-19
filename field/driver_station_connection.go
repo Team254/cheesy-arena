@@ -39,8 +39,6 @@ type DriverStationConnection struct {
 	BatteryVoltage            float64
 	DsRobotTripTimeMs         int
 	MissedPacketCount         int
-	MBpsToRobot               float64
-	MBpsFromRobot             float64
 	SecondsSinceLastRobotLink float64
 	lastPacketTime            time.Time
 	lastRobotLinkedTime       time.Time
@@ -120,8 +118,6 @@ func (dsConn *DriverStationConnection) update(arena *Arena) error {
 		dsConn.RadioLinked = false
 		dsConn.RobotLinked = false
 		dsConn.BatteryVoltage = 0
-		dsConn.MBpsToRobot = 0
-		dsConn.MBpsFromRobot = 0
 	}
 	dsConn.SecondsSinceLastRobotLink = time.Since(dsConn.lastRobotLinkedTime).Seconds()
 
@@ -386,4 +382,26 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 			dsConn.log.LogDsPacket(matchTimeSec, packetType, dsConn)
 		}
 	}
+}
+
+func (dsConn *DriverStationConnection) sendGameSpecificDataPacket(gameSpecificData string) error {
+	byteData := []byte(gameSpecificData)
+	size := len(byteData)
+	packet := make([]byte, size+4)
+
+	packet[0] = 0              // Packet size
+	packet[1] = byte(size + 2) // Packet size
+	packet[2] = 28             // Packet type
+	packet[3] = byte(size)     // Data size
+
+	// Fill the rest of the packet with the data.
+	for i, character := range byteData {
+		packet[i+4] = character
+	}
+
+	if dsConn.tcpConn != nil {
+		_, err := dsConn.tcpConn.Write(packet)
+		return err
+	}
+	return nil
 }

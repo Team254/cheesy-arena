@@ -1,0 +1,4 @@
+echo "If prompted for private key password, copy-paste output of ssh-agent then run ssh-add."
+echo "Otherwise, tunnel may not recover from network interruption."
+echo "Starting tunnel..."
+autossh -M 9081 -N -R 9080:localhost:8080 cheesyarena@cheesyarena.com

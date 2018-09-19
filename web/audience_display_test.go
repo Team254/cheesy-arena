@@ -4,9 +4,9 @@
 package web
 
 import (
-	"github.com/gorilla/websocket"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"sync"
 	"testing"
 )
 
@@ -14,6 +14,12 @@ func TestAudienceDisplay(t *testing.T) {
 	web := setupTestWeb(t)
 
 	recorder := web.getHttpResponse("/displays/audience")
+	assert.Equal(t, 302, recorder.Code)
+	assert.Contains(t, recorder.Header().Get("Location"), "displayId=874")
+	assert.Contains(t, recorder.Header().Get("Location"), "background=%230f0")
+	assert.Contains(t, recorder.Header().Get("Location"), "reversed=false")
+
+	recorder = web.getHttpResponse("/displays/audience?displayId=1&background=%23000&reversed=false")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Audience Display - Untitled Event - Cheesy Arena")
 }
@@ -23,23 +29,23 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/audience/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/audience/websocket?displayId=1", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn, new(sync.Mutex)}
+	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "audienceDisplayMode")
+	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
-	readWebsocketType(t, ws, "setAudienceDisplay")
-	readWebsocketType(t, ws, "setMatch")
 	readWebsocketType(t, ws, "realtimeScore")
-	readWebsocketType(t, ws, "setFinalScore")
-	readWebsocketType(t, ws, "allianceSelection")
+	readWebsocketType(t, ws, "scorePosted")
+	readWebsocketType(t, ws, "displayConfiguration")
 
 	// Run through a match cycle.
-	web.arena.MatchLoadTeamsNotifier.Notify(nil)
-	readWebsocketType(t, ws, "setMatch")
+	web.arena.MatchLoadNotifier.Notify()
+	readWebsocketType(t, ws, "matchLoad")
 	web.arena.AllianceStations["R1"].Bypass = true
 	web.arena.AllianceStations["R2"].Bypass = true
 	web.arena.AllianceStations["R3"].Bypass = true
@@ -49,24 +55,24 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	web.arena.StartMatch()
 	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 3)
-	screen, ok := messages["setAudienceDisplay"]
+	screen, ok := messages["audienceDisplayMode"]
 	if assert.True(t, ok) {
 		assert.Equal(t, "match", screen)
 	}
 	sound, ok := messages["playSound"]
 	if assert.True(t, ok) {
-		assert.Equal(t, "match-start", sound)
+		assert.Equal(t, "match-warmup", sound)
 	}
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)
-	web.arena.RealtimeScoreNotifier.Notify(nil)
+	web.arena.RealtimeScoreNotifier.Notify()
 	readWebsocketType(t, ws, "realtimeScore")
-	web.arena.ScorePostedNotifier.Notify(nil)
-	readWebsocketType(t, ws, "setFinalScore")
+	web.arena.ScorePostedNotifier.Notify()
+	readWebsocketType(t, ws, "scorePosted")
 
 	// Test other overlays.
-	web.arena.AllianceSelectionNotifier.Notify(nil)
+	web.arena.AllianceSelectionNotifier.Notify()
 	readWebsocketType(t, ws, "allianceSelection")
-	web.arena.LowerThirdNotifier.Notify(nil)
+	web.arena.LowerThirdNotifier.Notify()
 	readWebsocketType(t, ws, "lowerThird")
 }

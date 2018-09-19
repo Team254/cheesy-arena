@@ -33,15 +33,22 @@ html {
   display: table;
   font-family: "FuturaLT";
 }
+.avatars {
+  display: none;
+}
+.avatar {
+  height: 25px;
+  margin: 4px 10px 3px;
+}
 .valign-cell {
   display: table-cell;
   vertical-align: middle;
 }
-#redTeams {
+#leftTeams {
   float: left;
   border-right: 1px solid #222;
 }
-#blueTeams {
+#rightTeams {
   float: right;
   border-left: 1px solid #222;
 }
@@ -50,12 +57,10 @@ html {
   height: 100%;
   float: left;
 }
-#redScore {
-  float: left;
+.reversible-left[data-reversed=false], .reversible-right[data-reversed=true] {
   background-color: #ff4444;
 }
-#blueScore {
-  float: left;
+.reversible-left[data-reversed=true], .reversible-right[data-reversed=false] {
   background-color: #2080ff;
 }
 #eventMatchInfo {
@@ -104,36 +109,91 @@ html {
   color: #fff;
   opacity: 0;
 }
-.score-fields-icons {
-  line-height: 99px;
-  text-align: center;
-  width: 30px;
-}
-.score-fields-icons span {
-  display: inline-block;
-  line-height: 33px;
-}
-.score-fields-text {
-  width: 19px;
-}
-.score-fields-text span {
+.score-fields span {
   display: inline-block;
   line-height: 34px;
   padding: 0;
 }
+.power-up[data-state="0"] {
+  opacity: 1;
+}
+.power-up[data-state="1"] {
+  color: #ffff00;
+}
+.power-up[data-state="2"] {
+  color: #ffff00;
+  animation: power-up-blinker 0.5s linear infinite;
+}
+.power-up[data-state="3"] {
+  opacity: 0.4;
+}
+@keyframes power-up-blinker {
+  50% {
+    opacity: 0.5;
+  }
+}
+.score-fields-icons {
+  text-align: center;
+  width: 28px;
+}
+.score-fields-text {
+  width: 19px;
+}
+.powerup-progress {
+  float: left;
+  height: 100%;
+  margin: 0 4px 0 4px;
+  width: 6px;
+}
+.powerup-progress>div {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  height: 0;
+  margin: auto;
+  background-color: #fff;
+  opacity: 0.7;
+  border-radius: 3px;
+}
 #logo {
   position: relative;
-  top: 30px;
-  height: 85px;
+  top: 35px;
+  height: 75px;
 }
 #matchTime {
   position: relative;
-  top: 6px;
+  top: 4px;
   height: 60px;
   color: #222;
   font-family: "FuturaLTBold";
   font-size: 32px;
   opacity: 0;
+}
+.seesaw-indicator {
+  position: absolute;
+  bottom: 8px;
+  border-radius: 3px;
+  width: 11px;
+  height: 16px;
+  background-color: #ccc;
+  border: 1px solid #333;
+  opacity: 0;
+}
+.seesaw-indicator[data-owned-by="1"] {
+  background-color: #ff4444;
+}
+.seesaw-indicator[data-owned-by="2"] {
+  background-color: #2080ff;
+}
+#leftSwitchIndicator {
+  left: 50px;
+}
+#scaleIndicator {
+  left: 68px;
+}
+#rightSwitchIndicator {
+  left: 86px;
 }
 #blindsContainer {
   position: fixed;
@@ -204,7 +264,7 @@ html {
 }
 #finalScore {
   position: fixed;
-  width: 800px;
+  width: 950px;
   height: 550px;
   top: 65px;
   bottom: 0;
@@ -228,13 +288,11 @@ html {
   text-align: center;
   text-shadow: 0 0 3px #333;
 }
-#redFinalScore {
-  background-color: #ff4444;
+#leftFinalScore {
   padding-right: 150px;
 }
-#blueFinalScore {
+#rightFinalScore {
   clear: right;
-  background-color: #2080ff;
   padding-left: 150px;
 }
 .final-teams {
@@ -245,16 +303,23 @@ html {
   text-align: center;
   color: #fff;
   font-family: "FuturaLT";
-  font-size: 35px;
+  font-size: 32px;
 }
 .final-teams span {
-  margin: 0px 20px;
+  margin: 0 10px;
 }
-#redFinalTeams {
+.final-avatar {
+  height: 35px;
+  position: relative;
+  bottom: 5px;
+}
+#leftFinalTeams {
+  padding-right: 5%;
   clear: left;
   border-right: 2px solid #333;
 }
-#blueFinalTeam {
+#rightFinalTeams {
+  padding-left: 5%;
 }
 .final-breakdown {
   float: left;
@@ -268,11 +333,11 @@ html {
   font-family: "FuturaLT";
   font-size: 24px;
 }
-#redFinalBreakdown {
+#leftFinalBreakdown {
   clear: left;
   text-align: right;
 }
-#blueFinalBreakdown {
+#rightFinalBreakdown {
   text-align: left;
 }
 #centerFinalBreakdown {
@@ -314,6 +379,12 @@ html {
 #sponsor .carousel-inner, #sponsor .item {
   height: 100%;
 }
+.sponsor-image-container {
+  width: 1000px;
+  height: 500px;
+  display: table-cell;
+  vertical-align: middle;
+}
 #sponsor h1, #sponsor h2 {
   font-family: "FuturaLTBold";
   margin: 0;
@@ -331,13 +402,12 @@ html {
 }
 #sponsor h2 {
   font-size: 6em;
-  padding-top: 150px;
+  padding-top: 145px;
+  line-height: 110px;
 }
 #sponsor img {
   max-width: 800px;
-  height: 400px;
-  margin-top: 50px;
-  display: inline-block;
+  max-height: 400px;
 }
 #allianceSelectionCentering {
   position: absolute;
@@ -356,7 +426,7 @@ html {
   font-size: 3.5em;
 }
 #allianceSelectionTable img {
-  width: 4em;
+  width: 8em;
   margin: 0.3em;
 }
 #allianceSelectionTable tr:nth-child(even) {
@@ -405,12 +475,4 @@ html {
   display: none;
   font-family: "FuturaLTBold";
   line-height: 87px;
-}
-.score-icon {
-  position: relative;
-  top: -4px;
-  height: 23px;
-}
-.score-icon-right {
-  -webkit-transform: scaleX(-1);
 }

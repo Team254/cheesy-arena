@@ -25,16 +25,6 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-5 control-label">Display Background Color</label>
-            <div class="col-lg-7">
-              <div class="input-group" id="displayBackgroundColor">
-                <input type="text" class="form-control" name="displayBackgroundColor"
-                    value="{{.DisplayBackgroundColor}}">
-                <span class="input-group-addon"><i></i></span>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
             <label class="col-lg-5 control-label">Number of Alliances</label>
             <div class="col-lg-7">
               <input type="text" class="form-control" name="numElimAlliances" value="{{.NumElimAlliances}}">
@@ -223,12 +213,6 @@
               <input type="password" class="form-control" name="switchPassword" value="{{.SwitchPassword}}">
             </div>
           </div>
-          <div class="form-group">
-            <label class="col-lg-7 control-label">Enable bandwidth monitoring</label>
-            <div class="col-lg-1 checkbox">
-              <input type="checkbox" name="bandwidthMonitoringEnabled"{{if .BandwidthMonitoringEnabled}} checked{{end}}>
-            </div>
-          </div>
         </fieldset>
         <fieldset>
           <legend>PLC</legend>
@@ -236,6 +220,39 @@
             <label class="col-lg-5 control-label">PLC Address</label>
             <div class="col-lg-7">
               <input type="text" class="form-control" name="plcAddress" value="{{.PlcAddress}}">
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>LEDs</legend>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Scale Controller Address</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="scaleLedAddress" value="{{.ScaleLedAddress}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Red Switch Controller Address</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="redSwitchLedAddress" value="{{.RedSwitchLedAddress}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Blue Switch Controller Address</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="blueSwitchLedAddress" value="{{.BlueSwitchLedAddress}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Red Vault Controller Address</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="redVaultLedAddress" value="{{.RedVaultLedAddress}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Blue Vault Controller Address</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="blueVaultLedAddress" value="{{.BlueVaultLedAddress}}">
             </div>
           </div>
         </fieldset>
@@ -307,9 +324,4 @@
 </div>
 {{end}}
 {{define "script"}}
-<script>
-  $(function() {
-    $("#displayBackgroundColor").colorpicker();
-  });
-</script>
 {{end}}

@@ -1,0 +1,24 @@
+{{/*
+  Copyright 2018 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  Placeholder display shown until configured by the server.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Placeholder Display - {{.EventSettings.Name}} - Cheesy Arena </title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/placeholder_display.css" />
+  </head>
+  <body>
+    <div id="displayId"></div>
+    <div id="displayNickname"></div>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/placeholder_display.js"></script>
+  </body>
+</html>

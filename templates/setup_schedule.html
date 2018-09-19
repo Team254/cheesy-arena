@@ -15,7 +15,8 @@
   {{end}}
   <div class="col-lg-5">
     <div class="well">
-      <form id="scheduleForm" class="form-horizontal" action="/setup/schedule/save" method="POST">
+      <form id="scheduleForm" class="form-horizontal" action="/setup/schedule/save?matchType={{.MatchType}}"
+          method="POST">
         <fieldset>
           <legend>Schedule Parameters</legend>
           <div class="form-group">
@@ -24,14 +25,16 @@
               <div class="radio">
                 <label>
                   <input type="radio" name="matchType" value="practice"
-                    {{if eq .MatchType "practice"}}checked{{end}}>
+                      onchange="window.location = '/setup/schedule?matchType=practice';"
+                      {{if eq .MatchType "practice"}}checked{{end}}>
                   Practice
                 </label>
               </div>
               <div class="radio">
                 <label>
                   <input type="radio" name="matchType" value="qualification"
-                    {{if eq .MatchType "qualification"}}checked{{end}}>
+                      onchange="window.location = '/setup/schedule?matchType=qualification';"
+                      {{if eq .MatchType "qualification"}}checked{{end}}>
                   Qualification
                 </label>
               </div>
@@ -46,11 +49,11 @@
           </p>
           <div class="form-group">
             <div class="col-lg-12">
-              <button type="button" class="btn btn-default" onclick="addBlock();">Add Block</button>
+              <p><button type="button" class="btn btn-default" onclick="addBlock();">Add Block</button>
               <button type="button" class="btn btn-info" onclick="generateSchedule();">
-                Generate Schedule
-              </button>
-              <button type="submit" class="btn btn-primary">Save Schedule</button>
+                Generate Schedule/Save Blocks
+              </button></p>
+              <p><button type="submit" class="btn btn-primary">Save Schedule</button></p>
             </div>
           </div>
           {{if .EventSettings.TbaPublishingEnabled}}
@@ -156,7 +159,7 @@
           existing matches and their data.</p>
       </div>
       <div class="modal-footer">
-        <form class="form-horizontal" action="/setup/schedule/republish" method="POST">
+        <form class="form-horizontal" action="/setup/schedule/republish?matchType={{.MatchType}}" method="POST">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary">Publish Schedule</button>
         </form>

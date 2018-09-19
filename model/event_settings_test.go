@@ -13,12 +13,11 @@ func TestEventSettingsReadWrite(t *testing.T) {
 
 	eventSettings, err := db.GetEventSettings()
 	assert.Nil(t, err)
-	assert.Equal(t, EventSettings{Id: 0, Name: "Untitled Event", DisplayBackgroundColor: "#00ff00",
-		NumElimAlliances: 8, SelectionRound2Order: "L", SelectionRound3Order: "", TBADownloadEnabled: true,
-		ApTeamChannel: 157, ApAdminChannel: 11, ApAdminWpaKey: "1234Five"}, *eventSettings)
+	assert.Equal(t, EventSettings{Id: 0, Name: "Untitled Event", NumElimAlliances: 8, SelectionRound2Order: "L",
+		SelectionRound3Order: "", TBADownloadEnabled: true, ApTeamChannel: 157, ApAdminChannel: 11,
+		ApAdminWpaKey: "1234Five"}, *eventSettings)
 
 	eventSettings.Name = "Chezy Champs"
-	eventSettings.DisplayBackgroundColor = "#ff00ff"
 	eventSettings.NumElimAlliances = 6
 	eventSettings.SelectionRound2Order = "F"
 	eventSettings.SelectionRound3Order = "L"

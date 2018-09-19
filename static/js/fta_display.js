@@ -7,7 +7,7 @@
 var websocket;
 
 // Handles a websocket message to update the team connection status.
-var handleStatus = function(data) {
+var handleArenaStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
     if (stationStatus.Team) {
@@ -19,7 +19,6 @@ var handleStatus = function(data) {
     if (stationStatus.DsConn) {
       var dsConn = stationStatus.DsConn;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
-      $("#status" + station + " .ds-status").text(dsConn.MBpsToRobot.toFixed(1) + "/" + dsConn.MBpsFromRobot.toFixed(1));
       $("#status" + station + " .radio-status").attr("data-status-ok", dsConn.RadioLinked);
       $("#status" + station + " .robot-status").attr("data-status-ok", dsConn.RobotLinked);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
@@ -28,7 +27,7 @@ var handleStatus = function(data) {
         $("#status" + station + " .robot-status").text("");
       }
       var lowBatteryThreshold = 6;
-      if (matchStates[data.MatchState] == "PRE_MATCH") {
+      if (matchStates[data.MatchState] === "PRE_MATCH") {
         lowBatteryThreshold = 12;
       }
       $("#status" + station + " .battery-status").attr("data-status-ok",
@@ -72,6 +71,6 @@ $(function() {
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/fta/websocket", {
-    status: function(event) { handleStatus(event.data); }
+    arenaStatus: function(event) { handleArenaStatus(event.data); }
   });
 });

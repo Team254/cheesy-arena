@@ -737,9 +737,9 @@ func TestEliminationScheduleTeamPositions(t *testing.T) {
 	matches, _ := database.GetMatchesByType("elimination")
 	match1 := matches[0]
 	match2 := matches[1]
-	assert.Equal(t, 100, match1.Red1)
+	assert.Equal(t, 10, match1.Red1)
 	assert.Equal(t, 1, match1.Red2)
-	assert.Equal(t, 10, match1.Red3)
+	assert.Equal(t, 100, match1.Red3)
 	assert.Equal(t, 30, match2.Blue1)
 	assert.Equal(t, 3, match2.Blue2)
 	assert.Equal(t, 300, match2.Blue3)

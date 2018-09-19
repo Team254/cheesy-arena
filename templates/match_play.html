@@ -167,7 +167,7 @@
           </div>
         </div>
         <div class="col-lg-4">
-          Alliance Station Display
+          <p>Alliance Station Display</p>
           <div class="form-group">
             <div class="radio">
               <label>
@@ -187,6 +187,10 @@
                     onclick="setAllianceStationDisplay();">Logo
               </label>
             </div>
+            <br />
+            <p>Game-Specific Data</p>
+            <input type="text" id="gameSpecificData" size="10"
+                {{if eq .CurrentMatchType "qualification" }}disabled{{end}} />
           </div>
           {{if .EventSettings.PlcAddress}}
           PLC Status

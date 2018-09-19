@@ -19,7 +19,7 @@ func TestSetupSchedule(t *testing.T) {
 	web.arena.Database.CreateMatch(&model.Match{Type: "practice", DisplayName: "1"})
 
 	// Check the default setting values.
-	recorder := web.getHttpResponse("/setup/schedule")
+	recorder := web.getHttpResponse("/setup/schedule?matchType=practice")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "addBlock();")
 
@@ -29,7 +29,7 @@ func TestSetupSchedule(t *testing.T) {
 		"numMatches2=40&matchSpacingSec2=360&matchType=qualification"
 	recorder = web.postHttpResponse("/setup/schedule/generate", postData)
 	assert.Equal(t, 303, recorder.Code)
-	recorder = web.getHttpResponse("/setup/schedule")
+	recorder = web.getHttpResponse("/setup/schedule?matchType=qualification")
 	assert.Contains(t, recorder.Body.String(), "2014-01-01 09:48:00") // Last match of first block.
 	assert.Contains(t, recorder.Body.String(), "2014-01-02 11:48:00") // Last match of second block.
 	assert.Contains(t, recorder.Body.String(), "2014-01-03 16:54:00") // Last match of third block.
@@ -37,7 +37,7 @@ func TestSetupSchedule(t *testing.T) {
 	// Save schedule and check that it is published to TBA.
 	web.arena.TbaClient.BaseUrl = "fakeUrl"
 	web.arena.EventSettings.TbaPublishingEnabled = true
-	recorder = web.postHttpResponse("/setup/schedule/save", "")
+	recorder = web.postHttpResponse("/setup/schedule/save?matchType=qualification", "")
 	matches, err := web.arena.Database.GetMatchesByType("qualification")
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Failed to delete published matches")

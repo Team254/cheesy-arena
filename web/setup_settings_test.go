@@ -23,17 +23,15 @@ func TestSetupSettings(t *testing.T) {
 	recorder := web.getHttpResponse("/setup/settings")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Untitled Event")
-	assert.Contains(t, recorder.Body.String(), "#00ff00")
 	assert.Contains(t, recorder.Body.String(), "8")
 	assert.NotContains(t, recorder.Body.String(), "tbaPublishingEnabled\" checked")
 
 	// Change the settings and check the response.
-	recorder = web.postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&displayBackgroundColor=#ff00ff&"+
-		"numElimAlliances=16&tbaPublishingEnabled=on&tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec")
+	recorder = web.postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&numElimAlliances=16&"+
+		"tbaPublishingEnabled=on&tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec")
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/settings")
 	assert.Contains(t, recorder.Body.String(), "Chezy Champs")
-	assert.Contains(t, recorder.Body.String(), "#ff00ff")
 	assert.Contains(t, recorder.Body.String(), "16")
 	assert.Contains(t, recorder.Body.String(), "tbaPublishingEnabled\" checked")
 	assert.Contains(t, recorder.Body.String(), "2014cc")
@@ -44,12 +42,8 @@ func TestSetupSettings(t *testing.T) {
 func TestSetupSettingsInvalidValues(t *testing.T) {
 	web := setupTestWeb(t)
 
-	// Invalid color value.
-	recorder := web.postHttpResponse("/setup/settings", "numAlliances=8&displayBackgroundColor=blorpy")
-	assert.Contains(t, recorder.Body.String(), "must be a valid hex color value")
-
 	// Invalid number of alliances.
-	recorder = web.postHttpResponse("/setup/settings", "numAlliances=1&displayBackgroundColor=#000")
+	recorder := web.postHttpResponse("/setup/settings", "numAlliances=1")
 	assert.Contains(t, recorder.Body.String(), "must be between 2 and 16")
 }
 

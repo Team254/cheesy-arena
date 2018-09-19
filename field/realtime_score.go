@@ -10,11 +10,9 @@ import "github.com/Team254/cheesy-arena/game"
 type RealtimeScore struct {
 	CurrentScore    game.Score
 	Cards           map[string]string
+	AutoCommitted   bool
 	TeleopCommitted bool
 	FoulsCommitted  bool
-	boiler          game.Boiler
-	rotorSet        game.RotorSet
-	touchpads       [3]game.Touchpad
 }
 
 func NewRealtimeScore() *RealtimeScore {

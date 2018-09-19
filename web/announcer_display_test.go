@@ -4,17 +4,16 @@
 package web
 
 import (
-	"github.com/gorilla/websocket"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"sync"
 	"testing"
-	"time"
 )
 
 func TestAnnouncerDisplay(t *testing.T) {
 	web := setupTestWeb(t)
 
-	recorder := web.getHttpResponse("/displays/announcer")
+	recorder := web.getHttpResponse("/displays/announcer?displayId=1")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Announcer Display - Untitled Event - Cheesy Arena")
 }
@@ -24,19 +23,22 @@ func TestAnnouncerDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := websocket.DefaultDialer.Dial(wsUrl+"/displays/announcer/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/announcer/websocket?displayId=1", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
-	ws := &Websocket{conn, new(sync.Mutex)}
+	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
-	readWebsocketType(t, ws, "setMatch")
 	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
+	readWebsocketType(t, ws, "scorePosted")
+	readWebsocketType(t, ws, "audienceDisplayMode")
+	readWebsocketType(t, ws, "displayConfiguration")
 
-	web.arena.MatchLoadTeamsNotifier.Notify(nil)
-	readWebsocketType(t, ws, "setMatch")
+	web.arena.MatchLoadNotifier.Notify()
+	readWebsocketType(t, ws, "matchLoad")
 	web.arena.AllianceStations["R1"].Bypass = true
 	web.arena.AllianceStations["R2"].Bypass = true
 	web.arena.AllianceStations["R3"].Bypass = true
@@ -46,17 +48,12 @@ func TestAnnouncerDisplayWebsocket(t *testing.T) {
 	web.arena.StartMatch()
 	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 2)
-	_, ok := messages["setAudienceDisplay"]
+	_, ok := messages["audienceDisplayMode"]
 	assert.True(t, ok)
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)
-	web.arena.RealtimeScoreNotifier.Notify(nil)
+	web.arena.RealtimeScoreNotifier.Notify()
 	readWebsocketType(t, ws, "realtimeScore")
-	web.arena.ScorePostedNotifier.Notify(nil)
-	readWebsocketType(t, ws, "setFinalScore")
-
-	// Test triggering the final score screen.
-	ws.Write("setAudienceDisplay", "score")
-	time.Sleep(time.Millisecond * 10) // Allow some time for the command to be processed.
-	assert.Equal(t, "score", web.arena.AudienceDisplayScreen)
+	web.arena.ScorePostedNotifier.Notify()
+	readWebsocketType(t, ws, "scorePosted")
 }

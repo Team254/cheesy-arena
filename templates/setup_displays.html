@@ -1,0 +1,66 @@
+{{/*
+  Copyright 2018 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  UI for configuring the field displays.
+*/}}
+{{define "title"}}Display Configuration{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-12">
+    <legend>Connected Displays</legend>
+    <table class="table table-striped table-hover ">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th># Connected</th>
+        <th>IP Address</th>
+        <th>Nickname</th>
+        <th>Type</th>
+        <th>Configuration</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody id="displayContainer"></tbody>
+    </table>
+    <button type="button" class="btn btn-primary pull-right" onclick="reloadAllDisplays();">
+      Force Reload of All Displays
+    </button>
+  </div>
+</div>
+
+<script id="displayTemplate" type="text/x-handlebars-template">
+  <tr>
+    <td>{{"{{Id}}"}}</td>
+    <td>{{"{{ConnectionCount}}"}}</td>
+    <td>{{"{{IpAddress}}"}}</td>
+    <td><input type="text" id="displayNickname{{"{{Id}}"}}" size="30" /></td>
+    <td>
+      <select id="displayType{{"{{Id}}"}}">
+        {{range $type, $typeName := .DisplayTypeNames}}
+          <option value="{{$type}}">{{$typeName}}</option>
+        {{end}}
+      </select>
+    </td>
+    <td>
+      <input type="text" id="displayConfiguration{{"{{Id}}"}}" size="50" />
+    </td>
+    <td>
+      <button type="button" class="btn btn-info btn-xs" title="Save Changes"
+          onclick="configureDisplay('{{"{{Id}}"}}');">
+        <i class="glyphicon glyphicon-ok"></i>
+      </button>
+      <button type="button" class="btn btn-primary btn-xs" title="Undo Changes" onclick="undoChanges();">
+        <i class="glyphicon glyphicon-arrow-left"></i>
+      </button>
+      <button type="button" class="btn btn-success btn-xs" title="Reload Display"
+          onclick="reloadDisplay('{{"{{Id}}"}}');">
+        <i class="glyphicon glyphicon-refresh"></i>
+      </button>
+    </td>
+  </tr>
+</script>
+{{end}}
+{{define "script"}}
+<script src="/static/js/setup_displays.js"></script>
+{{end}}

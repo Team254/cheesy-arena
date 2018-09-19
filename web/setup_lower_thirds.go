@@ -8,6 +8,7 @@ package web
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
@@ -47,22 +48,22 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	websocket, err := NewWebsocket(w, r)
+	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	defer websocket.Close()
+	defer ws.Close()
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		messageType, data, err := websocket.Read()
+		messageType, data, err := ws.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
 				return
 			}
-			log.Printf("Websocket error: %s", err)
+			log.Println(err)
 			return
 		}
 
@@ -71,7 +72,7 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 			var lowerThird model.LowerThird
 			err = mapstructure.Decode(data, &lowerThird)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			web.saveLowerThird(&lowerThird)
@@ -79,36 +80,36 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 			var lowerThird model.LowerThird
 			err = mapstructure.Decode(data, &lowerThird)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			err = web.arena.Database.DeleteLowerThird(&lowerThird)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 		case "showLowerThird":
 			var lowerThird model.LowerThird
 			err = mapstructure.Decode(data, &lowerThird)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			web.saveLowerThird(&lowerThird)
-			web.arena.LowerThirdNotifier.Notify(lowerThird)
-			web.arena.AudienceDisplayScreen = "lowerThird"
-			web.arena.AudienceDisplayNotifier.Notify(nil)
+			web.arena.LowerThirdNotifier.NotifyWithMessage(lowerThird)
+			web.arena.AudienceDisplayMode = "lowerThird"
+			web.arena.AudienceDisplayModeNotifier.Notify()
 			continue
 		case "hideLowerThird":
 			var lowerThird model.LowerThird
 			err = mapstructure.Decode(data, &lowerThird)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			web.saveLowerThird(&lowerThird)
-			web.arena.AudienceDisplayScreen = "blank"
-			web.arena.AudienceDisplayNotifier.Notify(nil)
+			web.arena.AudienceDisplayMode = "blank"
+			web.arena.AudienceDisplayModeNotifier.Notify()
 			continue
 		case "reorderLowerThird":
 			args := struct {
@@ -117,23 +118,23 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 			err = web.reorderLowerThird(args.Id, args.MoveUp)
 			if err != nil {
-				websocket.WriteError(err.Error())
+				ws.WriteError(err.Error())
 				continue
 			}
 		default:
-			websocket.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue
 		}
 
 		// Force a reload of the client to render the updated lower thirds list.
-		err = websocket.Write("reload", nil)
+		err = ws.WriteNotifier(web.arena.ReloadDisplaysNotifier)
 		if err != nil {
-			log.Printf("Websocket error: %s", err)
+			log.Println(err)
 			return
 		}
 	}

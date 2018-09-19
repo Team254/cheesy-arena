@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="/static/css/alliance_station_display.css" />
   </head>
   <body>
-    <div id="displayId" class="mode"></div>
     <div id="match" class="mode">
       <div id="preMatch">
         <div id="teamNumber"></div>
@@ -30,13 +29,9 @@
       </div>
     </div>
     <div id="logo" class="mode">
-      <img id="logoImg" src="/static/img/alliance-station-logo.gif" alt="logo" />
+      <img id="logoImg" src="/static/img/alliance-station-logo.png" alt="logo" />
     </div>
     <div id="fieldReset" class="mode"><div>FIELD<br />RESET</div></div>
-    <script>
-      // A unique id to differentiate this station's display from its peers.
-      var displayId = "{{.DisplayId}}";
-    </script>
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>

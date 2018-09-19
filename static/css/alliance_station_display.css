@@ -14,7 +14,7 @@ body {
   color: #fff;
 }
 body[data-mode=logo] {
-  background-color: #fff;
+  background-color: #000;
 }
 body[data-mode=fieldReset] {
   background-color: #0a3;
@@ -23,9 +23,6 @@ body[data-mode=fieldReset] {
 /* Switching Modes */
 .mode {
   display: none;
-}
-body[data-mode=displayId] .mode#displayId {
-  display: block;
 }
 body[data-mode=logo] .mode#logo {
   display: block;
@@ -44,23 +41,8 @@ body[data-mode=fieldReset] .mode#fieldReset {
   bottom: 0;
   left: 0;
   right: 0;
-  width: 100%;
+  width: 80%;
   margin: auto auto;
-}
-
-/* Display ID Mode */
-#displayId {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto auto;
-  height: 1px;
-  line-height: 1px;
-  text-align: center;
-  color: #ff0;
-  font-size: 500px;
 }
 
 /* Field Reset Mode */
@@ -83,8 +65,8 @@ body[data-mode=fieldReset] .mode#fieldReset {
   width: 100%;
   height: 100%;
 }
-#match[data-state=AUTO_PERIOD], #match[data-state=PAUSE_PERIOD], #match[data-state=TELEOP_PERIOD],
-    #match[data-state=ENDGAME_PERIOD], #match[data-state=POST_MATCH] {
+#match[data-state=WARMUP_PERIOD], #match[data-state=AUTO_PERIOD], #match[data-state=PAUSE_PERIOD],
+    #match[data-state=TELEOP_PERIOD], #match[data-state=ENDGAME_PERIOD], #match[data-state=POST_MATCH] {
   background-color: #fff;
   color: #000;
 }
@@ -94,9 +76,9 @@ body[data-mode=fieldReset] .mode#fieldReset {
 #match[data-state=PRE_MATCH] #preMatch {
   display: block;
 }
-#match[data-state=AUTO_PERIOD] #inMatch, #match[data-state=PAUSE_PERIOD] #inMatch,
-    #match[data-state=TELEOP_PERIOD] #inMatch, #match[data-state=ENDGAME_PERIOD] #inMatch,
-    #match[data-state=POST_MATCH] #inMatch {
+#match[data-state=WARMUP_PERIOD] #inMatch, #match[data-state=AUTO_PERIOD] #inMatch,
+    #match[data-state=PAUSE_PERIOD] #inMatch, #match[data-state=TELEOP_PERIOD] #inMatch,
+    #match[data-state=ENDGAME_PERIOD] #inMatch, #match[data-state=POST_MATCH] #inMatch {
   display: block;
 }
 
