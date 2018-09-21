@@ -25,7 +25,9 @@ func (web *Web) enforceDisplayConfiguration(w http.ResponseWriter, r *http.Reque
 		displayId = web.arena.NextDisplayId()
 		allPresent = false
 	}
-	configuration["nickname"] = r.URL.Query().Get("nickname")
+	if nickname := r.URL.Query().Get("nickname"); nickname != "" {
+		configuration["nickname"] = nickname
+	}
 
 	// Get display-specific fields from the query parameters.
 	if defaults != nil {
