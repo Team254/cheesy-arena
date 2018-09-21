@@ -1,0 +1,43 @@
+{{/*
+  Copyright 2018 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  UI for authenticating with the server.
+*/}}
+{{define "title"}}Log In{{end}}
+{{define "body"}}
+  <div class="row">
+    <div class="col-lg-4 col-lg-offset-4">
+      {{if .ErrorMessage}}
+        <div class="alert alert-dismissable alert-danger">
+          <button type="button" class="close" data-dismiss="alert">×</button>
+          {{.ErrorMessage}}
+        </div>
+      {{end}}
+      <div class="well">
+        <form class="form-horizontal" method="POST">
+          <legend>Log In</legend>
+          <div class="form-group">
+            <label class="col-lg-4 control-label">Username</label>
+            <div class="col-lg-8">
+              <input type="text" class="form-control" name="username" autofocus />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-4 control-label">Password</label>
+            <div class="col-lg-8">
+              <input type="password" class="form-control" name="password" />
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-lg-7 col-lg-offset-5">
+              <button type="submit" class="btn btn-info">Log In</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{{end}}
+{{define "script"}}
+{{end}}

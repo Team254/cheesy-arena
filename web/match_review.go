@@ -114,7 +114,6 @@ func (web *Web) matchReviewEditPostHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	r.ParseForm()
 	matchResultJson := model.MatchResultDb{Id: matchResult.Id, MatchId: match.Id, PlayNumber: matchResult.PlayNumber,
 		MatchType: matchResult.MatchType, RedScoreJson: r.PostFormValue("redScoreJson"),
 		BlueScoreJson: r.PostFormValue("blueScoreJson"), RedCardsJson: r.PostFormValue("redCardsJson"),

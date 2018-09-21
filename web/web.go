@@ -24,15 +24,13 @@ const (
 
 type Web struct {
 	arena           *field.Arena
-	adminAuth       *httpauth.Basic
-	readerAuth      *httpauth.Basic
+	cookieAuth      *httpauth.Cookie
 	templateHelpers template.FuncMap
 }
 
 func NewWeb(arena *field.Arena) *Web {
 	web := &Web{arena: arena}
-	web.adminAuth = httpauth.NewBasic("Cheesy Arena", web.checkAdminPassword, nil)
-	web.readerAuth = httpauth.NewBasic("Cheesy Arena", web.checkReaderPassword, nil)
+	web.cookieAuth = httpauth.NewCookie("Cheesy Arena", "", web.checkAuthPassword)
 
 	// Helper functions that can be used inside templates.
 	web.templateHelpers = template.FuncMap{
@@ -83,43 +81,43 @@ func (web *Web) indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Returns true if the given user is authorized for admin operations. Used for HTTP Basic Auth.
+// Returns true if the given user is authorized for admin operations. Used for HTTP cookie authentication.
 func (web *Web) userIsAdmin(w http.ResponseWriter, r *http.Request) bool {
 	if web.arena.EventSettings.AdminPassword == "" {
 		// Disable auth if there is no password configured.
 		return true
 	}
-	if web.adminAuth.Authorize(r) == "" {
-		web.adminAuth.NotifyAuthRequired(w, r)
+	if web.cookieAuth.Authorize(r) == adminUser {
+		return true
+	} else {
+		http.Redirect(w, r, "/login?redirect="+r.URL.Path, 307)
 		return false
 	}
-	return true
 }
 
-// Returns true if the given user is authorized for read-only operations. Used for HTTP Basic Auth.
+// Returns true if the given user is authorized for read-only operations. Used for HTTP cookie authentication.
 func (web *Web) userIsReader(w http.ResponseWriter, r *http.Request) bool {
 	if web.arena.EventSettings.ReaderPassword == "" {
 		// Disable auth if there is no password configured.
 		return true
 	}
-	if web.readerAuth.Authorize(r) == "" {
-		web.readerAuth.NotifyAuthRequired(w, r)
+	if username := web.cookieAuth.Authorize(r); username == readerUser || username == adminUser {
+		return true
+	} else {
+		http.Redirect(w, r, "/login?redirect="+r.URL.Path, 307)
 		return false
 	}
-	return true
 }
 
-func (web *Web) checkAdminPassword(user, password string) bool {
-	return user == adminUser && password == web.arena.EventSettings.AdminPassword
-}
-
-func (web *Web) checkReaderPassword(user, password string) bool {
-	if user == readerUser {
+func (web *Web) checkAuthPassword(user, password string) bool {
+	switch user {
+	case adminUser:
+		return password == web.arena.EventSettings.AdminPassword
+	case readerUser:
 		return password == web.arena.EventSettings.ReaderPassword
+	default:
+		return false
 	}
-
-	// The admin role also has read permissions.
-	return web.checkAdminPassword(user, password)
 }
 
 // Sets up the mapping between URLs and handlers.
@@ -150,6 +148,8 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/displays/pit/websocket", web.pitDisplayWebsocketHandler).Methods("GET")
 	router.HandleFunc("/displays/twitch", web.twitchDisplayHandler).Methods("GET")
 	router.HandleFunc("/displays/twitch/websocket", web.twitchDisplayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/login", web.loginHandler).Methods("GET")
+	router.HandleFunc("/login", web.loginPostHandler).Methods("POST")
 	router.HandleFunc("/match_play", web.matchPlayHandler).Methods("GET")
 	router.HandleFunc("/match_play/{matchId}/load", web.matchPlayLoadHandler).Methods("GET")
 	router.HandleFunc("/match_play/{matchId}/show_result", web.matchPlayShowResultHandler).Methods("GET")

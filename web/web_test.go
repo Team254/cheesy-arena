@@ -29,6 +29,16 @@ func (web *Web) getHttpResponse(path string) *httptest.ResponseRecorder {
 	return recorder
 }
 
+func (web *Web) getHttpResponseWithHeaders(path string, headers map[string]string) *httptest.ResponseRecorder {
+	recorder := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", path, nil)
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+	web.newHandler().ServeHTTP(recorder, req)
+	return recorder
+}
+
 func (web *Web) postHttpResponse(path string, body string) *httptest.ResponseRecorder {
 	recorder := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", path, strings.NewReader(body))

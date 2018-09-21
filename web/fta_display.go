@@ -13,7 +13,7 @@ import (
 
 // Renders the FTA diagnostic display.
 func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
+	if !web.userIsReader(w, r) {
 		return
 	}
 

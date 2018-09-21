@@ -246,6 +246,5 @@ func getMatchType(r *http.Request) string {
 	if matchType, ok := r.URL.Query()["matchType"]; ok {
 		return matchType[0]
 	}
-	r.ParseForm()
 	return r.PostFormValue("matchType")
 }
