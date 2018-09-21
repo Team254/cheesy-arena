@@ -274,8 +274,15 @@ func (web *Web) teamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	showHasConnected := r.URL.Query().Get("showHasConnected") == "true"
+
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Id": 12, "Name": 80, "Location": 80, "RookieYear": 23}
+	var colWidths map[string]float64
+	if showHasConnected {
+		colWidths = map[string]float64{"Id": 12, "Name": 70, "Location": 65, "RookieYear": 23, "HasConnected": 25}
+	} else {
+		colWidths = map[string]float64{"Id": 12, "Name": 80, "Location": 80, "RookieYear": 23}
+	}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -288,7 +295,12 @@ func (web *Web) teamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	pdf.CellFormat(colWidths["Id"], rowHeight, "Team", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Name"], rowHeight, "Name", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Location"], rowHeight, "Location", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["RookieYear"], rowHeight, "Rookie Year", "1", 1, "C", true, 0, "")
+	if showHasConnected {
+		pdf.CellFormat(colWidths["RookieYear"], rowHeight, "Rookie Year", "1", 0, "C", true, 0, "")
+		pdf.CellFormat(colWidths["HasConnected"], rowHeight, "Connected?", "1", 1, "C", true, 0, "")
+	} else {
+		pdf.CellFormat(colWidths["RookieYear"], rowHeight, "Rookie Year", "1", 1, "C", true, 0, "")
+	}
 	pdf.SetFont("Arial", "", 10)
 	for _, team := range teams {
 		// Render team info row.
@@ -296,7 +308,16 @@ func (web *Web) teamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		pdf.CellFormat(colWidths["Name"], rowHeight, team.Nickname, "1", 0, "L", false, 0, "")
 		location := fmt.Sprintf("%s, %s, %s", team.City, team.StateProv, team.Country)
 		pdf.CellFormat(colWidths["Location"], rowHeight, location, "1", 0, "L", false, 0, "")
-		pdf.CellFormat(colWidths["RookieYear"], rowHeight, strconv.Itoa(team.RookieYear), "1", 1, "L", false, 0, "")
+		if showHasConnected {
+			pdf.CellFormat(colWidths["RookieYear"], rowHeight, strconv.Itoa(team.RookieYear), "1", 0, "L", false, 0, "")
+			var hasConnected string
+			if team.HasConnected {
+				hasConnected = "Yes"
+			}
+			pdf.CellFormat(colWidths["HasConnected"], rowHeight, hasConnected, "1", 1, "L", false, 0, "")
+		} else {
+			pdf.CellFormat(colWidths["RookieYear"], rowHeight, strconv.Itoa(team.RookieYear), "1", 1, "L", false, 0, "")
+		}
 	}
 
 	// Write out the PDF file as the HTTP response.

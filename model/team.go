@@ -17,6 +17,7 @@ type Team struct {
 	Accomplishments string
 	WpaKey          string
 	YellowCard      bool
+	HasConnected    bool
 }
 
 func (database *Database) CreateTeam(team *Team) error {

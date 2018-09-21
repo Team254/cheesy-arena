@@ -148,6 +148,7 @@ func (web *Web) teamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	team.HasConnected = r.PostFormValue("hasConnected") == "on"
 	err = web.arena.Database.SaveTeam(team)
 	if err != nil {
 		handleWebErr(w, err)

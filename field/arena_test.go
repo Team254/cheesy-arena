@@ -595,3 +595,40 @@ func TestArenaTimeout(t *testing.T) {
 		assert.NotNil(t, arena.StartTimeout(1))
 	}
 }
+
+func TestSaveTeamHasConnected(t *testing.T) {
+	arena := setupTestArena(t)
+
+	arena.Database.CreateTeam(&model.Team{Id: 101})
+	arena.Database.CreateTeam(&model.Team{Id: 102})
+	arena.Database.CreateTeam(&model.Team{Id: 103})
+	arena.Database.CreateTeam(&model.Team{Id: 104})
+	arena.Database.CreateTeam(&model.Team{Id: 105})
+	arena.Database.CreateTeam(&model.Team{Id: 106, City: "San Jose", HasConnected: true})
+	match := model.Match{Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	arena.Database.CreateMatch(&match)
+	arena.LoadMatch(&match)
+	arena.AllianceStations["R1"].DsConn = &DriverStationConnection{TeamId: 101}
+	arena.AllianceStations["R1"].Bypass = true
+	arena.AllianceStations["R2"].DsConn = &DriverStationConnection{TeamId: 102, RobotLinked: true}
+	arena.AllianceStations["R3"].DsConn = &DriverStationConnection{TeamId: 103}
+	arena.AllianceStations["R3"].Bypass = true
+	arena.AllianceStations["B1"].DsConn = &DriverStationConnection{TeamId: 104}
+	arena.AllianceStations["B1"].Bypass = true
+	arena.AllianceStations["B2"].DsConn = &DriverStationConnection{TeamId: 105, RobotLinked: true}
+	arena.AllianceStations["B3"].DsConn = &DriverStationConnection{TeamId: 106, RobotLinked: true}
+	arena.AllianceStations["B3"].Team.City = "Sand Hosay" // Change some other field to verify that it isn't saved.
+	assert.Nil(t, arena.StartMatch())
+
+	// Check that the connection status was saved for the teams that just linked for the first time.
+	teams, _ := arena.Database.GetAllTeams()
+	if assert.Equal(t, 6, len(teams)) {
+		assert.False(t, teams[0].HasConnected)
+		assert.True(t, teams[1].HasConnected)
+		assert.False(t, teams[2].HasConnected)
+		assert.False(t, teams[3].HasConnected)
+		assert.True(t, teams[4].HasConnected)
+		assert.True(t, teams[5].HasConnected)
+		assert.Equal(t, "San Jose", teams[5].City)
+	}
+}

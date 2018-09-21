@@ -338,6 +338,13 @@ func (arena *Arena) StartMatch() error {
 					log.Println(err)
 				}
 			}
+
+			// Save the teams that have successfully connected to the field.
+			if allianceStation.Team != nil && !allianceStation.Team.HasConnected && allianceStation.DsConn != nil &&
+				allianceStation.DsConn.RobotLinked {
+				allianceStation.Team.HasConnected = true
+				arena.Database.SaveTeam(allianceStation.Team)
+			}
 		}
 
 		arena.MatchState = StartMatch

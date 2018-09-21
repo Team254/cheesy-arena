@@ -96,9 +96,9 @@ func TestTeamsCsvReport(t *testing.T) {
 	recorder := web.getHttpResponse("/reports/csv/teams")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.HeaderMap["Content-Type"][0])
-	expectedBody := "Number,Name,Nickname,City,StateProv,Country,RookieYear,RobotName\n254,\"NASA\"," +
-		"\"The Cheesy Poofs\",\"San Jose\",\"CA\",\"USA\",1999,\"Barrage\"\n1114,\"GM\",\"Simbotics\"," +
-		"\"St. Catharines\",\"ON\",\"Canada\",2003,\"Simbot Evolution\"\n\n"
+	expectedBody := "Number,Name,Nickname,City,StateProv,Country,RookieYear,RobotName,HasConnected\n254,\"NASA\"," +
+		"\"The Cheesy Poofs\",\"San Jose\",\"CA\",\"USA\",1999,\"Barrage\",false\n1114,\"GM\",\"Simbotics\"," +
+		"\"St. Catharines\",\"ON\",\"Canada\",2003,\"Simbot Evolution\",false\n\n"
 	assert.Equal(t, expectedBody, recorder.Body.String())
 }
 
