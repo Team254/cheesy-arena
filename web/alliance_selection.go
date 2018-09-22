@@ -20,8 +20,7 @@ type RankedTeam struct {
 	Picked bool
 }
 
-// Global vars to hold the alliances that are in the process of being selected.
-var cachedAlliances [][]model.AllianceTeam
+// Global var to hold the team rankings during the alliance selection.
 var cachedRankedTeams []*RankedTeam
 
 // Shows the alliance selection page.
@@ -51,11 +50,11 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	// Iterate through all selections and update the alliances.
-	for i, alliance := range cachedAlliances {
+	for i, alliance := range web.arena.AllianceSelectionAlliances {
 		for j := range alliance {
 			teamString := r.PostFormValue(fmt.Sprintf("selection%d_%d", i, j))
 			if teamString == "" {
-				cachedAlliances[i][j].TeamId = 0
+				web.arena.AllianceSelectionAlliances[i][j].TeamId = 0
 			} else {
 				teamId, err := strconv.Atoi(teamString)
 				if err != nil {
@@ -66,12 +65,13 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 				for _, team := range newRankedTeams {
 					if team.TeamId == teamId {
 						if team.Picked {
-							web.renderAllianceSelection(w, r, fmt.Sprintf("Team %d is already part of an alliance.", teamId))
+							web.renderAllianceSelection(w, r,
+								fmt.Sprintf("Team %d is already part of an alliance.", teamId))
 							return
 						}
 						found = true
 						team.Picked = true
-						cachedAlliances[i][j].TeamId = teamId
+						web.arena.AllianceSelectionAlliances[i][j].TeamId = teamId
 						break
 					}
 				}
@@ -84,7 +84,7 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 	}
 	cachedRankedTeams = newRankedTeams
 
-	web.arena.AllianceSelectionNotifier.NotifyWithMessage(cachedAlliances)
+	web.arena.AllianceSelectionNotifier.Notify()
 	http.Redirect(w, r, "/alliance_selection", 303)
 }
 
@@ -94,7 +94,7 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if len(cachedAlliances) != 0 {
+	if len(web.arena.AllianceSelectionAlliances) != 0 {
 		web.renderAllianceSelection(w, r, "Can't start alliance selection when it is already in progress.")
 		return
 	}
@@ -104,15 +104,15 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// Create a blank alliance set matching the event configuration.
-	cachedAlliances = make([][]model.AllianceTeam, web.arena.EventSettings.NumElimAlliances)
+	web.arena.AllianceSelectionAlliances = make([][]model.AllianceTeam, web.arena.EventSettings.NumElimAlliances)
 	teamsPerAlliance := 3
 	if web.arena.EventSettings.SelectionRound3Order != "" {
 		teamsPerAlliance = 4
 	}
 	for i := 0; i < web.arena.EventSettings.NumElimAlliances; i++ {
-		cachedAlliances[i] = make([]model.AllianceTeam, teamsPerAlliance)
+		web.arena.AllianceSelectionAlliances[i] = make([]model.AllianceTeam, teamsPerAlliance)
 		for j := 0; j < teamsPerAlliance; j++ {
-			cachedAlliances[i][j] = model.AllianceTeam{AllianceId: i + 1, PickPosition: j}
+			web.arena.AllianceSelectionAlliances[i][j] = model.AllianceTeam{AllianceId: i + 1, PickPosition: j}
 		}
 	}
 
@@ -127,7 +127,7 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 		cachedRankedTeams[i] = &RankedTeam{i + 1, ranking.TeamId, false}
 	}
 
-	web.arena.AllianceSelectionNotifier.NotifyWithMessage(cachedAlliances)
+	web.arena.AllianceSelectionNotifier.Notify()
 	http.Redirect(w, r, "/alliance_selection", 303)
 }
 
@@ -142,9 +142,9 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	cachedAlliances = [][]model.AllianceTeam{}
+	web.arena.AllianceSelectionAlliances = [][]model.AllianceTeam{}
 	cachedRankedTeams = []*RankedTeam{}
-	web.arena.AllianceSelectionNotifier.NotifyWithMessage(cachedAlliances)
+	web.arena.AllianceSelectionNotifier.Notify()
 	http.Redirect(w, r, "/alliance_selection", 303)
 }
 
@@ -167,7 +167,7 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	}
 
 	// Check that all spots are filled.
-	for _, alliance := range cachedAlliances {
+	for _, alliance := range web.arena.AllianceSelectionAlliances {
 		for _, team := range alliance {
 			if team.TeamId <= 0 {
 				web.renderAllianceSelection(w, r, "Can't finalize alliance selection until all spots have been filled.")
@@ -177,7 +177,7 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	}
 
 	// Save alliances to the database.
-	for _, alliance := range cachedAlliances {
+	for _, alliance := range web.arena.AllianceSelectionAlliances {
 		for _, team := range alliance {
 			err := web.arena.Database.CreateAllianceTeam(&team)
 			if err != nil {
@@ -240,10 +240,10 @@ func (web *Web) allianceSelectionPublishHandler(w http.ResponseWriter, r *http.R
 }
 
 func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
-	if len(cachedAlliances) == 0 && !web.canModifyAllianceSelection() {
+	if len(web.arena.AllianceSelectionAlliances) == 0 && !web.canModifyAllianceSelection() {
 		// The application was restarted since the alliance selection was conducted; reload the alliances from the DB.
 		var err error
-		cachedAlliances, err = web.arena.Database.GetAllAlliances()
+		web.arena.AllianceSelectionAlliances, err = web.arena.Database.GetAllAlliances()
 		if err != nil {
 			handleWebErr(w, err)
 			return
@@ -263,7 +263,7 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 		NextRow      int
 		NextCol      int
 		ErrorMessage string
-	}{web.arena.EventSettings, cachedAlliances, cachedRankedTeams, nextRow, nextCol, errorMessage}
+	}{web.arena.EventSettings, web.arena.AllianceSelectionAlliances, cachedRankedTeams, nextRow, nextCol, errorMessage}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -283,7 +283,7 @@ func (web *Web) canModifyAllianceSelection() bool {
 // Returns the row and column of the next alliance selection spot that should have keyboard autofocus.
 func (web *Web) determineNextCell() (int, int) {
 	// Check the first two columns.
-	for i, alliance := range cachedAlliances {
+	for i, alliance := range web.arena.AllianceSelectionAlliances {
 		if alliance[0].TeamId == 0 {
 			return i, 0
 		}
@@ -294,14 +294,14 @@ func (web *Web) determineNextCell() (int, int) {
 
 	// Check the third column.
 	if web.arena.EventSettings.SelectionRound2Order == "F" {
-		for i, alliance := range cachedAlliances {
+		for i, alliance := range web.arena.AllianceSelectionAlliances {
 			if alliance[2].TeamId == 0 {
 				return i, 2
 			}
 		}
 	} else {
-		for i := len(cachedAlliances) - 1; i >= 0; i-- {
-			if cachedAlliances[i][2].TeamId == 0 {
+		for i := len(web.arena.AllianceSelectionAlliances) - 1; i >= 0; i-- {
+			if web.arena.AllianceSelectionAlliances[i][2].TeamId == 0 {
 				return i, 2
 			}
 		}
@@ -309,14 +309,14 @@ func (web *Web) determineNextCell() (int, int) {
 
 	// Check the fourth column.
 	if web.arena.EventSettings.SelectionRound3Order == "F" {
-		for i, alliance := range cachedAlliances {
+		for i, alliance := range web.arena.AllianceSelectionAlliances {
 			if alliance[3].TeamId == 0 {
 				return i, 3
 			}
 		}
 	} else if web.arena.EventSettings.SelectionRound3Order == "L" {
-		for i := len(cachedAlliances) - 1; i >= 0; i-- {
-			if cachedAlliances[i][3].TeamId == 0 {
+		for i := len(web.arena.AllianceSelectionAlliances) - 1; i >= 0; i-- {
+			if web.arena.AllianceSelectionAlliances[i][3].TeamId == 0 {
 				return i, 3
 			}
 		}

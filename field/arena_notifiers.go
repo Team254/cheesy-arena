@@ -60,7 +60,7 @@ type audienceAllianceScoreFields struct {
 
 // Instantiates notifiers and configures their message producing methods.
 func (arena *Arena) configureNotifiers() {
-	arena.AllianceSelectionNotifier = websocket.NewNotifier("allianceSelection", nil)
+	arena.AllianceSelectionNotifier = websocket.NewNotifier("allianceSelection", arena.generateAllianceSelectionMessage)
 	arena.AllianceStationDisplayModeNotifier = websocket.NewNotifier("allianceStationDisplayMode",
 		arena.generateAllianceStationDisplayModeMessage)
 	arena.ArenaStatusNotifier = websocket.NewNotifier("arenaStatus", arena.generateArenaStatusMessage)
@@ -69,7 +69,7 @@ func (arena *Arena) configureNotifiers() {
 	arena.DisplayConfigurationNotifier = websocket.NewNotifier("displayConfiguration",
 		arena.generateDisplayConfigurationMessage)
 	arena.LedModeNotifier = websocket.NewNotifier("ledMode", arena.generateLedModeMessage)
-	arena.LowerThirdNotifier = websocket.NewNotifier("lowerThird", nil)
+	arena.LowerThirdNotifier = websocket.NewNotifier("lowerThird", arena.generateLowerThirdMessage)
 	arena.MatchLoadNotifier = websocket.NewNotifier("matchLoad", arena.generateMatchLoadMessage)
 	arena.MatchTimeNotifier = websocket.NewNotifier("matchTime", arena.generateMatchTimeMessage)
 	arena.MatchTimingNotifier = websocket.NewNotifier("matchTiming", arena.generateMatchTimingMessage)
@@ -78,6 +78,10 @@ func (arena *Arena) configureNotifiers() {
 	arena.ReloadDisplaysNotifier = websocket.NewNotifier("reload", nil)
 	arena.ScorePostedNotifier = websocket.NewNotifier("scorePosted", arena.generateScorePostedMessage)
 	arena.ScoringStatusNotifier = websocket.NewNotifier("scoringStatus", arena.generateScoringStatusMessage)
+}
+
+func (arena *Arena) generateAllianceSelectionMessage() interface{} {
+	return &arena.AllianceSelectionAlliances
 }
 
 func (arena *Arena) generateAllianceStationDisplayModeMessage() interface{} {
@@ -110,6 +114,10 @@ func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
 
 func (arena *Arena) generateLedModeMessage() interface{} {
 	return &LedModeMessage{arena.ScaleLeds.GetCurrentMode(), arena.RedVaultLeds.CurrentForceMode}
+}
+
+func (arena *Arena) generateLowerThirdMessage() interface{} {
+	return arena.LowerThird
 }
 
 func (arena *Arena) generateMatchLoadMessage() interface{} {

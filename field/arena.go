@@ -66,6 +66,8 @@ type Arena struct {
 	SavedMatch                 *model.Match
 	SavedMatchResult           *model.MatchResult
 	AllianceStationDisplayMode string
+	AllianceSelectionAlliances [][]model.AllianceTeam
+	LowerThird                 *model.LowerThird
 	MuteMatchSounds            bool
 	matchAborted               bool
 	Scale                      *game.Seesaw

@@ -41,6 +41,8 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "scorePosted")
+	readWebsocketType(t, ws, "allianceSelection")
+	readWebsocketType(t, ws, "lowerThird")
 	readWebsocketType(t, ws, "displayConfiguration")
 
 	// Run through a match cycle.

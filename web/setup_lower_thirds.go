@@ -96,7 +96,8 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				continue
 			}
 			web.saveLowerThird(&lowerThird)
-			web.arena.LowerThirdNotifier.NotifyWithMessage(lowerThird)
+			web.arena.LowerThird = &lowerThird
+			web.arena.LowerThirdNotifier.Notify()
 			web.arena.AudienceDisplayMode = "lowerThird"
 			web.arena.AudienceDisplayModeNotifier.Notify()
 			continue
