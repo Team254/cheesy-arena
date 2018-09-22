@@ -50,7 +50,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.SelectionRound3Order = ""
 		eventSettings.TBADownloadEnabled = true
 		eventSettings.ApTeamChannel = 157
-		eventSettings.ApAdminChannel = 11
+		eventSettings.ApAdminChannel = 0
 		eventSettings.ApAdminWpaKey = "1234Five"
 
 		err = database.eventSettingsMap.Insert(eventSettings)

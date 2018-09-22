@@ -54,8 +54,13 @@ func (ap *AccessPoint) ConfigureAdminWifi() error {
 	ap.mutex.Lock()
 	defer ap.mutex.Unlock()
 
+	disabled := 0
+	if ap.adminChannel == 0 {
+		disabled = 1
+	}
 	commands := []string{
 		fmt.Sprintf("set wireless.radio0.channel='%d'", ap.teamChannel),
+		fmt.Sprintf("set wireless.radio1.disabled='%d'", disabled),
 		fmt.Sprintf("set wireless.radio1.channel='%d'", ap.adminChannel),
 		fmt.Sprintf("set wireless.@wifi-iface[0].key='%s'", ap.adminWpaKey),
 		"commit wireless",
