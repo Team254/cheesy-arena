@@ -1,0 +1,83 @@
+{{/*
+  Copyright 2018 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  Display that shows upcoming matches and timing information.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Queueing Display - {{.EventSettings.Name}} - Cheesy Arena</title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/queueing_display.css" />
+  </head>
+  <body>
+    <div id="header" class="col-lg-10 col-lg-offset-1">
+      <div class="pull-left">Match Queue</div>
+      <div class="pull-right">{{.EventSettings.Name}}</div>
+    </div>
+    {{range $i, $match := .Matches}}
+      <div class="col-lg-10 col-lg-offset-1 well">
+        <div class="col-lg-6">
+          <div class="row">
+            <div class="col-lg-5">
+              <h1>
+                {{if eq $i 0}}
+                  On Field
+                {{else if eq $i 1}}
+                  On Deck
+                {{else if eq $i 2}}
+                  Last Call
+                {{else if eq $i 3}}
+                  Second Call
+                {{else if eq $i 4}}
+                  First Call
+                {{end}}
+              </h1>
+              <br />
+            </div>
+            <div class="col-lg-2">
+              <h1>{{$.MatchTypePrefix}}{{$match.DisplayName}}</h1>
+            </div>
+            <div class="col-lg-5">
+              <h1>{{$match.Time.Local.Format "3:04 PM"}}</h1>
+            </div>
+          </div>
+          {{if eq $i 0}}
+            <div class="row">
+              <div id="matchState" class="col-lg-5"></div>
+              <div id="matchTime" class="col-lg-3"></div>
+            </div>
+          {{end}}
+        </div>
+        <div class="col-lg-1 avatars text-right">
+          <img class="avatar" src="/static/img/avatars/{{$match.Red1}}.png" /><br />
+          <img class="avatar" src="/static/img/avatars/{{$match.Red2}}.png" /><br />
+          <img class="avatar" src="/static/img/avatars/{{$match.Red3}}.png" />
+        </div>
+        <div class="col-lg-2 red-teams">
+          {{$match.Red1}}<br />{{$match.Red2}}<br />{{$match.Red3}}
+        </div>
+        <div class="col-lg-2 blue-teams text-right">
+          {{$match.Blue1}}<br />{{$match.Blue2}}<br />{{$match.Blue3}}
+        </div>
+        <div class="col-lg-1 avatars">
+          <img class="avatar" src="/static/img/avatars/{{$match.Blue1}}.png" /><br />
+          <img class="avatar" src="/static/img/avatars/{{$match.Blue2}}.png" /><br />
+          <img class="avatar" src="/static/img/avatars/{{$match.Blue3}}.png" />
+        </div>
+      </div>
+    {{end}}
+    <div id="footer" class="col-lg-10 col-lg-offset-1">{{.StatusMessage}}</div>
+  </body>
+  <script src="/static/js/lib/jquery.min.js"></script>
+  <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+  <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+  <script src="/static/js/lib/jquery.transit.min.js"></script>
+  <script src="/static/js/lib/bootstrap.min.js"></script>
+  <script src="/static/js/cheesy-websocket.js"></script>
+  <script src="/static/js/match_timing.js"></script>
+  <script src="/static/js/queueing_display.js"></script>
+</html>

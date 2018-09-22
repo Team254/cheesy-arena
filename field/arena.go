@@ -265,14 +265,15 @@ func (arena *Arena) LoadNextMatch() error {
 	}
 	for _, match := range matches {
 		if match.Status != "complete" {
-			err = arena.LoadMatch(&match)
-			if err != nil {
+			if err = arena.LoadMatch(&match); err != nil {
 				return err
 			}
-			break
+			return nil
 		}
 	}
-	return nil
+
+	// There are no matches left in the series; just load a test match.
+	return arena.LoadTestMatch()
 }
 
 // Assigns the given team to the given station, also substituting it into the match record.

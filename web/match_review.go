@@ -53,7 +53,8 @@ func (web *Web) matchReviewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	matchesByType := map[string][]MatchReviewListItem{"practice": practiceMatches,
 		"qualification": qualificationMatches, "elimination": eliminationMatches}
-	if currentMatchType == "" {
+	currentMatchType := web.arena.CurrentMatch.Type
+	if currentMatchType == "test" {
 		currentMatchType = "practice"
 	}
 	data := struct {

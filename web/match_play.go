@@ -30,9 +30,6 @@ type MatchPlayListItem struct {
 
 type MatchPlayList []MatchPlayListItem
 
-// Global var to hold the current active tournament so that its matches are displayed by default.
-var currentMatchType string
-
 // Shows the match play control interface.
 func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
@@ -62,7 +59,8 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	matchesByType := map[string]MatchPlayList{"practice": practiceMatches,
 		"qualification": qualificationMatches, "elimination": eliminationMatches}
-	if currentMatchType == "" {
+	currentMatchType := web.arena.CurrentMatch.Type
+	if currentMatchType == "test" {
 		currentMatchType = "practice"
 	}
 	allowSubstitution := web.arena.CurrentMatch.Type != "qualification"
@@ -79,7 +77,8 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		Match             *model.Match
 		AllowSubstitution bool
 		IsReplay          bool
-	}{web.arena.EventSettings, matchesByType, currentMatchType, web.arena.CurrentMatch, allowSubstitution, isReplay}
+	}{web.arena.EventSettings, matchesByType, currentMatchType, web.arena.CurrentMatch, allowSubstitution,
+		isReplay}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -115,7 +114,6 @@ func (web *Web) matchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	currentMatchType = web.arena.CurrentMatch.Type
 
 	http.Redirect(w, r, "/match_play", 303)
 }

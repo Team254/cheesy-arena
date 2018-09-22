@@ -412,8 +412,8 @@ func TestLoadNextMatch(t *testing.T) {
 	arena.Database.SaveMatch(&practiceMatch3)
 	err = arena.LoadNextMatch()
 	assert.Nil(t, err)
-	assert.Equal(t, practiceMatch3.Id, arena.CurrentMatch.Id)
-	assert.Equal(t, "complete", practiceMatch3.Status)
+	assert.Equal(t, 0, arena.CurrentMatch.Id)
+	assert.Equal(t, "test", arena.CurrentMatch.Type)
 
 	err = arena.LoadMatch(&qualificationMatch1)
 	assert.Nil(t, err)
