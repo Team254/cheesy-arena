@@ -359,6 +359,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 	// Update and save the match record to the database.
 	match.Status = "complete"
+	match.ScoreCommittedAt = time.Now()
 	redScore := matchResult.RedScoreSummary()
 	blueScore := matchResult.BlueScoreSummary()
 	if redScore.Score > blueScore.Score {

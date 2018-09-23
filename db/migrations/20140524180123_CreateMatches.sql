@@ -21,6 +21,7 @@ CREATE TABLE matches (
   blue3issurrogate bool,
   status VARCHAR(16),
   startedat DATETIME,
+  scorecommittedat DATETIME,
   winner VARCHAR(16),
   gamespecificdata VARCHAR(3)
 );

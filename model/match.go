@@ -33,6 +33,7 @@ type Match struct {
 	Blue3IsSurrogate bool
 	Status           string
 	StartedAt        time.Time
+	ScoreCommittedAt time.Time
 	Winner           string
 	GameSpecificData string
 }
