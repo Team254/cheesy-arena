@@ -147,7 +147,7 @@ func (arena *Arena) RegisterDisplay(display *Display) {
 	defer displayRegistryMutex.Unlock()
 
 	existingDisplay, ok := arena.Displays[display.Id]
-	if ok && display.Type == PlaceholderDisplay && existingDisplay.Type != PlaceholderDisplay {
+	if ok && display.Type == PlaceholderDisplay {
 		// Don't rewrite the registered configuration if the new one is a placeholder -- if it is reconnecting after a
 		// restart, it should adopt the existing configuration.
 		arena.Displays[display.Id].ConnectionCount++
@@ -184,8 +184,15 @@ func (arena *Arena) MarkDisplayDisconnected(display *Display) {
 	displayRegistryMutex.Lock()
 	defer displayRegistryMutex.Unlock()
 
-	if display, ok := arena.Displays[display.Id]; ok {
-		display.ConnectionCount -= 1
-		arena.DisplayConfigurationNotifier.Notify()
+	if existingDisplay, ok := arena.Displays[display.Id]; ok {
+		if existingDisplay.Type == PlaceholderDisplay && existingDisplay.Nickname == "" &&
+			len(existingDisplay.Configuration) == 0 {
+			// If the display is an unconfigured placeholder, just remove it entirely to prevent clutter.
+			delete(arena.Displays, existingDisplay.Id)
+		} else {
+			existingDisplay.ConnectionCount -= 1
+			arena.DisplayConfigurationNotifier.Notify()
+
+		}
 	}
 }
