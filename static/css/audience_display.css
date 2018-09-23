@@ -430,6 +430,7 @@ html {
 #allianceSelectionCentering {
   position: absolute;
   height: 100%;
+  top: 3em;
   right: 3em;
 }
 #allianceSelection {
@@ -448,7 +449,7 @@ html {
   margin: 0.3em;
 }
 #allianceSelectionTable tr:nth-child(even) {
-  background-color: #eee;
+  background-color: #ccc;
 }
 .alliance-cell {
   padding: 0px 40px;
