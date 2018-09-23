@@ -107,6 +107,13 @@ func TestSetupTeams(t *testing.T) {
 	recorder = web.getHttpResponse("/setup/teams")
 	assert.Contains(t, recorder.Body.String(), "Teh Chezy Pofs")
 
+	// Re-download team info from TBA.
+	recorder = web.getHttpResponse("/setup/teams/refresh")
+	assert.Equal(t, 303, recorder.Code)
+	recorder = web.getHttpResponse("/setup/teams")
+	assert.Contains(t, recorder.Body.String(), "The Cheesy Poofs")
+	assert.NotContains(t, recorder.Body.String(), "Teh Chezy Pofs")
+
 	// Delete a team.
 	recorder = web.postHttpResponse("/setup/teams/1114/delete", "")
 	assert.Equal(t, 303, recorder.Code)
