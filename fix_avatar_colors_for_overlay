@@ -1,0 +1,17 @@
+# This script replaces a single color in the team avatars with a second one, to fix conflicts with chroma/luma key.
+# By default, it replaces black with dark gray; edit the two variables below to change this.
+# Run it after the team list import, during which the avatars are downloaded.
+
+COLOR_TO_REPLACE="#000"
+REPLACEMENT_COLOR="#222"
+
+echo "This script will replace color $COLOR_TO_REPLACE with $REPLACEMENT_COLOR in the following files:\n"
+cd ./static/img/avatars
+ls *.png
+echo "\nPress enter to continue or CTRL-C to cancel."
+read
+
+for f in *.png
+do
+  convert $f -fill $REPLACEMENT_COLOR -fuzz 10% -opaque $COLOR_TO_REPLACE $f
+done
