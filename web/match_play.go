@@ -410,16 +410,6 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}()
 	}
 
-	if web.arena.EventSettings.StemTvPublishingEnabled && match.Type != "practice" {
-		// Publish asynchronously to STEMtv.
-		go func() {
-			err = web.arena.StemTvClient.PublishMatchVideoSplit(match, time.Now())
-			if err != nil {
-				log.Printf("Failed to publish match video split to STEMtv: %s", err.Error())
-			}
-		}()
-	}
-
 	// Back up the database, but don't error out if it fails.
 	err = web.arena.Database.Backup(web.arena.EventSettings.Name, fmt.Sprintf("post_%s_match_%s", match.Type, match.DisplayName))
 	if err != nil {

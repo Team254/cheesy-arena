@@ -48,7 +48,6 @@ type Arena struct {
 	networkSwitch    *NetworkSwitch
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
-	StemTvClient     *partner.StemTvClient
 	AllianceStations map[string]*AllianceStation
 	Displays         map[string]*Display
 	ArenaNotifiers
@@ -148,7 +147,6 @@ func (arena *Arena) LoadSettings() error {
 	arena.networkSwitch = NewNetworkSwitch(settings.SwitchAddress, settings.SwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
-	arena.StemTvClient = partner.NewStemTvClient(settings.StemTvEventCode)
 
 	if arena.EventSettings.NetworkSecurityEnabled {
 		if err = arena.accessPoint.ConfigureAdminWifi(); err != nil {

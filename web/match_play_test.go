@@ -157,11 +157,9 @@ func TestCommitMatch(t *testing.T) {
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner)
 
-	// Verify TBA and STEMtv publishing by checking the log for the expected failure messages.
+	// Verify TBA publishing by checking the log for the expected failure messages.
 	web.arena.TbaClient.BaseUrl = "fakeUrl"
-	web.arena.StemTvClient.BaseUrl = "fakeUrl"
 	web.arena.EventSettings.TbaPublishingEnabled = true
-	web.arena.EventSettings.StemTvPublishingEnabled = true
 	var writer bytes.Buffer
 	log.SetOutput(&writer)
 	err = web.commitMatchScore(match, matchResult, false)
@@ -169,7 +167,6 @@ func TestCommitMatch(t *testing.T) {
 	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous publishing to happen.
 	assert.Contains(t, writer.String(), "Failed to publish matches")
 	assert.Contains(t, writer.String(), "Failed to publish rankings")
-	assert.Contains(t, writer.String(), "Failed to publish match video split to STEMtv")
 }
 
 func TestCommitEliminationTie(t *testing.T) {

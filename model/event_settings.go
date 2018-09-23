@@ -6,35 +6,33 @@
 package model
 
 type EventSettings struct {
-	Id                      int
-	Name                    string
-	NumElimAlliances        int
-	SelectionRound2Order    string
-	SelectionRound3Order    string
-	TBADownloadEnabled      bool
-	TbaPublishingEnabled    bool
-	TbaEventCode            string
-	TbaSecretId             string
-	TbaSecret               string
-	NetworkSecurityEnabled  bool
-	ApAddress               string
-	ApUsername              string
-	ApPassword              string
-	ApTeamChannel           int
-	ApAdminChannel          int
-	ApAdminWpaKey           string
-	SwitchAddress           string
-	SwitchPassword          string
-	PlcAddress              string
-	AdminPassword           string
-	ReaderPassword          string
-	StemTvPublishingEnabled bool
-	StemTvEventCode         string
-	ScaleLedAddress         string
-	RedSwitchLedAddress     string
-	BlueSwitchLedAddress    string
-	RedVaultLedAddress      string
-	BlueVaultLedAddress     string
+	Id                     int
+	Name                   string
+	NumElimAlliances       int
+	SelectionRound2Order   string
+	SelectionRound3Order   string
+	TBADownloadEnabled     bool
+	TbaPublishingEnabled   bool
+	TbaEventCode           string
+	TbaSecretId            string
+	TbaSecret              string
+	NetworkSecurityEnabled bool
+	ApAddress              string
+	ApUsername             string
+	ApPassword             string
+	ApTeamChannel          int
+	ApAdminChannel         int
+	ApAdminWpaKey          string
+	SwitchAddress          string
+	SwitchPassword         string
+	PlcAddress             string
+	AdminPassword          string
+	ReaderPassword         string
+	ScaleLedAddress        string
+	RedSwitchLedAddress    string
+	BlueSwitchLedAddress   string
+	RedVaultLedAddress     string
+	BlueVaultLedAddress    string
 }
 
 const eventSettingsId = 0

@@ -48,8 +48,6 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TbaEventCode = r.PostFormValue("tbaEventCode")
 	eventSettings.TbaSecretId = r.PostFormValue("tbaSecretId")
 	eventSettings.TbaSecret = r.PostFormValue("tbaSecret")
-	eventSettings.StemTvPublishingEnabled = r.PostFormValue("stemTvPublishingEnabled") == "on"
-	eventSettings.StemTvEventCode = r.PostFormValue("stemTvEventCode")
 	eventSettings.NetworkSecurityEnabled = r.PostFormValue("networkSecurityEnabled") == "on"
 	eventSettings.ApAddress = r.PostFormValue("apAddress")
 	eventSettings.ApUsername = r.PostFormValue("apUsername")

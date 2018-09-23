@@ -23,8 +23,6 @@ CREATE TABLE event_settings (
   tbadownloadenabled bool,
   adminpassword VARCHAR(255),
   readerpassword VARCHAR(255),
-  stemtvpublishingenabled bool,
-  stemtveventcode VARCHAR(16),
   scaleledaddress VARCHAR(255),
   redswitchledaddress VARCHAR(255),
   blueswitchledaddress VARCHAR(255),
