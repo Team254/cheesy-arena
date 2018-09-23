@@ -5,10 +5,12 @@
 COLOR_TO_REPLACE="#000"
 REPLACEMENT_COLOR="#222"
 
-echo "This script will replace color $COLOR_TO_REPLACE with $REPLACEMENT_COLOR in the following files:\n"
+echo "This script will replace color $COLOR_TO_REPLACE with $REPLACEMENT_COLOR in the following files:"
+echo
 cd ./static/img/avatars
 ls *.png
-echo "\nPress enter to continue or CTRL-C to cancel."
+echo
+echo "Press enter to continue or CTRL-C to cancel."
 read
 
 for f in *.png
