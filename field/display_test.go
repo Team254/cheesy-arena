@@ -31,7 +31,7 @@ func TestDisplayFromUrl(t *testing.T) {
 	assert.Equal(t, AnnouncerDisplay, display.Type)
 	display, _ = DisplayFromUrl("/displays/audience/websocket", query)
 	assert.Equal(t, AudienceDisplay, display.Type)
-	display, _ = DisplayFromUrl("/displays/fta/websocket", query)
+	display, _ = DisplayFromUrl("/displays/field_monitor/websocket", query)
 	assert.Equal(t, FieldMonitorDisplay, display.Type)
 	display, _ = DisplayFromUrl("/displays/pit/websocket", query)
 	assert.Equal(t, PitDisplay, display.Type)

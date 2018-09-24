@@ -1,0 +1,41 @@
+{{/*
+  Copyright 2018 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  Display showing robot connection status.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Field Monitor - {{.EventSettings.Name}} - Cheesy Arena</title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/field_monitor_display.css" />
+  </head>
+  <body>
+    {{template "row" dict "leftPosition" "1" "rightPosition" "3"}}
+    {{template "row" dict "leftPosition" "2" "rightPosition" "2"}}
+    {{template "row" dict "leftPosition" "3" "rightPosition" "1"}}
+  </body>
+  <script src="/static/js/lib/jquery.min.js"></script>
+  <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+  <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+  <script src="/static/js/lib/jquery.transit.min.js"></script>
+  <script src="/static/js/lib/bootstrap.min.js"></script>
+  <script src="/static/js/cheesy-websocket.js"></script>
+  <script src="/static/js/field_monitor_display.js"></script>
+</html>
+
+{{define "row"}}
+  <div class="position-row center">
+    <div class="left-position center reversible-left">{{.leftPosition}}</div>
+    {{template "team" dict "side" "left" "position" .leftPosition}}
+    {{template "team" dict "side" "right" "position" .rightPosition}}
+    <div class="right-position center reversible-right">{{.rightPosition}}</div>
+  </div>
+{{end}}
+
+{{define "team"}}
+  <div id="{{.side}}Team{{.position}}" class="team center"></div>
+{{end}}

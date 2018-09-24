@@ -51,7 +51,7 @@ var displayTypePaths = map[DisplayType]string{
 	AllianceStationDisplay: "/displays/alliance_station",
 	AnnouncerDisplay:       "/displays/announcer",
 	AudienceDisplay:        "/displays/audience",
-	FieldMonitorDisplay:    "/displays/fta",
+	FieldMonitorDisplay:    "/displays/field_monitor",
 	PitDisplay:             "/displays/pit",
 	QueueingDisplay:        "/displays/queueing",
 	TwitchStreamDisplay:    "/displays/twitch",

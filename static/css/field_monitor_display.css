@@ -1,0 +1,52 @@
+/*
+  Copyright 2018 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+*/
+
+html {
+  height: 100%;
+  cursor: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  overflow: hidden;
+}
+body {
+  height: 100%;
+  font-family: FuturaLTBold;
+  color: #fff;
+}
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.position-row {
+  height: 33.3%;
+}
+.left-position, .right-position {
+  width: 8%;
+  height: 100%;
+  font-size: 6vw;
+}
+.left-position[data-reversed=false], .right-position[data-reversed=true] {
+  background-color: #ff4444;
+}
+.left-position[data-reversed=true], .right-position[data-reversed=false] {
+  background-color: #2080ff;
+}
+.team {
+  width: 42%;
+  height: 100%;
+  background-color: #333;
+  font-size: 13vw;
+}
+.team[data-status=no-link] {
+  background-color: #963;
+}
+.team[data-status=ds-linked] {
+  background-color: #ff0;
+  color: #333;
+}
+.team[data-status=robot-linked] {
+  background-color: #0a3;
+}

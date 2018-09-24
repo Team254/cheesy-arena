@@ -1,7 +1,7 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2018 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Web handlers for the FTA diagnostic display.
+// Web handlers for the field monitor display showing robot connection status.
 
 package web
 
@@ -11,17 +11,17 @@ import (
 	"net/http"
 )
 
-// Renders the FTA diagnostic display.
-func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
+// Renders the field monitor display.
+func (web *Web) fieldMonitorDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsReader(w, r) {
 		return
 	}
 
-	if !web.enforceDisplayConfiguration(w, r, nil) {
+	if !web.enforceDisplayConfiguration(w, r, map[string]string{"reversed": "false"}) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/fta_display.html", "templates/base.html")
+	template, err := web.parseFiles("templates/field_monitor_display.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -29,15 +29,15 @@ func (web *Web) ftaDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 	}{web.arena.EventSettings}
-	err = template.ExecuteTemplate(w, "base_no_navbar", data)
+	err = template.ExecuteTemplate(w, "field_monitor_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 }
 
-// The websocket endpoint for the FTA display client to receive status updates.
-func (web *Web) ftaDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+// The websocket endpoint for the field monitor display client to receive status updates.
+func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsReader(w, r) {
 		return
 	}
