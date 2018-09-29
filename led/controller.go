@@ -14,7 +14,7 @@ const (
 	port              = 5568
 	sourceName        = "Cheesy Arena"
 	packetTimeoutSec  = 1
-	numPixels         = 150
+	numPixels         = 114
 	pixelDataOffset   = 126
 	nearStripUniverse = 1
 	farStripUniverse  = 2
