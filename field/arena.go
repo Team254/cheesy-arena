@@ -753,6 +753,8 @@ func (arena *Arena) handlePlcInput() {
 		redScore.AutoSwitchOwnershipSec, _ = arena.RedSwitch.GetRedSeconds(matchStartTime, currentTime)
 		blueScore.AutoScaleOwnershipSec, _ = arena.Scale.GetBlueSeconds(matchStartTime, currentTime)
 		blueScore.AutoSwitchOwnershipSec, _ = arena.BlueSwitch.GetBlueSeconds(matchStartTime, currentTime)
+		redScore.AutoEndSwitchOwnership = arena.RedSwitch.GetOwnedBy() == game.RedAlliance
+		blueScore.AutoEndSwitchOwnership = arena.BlueSwitch.GetOwnedBy() == game.BlueAlliance
 	} else {
 		redScore.TeleopScaleOwnershipSec, redScore.TeleopScaleBoostSec =
 			arena.Scale.GetRedSeconds(teleopStartTime, currentTime)
