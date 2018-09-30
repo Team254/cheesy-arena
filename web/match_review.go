@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type MatchReviewListItem struct {
@@ -91,6 +92,8 @@ func (web *Web) matchReviewEditGetHandler(w http.ResponseWriter, r *http.Request
 		handleWebErr(w, err)
 		return
 	}
+	matchResultJson.RedScoreJson = strings.Replace(matchResultJson.RedScoreJson, "'", "\\'", -1)
+	matchResultJson.BlueScoreJson = strings.Replace(matchResultJson.BlueScoreJson, "'", "\\'", -1)
 	data := struct {
 		*model.EventSettings
 		Match           *model.Match
