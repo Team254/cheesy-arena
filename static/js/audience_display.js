@@ -145,7 +145,7 @@ var handleScorePosted = function(data) {
   $("#" + blueSide + "FinalAutoQuest").attr("data-checked", data.BlueScoreSummary.AutoQuest);
   $("#" + blueSide + "FinalFaceTheBoss").html(data.BlueScoreSummary.FaceTheBoss ? "&#x2714;" : "&#x2718;");
   $("#" + blueSide + "FinalFaceTheBoss").attr("data-checked", data.BlueScoreSummary.FaceTheBoss);
-  $("#finalSeriesStatus").text(data.SeriesStatus);
+  $("#finalSeriesStatus").text("");
   $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
   $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);
 };
