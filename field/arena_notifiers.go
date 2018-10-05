@@ -248,13 +248,15 @@ func getAudienceAllianceScoreFields(allianceScore *RealtimeScore, allianceScoreS
 
 // Copy the description from the rules to the fouls so that they are available to the announcer.
 func populateFoulDescriptions(fouls []game.Foul) []game.Foul {
-	for i := range fouls {
+	foulsCopy := make([]game.Foul, len(fouls))
+	copy(foulsCopy, fouls)
+	for i := range foulsCopy {
 		for _, rule := range game.Rules {
-			if fouls[i].RuleNumber == rule.RuleNumber {
-				fouls[i].Description = rule.Description
+			if foulsCopy[i].RuleNumber == rule.RuleNumber {
+				foulsCopy[i].Description = rule.Description
 				break
 			}
 		}
 	}
-	return fouls
+	return foulsCopy
 }
