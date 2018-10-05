@@ -131,6 +131,9 @@ func (display *Display) ToUrl() string {
 
 // Returns an unused ID that can be used for a new display.
 func (arena *Arena) NextDisplayId() string {
+	displayRegistryMutex.Lock()
+	defer displayRegistryMutex.Unlock()
+
 	// Loop until we get an ID that isn't already used. This is inefficient if there is a large number of displays, but
 	// that should never be the case.
 	for {

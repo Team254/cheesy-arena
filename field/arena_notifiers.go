@@ -105,11 +105,16 @@ func (arena *Arena) generateAudienceDisplayModeMessage() interface{} {
 }
 
 func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
+	// Make a copy of the map to avoid potential data races; otherwise the same map would get iterated through as it is
+	// serialized to JSON.
+	displaysCopy := make(map[string]*Display)
 	displayUrls := make(map[string]string)
 	for displayId, display := range arena.Displays {
+		displaysCopy[displayId] = display
 		displayUrls[displayId] = display.ToUrl()
 	}
-	return &DisplayConfigurationMessage{arena.Displays, displayUrls}
+
+	return &DisplayConfigurationMessage{displaysCopy, displayUrls}
 }
 
 func (arena *Arena) generateLedModeMessage() interface{} {
