@@ -133,14 +133,18 @@ func (ap *AccessPoint) generateAccessPointConfig(red1, red2, red3, blue1, blue2,
 // Verifies the validity of the given team's WPA key and adds a network for it to the list to be configured.
 func addTeamConfigCommands(position int, team *model.Team, commands *[]string) error {
 	if team == nil {
-		return nil
-	}
-	if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
-		return fmt.Errorf("Invalid WPA key '%s' configured for team %d.", team.WpaKey, team.Id)
-	}
+		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='1'", position),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid=''", position),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].key=''", position))
+	} else {
+		if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
+			return fmt.Errorf("Invalid WPA key '%s' configured for team %d.", team.WpaKey, team.Id)
+		}
 
-	*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position, team.Id),
-		fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
+		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position, team.Id),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
+	}
 
 	return nil
 }
