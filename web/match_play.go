@@ -320,101 +320,100 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		matchResult.CorrectEliminationScore()
 	}
 
+	if match.Type != "test" {
+		if matchResult.PlayNumber == 0 {
+			// Determine the play number for this new match result.
+			prevMatchResult, err := web.arena.Database.GetMatchResultForMatch(match.Id)
+			if err != nil {
+				return err
+			}
+			if prevMatchResult != nil {
+				matchResult.PlayNumber = prevMatchResult.PlayNumber + 1
+			} else {
+				matchResult.PlayNumber = 1
+			}
+
+			// Save the match result record to the database.
+			err = web.arena.Database.CreateMatchResult(matchResult)
+			if err != nil {
+				return err
+			}
+		} else {
+			// We are updating a match result record that already exists.
+			err := web.arena.Database.SaveMatchResult(matchResult)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Update and save the match record to the database.
+		match.Status = "complete"
+		match.ScoreCommittedAt = time.Now()
+		redScore := matchResult.RedScoreSummary()
+		blueScore := matchResult.BlueScoreSummary()
+		if redScore.Score > blueScore.Score {
+			match.Winner = "R"
+		} else if redScore.Score < blueScore.Score {
+			match.Winner = "B"
+		} else {
+			match.Winner = "T"
+		}
+		err := web.arena.Database.SaveMatch(match)
+		if err != nil {
+			return err
+		}
+
+		if match.Type != "practice" {
+			// Regenerate the residual yellow cards that teams may carry.
+			tournament.CalculateTeamCards(web.arena.Database, match.Type)
+		}
+
+		if match.Type == "qualification" {
+			// Recalculate all the rankings.
+			err = tournament.CalculateRankings(web.arena.Database)
+			if err != nil {
+				return err
+			}
+		}
+
+		if match.Type == "elimination" {
+			// Generate any subsequent elimination matches.
+			_, err = tournament.UpdateEliminationSchedule(web.arena.Database,
+				time.Now().Add(time.Second*tournament.ElimMatchSpacingSec))
+			if err != nil {
+				return err
+			}
+		}
+
+		if web.arena.EventSettings.TbaPublishingEnabled && match.Type != "practice" {
+			// Publish asynchronously to The Blue Alliance.
+			go func() {
+				err = web.arena.TbaClient.PublishMatches(web.arena.Database)
+				if err != nil {
+					log.Printf("Failed to publish matches: %s", err.Error())
+				}
+				if match.Type == "qualification" {
+					err = web.arena.TbaClient.PublishRankings(web.arena.Database)
+					if err != nil {
+						log.Printf("Failed to publish rankings: %s", err.Error())
+					}
+				}
+			}()
+		}
+
+		// Back up the database, but don't error out if it fails.
+		err = web.arena.Database.Backup(web.arena.EventSettings.Name,
+			fmt.Sprintf("post_%s_match_%s", match.Type, match.DisplayName))
+		if err != nil {
+			log.Println(err)
+		}
+	}
+
 	if loadToShowBuffer {
 		// Store the result in the buffer to be shown in the audience display.
 		web.arena.SavedMatch = match
 		web.arena.SavedMatchResult = matchResult
 		web.arena.ScorePostedNotifier.Notify()
-	}
-
-	if match.Type == "test" {
-		// Do nothing since this is a test match and doesn't exist in the database.
-		return nil
-	}
-
-	if matchResult.PlayNumber == 0 {
-		// Determine the play number for this new match result.
-		prevMatchResult, err := web.arena.Database.GetMatchResultForMatch(match.Id)
-		if err != nil {
-			return err
-		}
-		if prevMatchResult != nil {
-			matchResult.PlayNumber = prevMatchResult.PlayNumber + 1
-		} else {
-			matchResult.PlayNumber = 1
-		}
-
-		// Save the match result record to the database.
-		err = web.arena.Database.CreateMatchResult(matchResult)
-		if err != nil {
-			return err
-		}
-	} else {
-		// We are updating a match result record that already exists.
-		err := web.arena.Database.SaveMatchResult(matchResult)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Update and save the match record to the database.
-	match.Status = "complete"
-	match.ScoreCommittedAt = time.Now()
-	redScore := matchResult.RedScoreSummary()
-	blueScore := matchResult.BlueScoreSummary()
-	if redScore.Score > blueScore.Score {
-		match.Winner = "R"
-	} else if redScore.Score < blueScore.Score {
-		match.Winner = "B"
-	} else {
-		match.Winner = "T"
-	}
-	err := web.arena.Database.SaveMatch(match)
-	if err != nil {
-		return err
-	}
-
-	if match.Type != "practice" {
-		// Regenerate the residual yellow cards that teams may carry.
-		tournament.CalculateTeamCards(web.arena.Database, match.Type)
-	}
-
-	if match.Type == "qualification" {
-		// Recalculate all the rankings.
-		err = tournament.CalculateRankings(web.arena.Database)
-		if err != nil {
-			return err
-		}
-	}
-
-	if match.Type == "elimination" {
-		// Generate any subsequent elimination matches.
-		_, err = tournament.UpdateEliminationSchedule(web.arena.Database, time.Now().Add(time.Second*tournament.ElimMatchSpacingSec))
-		if err != nil {
-			return err
-		}
-	}
-
-	if web.arena.EventSettings.TbaPublishingEnabled && match.Type != "practice" {
-		// Publish asynchronously to The Blue Alliance.
-		go func() {
-			err = web.arena.TbaClient.PublishMatches(web.arena.Database)
-			if err != nil {
-				log.Printf("Failed to publish matches: %s", err.Error())
-			}
-			if match.Type == "qualification" {
-				err = web.arena.TbaClient.PublishRankings(web.arena.Database)
-				if err != nil {
-					log.Printf("Failed to publish rankings: %s", err.Error())
-				}
-			}
-		}()
-	}
-
-	// Back up the database, but don't error out if it fails.
-	err = web.arena.Database.Backup(web.arena.EventSettings.Name, fmt.Sprintf("post_%s_match_%s", match.Type, match.DisplayName))
-	if err != nil {
-		log.Println(err)
 	}
 
 	return nil
