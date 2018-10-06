@@ -3,7 +3,7 @@
 //
 // Methods for configuring a Linksys WRT1900ACS access point running OpenWRT for team SSIDs and VLANs.
 
-package field
+package network
 
 import (
 	"fmt"
@@ -30,7 +30,8 @@ type AccessPoint struct {
 	mutex        sync.Mutex
 }
 
-func NewAccessPoint(address, username, password string, teamChannel, adminChannel int, adminWpaKey string) *AccessPoint {
+func NewAccessPoint(address, username, password string, teamChannel, adminChannel int,
+	adminWpaKey string) *AccessPoint {
 	return &AccessPoint{address: address, port: accessPointSshPort, username: username, password: password,
 		teamChannel: teamChannel, adminChannel: adminChannel, adminWpaKey: adminWpaKey}
 }

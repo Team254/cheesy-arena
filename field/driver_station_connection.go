@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
 	"log"
 	"net"
 	"regexp"
@@ -50,7 +51,6 @@ type DriverStationConnection struct {
 }
 
 var allianceStationPositionMap = map[string]byte{"R1": 0, "R2": 1, "R3": 2, "B1": 3, "B2": 4, "B3": 5}
-var driverStationTcpListenAddress = "10.0.100.5" // The DS will try to connect to this address only.
 
 // Opens a UDP connection for communicating to the driver station.
 func newDriverStationConnection(teamId int, allianceStation string, tcpConn net.Conn) (*DriverStationConnection, error) {
@@ -271,10 +271,10 @@ func (dsConn *DriverStationConnection) decodeStatusPacket(data [36]byte) {
 
 // Listens for TCP connection requests to Cheesy Arena from driver stations.
 func (arena *Arena) listenForDriverStations() {
-	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", driverStationTcpListenAddress, driverStationTcpListenPort))
+	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", network.ServerIpAddress, driverStationTcpListenPort))
 	if err != nil {
 		log.Printf("Error opening driver station TCP socket: %v", err.Error())
-		log.Printf("Change IP address to %s and restart Cheesy Arena to fix.", driverStationTcpListenAddress)
+		log.Printf("Change IP address to %s and restart Cheesy Arena to fix.", network.ServerIpAddress)
 		return
 	}
 	defer l.Close()

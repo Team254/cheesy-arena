@@ -10,6 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
 	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/plc"
 	"github.com/Team254/cheesy-arena/vaultled"
@@ -44,8 +45,8 @@ const (
 type Arena struct {
 	Database         *model.Database
 	EventSettings    *model.EventSettings
-	accessPoint      *AccessPoint
-	networkSwitch    *NetworkSwitch
+	accessPoint      *network.AccessPoint
+	networkSwitch    *network.Switch
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
 	AllianceStations map[string]*AllianceStation
@@ -142,9 +143,9 @@ func (arena *Arena) LoadSettings() error {
 	arena.EventSettings = settings
 
 	// Initialize the components that depend on settings.
-	arena.accessPoint = NewAccessPoint(settings.ApAddress, settings.ApUsername, settings.ApPassword,
+	arena.accessPoint = network.NewAccessPoint(settings.ApAddress, settings.ApUsername, settings.ApPassword,
 		settings.ApTeamChannel, settings.ApAdminChannel, settings.ApAdminWpaKey)
-	arena.networkSwitch = NewNetworkSwitch(settings.SwitchAddress, settings.SwitchPassword)
+	arena.networkSwitch = network.NewSwitch(settings.SwitchAddress, settings.SwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 

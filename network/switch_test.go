@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
-package field
+package network
 
 import (
 	"bytes"
@@ -14,27 +14,27 @@ import (
 )
 
 func TestConfigureSwitch(t *testing.T) {
-	ns := NewNetworkSwitch("127.0.0.1", "password")
-	ns.port = 9050
+	sw := NewSwitch("127.0.0.1", "password")
+	sw.port = 9050
 	var command string
 
 	// Should do nothing if current configuration is blank.
-	mockTelnet(t, ns.port, "", &command)
-	assert.Nil(t, ns.ConfigureTeamEthernet(nil, nil, nil, nil, nil, nil))
+	mockTelnet(t, sw.port, "", &command)
+	assert.Nil(t, sw.ConfigureTeamEthernet(nil, nil, nil, nil, nil, nil))
 	assert.Equal(t, "", command)
 
 	// Should remove any existing teams but not other SSIDs.
-	ns.port += 1
-	mockTelnet(t, ns.port,
+	sw.port += 1
+	mockTelnet(t, sw.port,
 		"interface Vlan100\nip address 10.0.100.2\ninterface Vlan50\nip address 10.2.54.61\n", &command)
-	assert.Nil(t, ns.ConfigureTeamEthernet(nil, nil, nil, nil, nil, nil))
+	assert.Nil(t, sw.ConfigureTeamEthernet(nil, nil, nil, nil, nil, nil))
 	assert.Equal(t, "password\nenable\npassword\nterminal length 0\nconfig terminal\ninterface Vlan50\nno ip"+
 		" address\nno access-list 150\nend\ncopy running-config startup-config\n\nexit\n", command)
 
 	// Should configure new teams and leave existing ones alone if still needed.
-	ns.port += 1
-	mockTelnet(t, ns.port, "interface Vlan50\nip address 10.2.54.61\n", &command)
-	assert.Nil(t, ns.ConfigureTeamEthernet(nil, &model.Team{Id: 1114}, nil, nil, &model.Team{Id: 254}, nil))
+	sw.port += 1
+	mockTelnet(t, sw.port, "interface Vlan50\nip address 10.2.54.61\n", &command)
+	assert.Nil(t, sw.ConfigureTeamEthernet(nil, &model.Team{Id: 1114}, nil, nil, &model.Team{Id: 254}, nil))
 	assert.Equal(t, "password\nenable\npassword\nterminal length 0\nconfig terminal\n"+
 		"ip dhcp excluded-address 10.11.14.1 10.11.14.100\nno ip dhcp pool dhcp20\nip dhcp pool dhcp20\n"+
 		"network 10.11.14.0 255.255.255.0\ndefault-router 10.11.14.61\nlease 7\nno access-list 120\n"+

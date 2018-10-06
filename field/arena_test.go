@@ -473,8 +473,10 @@ func TestSetupNetwork(t *testing.T) {
 
 	// Verify the setup ran by checking the log for the expected failure messages.
 	arena.EventSettings.NetworkSecurityEnabled = true
-	arena.accessPoint.port = 10022
-	arena.networkSwitch.port = 10023
+	arena.EventSettings.ApAddress = "invalid"
+	arena.EventSettings.SwitchAddress = "invalid"
+	arena.Database.SaveEventSettings(arena.EventSettings)
+	arena.LoadSettings()
 	arena.LoadMatch(&model.Match{Type: "test"})
 	var writer bytes.Buffer
 	log.SetOutput(&writer)
