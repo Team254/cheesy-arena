@@ -618,14 +618,12 @@ func (arena *Arena) assignTeam(teamId int, station string) error {
 // Asynchronously reconfigures the networking hardware for the new set of teams.
 func (arena *Arena) setupNetwork() {
 	if arena.EventSettings.NetworkSecurityEnabled {
-		go func() {
-			err := arena.accessPoint.ConfigureTeamWifi(arena.AllianceStations["R1"].Team,
-				arena.AllianceStations["R2"].Team, arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team,
-				arena.AllianceStations["B2"].Team, arena.AllianceStations["B3"].Team)
-			if err != nil {
-				log.Printf("Failed to configure team WiFi: %s", err.Error())
-			}
-		}()
+		err := arena.accessPoint.ConfigureTeamWifi(arena.AllianceStations["R1"].Team,
+			arena.AllianceStations["R2"].Team, arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team,
+			arena.AllianceStations["B2"].Team, arena.AllianceStations["B3"].Team)
+		if err != nil {
+			log.Printf("Failed to configure team WiFi: %s", err.Error())
+		}
 		go func() {
 			err := arena.networkSwitch.ConfigureTeamEthernet(arena.AllianceStations["R1"].Team,
 				arena.AllianceStations["R2"].Team, arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team,

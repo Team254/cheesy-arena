@@ -18,10 +18,9 @@ func TestConfigureAccessPoint(t *testing.T) {
 	disabledRe := regexp.MustCompile("disabled='([-\\w ]+)'")
 	ssidRe := regexp.MustCompile("ssid='([-\\w ]*)'")
 	wpaKeyRe := regexp.MustCompile("key='([-\\w ]*)'")
-	ap := AccessPoint{teamChannel: 1234, adminChannel: 4321, adminWpaKey: "blorpy"}
 
 	// Should put dummy values for all team SSIDs if there are no teams.
-	config, _ := ap.generateAccessPointConfig(nil, nil, nil, nil, nil, nil)
+	config, _ := generateAccessPointConfig([6]*model.Team{nil, nil, nil, nil, nil, nil})
 	disableds := disabledRe.FindAllStringSubmatch(config, -1)
 	ssids := ssidRe.FindAllStringSubmatch(config, -1)
 	wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
@@ -34,8 +33,8 @@ func TestConfigureAccessPoint(t *testing.T) {
 	}
 
 	// Should configure two SSIDs for two teams and put dummy values for the rest.
-	config, _ = ap.generateAccessPointConfig(&model.Team{Id: 254, WpaKey: "aaaaaaaa"}, nil, nil, nil, nil,
-		&model.Team{Id: 1114, WpaKey: "bbbbbbbb"})
+	config, _ = generateAccessPointConfig([6]*model.Team{{Id: 254, WpaKey: "aaaaaaaa"}, nil, nil, nil, nil,
+		{Id: 1114, WpaKey: "bbbbbbbb"}})
 	disableds = disabledRe.FindAllStringSubmatch(config, -1)
 	ssids = ssidRe.FindAllStringSubmatch(config, -1)
 	wpaKeys = wpaKeyRe.FindAllStringSubmatch(config, -1)
@@ -54,10 +53,9 @@ func TestConfigureAccessPoint(t *testing.T) {
 	}
 
 	// Should configure all SSIDs for six teams.
-	config, _ = ap.generateAccessPointConfig(&model.Team{Id: 1, WpaKey: "11111111"},
-		&model.Team{Id: 2, WpaKey: "22222222"}, &model.Team{Id: 3, WpaKey: "33333333"},
-		&model.Team{Id: 4, WpaKey: "44444444"}, &model.Team{Id: 5, WpaKey: "55555555"},
-		&model.Team{Id: 6, WpaKey: "66666666"})
+	config, _ = generateAccessPointConfig([6]*model.Team{{Id: 1, WpaKey: "11111111"}, {Id: 2, WpaKey: "22222222"},
+		{Id: 3, WpaKey: "33333333"}, {Id: 4, WpaKey: "44444444"}, {Id: 5, WpaKey: "55555555"},
+		{Id: 6, WpaKey: "66666666"}})
 	disableds = disabledRe.FindAllStringSubmatch(config, -1)
 	ssids = ssidRe.FindAllStringSubmatch(config, -1)
 	wpaKeys = wpaKeyRe.FindAllStringSubmatch(config, -1)
@@ -80,7 +78,7 @@ func TestConfigureAccessPoint(t *testing.T) {
 	}
 
 	// Should reject a missing WPA key.
-	_, err := ap.generateAccessPointConfig(&model.Team{Id: 254}, nil, nil, nil, nil, nil)
+	_, err := generateAccessPointConfig([6]*model.Team{{Id: 254}, nil, nil, nil, nil, nil})
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Invalid WPA key")
 	}

@@ -13,14 +13,15 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
 const (
-	accessPointSshPort           = 22
-	accessPointConnectTimeoutSec = 1
-	accessPointPollPeriodSec     = 3
+	accessPointSshPort                = 22
+	accessPointConnectTimeoutSec      = 1
+	accessPointPollPeriodSec          = 3
+	accessPointRequestBufferSize      = 10
+	accessPointConfigRetryIntervalSec = 5
 )
 
 type AccessPoint struct {
@@ -31,8 +32,9 @@ type AccessPoint struct {
 	adminChannel           int
 	adminWpaKey            string
 	networkSecurityEnabled bool
-	mutex                  sync.Mutex
+	configRequestChan      chan [6]*model.Team
 	TeamWifiStatuses       [6]TeamWifiStatus
+	initialStatusesFetched bool
 }
 
 type TeamWifiStatus struct {
@@ -49,31 +51,47 @@ func (ap *AccessPoint) SetSettings(address, username, password string, teamChann
 	ap.adminChannel = adminChannel
 	ap.adminWpaKey = adminWpaKey
 	ap.networkSecurityEnabled = networkSecurityEnabled
+
+	// Create config channel the first time this method is called.
+	if ap.configRequestChan == nil {
+		ap.configRequestChan = make(chan [6]*model.Team, accessPointRequestBufferSize)
+	}
 }
 
-// Loops indefinitely to read status from the access point.
+// Loops indefinitely to read status from and write configurations to the access point.
 func (ap *AccessPoint) Run() {
 	for {
-		if ap.networkSecurityEnabled {
+		// Check if there are any pending configuration requests; if not, periodically poll wifi status.
+		select {
+		case request := <-ap.configRequestChan:
+			// If there are multiple requests queued up, only consider the latest one.
+			numExtraRequests := len(ap.configRequestChan)
+			for i := 0; i < numExtraRequests; i++ {
+				request = <-ap.configRequestChan
+			}
+			ap.handleTeamWifiConfiguration(request)
+		case <-time.After(time.Second * accessPointPollPeriodSec):
 			ap.updateTeamWifiStatuses()
 		}
-
-		time.Sleep(time.Second * accessPointPollPeriodSec)
 	}
 }
 
-// Sets up wireless networks for the given set of teams.
+// Adds a request to set up wireless networks for the given set of teams to the asynchronous queue.
 func (ap *AccessPoint) ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
-	config, err := ap.generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3)
-	if err != nil {
-		return err
+	// Use a channel to serialize configuration requests; the monitoring goroutine will service them.
+	select {
+	case ap.configRequestChan <- [6]*model.Team{red1, red2, red3, blue1, blue2, blue3}:
+		return nil
+	default:
+		return fmt.Errorf("WiFi config request buffer full")
 	}
-	command := fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\nENDCONFIG\n", config)
-	_, err = ap.runCommand(command)
-	return err
 }
 
 func (ap *AccessPoint) ConfigureAdminWifi() error {
+	if !ap.networkSecurityEnabled {
+		return nil
+	}
+
 	disabled := 0
 	if ap.adminChannel == 0 {
 		disabled = 1
@@ -85,17 +103,98 @@ func (ap *AccessPoint) ConfigureAdminWifi() error {
 		fmt.Sprintf("set wireless.@wifi-iface[0].key='%s'", ap.adminWpaKey),
 		"commit wireless",
 	}
-	command := fmt.Sprintf("uci batch <<ENDCONFIG && wifi\n%s\nENDCONFIG\n", strings.Join(commands, "\n"))
+	command := fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio1\n%s\nENDCONFIG\n", strings.Join(commands, "\n"))
 	_, err := ap.runCommand(command)
 	return err
 }
 
+func (ap *AccessPoint) handleTeamWifiConfiguration(teams [6]*model.Team) {
+	if !ap.networkSecurityEnabled {
+		return
+	}
+
+	if ap.configIsCorrectForTeams(teams) {
+		return
+	}
+
+	// Generate the configuration command.
+	config, err := generateAccessPointConfig(teams)
+	if err != nil {
+		fmt.Printf("Failed to configure team WiFi: %v", err)
+		return
+	}
+	command := fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\nENDCONFIG\n", config)
+
+	// Loop indefinitely at writing the configuration and reading it back until it is successfully applied.
+	attemptCount := 1
+	for {
+		_, err := ap.runCommand(command)
+
+		// Wait before reading the config back on write success as it doesn't take effect right away, or before retrying
+		// on failure.
+		time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
+
+		if err == nil {
+			err = ap.updateTeamWifiStatuses()
+			if err == nil && ap.configIsCorrectForTeams(teams) {
+				if attemptCount > 1 {
+					log.Printf("Successfully configured WiFi after %d attempts.", attemptCount)
+				}
+				return
+			}
+		}
+
+		if err != nil {
+			log.Printf("Error configuring WiFi: %v", err)
+		}
+
+		log.Printf("WiFi configuration still incorrect after %d attempts; trying again.", attemptCount)
+		attemptCount++
+	}
+}
+
+// Returns true if the configured networks as read from the access point match the given teams.
+func (ap *AccessPoint) configIsCorrectForTeams(teams [6]*model.Team) bool {
+	if !ap.initialStatusesFetched {
+		return false
+	}
+
+	for i, team := range teams {
+		expectedTeamId := 0
+		if team != nil {
+			expectedTeamId = team.Id
+		}
+		if ap.TeamWifiStatuses[i].TeamId != expectedTeamId {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Fetches the current wifi network status from the access point and updates the status structure.
+func (ap *AccessPoint) updateTeamWifiStatuses() error {
+	if !ap.networkSecurityEnabled {
+		return nil
+	}
+
+	output, err := ap.runCommand("iwinfo")
+	if err == nil {
+		err = decodeWifiInfo(output, ap.TeamWifiStatuses[:])
+	}
+
+	if err != nil {
+		return fmt.Errorf("Error getting wifi info from AP: %v", err)
+	} else {
+		if !ap.initialStatusesFetched {
+			ap.initialStatusesFetched = true
+		}
+	}
+	return nil
+}
+
 // Logs into the access point via SSH and runs the given shell command.
 func (ap *AccessPoint) runCommand(command string) (string, error) {
-	// Make sure multiple commands aren't being run at the same time.
-	ap.mutex.Lock()
-	defer ap.mutex.Unlock()
-
 	// Open an SSH connection to the AP.
 	config := &ssh.ClientConfig{User: ap.username,
 		Auth:            []ssh.AuthMethod{ssh.Password(ap.password)},
@@ -117,64 +216,27 @@ func (ap *AccessPoint) runCommand(command string) (string, error) {
 	return string(outputBytes), err
 }
 
-func (ap *AccessPoint) generateAccessPointConfig(red1, red2, red3, blue1, blue2, blue3 *model.Team) (string, error) {
-	// Determine what new SSIDs are needed.
+// Verifies WPA key validity and produces the configuration command for the given list of teams.
+func generateAccessPointConfig(teams [6]*model.Team) (string, error) {
 	commands := &[]string{}
-	var err error
-	if err = addTeamConfigCommands(1, red1, commands); err != nil {
-		return "", err
-	}
-	if err = addTeamConfigCommands(2, red2, commands); err != nil {
-		return "", err
-	}
-	if err = addTeamConfigCommands(3, red3, commands); err != nil {
-		return "", err
-	}
-	if err = addTeamConfigCommands(4, blue1, commands); err != nil {
-		return "", err
-	}
-	if err = addTeamConfigCommands(5, blue2, commands); err != nil {
-		return "", err
-	}
-	if err = addTeamConfigCommands(6, blue3, commands); err != nil {
-		return "", err
-	}
+	for i, team := range teams {
+		position := i + 1
+		if team == nil {
+			*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
+				fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='no-team-%d'", position, position),
+				fmt.Sprintf("set wireless.@wifi-iface[%d].key='no-team-%d'", position, position))
+		} else {
+			if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
+				return "", fmt.Errorf("Invalid WPA key '%s' configured for team %d.", team.WpaKey, team.Id)
+			}
 
-	*commands = append(*commands, "commit wireless")
-
-	return strings.Join(*commands, "\n"), nil
-}
-
-// Verifies the validity of the given team's WPA key and adds a network for it to the list to be configured.
-func addTeamConfigCommands(position int, team *model.Team, commands *[]string) error {
-	if team == nil {
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='no-team-%d'", position, position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='no-team-%d'", position, position))
-	} else {
-		if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
-			return fmt.Errorf("Invalid WPA key '%s' configured for team %d.", team.WpaKey, team.Id)
+			*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
+				fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position, team.Id),
+				fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
 		}
-
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position, team.Id),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
 	}
-
-	return nil
-}
-
-// Fetches the current wifi network status from the access point and updates the status structure.
-func (ap *AccessPoint) updateTeamWifiStatuses() {
-	output, err := ap.runCommand("iwinfo")
-	if err != nil {
-		log.Printf("Error getting wifi info from AP: %v", err)
-		return
-	}
-
-	if err := decodeWifiInfo(output, ap.TeamWifiStatuses[:]); err != nil {
-		log.Println(err.Error())
-	}
+	*commands = append(*commands, "commit wireless")
+	return strings.Join(*commands, "\n"), nil
 }
 
 // Parses the given output from the "iwinfo" command on the AP and updates the given status structure with the result.
