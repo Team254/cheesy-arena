@@ -46,7 +46,7 @@
 .modal-large {
   width: 60%;
 }
-.ds-status, .radio-status, .robot-status, .bypass-status, .trip-time, .packet-loss  {
+.ds-status, .radio-status, .robot-status, .bypass-status {
   background-color: #aaa;
   color: #000;
   border: 1px solid #999;
@@ -57,9 +57,6 @@
   line-height: 25px;
   font-size: 14px;
   margin: 0 auto;
-}
-.trip-time, .packet-loss {
-  width: 90px;
 }
 .bypass-status {
   cursor: pointer;
