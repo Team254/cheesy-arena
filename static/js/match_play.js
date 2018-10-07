@@ -4,6 +4,7 @@
 // Client-side logic for the match play page.
 
 var websocket;
+var currentMatchId;
 var scoreIsReady;
 var lowBatteryThreshold = 6;
 
@@ -71,6 +72,13 @@ var confirmCommit = function(isReplay) {
 
 // Handles a websocket message to update the team connection status.
 var handleArenaStatus = function(data) {
+  // If getting data for the wrong match (e.g. after a server restart), reload the page.
+  if (currentMatchId == null) {
+    currentMatchId = data.MatchId;
+  } else if (currentMatchId !== data.MatchId) {
+    location.reload();
+  }
+
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
     var wifiStatus = data.TeamWifiStatuses[station];

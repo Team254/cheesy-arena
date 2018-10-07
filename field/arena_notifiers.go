@@ -97,6 +97,7 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 	}
 
 	return &struct {
+		MatchId          int
 		AllianceStations map[string]*AllianceStation
 		TeamWifiStatuses map[string]network.TeamWifiStatus
 		MatchState
@@ -104,8 +105,9 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 		PlcIsHealthy     bool
 		FieldEstop       bool
 		GameSpecificData string
-	}{arena.AllianceStations, teamWifiStatuses, arena.MatchState, arena.checkCanStartMatch() == nil,
-		arena.Plc.IsHealthy, arena.Plc.GetFieldEstop(), arena.CurrentMatch.GameSpecificData}
+	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState,
+		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy, arena.Plc.GetFieldEstop(),
+		arena.CurrentMatch.GameSpecificData}
 }
 
 func (arena *Arena) generateAudienceDisplayModeMessage() interface{} {
