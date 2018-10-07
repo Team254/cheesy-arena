@@ -149,7 +149,7 @@ func (arena *Arena) LoadSettings() error {
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 
-	if arena.EventSettings.NetworkSecurityEnabled {
+	if arena.EventSettings.NetworkSecurityEnabled && arena.MatchState == PreMatch {
 		if err = arena.accessPoint.ConfigureAdminWifi(); err != nil {
 			log.Printf("Failed to configure admin WiFi: %s", err.Error())
 		}
