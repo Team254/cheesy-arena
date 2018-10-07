@@ -4,8 +4,10 @@
 package network
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"regexp"
 	"testing"
 )
@@ -18,20 +20,20 @@ func TestConfigureAccessPoint(t *testing.T) {
 	wpaKeyRe := regexp.MustCompile("key='([-\\w ]*)'")
 	ap := AccessPoint{teamChannel: 1234, adminChannel: 4321, adminWpaKey: "blorpy"}
 
-	// Should disable all team SSIDs if there are no teams.
+	// Should put dummy values for all team SSIDs if there are no teams.
 	config, _ := ap.generateAccessPointConfig(nil, nil, nil, nil, nil, nil)
 	disableds := disabledRe.FindAllStringSubmatch(config, -1)
 	ssids := ssidRe.FindAllStringSubmatch(config, -1)
 	wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
 	if assert.Equal(t, 6, len(disableds)) && assert.Equal(t, 6, len(ssids)) && assert.Equal(t, 6, len(wpaKeys)) {
 		for i := 0; i < 6; i++ {
-			assert.Equal(t, "1", disableds[i][1])
-			assert.Equal(t, "", ssids[i][1])
-			assert.Equal(t, "", wpaKeys[i][1])
+			assert.Equal(t, "0", disableds[i][1])
+			assert.Equal(t, fmt.Sprintf("no-team-%d", i+1), ssids[i][1])
+			assert.Equal(t, fmt.Sprintf("no-team-%d", i+1), wpaKeys[i][1])
 		}
 	}
 
-	// Should configure two SSIDs for two teams and disable the rest.
+	// Should configure two SSIDs for two teams and put dummy values for the rest.
 	config, _ = ap.generateAccessPointConfig(&model.Team{Id: 254, WpaKey: "aaaaaaaa"}, nil, nil, nil, nil,
 		&model.Team{Id: 1114, WpaKey: "bbbbbbbb"})
 	disableds = disabledRe.FindAllStringSubmatch(config, -1)
@@ -42,9 +44,9 @@ func TestConfigureAccessPoint(t *testing.T) {
 		assert.Equal(t, "254", ssids[0][1])
 		assert.Equal(t, "aaaaaaaa", wpaKeys[0][1])
 		for i := 1; i < 5; i++ {
-			assert.Equal(t, "1", disableds[i][1])
-			assert.Equal(t, "", ssids[i][1])
-			assert.Equal(t, "", wpaKeys[i][1])
+			assert.Equal(t, "0", disableds[i][1])
+			assert.Equal(t, fmt.Sprintf("no-team-%d", i+1), ssids[i][1])
+			assert.Equal(t, fmt.Sprintf("no-team-%d", i+1), wpaKeys[i][1])
 		}
 		assert.Equal(t, "0", disableds[5][1])
 		assert.Equal(t, "1114", ssids[5][1])
@@ -82,4 +84,56 @@ func TestConfigureAccessPoint(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Invalid WPA key")
 	}
+}
+
+func TestDecodeWifiInfo(t *testing.T) {
+	var statuses [6]TeamWifiStatus
+
+	// Test with zero team networks configured.
+	output, err := ioutil.ReadFile("testdata/iwinfo_0_teams.txt")
+	if assert.Nil(t, err) {
+		assert.Nil(t, decodeWifiInfo(string(output), statuses[:]))
+		assertTeamWifiStatus(t, 0, false, statuses[0])
+		assertTeamWifiStatus(t, 0, false, statuses[1])
+		assertTeamWifiStatus(t, 0, false, statuses[2])
+		assertTeamWifiStatus(t, 0, false, statuses[3])
+		assertTeamWifiStatus(t, 0, false, statuses[4])
+		assertTeamWifiStatus(t, 0, false, statuses[5])
+	}
+
+	// Test with two team networks configured.
+	output, err = ioutil.ReadFile("testdata/iwinfo_2_teams.txt")
+	if assert.Nil(t, err) {
+		assert.Nil(t, decodeWifiInfo(string(output), statuses[:]))
+		assertTeamWifiStatus(t, 0, false, statuses[0])
+		assertTeamWifiStatus(t, 2471, true, statuses[1])
+		assertTeamWifiStatus(t, 0, false, statuses[2])
+		assertTeamWifiStatus(t, 254, false, statuses[3])
+		assertTeamWifiStatus(t, 0, false, statuses[4])
+		assertTeamWifiStatus(t, 0, false, statuses[5])
+	}
+
+	// Test with six team networks configured.
+	output, err = ioutil.ReadFile("testdata/iwinfo_6_teams.txt")
+	if assert.Nil(t, err) {
+		assert.Nil(t, decodeWifiInfo(string(output), statuses[:]))
+		assertTeamWifiStatus(t, 254, false, statuses[0])
+		assertTeamWifiStatus(t, 1678, false, statuses[1])
+		assertTeamWifiStatus(t, 2910, true, statuses[2])
+		assertTeamWifiStatus(t, 604, false, statuses[3])
+		assertTeamWifiStatus(t, 8, false, statuses[4])
+		assertTeamWifiStatus(t, 2471, true, statuses[5])
+	}
+
+	// Test with invalid input.
+	assert.NotNil(t, decodeWifiInfo("", statuses[:]))
+	output, err = ioutil.ReadFile("testdata/iwinfo_invalid.txt")
+	if assert.Nil(t, err) {
+		assert.NotNil(t, decodeWifiInfo(string(output), statuses[:]))
+	}
+}
+
+func assertTeamWifiStatus(t *testing.T, expectedTeamId int, expectedRadioLinked bool, status TeamWifiStatus) {
+	assert.Equal(t, expectedTeamId, status.TeamId)
+	assert.Equal(t, expectedRadioLinked, status.RadioLinked)
 }

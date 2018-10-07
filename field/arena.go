@@ -45,7 +45,7 @@ const (
 type Arena struct {
 	Database         *model.Database
 	EventSettings    *model.EventSettings
-	accessPoint      *network.AccessPoint
+	accessPoint      network.AccessPoint
 	networkSwitch    *network.Switch
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
@@ -143,8 +143,8 @@ func (arena *Arena) LoadSettings() error {
 	arena.EventSettings = settings
 
 	// Initialize the components that depend on settings.
-	arena.accessPoint = network.NewAccessPoint(settings.ApAddress, settings.ApUsername, settings.ApPassword,
-		settings.ApTeamChannel, settings.ApAdminChannel, settings.ApAdminWpaKey)
+	arena.accessPoint.SetSettings(settings.ApAddress, settings.ApUsername, settings.ApPassword,
+		settings.ApTeamChannel, settings.ApAdminChannel, settings.ApAdminWpaKey, settings.NetworkSecurityEnabled)
 	arena.networkSwitch = network.NewSwitch(settings.SwitchAddress, settings.SwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
@@ -559,6 +559,7 @@ func (arena *Arena) Run() {
 	// Start other loops in goroutines.
 	go arena.listenForDriverStations()
 	go arena.listenForDsUdpPackets()
+	go arena.accessPoint.Run()
 	go arena.Plc.Run()
 
 	for {

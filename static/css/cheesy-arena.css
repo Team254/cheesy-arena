@@ -46,7 +46,7 @@
 .modal-large {
   width: 60%;
 }
-.ds-status, .radio-status, .robot-status, .battery-status, .bypass-status, .trip-time, .packet-loss  {
+.ds-status, .radio-status, .robot-status, .bypass-status, .trip-time, .packet-loss  {
   background-color: #aaa;
   color: #000;
   border: 1px solid #999;
