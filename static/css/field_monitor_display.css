@@ -56,6 +56,9 @@ body {
 .team-id[data-status=robot-linked] {
   background-color: #0a3;
 }
+.team-id[data-status=radio-linked] {
+  background-color: #ff00ff;
+}
 .team-box-row {
   display: flex;
   height: 20%;
