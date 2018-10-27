@@ -365,6 +365,7 @@ html {
 .final-footer {
   float: left;
   width: 33.3%;
+  white-space: nowrap;
 }
 #finalSeriesStatus {
   text-align: center;

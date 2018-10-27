@@ -81,7 +81,7 @@
           </span>
         </div>
         <div id="eventMatchInfo">
-          <span>{{.EventSettings.Name}} 2018</span>
+          <span>{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 16}} 2018{{end}}</span>
           <span class="pull-right" id="matchName"></span>
         </div>
       </div>
@@ -142,7 +142,7 @@
           </span>
         </div>
         <div id="finalEventMatchInfo">
-          <div class="final-footer">{{.EventSettings.Name}} 2018</div>
+          <div class="final-footer">{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 22}} 2018{{end}}</div>
           <div class="final-footer" id="finalSeriesStatus">&nbsp;</div>
           <div class="final-footer" id="finalMatchName">&nbsp;</div>
         </div>

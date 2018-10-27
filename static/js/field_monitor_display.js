@@ -6,6 +6,7 @@
 var websocket;
 var redSide;
 var blueSide;
+var lowBatteryThreshold = 12;
 
 // Handles a websocket message to update the team connection status.
 var handleArenaStatus = function(data) {
