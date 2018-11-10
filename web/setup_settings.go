@@ -34,10 +34,10 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	eventSettings := web.arena.EventSettings
 	
-	previousName = eventSettings.Name
+	perviousEventName = eventSettings.Name
 	eventSettings.Name = r.PostFormValue("name")
-	if len(eventSettings.Name) < 1 && perviousName == "Untitled Event"{
-		eventSettings.Name = "Untitled Event"
+	if len(eventSettings.Name) < 1 && eventSettings.Name != perviousEventName{
+		eventSettings.Name = perviousEventName
 	}
 	
 	numAlliances, _ := strconv.Atoi(r.PostFormValue("numElimAlliances"))
