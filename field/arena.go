@@ -236,7 +236,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.AllianceStationDisplayModeNotifier.Notify()
 
 	// Set the initial state of the lights.
-	arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
+	arena.ScaleLeds.SetMode(led.GreenMode, led.GreenMode)
 	arena.RedSwitchLeds.SetMode(led.RedMode, led.RedMode)
 	arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
 	arena.RedVaultLeds.SetAllModes(vaultled.OffMode)
@@ -823,6 +823,11 @@ func (arena *Arena) handleLeds() {
 			arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
 		}
 		arena.lastBlueAllianceReady = blueAllianceReady
+		if !redAllianceReady && !blueAllianceReady{
+			arena.ScaleLeds.SetMode(led.GreenMode, led.GreenMode)
+		} else if redAllianceReady && blueAllianceReady{
+			arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
+		}
 	case WarmupPeriod:
 		arena.Plc.SetStackLights(false, false, true)
 		arena.ScaleLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
