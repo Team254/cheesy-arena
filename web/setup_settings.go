@@ -33,13 +33,13 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	eventSettings := web.arena.EventSettings
-	
-	perviousEventName = eventSettings.Name
+
+	previousEventName := eventSettings.Name
 	eventSettings.Name = r.PostFormValue("name")
-	if len(eventSettings.Name) < 1 && eventSettings.Name != perviousEventName{
-		eventSettings.Name = perviousEventName
+	if len(eventSettings.Name) < 1 && eventSettings.Name != previousEventName {
+		eventSettings.Name = previousEventName
 	}
-	
+
 	numAlliances, _ := strconv.Atoi(r.PostFormValue("numElimAlliances"))
 	if numAlliances < 2 || numAlliances > 16 {
 		web.renderSettings(w, r, "Number of alliances must be between 2 and 16.")
