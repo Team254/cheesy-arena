@@ -1,0 +1,91 @@
+wlan0     ESSID: "no-team-1"
+          Access Point: 00:25:9C:14:65:8A
+          Mode: Master  Channel: 161 (5.805 GHz)
+          Tx-Power: 23 dBm  Link Quality: unknown/70
+          Signal: unknown  Noise: -94 dBm
+          Bit Rate: unknown
+          Encryption: WPA2 PSK (CCMP)
+          Type: nl80211  HW Mode(s): 802.11nac
+          Hardware: 11AB:2A55 11AB:0000 [Marvell 88W8864]
+          TX power offset: none
+          Frequency offset: none
+          Supports VAPs: yes  PHY name: phy0
+
+wlan0-1   ESSID: "2471"
+          Access Point: 02:25:9C:14:65:8A
+          Mode: Master  Channel: 161 (5.805 GHz)
+          Tx-Power: 23 dBm  Link Quality: 2/70
+          Signal: unknown  Noise: -94 dBm
+          Bit Rate: unknown
+          Encryption: WPA2 PSK (CCMP)
+          Type: nl80211  HW Mode(s): 802.11nac
+          Hardware: 11AB:2A55 11AB:0000 [Marvell 88W8864]
+          TX power offset: none
+          Frequency offset: none
+          Supports VAPs: yes  PHY name: phy0
+
+wlan0-2   ESSID: "no-team-3"
+          Access Point: 06:25:9C:14:65:8A
+          Mode: Master  Channel: 161 (5.805 GHz)
+          Tx-Power: 23 dBm  Link Quality: unknown/70
+          Signal: unknown  Noise: -94 dBm
+          Bit Rate: unknown
+          Encryption: WPA2 PSK (CCMP)
+          Type: nl80211  HW Mode(s): 802.11nac
+          Hardware: 11AB:2A55 11AB:0000 [Marvell 88W8864]
+          TX power offset: none
+          Frequency offset: none
+          Supports VAPs: yes  PHY name: phy0
+
+wlan0-3   ESSID: "254"
+          Access Point: 0A:25:9C:14:65:8A
+          Mode: Master  Channel: 161 (5.805 GHz)
+          Tx-Power: 23 dBm  Link Quality: unknown/70
+          Signal: unknown  Noise: -94 dBm
+          Bit Rate: unknown
+          Encryption: WPA2 PSK (CCMP)
+          Type: nl80211  HW Mode(s): 802.11nac
+          Hardware: 11AB:2A55 11AB:0000 [Marvell 88W8864]
+          TX power offset: none
+          Frequency offset: none
+          Supports VAPs: yes  PHY name: phy0
+
+wlan0-4   ESSID: "no-team-5"
+          Access Point: 0E:25:9C:14:65:8A
+          Mode: Master  Channel: 161 (5.805 GHz)
+          Tx-Power: 23 dBm  Link Quality: unknown/70
+          Signal: unknown  Noise: -94 dBm
+          Bit Rate: unknown
+          Encryption: WPA2 PSK (CCMP)
+          Type: nl80211  HW Mode(s): 802.11nac
+          Hardware: 11AB:2A55 11AB:0000 [Marvell 88W8864]
+          TX power offset: none
+          Frequency offset: none
+          Supports VAPs: yes  PHY name: phy0
+
+wlan0-5   ESSID: "no-team-6"
+          Access Point: 12:25:9C:14:65:8A
+          Mode: Master  Channel: 161 (5.805 GHz)
+          Tx-Power: 23 dBm  Link Quality: unknown/70
+          Signal: unknown  Noise: -94 dBm
+          Bit Rate: unknown
+          Encryption: WPA2 PSK (CCMP)
+          Type: nl80211  HW Mode(s): 802.11nac
+          Hardware: 11AB:2A55 11AB:0000 [Marvell 88W8864]
+          TX power offset: none
+          Frequency offset: none
+          Supports VAPs: yes  PHY name: phy0
+
+wlan1     ESSID: unknown
+          Access Point: 00:00:00:00:00:00
+          Mode: Client  Channel: unknown (unknown)
+          Tx-Power: unknown  Link Quality: unknown/70
+          Signal: unknown  Noise: unknown
+          Bit Rate: unknown
+          Encryption: unknown
+          Type: nl80211  HW Mode(s): 802.11bgn
+          Hardware: 11AB:2A55 11AB:0000 [Marvell 88W8864]
+          TX power offset: none
+          Frequency offset: none
+          Supports VAPs: yes  PHY name: phy1
+

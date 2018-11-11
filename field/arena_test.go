@@ -473,14 +473,14 @@ func TestSetupNetwork(t *testing.T) {
 
 	// Verify the setup ran by checking the log for the expected failure messages.
 	arena.EventSettings.NetworkSecurityEnabled = true
-	arena.accessPoint.port = 10022
-	arena.networkSwitch.port = 10023
+	arena.EventSettings.SwitchAddress = "invalid"
+	arena.Database.SaveEventSettings(arena.EventSettings)
+	arena.LoadSettings()
 	arena.LoadMatch(&model.Match{Type: "test"})
 	var writer bytes.Buffer
 	log.SetOutput(&writer)
 	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous configuration to happen.
 	assert.Contains(t, writer.String(), "Failed to configure team Ethernet")
-	assert.Contains(t, writer.String(), "Failed to configure team WiFi")
 }
 
 func TestAstop(t *testing.T) {

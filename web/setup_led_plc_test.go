@@ -27,7 +27,7 @@ func TestSetupLedPlcWebsocket(t *testing.T) {
 
 	// Should get a few status updates right after connection.
 	ledModeMessage := readLedModes(t, ws)
-	assert.Equal(t, led.OffMode, ledModeMessage.LedMode)
+	assert.Equal(t, led.GreenMode, ledModeMessage.LedMode)
 	assert.Equal(t, vaultled.OffMode, ledModeMessage.VaultLedMode)
 	readWebsocketType(t, ws, "plcIoChange")
 

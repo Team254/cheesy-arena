@@ -3,7 +3,7 @@
 //
 // Methods for configuring a Cisco Switch 3500-series switch for team VLANs.
 
-package field
+package network
 
 import (
 	"bufio"
@@ -27,25 +27,27 @@ const (
 	blue3Vlan = 60
 )
 
-type NetworkSwitch struct {
+type Switch struct {
 	address  string
 	port     int
 	password string
 	mutex    sync.Mutex
 }
 
-func NewNetworkSwitch(address, password string) *NetworkSwitch {
-	return &NetworkSwitch{address: address, port: switchTelnetPort, password: password}
+var ServerIpAddress = "10.0.100.5" // The DS will try to connect to this address only.
+
+func NewSwitch(address, password string) *Switch {
+	return &Switch{address: address, port: switchTelnetPort, password: password}
 }
 
 // Sets up wired networks for the given set of teams.
-func (ns *NetworkSwitch) ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
+func (sw *Switch) ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
 	// Make sure multiple configurations aren't being set at the same time.
-	ns.mutex.Lock()
-	defer ns.mutex.Unlock()
+	sw.mutex.Lock()
+	defer sw.mutex.Unlock()
 
 	// Determine what new team VLANs are needed and build the commands to set them up.
-	oldTeamVlans, err := ns.getTeamVlans()
+	oldTeamVlans, err := sw.getTeamVlans()
 	if err != nil {
 		return err
 	}
@@ -69,8 +71,8 @@ func (ns *NetworkSwitch) ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, b
 					"access-list 1%d permit udp any eq bootpc any eq bootps\n"+
 					"interface Vlan%d\nip address 10.%d.%d.61 255.255.255.0\n",
 				team.Id/100, team.Id%100, team.Id/100, team.Id%100, vlan, vlan, team.Id/100, team.Id%100, team.Id/100,
-				team.Id%100, vlan, vlan, team.Id/100, team.Id%100, driverStationTcpListenAddress, vlan, vlan,
-				team.Id/100, team.Id%100)
+				team.Id%100, vlan, vlan, team.Id/100, team.Id%100, ServerIpAddress, vlan, vlan, team.Id/100,
+				team.Id%100)
 		}
 	}
 	replaceTeamVlan(red1, red1Vlan)
@@ -89,7 +91,7 @@ func (ns *NetworkSwitch) ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, b
 	// Build and run the overall command to do everything in a single telnet session.
 	command := removeTeamVlansCommand + addTeamVlansCommand
 	if len(command) > 0 {
-		_, err = ns.runConfigCommand(removeTeamVlansCommand + addTeamVlansCommand)
+		_, err = sw.runConfigCommand(removeTeamVlansCommand + addTeamVlansCommand)
 		if err != nil {
 			return err
 		}
@@ -99,9 +101,9 @@ func (ns *NetworkSwitch) ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, b
 }
 
 // Returns a map of currently-configured teams to VLANs.
-func (ns *NetworkSwitch) getTeamVlans() (map[int]int, error) {
+func (sw *Switch) getTeamVlans() (map[int]int, error) {
 	// Get the entire config dump.
-	config, err := ns.runCommand("show running-config\n")
+	config, err := sw.runCommand("show running-config\n")
 	if err != nil {
 		return nil, err
 	}
@@ -128,9 +130,9 @@ func (ns *NetworkSwitch) getTeamVlans() (map[int]int, error) {
 
 // Logs into the switch via Telnet and runs the given command in user exec mode. Reads the output and
 // returns it as a string.
-func (ns *NetworkSwitch) runCommand(command string) (string, error) {
+func (sw *Switch) runCommand(command string) (string, error) {
 	// Open a Telnet connection to the switch.
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ns.address, ns.port))
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port))
 	if err != nil {
 		return "", err
 	}
@@ -138,7 +140,7 @@ func (ns *NetworkSwitch) runCommand(command string) (string, error) {
 
 	// Login to the AP, send the command, and log out all at once.
 	writer := bufio.NewWriter(conn)
-	_, err = writer.WriteString(fmt.Sprintf("%s\nenable\n%s\nterminal length 0\n%sexit\n", ns.password, ns.password,
+	_, err = writer.WriteString(fmt.Sprintf("%s\nenable\n%s\nterminal length 0\n%sexit\n", sw.password, sw.password,
 		command))
 	if err != nil {
 		return "", err
@@ -159,6 +161,6 @@ func (ns *NetworkSwitch) runCommand(command string) (string, error) {
 
 // Logs into the switch via Telnet and runs the given command in global configuration mode. Reads the output
 // and returns it as a string.
-func (ns *NetworkSwitch) runConfigCommand(command string) (string, error) {
-	return ns.runCommand(fmt.Sprintf("config terminal\n%send\ncopy running-config startup-config\n\n", command))
+func (sw *Switch) runConfigCommand(command string) (string, error) {
+	return sw.runCommand(fmt.Sprintf("config terminal\n%send\ncopy running-config startup-config\n\n", command))
 }
