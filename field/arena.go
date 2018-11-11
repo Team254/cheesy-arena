@@ -811,6 +811,11 @@ func (arena *Arena) handleLeds() {
 		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady)
 
 		// Turn off each alliance switch if all teams become ready.
+		if redAllianceReady && !arena.lastRedAllianceReady && blueAllianceReady && !arena.lastBlueAllianceReady {
+			arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
+		} else if !redAllianceReady && arena.lastRedAllianceReady && !blueAllianceReady && arena.lastBlueAllianceReady {
+			arena.ScaleLeds.SetMode(led.GreenMode, led.GreenMode)
+		}
 		if redAllianceReady && !arena.lastRedAllianceReady {
 			arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
 		} else if !redAllianceReady && arena.lastRedAllianceReady {
@@ -823,11 +828,7 @@ func (arena *Arena) handleLeds() {
 			arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
 		}
 		arena.lastBlueAllianceReady = blueAllianceReady
-		if !redAllianceReady && !blueAllianceReady{
-			arena.ScaleLeds.SetMode(led.GreenMode, led.GreenMode)
-		} else if redAllianceReady && blueAllianceReady{
-			arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
-		}
+
 	case WarmupPeriod:
 		arena.Plc.SetStackLights(false, false, true)
 		arena.ScaleLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
