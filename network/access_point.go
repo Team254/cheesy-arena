@@ -137,9 +137,7 @@ func (ap *AccessPoint) handleTeamWifiConfiguration(teams [6]*model.Team) {
 		if err == nil {
 			err = ap.updateTeamWifiStatuses()
 			if err == nil && ap.configIsCorrectForTeams(teams) {
-				if attemptCount > 1 {
-					log.Printf("Successfully configured WiFi after %d attempts.", attemptCount)
-				}
+				log.Printf("Successfully configured WiFi after %d attempts.", attemptCount)
 				return
 			}
 		}
