@@ -4,6 +4,7 @@
 package field
 
 import (
+	"github.com/Team254/cheesy-arena/network"
 	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
@@ -162,11 +163,11 @@ func TestDecodeStatusPacket(t *testing.T) {
 func TestListenForDriverStations(t *testing.T) {
 	arena := setupTestArena(t)
 
-	oldAddress := driverStationTcpListenAddress
-	driverStationTcpListenAddress = "127.0.0.1"
+	oldAddress := network.ServerIpAddress
+	network.ServerIpAddress = "127.0.0.1"
 	go arena.listenForDriverStations()
 	time.Sleep(time.Millisecond * 10)
-	driverStationTcpListenAddress = oldAddress // Put it back to avoid affecting other tests.
+	network.ServerIpAddress = oldAddress // Put it back to avoid affecting other tests.
 
 	// Connect with an invalid initial packet.
 	tcpConn, err := net.Dial("tcp", "127.0.0.1:1750")

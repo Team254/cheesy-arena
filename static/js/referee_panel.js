@@ -30,17 +30,6 @@ var setFoulRule = function(ruleButton) {
   $("#commit").prop("disabled", !(foulTeamButton && foulRuleButton));
 };
 
-// Sets button styles to match the selection cached in the global variables.
-var setSelections = function() {
-  $("[data-team]").each(function(i, teamButton) {
-    $(teamButton).attr("data-selected", $(teamButton).attr("data-team") === foulTeam);
-  });
-
-  $("[data-rule]").each(function(i, ruleButton) {
-    $(ruleButton).attr("data-selected", $(ruleButton).attr("data-rule") === foulRule);
-  });
-};
-
 // Resets the buttons to their default selections.
 var clearFoul = function() {
   if (foulTeamButton) {

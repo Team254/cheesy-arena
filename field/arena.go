@@ -10,6 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
 	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/plc"
 	"github.com/Team254/cheesy-arena/vaultled"
@@ -44,8 +45,8 @@ const (
 type Arena struct {
 	Database         *model.Database
 	EventSettings    *model.EventSettings
-	accessPoint      *AccessPoint
-	networkSwitch    *NetworkSwitch
+	accessPoint      network.AccessPoint
+	networkSwitch    *network.Switch
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
 	AllianceStations map[string]*AllianceStation
@@ -142,13 +143,13 @@ func (arena *Arena) LoadSettings() error {
 	arena.EventSettings = settings
 
 	// Initialize the components that depend on settings.
-	arena.accessPoint = NewAccessPoint(settings.ApAddress, settings.ApUsername, settings.ApPassword,
-		settings.ApTeamChannel, settings.ApAdminChannel, settings.ApAdminWpaKey)
-	arena.networkSwitch = NewNetworkSwitch(settings.SwitchAddress, settings.SwitchPassword)
+	arena.accessPoint.SetSettings(settings.ApAddress, settings.ApUsername, settings.ApPassword,
+		settings.ApTeamChannel, settings.ApAdminChannel, settings.ApAdminWpaKey, settings.NetworkSecurityEnabled)
+	arena.networkSwitch = network.NewSwitch(settings.SwitchAddress, settings.SwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 
-	if arena.EventSettings.NetworkSecurityEnabled {
+	if arena.EventSettings.NetworkSecurityEnabled && arena.MatchState == PreMatch {
 		if err = arena.accessPoint.ConfigureAdminWifi(); err != nil {
 			log.Printf("Failed to configure admin WiFi: %s", err.Error())
 		}
@@ -235,7 +236,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.AllianceStationDisplayModeNotifier.Notify()
 
 	// Set the initial state of the lights.
-	arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
+	arena.ScaleLeds.SetMode(led.GreenMode, led.GreenMode)
 	arena.RedSwitchLeds.SetMode(led.RedMode, led.RedMode)
 	arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
 	arena.RedVaultLeds.SetAllModes(vaultled.OffMode)
@@ -558,6 +559,7 @@ func (arena *Arena) Run() {
 	// Start other loops in goroutines.
 	go arena.listenForDriverStations()
 	go arena.listenForDsUdpPackets()
+	go arena.accessPoint.Run()
 	go arena.Plc.Run()
 
 	for {
@@ -616,14 +618,12 @@ func (arena *Arena) assignTeam(teamId int, station string) error {
 // Asynchronously reconfigures the networking hardware for the new set of teams.
 func (arena *Arena) setupNetwork() {
 	if arena.EventSettings.NetworkSecurityEnabled {
-		go func() {
-			err := arena.accessPoint.ConfigureTeamWifi(arena.AllianceStations["R1"].Team,
-				arena.AllianceStations["R2"].Team, arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team,
-				arena.AllianceStations["B2"].Team, arena.AllianceStations["B3"].Team)
-			if err != nil {
-				log.Printf("Failed to configure team WiFi: %s", err.Error())
-			}
-		}()
+		err := arena.accessPoint.ConfigureTeamWifi(arena.AllianceStations["R1"].Team,
+			arena.AllianceStations["R2"].Team, arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team,
+			arena.AllianceStations["B2"].Team, arena.AllianceStations["B3"].Team)
+		if err != nil {
+			log.Printf("Failed to configure team WiFi: %s", err.Error())
+		}
 		go func() {
 			err := arena.networkSwitch.ConfigureTeamEthernet(arena.AllianceStations["R1"].Team,
 				arena.AllianceStations["R2"].Team, arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team,
@@ -810,7 +810,13 @@ func (arena *Arena) handleLeds() {
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, greenStackLight)
 		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady)
 
-		// Turn off each alliance switch if all teams become ready.
+		// Turn off scale and each alliance switch if all teams become ready.
+		if redAllianceReady && blueAllianceReady && !(arena.lastRedAllianceReady && arena.lastBlueAllianceReady) {
+			arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
+		} else if !(redAllianceReady && blueAllianceReady) && arena.lastRedAllianceReady &&
+			arena.lastBlueAllianceReady {
+			arena.ScaleLeds.SetMode(led.GreenMode, led.GreenMode)
+		}
 		if redAllianceReady && !arena.lastRedAllianceReady {
 			arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
 		} else if !redAllianceReady && arena.lastRedAllianceReady {
@@ -823,6 +829,7 @@ func (arena *Arena) handleLeds() {
 			arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
 		}
 		arena.lastBlueAllianceReady = blueAllianceReady
+
 	case WarmupPeriod:
 		arena.Plc.SetStackLights(false, false, true)
 		arena.ScaleLeds.SetMode(arena.warmupLedMode, arena.warmupLedMode)
