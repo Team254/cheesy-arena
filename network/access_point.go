@@ -19,6 +19,7 @@ import (
 const (
 	accessPointSshPort                = 22
 	accessPointConnectTimeoutSec      = 1
+	accessPointCommandTimeoutSec      = 5
 	accessPointPollPeriodSec          = 3
 	accessPointRequestBufferSize      = 10
 	accessPointConfigRetryIntervalSec = 5
@@ -40,6 +41,11 @@ type AccessPoint struct {
 type TeamWifiStatus struct {
 	TeamId      int
 	RadioLinked bool
+}
+
+type sshOutput struct {
+	output string
+	err    error
 }
 
 func (ap *AccessPoint) SetSettings(address, username, password string, teamChannel, adminChannel int,
@@ -210,8 +216,18 @@ func (ap *AccessPoint) runCommand(command string) (string, error) {
 	defer session.Close()
 	defer conn.Close()
 
-	outputBytes, err := session.Output(command)
-	return string(outputBytes), err
+	// Run the command with a timeout.
+	commandChan := make(chan sshOutput, 1)
+	go func() {
+		outputBytes, err := session.Output(command)
+		commandChan <- sshOutput{string(outputBytes), err}
+	}()
+	select {
+	case output := <-commandChan:
+		return output.output, output.err
+	case <-time.After(accessPointCommandTimeoutSec * time.Second):
+		return "", fmt.Errorf("WiFi SSH command timed out after %d seconds", accessPointCommandTimeoutSec)
+	}
 }
 
 // Verifies WPA key validity and produces the configuration command for the given list of teams.
