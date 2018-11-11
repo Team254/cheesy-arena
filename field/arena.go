@@ -810,10 +810,11 @@ func (arena *Arena) handleLeds() {
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, greenStackLight)
 		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady)
 
-		// Turn off each alliance switch if all teams become ready.
-		if redAllianceReady && !arena.lastRedAllianceReady && blueAllianceReady && !arena.lastBlueAllianceReady {
+		// Turn off scale and each alliance switch if all teams become ready.
+		if redAllianceReady && blueAllianceReady && !(arena.lastRedAllianceReady && arena.lastBlueAllianceReady) {
 			arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
-		} else if !redAllianceReady && arena.lastRedAllianceReady && !blueAllianceReady && arena.lastBlueAllianceReady {
+		} else if !(redAllianceReady && blueAllianceReady) && arena.lastRedAllianceReady &&
+			arena.lastBlueAllianceReady {
 			arena.ScaleLeds.SetMode(led.GreenMode, led.GreenMode)
 		}
 		if redAllianceReady && !arena.lastRedAllianceReady {
