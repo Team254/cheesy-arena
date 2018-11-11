@@ -4,11 +4,9 @@
 package field
 
 import (
-	"bytes"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
-	"log"
 	"testing"
 	"time"
 )
@@ -466,21 +464,6 @@ func TestSubstituteTeam(t *testing.T) {
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
 	assert.Nil(t, arena.SubstituteTeam(107, "R1"))
-}
-
-func TestSetupNetwork(t *testing.T) {
-	arena := setupTestArena(t)
-
-	// Verify the setup ran by checking the log for the expected failure messages.
-	arena.EventSettings.NetworkSecurityEnabled = true
-	arena.EventSettings.SwitchAddress = "invalid"
-	arena.Database.SaveEventSettings(arena.EventSettings)
-	arena.LoadSettings()
-	arena.LoadMatch(&model.Match{Type: "test"})
-	var writer bytes.Buffer
-	log.SetOutput(&writer)
-	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous configuration to happen.
-	assert.Contains(t, writer.String(), "Failed to configure team Ethernet")
 }
 
 func TestAstop(t *testing.T) {
