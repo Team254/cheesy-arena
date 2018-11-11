@@ -6,36 +6,94 @@
 var websocket;
 var redSide;
 var blueSide;
+var lowBatteryThreshold = 8;
 
 // Handles a websocket message to update the team connection status.
 var handleArenaStatus = function(data) {
   $.each(data.AllianceStations, function(station, stationStatus) {
-    // Select the DOM element corresponding to the team station.
-    var teamElement;
+    // Select the DOM elements corresponding to the team station.
+    var teamElementPrefix;
     if (station[0] === "R") {
-      teamElement = $("#" + redSide + "Team" + station[1]);
+      teamElementPrefix = "#" + redSide + "Team" + station[1];
     } else {
-      teamElement = $("#" + blueSide + "Team" + station[1]);
+      teamElementPrefix = "#" + blueSide + "Team" + station[1];
     }
+    var teamIdElement = $(teamElementPrefix + "Id");
+    var teamDsElement = $(teamElementPrefix + "Ds");
+    var teamRadioElement = $(teamElementPrefix + "Radio");
+    var teamRadioTextElement = $(teamElementPrefix + "Radio span");
+    var teamRobotElement = $(teamElementPrefix + "Robot");
+    var teamBypassElement = $(teamElementPrefix + "Bypass");
 
     if (stationStatus.Team) {
       // Set the team number and status.
-      teamElement.text(stationStatus.Team.Id);
+      teamIdElement.text(stationStatus.Team.Id);
       var status = "no-link";
       if (stationStatus.Bypass) {
         status = "";
       } else if (stationStatus.DsConn) {
         if (stationStatus.DsConn.RobotLinked) {
           status = "robot-linked";
+        } else if (stationStatus.DsConn.RadioLinked) {
+          status = "radio-linked";
         } else if (stationStatus.DsConn.DsLinked) {
           status = "ds-linked";
         }
       }
-      teamElement.attr("data-status", status);
+      teamIdElement.attr("data-status", status);
     } else {
       // No team is present in this position for this match; blank out the status.
-      teamElement.text("");
-      teamElement.attr("data-status", "");
+      teamIdElement.text("");
+      teamIdElement.attr("data-status", "");
+    }
+
+    var wifiStatus = data.TeamWifiStatuses[station];
+    teamRadioTextElement.text(wifiStatus.TeamId);
+
+    if (stationStatus.DsConn) {
+      // Format the driver station status box.
+      var dsConn = stationStatus.DsConn;
+      teamDsElement.attr("data-status-ok", dsConn.DsLinked);
+
+      // Format the radio status box according to the connection status of the robot radio.
+      var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
+      teamRadioElement.attr("data-status-ok", radioOkay);
+
+      // Format the robot status box.
+      var robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
+      teamRobotElement.attr("data-status-ok", robotOkay);
+      if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
+        teamRobotElement.text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
+      } else {
+        teamRobotElement.text(dsConn.BatteryVoltage.toFixed(1) + "V");
+      }
+    } else {
+      teamDsElement.attr("data-status-ok", "");
+      teamRobotElement.attr("data-status-ok", "");
+      teamRobotElement.text("RBT");
+
+      // Format the robot status box according to whether the AP is configured with the correct SSID.
+      var expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+      if (wifiStatus.TeamId === expectedTeamId) {
+        if (wifiStatus.RadioLinked) {
+          teamRadioElement.attr("data-status-ok", true);
+        } else {
+          teamRadioElement.attr("data-status-ok", "");
+        }
+      } else {
+        teamRadioElement.attr("data-status-ok", false);
+      }
+    }
+
+    if (stationStatus.Estop) {
+      teamBypassElement.attr("data-status-ok", false);
+      teamBypassElement.text("ES");
+    } else if (stationStatus.Bypass) {
+      teamBypassElement.attr("data-status-ok", false);
+      teamBypassElement.text("BYP");
+    } else {
+      teamBypassElement.attr("data-status-ok", true);
+      teamBypassElement.text("ES");
     }
   });
 };

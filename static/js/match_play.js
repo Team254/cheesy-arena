@@ -4,7 +4,9 @@
 // Client-side logic for the match play page.
 
 var websocket;
+var currentMatchId;
 var scoreIsReady;
+var lowBatteryThreshold = 12;
 
 // Sends a websocket message to load a team into an alliance station.
 var substituteTeam = function(team, position) {
@@ -70,32 +72,51 @@ var confirmCommit = function(isReplay) {
 
 // Handles a websocket message to update the team connection status.
 var handleArenaStatus = function(data) {
+  // If getting data for the wrong match (e.g. after a server restart), reload the page.
+  if (currentMatchId == null) {
+    currentMatchId = data.MatchId;
+  } else if (currentMatchId !== data.MatchId) {
+    location.reload();
+  }
+
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
+    var wifiStatus = data.TeamWifiStatuses[station];
+    $("#status" + station + " .radio-status").text(wifiStatus.TeamId);
+
     if (stationStatus.DsConn) {
+      // Format the driver station status box.
       var dsConn = stationStatus.DsConn;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
-      $("#status" + station + " .robot-status").attr("data-status-ok", dsConn.RobotLinked);
+
+      // Format the radio status box according to the connection status of the robot radio.
+      var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
+      $("#status" + station + " .radio-status").attr("data-status-ok", radioOkay);
+
+      // Format the robot status box.
+      var robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
+      $("#status" + station + " .robot-status").attr("data-status-ok", robotOkay);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
         $("#status" + station + " .robot-status").text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
       } else {
-        $("#status" + station + " .robot-status").text("");
+        $("#status" + station + " .robot-status").text(dsConn.BatteryVoltage.toFixed(1) + "V");
       }
-      var lowBatteryThreshold = 6;
-      if (matchStates[data.MatchState] === "PRE_MATCH" || matchStates[data.MatchState] === "TIMEOUT_ACTIVE" ||
-          matchStates[data.MatchState] === "POST_TIMEOUT") {
-        lowBatteryThreshold = 12;
-      }
-      $("#status" + station + " .battery-status").attr("data-status-ok",
-          dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked);
-      $("#status" + station + " .battery-status").text(dsConn.BatteryVoltage.toFixed(1) + "V");
     } else {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
-      $("#status" + station + " .ds-status").text("");
       $("#status" + station + " .robot-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").text("");
-      $("#status" + station + " .battery-status").attr("data-status-ok", "");
-      $("#status" + station + " .battery-status").text("");
+
+      // Format the robot status box according to whether the AP is configured with the correct SSID.
+      var expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+      if (wifiStatus.TeamId === expectedTeamId) {
+        if (wifiStatus.RadioLinked) {
+          $("#status" + station + " .radio-status").attr("data-status-ok", true);
+        } else {
+          $("#status" + station + " .radio-status").attr("data-status-ok", "");
+        }
+      } else {
+        $("#status" + station + " .radio-status").attr("data-status-ok", false);
+      }
     }
 
     if (stationStatus.Estop) {

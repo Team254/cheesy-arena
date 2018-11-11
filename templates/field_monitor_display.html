@@ -37,5 +37,16 @@
 {{end}}
 
 {{define "team"}}
-  <div id="{{.side}}Team{{.position}}" class="team center"></div>
+  <div id="{{.side}}Team{{.position}}" class="team">
+    <div id="{{.side}}Team{{.position}}Id" class="team-id center"></div>
+    <div class="team-box-row">
+      <div id="{{.side}}Team{{.position}}Ds" class="team-box center">DS</div>
+      <div id="{{.side}}Team{{.position}}Radio" class="team-box center">
+        <i class="glyphicon glyphicon-signal"></i>
+        <span></span>
+      </div>
+      <div id="{{.side}}Team{{.position}}Robot" class="team-box center"></div>
+      <div id="{{.side}}Team{{.position}}Bypass" class="team-box center"></div>
+    </div>
+  </div>
 {{end}}

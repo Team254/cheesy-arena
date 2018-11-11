@@ -63,9 +63,9 @@
       <div class="col-lg-6 well well-darkblue">
         <div class="row form-group">
           <div class="col-lg-4">Blue Teams</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station (Tx/Rx Mbits/s)">DS</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Robot">R</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Battery">B</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station">DS</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Radio (AP Configured SSID)">Rad</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Robot">Rbt</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
         {{template "matchPlayTeam" dict "team" .Match.Blue1 "color" "B" "position" 1 "data" .}}
@@ -75,9 +75,9 @@
       <div class="col-lg-6 well well-darkred">
         <div class="row form-group">
           <div class="col-lg-4">Red Teams</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station (Tx/Rx Mbits/s)">DS</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Robot">R</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Battery">B</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station">DS</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Radio (AP Configured SSID)">Rad</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Robot">Rbt</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
         {{template "matchPlayTeam" dict "team" .Match.Red3 "color" "R" "position" 3 "data" .}}
@@ -271,8 +271,8 @@
         {{if not .data.AllowSubstitution}}disabled{{end}}>
   </div>
   <div class="col-lg-2 col-no-padding"><div class="ds-status"></div></div>
+  <div class="col-lg-2 col-no-padding"><div class="radio-status"></div></div>
   <div class="col-lg-2 col-no-padding"><div class="robot-status"></div></div>
-  <div class="col-lg-2 col-no-padding"><div class="battery-status"></div></div>
   <div class="col-lg-2 col-no-padding">
     <div class="bypass-status" onclick="toggleBypass('{{.color}}{{.position}}');"></div>
   </div>
