@@ -6,7 +6,7 @@
 var websocket;
 var currentMatchId;
 var scoreIsReady;
-var lowBatteryThreshold = 12;
+var lowBatteryThreshold = 8;
 
 // Sends a websocket message to load a team into an alliance station.
 var substituteTeam = function(team, position) {
