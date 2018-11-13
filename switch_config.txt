@@ -238,12 +238,20 @@ interface GigabitEthernet0/48
  switchport mode access
 !
 interface GigabitEthernet0/49
+ switchport access vlan 100
+ switchport mode access
 !
 interface GigabitEthernet0/50
+ switchport access vlan 100
+ switchport mode access
 !
 interface GigabitEthernet0/51
+ switchport access vlan 100
+ switchport mode access
 !
 interface GigabitEthernet0/52
+ switchport access vlan 100
+ switchport mode access
 !
 interface Vlan1
  ip address 10.0.0.61 255.255.255.0
