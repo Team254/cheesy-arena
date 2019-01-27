@@ -63,7 +63,7 @@ Cheesy Arena has the ability to integrate with an Allen-Bradley PLC setup simila
 Due to the prohibitive cost of the LEDs and LED controllers used on official fields, a custom solution was developed for Chezy Champs using consumer-grade LED strips and embedded microcontrollers.
 
 ## Advanced networking
-See the [Advanced Networking wiki page](https://github.com/Team254/cheesy-arena/wiki/Advanced-Networking) for instructions on what equipment to obtain and how to configure it in order to support advanced network security.
+See the [Advanced Networking wiki page](https://github.com/Team254/cheesy-arena/wiki/Advanced-Networking-Concepts) for instructions on what equipment to obtain and how to configure it in order to support advanced network security.
 
 ## Contributing
 Cheesy Arena is far from finished! You can help by:
