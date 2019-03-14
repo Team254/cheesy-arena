@@ -103,7 +103,7 @@ func DisplayFromUrl(path string, query map[string][]string) (*Display, error) {
 	return &display, nil
 }
 
-// Returns the URL string for the given display that includes all of its configuration parameters.
+// ToUrl returns the URL string for the given display that includes all of its configuration parameters.
 func (display *Display) ToUrl() string {
 	var builder strings.Builder
 	builder.WriteString(displayTypePaths[display.Type])
@@ -129,7 +129,7 @@ func (display *Display) ToUrl() string {
 	return builder.String()
 }
 
-// Returns an unused ID that can be used for a new display.
+// NextDisplayId returns an unused ID that can be used for a new display.
 func (arena *Arena) NextDisplayId() string {
 	displayRegistryMutex.Lock()
 	defer displayRegistryMutex.Unlock()
@@ -144,7 +144,7 @@ func (arena *Arena) NextDisplayId() string {
 	}
 }
 
-// Adds the given display to the arena registry and triggers a notification.
+// RegisterDisplay adds the given display to the arena registry and triggers a notification.
 func (arena *Arena) RegisterDisplay(display *Display) {
 	displayRegistryMutex.Lock()
 	defer displayRegistryMutex.Unlock()

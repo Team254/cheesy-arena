@@ -307,7 +307,7 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 	return nil
 }
 
-// Starts the match if all conditions are met.
+// StartMatch starts the match if all conditions are met.
 func (arena *Arena) StartMatch() error {
 	err := arena.checkCanStartMatch()
 	if err == nil {
@@ -378,7 +378,7 @@ func (arena *Arena) AbortMatch() error {
 	return nil
 }
 
-// Clears out the match and resets the arena state unless there is a match underway.
+// ResetMatch clears out the match and resets the arena state unless there is a match underway.
 func (arena *Arena) ResetMatch() error {
 	if arena.MatchState != PostMatch && arena.MatchState != PreMatch {
 		return fmt.Errorf("Cannot reset match while it is in progress.")
@@ -395,7 +395,7 @@ func (arena *Arena) ResetMatch() error {
 	return nil
 }
 
-// Starts a timeout of the given duration.
+// StartTimeout starts a timeout of the given duration.
 func (arena *Arena) StartTimeout(durationSec int) error {
 	if arena.MatchState != PreMatch {
 		return fmt.Errorf("Cannot start timeout while there is a match still in progress or with results pending.")
@@ -412,7 +412,7 @@ func (arena *Arena) StartTimeout(durationSec int) error {
 	return nil
 }
 
-// Returns the fractional number of seconds since the start of the match.
+// MatchTimeSec returns the fractional number of seconds since the start of the match.
 func (arena *Arena) MatchTimeSec() float64 {
 	if arena.MatchState == PreMatch || arena.MatchState == StartMatch || arena.MatchState == PostMatch {
 		return 0

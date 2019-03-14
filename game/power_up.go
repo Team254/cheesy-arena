@@ -56,7 +56,7 @@ func (powerUp *PowerUp) getEndTime() time.Time {
 	return powerUp.startTime.Add(powerUpDurationSec * time.Second)
 }
 
-// Returns the current active power up, or nil if there isn't one.
+// GetActivePowerUp returns the current active power up, or nil if there isn't one.
 func GetActivePowerUp(currentTime time.Time) *PowerUp {
 	for _, powerUp := range powerUpUses {
 		if powerUp.GetState(currentTime) == Active {

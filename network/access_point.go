@@ -82,7 +82,7 @@ func (ap *AccessPoint) Run() {
 	}
 }
 
-// Adds a request to set up wireless networks for the given set of teams to the asynchronous queue.
+// ConfigureTeamWifi adds a request to set up wireless networks for the given set of teams to the asynchronous queue.
 func (ap *AccessPoint) ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
 	// Use a channel to serialize configuration requests; the monitoring goroutine will service them.
 	select {

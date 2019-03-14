@@ -9,12 +9,12 @@ import "math/rand"
 
 var validGameSpecificDatas = []string{"RRR", "LLL", "RLR", "LRL"}
 
-// Returns a random configuration.
+// GenerateGameSpecificData returns a random configuration.
 func GenerateGameSpecificData() string {
 	return validGameSpecificDatas[rand.Intn(len(validGameSpecificDatas))]
 }
 
-// Returns true if the given game specific data is valid.
+// IsValidGameSpecificData returns true if the given game specific data is valid.
 func IsValidGameSpecificData(gameSpecificData string) bool {
 	for _, data := range validGameSpecificDatas {
 		if data == gameSpecificData {

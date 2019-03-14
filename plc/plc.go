@@ -161,12 +161,12 @@ func (plc *Plc) Run() {
 	}
 }
 
-// Returns the state of the field emergency stop button (true if e-stop is active).
+// GetFieldEstop returns the state of the field emergency stop button (true if e-stop is active).
 func (plc *Plc) GetFieldEstop() bool {
 	return plc.address != "" && !plc.inputs[fieldEstop]
 }
 
-// Returns the state of the red and blue driver station emergency stop buttons (true if e-stop is active).
+// GetTeamEstops returns the state of the red and blue driver station emergency stop buttons (true if e-stop is active).
 func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 	var redEstops, blueEstops [3]bool
 	if plc.address != "" {
@@ -180,7 +180,7 @@ func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 	return redEstops, blueEstops
 }
 
-// Returns the state of the scale and the red and blue switches.
+// GetScaleAndSwitches returns the state of the scale and the red and blue switches.
 func (plc *Plc) GetScaleAndSwitches() ([2]bool, [2]bool, [2]bool) {
 	var scale, redSwitch, blueSwitch [2]bool
 
@@ -194,13 +194,13 @@ func (plc *Plc) GetScaleAndSwitches() ([2]bool, [2]bool, [2]bool) {
 	return scale, redSwitch, blueSwitch
 }
 
-// Returns the state of the red and blue vault power cube sensors.
+// GetVaults returns the state of the red and blue vault power cube sensors.
 func (plc *Plc) GetVaults() (uint16, uint16, uint16, uint16, uint16, uint16) {
 	return plc.registers[redForceDistance], plc.registers[redLevitateDistance], plc.registers[redBoostDistance],
 		plc.registers[blueForceDistance], plc.registers[blueLevitateDistance], plc.registers[blueBoostDistance]
 }
 
-// Returns the state of the red and blue power up buttons on the vaults.
+// GetPowerUpButtons returns the state of the red and blue power up buttons on the vaults.
 func (plc *Plc) GetPowerUpButtons() (bool, bool, bool, bool, bool, bool) {
 	return plc.inputs[redForceActivate], plc.inputs[redLevitateActivate], plc.inputs[redBoostActivate],
 		plc.inputs[blueForceActivate], plc.inputs[blueLevitateActivate], plc.inputs[blueBoostActivate]

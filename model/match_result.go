@@ -32,7 +32,7 @@ type MatchResultDb struct {
 	BlueCardsJson string
 }
 
-// Returns a new match result object with empty slices instead of nil.
+// NewMatchResult returns a new match result object with empty slices instead of nil.
 func NewMatchResult() *MatchResult {
 	matchResult := new(MatchResult)
 	matchResult.RedScore = new(game.Score)
@@ -104,7 +104,7 @@ func (matchResult *MatchResult) BlueScoreSummary() *game.ScoreSummary {
 	return matchResult.BlueScore.Summarize(matchResult.RedScore.Fouls)
 }
 
-// Checks the score for disqualifications or a tie and adjusts it appropriately.
+// CorrectEliminationScore checks the score for disqualifications or a tie and adjusts it appropriately.
 func (matchResult *MatchResult) CorrectEliminationScore() {
 	matchResult.RedScore.ElimDq = false
 	for _, card := range matchResult.RedCards {

@@ -55,7 +55,7 @@ func (controller *Controller) SetMode(nearMode, farMode Mode) {
 	}
 }
 
-// Returns the current mode if both sides are in the same mode, or off otherwise.
+// GetCurrentMode returns the current mode if both sides are in the same mode, or off otherwise.
 func (controller *Controller) GetCurrentMode() Mode {
 	if controller.nearStrip.currentMode == controller.farStrip.currentMode {
 		return controller.nearStrip.currentMode

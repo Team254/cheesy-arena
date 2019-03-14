@@ -59,7 +59,7 @@ func CalculateRankings(database *model.Database) error {
 	return nil
 }
 
-// Checks all the match results for yellow and red cards, and updates the team model accordingly.
+// CalculateTeamCards checks all the match results for yellow and red cards, and updates the team model accordingly.
 func CalculateTeamCards(database *model.Database, matchType string) error {
 	teams, err := database.GetAllTeams()
 	if err != nil {

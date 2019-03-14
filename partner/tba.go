@@ -413,7 +413,7 @@ func (client *TbaClient) PublishAlliances(database *model.Database) error {
 	return nil
 }
 
-// Clears out the existing match data on The Blue Alliance for the event.
+// DeletePublishedMatches clears out the existing match data on The Blue Alliance for the event.
 func (client *TbaClient) DeletePublishedMatches() error {
 	resp, err := client.postRequest("matches", "delete_all", []byte(client.eventCode))
 	if err != nil {

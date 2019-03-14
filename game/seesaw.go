@@ -76,12 +76,12 @@ func (seesaw *Seesaw) GetOwnedBy() Alliance {
 	}
 }
 
-// Returns the total seconds of ownership and boost score accumulation for the red alliance.
+// GetRedSeconds returns the total seconds of ownership and boost score accumulation for the red alliance.
 func (seesaw *Seesaw) GetRedSeconds(startTime, endTime time.Time) (float64, float64) {
 	return seesaw.getAllianceSeconds(RedAlliance, startTime, endTime)
 }
 
-// Returns the total seconds of ownership and boost score accumulation for the blue alliance.
+// GetBlueSeconds returns the total seconds of ownership and boost score accumulation for the blue alliance.
 func (seesaw *Seesaw) GetBlueSeconds(startTime, endTime time.Time) (float64, float64) {
 	return seesaw.getAllianceSeconds(BlueAlliance, startTime, endTime)
 }

@@ -54,7 +54,7 @@ func NewWeb(arena *field.Arena) *Web {
 	return web
 }
 
-// Starts the webserver and blocks, waiting on requests. Does not return until the application exits.
+// ServeWebInterface starts the webserver and blocks, waiting on requests. Does not return until the application exits.
 func (web *Web) ServeWebInterface(port int) {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 	http.Handle("/", web.newHandler())

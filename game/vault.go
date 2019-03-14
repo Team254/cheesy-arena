@@ -55,7 +55,7 @@ func (vault *Vault) UpdateButtons(forceButton, levitateButton, boostButton bool,
 	}
 }
 
-// Returns the name of the newly-played power up if there is one, or an empty string otherwise, and resets the state.
+// CheckForNewlyPlayedPowerUp returns the name of the newly-played power up if there is one, or an empty string otherwise, and resets the state.
 func (vault *Vault) CheckForNewlyPlayedPowerUp() string {
 	powerUp := vault.newlyPlayedPowerUp
 	vault.newlyPlayedPowerUp = ""
