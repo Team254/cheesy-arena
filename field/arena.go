@@ -434,18 +434,28 @@ func (arena *Arena) Update() {
 		auto = true
 		enabled = false
 	case StartMatch:
-		arena.MatchState = WarmupPeriod
 		arena.MatchStartTime = time.Now()
 		arena.LastMatchTimeSec = -1
 		auto = true
-		enabled = false
 		arena.AudienceDisplayMode = "match"
 		arena.AudienceDisplayModeNotifier.Notify()
 		arena.AllianceStationDisplayMode = "match"
 		arena.AllianceStationDisplayModeNotifier.Notify()
-		arena.sendGameSpecificDataPacket()
-		if !arena.MuteMatchSounds {
-			arena.PlaySoundNotifier.NotifyWithMessage("match-warmup")
+		//arena.sendGameSpecificDataPacket()
+		if (game.MatchTiming.WarmupDurationSec > 0) {
+			arena.MatchState = WarmupPeriod
+			enabled = false
+			sendDsPacket = false
+			if !arena.MuteMatchSounds {
+				arena.PlaySoundNotifier.NotifyWithMessage("match-warmup")
+			}
+		} else {
+			arena.MatchState = AutoPeriod
+			enabled = true
+			sendDsPacket = true
+			if !arena.MuteMatchSounds {
+				arena.PlaySoundNotifier.NotifyWithMessage("match-start")
+			}
 		}
 		// Pick an LED warmup mode at random to keep things interesting.
 		allWarmupModes := []led.Mode{led.WarmupMode, led.Warmup2Mode, led.Warmup3Mode, led.Warmup4Mode}
@@ -466,12 +476,20 @@ func (arena *Arena) Update() {
 		auto = true
 		enabled = true
 		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) {
-			arena.MatchState = PausePeriod
 			auto = false
-			enabled = false
 			sendDsPacket = true
-			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.NotifyWithMessage("match-end")
+			if game.MatchTiming.PauseDurationSec > 0 {
+				arena.MatchState = PausePeriod
+				enabled = false
+				if !arena.MuteMatchSounds {
+					arena.PlaySoundNotifier.NotifyWithMessage("match-end")
+				}
+			} else {
+				arena.MatchState = TeleopPeriod
+				enabled = true
+				if !arena.MuteMatchSounds {
+					arena.PlaySoundNotifier.NotifyWithMessage("match-resume")
+				}
 			}
 		}
 	case PausePeriod:
