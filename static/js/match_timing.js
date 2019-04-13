@@ -10,10 +10,9 @@ var matchStates = {
   3: "AUTO_PERIOD",
   4: "PAUSE_PERIOD",
   5: "TELEOP_PERIOD",
-  6: "ENDGAME_PERIOD",
-  7: "POST_MATCH",
-  8: "TIMEOUT_ACTIVE",
-  9: "POST_TIMEOUT"
+  6: "POST_MATCH",
+  7: "TIMEOUT_ACTIVE",
+  8: "POST_TIMEOUT"
 };
 var matchTiming;
 
@@ -41,7 +40,6 @@ var translateMatchTime = function(data, callback) {
       matchStateText = "PAUSE";
       break;
     case "TELEOP_PERIOD":
-    case "ENDGAME_PERIOD":
       matchStateText = "TELEOPERATED";
       break;
     case "POST_MATCH":
@@ -65,7 +63,6 @@ var getCountdown = function(matchState, matchTimeSec) {
     case "AUTO_PERIOD":
       return matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec - matchTimeSec;
     case "TELEOP_PERIOD":
-    case "ENDGAME_PERIOD":
       return matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec + matchTiming.TeleopDurationSec +
           matchTiming.PauseDurationSec - matchTimeSec;
     case "TIMEOUT_ACTIVE":

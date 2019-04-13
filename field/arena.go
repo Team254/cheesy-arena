@@ -36,7 +36,6 @@ const (
 	AutoPeriod
 	PausePeriod
 	TeleopPeriod
-	EndgamePeriod
 	PostMatch
 	TimeoutActive
 	PostTimeout
@@ -509,17 +508,6 @@ func (arena *Arena) Update() {
 		auto = false
 		enabled = true
 		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
-			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec-game.MatchTiming.EndgameTimeLeftSec) {
-			arena.MatchState = EndgamePeriod
-			sendDsPacket = false
-			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.NotifyWithMessage("match-endgame")
-			}
-		}
-	case EndgamePeriod:
-		auto = false
-		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
 			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) {
 			arena.MatchState = PostMatch
 			auto = false
@@ -856,8 +844,6 @@ func (arena *Arena) handleLeds() {
 	case AutoPeriod:
 		fallthrough
 	case TeleopPeriod:
-		fallthrough
-	case EndgamePeriod:
 		handleSeesawTeleopLeds(arena.Scale, &arena.ScaleLeds)
 		handleSeesawTeleopLeds(arena.RedSwitch, &arena.RedSwitchLeds)
 		handleSeesawTeleopLeds(arena.BlueSwitch, &arena.BlueSwitchLeds)

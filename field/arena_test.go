@@ -148,19 +148,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
 
-	// Check endgame and match end.
-	arena.MatchStartTime = time.Now().
-		Add(-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
-			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec-game.MatchTiming.EndgameTimeLeftSec) *
-			time.Second)
-	arena.Update()
-	assert.Equal(t, EndgamePeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
-	arena.Update()
-	assert.Equal(t, EndgamePeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
+	// Check match end.
 	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
 		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) *
 		time.Second)
@@ -252,21 +240,6 @@ func TestArenaStateEnforcement(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Cannot reset match while")
 	}
-	arena.MatchState = EndgamePeriod
-	err = arena.LoadMatch(new(model.Match))
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Cannot load match while")
-	}
-	err = arena.StartMatch()
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Cannot start match while")
-	}
-	err = arena.ResetMatch()
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Cannot reset match while")
-	}
-	err = arena.AbortMatch()
-	assert.Nil(t, err)
 	arena.MatchState = PostMatch
 	err = arena.LoadMatch(new(model.Match))
 	if assert.NotNil(t, err) {

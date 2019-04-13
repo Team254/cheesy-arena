@@ -231,8 +231,6 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	case PausePeriod:
 		matchSecondsRemaining = game.MatchTiming.TeleopDurationSec
 	case TeleopPeriod:
-		fallthrough
-	case EndgamePeriod:
 		matchSecondsRemaining = game.MatchTiming.AutoDurationSec + game.MatchTiming.TeleopDurationSec +
 			game.MatchTiming.PauseDurationSec - int(arena.MatchTimeSec())
 	default:

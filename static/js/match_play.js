@@ -142,10 +142,10 @@ var handleArenaStatus = function(data) {
       $("#startTimeout").prop("disabled", false);
       break;
     case "START_MATCH":
+    case "WARMUP_PERIOD":
     case "AUTO_PERIOD":
     case "PAUSE_PERIOD":
     case "TELEOP_PERIOD":
-    case "ENDGAME_PERIOD":
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
