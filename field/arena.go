@@ -365,8 +365,8 @@ func (arena *Arena) AbortMatch() error {
 		return nil
 	}
 
-	if !arena.MuteMatchSounds && arena.MatchState != WarmupPeriod {
-		arena.PlaySoundNotifier.NotifyWithMessage("match-abort")
+	if arena.MatchState != WarmupPeriod {
+		arena.playSound("match-abort")
 	}
 	arena.MatchState = PostMatch
 	arena.matchAborted = true
@@ -445,16 +445,12 @@ func (arena *Arena) Update() {
 			arena.MatchState = WarmupPeriod
 			enabled = false
 			sendDsPacket = false
-			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.NotifyWithMessage("match-warmup")
-			}
+			arena.playSound("match-warmup")
 		} else {
 			arena.MatchState = AutoPeriod
 			enabled = true
 			sendDsPacket = true
-			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.NotifyWithMessage("match-start")
-			}
+			arena.playSound("match-start")
 		}
 		// Pick an LED warmup mode at random to keep things interesting.
 		allWarmupModes := []led.Mode{led.WarmupMode, led.Warmup2Mode, led.Warmup3Mode, led.Warmup4Mode}
@@ -467,9 +463,7 @@ func (arena *Arena) Update() {
 			auto = true
 			enabled = true
 			sendDsPacket = true
-			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.NotifyWithMessage("match-start")
-			}
+			arena.playSound("match-start")
 		}
 	case AutoPeriod:
 		auto = true
@@ -480,15 +474,11 @@ func (arena *Arena) Update() {
 			if game.MatchTiming.PauseDurationSec > 0 {
 				arena.MatchState = PausePeriod
 				enabled = false
-				if !arena.MuteMatchSounds {
-					arena.PlaySoundNotifier.NotifyWithMessage("match-end")
-				}
+				arena.playSound("match-end")
 			} else {
 				arena.MatchState = TeleopPeriod
 				enabled = true
-				if !arena.MuteMatchSounds {
-					arena.PlaySoundNotifier.NotifyWithMessage("match-resume")
-				}
+				arena.playSound("match-resume")
 			}
 		}
 	case PausePeriod:
@@ -500,9 +490,7 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = true
 			sendDsPacket = true
-			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.NotifyWithMessage("match-resume")
-			}
+			arena.playSound("match-resume")
 		}
 	case TeleopPeriod:
 		auto = false
@@ -521,14 +509,12 @@ func (arena *Arena) Update() {
 				arena.AllianceStationDisplayMode = "logo"
 				arena.AllianceStationDisplayModeNotifier.Notify()
 			}()
-			if !arena.MuteMatchSounds {
-				arena.PlaySoundNotifier.NotifyWithMessage("match-end")
-			}
+			arena.playSound("match-end")
 		}
 	case TimeoutActive:
 		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
 			arena.MatchState = PostTimeout
-			arena.PlaySoundNotifier.NotifyWithMessage("match-end")
+			arena.playSound("match-end")
 			go func() {
 				// Leave the timer on the screen briefly at the end of the timeout period.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
@@ -789,12 +775,12 @@ func (arena *Arena) handlePlcInput() {
 
 	// Check if a power up has been newly played and trigger the accompanying sound effect if so.
 	newRedPowerUp := arena.RedVault.CheckForNewlyPlayedPowerUp()
-	if newRedPowerUp != "" && !arena.MuteMatchSounds {
-		arena.PlaySoundNotifier.NotifyWithMessage("match-" + newRedPowerUp)
+	if newRedPowerUp != "" {
+		arena.playSound("match-" + newRedPowerUp)
 	}
 	newBluePowerUp := arena.BlueVault.CheckForNewlyPlayedPowerUp()
-	if newBluePowerUp != "" && !arena.MuteMatchSounds {
-		arena.PlaySoundNotifier.NotifyWithMessage("match-" + newBluePowerUp)
+	if newBluePowerUp != "" {
+		arena.playSound("match-" + newBluePowerUp)
 	}
 
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) || ownershipChanged {
@@ -956,5 +942,11 @@ func (arena *Arena) handleEstop(station string, state bool) {
 			// Don't reset the e-stop while a match is in progress.
 			allianceStation.Estop = false
 		}
+	}
+}
+
+func (arena *Arena) playSound(name string) {
+	if !arena.MuteMatchSounds {
+		arena.PlaySoundNotifier.NotifyWithMessage(name)
 	}
 }
