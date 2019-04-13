@@ -65,7 +65,7 @@ func TestSecondCounting(t *testing.T) {
 	assertRedSeconds(t, 13.8, 0.0, redSwitch, timeAfterStart(17), timeAfterEnd(-10))
 	redSwitch.UpdateState([2]bool{true, false}, timeAfterEnd(-5.1))
 	assertRedSeconds(t, 18.9, 0.0, redSwitch, timeAfterStart(17), timeAfterEnd(0))
-	assertBlueSeconds(t, 111.9, 0.0, redSwitch, timeAfterStart(17), timeAfterEnd(0))
+	assertBlueSeconds(t, 109.9, 0.0, redSwitch, timeAfterStart(17), timeAfterEnd(0))
 }
 
 func TestForce(t *testing.T) {

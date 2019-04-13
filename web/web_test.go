@@ -5,6 +5,7 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -83,6 +84,8 @@ func readWebsocketMultiple(t *testing.T, ws *websocket.Websocket, count int) map
 }
 
 func setupTestWeb(t *testing.T) *Web {
+	game.MatchTiming.WarmupDurationSec = 3
+	game.MatchTiming.PauseDurationSec = 2
 	arena := field.SetupTestArena(t, "web")
 	return NewWeb(arena)
 }

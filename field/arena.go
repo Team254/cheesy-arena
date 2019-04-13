@@ -442,7 +442,7 @@ func (arena *Arena) Update() {
 		arena.AllianceStationDisplayMode = "match"
 		arena.AllianceStationDisplayModeNotifier.Notify()
 		//arena.sendGameSpecificDataPacket()
-		if (game.MatchTiming.WarmupDurationSec > 0) {
+		if game.MatchTiming.WarmupDurationSec > 0 {
 			arena.MatchState = WarmupPeriod
 			enabled = false
 			sendDsPacket = false

@@ -495,18 +495,33 @@ func TestAstop(t *testing.T) {
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
 
 	arena.handleEstop("R1", true)
+	arena.handleEstop("R2", false)
+	assert.Equal(t, true, arena.AllianceStations["R1"].Astop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].Estop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].Astop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].Estop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
 	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn.Enabled)
 
+	arena.handleEstop("R1", true)
 	arena.handleEstop("R2", true)
+	assert.Equal(t, true, arena.AllianceStations["R1"].Astop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].Estop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].Astop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].Estop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
 
 	arena.handleEstop("R1", false)
+	arena.handleEstop("R2", true)
+	assert.Equal(t, true, arena.AllianceStations["R1"].Astop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].Estop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].Astop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].Estop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
@@ -518,16 +533,27 @@ func TestAstop(t *testing.T) {
 	assert.Equal(t, PausePeriod, arena.MatchState)
 	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
 		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec) * time.Second)
+	arena.handleEstop("R1", false)
 	arena.handleEstop("R2", true)
+	assert.Equal(t, false, arena.AllianceStations["R1"].Astop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].Estop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].Astop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].Estop)
+	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
 
+	arena.handleEstop("R1", true)
 	arena.handleEstop("R2", false)
+	assert.Equal(t, false, arena.AllianceStations["R1"].Astop)
+	assert.Equal(t, true, arena.AllianceStations["R1"].Estop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].Astop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].Estop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
-	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
 }
 
