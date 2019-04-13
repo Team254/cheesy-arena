@@ -56,6 +56,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	web.arena.AllianceStations["B3"].Bypass = true
 	web.arena.StartMatch()
 	web.arena.Update()
+	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 3)
 	screen, ok := messages["audienceDisplayMode"]
 	if assert.True(t, ok) {
@@ -63,7 +64,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	}
 	sound, ok := messages["playSound"]
 	if assert.True(t, ok) {
-		assert.Equal(t, "match-warmup", sound)
+		assert.Equal(t, "match-start", sound)
 	}
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)

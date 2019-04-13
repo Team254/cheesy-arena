@@ -82,6 +82,7 @@ type Arena struct {
 	warmupLedMode              led.Mode
 	lastRedAllianceReady       bool
 	lastBlueAllianceReady      bool
+	soundsPlayed               map[*game.MatchSound]struct{}
 }
 
 type AllianceStation struct {
@@ -208,7 +209,8 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 
 	arena.setupNetwork()
 
-	// Reset the realtime scores.
+	// Reset the arena state and realtime scores.
+	arena.soundsPlayed = make(map[*game.MatchSound]struct{})
 	arena.RedRealtimeScore = NewRealtimeScore()
 	arena.BlueRealtimeScore = NewRealtimeScore()
 	arena.FieldVolunteers = false
@@ -445,12 +447,10 @@ func (arena *Arena) Update() {
 			arena.MatchState = WarmupPeriod
 			enabled = false
 			sendDsPacket = false
-			arena.playSound("match-warmup")
 		} else {
 			arena.MatchState = AutoPeriod
 			enabled = true
 			sendDsPacket = true
-			arena.playSound("match-start")
 		}
 		// Pick an LED warmup mode at random to keep things interesting.
 		allWarmupModes := []led.Mode{led.WarmupMode, led.Warmup2Mode, led.Warmup3Mode, led.Warmup4Mode}
@@ -463,7 +463,6 @@ func (arena *Arena) Update() {
 			auto = true
 			enabled = true
 			sendDsPacket = true
-			arena.playSound("match-start")
 		}
 	case AutoPeriod:
 		auto = true
@@ -474,11 +473,9 @@ func (arena *Arena) Update() {
 			if game.MatchTiming.PauseDurationSec > 0 {
 				arena.MatchState = PausePeriod
 				enabled = false
-				arena.playSound("match-end")
 			} else {
 				arena.MatchState = TeleopPeriod
 				enabled = true
-				arena.playSound("match-resume")
 			}
 		}
 	case PausePeriod:
@@ -490,7 +487,6 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = true
 			sendDsPacket = true
-			arena.playSound("match-resume")
 		}
 	case TeleopPeriod:
 		auto = false
@@ -509,7 +505,6 @@ func (arena *Arena) Update() {
 				arena.AllianceStationDisplayMode = "logo"
 				arena.AllianceStationDisplayModeNotifier.Notify()
 			}()
-			arena.playSound("match-end")
 		}
 	case TimeoutActive:
 		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
@@ -540,6 +535,8 @@ func (arena *Arena) Update() {
 		arena.sendDsPacket(auto, enabled)
 		arena.ArenaStatusNotifier.Notify()
 	}
+
+	arena.handleSounds(matchTimeSec)
 
 	// Handle field sensors/lights/motors.
 	arena.handlePlcInput()
@@ -941,6 +938,17 @@ func (arena *Arena) handleEstop(station string, state bool) {
 		if arena.MatchTimeSec() == 0 {
 			// Don't reset the e-stop while a match is in progress.
 			allianceStation.Estop = false
+		}
+	}
+}
+
+func (arena *Arena) handleSounds(matchTimeSec float64) {
+	for _, sound := range game.MatchSounds {
+		if _, ok := arena.soundsPlayed[sound]; !ok {
+			if matchTimeSec > sound.MatchTimeSec {
+				arena.playSound(sound.Name)
+				arena.soundsPlayed[sound] = struct{}{}
+			}
 		}
 	}
 }
