@@ -1,6 +1,6 @@
 language: go
 
 go:
-- 12.2.x
+- 1.12.x
 
 dist: bionic
