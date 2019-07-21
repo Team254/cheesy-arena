@@ -3,12 +3,12 @@
 //
 // Contains the set of display modes for the vault LEDs.
 
-package vaultled
+package led
 
-type Mode int
+type VaultMode int
 
 const (
-	OffMode Mode = iota
+	VaultOffMode VaultMode = iota
 	OneCubeMode
 	TwoCubeMode
 	ThreeCubeMode
@@ -16,8 +16,8 @@ const (
 	BluePlayedMode
 )
 
-var ModeNames = map[Mode]string{
-	OffMode:        "Off",
+var VaultModeNames = map[VaultMode]string{
+	VaultOffMode:   "Off",
 	OneCubeMode:    "One Cube",
 	TwoCubeMode:    "Two Cubes",
 	ThreeCubeMode:  "Three Cubes",

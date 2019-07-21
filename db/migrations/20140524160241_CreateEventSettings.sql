@@ -22,12 +22,7 @@ CREATE TABLE event_settings (
   plcaddress VARCHAR(255),
   tbadownloadenabled bool,
   adminpassword VARCHAR(255),
-  readerpassword VARCHAR(255),
-  scaleledaddress VARCHAR(255),
-  redswitchledaddress VARCHAR(255),
-  blueswitchledaddress VARCHAR(255),
-  redvaultledaddress VARCHAR(255),
-  bluevaultledaddress VARCHAR(255)
+  readerpassword VARCHAR(255)
 );
 
 -- +goose Down

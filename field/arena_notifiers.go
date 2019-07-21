@@ -8,13 +8,10 @@ package field
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
-	"github.com/Team254/cheesy-arena/vaultled"
 	"github.com/Team254/cheesy-arena/websocket"
 	"strconv"
-	"time"
 )
 
 type ArenaNotifiers struct {
@@ -41,8 +38,6 @@ type DisplayConfigurationMessage struct {
 }
 
 type LedModeMessage struct {
-	LedMode      led.Mode
-	VaultLedMode vaultled.Mode
 }
 
 type MatchTimeMessage struct {
@@ -128,7 +123,7 @@ func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
 }
 
 func (arena *Arena) generateLedModeMessage() interface{} {
-	return &LedModeMessage{arena.ScaleLeds.GetCurrentMode(), arena.RedVaultLeds.CurrentForceMode}
+	return &LedModeMessage{}
 }
 
 func (arena *Arena) generateLowerThirdMessage() interface{} {
@@ -167,15 +162,11 @@ func (arena *Arena) generateMatchTimingMessage() interface{} {
 
 func (arena *Arena) generateRealtimeScoreMessage() interface{} {
 	fields := struct {
-		Red          *audienceAllianceScoreFields
-		Blue         *audienceAllianceScoreFields
-		ScaleOwnedBy game.Alliance
+		Red  *audienceAllianceScoreFields
+		Blue *audienceAllianceScoreFields
 	}{}
-	fields.Red = getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary(),
-		arena.RedVault, arena.RedSwitch)
-	fields.Blue = getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary(),
-		arena.BlueVault, arena.BlueSwitch)
-	fields.ScaleOwnedBy = arena.Scale.GetOwnedBy()
+	fields.Red = getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary())
+	fields.Blue = getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary())
 	return &fields
 }
 
@@ -237,27 +228,11 @@ func (arena *Arena) generateScoringStatusMessage() interface{} {
 }
 
 // Constructs the data object for one alliance sent to the audience display for the realtime scoring overlay.
-func getAudienceAllianceScoreFields(allianceScore *RealtimeScore, allianceScoreSummary *game.ScoreSummary,
-	allianceVault *game.Vault, allianceSwitch *game.Seesaw) *audienceAllianceScoreFields {
+func getAudienceAllianceScoreFields(allianceScore *RealtimeScore,
+	allianceScoreSummary *game.ScoreSummary) *audienceAllianceScoreFields {
 	fields := new(audienceAllianceScoreFields)
 	fields.RealtimeScore = allianceScore
 	fields.Score = allianceScoreSummary.Score
-	if allianceVault.ForcePowerUp != nil {
-		fields.ForceState = allianceVault.ForcePowerUp.GetState(time.Now())
-	} else {
-		fields.ForceState = game.Unplayed
-	}
-	if allianceVault.LevitatePlayed {
-		fields.LevitateState = game.Expired
-	} else {
-		fields.LevitateState = game.Unplayed
-	}
-	if allianceVault.BoostPowerUp != nil {
-		fields.BoostState = allianceVault.BoostPowerUp.GetState(time.Now())
-	} else {
-		fields.BoostState = game.Unplayed
-	}
-	fields.SwitchOwnedBy = allianceSwitch.GetOwnedBy()
 	return fields
 }
 

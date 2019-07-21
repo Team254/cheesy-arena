@@ -28,11 +28,6 @@ type EventSettings struct {
 	PlcAddress             string
 	AdminPassword          string
 	ReaderPassword         string
-	ScaleLedAddress        string
-	RedSwitchLedAddress    string
-	BlueSwitchLedAddress   string
-	RedVaultLedAddress     string
-	BlueVaultLedAddress    string
 }
 
 const eventSettingsId = 0

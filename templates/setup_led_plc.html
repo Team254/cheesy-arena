@@ -53,30 +53,6 @@
       </div>
     </div>
   </div>
-  <div class="col-lg-3">
-    <div class="well">
-      <legend>Switch/Scale LEDs</legend>
-      {{range $i, $name := .LedModeNames}}
-        <div class="radio">
-          <label>
-            <input type="radio" name="ledMode" value="{{$i}}" onclick="setLedMode();">{{$name}}
-          </label>
-        </div>
-      {{end}}
-    </div>
-  </div>
-  <div class="col-lg-2">
-    <div class="well">
-      <legend>Vault LEDs</legend>
-      {{range $i, $name := .VaultLedModeNames}}
-        <div class="radio">
-          <label>
-            <input type="radio" name="vaultLedMode" value="{{$i}}" onclick="setLedMode();">{{$name}}
-          </label>
-        </div>
-      {{end}}
-    </div>
-  </div>
 </div>
 {{end}}
 {{define "script"}}

@@ -11,23 +11,23 @@ import (
 )
 
 const (
-	port              = 5568
-	sourceName        = "Cheesy Arena"
-	packetTimeoutSec  = 1
-	numPixels         = 114
-	pixelDataOffset   = 126
-	nearStripUniverse = 1
-	farStripUniverse  = 2
+	advatekPort              = 5568
+	advatekSourceName        = "Cheesy Arena"
+	advatekPacketTimeoutSec  = 1
+	advatekNumPixels         = 114
+	advatekPixelDataOffset   = 126
+	advatekNearStripUniverse = 1
+	advatekFarStripUniverse  = 2
 )
 
-type Controller struct {
-	nearStrip strip
-	farStrip  strip
+type AdvatekController struct {
+	nearStrip advatekStrip
+	farStrip  advatekStrip
 	conn      net.Conn
 	packet    []byte
 }
 
-func (controller *Controller) SetAddress(address string) error {
+func (controller *AdvatekController) SetAddress(address string) error {
 	if controller.conn != nil {
 		controller.conn.Close()
 		controller.conn = nil
@@ -35,7 +35,7 @@ func (controller *Controller) SetAddress(address string) error {
 
 	if address != "" {
 		var err error
-		if controller.conn, err = net.Dial("udp4", fmt.Sprintf("%s:%d", address, port)); err != nil {
+		if controller.conn, err = net.Dial("udp4", fmt.Sprintf("%s:%d", address, advatekPort)); err != nil {
 			return err
 		}
 	}
@@ -44,7 +44,7 @@ func (controller *Controller) SetAddress(address string) error {
 }
 
 // Sets the current LED sequence mode and resets the intra-sequence counter to the beginning.
-func (controller *Controller) SetMode(nearMode, farMode Mode) {
+func (controller *AdvatekController) SetMode(nearMode, farMode StripMode) {
 	if nearMode != controller.nearStrip.currentMode {
 		controller.nearStrip.currentMode = nearMode
 		controller.nearStrip.counter = 0
@@ -56,7 +56,7 @@ func (controller *Controller) SetMode(nearMode, farMode Mode) {
 }
 
 // Returns the current mode if both sides are in the same mode, or off otherwise.
-func (controller *Controller) GetCurrentMode() Mode {
+func (controller *AdvatekController) GetCurrentMode() StripMode {
 	if controller.nearStrip.currentMode == controller.farStrip.currentMode {
 		return controller.nearStrip.currentMode
 	} else {
@@ -64,16 +64,9 @@ func (controller *Controller) GetCurrentMode() Mode {
 	}
 }
 
-// Sets which side of the scale or switch belongs to which alliance. A value of true indicates that the side nearest the
-// scoring table is red.
-func (controller *Controller) SetSidedness(nearIsRed bool) {
-	controller.nearStrip.isRed = nearIsRed
-	controller.farStrip.isRed = !nearIsRed
-}
-
 // Advances the pixel values through the current sequence and sends a packet if necessary. Should be called from a timed
 // loop.
-func (controller *Controller) Update() error {
+func (controller *AdvatekController) Update() error {
 	if controller.conn == nil {
 		// This controller is not configured; do nothing.
 		return nil
@@ -84,17 +77,17 @@ func (controller *Controller) Update() error {
 
 	// Create the template packet if it doesn't already exist.
 	if len(controller.packet) == 0 {
-		controller.packet = createBlankPacket(numPixels)
+		controller.packet = createBlankAdvatekPacket(advatekNumPixels)
 	}
 
 	// Send packets if the pixel values have changed.
 	if controller.nearStrip.shouldSendPacket() {
-		controller.nearStrip.populatePacketPixels(controller.packet[pixelDataOffset:])
-		controller.sendPacket(nearStripUniverse)
+		controller.nearStrip.populatePacketPixels(controller.packet[advatekPixelDataOffset:])
+		controller.sendPacket(advatekNearStripUniverse)
 	}
 	if controller.farStrip.shouldSendPacket() {
-		controller.farStrip.populatePacketPixels(controller.packet[pixelDataOffset:])
-		controller.sendPacket(farStripUniverse)
+		controller.farStrip.populatePacketPixels(controller.packet[advatekPixelDataOffset:])
+		controller.sendPacket(advatekFarStripUniverse)
 	}
 
 	return nil
@@ -102,8 +95,8 @@ func (controller *Controller) Update() error {
 
 // Constructs the structure of an E1.31 data packet that can be re-used indefinitely by updating the pixel data and
 // re-sending it.
-func createBlankPacket(numPixels int) []byte {
-	size := pixelDataOffset + 3*numPixels
+func createBlankAdvatekPacket(numPixels int) []byte {
+	size := advatekPixelDataOffset + 3*numPixels
 	packet := make([]byte, size)
 
 	// Preamble size
@@ -140,7 +133,7 @@ func createBlankPacket(numPixels int) []byte {
 	packet[21] = 0x04
 
 	// Component ID
-	for i, b := range []byte(sourceName) {
+	for i, b := range []byte(advatekSourceName) {
 		packet[22+i] = b
 	}
 
@@ -156,7 +149,7 @@ func createBlankPacket(numPixels int) []byte {
 	packet[43] = 0x02
 
 	// Source name
-	for i, b := range []byte(sourceName) {
+	for i, b := range []byte(advatekSourceName) {
 		packet[44+i] = b
 	}
 
@@ -208,7 +201,7 @@ func createBlankPacket(numPixels int) []byte {
 	return packet
 }
 
-func (controller *Controller) sendPacket(dmxUniverse int) error {
+func (controller *AdvatekController) sendPacket(dmxUniverse int) error {
 	// Update non-static packet fields.
 	controller.packet[111]++
 	controller.packet[113] = byte(dmxUniverse >> 8)

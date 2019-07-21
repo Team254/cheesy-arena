@@ -52,18 +52,6 @@ const (
 	blueConnected1
 	blueConnected2
 	blueConnected3
-	scaleNear
-	scaleFar
-	redSwitchNear
-	redSwitchFar
-	blueSwitchNear
-	blueSwitchFar
-	redForceActivate
-	redLevitateActivate
-	redBoostActivate
-	blueForceActivate
-	blueLevitateActivate
-	blueBoostActivate
 	inputCount
 )
 
@@ -77,12 +65,6 @@ const (
 	blue1Bandwidth
 	blue2Bandwidth
 	blue3Bandwidth
-	redForceDistance
-	redLevitateDistance
-	redBoostDistance
-	blueForceDistance
-	blueLevitateDistance
-	blueBoostDistance
 	registerCount
 )
 
@@ -178,32 +160,6 @@ func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 		blueEstops[2] = !plc.inputs[blueEstop3]
 	}
 	return redEstops, blueEstops
-}
-
-// Returns the state of the scale and the red and blue switches.
-func (plc *Plc) GetScaleAndSwitches() ([2]bool, [2]bool, [2]bool) {
-	var scale, redSwitch, blueSwitch [2]bool
-
-	scale[0] = plc.inputs[scaleNear]
-	scale[1] = plc.inputs[scaleFar]
-	redSwitch[0] = plc.inputs[redSwitchNear]
-	redSwitch[1] = plc.inputs[redSwitchFar]
-	blueSwitch[0] = plc.inputs[blueSwitchNear]
-	blueSwitch[1] = plc.inputs[blueSwitchFar]
-
-	return scale, redSwitch, blueSwitch
-}
-
-// Returns the state of the red and blue vault power cube sensors.
-func (plc *Plc) GetVaults() (uint16, uint16, uint16, uint16, uint16, uint16) {
-	return plc.registers[redForceDistance], plc.registers[redLevitateDistance], plc.registers[redBoostDistance],
-		plc.registers[blueForceDistance], plc.registers[blueLevitateDistance], plc.registers[blueBoostDistance]
-}
-
-// Returns the state of the red and blue power up buttons on the vaults.
-func (plc *Plc) GetPowerUpButtons() (bool, bool, bool, bool, bool, bool) {
-	return plc.inputs[redForceActivate], plc.inputs[redLevitateActivate], plc.inputs[redBoostActivate],
-		plc.inputs[blueForceActivate], plc.inputs[blueLevitateActivate], plc.inputs[blueBoostActivate]
 }
 
 // Set the on/off state of the stack lights on the scoring table.

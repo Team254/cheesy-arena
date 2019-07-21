@@ -4,6 +4,26 @@ package plc
 
 import "strconv"
 
+func _() {
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
+	var x [1]struct{}
+	_ = x[heartbeat-0]
+	_ = x[matchReset-1]
+	_ = x[stackLightGreen-2]
+	_ = x[stackLightOrange-3]
+	_ = x[stackLightRed-4]
+	_ = x[stackLightBlue-5]
+	_ = x[stackLightBuzzer-6]
+	_ = x[red1EthernetDisable-7]
+	_ = x[red2EthernetDisable-8]
+	_ = x[red3EthernetDisable-9]
+	_ = x[blue1EthernetDisable-10]
+	_ = x[blue2EthernetDisable-11]
+	_ = x[blue3EthernetDisable-12]
+	_ = x[coilCount-13]
+}
+
 const _coil_name = "heartbeatmatchResetstackLightGreenstackLightOrangestackLightRedstackLightBluestackLightBuzzerred1EthernetDisablered2EthernetDisablered3EthernetDisableblue1EthernetDisableblue2EthernetDisableblue3EthernetDisablecoilCount"
 
 var _coil_index = [...]uint8{0, 9, 19, 34, 50, 63, 77, 93, 112, 131, 150, 170, 190, 210, 219}
