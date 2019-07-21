@@ -1,3 +1,6 @@
 language: go
+
 go:
-- master
+- 12.2.x
+
+dist: bionic
