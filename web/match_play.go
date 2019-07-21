@@ -63,7 +63,6 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	if currentMatchType == "test" {
 		currentMatchType = "practice"
 	}
-	allowSubstitution := web.arena.CurrentMatch.Type != "qualification"
 	matchResult, err := web.arena.Database.GetMatchResultForMatch(web.arena.CurrentMatch.Id)
 	if err != nil {
 		handleWebErr(w, err)
@@ -77,8 +76,8 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		Match             *model.Match
 		AllowSubstitution bool
 		IsReplay          bool
-	}{web.arena.EventSettings, matchesByType, currentMatchType, web.arena.CurrentMatch, allowSubstitution,
-		isReplay}
+	}{web.arena.EventSettings, matchesByType, currentMatchType, web.arena.CurrentMatch,
+		web.arena.CurrentMatch.ShouldAllowSubstitution(), isReplay}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -363,12 +362,12 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			return err
 		}
 
-		if match.Type != "practice" {
+		if match.ShouldUpdateCards() {
 			// Regenerate the residual yellow cards that teams may carry.
 			tournament.CalculateTeamCards(web.arena.Database, match.Type)
 		}
 
-		if match.Type == "qualification" {
+		if match.ShouldUpdateRankings() {
 			// Recalculate all the rankings.
 			err = tournament.CalculateRankings(web.arena.Database)
 			if err != nil {
@@ -376,7 +375,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			}
 		}
 
-		if match.Type == "elimination" {
+		if match.ShouldUpdateEliminationMatches() {
 			// Generate any subsequent elimination matches.
 			_, err = tournament.UpdateEliminationSchedule(web.arena.Database,
 				time.Now().Add(time.Second*tournament.ElimMatchSpacingSec))
@@ -392,7 +391,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 				if err != nil {
 					log.Printf("Failed to publish matches: %s", err.Error())
 				}
-				if match.Type == "qualification" {
+				if match.ShouldUpdateRankings() {
 					err = web.arena.TbaClient.PublishRankings(web.arena.Database)
 					if err != nil {
 						log.Printf("Failed to publish rankings: %s", err.Error())
@@ -452,16 +451,10 @@ func (web *Web) buildMatchPlayList(matchType string) (MatchPlayList, error) {
 		return MatchPlayList{}, err
 	}
 
-	prefix := ""
-	if matchType == "practice" {
-		prefix = "P"
-	} else if matchType == "qualification" {
-		prefix = "Q"
-	}
 	matchPlayList := make(MatchPlayList, len(matches))
 	for i, match := range matches {
 		matchPlayList[i].Id = match.Id
-		matchPlayList[i].DisplayName = prefix + match.DisplayName
+		matchPlayList[i].DisplayName = match.TypePrefix() + match.DisplayName
 		matchPlayList[i].Time = match.Time.Local().Format("3:04 PM")
 		matchPlayList[i].Status = match.Status
 		switch match.Winner {

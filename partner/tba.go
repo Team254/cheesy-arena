@@ -541,7 +541,7 @@ func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResul
 	breakdown.FaceTheBossRankingPoint = scoreSummary.FaceTheBoss
 	breakdown.FoulPoints = scoreSummary.FoulPoints
 	breakdown.TotalPoints = scoreSummary.Score
-	if match.Type == "qualification" {
+	if match.ShouldUpdateRankings() {
 		// Calculate and set the ranking points for the match.
 		var ranking game.Ranking
 		ranking.AddScoreSummary(scoreSummary, opponentScoreSummary, false)
