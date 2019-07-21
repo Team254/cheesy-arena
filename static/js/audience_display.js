@@ -157,7 +157,7 @@ var handlePlaySound = function(sound) {
     v.pause();
     v.currentTime = 0;
   });
-  $("#" + sound)[0].play();
+  $("#sound-" + sound)[0].play();
 };
 
 // Handles a websocket message to update the alliance selection screen.

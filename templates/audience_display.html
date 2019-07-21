@@ -192,16 +192,10 @@
         <h1>{{"{{Subtitle}}"}}</h1>
       </div>
     </script>
-    <audio id="match-warmup" src="/static/audio/match_warmup.wav" preload="auto"></audio>
-    <audio id="match-start" src="/static/audio/match_start.wav" preload="auto"></audio>
-    <audio id="match-end" src="/static/audio/match_end.wav" preload="auto"></audio>
-    <audio id="match-abort" src="/static/audio/match_abort.mp3" preload="auto"></audio>
-    <audio id="match-resume" src="/static/audio/match_resume.wav" preload="auto"></audio>
-    <audio id="match-force" src="/static/audio/match_force.wav" preload="auto"></audio>
-    <audio id="match-levitate" src="/static/audio/match_levitate.wav" preload="auto"></audio>
-    <audio id="match-boost" src="/static/audio/match_boost.wav" preload="auto"></audio>
-    <audio id="match-warning1" src="/static/audio/match_warning1.wav" preload="auto"></audio>
-    <audio id="match-warning2" src="/static/audio/match_warning2.wav" preload="auto"></audio>
+    {{range $sound := .MatchSounds}}
+      <audio id="sound-{{$sound.Name}}" src="/static/audio/{{$sound.Name}}.{{$sound.FileExtension}}" preload="auto">
+      </audio>
+    {{end}}
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>

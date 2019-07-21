@@ -6,15 +6,18 @@
 package game
 
 type MatchSound struct {
-	Name         string
-	MatchTimeSec float64
+	Name          string
+	FileExtension string
+	MatchTimeSec  float64
 }
 
-// List of sounds and how many seconds into the match they are played.
+// List of sounds and how many seconds into the match they are played. A negative time indicates that the sound can only
+// be triggered explicitly.
 var MatchSounds = []*MatchSound{
-	{"match-start", 0},
-	{"match-resume", 15},
-	{"match-warning1", 120},
-	{"match-warning2", 130},
-	{"match-end", 150},
+	{"start", "wav", 0},
+	{"resume", "wav", 15},
+	{"warning1", "wav", 120},
+	{"warning2", "wav", 130},
+	{"end", "wav", 150},
+	{"abort", "mp3", -1},
 }

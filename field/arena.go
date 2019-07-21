@@ -303,7 +303,7 @@ func (arena *Arena) AbortMatch() error {
 	}
 
 	if arena.MatchState != WarmupPeriod {
-		arena.playSound("match-abort")
+		arena.playSound("abort")
 	}
 	arena.MatchState = PostMatch
 	arena.matchAborted = true
@@ -440,7 +440,7 @@ func (arena *Arena) Update() {
 	case TimeoutActive:
 		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
 			arena.MatchState = PostTimeout
-			arena.playSound("match-end")
+			arena.playSound("end")
 			go func() {
 				// Leave the timer on the screen briefly at the end of the timeout period.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
@@ -727,6 +727,10 @@ func (arena *Arena) handleEstop(station string, state bool) {
 
 func (arena *Arena) handleSounds(matchTimeSec float64) {
 	for _, sound := range game.MatchSounds {
+		if sound.MatchTimeSec < 0 {
+			// Skip sounds with negative timestamps; they are meant to only be triggered explicitly.
+			continue
+		}
 		if _, ok := arena.soundsPlayed[sound]; !ok {
 			if matchTimeSec > sound.MatchTimeSec {
 				arena.playSound(sound.Name)
