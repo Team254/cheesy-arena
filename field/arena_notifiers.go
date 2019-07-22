@@ -48,10 +48,6 @@ type MatchTimeMessage struct {
 type audienceAllianceScoreFields struct {
 	Score         int
 	RealtimeScore *RealtimeScore
-	ForceState    game.PowerUpState
-	LevitateState game.PowerUpState
-	BoostState    game.PowerUpState
-	SwitchOwnedBy game.Alliance
 }
 
 // Instantiates notifiers and configures their message producing methods.

@@ -53,8 +53,8 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Rank": 13, "Team": 20, "RP": 20, "Park/Climb": 21, "Auto": 20, "Ownership": 21,
-		"Vault": 20, "W-L-T": 21, "DQ": 20, "Played": 20}
+	colWidths := map[string]float64{"Rank": 13, "Team": 20, "RP": 20, "Cargo": 21, "Hatch": 20, "Hab Climb": 21,
+		"Sandstorm": 20, "W-L-T": 21, "DQ": 20, "Played": 20}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -67,10 +67,10 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	pdf.CellFormat(colWidths["Rank"], rowHeight, "Rank", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["RP"], rowHeight, "RP", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Park/Climb"], rowHeight, "Park/Climb", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Auto"], rowHeight, "Auto", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Ownership"], rowHeight, "Ownership", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Vault"], rowHeight, "Vault", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Cargo"], rowHeight, "Cargo", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Hatch"], rowHeight, "Hatch", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Hab Climb"], rowHeight, "Hab Climb", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Sandstorm"], rowHeight, "Sandstorm", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["W-L-T"], rowHeight, "W-L-T", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["DQ"], rowHeight, "DQ", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Played"], rowHeight, "Played", "1", 1, "C", true, 0, "")
@@ -81,10 +81,12 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 		pdf.SetFont("Arial", "", 10)
 		pdf.CellFormat(colWidths["Team"], rowHeight, strconv.Itoa(ranking.TeamId), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["RP"], rowHeight, strconv.Itoa(ranking.RankingPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Park/Climb"], rowHeight, strconv.Itoa(ranking.ParkClimbPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Auto"], rowHeight, strconv.Itoa(ranking.AutoPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Ownership"], rowHeight, strconv.Itoa(ranking.OwnershipPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Vault"], rowHeight, strconv.Itoa(ranking.VaultPoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Cargo"], rowHeight, strconv.Itoa(ranking.CargoPoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Hatch"], rowHeight, strconv.Itoa(ranking.HatchPanelPoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Hab Climb"], rowHeight, strconv.Itoa(ranking.HabClimbPoints), "1", 0, "C", false, 0,
+			"")
+		pdf.CellFormat(colWidths["Sandstorm"], rowHeight, strconv.Itoa(ranking.SandstormBonusPoints), "1", 0, "C",
+			false, 0, "")
 		record := fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties)
 		pdf.CellFormat(colWidths["W-L-T"], rowHeight, record, "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["DQ"], rowHeight, strconv.Itoa(ranking.Disqualifications), "1", 0, "C", false, 0, "")
@@ -196,7 +198,8 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 		}
 
 		// Render match info row.
-		pdf.CellFormat(colWidths["Time"], height, match.Time.Local().Format("Mon 1/02 03:04 PM"), borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Time"], height, match.Time.Local().Format("Mon 1/02 03:04 PM"), borderStr, 0,
+			alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Type"], height, matchType, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Match"], height, match.DisplayName, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red1), borderStr, 0, alignStr, false, 0, "")
@@ -212,12 +215,18 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 			pdf.CellFormat(colWidths["Time"], height, "", "LBR", 0, "C", false, 0, "")
 			pdf.CellFormat(colWidths["Type"], height, "", "LBR", 0, "C", false, 0, "")
 			pdf.CellFormat(colWidths["Match"], height, "", "LBR", 0, "C", false, 0, "")
-			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Red1IsSurrogate), "LBR", 0, "CT", false, 0, "")
-			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Red2IsSurrogate), "LBR", 0, "CT", false, 0, "")
-			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Red3IsSurrogate), "LBR", 0, "CT", false, 0, "")
-			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Blue1IsSurrogate), "LBR", 0, "CT", false, 0, "")
-			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Blue2IsSurrogate), "LBR", 0, "CT", false, 0, "")
-			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Blue3IsSurrogate), "LBR", 1, "CT", false, 0, "")
+			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Red1IsSurrogate), "LBR", 0, "CT", false, 0,
+				"")
+			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Red2IsSurrogate), "LBR", 0, "CT", false, 0,
+				"")
+			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Red3IsSurrogate), "LBR", 0, "CT", false, 0,
+				"")
+			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Blue1IsSurrogate), "LBR", 0, "CT", false, 0,
+				"")
+			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Blue2IsSurrogate), "LBR", 0, "CT", false, 0,
+				"")
+			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Blue3IsSurrogate), "LBR", 1, "CT", false, 0,
+				"")
 			pdf.SetFont("Arial", "", 10)
 		}
 	}

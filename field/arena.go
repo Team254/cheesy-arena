@@ -141,6 +141,8 @@ func (arena *Arena) LoadSettings() error {
 		}
 	}
 
+	game.HabDockingThreshold = settings.HabDockingThreshold
+
 	return nil
 }
 

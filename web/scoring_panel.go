@@ -89,48 +89,6 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 
 		scoreChanged := false
 		switch messageType {
-		case "r":
-			if !(*score).AutoCommitted {
-				if (*score).CurrentScore.AutoRuns < 3 {
-					(*score).CurrentScore.AutoRuns++
-					scoreChanged = true
-				}
-			}
-		case "R":
-			if !(*score).AutoCommitted {
-				if (*score).CurrentScore.AutoRuns > 0 {
-					(*score).CurrentScore.AutoRuns--
-					scoreChanged = true
-				}
-			}
-		case "c":
-			if (*score).AutoCommitted {
-				if (*score).CurrentScore.Climbs+(*score).CurrentScore.Parks < 3 {
-					(*score).CurrentScore.Climbs++
-					scoreChanged = true
-				}
-			}
-		case "C":
-			if (*score).AutoCommitted {
-				if (*score).CurrentScore.Climbs > 0 {
-					(*score).CurrentScore.Climbs--
-					scoreChanged = true
-				}
-			}
-		case "p":
-			if (*score).AutoCommitted {
-				if (*score).CurrentScore.Climbs+(*score).CurrentScore.Parks < 3 {
-					(*score).CurrentScore.Parks++
-					scoreChanged = true
-				}
-			}
-		case "P":
-			if (*score).AutoCommitted {
-				if (*score).CurrentScore.Parks > 0 {
-					(*score).CurrentScore.Parks--
-					scoreChanged = true
-				}
-			}
 		case "\r":
 			if (web.arena.MatchState != field.PreMatch && web.arena.MatchState != field.TimeoutActive &&
 				web.arena.MatchState != field.PostTimeout || web.arena.CurrentMatch.Type == "test") &&

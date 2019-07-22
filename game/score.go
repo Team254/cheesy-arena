@@ -6,39 +6,41 @@
 package game
 
 type Score struct {
-	AutoRuns                 int
-	AutoSwitchOwnershipSec   float64
-	AutoScaleOwnershipSec    float64
-	AutoEndSwitchOwnership   bool
-	TeleopScaleOwnershipSec  float64
-	TeleopScaleBoostSec      float64
-	TeleopSwitchOwnershipSec float64
-	TeleopSwitchBoostSec     float64
-	ForceCubes               int
-	ForceCubesPlayed         int
-	LevitateCubes            int
-	LevitatePlayed           bool
-	BoostCubes               int
-	BoostCubesPlayed         int
-	Climbs                   int
-	Parks                    int
-	Fouls                    []Foul
-	ElimDq                   bool
+	RobotStartLevels    [3]int
+	SandstormBonuses    [3]bool
+	CargoBaysPreMatch   [8]BayStatus
+	CargoBays           [8]BayStatus
+	RocketNearLeftBays  [3]BayStatus
+	RocketNearRightBays [3]BayStatus
+	RocketFarLeftBays   [3]BayStatus
+	RocketFarRightBays  [3]BayStatus
+	RobotEndLevels      [3]int
+	Fouls               []Foul
+	ElimDq              bool
 }
 
 type ScoreSummary struct {
-	AutoRunPoints         int
-	AutoOwnershipPoints   int
-	AutoPoints            int
-	TeleopOwnershipPoints int
-	OwnershipPoints       int
-	VaultPoints           int
-	ParkClimbPoints       int
-	FoulPoints            int
-	Score                 int
-	AutoQuest             bool
-	FaceTheBoss           bool
+	CargoPoints          int
+	HatchPanelPoints     int
+	HabClimbPoints       int
+	SandstormBonusPoints int
+	FoulPoints           int
+	Score                int
+	CompleteRocket       bool
+	HabDocking           bool
 }
+
+// Represents the state of a cargo ship or rocket bay.
+type BayStatus int
+
+const (
+	BayEmpty BayStatus = iota
+	BayHatch
+	BayHatchCargo
+	BayCargo
+)
+
+var HabDockingThreshold = 15
 
 // Calculates and returns the summary fields used for ranking and display.
 func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
@@ -49,51 +51,59 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 		return summary
 	}
 
-	// Calculate autonomous score.
-	autoRuns := score.AutoRuns
-	if autoRuns > 3 {
-		autoRuns = 3
+	// Calculate sandstorm bonus points.
+	for i, robotStartLevel := range score.RobotStartLevels {
+		if score.SandstormBonuses[i] {
+			if robotStartLevel == 1 {
+				summary.SandstormBonusPoints += 3
+			} else if robotStartLevel == 2 {
+				summary.SandstormBonusPoints += 6
+			}
+		}
 	}
-	summary.AutoRunPoints = 5 * autoRuns
-	summary.AutoOwnershipPoints = int(2 * (score.AutoScaleOwnershipSec + score.AutoSwitchOwnershipSec))
-	summary.AutoPoints = summary.AutoRunPoints + summary.AutoOwnershipPoints
 
-	// Calculate teleop score.
-	summary.TeleopOwnershipPoints = int(score.TeleopScaleOwnershipSec + score.TeleopScaleBoostSec +
-		score.TeleopSwitchOwnershipSec + score.TeleopSwitchBoostSec)
-	summary.OwnershipPoints = summary.AutoOwnershipPoints + summary.TeleopOwnershipPoints
-	forceCubes := score.ForceCubes
-	if forceCubes > 3 {
-		forceCubes = 3
+	// Calculate cargo and hatch panel points.
+	for i, bayStatus := range score.CargoBays {
+		if bayStatus == BayHatchCargo {
+			summary.CargoPoints += 3
+			if score.CargoBaysPreMatch[i] != BayHatch {
+				summary.HatchPanelPoints += 2
+			}
+		} else if bayStatus == BayHatch && score.CargoBaysPreMatch[i] != BayHatch {
+			summary.HatchPanelPoints += 2
+		}
 	}
-	levitateCubes := score.LevitateCubes
-	if levitateCubes > 3 {
-		levitateCubes = 3
-	}
-	boostCubes := score.BoostCubes
-	if boostCubes > 3 {
-		boostCubes = 3
-	}
-	summary.VaultPoints = 5 * (forceCubes + levitateCubes + boostCubes)
-	climbs := score.Climbs
-	if climbs > 3 {
-		climbs = 3
-	}
-	if score.LevitatePlayed && score.Climbs < 3 {
-		climbs++
-	}
-	parks := score.Parks
-	if parks+climbs > 3 {
-		parks = 3 - climbs
-	}
-	summary.ParkClimbPoints = 5*parks + 30*climbs
+	summary.addRocketHalfPoints(score.RocketNearLeftBays)
+	summary.addRocketHalfPoints(score.RocketNearRightBays)
+	summary.addRocketHalfPoints(score.RocketFarLeftBays)
+	summary.addRocketHalfPoints(score.RocketFarRightBays)
 
-	// Calculate bonuses.
-	if autoRuns == 3 && score.AutoEndSwitchOwnership {
-		summary.AutoQuest = true
+	// Calculate hab climb points.
+	for _, level := range score.RobotEndLevels {
+		switch level {
+		case 1:
+			summary.HabClimbPoints += 3
+		case 2:
+			summary.HabClimbPoints += 6
+		case 3:
+			summary.HabClimbPoints += 12
+		}
 	}
-	if climbs == 3 {
-		summary.FaceTheBoss = true
+
+	// Calculate bonus ranking points.
+	if score.isLevelComplete(0) && score.isLevelComplete(1) && score.isLevelComplete(2) {
+		summary.CompleteRocket = true
+	} else {
+		// Check for the opponent fouls that automatically trigger the ranking point.
+		for _, foul := range opponentFouls {
+			if foul.IsRankingPoint {
+				summary.CompleteRocket = true
+				break
+			}
+		}
+	}
+	if summary.HabClimbPoints >= HabDockingThreshold {
+		summary.HabDocking = true
 	}
 
 	// Calculate penalty points.
@@ -101,25 +111,24 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 		summary.FoulPoints += foul.PointValue()
 	}
 
-	summary.Score = summary.AutoRunPoints + summary.OwnershipPoints + summary.VaultPoints + summary.ParkClimbPoints +
-		summary.FoulPoints
+	summary.Score = summary.CargoPoints + summary.HatchPanelPoints + summary.HabClimbPoints +
+		summary.SandstormBonusPoints + summary.FoulPoints
 
 	return summary
 }
 
 func (score *Score) Equals(other *Score) bool {
-	if score.AutoRuns != other.AutoRuns || score.AutoEndSwitchOwnership != other.AutoEndSwitchOwnership ||
-		score.AutoScaleOwnershipSec != other.AutoScaleOwnershipSec ||
-		score.AutoSwitchOwnershipSec != other.AutoSwitchOwnershipSec ||
-		score.TeleopScaleOwnershipSec != other.TeleopScaleOwnershipSec ||
-		score.TeleopScaleBoostSec != other.TeleopScaleBoostSec ||
-		score.TeleopSwitchOwnershipSec != other.TeleopSwitchOwnershipSec ||
-		score.TeleopSwitchBoostSec != other.TeleopSwitchBoostSec ||
-		score.ForceCubes != other.ForceCubes ||
-		score.ForceCubesPlayed != other.ForceCubesPlayed || score.LevitateCubes != other.LevitateCubes ||
-		score.LevitatePlayed != other.LevitatePlayed || score.BoostCubes != other.BoostCubes ||
-		score.BoostCubesPlayed != other.BoostCubesPlayed || score.Parks != other.Parks ||
-		score.Climbs != other.Climbs || score.ElimDq != other.ElimDq || len(score.Fouls) != len(other.Fouls) {
+	if score.RobotStartLevels != other.RobotStartLevels ||
+		score.SandstormBonuses != other.SandstormBonuses ||
+		score.CargoBaysPreMatch != other.CargoBaysPreMatch ||
+		score.CargoBays != other.CargoBays ||
+		score.RocketNearLeftBays != other.RocketNearLeftBays ||
+		score.RocketNearRightBays != other.RocketNearRightBays ||
+		score.RocketFarLeftBays != other.RocketFarLeftBays ||
+		score.RocketFarRightBays != other.RocketFarRightBays ||
+		score.RobotEndLevels != other.RobotEndLevels ||
+		score.ElimDq != other.ElimDq ||
+		len(score.Fouls) != len(other.Fouls) {
 		return false
 	}
 
@@ -130,4 +139,22 @@ func (score *Score) Equals(other *Score) bool {
 	}
 
 	return true
+}
+
+// Calculates the cargo and hatch panel points for the given rocket half and adds them to the summary.
+func (summary *ScoreSummary) addRocketHalfPoints(rocketHalf [3]BayStatus) {
+	for _, bayStatus := range rocketHalf {
+		if bayStatus == BayHatchCargo {
+			summary.CargoPoints += 3
+			summary.HatchPanelPoints += 2
+		} else if bayStatus == BayHatch {
+			summary.HatchPanelPoints += 2
+		}
+	}
+}
+
+// Returns true if the level is complete for at least one rocket.
+func (score *Score) isLevelComplete(level int) bool {
+	return score.RocketNearLeftBays[level] == BayHatchCargo && score.RocketNearRightBays[level] == BayHatchCargo ||
+		score.RocketFarLeftBays[level] == BayHatchCargo && score.RocketFarRightBays[level] == BayHatchCargo
 }

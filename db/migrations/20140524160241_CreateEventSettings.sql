@@ -22,7 +22,8 @@ CREATE TABLE event_settings (
   plcaddress VARCHAR(255),
   tbadownloadenabled bool,
   adminpassword VARCHAR(255),
-  readerpassword VARCHAR(255)
+  readerpassword VARCHAR(255),
+  habdockingthreshold int
 );
 
 -- +goose Down

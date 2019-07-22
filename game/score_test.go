@@ -13,64 +13,43 @@ func TestScoreSummary(t *testing.T) {
 	blueScore := TestScore2()
 
 	redSummary := redScore.Summarize(blueScore.Fouls)
-	assert.Equal(t, 5, redSummary.AutoRunPoints)
-	assert.Equal(t, 17, redSummary.AutoPoints)
-	assert.Equal(t, 59, redSummary.OwnershipPoints)
-	assert.Equal(t, 15, redSummary.VaultPoints)
-	assert.Equal(t, 90, redSummary.ParkClimbPoints)
+	assert.Equal(t, 30, redSummary.CargoPoints)
+	assert.Equal(t, 20, redSummary.HatchPanelPoints)
+	assert.Equal(t, 12, redSummary.HabClimbPoints)
+	assert.Equal(t, 9, redSummary.SandstormBonusPoints)
 	assert.Equal(t, 0, redSummary.FoulPoints)
-	assert.Equal(t, 169, redSummary.Score)
-	assert.Equal(t, false, redSummary.AutoQuest)
-	assert.Equal(t, true, redSummary.FaceTheBoss)
+	assert.Equal(t, 71, redSummary.Score)
+	assert.Equal(t, true, redSummary.CompleteRocket)
+	assert.Equal(t, false, redSummary.HabDocking)
 
 	blueSummary := blueScore.Summarize(redScore.Fouls)
-	assert.Equal(t, 15, blueSummary.AutoRunPoints)
-	assert.Equal(t, 35, blueSummary.AutoPoints)
-	assert.Equal(t, 93, blueSummary.OwnershipPoints)
-	assert.Equal(t, 30, blueSummary.VaultPoints)
-	assert.Equal(t, 35, blueSummary.ParkClimbPoints)
+	assert.Equal(t, 12, blueSummary.CargoPoints)
+	assert.Equal(t, 0, blueSummary.HatchPanelPoints)
+	assert.Equal(t, 15, blueSummary.HabClimbPoints)
+	assert.Equal(t, 6, blueSummary.SandstormBonusPoints)
 	assert.Equal(t, 55, blueSummary.FoulPoints)
-	assert.Equal(t, 228, blueSummary.Score)
-	assert.Equal(t, true, blueSummary.AutoQuest)
-	assert.Equal(t, false, blueSummary.FaceTheBoss)
+	assert.Equal(t, 88, blueSummary.Score)
+	assert.Equal(t, false, blueSummary.CompleteRocket)
+	assert.Equal(t, true, blueSummary.HabDocking)
 
-	// Test limits on fields with a natural cap.
-	blueScore.AutoRuns = 5
-	assert.Equal(t, 15, blueScore.Summarize(redScore.Fouls).AutoRunPoints)
-	redScore.ForceCubes = 20
-	assert.Equal(t, 30, redScore.Summarize(blueScore.Fouls).VaultPoints)
-	redScore.LevitatePlayed = false
-	redScore.Climbs = 3
-	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
-	redScore.LevitatePlayed = true
-	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
-	redScore.Climbs = 4
-	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
-	redScore.Climbs = 50
-	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
-	redScore.Parks = 2
-	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
-	redScore.Parks = 25
-	assert.Equal(t, 90, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
-	redScore.Climbs = 0
-	assert.Equal(t, 40, redScore.Summarize(blueScore.Fouls).ParkClimbPoints)
+	// Test rocket completion boundary conditions.
+	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls).CompleteRocket)
+	redScore.RocketFarLeftBays[1] = BayHatch
+	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).CompleteRocket)
+	redScore.RocketNearLeftBays[1] = BayHatchCargo
+	redScore.RocketNearRightBays[1] = BayHatchCargo
+	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls).CompleteRocket)
+	redScore.RocketNearLeftBays[2] = BayHatch
+	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).CompleteRocket)
+	redScore.Fouls[1].IsRankingPoint = true
+	assert.Equal(t, true, redScore.Summarize(redScore.Fouls).CompleteRocket)
 
-	// Test Auto Quest boundary conditions.
-	assert.Equal(t, true, blueScore.Summarize(redScore.Fouls).AutoQuest)
-	blueScore.AutoEndSwitchOwnership = false
-	assert.Equal(t, false, blueScore.Summarize(redScore.Fouls).AutoQuest)
-	blueScore.AutoEndSwitchOwnership = true
-	blueScore.AutoRuns = 2
-	assert.Equal(t, false, blueScore.Summarize(redScore.Fouls).AutoQuest)
-
-	// Test Face the Boss boundary conditions.
-	redScore.LevitatePlayed = false
-	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).FaceTheBoss)
-	redScore.Climbs = 3
-	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls).FaceTheBoss)
-	redScore.Climbs = 1
-	redScore.Parks = 2
-	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).FaceTheBoss)
+	// Test hab docking boundary conditions.
+	assert.Equal(t, true, blueScore.Summarize(redScore.Fouls).HabDocking)
+	HabDockingThreshold = 24
+	assert.Equal(t, false, blueScore.Summarize(redScore.Fouls).HabDocking)
+	blueScore.RobotEndLevels[0] = 3
+	assert.Equal(t, true, blueScore.Summarize(redScore.Fouls).HabDocking)
 
 	// Test elimination disqualification.
 	redScore.ElimDq = true
@@ -90,82 +69,47 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score1.Equals(score3))
 	assert.False(t, score3.Equals(score1))
 
-	score2.AutoRuns += 1
+	score2.RobotStartLevels[2] = 3
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoEndSwitchOwnership = !score2.AutoEndSwitchOwnership
+	score2.SandstormBonuses[0] = false
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoScaleOwnershipSec += 1
+	score2.CargoBaysPreMatch[7] = BayCargo
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoSwitchOwnershipSec += 1
+	score2.CargoBays[5] = BayHatchCargo
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.TeleopScaleOwnershipSec += 1
+	score2.RocketNearLeftBays[0] = BayEmpty
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.TeleopScaleBoostSec += 1
+	score2.RocketNearRightBays[1] = BayHatchCargo
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.TeleopSwitchOwnershipSec += 1
+	score2.RocketFarLeftBays[2] = BayCargo
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.TeleopSwitchBoostSec += 1
+	score2.RocketFarRightBays[0] = BayHatch
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.ForceCubes += 1
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.ForceCubesPlayed = 1
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.LevitateCubes += 1
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.LevitatePlayed = !score2.LevitatePlayed
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.BoostCubes += 1
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.BoostCubesPlayed = 2
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.Parks += 1
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.Climbs += 1
+	score2.RobotEndLevels[1] = 2
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 

@@ -28,6 +28,7 @@ type EventSettings struct {
 	PlcAddress             string
 	AdminPassword          string
 	ReaderPassword         string
+	HabDockingThreshold    int
 }
 
 const eventSettingsId = 0
@@ -45,6 +46,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.ApTeamChannel = 157
 		eventSettings.ApAdminChannel = 0
 		eventSettings.ApAdminWpaKey = "1234Five"
+		eventSettings.HabDockingThreshold = 15
 
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {
