@@ -28,11 +28,11 @@ func TestMatchReview(t *testing.T) {
 	// Check that all matches are listed on the page.
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "P1")
-	assert.Contains(t, recorder.Body.String(), "P2")
-	assert.Contains(t, recorder.Body.String(), "Q1")
-	assert.Contains(t, recorder.Body.String(), "SF1-1")
-	assert.Contains(t, recorder.Body.String(), "SF1-2")
+	assert.Contains(t, recorder.Body.String(), ">P1<")
+	assert.Contains(t, recorder.Body.String(), ">P2<")
+	assert.Contains(t, recorder.Body.String(), ">Q1<")
+	assert.Contains(t, recorder.Body.String(), ">SF1-1<")
+	assert.Contains(t, recorder.Body.String(), ">SF1-2<")
 }
 
 func TestMatchReviewEditExistingResult(t *testing.T) {
@@ -48,9 +48,9 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "QF4-3")
-	assert.Contains(t, recorder.Body.String(), "71") // The red score
-	assert.Contains(t, recorder.Body.String(), "72") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
+	assert.Contains(t, recorder.Body.String(), ">71<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">72<") // The blue score
 
 	// Check response for non-existent match.
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", 12345))
@@ -59,7 +59,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "QF4-3")
+	assert.Contains(t, recorder.Body.String(), " QF4-3 ")
 
 	// Update the score to something else.
 	postBody := "redScoreJson={\"RobotEndLevels\":[0,3,0]}&blueScoreJson={\"CargoBays\":[0,2,1,2,2,0,1]," +
@@ -70,9 +70,9 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "QF4-3")
-	assert.Contains(t, recorder.Body.String(), "15") // The red score
-	assert.Contains(t, recorder.Body.String(), "19") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
+	assert.Contains(t, recorder.Body.String(), ">15<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">19<") // The blue score
 }
 
 func TestMatchReviewCreateNewResult(t *testing.T) {
@@ -85,16 +85,16 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "QF4-3")
-	assert.NotContains(t, recorder.Body.String(), "210") // The red score
-	assert.NotContains(t, recorder.Body.String(), "533") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
+	assert.NotContains(t, recorder.Body.String(), ">71<") // The red score
+	assert.NotContains(t, recorder.Body.String(), ">72<") // The blue score
 
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "QF4-3")
+	assert.Contains(t, recorder.Body.String(), " QF4-3 ")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"AutoScaleOwnershipSec\":13}&blueScoreJson={\"ForceCubes\":2,\"BoostCubes\":1," +
+	postBody := "redScoreJson={\"RocketNearLeftBays\":[1,0,2]}&blueScoreJson={\"RocketFarRightBays\":[2,2,2]," +
 		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
@@ -102,7 +102,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "QF4-3")
-	assert.Contains(t, recorder.Body.String(), "31") // The red score
-	assert.Contains(t, recorder.Body.String(), "15") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
+	assert.Contains(t, recorder.Body.String(), ">10<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">15<") // The blue score
 }
