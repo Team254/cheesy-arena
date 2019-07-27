@@ -44,8 +44,8 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.Red.Score);
-  $("#blueScore").text(data.Blue.Score);
+  $("#redScore").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HabClimbPoints);
+  $("#blueScore").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HabClimbPoints);
 };
 
 // Handles a websocket message to populate the final score data.

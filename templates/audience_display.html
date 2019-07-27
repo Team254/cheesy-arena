@@ -29,23 +29,6 @@
             <img class="avatar" id="leftTeam2Avatar" src="" /><br />
             <img class="avatar" id="leftTeam3Avatar" src="" />
           </div>
-          <div class="score-fields score-fields-icons">
-            <span class="valign-cell">
-              <span class="power-up" id="leftForceCubesIcon">F</span><br />
-              <span class="power-up" id="leftLevitateCubesIcon">L</span><br />
-              <span class="power-up" id="leftBoostCubesIcon">B</span>
-            </span>
-          </div>
-          <div class="score-fields score-fields-text">
-            <span class="valign-cell">
-              <span class="power-up" id="leftForceCubes"></span><br />
-              <span class="power-up" id="leftLevitateCubes"></span><br />
-              <span class="power-up" id="leftBoostCubes"></span>
-            </span>
-          </div>
-          <div class="powerup-progress">
-            <div id="leftProgress"></div>
-          </div>
           <div class="score-number" id="leftScoreNumber">&nbsp;</div>
         </div>
         <div class="score reversible-right" id="rightScore">
@@ -53,23 +36,6 @@
             <img class="avatar" id="rightTeam1Avatar" src="" /><br />
             <img class="avatar" id="rightTeam2Avatar" src="" /><br />
             <img class="avatar" id="rightTeam3Avatar" src="" />
-          </div>
-          <div class="score-fields score-fields-icons pull-right">
-            <span class="valign-cell">
-              <span class="power-up" id="rightForceCubesIcon">F</span><br />
-              <span class="power-up" id="rightLevitateCubesIcon">L</span><br />
-              <span class="power-up" id="rightBoostCubesIcon">B</span>
-            </span>
-          </div>
-          <div class="score-fields score-fields-text pull-right" style="direction: rtl;">
-            <span class="valign-cell" style="text-align: right;">
-              <span class="power-up" id="rightForceCubes"></span><br />
-              <span class="power-up" id="rightLevitateCubes"></span><br />
-              <span class="power-up" id="rightBoostCubes"></span>
-            </span>
-          </div>
-          <div class="powerup-progress pull-right">
-            <div id="rightProgress"></div>
           </div>
           <div class="score-number pull-right" id="rightScoreNumber">&nbsp;</div>
         </div>
@@ -81,7 +47,7 @@
           </span>
         </div>
         <div id="eventMatchInfo">
-          <span>{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 16}} 2018{{end}}</span>
+          <span>{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 16}} 2019{{end}}</span>
           <span class="pull-right" id="matchName"></span>
         </div>
       </div>
@@ -141,7 +107,7 @@
           </span>
         </div>
         <div id="finalEventMatchInfo">
-          <div class="final-footer">{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 22}} 2018{{end}}</div>
+          <div class="final-footer">{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 22}} 2019{{end}}</div>
           <div class="final-footer" id="finalSeriesStatus">&nbsp;</div>
           <div class="final-footer" id="finalMatchName">&nbsp;</div>
         </div>

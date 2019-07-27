@@ -20,7 +20,7 @@ var logoUp = "-3px";
 var logoDown = $("#logo").css("top");
 var scoreIn = $(".score").css("width");
 var scoreMid = "120px";
-var scoreOut = "275px";
+var scoreOut = "220px";
 var teamsIn = $(".teams").css("width");
 var teamsOut = "65px";
 
@@ -77,38 +77,8 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  var redScoreBreakdown = data.Red.RealtimeScore.CurrentScore;
-  $("#" + redSide + "ScoreNumber").text(data.Red.Score);
-  $("#" + redSide + "ForceCubesIcon").attr("data-state", data.Red.ForceState);
-  $("#" + redSide + "ForceCubes").text(redScoreBreakdown.ForceCubes).attr("data-state", data.Red.ForceState);
-  $("#" + redSide + "LevitateCubesIcon").attr("data-state", data.Red.LevitateState);
-  $("#" + redSide + "LevitateCubes").text(redScoreBreakdown.LevitateCubes).attr("data-state", data.Red.LevitateState);
-  $("#" + redSide + "BoostCubesIcon").attr("data-state", data.Red.BoostState);
-  $("#" + redSide + "BoostCubes").text(redScoreBreakdown.BoostCubes).attr("data-state", data.Red.BoostState);
-
-  var blueScoreBreakdown = data.Blue.RealtimeScore.CurrentScore;
-  $("#" + blueSide + "ScoreNumber").text(data.Blue.Score);
-  $("#" + blueSide + "ForceCubesIcon").attr("data-state", data.Blue.ForceState);
-  $("#" + blueSide + "ForceCubes").text(blueScoreBreakdown.ForceCubes).attr("data-state", data.Blue.ForceState);
-  $("#" + blueSide + "LevitateCubesIcon").attr("data-state", data.Blue.LevitateState);
-  $("#" + blueSide + "LevitateCubes").text(blueScoreBreakdown.LevitateCubes).attr("data-state", data.Blue.LevitateState);
-  $("#" + blueSide + "BoostCubesIcon").attr("data-state", data.Blue.BoostState);
-  $("#" + blueSide + "BoostCubes").text(blueScoreBreakdown.BoostCubes).attr("data-state", data.Blue.BoostState);
-
-  // Switch/scale indicators.
-  $("#scaleIndicator").attr("data-owned-by", data.ScaleOwnedBy);
-  $("#" + redSide + "SwitchIndicator").attr("data-owned-by", data.Red.SwitchOwnedBy);
-  $("#" + blueSide + "SwitchIndicator").attr("data-owned-by", data.Blue.SwitchOwnedBy);
-
-  // Power up progress bars.
-  if ((data.Red.ForceState === 2 || data.Red.BoostState === 2) && $("#" + redSide + "Progress").height() === 0) {
-    $("#" + redSide + "Progress").height(85);
-    $("#" + redSide + "Progress").transition({queue: false, height: 0}, 10000, "linear");
-  }
-  if ((data.Blue.ForceState === 2 || data.Blue.BoostState === 2) && $("#" + blueSide + "Progress").height() === 0) {
-    $("#" + blueSide + "Progress").height(85);
-    $("#" + blueSide + "Progress").transition({queue: false, height: 0}, 10000, "linear");
-  }
+  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HabClimbPoints);
+  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HabClimbPoints);
 };
 
 // Handles a websocket message to populate the final score data.

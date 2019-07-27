@@ -46,8 +46,8 @@ type MatchTimeMessage struct {
 }
 
 type audienceAllianceScoreFields struct {
-	Score         int
-	RealtimeScore *RealtimeScore
+	Score        *game.Score
+	ScoreSummary *game.ScoreSummary
 }
 
 // Instantiates notifiers and configures their message producing methods.
@@ -225,8 +225,8 @@ func (arena *Arena) generateScoringStatusMessage() interface{} {
 func getAudienceAllianceScoreFields(allianceScore *RealtimeScore,
 	allianceScoreSummary *game.ScoreSummary) *audienceAllianceScoreFields {
 	fields := new(audienceAllianceScoreFields)
-	fields.RealtimeScore = allianceScore
-	fields.Score = allianceScoreSummary.Score
+	fields.Score = &allianceScore.CurrentScore
+	fields.ScoreSummary = allianceScoreSummary
 	return fields
 }
 

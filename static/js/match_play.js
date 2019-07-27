@@ -199,8 +199,8 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.Red.Score);
-  $("#blueScore").text(data.Blue.Score);
+  $("#redScore").text(data.Red.ScoreSummary.Score);
+  $("#blueScore").text(data.Blue.ScoreSummary.Score);
 };
 
 // Handles a websocket message to update the audience display screen selector.
