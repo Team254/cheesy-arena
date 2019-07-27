@@ -58,10 +58,14 @@
           </div>
           <div class="row">
             {{range $rule := .Rules}}
-              <a class="btn btn-sm {{if $rule.IsTechnical}}btn-danger{{else}}btn-warning{{end}} btn-referee btn-rule"
+              <a class="btn btn-sm
+                  {{if $rule.IsTechnical}}btn-danger{{else if $rule.IsRankingPoint}}btn-primary
+                  {{else}}btn-warning{{end}}
+                  btn-referee btn-rule"
                   data-rule="{{$rule.RuleNumber}}" data-is-technical="{{$rule.IsTechnical}}"
                   onclick="setFoulRule(this);" data-toggle="tooltip" title="{{$rule.Description}}">
-                {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>{{end}}
+                {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>
+                {{else if $rule.IsRankingPoint}}<sup>RP</sup>{{end}}
               </a>
             {{end}}
           </div>
