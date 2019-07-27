@@ -622,19 +622,6 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	arena.lastDsPacketTime = time.Now()
 }
 
-func (arena *Arena) sendGameSpecificDataPacket() {
-	for _, allianceStation := range arena.AllianceStations {
-		dsConn := allianceStation.DsConn
-		if dsConn != nil {
-			err := dsConn.sendGameSpecificDataPacket(arena.CurrentMatch.GameSpecificData)
-			if err != nil {
-				log.Printf("Error sending game-specific data packet to Team %d: %v", dsConn.TeamId, err)
-			}
-		}
-	}
-	arena.lastDsPacketTime = time.Now()
-}
-
 // Returns the alliance station identifier for the given team, or the empty string if the team is not present
 // in the current match.
 func (arena *Arena) getAssignedAllianceStation(teamId int) string {

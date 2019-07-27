@@ -22,8 +22,7 @@ CREATE TABLE matches (
   status VARCHAR(16),
   startedat DATETIME,
   scorecommittedat DATETIME,
-  winner VARCHAR(16),
-  gamespecificdata VARCHAR(3)
+  winner VARCHAR(16)
 );
 CREATE UNIQUE INDEX type_displayname ON matches(type, displayname);
 

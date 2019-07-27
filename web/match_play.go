@@ -209,8 +209,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			web.arena.AllianceStations[station].Bypass = !web.arena.AllianceStations[station].Bypass
 		case "startMatch":
 			args := struct {
-				MuteMatchSounds  bool
-				GameSpecificData string
+				MuteMatchSounds bool
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -218,7 +217,6 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				continue
 			}
 			web.arena.MuteMatchSounds = args.MuteMatchSounds
-			web.arena.CurrentMatch.GameSpecificData = args.GameSpecificData
 			err = web.arena.StartMatch()
 			if err != nil {
 				ws.WriteError(err.Error())
