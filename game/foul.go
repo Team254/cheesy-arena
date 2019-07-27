@@ -55,10 +55,10 @@ var Rules = []Rule{
 
 func (foul *Foul) PointValue() int {
 	if foul.IsTechnical {
-		return 25
+		return 10
 	} else if foul.IsRankingPoint {
 		return 0
 	} else {
-		return 5
+		return 3
 	}
 }

@@ -23,12 +23,12 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, false, redSummary.HabDocking)
 
 	blueSummary := blueScore.Summarize(redScore.Fouls)
-	assert.Equal(t, 12, blueSummary.CargoPoints)
-	assert.Equal(t, 0, blueSummary.HatchPanelPoints)
-	assert.Equal(t, 15, blueSummary.HabClimbPoints)
+	assert.Equal(t, 18, blueSummary.CargoPoints)
+	assert.Equal(t, 4, blueSummary.HatchPanelPoints)
+	assert.Equal(t, 21, blueSummary.HabClimbPoints)
 	assert.Equal(t, 6, blueSummary.SandstormBonusPoints)
-	assert.Equal(t, 55, blueSummary.FoulPoints)
-	assert.Equal(t, 88, blueSummary.Score)
+	assert.Equal(t, 23, blueSummary.FoulPoints)
+	assert.Equal(t, 72, blueSummary.Score)
 	assert.Equal(t, false, blueSummary.CompleteRocket)
 	assert.Equal(t, true, blueSummary.HabDocking)
 

@@ -38,9 +38,9 @@ func TestScore2() *Score {
 			BayHatchCargo},
 		RocketNearLeftBays:  [3]BayStatus{BayEmpty, BayEmpty, BayEmpty},
 		RocketNearRightBays: [3]BayStatus{BayEmpty, BayEmpty, BayEmpty},
-		RocketFarLeftBays:   [3]BayStatus{BayEmpty, BayEmpty, BayEmpty},
-		RocketFarRightBays:  [3]BayStatus{BayEmpty, BayEmpty, BayEmpty},
-		RobotEndLevels:      [3]int{1, 2, 2},
+		RocketFarLeftBays:   [3]BayStatus{BayHatchCargo, BayEmpty, BayEmpty},
+		RocketFarRightBays:  [3]BayStatus{BayEmpty, BayEmpty, BayHatchCargo},
+		RobotEndLevels:      [3]int{1, 3, 2},
 		Fouls:               []Foul{},
 		ElimDq:              false,
 	}

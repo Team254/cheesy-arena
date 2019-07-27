@@ -177,8 +177,8 @@ func TestCommitEliminationTie(t *testing.T) {
 	matchResult := &model.MatchResult{
 		MatchId: match.Id,
 		RedScore: &game.Score{
-			RocketFarRightBays: [3]game.BayStatus{game.BayHatchCargo, game.BayEmpty, game.BayEmpty},
-			Fouls:              []game.Foul{{}}},
+			RocketFarRightBays: [3]game.BayStatus{game.BayHatchCargo, game.BayHatch, game.BayHatch},
+			Fouls:              []game.Foul{{}, {}, {}}},
 		BlueScore: &game.Score{},
 	}
 	err := web.commitMatchScore(match, matchResult, false)
