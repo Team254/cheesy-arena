@@ -62,18 +62,17 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"AutoRuns\":3}&blueScoreJson={\"VaultCubes\":3," +
+	postBody := "redScoreJson={\"RobotEndLevels\":[0,3,0]}&blueScoreJson={\"CargoBays\":[0,2,1,2,2,0,1]," +
 		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
 
-	// TODO(pat): Update for 2019.
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "QF4-3")
-	assert.Contains(t, recorder.Body.String(), "5") // The red score
-	assert.Contains(t, recorder.Body.String(), "0") // The blue score
+	assert.Contains(t, recorder.Body.String(), "17") // The red score
+	assert.Contains(t, recorder.Body.String(), "19") // The blue score
 }
 
 func TestMatchReviewCreateNewResult(t *testing.T) {
