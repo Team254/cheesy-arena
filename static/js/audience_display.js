@@ -9,13 +9,18 @@ var transitionMap;
 var currentScreen = "blank";
 var redSide;
 var blueSide;
+var overlayCenteringHideParams;
+var overlayCenteringShowParams;
 var allianceSelectionTemplate = Handlebars.compile($("#allianceSelectionTemplate").html());
 var sponsorImageTemplate = Handlebars.compile($("#sponsorImageTemplate").html());
 var sponsorTextTemplate = Handlebars.compile($("#sponsorTextTemplate").html());
 
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
-var overlayCenteringHidden = $("#overlayCentering").css("bottom");
-var overlayCenteringPresent = "0px";
+var overlayCenteringTopUp = "-130px";
+var overlayCenteringBottomHideParams = {queue: false, bottom: $("#overlayCentering").css("bottom")};
+var overlayCenteringBottomShowParams = {queue: false, bottom: "0px"};
+var overlayCenteringTopHideParams = {queue: false, top: overlayCenteringTopUp};
+var overlayCenteringTopShowParams = {queue: false, top: "50px"};
 var eventMatchInfoDown = "30px";
 var eventMatchInfoUp = $("#eventMatchInfo").css("height");
 var logoUp = "-3px";
@@ -161,7 +166,7 @@ var handleLowerThird = function(data) {
 };
 
 var transitionBlankToIntro = function(callback) {
-  $("#overlayCentering").transition({queue: false, bottom: overlayCenteringPresent}, 500, "ease", function() {
+  $("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function() {
     $(".teams").css("display", "flex");
     $(".avatars").css("display", "flex");
     $(".avatars").css("opacity", 1);
@@ -190,13 +195,13 @@ var transitionIntroToBlank = function(callback) {
       $(".avatars").css("opacity", 0);
       $(".avatars").hide();
       $(".teams").hide();
-      $("#overlayCentering").transition({queue: false, bottom: overlayCenteringHidden}, 1000, "ease", callback);
+      $("#overlayCentering").transition(overlayCenteringHideParams, 1000, "ease", callback);
     });
   });
 };
 
 var transitionBlankToInMatch = function(callback) {
-  $("#overlayCentering").transition({queue: false, bottom: overlayCenteringPresent}, 500, "ease", function() {
+  $("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function() {
     $(".teams").css("display", "flex");
     $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
     $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function() {
@@ -227,7 +232,7 @@ var transitionInMatchToBlank = function(callback) {
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease");
     $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function() {
       $(".teams").hide();
-      $("#overlayCentering").transition({queue: false, bottom: overlayCenteringHidden}, 1000, "ease", callback);
+      $("#overlayCentering").transition(overlayCenteringHideParams, 1000, "ease", callback);
     });
   });
 };
@@ -358,7 +363,7 @@ var transitionSponsorToScore = function(callback) {
 };
 
 var transitionBlankToTimeout = function(callback) {
-  $("#overlayCentering").transition({queue: false, bottom: overlayCenteringPresent}, 500, "ease", function () {
+  $("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function () {
     $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function() {
       $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
     });
@@ -382,7 +387,7 @@ var transitionIntroToTimeout = function(callback) {
 var transitionTimeoutToBlank = function(callback) {
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function() {
-      $("#overlayCentering").transition({queue: false, bottom: overlayCenteringHidden}, 1000, "ease", callback);
+      $("#overlayCentering").transition(overlayCenteringHideParams, 1000, "ease", callback);
     });
   });
 };
@@ -462,6 +467,14 @@ $(function() {
   }
   $(".reversible-left").attr("data-reversed", reversed);
   $(".reversible-right").attr("data-reversed", reversed);
+  if (urlParams.get("overlayLocation") === "top") {
+    overlayCenteringHideParams = overlayCenteringTopHideParams;
+    overlayCenteringShowParams = overlayCenteringTopShowParams;
+    $("#overlayCentering").css("top", overlayCenteringTopUp);
+  } else {
+    overlayCenteringHideParams = overlayCenteringBottomHideParams;
+    overlayCenteringShowParams = overlayCenteringBottomShowParams;
+  }
 
   // Fall back to a blank avatar if one doesn't exist for the team.
   $(".avatar, .final-avatar").attr("onerror", "this.src='" + getAvatarUrl(0) + "';");
