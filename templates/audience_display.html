@@ -14,41 +14,41 @@
     <link rel="stylesheet" href="/static/css/audience_display.css" />
   </head>
   <body>
-    <div id="centering">
+    <div id="overlayCentering">
       <div id="matchOverlay">
-        <div class="teams" id="leftTeams">
-          <span class="valign-cell">
-            <span id="leftTeam1"></span><br />
-            <span id="leftTeam2"></span><br />
-            <span id="leftTeam3"></span>
-          </span>
-        </div>
-        <div class="score reversible-left" id="leftScore">
-          <div class="avatars">
-            <img class="avatar" id="leftTeam1Avatar" src="" /><br />
-            <img class="avatar" id="leftTeam2Avatar" src="" /><br />
-            <img class="avatar" id="leftTeam3Avatar" src="" />
+        <div id="matchOverlayTop">
+          <div class="teams" id="leftTeams">
+            <div id="leftTeam1"></div>
+            <div id="leftTeam2"></div>
+            <div id="leftTeam3"></div>
           </div>
-          <div class="score-number" id="leftScoreNumber">&nbsp;</div>
-        </div>
-        <div class="score reversible-right" id="rightScore">
-          <div class="avatars pull-right">
-            <img class="avatar" id="rightTeam1Avatar" src="" /><br />
-            <img class="avatar" id="rightTeam2Avatar" src="" /><br />
-            <img class="avatar" id="rightTeam3Avatar" src="" />
+          <div class="score reversible-left">
+            <div class="avatars">
+              <img class="avatar" id="leftTeam1Avatar" src="" />
+              <img class="avatar" id="leftTeam2Avatar" src="" />
+              <img class="avatar" id="leftTeam3Avatar" src="" />
+            </div>
+            <div class="score-number" id="leftScoreNumber"></div>
+            <div class="dummy"></div>
           </div>
-          <div class="score-number pull-right" id="rightScoreNumber">&nbsp;</div>
-        </div>
-        <div class="teams" id="rightTeams">
-          <span class="valign-cell">
-            <span id="rightTeam1"></span><br />
-            <span id="rightTeam2"></span><br />
-            <span id="rightTeam3"></span>
-          </span>
+          <div class="score reversible-right">
+            <div class="dummy"></div>
+            <div class="score-number" id="rightScoreNumber"></div>
+            <div class="avatars">
+              <img class="avatar" id="rightTeam1Avatar" src="" />
+              <img class="avatar" id="rightTeam2Avatar" src="" />
+              <img class="avatar" id="rightTeam3Avatar" src="" />
+            </div>
+          </div>
+          <div class="teams" id="rightTeams">
+            <div id="rightTeam1"></div>
+            <div id="rightTeam2"></div>
+            <div id="rightTeam3"></div>
+          </div>
         </div>
         <div id="eventMatchInfo">
-          <span>{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 16}} 2019{{end}}</span>
-          <span class="pull-right" id="matchName"></span>
+          <span>{{.EventSettings.Name}}</span>
+          <span id="matchName"></span>
         </div>
       </div>
       <div class="text-center" id="matchCircle">
@@ -107,7 +107,7 @@
           </span>
         </div>
         <div id="finalEventMatchInfo">
-          <div class="final-footer">{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 22}} 2019{{end}}</div>
+          <div class="final-footer">{{.EventSettings.Name}}</div>
           <div class="final-footer" id="finalSeriesStatus">&nbsp;</div>
           <div class="final-footer" id="finalMatchName">&nbsp;</div>
         </div>

@@ -14,15 +14,15 @@ var sponsorImageTemplate = Handlebars.compile($("#sponsorImageTemplate").html())
 var sponsorTextTemplate = Handlebars.compile($("#sponsorTextTemplate").html());
 
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
-var centeringDown = $("#centering").css("bottom");
-var centeringUp = "0px";
+var overlayCenteringHidden = $("#overlayCentering").css("bottom");
+var overlayCenteringPresent = "0px";
+var eventMatchInfoDown = "30px";
+var eventMatchInfoUp = $("#eventMatchInfo").css("height");
 var logoUp = "-3px";
 var logoDown = $("#logo").css("top");
 var scoreIn = $(".score").css("width");
-var scoreMid = "120px";
-var scoreOut = "220px";
-var teamsIn = $(".teams").css("width");
-var teamsOut = "65px";
+var scoreMid = "135px";
+var scoreOut = "205px";
 
 // Handles a websocket message to change which screen is displayed.
 var handleAudienceDisplayMode = function(targetScreen) {
@@ -143,6 +143,9 @@ var handleAllianceSelection = function(alliances) {
 
 // Handles a websocket message to populate and/or show/hide a lower third.
 var handleLowerThird = function(data) {
+  if (data === null) {
+    return;
+  }
   if (data.BottomText === "") {
     $("#lowerThirdTop").hide();
     $("#lowerThirdBottom").hide();
@@ -158,15 +161,13 @@ var handleLowerThird = function(data) {
 };
 
 var transitionBlankToIntro = function(callback) {
-  $("#centering").transition({queue: false, bottom: centeringUp}, 500, "ease", function() {
-    $(".avatars").show();
+  $("#overlayCentering").transition({queue: false, bottom: overlayCenteringPresent}, 500, "ease", function() {
+    $(".teams").css("display", "flex");
+    $(".avatars").css("display", "flex");
     $(".avatars").css("opacity", 1);
-    $(".teams").transition({queue: false, width: teamsOut}, 100, "linear", function() {
-      $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function() {
-        $("#eventMatchInfo").show();
-        var height = -$("#eventMatchInfo").height();
-        $("#eventMatchInfo").transition({queue: false, bottom: height + "px"}, 500, "ease", callback);
-      });
+    $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function() {
+      $("#eventMatchInfo").css("display", "flex");
+      $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
     });
   });
 };
@@ -178,66 +179,55 @@ var transitionIntroToInMatch = function(callback) {
   $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
   $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function() {
     $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
-    $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
-    $(".seesaw-indicator").transition({queue: false, opacity: 1}, 750, "ease");
     $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
   });
 };
 
 var transitionIntroToBlank = function(callback) {
-  $("#eventMatchInfo").transition({queue: false, bottom: "0px"}, 500, "ease", function() {
+  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease", function() {
     $("#eventMatchInfo").hide();
-    $(".score").transition({queue: false, width: scoreIn}, 500, "ease");
-    $(".teams").transition({queue: false, width: teamsIn}, 500, "ease", function() {
+    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function() {
       $(".avatars").css("opacity", 0);
       $(".avatars").hide();
-      $("#centering").transition({queue: false, bottom: centeringDown}, 1000, "ease", callback);
+      $(".teams").hide();
+      $("#overlayCentering").transition({queue: false, bottom: overlayCenteringHidden}, 1000, "ease", callback);
     });
   });
 };
 
 var transitionBlankToInMatch = function(callback) {
-  $("#centering").transition({queue: false, bottom: centeringUp}, 500, "ease", function() {
-    $(".teams").transition({queue: false, width: teamsOut}, 100, "linear", function() {
-      $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
-      $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function() {
-        $("#eventMatchInfo").show();
-        $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
-        $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
-        $(".seesaw-indicator").transition({queue: false, opacity: 1}, 750, "ease");
-        $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease");
-        var height = -$("#eventMatchInfo").height();
-        $("#eventMatchInfo").transition({queue: false, bottom: height + "px"}, 500, "ease", callback);
-      });
+  $("#overlayCentering").transition({queue: false, bottom: overlayCenteringPresent}, 500, "ease", function() {
+    $(".teams").css("display", "flex");
+    $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
+    $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function() {
+      $("#eventMatchInfo").css("display", "flex");
+      $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
+      $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
+      $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease");
     });
   });
 };
 
 var transitionInMatchToIntro = function(callback) {
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear");
-  $(".score-fields").transition({queue: false, opacity: 0}, 300, "linear");
-  $(".seesaw-indicator").transition({queue: false, opacity: 0}, 300, "linear");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease");
-    $(".score").transition({queue: false, width: scoreMid}, 500, "ease");
-    $(".teams").transition({queue: false, width: teamsOut}, 500, "ease", function() {
-      $(".avatars").show();
+    $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function() {
+      $(".avatars").css("display", "flex");
       $(".avatars").transition({queue: false, opacity: 1}, 500, "ease", callback);
     });
   });
 };
 
 var transitionInMatchToBlank = function(callback) {
-  $("#eventMatchInfo").transition({queue: false, bottom: "0px"}, 500, "ease");
+  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear");
-  $(".score-fields").transition({queue: false, opacity: 0}, 300, "linear");
-  $(".seesaw-indicator").transition({queue: false, opacity: 0}, 300, "linear");
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#eventMatchInfo").hide();
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease");
-    $(".score").transition({queue: false, width: scoreIn}, 500, "ease");
-    $(".teams").transition({queue: false, width: teamsIn}, 500, "ease", function() {
-      $("#centering").transition({queue: false, bottom: centeringDown}, 1000, "ease", callback);
+    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function() {
+      $(".teams").hide();
+      $("#overlayCentering").transition({queue: false, bottom: overlayCenteringHidden}, 1000, "ease", callback);
     });
   });
 };
@@ -368,7 +358,7 @@ var transitionSponsorToScore = function(callback) {
 };
 
 var transitionBlankToTimeout = function(callback) {
-  $("#centering").transition({queue: false, bottom: centeringUp}, 500, "ease", function () {
+  $("#overlayCentering").transition({queue: false, bottom: overlayCenteringPresent}, 500, "ease", function () {
     $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function() {
       $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
     });
@@ -376,12 +366,12 @@ var transitionBlankToTimeout = function(callback) {
 };
 
 var transitionIntroToTimeout = function(callback) {
-  $("#eventMatchInfo").transition({queue: false, bottom: "0px"}, 500, "ease", function() {
+  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease", function() {
     $("#eventMatchInfo").hide();
-    $(".score").transition({queue: false, width: scoreIn}, 500, "ease");
-    $(".teams").transition({queue: false, width: teamsIn}, 500, "ease", function() {
+    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function() {
       $(".avatars").css("opacity", 0);
       $(".avatars").hide();
+      $(".teams").hide();
       $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function() {
         $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
       });
@@ -392,7 +382,7 @@ var transitionIntroToTimeout = function(callback) {
 var transitionTimeoutToBlank = function(callback) {
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function() {
-      $("#centering").transition({queue: false, bottom: centeringDown}, 1000, "ease", callback);
+      $("#overlayCentering").transition({queue: false, bottom: overlayCenteringHidden}, 1000, "ease", callback);
     });
   });
 };
@@ -400,14 +390,12 @@ var transitionTimeoutToBlank = function(callback) {
 var transitionTimeoutToIntro = function(callback) {
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function() {
-      $(".avatars").show();
+      $(".avatars").css("display", "flex");
       $(".avatars").css("opacity", 1);
-      $(".teams").transition({queue: false, width: teamsOut}, 100, "linear", function () {
-        $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function () {
-          $("#eventMatchInfo").show();
-          var height = -$("#eventMatchInfo").height();
-          $("#eventMatchInfo").transition({queue: false, bottom: height + "px"}, 500, "ease", callback);
-        });
+      $(".teams").css("display", "flex");
+      $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function () {
+        $("#eventMatchInfo").show();
+        $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
       });
     });
   });
