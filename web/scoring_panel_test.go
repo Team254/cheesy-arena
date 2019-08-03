@@ -42,8 +42,10 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	blueWs := websocket.NewTestWebsocket(blueConn)
 
 	// Should receive a score update right after connection.
+	readWebsocketType(t, redWs, "matchLoad")
 	readWebsocketType(t, redWs, "matchTime")
 	readWebsocketType(t, redWs, "realtimeScore")
+	readWebsocketType(t, blueWs, "matchLoad")
 	readWebsocketType(t, blueWs, "matchTime")
 	readWebsocketType(t, blueWs, "realtimeScore")
 

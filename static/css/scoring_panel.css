@@ -1,0 +1,224 @@
+/*
+  Copyright 2019 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+*/
+html {
+  height: 100%;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+body {
+  height: 100%;
+  background-color: #222;
+}
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#matchName {
+  font-size: 2vw;
+}
+#robots {
+  margin-bottom: 0.5vw;
+  display: flex;
+  font-size: 1.5vw;
+  color: #ccc;
+}
+#robotHeader {
+  margin-right: 1vw;
+  color: #666;
+}
+.robot-field {
+  min-width: 12vw;
+  height: 2.5vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.4vw 0.2vw;
+}
+.team {
+  display: flex;
+  justify-content: center;
+}
+.robot-start-level[data-value="0"] {
+  background-color: #633;
+}
+.robot-start-level[data-value="1"] {
+  background-color: #236;
+}
+.robot-start-level[data-value="2"] {
+  background-color: #263;
+}
+.robot-start-level[data-value="3"] {
+  background-color: #850;
+}
+.sandstorm-bonus[data-value="false"] {
+  background-color: #333;
+}
+.sandstorm-bonus[data-value="true"] {
+  background-color: #263;
+}
+.robot-end-level[data-value="0"] {
+  background-color: #333;
+}
+.robot-end-level[data-value="1"] {
+  background-color: #236;
+}
+.robot-end-level[data-value="2"] {
+  background-color: #224d4d;
+}
+.robot-end-level[data-value="3"] {
+  background-color: #263;
+}
+.robot-shortcut {
+  width: 2vw;
+  margin: 0 0.2vw;
+  font-size: 1vw;
+  align-self: flex-start;
+}
+.team {
+  font-weight: bold;
+}
+#scoringElements {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.rocket {
+  display: flex;
+  align-items: flex-end;
+}
+.rocket-outline {
+  display: flex;
+  align-items: flex-end;
+  padding: 5vw 2vw 1vw 2vw;
+  border: 1px solid #222;
+  border-radius: 40% 40% 0% 0%;
+}
+.alliance-color[data-alliance="red"] {
+  background-color: #633;
+}
+.alliance-color[data-alliance="blue"] {
+  background-color: #236;
+}
+.outer-rocket {
+  height: 26vw;
+  margin: 0.2vw;
+}
+.inner-rocket {
+  margin: 0.2vw;
+}
+#centerColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#cargoShipContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#cargoShip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1vw;
+  border: 1px solid #222;
+  border-radius: 10%;
+}
+.cargo-ship-side {
+  width: 25vw;
+  display: flex;
+  justify-content: space-between;
+}
+.cargo-ship-front {
+  display: flex;
+}
+.bay {
+  position: relative;
+  width: 7vw;
+  height: 7vw;
+  margin: 0.2vw;
+  border: 1px solid #222;
+  background-color: #666;
+  border-radius: 10%;
+}
+.bay[data-value="0"] .hatch-panel {
+  display: none;
+}
+.bay[data-value="1"] .hatch-panel {
+  display: flex;
+}
+.bay[data-value="2"] .hatch-panel {
+  display: flex;
+}
+.bay[data-value="3"] .hatch-panel {
+  display: none;
+}
+.bay[data-value="0"] .cargo {
+  display: none;
+}
+.bay[data-value="1"] .cargo {
+  display: none;
+}
+.bay[data-value="2"] .cargo {
+  display: flex;
+}
+.bay[data-value="3"] .cargo {
+  display: flex;
+}
+.shortcut {
+  position: absolute;
+  left: 0.3vw;
+  top: -0.1vw;
+  font-size: 1.2vw;
+  color: #fff
+}
+.hatch-panel {
+  width: 6vw;
+  height: 6vw;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: none;
+  margin: auto auto;
+  border: 1vw solid #c80;
+  border-radius: 50%;
+}
+.cargo {
+  width: 3vw;
+  height: 3vw;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: none;
+  margin: auto auto;
+  background-color: #c50;
+  border-radius: 50%;
+}
+#instructions {
+  margin-top: 0.3vw;
+}
+#preMatchMessage, #postMatchMessage {
+  height: 100%;
+  display: none;
+  align-items: center;
+  font-size: 1.5vw;
+  color: #c90;
+}
+#commitMatchScore {
+  height: 100%;
+  display: none;
+  align-items: center;
+}
+#commitMatchScore>button {
+  font-size: 1vw;
+}
