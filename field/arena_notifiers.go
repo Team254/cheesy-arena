@@ -214,11 +214,14 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 
 func (arena *Arena) generateScoringStatusMessage() interface{} {
 	return &struct {
-		RefereeScoreReady bool
-		RedScoreReady     bool
-		BlueScoreReady    bool
+		RefereeScoreReady         bool
+		NumRedScoringPanels       int
+		NumRedScoringPanelsReady  int
+		NumBlueScoringPanels      int
+		NumBlueScoringPanelsReady int
 	}{arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted,
-		arena.RedRealtimeScore.TeleopCommitted, arena.BlueRealtimeScore.TeleopCommitted}
+		arena.ScoringPanelRegistry.GetNumPanels("red"), arena.ScoringPanelRegistry.GetNumScoreCommitted("red"),
+		arena.ScoringPanelRegistry.GetNumPanels("blue"), arena.ScoringPanelRegistry.GetNumScoreCommitted("blue")}
 }
 
 // Constructs the data object for one alliance sent to the audience display for the realtime scoring overlay.

@@ -47,6 +47,7 @@ type Arena struct {
 	TbaClient        *partner.TbaClient
 	AllianceStations map[string]*AllianceStation
 	Displays         map[string]*Display
+	ScoringPanelRegistry
 	ArenaNotifiers
 	MatchState
 	lastMatchState             MatchState
@@ -104,6 +105,8 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.Displays = make(map[string]*Display)
 
 	arena.configureNotifiers()
+
+	arena.ScoringPanelRegistry.initialize()
 
 	// Load empty match as current.
 	arena.MatchState = PreMatch
@@ -186,6 +189,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.BlueRealtimeScore = NewRealtimeScore()
 	arena.FieldVolunteers = false
 	arena.FieldReset = false
+	arena.ScoringPanelRegistry.resetScoreCommitted()
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()

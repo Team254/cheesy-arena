@@ -107,6 +107,10 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	defer ws.Close()
+	web.arena.ScoringPanelRegistry.RegisterPanel(alliance, ws)
+	web.arena.ScoringStatusNotifier.Notify()
+	defer web.arena.ScoringStatusNotifier.Notify()
+	defer web.arena.ScoringPanelRegistry.UnregisterPanel(alliance, ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
@@ -132,12 +136,8 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				ws.WriteError("Cannot commit score: Match is not over.")
 				continue
 			}
-
-			if !(*realtimeScore).TeleopCommitted {
-				(*realtimeScore).TeleopCommitted = true
-				web.arena.ScoringStatusNotifier.Notify()
-				scoreChanged = true
-			}
+			web.arena.ScoringPanelRegistry.SetScoreCommitted(alliance, ws)
+			web.arena.ScoringStatusNotifier.Notify()
 		} else if number, err := strconv.Atoi(command); err == nil && number >= 1 && number <= 9 {
 			// Handle per-robot scoring fields.
 			if number <= 3 {
