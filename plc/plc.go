@@ -59,13 +59,7 @@ const (
 type register int
 
 const (
-	red1Bandwidth register = iota
-	red2Bandwidth
-	red3Bandwidth
-	blue1Bandwidth
-	blue2Bandwidth
-	blue3Bandwidth
-	registerCount
+	registerCount register = iota
 )
 
 // Coils
@@ -79,12 +73,17 @@ const (
 	stackLightRed
 	stackLightBlue
 	stackLightBuzzer
-	red1EthernetDisable
-	red2EthernetDisable
-	red3EthernetDisable
-	blue1EthernetDisable
-	blue2EthernetDisable
-	blue3EthernetDisable
+	fieldResetLight
+	cargoShipMagnetRed
+	cargoShipMagnetBlue
+	cargoShipLightRed
+	cargoShipLightBlue
+	sandstormUpRed
+	sandstormUpBlue
+	rocketLightRedNear
+	rocketLightRedFar
+	rocketLightBlueNear
+	rocketLightBlueFar
 	coilCount
 )
 
