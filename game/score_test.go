@@ -143,3 +143,61 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 }
+
+func TestIsValidPreMatch(t *testing.T) {
+	score := &Score{}
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.RobotStartLevels = [3]int{1, 2, 3}
+	score.CargoBaysPreMatch = [8]BayStatus{1, 3, 3, 0, 0, 1, 1, 3}
+	score.CargoBays = score.CargoBaysPreMatch
+	assert.True(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.RobotStartLevels[0] = 0
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.SandstormBonuses[1] = true
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.RobotEndLevels[2] = 3
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.CargoBaysPreMatch[0] = BayEmpty
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.CargoBaysPreMatch[1] = BayHatchCargo
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.CargoBaysPreMatch[3] = BayHatch
+	score.CargoBaysPreMatch[4] = BayCargo
+	score.CargoBaysPreMatch[5] = BayEmpty
+	score.CargoBaysPreMatch[6] = BayEmpty
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.CargoBays[0] = BayCargo
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.RocketNearLeftBays[0] = BayHatch
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.RocketNearRightBays[1] = BayHatchCargo
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.RocketFarLeftBays[2] = BayCargo
+	assert.False(t, score.IsValidPreMatch())
+
+	score = TestScoreValidPreMatch()
+	score.RocketFarRightBays[0] = BayHatchCargo
+	assert.False(t, score.IsValidPreMatch())
+}

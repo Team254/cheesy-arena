@@ -65,6 +65,7 @@ type Arena struct {
 	AllianceStationDisplayMode string
 	AllianceSelectionAlliances [][]model.AllianceTeam
 	LowerThird                 *model.LowerThird
+	BypassPreMatchScore        bool
 	MuteMatchSounds            bool
 	matchAborted               bool
 	lastRedAllianceReady       bool
@@ -333,6 +334,7 @@ func (arena *Arena) ResetMatch() error {
 	arena.AllianceStations["B1"].Bypass = false
 	arena.AllianceStations["B2"].Bypass = false
 	arena.AllianceStations["B3"].Bypass = false
+	arena.BypassPreMatchScore = false
 	arena.MuteMatchSounds = false
 	return nil
 }
@@ -580,6 +582,11 @@ func (arena *Arena) checkCanStartMatch() error {
 	err := arena.checkAllianceStationsReady("R1", "R2", "R3", "B1", "B2", "B3")
 	if err != nil {
 		return err
+	}
+
+	if !arena.BypassPreMatchScore && (!arena.RedRealtimeScore.CurrentScore.IsValidPreMatch() ||
+		!arena.BlueRealtimeScore.CurrentScore.IsValidPreMatch()) {
+		return fmt.Errorf("Cannot start match until pre-match scoring is set")
 	}
 
 	if arena.EventSettings.PlcAddress != "" {

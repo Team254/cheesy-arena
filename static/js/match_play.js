@@ -18,6 +18,11 @@ var toggleBypass = function(station) {
   websocket.send("toggleBypass", station);
 };
 
+// Sends a websocket message to toggle the bypass state for the pre-match scoring.
+var toggleBypassPreMatchScore = function() {
+  websocket.send("toggleBypassPreMatchScore");
+};
+
 // Sends a websocket message to start the match.
 var startMatch = function() {
   websocket.send("startMatch",
@@ -179,6 +184,8 @@ var handleArenaStatus = function(data) {
       break;
   }
 
+  $("#bypassPreMatchScore").prop("checked", data.BypassPreMatchScore);
+
   if (data.PlcIsHealthy) {
     $("#plcStatus").text("Connected");
     $("#plcStatus").attr("data-ready", true);
@@ -201,6 +208,10 @@ var handleMatchTime = function(data) {
 var handleRealtimeScore = function(data) {
   $("#redScore").text(data.Red.ScoreSummary.Score);
   $("#blueScore").text(data.Blue.ScoreSummary.Score);
+  if (matchStates[data.MatchState] == "PRE_MATCH") {
+    $("#redPreMatchScoreStatus").attr("data-ready", data.Red.IsPreMatchScoreReady);
+    $("#bluePreMatchScoreStatus").attr("data-ready", data.Blue.IsPreMatchScoreReady);
+  }
 };
 
 // Handles a websocket message to update the audience display screen selector.

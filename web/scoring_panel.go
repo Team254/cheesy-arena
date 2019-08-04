@@ -140,19 +140,19 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.ScoringStatusNotifier.Notify()
 		} else if number, err := strconv.Atoi(command); err == nil && number >= 1 && number <= 9 {
 			// Handle per-robot scoring fields.
-			if number <= 3 {
+			if number <= 3 && web.arena.MatchState == field.PreMatch {
 				index := number - 1
 				score.RobotStartLevels[index]++
 				if score.RobotStartLevels[index] == 4 {
 					score.RobotStartLevels[index] = 0
 				}
 				scoreChanged = true
-			} else if number <= 6 && web.arena.MatchState != field.PreMatch {
+			} else if number > 3 && number <= 6 && web.arena.MatchState != field.PreMatch {
 				index := number - 4
 				score.SandstormBonuses[index] =
 					!score.SandstormBonuses[index]
 				scoreChanged = true
-			} else if web.arena.MatchState != field.PreMatch {
+			} else if number > 6 && web.arena.MatchState != field.PreMatch {
 				index := number - 7
 				score.RobotEndLevels[index]++
 				if score.RobotEndLevels[index] == 4 {

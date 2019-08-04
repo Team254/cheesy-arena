@@ -141,6 +141,37 @@ func (score *Score) Equals(other *Score) bool {
 	return true
 }
 
+// Returns true if the score represents a valid pre-match state.
+func (score *Score) IsValidPreMatch() bool {
+	for i := 0; i < 3; i++ {
+		// Ensure robot start level is set.
+		if score.RobotStartLevels[i] == 0 || score.RobotStartLevels[i] > 3 {
+			return false
+		}
+
+		// Ensure other robot fields and rocket bays are empty.
+		if score.SandstormBonuses[i] || score.RobotEndLevels[i] != 0 || score.RocketNearLeftBays[i] != BayEmpty ||
+			score.RocketNearRightBays[i] != BayEmpty || score.RocketFarLeftBays[i] != BayEmpty ||
+			score.RocketFarRightBays[i] != BayEmpty {
+			return false
+		}
+	}
+	for i := 0; i < 8; i++ {
+		if i == 3 || i == 4 {
+			// Ensure cargo ship front bays are empty.
+			if score.CargoBaysPreMatch[i] != BayEmpty {
+				return false
+			}
+		} else {
+			// Ensure cargo ship side bays have either a hatch or cargo but not both.
+			if !(score.CargoBaysPreMatch[i] == BayHatch || score.CargoBaysPreMatch[i] == BayCargo) {
+				return false
+			}
+		}
+	}
+	return score.CargoBays == score.CargoBaysPreMatch
+}
+
 // Calculates the cargo and hatch panel points for the given rocket half and adds them to the summary.
 func (summary *ScoreSummary) addRocketHalfPoints(rocketHalf [3]BayStatus) {
 	for _, bayStatus := range rocketHalf {

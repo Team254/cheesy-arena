@@ -22,12 +22,13 @@ var handleMatchLoad = function(data) {
 
 // Handles a websocket message to update the realtime scoring fields.
 var handleRealtimeScore = function(data) {
-  var score;
+  var realtimeScore;
   if (alliance === "red") {
-    score = data.Red.Score;
+    realtimeScore = data.Red;
   } else {
-    score = data.Blue.Score;
+    realtimeScore = data.Blue;
   }
+  var score = realtimeScore.Score;
 
   for (var i = 0; i < 3; i++) {
     var i1 = i + 1;
@@ -45,13 +46,21 @@ var handleRealtimeScore = function(data) {
   for (var i = 0; i < 8; i++) {
     getBay("cargoShip", i).attr("data-value", score.CargoBays[i]);
   }
+
+  if (matchStates[data.MatchState] === "PRE_MATCH") {
+    if (realtimeScore.IsPreMatchScoreReady) {
+      $("#preMatchMessage").hide();
+    } else {
+      $("#preMatchMessage").css("display", "flex");
+    }
+  }
 };
 
 // Handles a websocket message to update the match status.
 var handleMatchTime = function(data) {
   switch (matchStates[data.MatchState]) {
     case "PRE_MATCH":
-      $("#preMatchMessage").css("display", "flex");
+      // Pre-match message state is set in handleRealtimeScore().
       $("#postMatchMessage").hide();
       $("#commitMatchScore").hide();
       break;

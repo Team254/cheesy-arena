@@ -46,6 +46,14 @@ func TestScore2() *Score {
 	}
 }
 
+func TestScoreValidPreMatch() *Score {
+	return &Score{
+		RobotStartLevels:  [3]int{1, 2, 3},
+		CargoBaysPreMatch: [8]BayStatus{1, 3, 3, 0, 0, 1, 1, 3},
+		CargoBays:         [8]BayStatus{1, 3, 3, 0, 0, 1, 1, 3},
+	}
+}
+
 func TestRanking1() *Ranking {
 	return &Ranking{254, 1, RankingFields{20, 625, 90, 554, 10, 0.254, 3, 2, 1, 0, 10}}
 }

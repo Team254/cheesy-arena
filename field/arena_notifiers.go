@@ -41,13 +41,14 @@ type LedModeMessage struct {
 }
 
 type MatchTimeMessage struct {
-	MatchState   int
+	MatchState
 	MatchTimeSec int
 }
 
 type audienceAllianceScoreFields struct {
-	Score        *game.Score
-	ScoreSummary *game.ScoreSummary
+	Score                *game.Score
+	ScoreSummary         *game.ScoreSummary
+	IsPreMatchScoreReady bool
 }
 
 // Instantiates notifiers and configures their message producing methods.
@@ -92,10 +93,11 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 		AllianceStations map[string]*AllianceStation
 		TeamWifiStatuses map[string]network.TeamWifiStatus
 		MatchState
-		CanStartMatch bool
-		PlcIsHealthy  bool
-		FieldEstop    bool
-	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState,
+		BypassPreMatchScore bool
+		CanStartMatch       bool
+		PlcIsHealthy        bool
+		FieldEstop          bool
+	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState, arena.BypassPreMatchScore,
 		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy, arena.Plc.GetFieldEstop()}
 }
 
@@ -147,7 +149,7 @@ func (arena *Arena) generateMatchLoadMessage() interface{} {
 }
 
 func (arena *Arena) generateMatchTimeMessage() interface{} {
-	return MatchTimeMessage{int(arena.MatchState), int(arena.MatchTimeSec())}
+	return MatchTimeMessage{arena.MatchState, int(arena.MatchTimeSec())}
 }
 
 func (arena *Arena) generateMatchTimingMessage() interface{} {
@@ -158,9 +160,11 @@ func (arena *Arena) generateRealtimeScoreMessage() interface{} {
 	fields := struct {
 		Red  *audienceAllianceScoreFields
 		Blue *audienceAllianceScoreFields
+		MatchState
 	}{}
 	fields.Red = getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary())
 	fields.Blue = getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary())
+	fields.MatchState = arena.MatchState
 	return &fields
 }
 
@@ -230,6 +234,7 @@ func getAudienceAllianceScoreFields(allianceScore *RealtimeScore,
 	fields := new(audienceAllianceScoreFields)
 	fields.Score = &allianceScore.CurrentScore
 	fields.ScoreSummary = allianceScoreSummary
+	fields.IsPreMatchScoreReady = allianceScore.CurrentScore.IsValidPreMatch()
 	return fields
 }
 

@@ -294,6 +294,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web.arena.AllianceStations["B1"].Bypass = true
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
+	web.arena.BypassPreMatchScore = true
 	ws.Write("startMatch", nil)
 	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, field.StartMatch, web.arena.MatchState)
@@ -353,6 +354,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.AllianceStations["B1"].Bypass = true
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
+	web.arena.BypassPreMatchScore = true
 	assert.Nil(t, web.arena.StartMatch())
 	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 4)
@@ -367,7 +369,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	messages = readWebsocketMultiple(t, ws, 2)
 	statusReceived, matchTime := getStatusMatchTime(t, messages)
 	assert.Equal(t, true, statusReceived)
-	assert.Equal(t, 3, matchTime.MatchState)
+	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 3, matchTime.MatchTimeSec)
 	web.arena.ScoringStatusNotifier.Notify()
 	readWebsocketType(t, ws, "scoringStatus")
@@ -377,7 +379,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.Update()
 	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
 	assert.Nil(t, err)
-	assert.Equal(t, 3, matchTime.MatchState)
+	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 1, matchTime.MatchTimeSec)
 	web.arena.MatchStartTime = time.Now().Add(-2*time.Second + 10*time.Millisecond) // Not crossed yet
 	web.arena.Update()
@@ -385,7 +387,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.Update()
 	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
 	assert.Nil(t, err)
-	assert.Equal(t, 3, matchTime.MatchState)
+	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 2, matchTime.MatchTimeSec)
 
 	// Check across a match state boundary.
@@ -394,7 +396,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.Update()
 	statusReceived, matchTime = readWebsocketStatusMatchTime(t, ws)
 	assert.Equal(t, true, statusReceived)
-	assert.Equal(t, 4, matchTime.MatchState)
+	assert.Equal(t, field.PausePeriod, matchTime.MatchState)
 	assert.Equal(t, game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec, matchTime.MatchTimeSec)
 }
 
