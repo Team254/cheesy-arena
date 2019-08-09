@@ -222,14 +222,12 @@ var handleAudienceDisplayMode = function(data) {
 
 // Handles a websocket message to signal whether the referee and scorers have committed after the match.
 var handleScoringStatus = function(data) {
-  var redScoreReady = data.NumRedScoringPanels > 0 && data.NumRedScoringPanelsReady >= data.NumRedScoringPanels;
-  var blueScoreReady = data.NumBlueScoringPanels > 0 && data.NumBlueScoringPanelsReady >= data.NumBlueScoringPanels;
-  scoreIsReady = data.RefereeScoreReady && redScoreReady && blueScoreReady;
+  scoreIsReady = data.RefereeScoreReady && data.RedScoreReady && data.BlueScoreReady;
   $("#refereeScoreStatus").attr("data-ready", data.RefereeScoreReady);
   $("#redScoreStatus").text("Red Scoring " + data.NumRedScoringPanelsReady + "/" + data.NumRedScoringPanels);
-  $("#redScoreStatus").attr("data-ready", redScoreReady);
+  $("#redScoreStatus").attr("data-ready", data.RedScoreReady);
   $("#blueScoreStatus").text("Blue Scoring " + data.NumBlueScoringPanelsReady + "/" + data.NumBlueScoringPanels);
-  $("#blueScoreStatus").attr("data-ready", blueScoreReady);
+  $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
 };
 
 // Handles a websocket message to update the alliance station display screen selector.

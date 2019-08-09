@@ -102,29 +102,32 @@ func (plc *Plc) Run() {
 	for {
 		if plc.handler == nil {
 			if plc.address == "" {
-				time.Sleep(time.Second * plcRetryIntevalSec)
+				// No PLC is configured; just allow the loop to continue to simulate inputs and outputs.
 				plc.IsHealthy = false
-				continue
-			}
-
-			err := plc.connect()
-			if err != nil {
-				log.Printf("PLC error: %v", err)
-				time.Sleep(time.Second * plcRetryIntevalSec)
-				plc.IsHealthy = false
-				continue
+			} else {
+				err := plc.connect()
+				if err != nil {
+					log.Printf("PLC error: %v", err)
+					//time.Sleep(time.Second * plcRetryIntevalSec)
+					plc.IsHealthy = false
+					continue
+				}
 			}
 		}
 
 		startTime := time.Now()
-		isHealthy := true
-		isHealthy = isHealthy && plc.writeCoils()
-		isHealthy = isHealthy && plc.readInputs()
-		isHealthy = isHealthy && plc.readCounters()
-		if !isHealthy {
-			plc.resetConnection()
+
+		if plc.handler != nil {
+			isHealthy := true
+			isHealthy = isHealthy && plc.writeCoils()
+			isHealthy = isHealthy && plc.readInputs()
+			isHealthy = isHealthy && plc.readCounters()
+			if !isHealthy {
+				plc.resetConnection()
+			}
+			plc.IsHealthy = isHealthy
 		}
-		plc.IsHealthy = isHealthy
+
 		plc.cycleCounter++
 		if plc.cycleCounter == cycleCounterMax {
 			plc.cycleCounter = 0
@@ -162,9 +165,10 @@ func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 }
 
 // Set the on/off state of the stack lights on the scoring table.
-func (plc *Plc) SetStackLights(red, blue, green bool) {
+func (plc *Plc) SetStackLights(red, blue, orange, green bool) {
 	plc.coils[stackLightRed] = red
 	plc.coils[stackLightBlue] = blue
+	plc.coils[stackLightOrange] = orange
 	plc.coils[stackLightGreen] = green
 }
 

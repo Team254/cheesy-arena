@@ -19,7 +19,7 @@
             {{range $i, $name := .InputNames}}
             <tr>
               <td>{{$name}}</td>
-              <td id="input{{$i}}"></td>
+              <td id="input{{$i}}" data-plc-value="false"></td>
             </tr>
             {{end}}
           </table>
@@ -45,7 +45,7 @@
             {{range $i, $name := .CoilNames}}
             <tr>
               <td>{{$name}}</td>
-              <td id="coil{{$i}}"></td>
+              <td id="coil{{$i}}" data-plc-value="false"></td>
             </tr>
             {{end}}
           </table>

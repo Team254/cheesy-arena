@@ -673,12 +673,16 @@ func (arena *Arena) handleLeds() {
 	case TimeoutActive:
 		fallthrough
 	case PostTimeout:
-		// Set the stack light state -- blinking green if ready, or solid alliance color(s) if not.
+		// Set the stack light state -- solid alliance color(s) if robots are not connected, solid orange if scores are
+		// not input, or blinking green if ready.
 		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
-		greenStackLight := redAllianceReady && blueAllianceReady && arena.Plc.GetCycleState(2, 0, 2)
-		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, greenStackLight)
-		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady)
+		preMatchScoreReady := arena.BypassPreMatchScore || arena.RedRealtimeScore.CurrentScore.IsValidPreMatch() &&
+			arena.BlueRealtimeScore.CurrentScore.IsValidPreMatch()
+		greenStackLight := redAllianceReady && blueAllianceReady && preMatchScoreReady &&
+			arena.Plc.GetCycleState(2, 0, 2)
+		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, !preMatchScoreReady, greenStackLight)
+		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady && preMatchScoreReady)
 
 		// Turn off lights if all teams become ready.
 		// TODO(pat): Implement for 2019.
@@ -700,9 +704,10 @@ func (arena *Arena) handleLeds() {
 			//arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
 		}
 		arena.lastBlueAllianceReady = blueAllianceReady
-
 	case PostMatch:
-		arena.Plc.SetStackLights(false, false, false)
+		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
+			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
+		arena.Plc.SetStackLights(false, false, !scoreReady, false)
 	}
 }
 
@@ -744,4 +749,9 @@ func (arena *Arena) playSound(name string) {
 	if !arena.MuteMatchSounds {
 		arena.PlaySoundNotifier.NotifyWithMessage(name)
 	}
+}
+
+func (arena *Arena) alliancePostMatchScoreReady(alliance string) bool {
+	numPanels := arena.ScoringPanelRegistry.GetNumPanels(alliance)
+	return numPanels > 0 && arena.ScoringPanelRegistry.GetNumScoreCommitted(alliance) >= numPanels
 }

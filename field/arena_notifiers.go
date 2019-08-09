@@ -219,11 +219,14 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 func (arena *Arena) generateScoringStatusMessage() interface{} {
 	return &struct {
 		RefereeScoreReady         bool
+		RedScoreReady             bool
+		BlueScoreReady            bool
 		NumRedScoringPanels       int
 		NumRedScoringPanelsReady  int
 		NumBlueScoringPanels      int
 		NumBlueScoringPanelsReady int
 	}{arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted,
+		arena.alliancePostMatchScoreReady("red"), arena.alliancePostMatchScoreReady("blue"),
 		arena.ScoringPanelRegistry.GetNumPanels("red"), arena.ScoringPanelRegistry.GetNumScoreCommitted("red"),
 		arena.ScoringPanelRegistry.GetNumPanels("blue"), arena.ScoringPanelRegistry.GetNumScoreCommitted("blue")}
 }

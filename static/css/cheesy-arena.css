@@ -92,6 +92,12 @@
   width: 80px;
 }
 input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
+}
+td[data-plc-value="false"] {
+  color: #f00;
+}
+td[data-plc-value="true"] {
+  color: #090;
 }
