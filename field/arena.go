@@ -21,6 +21,7 @@ const (
 	dsPacketPeriodMs      = 250
 	matchEndScoreDwellSec = 3
 	postTimeoutSec        = 4
+	sandstormUpSec        = 1
 )
 
 // Progression of match states.
@@ -195,9 +196,6 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.RealtimeScoreNotifier.Notify()
 	arena.AllianceStationDisplayMode = "match"
 	arena.AllianceStationDisplayModeNotifier.Notify()
-
-	// Set the initial state of the lights.
-	arena.Plc.SetFieldResetLight(true)
 
 	return nil
 }
@@ -463,8 +461,6 @@ func (arena *Arena) Update() {
 	if int(matchTimeSec) != int(arena.LastMatchTimeSec) || arena.MatchState != arena.lastMatchState {
 		arena.MatchTimeNotifier.Notify()
 	}
-	arena.LastMatchTimeSec = matchTimeSec
-	arena.lastMatchState = arena.MatchState
 
 	// Send a packet if at a period transition point or if it's been long enough since the last one.
 	if sendDsPacket || time.Since(arena.lastDsPacketTime).Seconds()*1000 >= dsPacketPeriodMs {
@@ -474,19 +470,12 @@ func (arena *Arena) Update() {
 
 	arena.handleSounds(matchTimeSec)
 
-	// Handle field sensors/lights/motors.
+	// Handle field sensors/lights/actuators.
 	arena.handlePlcInput()
-	arena.handleLeds()
+	arena.handlePlcOutput()
 
-	// Send a notification if there has been a change in score.
-	redScore := &arena.RedRealtimeScore.CurrentScore
-	oldRedScore := *redScore
-	blueScore := &arena.BlueRealtimeScore.CurrentScore
-	oldBlueScore := *blueScore
-	// TODO(pat): Fix this to work with manual scoring.
-	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
-		arena.RealtimeScoreNotifier.Notify()
-	}
+	arena.LastMatchTimeSec = matchTimeSec
+	arena.lastMatchState = arena.MatchState
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -663,9 +652,12 @@ func (arena *Arena) handlePlcInput() {
 	}
 }
 
-func (arena *Arena) handleLeds() {
+func (arena *Arena) handlePlcOutput() {
 	switch arena.MatchState {
 	case PreMatch:
+		if arena.lastMatchState != PreMatch {
+			arena.Plc.SetFieldResetLight(true)
+		}
 		fallthrough
 	case TimeoutActive:
 		fallthrough
@@ -685,6 +677,9 @@ func (arena *Arena) handleLeds() {
 		if redAllianceReady && blueAllianceReady {
 			arena.Plc.SetFieldResetLight(false)
 		}
+
+		arena.Plc.SetCargoShipMagnets(true)
+		arena.Plc.SetRocketLights(false, false)
 	case PostMatch:
 		if arena.FieldReset {
 			arena.Plc.SetFieldResetLight(true)
@@ -692,6 +687,18 @@ func (arena *Arena) handleLeds() {
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
 			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
+		arena.Plc.SetCargoShipMagnets(true)
+		arena.Plc.SetRocketLights(false, false)
+	case TeleopPeriod:
+		if arena.lastMatchState != TeleopPeriod {
+			arena.Plc.SetSandstormUp(true)
+			go func() {
+				time.Sleep(sandstormUpSec * time.Second)
+				arena.Plc.SetSandstormUp(false)
+			}()
+		}
+		arena.Plc.SetCargoShipMagnets(false)
+		arena.Plc.SetRocketLights(arena.RedScoreSummary().CompleteRocket, arena.BlueScoreSummary().CompleteRocket)
 	}
 }
 

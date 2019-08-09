@@ -181,6 +181,25 @@ func (plc *Plc) SetFieldResetLight(state bool) {
 	plc.coils[fieldResetLight] = state
 }
 
+func (plc *Plc) SetSandstormUp(state bool) {
+	plc.coils[sandstormUpRed] = state
+	plc.coils[sandstormUpBlue] = state
+}
+
+func (plc *Plc) SetCargoShipMagnets(state bool) {
+	plc.coils[cargoShipMagnetRed] = state
+	plc.coils[cargoShipMagnetBlue] = state
+	plc.coils[cargoShipLightRed] = state
+	plc.coils[cargoShipLightBlue] = state
+}
+
+func (plc *Plc) SetRocketLights(red, blue bool) {
+	plc.coils[rocketLightRedNear] = red
+	plc.coils[rocketLightRedFar] = red
+	plc.coils[rocketLightBlueNear] = blue
+	plc.coils[rocketLightBlueFar] = blue
+}
+
 func (plc *Plc) GetCycleState(max, index, duration int) bool {
 	return plc.cycleCounter/duration%max == index
 }
