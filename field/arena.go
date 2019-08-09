@@ -68,8 +68,6 @@ type Arena struct {
 	BypassPreMatchScore        bool
 	MuteMatchSounds            bool
 	matchAborted               bool
-	lastRedAllianceReady       bool
-	lastBlueAllianceReady      bool
 	soundsPlayed               map[*game.MatchSound]struct{}
 }
 
@@ -199,8 +197,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.AllianceStationDisplayModeNotifier.Notify()
 
 	// Set the initial state of the lights.
-	arena.lastRedAllianceReady = false
-	arena.lastBlueAllianceReady = false
+	arena.Plc.SetFieldResetLight(true)
 
 	return nil
 }
@@ -685,26 +682,13 @@ func (arena *Arena) handleLeds() {
 		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady && preMatchScoreReady)
 
 		// Turn off lights if all teams become ready.
-		// TODO(pat): Implement for 2019.
-		if redAllianceReady && blueAllianceReady && !(arena.lastRedAllianceReady && arena.lastBlueAllianceReady) {
-			//arena.ScaleLeds.SetMode(led.OffMode, led.OffMode)
-		} else if !(redAllianceReady && blueAllianceReady) && arena.lastRedAllianceReady &&
-			arena.lastBlueAllianceReady {
-			//arena.ScaleLeds.SetMode(led.GreenMode, led.GreenMode)
+		if redAllianceReady && blueAllianceReady {
+			arena.Plc.SetFieldResetLight(false)
 		}
-		if redAllianceReady && !arena.lastRedAllianceReady {
-			//arena.RedSwitchLeds.SetMode(led.OffMode, led.OffMode)
-		} else if !redAllianceReady && arena.lastRedAllianceReady {
-			//arena.RedSwitchLeds.SetMode(led.RedMode, led.RedMode)
-		}
-		arena.lastRedAllianceReady = redAllianceReady
-		if blueAllianceReady && !arena.lastBlueAllianceReady {
-			//arena.BlueSwitchLeds.SetMode(led.OffMode, led.OffMode)
-		} else if !blueAllianceReady && arena.lastBlueAllianceReady {
-			//arena.BlueSwitchLeds.SetMode(led.BlueMode, led.BlueMode)
-		}
-		arena.lastBlueAllianceReady = blueAllianceReady
 	case PostMatch:
+		if arena.FieldReset {
+			arena.Plc.SetFieldResetLight(true)
+		}
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
 			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)

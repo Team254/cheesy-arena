@@ -177,6 +177,10 @@ func (plc *Plc) SetStackBuzzer(state bool) {
 	plc.coils[stackLightBuzzer] = state
 }
 
+func (plc *Plc) SetFieldResetLight(state bool) {
+	plc.coils[fieldResetLight] = state
+}
+
 func (plc *Plc) GetCycleState(max, index, duration int) bool {
 	return plc.cycleCounter/duration%max == index
 }
