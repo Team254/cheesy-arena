@@ -10,6 +10,7 @@ type LowerThird struct {
 	TopText      string
 	BottomText   string
 	DisplayOrder int
+	AwardId      int
 }
 
 func (database *Database) CreateLowerThird(lowerThird *LowerThird) error {
@@ -44,4 +45,17 @@ func (database *Database) GetAllLowerThirds() ([]LowerThird, error) {
 	var lowerThirds []LowerThird
 	err := database.lowerThirdMap.Select(&lowerThirds, "SELECT * FROM lower_thirds ORDER BY displayorder")
 	return lowerThirds, err
+}
+
+func (database *Database) GetLowerThirdsByAwardId(awardId int) ([]LowerThird, error) {
+	var lowerThirds []LowerThird
+	err := database.lowerThirdMap.Select(&lowerThirds, "SELECT * FROM lower_thirds WHERE awardid = ? ORDER BY id",
+		awardId)
+	return lowerThirds, err
+}
+
+func (database *Database) GetNextLowerThirdDisplayOrder() int {
+	var count int
+	_ = database.lowerThirdMap.SelectOne(&count, "SELECT MAX(displayorder) + 1 FROM lower_thirds")
+	return count
 }

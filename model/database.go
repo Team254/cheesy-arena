@@ -36,6 +36,7 @@ type Database struct {
 	lowerThirdMap    *modl.DbMap
 	sponsorSlideMap  *modl.DbMap
 	scheduleBlockMap *modl.DbMap
+	awardMap         *modl.DbMap
 }
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
@@ -124,6 +125,9 @@ func (database *Database) mapTables() {
 
 	database.scheduleBlockMap = modl.NewDbMap(database.db, dialect)
 	database.scheduleBlockMap.AddTableWithName(ScheduleBlock{}, "schedule_blocks").SetKeys(true, "Id")
+
+	database.awardMap = modl.NewDbMap(database.db, dialect)
+	database.awardMap.AddTableWithName(Award{}, "awards").SetKeys(true, "Id")
 }
 
 func serializeHelper(target *string, source interface{}) error {

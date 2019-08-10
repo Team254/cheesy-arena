@@ -3,7 +3,6 @@ Cheesy Arena To-Do List
 
 ### Features for FRC parity
 * Event wizard to guide scorekeeper through running an event
-* Awards tracking and publishing
 * Elimination bracket report and audience screen
 * Interface for viewing logs (right now it's CSV files in Excel)
 
@@ -15,7 +14,6 @@ Cheesy Arena To-Do List
 ### Scorekeeper-facing features
 * Ability to unscore a match and reset it to non-played status
 * Allow reordering of sponsor slides in the setup page
-* Automatic creation of lower thirds for awards
 
 ### Features for other volunteers
 * Referee interface: add timer starting at field reset to track time limit for calling timeouts/backups
