@@ -20,7 +20,6 @@ type ArenaNotifiers struct {
 	ArenaStatusNotifier                *websocket.Notifier
 	AudienceDisplayModeNotifier        *websocket.Notifier
 	DisplayConfigurationNotifier       *websocket.Notifier
-	LedModeNotifier                    *websocket.Notifier
 	LowerThirdNotifier                 *websocket.Notifier
 	MatchLoadNotifier                  *websocket.Notifier
 	MatchTimeNotifier                  *websocket.Notifier
@@ -35,9 +34,6 @@ type ArenaNotifiers struct {
 type DisplayConfigurationMessage struct {
 	Displays    map[string]*Display
 	DisplayUrls map[string]string
-}
-
-type LedModeMessage struct {
 }
 
 type MatchTimeMessage struct {
@@ -61,7 +57,6 @@ func (arena *Arena) configureNotifiers() {
 		arena.generateAudienceDisplayModeMessage)
 	arena.DisplayConfigurationNotifier = websocket.NewNotifier("displayConfiguration",
 		arena.generateDisplayConfigurationMessage)
-	arena.LedModeNotifier = websocket.NewNotifier("ledMode", arena.generateLedModeMessage)
 	arena.LowerThirdNotifier = websocket.NewNotifier("lowerThird", arena.generateLowerThirdMessage)
 	arena.MatchLoadNotifier = websocket.NewNotifier("matchLoad", arena.generateMatchLoadMessage)
 	arena.MatchTimeNotifier = websocket.NewNotifier("matchTime", arena.generateMatchTimeMessage)
@@ -116,10 +111,6 @@ func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
 	}
 
 	return &DisplayConfigurationMessage{displaysCopy, displayUrls}
-}
-
-func (arena *Arena) generateLedModeMessage() interface{} {
-	return &LedModeMessage{}
 }
 
 func (arena *Arena) generateLowerThirdMessage() interface{} {

@@ -8,9 +8,6 @@ import (
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"testing"
-
-	"github.com/Team254/cheesy-arena/field"
-	"github.com/mitchellh/mapstructure"
 )
 
 func TestSetupLedPlcWebsocket(t *testing.T) {
@@ -24,14 +21,5 @@ func TestSetupLedPlcWebsocket(t *testing.T) {
 	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
-	readLedModes(t, ws)
 	readWebsocketType(t, ws, "plcIoChange")
-}
-
-func readLedModes(t *testing.T, ws *websocket.Websocket) *field.LedModeMessage {
-	message := readWebsocketType(t, ws, "ledMode")
-	var ledModeMessage field.LedModeMessage
-	err := mapstructure.Decode(message, &ledModeMessage)
-	assert.Nil(t, err)
-	return &ledModeMessage
 }
