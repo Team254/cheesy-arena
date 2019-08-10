@@ -24,6 +24,7 @@ _testmain.go
 *.exe
 *.test
 *.db
+*.db-journal
 *.out
 .DS_Store
 static/logs

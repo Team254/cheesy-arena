@@ -47,13 +47,14 @@ var clearFoul = function() {
 var commitFoul = function() {
   websocket.send("addFoul", {Alliance: foulTeamButton.attr("data-alliance"),
       TeamId: parseInt(foulTeamButton.attr("data-team")), Rule: foulRuleButton.attr("data-rule"),
-      IsTechnical: foulRuleButton.attr("data-is-technical") === "true"});
+      IsTechnical: foulRuleButton.attr("data-is-technical") === "true",
+      IsRankingPoint: foulRuleButton.attr("data-is-ranking-point") === "true"});
 };
 
 // Removes the foul with the given parameters from the list.
-var deleteFoul = function(alliance, team, rule, isTechnical, timeSec) {
+var deleteFoul = function(alliance, team, rule, isTechnical, isRankingPoint, timeSec) {
   websocket.send("deleteFoul", {Alliance: alliance, TeamId: parseInt(team), Rule: rule,
-      IsTechnical: isTechnical, TimeInMatchSec: timeSec});
+      IsTechnical: isTechnical, IsRankingPoint: isRankingPoint, TimeInMatchSec: timeSec});
 };
 
 // Cycles through no card, yellow card, and red card.
