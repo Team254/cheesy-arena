@@ -1,0 +1,8 @@
+All schedules with _balanced at the end of them were created by Caleb Sykes. These schedules are built by swapping the team indexes in the unbalanced schedules to give each team as fair of possible of a schedule without sacrificing unique partners/opponents or time between matches. Because of this, these schedules could overwrite the unbalanced schedules without impacting normal schedule generation, however I've made them duplicates for now since that's not my call to make. 
+
+To implement, you must input a team list which is ordered according to whatever "strength" metric you want to use for teams. The schedule is symmetric, meaning that both ascending and descending lists of teams according to strength are acceptable. Common metrics that could be used for this list are Elo, District Points, non-award District Points, OPR, and team number. My recommendation for which to use is as follows: Elo > OPR > non-award District Points >> District Points >>> Team Number > Random. 
+
+If anyone actually implements these, reach out to me on CD or at calebsyk@gmail.com as I'd be interested in helping with implementation and/or analyzing results. I haven't dug into the rest of the CA code to see exactly how to incorporate these, but I bet it'd be reasonably straightforward, I've done all the hard work already :). 
+
+
+More details on the process to generate these schedules can be found in the 3 related blog posts on the TBA blog: https://blog.thebluealliance.com/
