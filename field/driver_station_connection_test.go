@@ -122,7 +122,6 @@ func TestEncodeControlPacket(t *testing.T) {
 	arena.MatchStartTime = time.Now().Add(-time.Duration(33 * time.Second))
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(119), data[21])
-	arena.MatchState = EndgamePeriod
 	arena.MatchStartTime = time.Now().Add(-time.Duration(150 * time.Second))
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(2), data[21])

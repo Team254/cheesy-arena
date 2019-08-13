@@ -8,13 +8,10 @@ package field
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
-	"github.com/Team254/cheesy-arena/vaultled"
 	"github.com/Team254/cheesy-arena/websocket"
 	"strconv"
-	"time"
 )
 
 type ArenaNotifiers struct {
@@ -41,22 +38,17 @@ type DisplayConfigurationMessage struct {
 }
 
 type LedModeMessage struct {
-	LedMode      led.Mode
-	VaultLedMode vaultled.Mode
 }
 
 type MatchTimeMessage struct {
-	MatchState   int
+	MatchState
 	MatchTimeSec int
 }
 
 type audienceAllianceScoreFields struct {
-	Score         int
-	RealtimeScore *RealtimeScore
-	ForceState    game.PowerUpState
-	LevitateState game.PowerUpState
-	BoostState    game.PowerUpState
-	SwitchOwnedBy game.Alliance
+	Score                *game.Score
+	ScoreSummary         *game.ScoreSummary
+	IsPreMatchScoreReady bool
 }
 
 // Instantiates notifiers and configures their message producing methods.
@@ -101,13 +93,12 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 		AllianceStations map[string]*AllianceStation
 		TeamWifiStatuses map[string]network.TeamWifiStatus
 		MatchState
-		CanStartMatch    bool
-		PlcIsHealthy     bool
-		FieldEstop       bool
-		GameSpecificData string
-	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState,
-		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy, arena.Plc.GetFieldEstop(),
-		arena.CurrentMatch.GameSpecificData}
+		BypassPreMatchScore bool
+		CanStartMatch       bool
+		PlcIsHealthy        bool
+		FieldEstop          bool
+	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState, arena.BypassPreMatchScore,
+		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy, arena.Plc.GetFieldEstop()}
 }
 
 func (arena *Arena) generateAudienceDisplayModeMessage() interface{} {
@@ -128,7 +119,7 @@ func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
 }
 
 func (arena *Arena) generateLedModeMessage() interface{} {
-	return &LedModeMessage{arena.ScaleLeds.GetCurrentMode(), arena.RedVaultLeds.CurrentForceMode}
+	return &LedModeMessage{}
 }
 
 func (arena *Arena) generateLowerThirdMessage() interface{} {
@@ -158,7 +149,7 @@ func (arena *Arena) generateMatchLoadMessage() interface{} {
 }
 
 func (arena *Arena) generateMatchTimeMessage() interface{} {
-	return MatchTimeMessage{int(arena.MatchState), int(arena.MatchTimeSec())}
+	return MatchTimeMessage{arena.MatchState, int(arena.MatchTimeSec())}
 }
 
 func (arena *Arena) generateMatchTimingMessage() interface{} {
@@ -167,15 +158,13 @@ func (arena *Arena) generateMatchTimingMessage() interface{} {
 
 func (arena *Arena) generateRealtimeScoreMessage() interface{} {
 	fields := struct {
-		Red          *audienceAllianceScoreFields
-		Blue         *audienceAllianceScoreFields
-		ScaleOwnedBy game.Alliance
+		Red  *audienceAllianceScoreFields
+		Blue *audienceAllianceScoreFields
+		MatchState
 	}{}
-	fields.Red = getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary(),
-		arena.RedVault, arena.RedSwitch)
-	fields.Blue = getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary(),
-		arena.BlueVault, arena.BlueSwitch)
-	fields.ScaleOwnedBy = arena.Scale.GetOwnedBy()
+	fields.Red = getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary())
+	fields.Blue = getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary())
+	fields.MatchState = arena.MatchState
 	return &fields
 }
 
@@ -229,35 +218,26 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 
 func (arena *Arena) generateScoringStatusMessage() interface{} {
 	return &struct {
-		RefereeScoreReady bool
-		RedScoreReady     bool
-		BlueScoreReady    bool
+		RefereeScoreReady         bool
+		RedScoreReady             bool
+		BlueScoreReady            bool
+		NumRedScoringPanels       int
+		NumRedScoringPanelsReady  int
+		NumBlueScoringPanels      int
+		NumBlueScoringPanelsReady int
 	}{arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted,
-		arena.RedRealtimeScore.TeleopCommitted, arena.BlueRealtimeScore.TeleopCommitted}
+		arena.alliancePostMatchScoreReady("red"), arena.alliancePostMatchScoreReady("blue"),
+		arena.ScoringPanelRegistry.GetNumPanels("red"), arena.ScoringPanelRegistry.GetNumScoreCommitted("red"),
+		arena.ScoringPanelRegistry.GetNumPanels("blue"), arena.ScoringPanelRegistry.GetNumScoreCommitted("blue")}
 }
 
 // Constructs the data object for one alliance sent to the audience display for the realtime scoring overlay.
-func getAudienceAllianceScoreFields(allianceScore *RealtimeScore, allianceScoreSummary *game.ScoreSummary,
-	allianceVault *game.Vault, allianceSwitch *game.Seesaw) *audienceAllianceScoreFields {
+func getAudienceAllianceScoreFields(allianceScore *RealtimeScore,
+	allianceScoreSummary *game.ScoreSummary) *audienceAllianceScoreFields {
 	fields := new(audienceAllianceScoreFields)
-	fields.RealtimeScore = allianceScore
-	fields.Score = allianceScoreSummary.Score
-	if allianceVault.ForcePowerUp != nil {
-		fields.ForceState = allianceVault.ForcePowerUp.GetState(time.Now())
-	} else {
-		fields.ForceState = game.Unplayed
-	}
-	if allianceVault.LevitatePlayed {
-		fields.LevitateState = game.Expired
-	} else {
-		fields.LevitateState = game.Unplayed
-	}
-	if allianceVault.BoostPowerUp != nil {
-		fields.BoostState = allianceVault.BoostPowerUp.GetState(time.Now())
-	} else {
-		fields.BoostState = game.Unplayed
-	}
-	fields.SwitchOwnedBy = allianceSwitch.GetOwnedBy()
+	fields.Score = &allianceScore.CurrentScore
+	fields.ScoreSummary = allianceScoreSummary
+	fields.IsPreMatchScoreReady = allianceScore.CurrentScore.IsValidPreMatch()
 	return fields
 }
 

@@ -7,6 +7,7 @@ package field
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
@@ -26,5 +27,7 @@ func SetupTestArena(t *testing.T, uniqueName string) *Arena {
 }
 
 func setupTestArena(t *testing.T) *Arena {
+	game.MatchTiming.WarmupDurationSec = 3
+	game.MatchTiming.PauseDurationSec = 2
 	return SetupTestArena(t, "field")
 }

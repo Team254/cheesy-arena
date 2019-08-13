@@ -35,7 +35,6 @@ type Match struct {
 	StartedAt        time.Time
 	ScoreCommittedAt time.Time
 	Winner           string
-	GameSpecificData string
 }
 
 var ElimRoundNames = map[int]string{1: "F", 2: "SF", 4: "QF", 8: "EF"}
@@ -104,6 +103,15 @@ func (match *Match) CapitalizedType() string {
 	return strings.ToUpper(match.Type[0:1]) + match.Type[1:]
 }
 
+func (match *Match) TypePrefix() string {
+	if match.Type == "practice" {
+		return "P"
+	} else if match.Type == "qualification" {
+		return "Q"
+	}
+	return ""
+}
+
 func (match *Match) TbaCode() string {
 	if match.Type == "qualification" {
 		return fmt.Sprintf("qm%s", match.DisplayName)
@@ -112,4 +120,24 @@ func (match *Match) TbaCode() string {
 			match.ElimInstance)
 	}
 	return ""
+}
+
+// Returns true if the match is of a type that allows substitution of teams.
+func (match *Match) ShouldAllowSubstitution() bool {
+	return match.Type != "qualification"
+}
+
+// Returns true if the red and yellow cards should be updated as a result of the match.
+func (match *Match) ShouldUpdateCards() bool {
+	return match.Type == "qualification" || match.Type == "elimination"
+}
+
+// Returns true if the rankings should be updated as a result of the match.
+func (match *Match) ShouldUpdateRankings() bool {
+	return match.Type == "qualification"
+}
+
+// Returns true if the elimination match set should be updated as a result of the match.
+func (match *Match) ShouldUpdateEliminationMatches() bool {
+	return match.Type == "elimination"
 }

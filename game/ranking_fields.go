@@ -8,17 +8,17 @@ package game
 import "math/rand"
 
 type RankingFields struct {
-	RankingPoints     int
-	ParkClimbPoints   int
-	AutoPoints        int
-	OwnershipPoints   int
-	VaultPoints       int
-	Random            float64
-	Wins              int
-	Losses            int
-	Ties              int
-	Disqualifications int
-	Played            int
+	RankingPoints        int
+	CargoPoints          int
+	HatchPanelPoints     int
+	HabClimbPoints       int
+	SandstormBonusPoints int
+	Random               float64
+	Wins                 int
+	Losses               int
+	Ties                 int
+	Disqualifications    int
+	Played               int
 }
 
 type Ranking struct {
@@ -48,18 +48,18 @@ func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentSco
 	} else {
 		fields.Losses += 1
 	}
-	if ownScore.AutoQuest {
+	if ownScore.CompleteRocket {
 		fields.RankingPoints += 1
 	}
-	if ownScore.FaceTheBoss {
+	if ownScore.HabDocking {
 		fields.RankingPoints += 1
 	}
 
 	// Assign tiebreaker points.
-	fields.ParkClimbPoints += ownScore.ParkClimbPoints
-	fields.AutoPoints += ownScore.AutoPoints
-	fields.OwnershipPoints += ownScore.OwnershipPoints
-	fields.VaultPoints += ownScore.VaultPoints
+	fields.CargoPoints += ownScore.CargoPoints
+	fields.HatchPanelPoints += ownScore.HatchPanelPoints
+	fields.HabClimbPoints += ownScore.HabClimbPoints
+	fields.SandstormBonusPoints += ownScore.SandstormBonusPoints
 
 	// Store a random value to be used as the last tiebreaker if necessary.
 	fields.Random = rand.Float64()
@@ -77,19 +77,19 @@ func (rankings Rankings) Less(i, j int) bool {
 
 	// Use cross-multiplication to keep it in integer math.
 	if a.RankingPoints*b.Played == b.RankingPoints*a.Played {
-		if a.ParkClimbPoints*b.Played == b.ParkClimbPoints*a.Played {
-			if a.AutoPoints*b.Played == b.AutoPoints*a.Played {
-				if a.OwnershipPoints*b.Played == b.OwnershipPoints*a.Played {
-					if a.VaultPoints*b.Played == b.VaultPoints*a.Played {
+		if a.CargoPoints*b.Played == b.CargoPoints*a.Played {
+			if a.HatchPanelPoints*b.Played == b.HatchPanelPoints*a.Played {
+				if a.HabClimbPoints*b.Played == b.HabClimbPoints*a.Played {
+					if a.SandstormBonusPoints*b.Played == b.SandstormBonusPoints*a.Played {
 						return a.Random > b.Random
 					}
-					return a.VaultPoints*b.Played > b.VaultPoints*a.Played
+					return a.SandstormBonusPoints*b.Played > b.SandstormBonusPoints*a.Played
 				}
-				return a.OwnershipPoints*b.Played > b.OwnershipPoints*a.Played
+				return a.HabClimbPoints*b.Played > b.HabClimbPoints*a.Played
 			}
-			return a.AutoPoints*b.Played > b.AutoPoints*a.Played
+			return a.HatchPanelPoints*b.Played > b.HatchPanelPoints*a.Played
 		}
-		return a.ParkClimbPoints*b.Played > b.ParkClimbPoints*a.Played
+		return a.CargoPoints*b.Played > b.CargoPoints*a.Played
 	}
 	return a.RankingPoints*b.Played > b.RankingPoints*a.Played
 }

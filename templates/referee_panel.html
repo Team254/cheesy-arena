@@ -58,10 +58,15 @@
           </div>
           <div class="row">
             {{range $rule := .Rules}}
-              <a class="btn btn-sm {{if $rule.IsTechnical}}btn-danger{{else}}btn-warning{{end}} btn-referee btn-rule"
+              <a class="btn btn-sm
+                  {{if $rule.IsTechnical}}btn-danger{{else if $rule.IsRankingPoint}}btn-primary
+                  {{else}}btn-warning{{end}}
+                  btn-referee btn-rule"
                   data-rule="{{$rule.RuleNumber}}" data-is-technical="{{$rule.IsTechnical}}"
-                  onclick="setFoulRule(this);" data-toggle="tooltip" title="{{$rule.Description}}">
-                {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>{{end}}
+                  data-is-ranking-point="{{$rule.IsRankingPoint}}" onclick="setFoulRule(this);"
+                  data-toggle="tooltip" title="{{$rule.Description}}">
+                {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>
+                {{else if $rule.IsRankingPoint}}<sup>RP</sup>{{end}}
               </a>
             {{end}}
           </div>
@@ -102,9 +107,11 @@
 {{define "foul"}}
   <tr class="row-{{.color}}">
     <td>{{.foul.TeamId}}</td>
-    <td>{{.foul.RuleNumber}}{{if .foul.IsTechnical}}<sup>T</sup>{{end}}</td>
+    <td>
+      {{.foul.RuleNumber}}{{if .foul.IsTechnical}}<sup>T</sup>{{else if .foul.IsRankingPoint}}<sup>RP</sup>{{end}}
+    </td>
     <td><a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.RuleNumber}}',
-          {{.foul.IsTechnical}}, {{.foul.TimeInMatchSec}});">Delete</a></td>
+          {{.foul.IsTechnical}}, {{.foul.IsRankingPoint}}, {{.foul.TimeInMatchSec}});">Delete</a></td>
   </tr>
 {{end}}
 {{define "card"}}

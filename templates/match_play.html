@@ -112,11 +112,18 @@
     <div class="row">
       <div class="col-lg-12 well">
         <div class="col-lg-3">
-          <p>Scoring Status</p>
+          <p>Pre-Match Scoring</p>
+          <p><span class="label label-scoring" id="redPreMatchScoreStatus">Red Scoring</span><br />
+            <span class="label label-scoring" id="bluePreMatchScoreStatus">Blue Scoring</span></p>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" id="bypassPreMatchScore" onchange="toggleBypassPreMatchScore();">Bypass
+              </label>
+            </div>
+          <p>Post-Match Scoring</p>
           <p><span class="label label-scoring" id="refereeScoreStatus">Referee</span><br />
-            <span class="label label-scoring" id="redScoreStatus">Red Scoring</span><br />
-            <span class="label label-scoring" id="blueScoreStatus">Blue Scoring</span></p>
-          <br />
+            <span class="label label-scoring" id="redScoreStatus"></span><br />
+            <span class="label label-scoring" id="blueScoreStatus"></span></p>
         {{if .EventSettings.PlcAddress}}
           <p>PLC Status</p>
           <p>
@@ -195,10 +202,6 @@
           </div>
         </div>
         <div class="col-lg-3">
-          <p>Game-Specific Data</p>
-          <input type="text" id="gameSpecificData" size="10"
-              {{if or (eq .CurrentMatchType "qualification") (eq .CurrentMatchType "elimination") }}disabled{{end}} />
-          <br /><br />
           <p>Match Sounds</p>
           <div class="checkbox">
             <label>

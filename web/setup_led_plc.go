@@ -10,7 +10,6 @@ import (
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/vaultled"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
 	"io"
@@ -35,10 +34,10 @@ func (web *Web) ledPlcGetHandler(w http.ResponseWriter, r *http.Request) {
 		InputNames        []string
 		RegisterNames     []string
 		CoilNames         []string
-		LedModeNames      map[led.Mode]string
-		VaultLedModeNames map[vaultled.Mode]string
-	}{web.arena.EventSettings, plc.GetInputNames(), plc.GetRegisterNames(), plc.GetCoilNames(), led.ModeNames,
-		vaultled.ModeNames}
+		LedModeNames      map[led.StripMode]string
+		VaultLedModeNames map[led.VaultMode]string
+	}{web.arena.EventSettings, plc.GetInputNames(), plc.GetRegisterNames(), plc.GetCoilNames(), led.StripModeNames,
+		led.VaultModeNames}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -87,13 +86,6 @@ func (web *Web) ledPlcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 				ws.WriteError(err.Error())
 				continue
 			}
-
-			web.arena.ScaleLeds.SetMode(modeMessage.LedMode, modeMessage.LedMode)
-			web.arena.RedSwitchLeds.SetMode(modeMessage.LedMode, modeMessage.LedMode)
-			web.arena.BlueSwitchLeds.SetMode(modeMessage.LedMode, modeMessage.LedMode)
-			web.arena.RedVaultLeds.SetAllModes(modeMessage.VaultLedMode)
-			web.arena.BlueVaultLeds.SetAllModes(modeMessage.VaultLedMode)
-			web.arena.LedModeNotifier.Notify()
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}

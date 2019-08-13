@@ -25,7 +25,7 @@ func TestMatchResultCrud(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, matchResult, matchResult2)
 
-	matchResult.BlueScore.AutoRuns = 12
+	matchResult.BlueScore.RobotEndLevels = [3]int{3, 3, 3}
 	db.SaveMatchResult(matchResult)
 	matchResult2, err = db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)

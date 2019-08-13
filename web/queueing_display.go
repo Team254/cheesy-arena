@@ -24,14 +24,7 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matchTypePrefix := ""
-	currentMatchType := web.arena.CurrentMatch.Type
-	if currentMatchType == "practice" {
-		matchTypePrefix = "P"
-	} else if currentMatchType == "qualification" {
-		matchTypePrefix = "Q"
-	}
-	matches, err := web.arena.Database.GetMatchesByType(currentMatchType)
+	matches, err := web.arena.Database.GetMatchesByType(web.arena.CurrentMatch.Type)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -58,7 +51,7 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		MatchTypePrefix string
 		Matches         []model.Match
 		StatusMessage   string
-	}{web.arena.EventSettings, matchTypePrefix, upcomingMatches, generateEventStatusMessage(matches)}
+	}{web.arena.EventSettings, web.arena.CurrentMatch.TypePrefix(), upcomingMatches, generateEventStatusMessage(matches)}
 	err = template.ExecuteTemplate(w, "queueing_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)

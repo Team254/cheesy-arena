@@ -19,7 +19,8 @@ func TestAudienceDisplay(t *testing.T) {
 	assert.Contains(t, recorder.Header().Get("Location"), "background=%230f0")
 	assert.Contains(t, recorder.Header().Get("Location"), "reversed=false")
 
-	recorder = web.getHttpResponse("/displays/audience?displayId=1&background=%23000&reversed=false")
+	recorder = web.getHttpResponse("/displays/audience?displayId=1&background=%23000&reversed=false&overlayLocation=" +
+		"top")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Audience Display - Untitled Event - Cheesy Arena")
 }
@@ -54,7 +55,9 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	web.arena.AllianceStations["B1"].Bypass = true
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
+	web.arena.BypassPreMatchScore = true
 	web.arena.StartMatch()
+	web.arena.Update()
 	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 3)
 	screen, ok := messages["audienceDisplayMode"]
@@ -63,7 +66,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	}
 	sound, ok := messages["playSound"]
 	if assert.True(t, ok) {
-		assert.Equal(t, "match-warmup", sound)
+		assert.Equal(t, "start", sound)
 	}
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)

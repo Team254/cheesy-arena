@@ -24,6 +24,7 @@ var handleLedMode = function(data) {
 var handlePlcIoChange = function(data) {
   $.each(data.Inputs, function(index, input) {
     $("#input" + index).text(input)
+    $("#input" + index).attr("data-plc-value", input);
   });
 
   $.each(data.Registers, function(index, register) {
@@ -32,6 +33,7 @@ var handlePlcIoChange = function(data) {
 
   $.each(data.Coils, function(index, coil) {
     $("#coil" + index).text(coil)
+    $("#coil" + index).attr("data-plc-value", coil);
   });
 };
 

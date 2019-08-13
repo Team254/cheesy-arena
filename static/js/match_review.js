@@ -32,36 +32,35 @@ var renderResults = function(alliance) {
   $("#" + alliance + "Score").html(scoreContent);
 
   // Set the values of the form fields from the JSON results data.
-  $("input[name=" + alliance + "AutoRuns]").val(result.score.AutoRuns);
-  $("input[name=" + alliance + "AutoScaleOwnershipSec]").val(result.score.AutoScaleOwnershipSec);
-  $("input[name=" + alliance + "AutoSwitchOwnershipSec]").val(result.score.AutoSwitchOwnershipSec);
-  $("input[name=" + alliance + "AutoEndSwitchOwnership]").prop("checked", result.score.AutoEndSwitchOwnership);
-
-  $("input[name=" + alliance + "TeleopScaleOwnershipSec]").val(result.score.TeleopScaleOwnershipSec);
-  $("input[name=" + alliance + "TeleopScaleBoostSec]").val(result.score.TeleopScaleBoostSec);
-  $("input[name=" + alliance + "TeleopSwitchOwnershipSec]").val(result.score.TeleopSwitchOwnershipSec);
-  $("input[name=" + alliance + "TeleopSwitchBoostSec]").val(result.score.TeleopSwitchBoostSec);
-  $("input[name=" + alliance + "ForceCubes]").val(result.score.ForceCubes);
-  $("input[name=" + alliance + "ForceCubesPlayed]").val(result.score.ForceCubesPlayed);
-  $("input[name=" + alliance + "LevitateCubes]").val(result.score.LevitateCubes);
-  $("input[name=" + alliance + "LevitatePlayed]").prop("checked", result.score.LevitatePlayed);
-  $("input[name=" + alliance + "BoostCubes]").val(result.score.BoostCubes);
-  $("input[name=" + alliance + "BoostCubesPlayed]").val(result.score.BoostCubesPlayed);
-  $("input[name=" + alliance + "Climbs]").val(result.score.Climbs);
-  $("input[name=" + alliance + "Parks]").val(result.score.Parks);
+  for (var i = 0; i < 3; i++) {
+    var i1 = i + 1;
+    getInputElement(alliance, "RobotStartLevel" + i1, result.score.RobotStartLevels[i]).prop("checked", true);
+    getInputElement(alliance, "SandstormBonus" + i1).prop("checked", result.score.SandstormBonuses[i]);
+    getInputElement(alliance, "RobotEndLevel" + i1, result.score.RobotEndLevels[i]).prop("checked", true);
+    getSelectElement(alliance, "RocketNearLeftBay" + i1).val(result.score.RocketNearLeftBays[i]);
+    getSelectElement(alliance, "RocketNearRightBay" + i1).val(result.score.RocketNearRightBays[i]);
+    getSelectElement(alliance, "RocketFarLeftBay" + i1).val(result.score.RocketFarLeftBays[i]);
+    getSelectElement(alliance, "RocketFarRightBay" + i1).val(result.score.RocketFarRightBays[i]);
+  }
+  for (var i = 0; i < 8; i++) {
+    var i1 = i + 1;
+    getSelectElement(alliance, "CargoBayPreMatch" + i1).val(result.score.CargoBaysPreMatch[i]);
+    getSelectElement(alliance, "CargoBay" + i1).val(result.score.CargoBays[i]);
+  }
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
-      $("input[name=" + alliance + "Foul" + k + "Team][value=" + v.TeamId + "]").prop("checked", true);
-      $("input[name=" + alliance + "Foul" + k + "RuleNumber]").val(v.RuleNumber);
-      $("input[name=" + alliance + "Foul" + k + "IsTechnical]").prop("checked", v.IsTechnical);
-      $("input[name=" + alliance + "Foul" + k + "Time]").val(v.TimeInMatchSec);
+      getInputElement(alliance, "Foul" + k + "Team", v.TeamId).prop("checked", true);
+      getInputElement(alliance, "Foul" + k + "RuleNumber").val(v.RuleNumber);
+      getInputElement(alliance, "Foul" + k + "IsTechnical").prop("checked", v.IsTechnical);
+      getInputElement(alliance, "Foul" + k + "IsRankingPoint").prop("checked", v.IsRankingPoint);
+      getInputElement(alliance, "Foul" + k + "Time").val(v.TimeInMatchSec);
     });
   }
 
   if (result.cards != null) {
     $.each(result.cards, function(k, v) {
-      $("input[name=" + alliance + "Team" + k + "Card][value=" + v + "]").prop("checked", true);
+      getInputElement(alliance, "Team" + k + "Card", v).prop("checked", true);
     });
   }
 };
@@ -74,28 +73,35 @@ var updateResults = function(alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.AutoRuns = parseInt(formData[alliance + "AutoRuns"]);
-  result.score.AutoScaleOwnershipSec = parseFloat(formData[alliance + "AutoScaleOwnershipSec"]);
-  result.score.AutoSwitchOwnershipSec = parseFloat(formData[alliance + "AutoSwitchOwnershipSec"]);
-  result.score.AutoEndSwitchOwnership = formData[alliance + "AutoEndSwitchOwnership"] === "on";
-  result.score.TeleopScaleOwnershipSec = parseFloat(formData[alliance + "TeleopScaleOwnershipSec"]);
-  result.score.TeleopScaleBoostSec = parseFloat(formData[alliance + "TeleopScaleBoostSec"]);
-  result.score.TeleopSwitchOwnershipSec = parseFloat(formData[alliance + "TeleopSwitchOwnershipSec"]);
-  result.score.TeleopSwitchBoostSec = parseFloat(formData[alliance + "TeleopSwitchBoostSec"]);
-  result.score.ForceCubes = parseInt(formData[alliance + "ForceCubes"]);
-  result.score.ForceCubesPlayed = parseInt(formData[alliance + "ForceCubesPlayed"]);
-  result.score.LevitateCubes = parseInt(formData[alliance + "LevitateCubes"]);
-  result.score.LevitatePlayed = formData[alliance + "LevitatePlayed"] === "on";
-  result.score.BoostCubes = parseInt(formData[alliance + "BoostCubes"]);
-  result.score.BoostCubesPlayed = parseInt(formData[alliance + "BoostCubesPlayed"]);
-  result.score.Climbs = parseInt(formData[alliance + "Climbs"]);
-  result.score.Parks = parseInt(formData[alliance + "Parks"]);
+  result.score.RobotStartLevels = [];
+  result.score.SandstormBonuses = [];
+  result.score.CargoBaysPreMatch = [];
+  result.score.CargoBays = [];
+  result.score.RocketNearLeftBays = [];
+  result.score.RocketNearRightBays = [];
+  result.score.RocketFarLeftBays = [];
+  result.score.RocketFarRightBays = [];
+  result.score.RobotEndLevels = [];
+  for (var i = 0; i < 3; i++) {
+    result.score.RobotStartLevels[i] = parseInt(formData[alliance + "RobotStartLevel" + (i + 1)]);
+    result.score.SandstormBonuses[i] = formData[alliance + "SandstormBonus" + (i + 1)] === "on";
+    result.score.RobotEndLevels[i] = parseInt(formData[alliance + "RobotEndLevel" + (i + 1)]);
+    result.score.RocketNearLeftBays[i] = parseInt(formData[alliance + "RocketNearLeftBay" + (i + 1)]);
+    result.score.RocketNearRightBays[i] = parseInt(formData[alliance + "RocketNearRightBay" + (i + 1)]);
+    result.score.RocketFarLeftBays[i] = parseInt(formData[alliance + "RocketFarLeftBay" + (i + 1)]);
+    result.score.RocketFarRightBays[i] = parseInt(formData[alliance + "RocketFarRightBay" + (i + 1)]);
+  }
+  for (var i = 0; i < 8; i++) {
+    result.score.CargoBaysPreMatch[i] = parseInt(formData[alliance + "CargoBayPreMatch" + (i + 1)]);
+    result.score.CargoBays[i] = parseInt(formData[alliance + "CargoBay" + (i + 1)]);
+  }
 
   result.score.Fouls = [];
   for (var i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {
     var prefix = alliance + "Foul" + i;
     var foul = {TeamId: parseInt(formData[prefix + "Team"]), RuleNumber: formData[prefix + "RuleNumber"],
                 IsTechnical: formData[prefix + "IsTechnical"] === "on",
+                IsRankingPoint: formData[prefix + "IsRankingPoint"] === "on",
                 TimeInMatchSec: parseFloat(formData[prefix + "Time"])};
     result.score.Fouls.push(foul);
   }
@@ -120,4 +126,19 @@ var deleteFoul = function(alliance, index) {
   var result = allianceResults[alliance];
   result.score.Fouls.splice(index, 1);
   renderResults(alliance);
+};
+
+// Returns the form input element having the given parameters.
+var getInputElement = function(alliance, name, value) {
+  var selector = "input[name=" + alliance + name + "]";
+  if (value !== undefined) {
+    selector += "[value=" + value + "]";
+  }
+  return $(selector);
+};
+
+// Returns the form select element having the given parameters.
+var getSelectElement = function(alliance, name) {
+  var selector = "select[name=" + alliance + name + "]";
+  return $(selector);
 };

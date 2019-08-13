@@ -183,16 +183,10 @@ func (web *Web) buildMatchReviewList(matchType string) ([]MatchReviewListItem, e
 		return []MatchReviewListItem{}, err
 	}
 
-	prefix := ""
-	if matchType == "practice" {
-		prefix = "P"
-	} else if matchType == "qualification" {
-		prefix = "Q"
-	}
 	matchReviewList := make([]MatchReviewListItem, len(matches))
 	for i, match := range matches {
 		matchReviewList[i].Id = match.Id
-		matchReviewList[i].DisplayName = prefix + match.DisplayName
+		matchReviewList[i].DisplayName = match.TypePrefix() + match.DisplayName
 		matchReviewList[i].Time = match.Time.Local().Format("Mon 1/02 03:04 PM")
 		matchReviewList[i].RedTeams = []int{match.Red1, match.Red2, match.Red3}
 		matchReviewList[i].BlueTeams = []int{match.Blue1, match.Blue2, match.Blue3}

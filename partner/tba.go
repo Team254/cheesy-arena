@@ -11,7 +11,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"io/ioutil"
 	"net/http"
@@ -360,8 +359,8 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank,
-			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.ParkClimbPoints, ranking.AutoPoints,
-			ranking.OwnershipPoints, ranking.VaultPoints,
+			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.CargoPoints, ranking.HatchPanelPoints,
+			ranking.HabClimbPoints, ranking.SandstormBonusPoints,
 			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
 			ranking.Played}
 	}
@@ -504,50 +503,53 @@ func createTbaAlliance(teamIds [3]int, surrogates [3]bool, score *int, cards map
 
 func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResult, alliance string) *TbaScoreBreakdown {
 	var breakdown TbaScoreBreakdown
-	var score *game.Score
-	var scoreSummary, opponentScoreSummary *game.ScoreSummary
-	if alliance == "red" {
-		score = matchResult.RedScore
-		scoreSummary = matchResult.RedScoreSummary()
-		opponentScoreSummary = matchResult.BlueScoreSummary()
-	} else {
-		score = matchResult.BlueScore
-		scoreSummary = matchResult.BlueScoreSummary()
-		opponentScoreSummary = matchResult.RedScoreSummary()
-	}
+	// TODO(pat): Update for 2019.
+	/*
+			var score *game.Score
+			var scoreSummary, opponentScoreSummary *game.ScoreSummary
+			if alliance == "red" {
+				score = matchResult.RedScore
+				scoreSummary = matchResult.RedScoreSummary()
+				opponentScoreSummary = matchResult.BlueScoreSummary()
+			} else {
+				score = matchResult.BlueScore
+				scoreSummary = matchResult.BlueScoreSummary()
+				opponentScoreSummary = matchResult.RedScoreSummary()
+			}
 
-	breakdown.AutoRunPoints = 5 * score.AutoRuns
-	breakdown.AutoScaleOwnershipSec = int(score.AutoScaleOwnershipSec)
-	breakdown.AutoSwitchOwnershipSec = int(score.AutoSwitchOwnershipSec)
-	breakdown.AutoOwnershipPoints = scoreSummary.AutoOwnershipPoints
-	breakdown.AutoPoints = scoreSummary.AutoPoints
-	breakdown.TeleopScaleOwnershipSec = int(score.TeleopScaleOwnershipSec)
-	breakdown.TeleopScaleBoostSec = int(score.TeleopScaleBoostSec)
-	breakdown.TeleopSwitchOwnershipSec = int(score.TeleopSwitchOwnershipSec)
-	breakdown.TeleopSwitchBoostSec = int(score.TeleopSwitchBoostSec)
-	breakdown.TeleopOwnershipPoints = scoreSummary.TeleopOwnershipPoints
-	breakdown.VaultForceTotal = score.ForceCubes
-	breakdown.VaultForcePlayed = score.ForceCubesPlayed
-	breakdown.VaultLevitateTotal = score.LevitateCubes
-	if score.LevitatePlayed {
-		breakdown.VaultLevitatePlayed = score.LevitateCubes
-	}
-	breakdown.VaultBoostTotal = score.BoostCubes
-	breakdown.VaultBoostPlayed = score.BoostCubesPlayed
-	breakdown.VaultPoints = scoreSummary.VaultPoints
-	breakdown.EndgamePoints = scoreSummary.ParkClimbPoints
-	breakdown.TeleopPoints = scoreSummary.Score - scoreSummary.AutoPoints - scoreSummary.FoulPoints
-	breakdown.AutoQuestRankingPoint = scoreSummary.AutoQuest
-	breakdown.FaceTheBossRankingPoint = scoreSummary.FaceTheBoss
-	breakdown.FoulPoints = scoreSummary.FoulPoints
-	breakdown.TotalPoints = scoreSummary.Score
-	if match.Type == "qualification" {
-		// Calculate and set the ranking points for the match.
-		var ranking game.Ranking
-		ranking.AddScoreSummary(scoreSummary, opponentScoreSummary, false)
-		breakdown.RP = ranking.RankingPoints
-	}
-	breakdown.TbaGameData = match.GameSpecificData
+				breakdown.AutoRunPoints = 5 * score.AutoRuns
+				breakdown.AutoScaleOwnershipSec = int(score.AutoScaleOwnershipSec)
+				breakdown.AutoSwitchOwnershipSec = int(score.AutoSwitchOwnershipSec)
+				breakdown.AutoOwnershipPoints = scoreSummary.AutoOwnershipPoints
+				breakdown.AutoPoints = scoreSummary.AutoPoints
+				breakdown.TeleopScaleOwnershipSec = int(score.TeleopScaleOwnershipSec)
+				breakdown.TeleopScaleBoostSec = int(score.TeleopScaleBoostSec)
+				breakdown.TeleopSwitchOwnershipSec = int(score.TeleopSwitchOwnershipSec)
+				breakdown.TeleopSwitchBoostSec = int(score.TeleopSwitchBoostSec)
+				breakdown.TeleopOwnershipPoints = scoreSummary.TeleopOwnershipPoints
+				breakdown.VaultForceTotal = score.ForceCubes
+				breakdown.VaultForcePlayed = score.ForceCubesPlayed
+				breakdown.VaultLevitateTotal = score.LevitateCubes
+				if score.LevitatePlayed {
+					breakdown.VaultLevitatePlayed = score.LevitateCubes
+				}
+				breakdown.VaultBoostTotal = score.BoostCubes
+				breakdown.VaultBoostPlayed = score.BoostCubesPlayed
+				breakdown.VaultPoints = scoreSummary.VaultPoints
+				breakdown.EndgamePoints = scoreSummary.ParkClimbPoints
+				breakdown.TeleopPoints = scoreSummary.Score - scoreSummary.AutoPoints - scoreSummary.FoulPoints
+				breakdown.AutoQuestRankingPoint = scoreSummary.AutoQuest
+				breakdown.FaceTheBossRankingPoint = scoreSummary.FaceTheBoss
+				breakdown.FoulPoints = scoreSummary.FoulPoints
+				breakdown.TotalPoints = scoreSummary.Score
+		if match.ShouldUpdateRankings() {
+			// Calculate and set the ranking points for the match.
+			var ranking game.Ranking
+			ranking.AddScoreSummary(scoreSummary, opponentScoreSummary, false)
+			breakdown.RP = ranking.RankingPoints
+		}
+		breakdown.TbaGameData = match.GameSpecificData
+	*/
 
 	return &breakdown
 }

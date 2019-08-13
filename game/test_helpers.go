@@ -6,13 +6,52 @@
 package game
 
 func TestScore1() *Score {
-	fouls := []Foul{{Rule{"G22", false, ""}, 25, 25.2}, {Rule{"G18", true, ""}, 25, 150},
-		{Rule{"G20", true, ""}, 1868, 0}}
-	return &Score{1, 1.5, 4.5, true, 25.4, 0, 21.6, 0, 0, 0, 3, true, 0, 0, 2, 0, fouls, false}
+	fouls := []Foul{
+		{Rule{"G18", true, false, ""}, 25, 150},
+		{Rule{"G20", true, false, ""}, 1868, 0},
+		{Rule{"G22", false, false, ""}, 25, 25.2},
+	}
+	return &Score{
+		RobotStartLevels: [3]int{2, 1, 2},
+		SandstormBonuses: [3]bool{true, true, false},
+		CargoBaysPreMatch: [8]BayStatus{BayHatch, BayEmpty, BayEmpty, BayCargo, BayHatch, BayCargo, BayHatch,
+			BayHatch},
+		CargoBays: [8]BayStatus{BayHatchCargo, BayHatch, BayEmpty, BayHatchCargo, BayHatchCargo, BayEmpty,
+			BayHatch, BayHatchCargo},
+		RocketNearLeftBays:  [3]BayStatus{BayHatchCargo, BayEmpty, BayHatchCargo},
+		RocketNearRightBays: [3]BayStatus{BayHatchCargo, BayHatch, BayHatchCargo},
+		RocketFarLeftBays:   [3]BayStatus{BayEmpty, BayHatchCargo, BayHatch},
+		RocketFarRightBays:  [3]BayStatus{BayEmpty, BayHatchCargo, BayEmpty},
+		RobotEndLevels:      [3]int{0, 0, 3},
+		Fouls:               fouls,
+		ElimDq:              false,
+	}
 }
 
 func TestScore2() *Score {
-	return &Score{3, 4, 6, true, 33, 10, 20, 10, 3, 3, 0, false, 3, 3, 1, 1, []Foul{}, false}
+	return &Score{
+		RobotStartLevels: [3]int{1, 2, 1},
+		SandstormBonuses: [3]bool{false, true, false},
+		CargoBaysPreMatch: [8]BayStatus{BayEmpty, BayEmpty, BayHatch, BayHatch, BayHatch, BayHatch, BayHatch,
+			BayHatch},
+		CargoBays: [8]BayStatus{BayEmpty, BayEmpty, BayHatchCargo, BayHatchCargo, BayHatchCargo, BayHatch, BayHatch,
+			BayHatchCargo},
+		RocketNearLeftBays:  [3]BayStatus{BayEmpty, BayEmpty, BayEmpty},
+		RocketNearRightBays: [3]BayStatus{BayEmpty, BayEmpty, BayEmpty},
+		RocketFarLeftBays:   [3]BayStatus{BayHatchCargo, BayEmpty, BayEmpty},
+		RocketFarRightBays:  [3]BayStatus{BayEmpty, BayEmpty, BayHatchCargo},
+		RobotEndLevels:      [3]int{1, 3, 2},
+		Fouls:               []Foul{},
+		ElimDq:              false,
+	}
+}
+
+func TestScoreValidPreMatch() *Score {
+	return &Score{
+		RobotStartLevels:  [3]int{1, 2, 3},
+		CargoBaysPreMatch: [8]BayStatus{1, 3, 3, 0, 0, 1, 1, 3},
+		CargoBays:         [8]BayStatus{1, 3, 3, 0, 0, 1, 1, 3},
+	}
 }
 
 func TestRanking1() *Ranking {

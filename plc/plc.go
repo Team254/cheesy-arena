@@ -52,18 +52,6 @@ const (
 	blueConnected1
 	blueConnected2
 	blueConnected3
-	scaleNear
-	scaleFar
-	redSwitchNear
-	redSwitchFar
-	blueSwitchNear
-	blueSwitchFar
-	redForceActivate
-	redLevitateActivate
-	redBoostActivate
-	blueForceActivate
-	blueLevitateActivate
-	blueBoostActivate
 	inputCount
 )
 
@@ -71,19 +59,7 @@ const (
 type register int
 
 const (
-	red1Bandwidth register = iota
-	red2Bandwidth
-	red3Bandwidth
-	blue1Bandwidth
-	blue2Bandwidth
-	blue3Bandwidth
-	redForceDistance
-	redLevitateDistance
-	redBoostDistance
-	blueForceDistance
-	blueLevitateDistance
-	blueBoostDistance
-	registerCount
+	registerCount register = iota
 )
 
 // Coils
@@ -97,12 +73,17 @@ const (
 	stackLightRed
 	stackLightBlue
 	stackLightBuzzer
-	red1EthernetDisable
-	red2EthernetDisable
-	red3EthernetDisable
-	blue1EthernetDisable
-	blue2EthernetDisable
-	blue3EthernetDisable
+	fieldResetLight
+	cargoShipMagnetRed
+	cargoShipMagnetBlue
+	cargoShipLightRed
+	cargoShipLightBlue
+	sandstormUpRed
+	sandstormUpBlue
+	rocketLightRedNear
+	rocketLightRedFar
+	rocketLightBlueNear
+	rocketLightBlueFar
 	coilCount
 )
 
@@ -121,29 +102,32 @@ func (plc *Plc) Run() {
 	for {
 		if plc.handler == nil {
 			if plc.address == "" {
-				time.Sleep(time.Second * plcRetryIntevalSec)
+				// No PLC is configured; just allow the loop to continue to simulate inputs and outputs.
 				plc.IsHealthy = false
-				continue
-			}
-
-			err := plc.connect()
-			if err != nil {
-				log.Printf("PLC error: %v", err)
-				time.Sleep(time.Second * plcRetryIntevalSec)
-				plc.IsHealthy = false
-				continue
+			} else {
+				err := plc.connect()
+				if err != nil {
+					log.Printf("PLC error: %v", err)
+					//time.Sleep(time.Second * plcRetryIntevalSec)
+					plc.IsHealthy = false
+					continue
+				}
 			}
 		}
 
 		startTime := time.Now()
-		isHealthy := true
-		isHealthy = isHealthy && plc.writeCoils()
-		isHealthy = isHealthy && plc.readInputs()
-		isHealthy = isHealthy && plc.readCounters()
-		if !isHealthy {
-			plc.resetConnection()
+
+		if plc.handler != nil {
+			isHealthy := true
+			isHealthy = isHealthy && plc.writeCoils()
+			isHealthy = isHealthy && plc.readInputs()
+			isHealthy = isHealthy && plc.readCounters()
+			if !isHealthy {
+				plc.resetConnection()
+			}
+			plc.IsHealthy = isHealthy
 		}
-		plc.IsHealthy = isHealthy
+
 		plc.cycleCounter++
 		if plc.cycleCounter == cycleCounterMax {
 			plc.cycleCounter = 0
@@ -180,42 +164,40 @@ func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 	return redEstops, blueEstops
 }
 
-// Returns the state of the scale and the red and blue switches.
-func (plc *Plc) GetScaleAndSwitches() ([2]bool, [2]bool, [2]bool) {
-	var scale, redSwitch, blueSwitch [2]bool
-
-	scale[0] = plc.inputs[scaleNear]
-	scale[1] = plc.inputs[scaleFar]
-	redSwitch[0] = plc.inputs[redSwitchNear]
-	redSwitch[1] = plc.inputs[redSwitchFar]
-	blueSwitch[0] = plc.inputs[blueSwitchNear]
-	blueSwitch[1] = plc.inputs[blueSwitchFar]
-
-	return scale, redSwitch, blueSwitch
-}
-
-// Returns the state of the red and blue vault power cube sensors.
-func (plc *Plc) GetVaults() (uint16, uint16, uint16, uint16, uint16, uint16) {
-	return plc.registers[redForceDistance], plc.registers[redLevitateDistance], plc.registers[redBoostDistance],
-		plc.registers[blueForceDistance], plc.registers[blueLevitateDistance], plc.registers[blueBoostDistance]
-}
-
-// Returns the state of the red and blue power up buttons on the vaults.
-func (plc *Plc) GetPowerUpButtons() (bool, bool, bool, bool, bool, bool) {
-	return plc.inputs[redForceActivate], plc.inputs[redLevitateActivate], plc.inputs[redBoostActivate],
-		plc.inputs[blueForceActivate], plc.inputs[blueLevitateActivate], plc.inputs[blueBoostActivate]
-}
-
 // Set the on/off state of the stack lights on the scoring table.
-func (plc *Plc) SetStackLights(red, blue, green bool) {
+func (plc *Plc) SetStackLights(red, blue, orange, green bool) {
 	plc.coils[stackLightRed] = red
 	plc.coils[stackLightBlue] = blue
+	plc.coils[stackLightOrange] = orange
 	plc.coils[stackLightGreen] = green
 }
 
 // Set the on/off state of the stack lights on the scoring table.
 func (plc *Plc) SetStackBuzzer(state bool) {
 	plc.coils[stackLightBuzzer] = state
+}
+
+func (plc *Plc) SetFieldResetLight(state bool) {
+	plc.coils[fieldResetLight] = state
+}
+
+func (plc *Plc) SetSandstormUp(state bool) {
+	plc.coils[sandstormUpRed] = state
+	plc.coils[sandstormUpBlue] = state
+}
+
+func (plc *Plc) SetCargoShipMagnets(state bool) {
+	plc.coils[cargoShipMagnetRed] = state
+	plc.coils[cargoShipMagnetBlue] = state
+	plc.coils[cargoShipLightRed] = state
+	plc.coils[cargoShipLightBlue] = state
+}
+
+func (plc *Plc) SetRocketLights(red, blue bool) {
+	plc.coils[rocketLightRedNear] = red
+	plc.coils[rocketLightRedFar] = red
+	plc.coils[rocketLightBlueNear] = blue
+	plc.coils[rocketLightBlueFar] = blue
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {

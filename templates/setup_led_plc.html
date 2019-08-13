@@ -19,7 +19,7 @@
             {{range $i, $name := .InputNames}}
             <tr>
               <td>{{$name}}</td>
-              <td id="input{{$i}}"></td>
+              <td id="input{{$i}}" data-plc-value="false"></td>
             </tr>
             {{end}}
           </table>
@@ -45,36 +45,12 @@
             {{range $i, $name := .CoilNames}}
             <tr>
               <td>{{$name}}</td>
-              <td id="coil{{$i}}"></td>
+              <td id="coil{{$i}}" data-plc-value="false"></td>
             </tr>
             {{end}}
           </table>
         </div>
       </div>
-    </div>
-  </div>
-  <div class="col-lg-3">
-    <div class="well">
-      <legend>Switch/Scale LEDs</legend>
-      {{range $i, $name := .LedModeNames}}
-        <div class="radio">
-          <label>
-            <input type="radio" name="ledMode" value="{{$i}}" onclick="setLedMode();">{{$name}}
-          </label>
-        </div>
-      {{end}}
-    </div>
-  </div>
-  <div class="col-lg-2">
-    <div class="well">
-      <legend>Vault LEDs</legend>
-      {{range $i, $name := .VaultLedModeNames}}
-        <div class="radio">
-          <label>
-            <input type="radio" name="vaultLedMode" value="{{$i}}" onclick="setLedMode();">{{$name}}
-          </label>
-        </div>
-      {{end}}
     </div>
   </div>
 </div>

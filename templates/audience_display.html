@@ -14,83 +14,46 @@
     <link rel="stylesheet" href="/static/css/audience_display.css" />
   </head>
   <body>
-    <div id="centering">
+    <div id="overlayCentering">
       <div id="matchOverlay">
-        <div class="teams" id="leftTeams">
-          <span class="valign-cell">
-            <span id="leftTeam1"></span><br />
-            <span id="leftTeam2"></span><br />
-            <span id="leftTeam3"></span>
-          </span>
-        </div>
-        <div class="score reversible-left" id="leftScore">
-          <div class="avatars">
-            <img class="avatar" id="leftTeam1Avatar" src="" /><br />
-            <img class="avatar" id="leftTeam2Avatar" src="" /><br />
-            <img class="avatar" id="leftTeam3Avatar" src="" />
+        <div id="matchOverlayTop">
+          <div class="teams" id="leftTeams">
+            <div id="leftTeam1"></div>
+            <div id="leftTeam2"></div>
+            <div id="leftTeam3"></div>
           </div>
-          <div class="score-fields score-fields-icons">
-            <span class="valign-cell">
-              <span class="power-up" id="leftForceCubesIcon">F</span><br />
-              <span class="power-up" id="leftLevitateCubesIcon">L</span><br />
-              <span class="power-up" id="leftBoostCubesIcon">B</span>
-            </span>
+          <div class="score reversible-left">
+            <div class="avatars">
+              <img class="avatar" id="leftTeam1Avatar" src="" />
+              <img class="avatar" id="leftTeam2Avatar" src="" />
+              <img class="avatar" id="leftTeam3Avatar" src="" />
+            </div>
+            <div class="score-number" id="leftScoreNumber"></div>
+            <div class="dummy"></div>
           </div>
-          <div class="score-fields score-fields-text">
-            <span class="valign-cell">
-              <span class="power-up" id="leftForceCubes"></span><br />
-              <span class="power-up" id="leftLevitateCubes"></span><br />
-              <span class="power-up" id="leftBoostCubes"></span>
-            </span>
+          <div class="score reversible-right">
+            <div class="dummy"></div>
+            <div class="score-number" id="rightScoreNumber"></div>
+            <div class="avatars">
+              <img class="avatar" id="rightTeam1Avatar" src="" />
+              <img class="avatar" id="rightTeam2Avatar" src="" />
+              <img class="avatar" id="rightTeam3Avatar" src="" />
+            </div>
           </div>
-          <div class="powerup-progress">
-            <div id="leftProgress"></div>
+          <div class="teams" id="rightTeams">
+            <div id="rightTeam1"></div>
+            <div id="rightTeam2"></div>
+            <div id="rightTeam3"></div>
           </div>
-          <div class="score-number" id="leftScoreNumber">&nbsp;</div>
-        </div>
-        <div class="score reversible-right" id="rightScore">
-          <div class="avatars pull-right">
-            <img class="avatar" id="rightTeam1Avatar" src="" /><br />
-            <img class="avatar" id="rightTeam2Avatar" src="" /><br />
-            <img class="avatar" id="rightTeam3Avatar" src="" />
-          </div>
-          <div class="score-fields score-fields-icons pull-right">
-            <span class="valign-cell">
-              <span class="power-up" id="rightForceCubesIcon">F</span><br />
-              <span class="power-up" id="rightLevitateCubesIcon">L</span><br />
-              <span class="power-up" id="rightBoostCubesIcon">B</span>
-            </span>
-          </div>
-          <div class="score-fields score-fields-text pull-right" style="direction: rtl;">
-            <span class="valign-cell" style="text-align: right;">
-              <span class="power-up" id="rightForceCubes"></span><br />
-              <span class="power-up" id="rightLevitateCubes"></span><br />
-              <span class="power-up" id="rightBoostCubes"></span>
-            </span>
-          </div>
-          <div class="powerup-progress pull-right">
-            <div id="rightProgress"></div>
-          </div>
-          <div class="score-number pull-right" id="rightScoreNumber">&nbsp;</div>
-        </div>
-        <div class="teams" id="rightTeams">
-          <span class="valign-cell">
-            <span id="rightTeam1"></span><br />
-            <span id="rightTeam2"></span><br />
-            <span id="rightTeam3"></span>
-          </span>
         </div>
         <div id="eventMatchInfo">
-          <span>{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 16}} 2018{{end}}</span>
-          <span class="pull-right" id="matchName"></span>
+          <span>{{.EventSettings.Name}}</span>
+          <span id="matchName"></span>
         </div>
       </div>
       <div class="text-center" id="matchCircle">
         <img id="logo" src="/static/img/game-logo.png" alt="logo" />
         <div id="matchTime"></div>
-        <div class="seesaw-indicator" id="leftSwitchIndicator"></div>
-        <div class="seesaw-indicator" id="scaleIndicator"></div>
-        <div class="seesaw-indicator" id="rightSwitchIndicator"></div>
       </div>
     </div>
     <div id="blindsContainer">
@@ -118,31 +81,33 @@
         </div>
         <div class="final-breakdown" id="leftFinalBreakdown">
           <span class="valign-cell">
-            <span id="leftFinalAutoRunPoints"></span><br />
-            <span id="leftFinalOwnershipPoints"></span><br />
-            <span id="leftFinalVaultPoints"></span><br />
-            <span id="leftFinalParkClimbPoints"></span><br />
+            <span id="leftFinalSandstormBonusPoints"></span><br />
+            <span id="leftFinalHatchPanelPoints"></span><br />
+            <span id="leftFinalCargoPoints"></span><br />
+            <span id="leftFinalHabClimbPoints"></span><br />
             <span id="leftFinalFoulPoints"></span><br />
-            <span id="leftFinalAutoQuest"></span><br />
-            <span id="leftFinalFaceTheBoss"></span><br />
+            <span id="leftFinalCompleteRocket"></span><br />
+            <span id="leftFinalHabDocking"></span><br />
           </span>
         </div>
         <div class="final-breakdown" id="centerFinalBreakdown">
-          <span class="valign-cell">Auto Run<br />Ownership<br />Vault<br />Endgame<br />Foul<br />Auto Quest<br />Face The Boss</span>
+          <span class="valign-cell">
+            Sandstorm Bonus<br />Hatch Panel<br />Cargo<br />Hab Climb<br />Foul<br />Complete Rocket<br />Hab Docking
+          </span>
         </div>
         <div class="final-breakdown" id="rightFinalBreakdown">
           <span class="valign-cell">
-            <span id="rightFinalAutoRunPoints"></span><br />
-            <span id="rightFinalOwnershipPoints"></span><br />
-            <span id="rightFinalVaultPoints"></span><br />
-            <span id="rightFinalParkClimbPoints"></span><br />
+            <span id="rightFinalSandstormBonusPoints"></span><br />
+            <span id="rightFinalHatchPanelPoints"></span><br />
+            <span id="rightFinalCargoPoints"></span><br />
+            <span id="rightFinalHabClimbPoints"></span><br />
             <span id="rightFinalFoulPoints"></span><br />
-            <span id="rightFinalAutoQuest"></span><br />
-            <span id="rightFinalFaceTheBoss"></span><br />
+            <span id="rightFinalCompleteRocket"></span><br />
+            <span id="rightFinalHabDocking"></span><br />
           </span>
         </div>
         <div id="finalEventMatchInfo">
-          <div class="final-footer">{{.EventSettings.Name}}{{if lt (len .EventSettings.Name) 22}} 2018{{end}}</div>
+          <div class="final-footer">{{.EventSettings.Name}}</div>
           <div class="final-footer" id="finalSeriesStatus">&nbsp;</div>
           <div class="final-footer" id="finalMatchName">&nbsp;</div>
         </div>
@@ -192,15 +157,10 @@
         <h1>{{"{{Subtitle}}"}}</h1>
       </div>
     </script>
-    <audio id="match-warmup" src="/static/audio/match_warmup.wav" preload="auto"></audio>
-    <audio id="match-start" src="/static/audio/match_start.wav" preload="auto"></audio>
-    <audio id="match-end" src="/static/audio/match_end.wav" preload="auto"></audio>
-    <audio id="match-abort" src="/static/audio/match_abort.mp3" preload="auto"></audio>
-    <audio id="match-resume" src="/static/audio/match_resume.wav" preload="auto"></audio>
-    <audio id="match-force" src="/static/audio/match_force.wav" preload="auto"></audio>
-    <audio id="match-levitate" src="/static/audio/match_levitate.wav" preload="auto"></audio>
-    <audio id="match-boost" src="/static/audio/match_boost.wav" preload="auto"></audio>
-    <audio id="match-endgame" src="/static/audio/match_endgame.wav" preload="auto"></audio>
+    {{range $sound := .MatchSounds}}
+      <audio id="sound-{{$sound.Name}}" src="/static/audio/{{$sound.Name}}.{{$sound.FileExtension}}" preload="auto">
+      </audio>
+    {{end}}
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>

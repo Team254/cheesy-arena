@@ -231,8 +231,6 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	case PausePeriod:
 		matchSecondsRemaining = game.MatchTiming.TeleopDurationSec
 	case TeleopPeriod:
-		fallthrough
-	case EndgamePeriod:
 		matchSecondsRemaining = game.MatchTiming.AutoDurationSec + game.MatchTiming.TeleopDurationSec +
 			game.MatchTiming.PauseDurationSec - int(arena.MatchTimeSec())
 	default:
@@ -386,26 +384,4 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 			dsConn.log.LogDsPacket(matchTimeSec, packetType, dsConn)
 		}
 	}
-}
-
-func (dsConn *DriverStationConnection) sendGameSpecificDataPacket(gameSpecificData string) error {
-	byteData := []byte(gameSpecificData)
-	size := len(byteData)
-	packet := make([]byte, size+4)
-
-	packet[0] = 0              // Packet size
-	packet[1] = byte(size + 2) // Packet size
-	packet[2] = 28             // Packet type
-	packet[3] = byte(size)     // Data size
-
-	// Fill the rest of the packet with the data.
-	for i, character := range byteData {
-		packet[i+4] = character
-	}
-
-	if dsConn.tcpConn != nil {
-		_, err := dsConn.tcpConn.Write(packet)
-		return err
-	}
-	return nil
 }

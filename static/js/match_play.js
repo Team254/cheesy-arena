@@ -18,10 +18,15 @@ var toggleBypass = function(station) {
   websocket.send("toggleBypass", station);
 };
 
+// Sends a websocket message to toggle the bypass state for the pre-match scoring.
+var toggleBypassPreMatchScore = function() {
+  websocket.send("toggleBypassPreMatchScore");
+};
+
 // Sends a websocket message to start the match.
 var startMatch = function() {
   websocket.send("startMatch",
-      { muteMatchSounds: $("#muteMatchSounds").prop("checked"), gameSpecificData: $("#gameSpecificData").val() });
+      { muteMatchSounds: $("#muteMatchSounds").prop("checked") });
 };
 
 // Sends a websocket message to abort the match.
@@ -142,10 +147,10 @@ var handleArenaStatus = function(data) {
       $("#startTimeout").prop("disabled", false);
       break;
     case "START_MATCH":
+    case "WARMUP_PERIOD":
     case "AUTO_PERIOD":
     case "PAUSE_PERIOD":
     case "TELEOP_PERIOD":
-    case "ENDGAME_PERIOD":
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
@@ -179,6 +184,8 @@ var handleArenaStatus = function(data) {
       break;
   }
 
+  $("#bypassPreMatchScore").prop("checked", data.BypassPreMatchScore);
+
   if (data.PlcIsHealthy) {
     $("#plcStatus").text("Connected");
     $("#plcStatus").attr("data-ready", true);
@@ -187,10 +194,6 @@ var handleArenaStatus = function(data) {
     $("#plcStatus").attr("data-ready", false);
   }
   $("#fieldEstop").attr("data-ready", !data.FieldEstop);
-
-  if (matchStates[data.MatchState] !== "PRE_MATCH") {
-    $("#gameSpecificData").val(data.GameSpecificData);
-  }
 };
 
 // Handles a websocket message to update the match time countdown.
@@ -203,8 +206,12 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.Red.Score);
-  $("#blueScore").text(data.Blue.Score);
+  $("#redScore").text(data.Red.ScoreSummary.Score);
+  $("#blueScore").text(data.Blue.ScoreSummary.Score);
+  if (matchStates[data.MatchState] == "PRE_MATCH") {
+    $("#redPreMatchScoreStatus").attr("data-ready", data.Red.IsPreMatchScoreReady);
+    $("#bluePreMatchScoreStatus").attr("data-ready", data.Blue.IsPreMatchScoreReady);
+  }
 };
 
 // Handles a websocket message to update the audience display screen selector.
@@ -217,7 +224,9 @@ var handleAudienceDisplayMode = function(data) {
 var handleScoringStatus = function(data) {
   scoreIsReady = data.RefereeScoreReady && data.RedScoreReady && data.BlueScoreReady;
   $("#refereeScoreStatus").attr("data-ready", data.RefereeScoreReady);
+  $("#redScoreStatus").text("Red Scoring " + data.NumRedScoringPanelsReady + "/" + data.NumRedScoringPanels);
   $("#redScoreStatus").attr("data-ready", data.RedScoreReady);
+  $("#blueScoreStatus").text("Blue Scoring " + data.NumBlueScoringPanelsReady + "/" + data.NumBlueScoringPanels);
   $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
 };
 

@@ -13,19 +13,22 @@ var handleAllianceStationDisplayMode = function(targetScreen) {
   currentScreen = targetScreen;
   if (station === "") {
     // Don't do anything if this screen hasn't been assigned a position yet.
-    return;
-  }
-  $("body").attr("data-mode", targetScreen);
-  switch (station[1]) {
-    case "1":
-      $("body").attr("data-position", "right");
-      break;
-    case "2":
-      $("body").attr("data-position", "middle");
-      break;
-    case "3":
-      $("body").attr("data-position", "left");
-      break;
+  } else if (station == "T") {
+    $("body").attr("data-mode", "match");
+    $("body").attr("data-position", "middle");
+  } else {
+    $("body").attr("data-mode", targetScreen);
+    switch (station[1]) {
+      case "1":
+        $("body").attr("data-position", "right");
+        break;
+      case "2":
+        $("body").attr("data-position", "middle");
+        break;
+      case "3":
+        $("body").attr("data-position", "left");
+        break;
+    }
   }
 };
 
@@ -95,8 +98,8 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.Red.Score);
-  $("#blueScore").text(data.Blue.Score);
+  $("#redScore").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HabClimbPoints);
+  $("#blueScore").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HabClimbPoints);
 };
 
 $(function() {

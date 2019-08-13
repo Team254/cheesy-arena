@@ -49,6 +49,19 @@ func NewWeb(arena *field.Arena) *Web {
 			}
 			return dict, nil
 		},
+		"add": func(a, b int) int {
+			return a + b
+		},
+		"multiply": func(a, b int) int {
+			return a * b
+		},
+		"seq": func(count int) []int {
+			seq := make([]int, count)
+			for i := 0; i < count; i++ {
+				seq[i] = i + 1
+			}
+			return seq
+		},
 	}
 
 	return web

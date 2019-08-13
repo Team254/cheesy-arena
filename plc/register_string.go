@@ -4,9 +4,16 @@ package plc
 
 import "strconv"
 
-const _register_name = "red1Bandwidthred2Bandwidthred3Bandwidthblue1Bandwidthblue2Bandwidthblue3BandwidthredForceDistanceredLevitateDistanceredBoostDistanceblueForceDistanceblueLevitateDistanceblueBoostDistanceregisterCount"
+func _() {
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
+	var x [1]struct{}
+	_ = x[registerCount-0]
+}
 
-var _register_index = [...]uint8{0, 13, 26, 39, 53, 67, 81, 97, 116, 132, 149, 169, 186, 199}
+const _register_name = "registerCount"
+
+var _register_index = [...]uint8{0, 13}
 
 func (i register) String() string {
 	if i < 0 || i >= register(len(_register_index)-1) {

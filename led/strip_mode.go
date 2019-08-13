@@ -5,24 +5,16 @@
 
 package led
 
-type Mode int
+type StripMode int
 
 const (
-	OffMode Mode = iota
+	OffMode StripMode = iota
 	RedMode
 	GreenMode
 	BlueMode
 	WhiteMode
 	PurpleMode
 	ChaseMode
-	WarmupMode
-	Warmup2Mode
-	Warmup3Mode
-	Warmup4Mode
-	OwnedMode
-	NotOwnedMode
-	ForceMode
-	BoostMode
 	RandomMode
 	FadeRedBlueMode
 	FadeSingleMode
@@ -30,7 +22,7 @@ const (
 	BlinkMode
 )
 
-var ModeNames = map[Mode]string{
+var StripModeNames = map[StripMode]string{
 	OffMode:         "Off",
 	RedMode:         "Red",
 	GreenMode:       "Green",
@@ -38,14 +30,6 @@ var ModeNames = map[Mode]string{
 	WhiteMode:       "White",
 	PurpleMode:      "Purple",
 	ChaseMode:       "Chase",
-	WarmupMode:      "Warmup",
-	Warmup2Mode:     "Warmup Purple",
-	Warmup3Mode:     "Warmup Sneaky",
-	Warmup4Mode:     "Warmup Gradient",
-	OwnedMode:       "Owned",
-	NotOwnedMode:    "Not Owned",
-	ForceMode:       "Force",
-	BoostMode:       "Boost",
 	RandomMode:      "Random",
 	FadeRedBlueMode: "Fade Red/Blue",
 	FadeSingleMode:  "Fade Single",

@@ -62,32 +62,32 @@
 <script id="matchResultTemplate" type="text/x-handlebars-template">
   <h4>Score</h4>
   <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Auto Run Points</div>
-    <div class="col-lg-2">{{"{{score.AutoRunPoints}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Sandstorm Bonus Points</div>
+    <div class="col-lg-2">{{"{{score.SandstormBonusPoints}}"}}</div>
   </div>
   <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Ownership Points</div>
-    <div class="col-lg-2">{{"{{score.OwnershipPoints}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Hatch Panel Points</div>
+    <div class="col-lg-2">{{"{{score.HatchPanelPoints}}"}}</div>
   </div>
   <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Vault Points</div>
-    <div class="col-lg-2">{{"{{score.VaultPoints}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Cargo Points</div>
+    <div class="col-lg-2">{{"{{score.CargoPoints}}"}}</div>
   </div>
   <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Park/Climb Points</div>
-    <div class="col-lg-2">{{"{{score.ParkClimbPoints}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Hab Climb Points</div>
+    <div class="col-lg-2">{{"{{score.HabClimbPoints}}"}}</div>
   </div>
   <div class="row">
     <div class="col-lg-7 col-lg-offset-1 control-label">Foul Points</div>
     <div class="col-lg-2">{{"{{score.FoulPoints}}"}}</div>
   </div>
   <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Auto Quest</div>
-    <div class="col-lg-2">{{"{{score.AutoQuest}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Complete Rocket</div>
+    <div class="col-lg-2">{{"{{score.CompleteRocket}}"}}</div>
   </div>
   <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Face the Boss</div>
-    <div class="col-lg-2">{{"{{score.FaceTheBoss}}"}}</div>
+    <div class="col-lg-7 col-lg-offset-1 control-label">Hab Docking</div>
+    <div class="col-lg-2">{{"{{score.HabDocking}}"}}</div>
   </div>
   <div class="row">
     <div class="col-lg-7 col-lg-offset-1 control-label"><b>Final Score</b></div>
@@ -111,6 +111,8 @@
     {{"{{/if}}"}}
   {{"{{/eachMapEntry}}"}}
 </script>
+{{end}}
+{{define "head"}}
 {{end}}
 {{define "script"}}
 <script src="/static/js/match_timing.js"></script>

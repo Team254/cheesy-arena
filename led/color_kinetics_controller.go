@@ -3,34 +3,33 @@
 //
 // Represents a Philips Color Kinetics LED controller with one output, as used in the 2018 vault.
 
-package vaultled
+package led
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/led"
 	"net"
 	"time"
 )
 
 const (
-	port             = 6038
-	packetTimeoutSec = 1
-	numPixels        = 17
-	pixelDataOffset  = 21
+	colorKineticsPort             = 6038
+	colorKineticsPacketTimeoutSec = 1
+	colorKineticsNumPixels        = 17
+	colorKineticsPixelDataOffset  = 21
 )
 
-type Controller struct {
-	CurrentForceMode    Mode
-	CurrentLevitateMode Mode
-	CurrentBoostMode    Mode
-	pixels              [numPixels][3]byte
-	oldPixels           [numPixels][3]byte
+type ColorKineticsController struct {
+	CurrentForceMode    VaultMode
+	CurrentLevitateMode VaultMode
+	CurrentBoostMode    VaultMode
+	pixels              [colorKineticsNumPixels][3]byte
+	oldPixels           [colorKineticsNumPixels][3]byte
 	conn                net.Conn
 	packet              []byte
 	lastPacketTime      time.Time
 }
 
-func (controller *Controller) SetAddress(address string) error {
+func (controller *ColorKineticsController) SetAddress(address string) error {
 	if controller.conn != nil {
 		controller.conn.Close()
 		controller.conn = nil
@@ -38,7 +37,7 @@ func (controller *Controller) SetAddress(address string) error {
 
 	if address != "" {
 		var err error
-		if controller.conn, err = net.Dial("udp4", fmt.Sprintf("%s:%d", address, port)); err != nil {
+		if controller.conn, err = net.Dial("udp4", fmt.Sprintf("%s:%d", address, colorKineticsPort)); err != nil {
 			return err
 		}
 	}
@@ -47,32 +46,32 @@ func (controller *Controller) SetAddress(address string) error {
 }
 
 // Sets the current mode for the section of LEDs corresponding to the force powerup.
-func (controller *Controller) SetForceMode(mode Mode) {
+func (controller *ColorKineticsController) SetForceMode(mode VaultMode) {
 	controller.CurrentForceMode = mode
 	controller.setPixels(0, mode)
 }
 
 // Sets the current mode for the section of LEDs corresponding to the levitate powerup.
-func (controller *Controller) SetLevitateMode(mode Mode) {
+func (controller *ColorKineticsController) SetLevitateMode(mode VaultMode) {
 	controller.CurrentLevitateMode = mode
 	controller.setPixels(6, mode)
 }
 
 // Sets the current mode for the section of LEDs corresponding to the boost powerup.
-func (controller *Controller) SetBoostMode(mode Mode) {
+func (controller *ColorKineticsController) SetBoostMode(mode VaultMode) {
 	controller.CurrentBoostMode = mode
 	controller.setPixels(12, mode)
 }
 
 // Sets the current mode for all sections of LEDs to the same value.
-func (controller *Controller) SetAllModes(mode Mode) {
+func (controller *ColorKineticsController) SetAllModes(mode VaultMode) {
 	controller.SetForceMode(mode)
 	controller.SetLevitateMode(mode)
 	controller.SetBoostMode(mode)
 }
 
 // Sends a packet if necessary. Should be called from a timed loop.
-func (controller *Controller) Update() error {
+func (controller *ColorKineticsController) Update() error {
 	if controller.conn == nil {
 		// This controller is not configured; do nothing.
 		return nil
@@ -80,47 +79,47 @@ func (controller *Controller) Update() error {
 
 	// Create the template packet if it doesn't already exist.
 	if len(controller.packet) == 0 {
-		controller.packet = createBlankPacket(numPixels)
+		controller.packet = createBlankColorKineticsPacket(colorKineticsPort)
 	}
 
 	// Send packets if the pixel values have changed.
 	if controller.shouldSendPacket() {
-		controller.populatePacketPixels(controller.packet[pixelDataOffset:])
+		controller.populatePacketPixels(controller.packet[colorKineticsPixelDataOffset:])
 		controller.sendPacket()
 	}
 
 	return nil
 }
 
-func (controller *Controller) setPixels(offset int, mode Mode) {
+func (controller *ColorKineticsController) setPixels(offset int, mode VaultMode) {
 	for i := 0; i < 5; i++ {
-		controller.pixels[offset+i] = led.Colors[led.Black]
+		controller.pixels[offset+i] = Colors[Black]
 	}
 
 	switch mode {
 	case ThreeCubeMode:
-		controller.pixels[offset+3] = led.Colors[led.Yellow]
+		controller.pixels[offset+3] = Colors[Yellow]
 		fallthrough
 	case TwoCubeMode:
-		controller.pixels[offset+2] = led.Colors[led.Yellow]
+		controller.pixels[offset+2] = Colors[Yellow]
 		fallthrough
 	case OneCubeMode:
-		controller.pixels[offset+1] = led.Colors[led.Yellow]
+		controller.pixels[offset+1] = Colors[Yellow]
 	case RedPlayedMode:
 		for i := 0; i < 5; i++ {
-			controller.pixels[offset+i] = led.Colors[led.Red]
+			controller.pixels[offset+i] = Colors[Red]
 		}
 	case BluePlayedMode:
 		for i := 0; i < 5; i++ {
-			controller.pixels[offset+i] = led.Colors[led.Blue]
+			controller.pixels[offset+i] = Colors[Blue]
 		}
 	}
 }
 
 // Constructs the structure of a KiNET data packet that can be re-used indefinitely by updating the pixel data and
 // re-sending it.
-func createBlankPacket(numPixels int) []byte {
-	size := pixelDataOffset + 3*numPixels
+func createBlankColorKineticsPacket(numPixels int) []byte {
+	size := colorKineticsPixelDataOffset + 3*numPixels
 	packet := make([]byte, size)
 
 	// Magic sequence
@@ -167,17 +166,17 @@ func createBlankPacket(numPixels int) []byte {
 }
 
 // Returns true if the pixel data has changed.
-func (controller *Controller) shouldSendPacket() bool {
-	for i := 0; i < numPixels; i++ {
+func (controller *ColorKineticsController) shouldSendPacket() bool {
+	for i := 0; i < colorKineticsNumPixels; i++ {
 		if controller.pixels[i] != controller.oldPixels[i] {
 			return true
 		}
 	}
-	return time.Since(controller.lastPacketTime).Seconds() > packetTimeoutSec
+	return time.Since(controller.lastPacketTime).Seconds() > colorKineticsPacketTimeoutSec
 }
 
 // Writes the pixel RGB values into the given packet in preparation for sending.
-func (controller *Controller) populatePacketPixels(pixelData []byte) {
+func (controller *ColorKineticsController) populatePacketPixels(pixelData []byte) {
 	for i, pixel := range controller.pixels {
 		pixelData[3*i] = pixel[0]
 		pixelData[3*i+1] = pixel[1]
@@ -189,7 +188,7 @@ func (controller *Controller) populatePacketPixels(pixelData []byte) {
 	controller.lastPacketTime = time.Now()
 }
 
-func (controller *Controller) sendPacket() error {
+func (controller *ColorKineticsController) sendPacket() error {
 	_, err := controller.conn.Write(controller.packet)
 	if err != nil {
 		return err

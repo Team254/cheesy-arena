@@ -133,7 +133,7 @@ func TestCommitMatch(t *testing.T) {
 	web.arena.Database.CreateMatch(match)
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	matchResult.BlueScore = &game.Score{AutoRuns: 2}
+	matchResult.BlueScore = &game.Score{RobotEndLevels: [3]int{3, 3, 3}}
 	err = web.commitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, matchResult.PlayNumber)
@@ -142,7 +142,7 @@ func TestCommitMatch(t *testing.T) {
 
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	matchResult.RedScore = &game.Score{AutoRuns: 1}
+	matchResult.RedScore = &game.Score{RobotEndLevels: [3]int{2, 2, 2}}
 	err = web.commitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, matchResult.PlayNumber)
@@ -174,8 +174,13 @@ func TestCommitEliminationTie(t *testing.T) {
 
 	match := &model.Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	web.arena.Database.CreateMatch(match)
-	matchResult := &model.MatchResult{MatchId: match.Id, RedScore: &game.Score{ForceCubes: 1, Fouls: []game.Foul{{}}},
-		BlueScore: &game.Score{}}
+	matchResult := &model.MatchResult{
+		MatchId: match.Id,
+		RedScore: &game.Score{
+			RocketFarRightBays: [3]game.BayStatus{game.BayHatchCargo, game.BayHatch, game.BayHatch},
+			Fouls:              []game.Foul{{}, {}, {}}},
+		BlueScore: &game.Score{},
+	}
 	err := web.commitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
@@ -289,6 +294,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web.arena.AllianceStations["B1"].Bypass = true
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
+	web.arena.BypassPreMatchScore = true
 	ws.Write("startMatch", nil)
 	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, field.StartMatch, web.arena.MatchState)
@@ -301,12 +307,12 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
-	web.arena.RedRealtimeScore.CurrentScore.AutoRuns = 1
-	web.arena.BlueRealtimeScore.CurrentScore.BoostCubes = 2
+	web.arena.RedRealtimeScore.CurrentScore.RobotEndLevels = [3]int{1, 2, 3}
+	web.arena.BlueRealtimeScore.CurrentScore.SandstormBonuses = [3]bool{true, false, true}
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
-	assert.Equal(t, 1, web.arena.SavedMatchResult.RedScore.AutoRuns)
-	assert.Equal(t, 2, web.arena.SavedMatchResult.BlueScore.BoostCubes)
+	assert.Equal(t, [3]int{1, 2, 3}, web.arena.SavedMatchResult.RedScore.RobotEndLevels)
+	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.SandstormBonuses)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)
 	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
@@ -348,9 +354,10 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.AllianceStations["B1"].Bypass = true
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
+	web.arena.BypassPreMatchScore = true
 	assert.Nil(t, web.arena.StartMatch())
 	web.arena.Update()
-	messages := readWebsocketMultiple(t, ws, 3)
+	messages := readWebsocketMultiple(t, ws, 4)
 	_, ok := messages["matchTime"]
 	assert.True(t, ok)
 	_, ok = messages["audienceDisplayMode"]
@@ -362,9 +369,8 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	messages = readWebsocketMultiple(t, ws, 2)
 	statusReceived, matchTime := getStatusMatchTime(t, messages)
 	assert.Equal(t, true, statusReceived)
-	assert.Equal(t, 3, matchTime.MatchState)
+	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 3, matchTime.MatchTimeSec)
-	assert.True(t, ok)
 	web.arena.ScoringStatusNotifier.Notify()
 	readWebsocketType(t, ws, "scoringStatus")
 
@@ -373,7 +379,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.Update()
 	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
 	assert.Nil(t, err)
-	assert.Equal(t, 3, matchTime.MatchState)
+	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 1, matchTime.MatchTimeSec)
 	web.arena.MatchStartTime = time.Now().Add(-2*time.Second + 10*time.Millisecond) // Not crossed yet
 	web.arena.Update()
@@ -381,7 +387,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.Update()
 	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
 	assert.Nil(t, err)
-	assert.Equal(t, 3, matchTime.MatchState)
+	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 2, matchTime.MatchTimeSec)
 
 	// Check across a match state boundary.
@@ -390,7 +396,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.Update()
 	statusReceived, matchTime = readWebsocketStatusMatchTime(t, ws)
 	assert.Equal(t, true, statusReceived)
-	assert.Equal(t, 4, matchTime.MatchState)
+	assert.Equal(t, field.PausePeriod, matchTime.MatchState)
 	assert.Equal(t, game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec, matchTime.MatchTimeSec)
 }
 

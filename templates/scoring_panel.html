@@ -6,80 +6,103 @@
 */}}
 {{define "title"}}Scoring Panel{{end}}
 {{define "body"}}
-<br />
-<div class="row">
-  <div class="text-center" id="waitingMessage" style="display: none;">
-    <h3>Waiting for the next match...</h3>
+<div id="matchName">&nbsp;</div>
+<div id="robots">
+  <div id="robotHeader">
+    <div class="robot-field">&nbsp;</div>
+    <div class="robot-field">Start Hab Level</div>
+    <div class="robot-field">Sandstorm Bonus?</div>
+    <div class="robot-field">End Hab Level</div>
   </div>
-  <div id="autoScoring" class="col-lg-12 well well-{{.Alliance}}" style="display: none;">
-    <div class="col-lg-6">
-      <div>
-        <h2>Autonomous Period</h2>
-        <p>Use the following keyboard shortcuts:</p>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">r/R</div>
-          <div class="col-lg-8 scoring-comment">Auto runs +/-</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">Enter</div>
-          <div class="col-lg-8 scoring-comment">Commit autonomous score</div>
-        </div>
+  {{range $i := seq 3}}
+    <div>
+      <div id="team{{$i}}" class="team robot-field"></div>
+      <div id="robotStartLevel{{$i}}" class="robot-start-level robot-field" onclick="handleClick('{{$i}}');">
+        <div class="robot-shortcut">{{$i}}</div>
+        <div class="value"></div>
+        <div class="robot-shortcut"></div>
+      </div>
+      <div id="sandstormBonus{{$i}}" class="sandstorm-bonus robot-field" onclick="handleClick('{{add $i 3}}');">
+        <div class="robot-shortcut">{{add $i 3}}</div>
+        <div class="value"></div>
+        <div class="robot-shortcut"></div>
+      </div>
+      <div id="robotEndLevel{{$i}}" class="robot-end-level robot-field" onclick="handleClick('{{add $i 6}}');">
+        <div class="robot-shortcut">{{add $i 6}}</div>
+        <div class="value"></div>
+        <div class="robot-shortcut"></div>
       </div>
     </div>
-    <div class="col-lg-6">
-      <div>
-        <h2>Autonomous Score</h2>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Auto runs</div>
-          <div class="col-lg-2 scoring-comment" id="autoRuns"></div>
-        </div>
-        <h3 class="text-center scoring-message">Press Enter to commit autonomous score</h3>
-      </div>
-    </div>
-  </div>
-  <div id="teleopScoring" class="col-lg-12 well well-{{.Alliance}}" style="display: none;">
-    <div class="col-lg-6">
-      <div>
-        <h2>Teleoperated Period</h2>
-        <p>Use the following keyboard shortcuts:</p>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">c/C</div>
-          <div class="col-lg-8 scoring-comment">Climbs +/- (actual; disregard Levitate)</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">p/P</div>
-          <div class="col-lg-8 scoring-comment">Parks +/-</div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-lg-offset-1 scoring">a</div>
-          <div class="col-lg-8 scoring-comment">Back to autonomous</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-6">
-      <div>
-        <h2>Teleoperated Score</h2>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Climbs</div>
-          <div class="col-lg-2 scoring-comment" id="climbs"></div>
-        </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1 scoring-comment">Parks</div>
-          <div class="col-lg-2 scoring-comment" id="parks"></div>
-        </div>
-      </div>
+  {{end}}
+</div>
+<div id="scoringElements">
+  <div class="rocket">
+    <div class="rocket-outline alliance-color">
+      <div class="outer-rocket">{{template "rocketHalf" dict "startBayId" 0 "vars" $}}</div>
+      <div class="inner-rocket">{{template "rocketHalf" dict "startBayId" 3 "vars" $}}</div>
     </div>
   </div>
-  <div class="text-center col-lg-12">
-    <button type="button" class="btn btn-info" id="commitMatchScore" onclick="commitMatchScore();"
-        style="display: none;">Commit Final Match Score</button>
+  <div id="centerColumn">
+    <div id="cargoShipContainer">
+      <div id="cargoShip" class="alliance-color">
+        <div class="cargo-ship-side">
+          {{template "bay" dict "id" 6 "vars" $}}{{template "bay" dict "id" 13 "vars" $}}
+        </div>
+        <div class="cargo-ship-side">
+          {{template "bay" dict "id" 7 "vars" $}}{{template "bay" dict "id" 12 "vars" $}}
+        </div>
+        <div class="cargo-ship-side">
+          {{template "bay" dict "id" 8 "vars" $}}{{template "bay" dict "id" 11 "vars" $}}
+        </div>
+        <div class="cargo-ship-front">
+          {{template "bay" dict "id" 9 "vars" $}}{{template "bay" dict "id" 10 "vars" $}}
+        </div>
+      </div>
+    </div>
+    <div id="instructions">Click or use the labeled keyboard shortcuts to toggle each element</div>
+    <div id="preMatchMessage">Set pre-match state of robots and cargo ship</div>
+    <div id="commitMatchScore">
+      <button type="button" class="btn btn-success" onclick="commitMatchScore();">
+        Commit Final Match Score
+      </button>
+    </div>
+    <div id="postMatchMessage">Waiting for the next match...</div>
+  </div>
+  <div class="rocket">
+    <div class="rocket-outline alliance-color">
+      <div class="inner-rocket">{{template "rocketHalf" dict "startBayId" 14 "vars" $}}</div>
+      <div class="outer-rocket">{{template "rocketHalf" dict "startBayId" 17 "vars" $}}</div>
+    </div>
   </div>
 </div>
 {{end}}
+{{define "head"}}
+<link href="/static/css/scoring_panel.css" rel="stylesheet">
+{{end}}
 {{define "script"}}
-<script>
-  var alliance = "{{.Alliance}}";
-</script>
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/scoring_panel.js"></script>
+<script>
+  var bayMappings = {"cargoShip": [], "rocketNearLeft": [], "rocketNearRight": [], "rocketFarLeft": [],
+    "rocketFarRight": []};
+  {{range $mapping := .BayMappings}}
+    {{if eq $.Alliance "red"}}
+      bayMappings["{{$mapping.RedElement}}"][{{$mapping.RedIndex}}] = {{$mapping.BayId}};
+    {{else}}
+      bayMappings["{{$mapping.BlueElement}}"][{{$mapping.BlueIndex}}] = {{$mapping.BayId}};
+    {{end}}
+  {{end}}
+</script>
+{{end}}
+{{define "rocketHalf"}}
+  {{template "bay" dict "id" .startBayId "vars" .vars}}
+  {{template "bay" dict "id" (add .startBayId 1) "vars" .vars}}
+  {{template "bay" dict "id" (add .startBayId 2) "vars" .vars}}
+{{end}}
+{{define "bay"}}
+  <div id="bay{{.id}}" class="bay" onclick="handleClick('{{(index .vars.BayMappings .id).Shortcut}}');">
+    <div class="shortcut">{{(index .vars.BayMappings .id).Shortcut}}</div>
+    <div class="hatch-panel"></div>
+    <div class="cargo"></div>
+  </div>
 {{end}}
