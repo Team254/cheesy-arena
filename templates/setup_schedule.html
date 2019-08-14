@@ -39,7 +39,27 @@
                 </label>
               </div>
             </div>
+			<label class="col-lg-5 control-label">Team Strength Schedule Balancing</label>
+            <div class="col-lg-7">
+              <div class="radio">
+                <label>
+                  <input type="radio" name="balancing" value="enabled">
+                  Enabled
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" name="balancing" value="disabled" checked="checked">
+                  Disabled
+                </label>
+              </div>
+            </div>
+			<label class="col-lg-5 control-label">CSV File of Teams Ordered by Strength</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="teamStrengthsPath" placeholder="C:\team_strengths.csv">
+            </div>
           </div>
+		  
           <div id="blockContainer"></div>
           <p>
             <b>Total match count: <span id="totalNumMatches">0</span></b><br />
