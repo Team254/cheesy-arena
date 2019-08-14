@@ -44,6 +44,8 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	matchType := getMatchType(r)
+	useBalancedSchedules := getScheduleBalancing(r)
+	teamStrengthsPath := getTeamStrengthsPath(r)
 	scheduleBlocks, err := getScheduleBlocks(r)
 	// Save blocks even if there is an error, so that any good ones are not discarded.
 	deleteBlocksErr := web.arena.Database.DeleteScheduleBlocksByMatchType(matchType)
@@ -80,7 +82,7 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 			"a schedule.", len(teams)))
 		return
 	}
-	matches, err := tournament.BuildRandomSchedule(teams, scheduleBlocks, r.PostFormValue("matchType"))
+	matches, err := tournament.BuildRandomSchedule(teams, scheduleBlocks, r.PostFormValue("matchType"), useBalancedSchedules == "enabled", teamStrengthsPath)
 	if err != nil {
 		web.renderSchedule(w, r, fmt.Sprintf("Error generating schedule: %s.", err.Error()))
 		return
@@ -247,4 +249,18 @@ func getMatchType(r *http.Request) string {
 		return matchType[0]
 	}
 	return r.PostFormValue("matchType")
+}
+
+func getScheduleBalancing(r *http.Request) string {
+	if balancing, ok := r.URL.Query()["balancing"]; ok {
+		return balancing[0]
+	}
+	return r.PostFormValue("balancing")
+}
+
+func getTeamStrengthsPath(r *http.Request) string {
+	if teamStrengthsPath, ok := r.URL.Query()["teamStrengthsPath"]; ok {
+		return teamStrengthsPath[0]
+	}
+	return r.PostFormValue("teamStrengthsPath")
 }
