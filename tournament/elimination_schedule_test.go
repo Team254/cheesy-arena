@@ -784,7 +784,9 @@ func TestEliminationScheduleTeamPositions(t *testing.T) {
 func assertMatch(t *testing.T, match model.Match, displayName string, redAlliance int, blueAlliance int) {
 	assert.Equal(t, displayName, match.DisplayName)
 	assert.Equal(t, redAlliance, match.Red2)
+	assert.Equal(t, redAlliance, match.ElimRedAlliance)
 	assert.Equal(t, blueAlliance, match.Blue2)
+	assert.Equal(t, blueAlliance, match.ElimBlueAlliance)
 }
 
 func scoreMatch(database *model.Database, displayName string, winner string) {

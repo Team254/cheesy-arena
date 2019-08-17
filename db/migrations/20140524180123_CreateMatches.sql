@@ -7,6 +7,8 @@ CREATE TABLE matches (
   elimround int,
   elimgroup int,
   eliminstance int,
+  elimredalliance int,
+  elimbluealliance int,
   red1 int,
   red1issurrogate bool,
   red2 int,

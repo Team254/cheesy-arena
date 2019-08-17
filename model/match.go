@@ -19,6 +19,8 @@ type Match struct {
 	ElimRound        int
 	ElimGroup        int
 	ElimInstance     int
+	ElimRedAlliance  int
+	ElimBlueAlliance int
 	Red1             int
 	Red1IsSurrogate  bool
 	Red2             int
