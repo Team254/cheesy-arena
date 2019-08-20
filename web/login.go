@@ -8,27 +8,31 @@ package web
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/google/uuid"
 	"net/http"
+	"time"
 )
 
 // Shows the login form.
 func (web *Web) loginHandler(w http.ResponseWriter, r *http.Request) {
-	var errorMessage string
-	if username := web.cookieAuth.Authorize(r); username != "" {
-		// If redirected here but already logged in, the user must have insufficient privileges; show a useful message.
-		errorMessage = fmt.Sprintf("User '%s' has insufficient privileges for the requested page. Try logging in as a"+
-			" different user.", username)
-	}
-	web.renderLogin(w, r, errorMessage)
+	web.renderLogin(w, r, "")
 }
 
 // Processes the login request.
 func (web *Web) loginPostHandler(w http.ResponseWriter, r *http.Request) {
-	if err := web.cookieAuth.Login(w, r.PostFormValue("username"), r.PostFormValue("password")); err != nil {
+	username := r.PostFormValue("username")
+	if err := web.checkAuthPassword(username, r.PostFormValue("password")); err != nil {
 		web.renderLogin(w, r, err.Error())
 		return
 	}
 
+	session := model.UserSession{Token: uuid.New().String(), Username: username, CreatedAt: time.Now()}
+	if err := web.arena.Database.CreateUserSession(&session); err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{Name: sessionTokenCookie, Value: session.Token})
 	redirectUrl := r.URL.Query().Get("redirect")
 	if redirectUrl == "" {
 		redirectUrl = "/"
@@ -50,5 +54,37 @@ func (web *Web) renderLogin(w http.ResponseWriter, r *http.Request, errorMessage
 	if err != nil {
 		handleWebErr(w, err)
 		return
+	}
+}
+
+// Returns true if the given user is authorized for admin operations. Used for HTTP cookie authentication.
+func (web *Web) userIsAdmin(w http.ResponseWriter, r *http.Request) bool {
+	if web.arena.EventSettings.AdminPassword == "" {
+		// Disable auth if there is no password configured.
+		return true
+	}
+	session := web.getUserSessionFromCookie(r)
+	if session != nil && session.Username == adminUser {
+		return true
+	} else {
+		http.Redirect(w, r, "/login?redirect="+r.URL.Path, 307)
+		return false
+	}
+}
+
+func (web *Web) getUserSessionFromCookie(r *http.Request) *model.UserSession {
+	token, err := r.Cookie(sessionTokenCookie)
+	if err != nil {
+		return nil
+	}
+	session, _ := web.arena.Database.GetUserSessionByToken(token.Value)
+	return session
+}
+
+func (web *Web) checkAuthPassword(user, password string) error {
+	if user == adminUser && password == web.arena.EventSettings.AdminPassword {
+		return nil
+	} else {
+		return fmt.Errorf("Invalid login credentials.")
 	}
 }

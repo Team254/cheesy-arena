@@ -6,7 +6,6 @@
 package web
 
 import (
-	"bitbucket.org/rj/httpauth-go"
 	"fmt"
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
@@ -18,18 +17,17 @@ import (
 )
 
 const (
-	adminUser = "admin"
+	sessionTokenCookie = "session_token"
+	adminUser          = "admin"
 )
 
 type Web struct {
 	arena           *field.Arena
-	cookieAuth      *httpauth.Cookie
 	templateHelpers template.FuncMap
 }
 
 func NewWeb(arena *field.Arena) *Web {
 	web := &Web{arena: arena}
-	web.cookieAuth = httpauth.NewCookie("Cheesy Arena", "", web.checkAuthPassword)
 
 	// Helper functions that can be used inside templates.
 	web.templateHelpers = template.FuncMap{
@@ -91,24 +89,6 @@ func (web *Web) indexHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-}
-
-// Returns true if the given user is authorized for admin operations. Used for HTTP cookie authentication.
-func (web *Web) userIsAdmin(w http.ResponseWriter, r *http.Request) bool {
-	if web.arena.EventSettings.AdminPassword == "" {
-		// Disable auth if there is no password configured.
-		return true
-	}
-	if web.cookieAuth.Authorize(r) == adminUser {
-		return true
-	} else {
-		http.Redirect(w, r, "/login?redirect="+r.URL.Path, 307)
-		return false
-	}
-}
-
-func (web *Web) checkAuthPassword(user, password string) bool {
-	return user == adminUser && password == web.arena.EventSettings.AdminPassword
 }
 
 // Sets up the mapping between URLs and handlers.

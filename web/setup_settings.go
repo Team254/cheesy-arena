@@ -39,6 +39,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	if len(eventSettings.Name) < 1 && eventSettings.Name != previousEventName {
 		eventSettings.Name = previousEventName
 	}
+	previousAdminPassword := eventSettings.AdminPassword
 
 	numAlliances, _ := strconv.Atoi(r.PostFormValue("numElimAlliances"))
 	if numAlliances < 2 || numAlliances > 16 {
@@ -78,6 +79,14 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		handleWebErr(w, err)
 		return
+	}
+
+	if eventSettings.AdminPassword != previousAdminPassword {
+		// Delete any existing user sessions to force a logout.
+		if err := web.arena.Database.TruncateUserSessions(); err != nil {
+			handleWebErr(w, err)
+			return
+		}
 	}
 
 	http.Redirect(w, r, "/setup/settings", 303)

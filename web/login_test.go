@@ -24,19 +24,19 @@ func TestLoginDisplay(t *testing.T) {
 	// Check logging in with the wrong username and right password.
 	recorder = web.postHttpResponse("/login?redirect=/match_play", "username=blorpy&password=reader")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Bad username or password")
+	assert.Contains(t, recorder.Body.String(), "Invalid login credentials.")
 
 	// Check logging in with the right username and wrong password.
 	recorder = web.postHttpResponse("/login?redirect=/match_play", "username=admin&password=blorpy")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Bad username or password")
+	assert.Contains(t, recorder.Body.String(), "Invalid login credentials.")
 
 	// Check logging in with the right username and password.
 	recorder = web.postHttpResponse("/login?redirect=/match_play", "username=admin&password=admin")
 	assert.Equal(t, 303, recorder.Code)
 	assert.Equal(t, "/match_play", recorder.Header().Get("Location"))
 	cookie := recorder.Header().Get("Set-Cookie")
-	assert.Contains(t, cookie, "Authorization=")
+	assert.Contains(t, cookie, "session_token=")
 
 	// Check that hitting the reader-level protected page works now.
 	recorder = web.getHttpResponseWithHeaders("/match_play", map[string]string{"Cookie": cookie})
