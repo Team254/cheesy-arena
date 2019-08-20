@@ -13,10 +13,6 @@ import (
 
 // Renders the team number and status display shown above each alliance station.
 func (web *Web) allianceStationDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	if !web.enforceDisplayConfiguration(w, r, map[string]string{"station": "R1"}) {
 		return
 	}
@@ -39,10 +35,6 @@ func (web *Web) allianceStationDisplayHandler(w http.ResponseWriter, r *http.Req
 
 // The websocket endpoint for the alliance station display client to receive status updates.
 func (web *Web) allianceStationDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)

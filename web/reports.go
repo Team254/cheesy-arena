@@ -16,10 +16,6 @@ import (
 
 // Generates a CSV-formatted report of the qualification rankings.
 func (web *Web) rankingsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
@@ -42,10 +38,6 @@ func (web *Web) rankingsCsvReportHandler(w http.ResponseWriter, r *http.Request)
 
 // Generates a PDF-formatted report of the qualification rankings.
 func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
@@ -104,10 +96,6 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 
 // Generates a CSV-formatted report of the match schedule.
 func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	vars := mux.Vars(r)
 	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
 	if err != nil {
@@ -131,10 +119,6 @@ func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request)
 
 // Generates a PDF-formatted report of the match schedule.
 func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	vars := mux.Vars(r)
 	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
 	if err != nil {
@@ -247,10 +231,6 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 
 // Generates a CSV-formatted report of the team list.
 func (web *Web) teamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
@@ -273,10 +253,6 @@ func (web *Web) teamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a PDF-formatted report of the team list.
 func (web *Web) teamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)

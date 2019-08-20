@@ -18,8 +18,7 @@ import (
 )
 
 const (
-	adminUser  = "admin"
-	readerUser = "reader"
+	adminUser = "admin"
 )
 
 type Web struct {
@@ -108,29 +107,8 @@ func (web *Web) userIsAdmin(w http.ResponseWriter, r *http.Request) bool {
 	}
 }
 
-// Returns true if the given user is authorized for read-only operations. Used for HTTP cookie authentication.
-func (web *Web) userIsReader(w http.ResponseWriter, r *http.Request) bool {
-	if web.arena.EventSettings.ReaderPassword == "" {
-		// Disable auth if there is no password configured.
-		return true
-	}
-	if username := web.cookieAuth.Authorize(r); username == readerUser || username == adminUser {
-		return true
-	} else {
-		http.Redirect(w, r, "/login?redirect="+r.URL.Path, 307)
-		return false
-	}
-}
-
 func (web *Web) checkAuthPassword(user, password string) bool {
-	switch user {
-	case adminUser:
-		return password == web.arena.EventSettings.AdminPassword
-	case readerUser:
-		return password == web.arena.EventSettings.ReaderPassword
-	default:
-		return false
-	}
+	return user == adminUser && password == web.arena.EventSettings.AdminPassword
 }
 
 // Sets up the mapping between URLs and handlers.

@@ -14,10 +14,6 @@ import (
 
 // Renders the audience display to be chroma keyed over the video feed.
 func (web *Web) audienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	if !web.enforceDisplayConfiguration(w, r, map[string]string{"background": "#0f0", "reversed": "false",
 		"overlayLocation": "bottom"}) {
 		return
@@ -42,10 +38,6 @@ func (web *Web) audienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the audience display client to receive status updates.
 func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)

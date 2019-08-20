@@ -16,10 +16,6 @@ const numMatchesToShow = 5
 
 // Renders the queueing display that shows upcoming matches and timing information.
 func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	if !web.enforceDisplayConfiguration(w, r, nil) {
 		return
 	}
@@ -61,10 +57,6 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the queueing display to receive updates.
 func (web *Web) queueingDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)

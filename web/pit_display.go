@@ -13,10 +13,6 @@ import (
 
 // Renders the pit display which shows scrolling rankings.
 func (web *Web) pitDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	if !web.enforceDisplayConfiguration(w, r, map[string]string{"scrollMsPerRow": "1000"}) {
 		return
 	}
@@ -38,10 +34,6 @@ func (web *Web) pitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for the pit display, used only to force reloads remotely.
 func (web *Web) pitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)

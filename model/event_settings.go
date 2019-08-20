@@ -27,7 +27,6 @@ type EventSettings struct {
 	SwitchPassword         string
 	PlcAddress             string
 	AdminPassword          string
-	ReaderPassword         string
 	HabDockingThreshold    int
 }
 

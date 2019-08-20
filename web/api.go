@@ -31,10 +31,6 @@ type RankingWithNickname struct {
 
 // Generates a JSON dump of the matches and results.
 func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	vars := mux.Vars(r)
 	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
 	if err != nil {
@@ -75,10 +71,6 @@ func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a JSON dump of the sponsor slides for use by the audience display.
 func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	sponsors, err := web.arena.Database.GetAllSponsorSlides()
 	if err != nil {
 		handleWebErr(w, err)
@@ -105,10 +97,6 @@ func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) 
 
 // Generates a JSON dump of the qualification rankings, primarily for use by the pit display.
 func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
@@ -169,10 +157,6 @@ func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a JSON dump of the alliances.
 func (web *Web) alliancesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	alliances, err := web.arena.Database.GetAllAlliances()
 	if err != nil {
 		handleWebErr(w, err)

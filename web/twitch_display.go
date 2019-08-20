@@ -13,10 +13,6 @@ import (
 
 // Renders the Twitch stream view.
 func (web *Web) twitchDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	if !web.enforceDisplayConfiguration(w, r, map[string]string{"channel": "team254"}) {
 		return
 	}
@@ -38,10 +34,6 @@ func (web *Web) twitchDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 // The websocket endpoint for sending configuration commands to the display.
 func (web *Web) twitchDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)

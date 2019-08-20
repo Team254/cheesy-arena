@@ -13,10 +13,6 @@ import (
 
 // Shows a random ID to visually identify the display so that it can be configured on the server.
 func (web *Web) placeholderDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	if !web.enforceDisplayConfiguration(w, r, nil) {
 		return
 	}
@@ -38,10 +34,6 @@ func (web *Web) placeholderDisplayHandler(w http.ResponseWriter, r *http.Request
 
 // The websocket endpoint for sending configuration commands to the display.
 func (web *Web) placeholderDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)
