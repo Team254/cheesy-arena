@@ -37,6 +37,7 @@ type Database struct {
 	sponsorSlideMap  *modl.DbMap
 	scheduleBlockMap *modl.DbMap
 	awardMap         *modl.DbMap
+	userSessionMap   *modl.DbMap
 }
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
@@ -128,6 +129,9 @@ func (database *Database) mapTables() {
 
 	database.awardMap = modl.NewDbMap(database.db, dialect)
 	database.awardMap.AddTableWithName(Award{}, "awards").SetKeys(true, "Id")
+
+	database.userSessionMap = modl.NewDbMap(database.db, dialect)
+	database.userSessionMap.AddTableWithName(UserSession{}, "user_sessions").SetKeys(true, "Id")
 }
 
 func serializeHelper(target *string, source interface{}) error {
