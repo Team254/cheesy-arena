@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -122,4 +124,20 @@ func TestAlliancesApi(t *testing.T) {
 			assert.Equal(t, 2451, alliances[1][1].TeamId)
 		}
 	}
+}
+
+func TestArenaWebsocketApi(t *testing.T) {
+	web := setupTestWeb(t)
+
+	server, wsUrl := web.startTestServer()
+	defer server.Close()
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/api/arena/websocket", nil)
+	assert.Nil(t, err)
+	defer conn.Close()
+	ws := websocket.NewTestWebsocket(conn)
+
+	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "matchLoad")
+	readWebsocketType(t, ws, "matchTime")
 }

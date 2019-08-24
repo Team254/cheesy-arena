@@ -49,6 +49,6 @@ func (web *Web) ledPlcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
-	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
 	ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier)
 }

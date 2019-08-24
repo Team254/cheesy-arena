@@ -102,6 +102,7 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/alliance_selection/reset", web.allianceSelectionResetHandler).Methods("POST")
 	router.HandleFunc("/alliance_selection/start", web.allianceSelectionStartHandler).Methods("POST")
 	router.HandleFunc("/api/alliances", web.alliancesApiHandler).Methods("GET")
+	router.HandleFunc("/api/arena/websocket", web.arenaWebsocketApiHandler).Methods("GET")
 	router.HandleFunc("/api/matches/{type}", web.matchesApiHandler).Methods("GET")
 	router.HandleFunc("/api/rankings", web.rankingsApiHandler).Methods("GET")
 	router.HandleFunc("/api/sponsor_slides", web.sponsorSlidesApiHandler).Methods("GET")
