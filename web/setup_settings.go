@@ -62,11 +62,20 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.ApTeamChannel, _ = strconv.Atoi(r.PostFormValue("apTeamChannel"))
 	eventSettings.ApAdminChannel, _ = strconv.Atoi(r.PostFormValue("apAdminChannel"))
 	eventSettings.ApAdminWpaKey = r.PostFormValue("apAdminWpaKey")
+	eventSettings.Ap2Address = r.PostFormValue("ap2Address")
+	eventSettings.Ap2Username = r.PostFormValue("ap2Username")
+	eventSettings.Ap2Password = r.PostFormValue("ap2Password")
+	eventSettings.Ap2TeamChannel, _ = strconv.Atoi(r.PostFormValue("ap2TeamChannel"))
 	eventSettings.SwitchAddress = r.PostFormValue("switchAddress")
 	eventSettings.SwitchPassword = r.PostFormValue("switchPassword")
 	eventSettings.PlcAddress = r.PostFormValue("plcAddress")
 	eventSettings.AdminPassword = r.PostFormValue("adminPassword")
 	eventSettings.HabDockingThreshold, _ = strconv.Atoi(r.PostFormValue("habDockingThreshold"))
+
+	if eventSettings.Ap2TeamChannel != 0 && eventSettings.Ap2TeamChannel == eventSettings.ApTeamChannel {
+		web.renderSettings(w, r, "Cannot use same channel for both access points.")
+		return
+	}
 
 	err := web.arena.Database.SaveEventSettings(eventSettings)
 	if err != nil {

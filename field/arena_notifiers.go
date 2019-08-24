@@ -80,7 +80,11 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 	// Convert AP team wifi network status array to a map by station for ease of client use.
 	teamWifiStatuses := make(map[string]network.TeamWifiStatus)
 	for i, station := range []string{"R1", "R2", "R3", "B1", "B2", "B3"} {
-		teamWifiStatuses[station] = arena.accessPoint.TeamWifiStatuses[i]
+		if arena.EventSettings.Ap2TeamChannel == 0 || i < 3 {
+			teamWifiStatuses[station] = arena.accessPoint.TeamWifiStatuses[i]
+		} else {
+			teamWifiStatuses[station] = arena.accessPoint2.TeamWifiStatuses[i]
+		}
 	}
 
 	return &struct {
