@@ -83,10 +83,10 @@ func (ap *AccessPoint) Run() {
 }
 
 // Adds a request to set up wireless networks for the given set of teams to the asynchronous queue.
-func (ap *AccessPoint) ConfigureTeamWifi(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
+func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
 	// Use a channel to serialize configuration requests; the monitoring goroutine will service them.
 	select {
-	case ap.configRequestChan <- [6]*model.Team{red1, red2, red3, blue1, blue2, blue3}:
+	case ap.configRequestChan <- teams:
 		return nil
 	default:
 		return fmt.Errorf("WiFi config request buffer full")
