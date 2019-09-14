@@ -20,7 +20,7 @@ import (
 const (
 	tbaBaseUrl = "https://www.thebluealliance.com"
 	tbaAuthKey = "MAApv9MCuKY9MSFkXLuzTSYBCdosboxDq8Q3ujUE2Mn8PD3Nmv64uczu5Lvy0NQ3"
-	avatarsDir = "static/img/avatars"
+	AvatarsDir = "static/img/avatars"
 )
 
 type TbaClient struct {
@@ -242,7 +242,7 @@ func (client *TbaClient) DownloadTeamAvatar(teamNumber, year int) error {
 			}
 
 			// Store the avatar to disk as a PNG file.
-			avatarPath := fmt.Sprintf("%s/%d.png", avatarsDir, teamNumber)
+			avatarPath := fmt.Sprintf("%s/%d.png", AvatarsDir, teamNumber)
 			ioutil.WriteFile(avatarPath, avatarBytes, 0644)
 			return nil
 		}

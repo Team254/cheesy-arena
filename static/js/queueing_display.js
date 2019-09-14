@@ -29,9 +29,6 @@ var handleMatchTime = function(data) {
 };
 
 $(function() {
-  // Fall back to a blank avatar if one doesn't exist for the team.
-  $(".avatar").attr("onerror", "this.src='/static/img/avatars/0.png';");
-
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/queueing/websocket", {
     matchLoad: function(event) { handleMatchLoad(event.data); },
