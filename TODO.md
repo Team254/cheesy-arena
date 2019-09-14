@@ -13,7 +13,6 @@ Cheesy Arena To-Do List
 
 ### Scorekeeper-facing features
 * Ability to unscore a match and reset it to non-played status
-* Allow reordering of sponsor slides in the setup page
 
 ### Features for other volunteers
 * Referee interface: add timer starting at field reset to track time limit for calling timeouts/backups
