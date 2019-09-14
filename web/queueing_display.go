@@ -13,8 +13,11 @@ import (
 	"time"
 )
 
-const numMatchesToShow = 5
-const maxGapMin = 20
+const (
+	earlyLateThresholdMin = 2
+	maxGapMin             = 20
+	numMatchesToShow      = 5
+)
 
 // Renders the queueing display that shows upcoming matches and timing information.
 func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +57,8 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		MatchTypePrefix string
 		Matches         []model.Match
 		StatusMessage   string
-	}{web.arena.EventSettings, web.arena.CurrentMatch.TypePrefix(), upcomingMatches, generateEventStatusMessage(matches)}
+	}{web.arena.EventSettings, web.arena.CurrentMatch.TypePrefix(), upcomingMatches,
+		generateEventStatusMessage(web.arena.CurrentMatch.Type, matches)}
 	err = template.ExecuteTemplate(w, "queueing_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -84,22 +88,31 @@ func (web *Web) queueingDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 }
 
 // Returns a message indicating how early or late the event is running.
-func generateEventStatusMessage(matches []model.Match) string {
+func generateEventStatusMessage(matchType string, matches []model.Match) string {
+	if matchType != "practice" && matchType != "qualification" {
+		// Only practice and qualification matches have a strict schedule.
+		return ""
+	}
+	if len(matches) == 0 || matches[len(matches)-1].Status == "complete" {
+		// All matches of the current type are complete.
+		return ""
+	}
+
 	for i := len(matches) - 1; i >= 0; i-- {
 		match := matches[i]
 		if match.Status == "complete" {
-			minutesLate := match.StartedAt.Sub(match.Time).Minutes()
-			if minutesLate > 2 {
-				return fmt.Sprintf("Event is running %d minutes late", int(minutesLate))
-			} else if minutesLate < -2 {
-				return fmt.Sprintf("Event is running %d minutes early", int(-minutesLate))
+			if i+1 < len(matches) && matches[i+1].Time.Sub(match.Time) > maxGapMin*time.Minute {
+				break
+			} else {
+				minutesLate := match.StartedAt.Sub(match.Time).Minutes()
+				if minutesLate > earlyLateThresholdMin {
+					return fmt.Sprintf("Event is running %d minutes late", int(minutesLate))
+				} else if minutesLate < -earlyLateThresholdMin {
+					return fmt.Sprintf("Event is running %d minutes early", int(-minutesLate))
+				}
 			}
 		}
 	}
 
-	if len(matches) > 0 {
-		return "Event is running on schedule"
-	} else {
-		return ""
-	}
+	return "Event is running on schedule"
 }

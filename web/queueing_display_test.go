@@ -1,4 +1,4 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2018 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
 package web
@@ -38,42 +38,51 @@ func TestQueueingDisplayWebsocket(t *testing.T) {
 }
 
 func TestQueueingStatusMessage(t *testing.T) {
-	assert.Equal(t, "", generateEventStatusMessage([]model.Match{}))
+	assert.Equal(t, "", generateEventStatusMessage("practice", []model.Match{}))
 
 	matches := make([]model.Match, 3)
-	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage("practice", matches))
 
 	// Check within threshold considered to be on time.
 	setMatchLateness(&matches[1], 0)
-	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage("qualification", matches))
 	setMatchLateness(&matches[1], 60)
-	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage("practice", matches))
 	setMatchLateness(&matches[1], -60)
-	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage("qualification", matches))
 	setMatchLateness(&matches[1], 90)
-	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage("qualification", matches))
 	setMatchLateness(&matches[1], -90)
-	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage("qualification", matches))
 	setMatchLateness(&matches[1], 110)
-	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage("practice", matches))
 	setMatchLateness(&matches[1], -110)
-	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage("qualification", matches))
 
 	// Check lateness.
 	setMatchLateness(&matches[1], 130)
-	assert.Equal(t, "Event is running 2 minutes late", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running 2 minutes late", generateEventStatusMessage("practice", matches))
 	setMatchLateness(&matches[1], 3601)
-	assert.Equal(t, "Event is running 60 minutes late", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running 60 minutes late", generateEventStatusMessage("qualification", matches))
 
 	// Check earliness.
 	setMatchLateness(&matches[1], -130)
-	assert.Equal(t, "Event is running 2 minutes early", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running 2 minutes early", generateEventStatusMessage("qualification", matches))
 	setMatchLateness(&matches[1], -3601)
-	assert.Equal(t, "Event is running 60 minutes early", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running 60 minutes early", generateEventStatusMessage("practice", matches))
+
+	// Check other match types.
+	assert.Equal(t, "", generateEventStatusMessage("test", matches))
+	assert.Equal(t, "", generateEventStatusMessage("elimination", matches))
 
 	// Check that later matches supersede earlier ones.
+	matches = append(matches, model.Match{})
 	setMatchLateness(&matches[2], 180)
-	assert.Equal(t, "Event is running 3 minutes late", generateEventStatusMessage(matches))
+	assert.Equal(t, "Event is running 3 minutes late", generateEventStatusMessage("qualification", matches))
+
+	// Check that a lateness before a large gap is ignored.
+	matches[3].Time = time.Now().Add(time.Minute * 25)
+	assert.Equal(t, "Event is running on schedule", generateEventStatusMessage("qualification", matches))
 }
 
 func setMatchLateness(match *model.Match, secondsLate int) {
