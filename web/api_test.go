@@ -84,8 +84,8 @@ func TestRankingsApi(t *testing.T) {
 func TestSponsorSlidesApi(t *testing.T) {
 	web := setupTestWeb(t)
 
-	slide1 := model.SponsorSlide{1, "subtitle", "line1", "line2", "image", 2}
-	slide2 := model.SponsorSlide{2, "Chezy Sponsaur", "Teh", "Chezy Pofs", "ejface.jpg", 54}
+	slide1 := model.SponsorSlide{1, "subtitle", "line1", "line2", "image", 2, 0}
+	slide2 := model.SponsorSlide{2, "Chezy Sponsaur", "Teh", "Chezy Pofs", "ejface.jpg", 54, 1}
 	web.arena.Database.CreateSponsorSlide(&slide1)
 	web.arena.Database.CreateSponsorSlide(&slide2)
 
