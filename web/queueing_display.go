@@ -10,9 +10,11 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
+	"time"
 )
 
 const numMatchesToShow = 5
+const maxGapMin = 20
 
 // Renders the queueing display that shows upcoming matches and timing information.
 func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,12 +28,17 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var upcomingMatches []model.Match
-	for _, match := range matches {
+	for i, match := range matches {
 		if match.Status == "complete" {
 			continue
 		}
 		upcomingMatches = append(upcomingMatches, match)
 		if len(upcomingMatches) == numMatchesToShow {
+			break
+		}
+
+		// Don't include any more matches if there is a significant gap before the next one.
+		if i+1 < len(matches) && matches[i+1].Time.Sub(match.Time) > maxGapMin*time.Minute {
 			break
 		}
 	}
