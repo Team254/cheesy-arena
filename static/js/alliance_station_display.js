@@ -13,9 +13,6 @@ var handleAllianceStationDisplayMode = function(targetScreen) {
   currentScreen = targetScreen;
   if (station === "") {
     // Don't do anything if this screen hasn't been assigned a position yet.
-  } else if (station == "T") {
-    $("body").attr("data-mode", "match");
-    $("body").attr("data-position", "middle");
   } else {
     $("body").attr("data-mode", targetScreen);
     switch (station[1]) {
@@ -86,6 +83,10 @@ var handleArenaStatus = function(data) {
 // Handles a websocket message to update the match time countdown.
 var handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
+    if (station[0] === "N") {
+      // Pin the state for a non-alliance display to an in-match state, so as to always show time or score.
+      matchState = "TELEOP_PERIOD";
+    }
     var countdownString = String(countdownSec % 60);
     if (countdownString.length === 1) {
       countdownString = "0" + countdownString;
