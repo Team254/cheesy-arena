@@ -146,6 +146,12 @@ type TbaMediaItem struct {
 	Type    string                 `json:"type"`
 }
 
+type TbaPublishedAward struct {
+	Name    string `json:"name_str"`
+	TeamKey string `json:"team_key"`
+	Awardee string `json:"awardee"`
+}
+
 var habLevelMapping = []string{"None", "HabLevel1", "HabLevel2", "HabLevel3"}
 var bayStatusMapping = []string{"None", "Panel", "PanelAndCargo", "Cargo"}
 var sandstormBonusMapping = map[bool]string{false: "None", true: "CrossedHabLineInSandstorm"}
@@ -592,4 +598,35 @@ func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResul
 	}
 
 	return &breakdown
+}
+
+// Uploads the awards to The Blue Alliance.
+func (client *TbaClient) PublishAwards(database *model.Database) error {
+	awards, err := database.GetAllAwards()
+	if err != nil {
+		return err
+	}
+
+	// Build a JSON array of TBA-format award models.
+	tbaAwards := make([]TbaPublishedAward, len(awards))
+	for i, award := range awards {
+		tbaAwards[i].Name = award.AwardName
+		tbaAwards[i].TeamKey = getTbaTeam(award.TeamId)
+		tbaAwards[i].Awardee = award.PersonName
+	}
+	jsonBody, err := json.Marshal(tbaAwards)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.postRequest("awards", "update", jsonBody)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		defer resp.Body.Close()
+		body, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
+	}
+	return nil
 }

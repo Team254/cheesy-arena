@@ -145,6 +145,7 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/reports/csv/wpa_keys", web.wpaKeysCsvReportHandler).Methods("GET")
 	router.HandleFunc("/setup/awards", web.awardsGetHandler).Methods("GET")
 	router.HandleFunc("/setup/awards", web.awardsPostHandler).Methods("POST")
+	router.HandleFunc("/setup/awards/publish", web.awardsPublishHandler).Methods("POST")
 	router.HandleFunc("/setup/db/clear", web.clearDbHandler).Methods("POST")
 	router.HandleFunc("/setup/db/restore", web.restoreDbHandler).Methods("POST")
 	router.HandleFunc("/setup/db/save", web.saveDbHandler).Methods("GET")

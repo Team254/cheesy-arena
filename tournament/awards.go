@@ -125,7 +125,7 @@ func CreateOrUpdateWinnerAndFinalistAwards(database *model.Database, winnerAllia
 	}
 
 	// Create the finalist awards first since they're usually presented first.
-	finalistAward := model.Award{AwardName: "Event Finalist", Type: model.FinalistAward,
+	finalistAward := model.Award{AwardName: "Finalist", Type: model.FinalistAward,
 		TeamId: finalistAllianceTeams[0].TeamId}
 	if err = CreateOrUpdateAward(database, &finalistAward, true); err != nil {
 		return err
@@ -139,7 +139,7 @@ func CreateOrUpdateWinnerAndFinalistAwards(database *model.Database, winnerAllia
 	}
 
 	// Create the winner awards.
-	winnerAward := model.Award{AwardName: "Event Winner", Type: model.WinnerAward,
+	winnerAward := model.Award{AwardName: "Winner", Type: model.WinnerAward,
 		TeamId: winnerAllianceTeams[0].TeamId}
 	if err = CreateOrUpdateAward(database, &winnerAward, true); err != nil {
 		return err
