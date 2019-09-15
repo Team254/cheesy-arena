@@ -7,7 +7,6 @@ package field
 
 import (
 	"fmt"
-	"math/rand"
 	"net/url"
 	"reflect"
 	"sort"
@@ -18,7 +17,6 @@ import (
 
 const (
 	minDisplayId = 100
-	maxDisplayId = 999
 )
 
 type DisplayType int
@@ -136,11 +134,12 @@ func (arena *Arena) NextDisplayId() string {
 
 	// Loop until we get an ID that isn't already used. This is inefficient if there is a large number of displays, but
 	// that should never be the case.
+	candidateId := minDisplayId
 	for {
-		candidateId := strconv.Itoa(rand.Intn(maxDisplayId+1-minDisplayId) + minDisplayId)
-		if _, ok := arena.Displays[candidateId]; !ok {
-			return candidateId
+		if _, ok := arena.Displays[strconv.Itoa(candidateId)]; !ok {
+			return strconv.Itoa(candidateId)
 		}
+		candidateId++
 	}
 }
 
@@ -194,8 +193,7 @@ func (arena *Arena) MarkDisplayDisconnected(display *Display) {
 			delete(arena.Displays, existingDisplay.Id)
 		} else {
 			existingDisplay.ConnectionCount -= 1
-			arena.DisplayConfigurationNotifier.Notify()
-
 		}
+		arena.DisplayConfigurationNotifier.Notify()
 	}
 }

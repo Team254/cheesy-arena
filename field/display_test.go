@@ -59,12 +59,11 @@ func TestDisplayToUrl(t *testing.T) {
 func TestNextDisplayId(t *testing.T) {
 	arena := setupTestArena(t)
 
-	assert.Equal(t, "874", arena.NextDisplayId())
+	assert.Equal(t, "100", arena.NextDisplayId())
 
-	// The next random numbers for the test seed are 514 and 653; check that a number is skipped if already used.
-	display := &Display{Id: "514"}
+	display := &Display{Id: "100"}
 	arena.RegisterDisplay(display)
-	assert.Equal(t, "653", arena.NextDisplayId())
+	assert.Equal(t, "101", arena.NextDisplayId())
 }
 
 func TestDisplayRegisterUnregister(t *testing.T) {

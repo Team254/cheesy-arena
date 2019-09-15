@@ -17,7 +17,7 @@ func TestAllianceStationDisplay(t *testing.T) {
 
 	recorder := web.getHttpResponse("/displays/alliance_station")
 	assert.Equal(t, 302, recorder.Code)
-	assert.Contains(t, recorder.Header().Get("Location"), "displayId=874")
+	assert.Contains(t, recorder.Header().Get("Location"), "displayId=100")
 	assert.Contains(t, recorder.Header().Get("Location"), "station=R1")
 
 	recorder = web.getHttpResponse("/displays/alliance_station?displayId=1&station=B1")
