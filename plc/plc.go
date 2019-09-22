@@ -186,11 +186,14 @@ func (plc *Plc) SetSandstormUp(state bool) {
 	plc.coils[sandstormUpBlue] = state
 }
 
+func (plc *Plc) SetCargoShipLights(state bool) {
+	plc.coils[cargoShipLightRed] = state
+	plc.coils[cargoShipLightBlue] = state
+}
+
 func (plc *Plc) SetCargoShipMagnets(state bool) {
 	plc.coils[cargoShipMagnetRed] = state
 	plc.coils[cargoShipMagnetBlue] = state
-	plc.coils[cargoShipLightRed] = state
-	plc.coils[cargoShipLightBlue] = state
 }
 
 func (plc *Plc) SetRocketLights(red, blue bool) {

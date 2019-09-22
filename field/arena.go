@@ -739,6 +739,7 @@ func (arena *Arena) handlePlcOutput() {
 			arena.Plc.SetFieldResetLight(false)
 		}
 
+		arena.Plc.SetCargoShipLights(true)
 		arena.Plc.SetCargoShipMagnets(true)
 		arena.Plc.SetRocketLights(false, false)
 	case PostMatch:
@@ -748,8 +749,13 @@ func (arena *Arena) handlePlcOutput() {
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
 			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
+		arena.Plc.SetCargoShipLights(true)
 		arena.Plc.SetCargoShipMagnets(true)
 		arena.Plc.SetRocketLights(false, false)
+	case AutoPeriod:
+		fallthrough
+	case PausePeriod:
+		arena.Plc.SetCargoShipLights(false)
 	case TeleopPeriod:
 		if arena.lastMatchState != TeleopPeriod {
 			arena.Plc.SetSandstormUp(true)
@@ -758,6 +764,7 @@ func (arena *Arena) handlePlcOutput() {
 				arena.Plc.SetSandstormUp(false)
 			}()
 		}
+		arena.Plc.SetCargoShipLights(false)
 		arena.Plc.SetCargoShipMagnets(false)
 		arena.Plc.SetRocketLights(arena.RedScoreSummary().CompleteRocket, arena.BlueScoreSummary().CompleteRocket)
 	}
