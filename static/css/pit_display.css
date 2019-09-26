@@ -12,10 +12,10 @@ html {
 }
 body {
   height: 100%;
-  background: -moz-linear-gradient(top, #003375 1%, #3C679D 100%); /* FF3.6+ */
-  background: -webkit-linear-gradient(top, #003375 1%, #3C679D 100%); /* Chrome10+,Safari5.1+ */
   background-repeat: no-repeat;
+  background-image: url("/static/img/endofmatch-bg.png");
   font-family: "FuturaLT";
+  background-size: cover;
 }
 #column {
   width: 80%;
@@ -27,7 +27,7 @@ body {
   line-height: 50px;
   font-size: 40px;
   font-family: "FuturaLTBold";
-  color: #fff;
+  color: #000;
   text-transform: uppercase;
 }
 #logo {

@@ -12,9 +12,9 @@ html {
 }
 body {
   height: 100%;
-  background: -moz-linear-gradient(top, #003375 1%, #3C679D 100%); /* FF3.6+ */
-  background: -webkit-linear-gradient(top, #003375 1%, #3C679D 100%); /* Chrome10+,Safari5.1+ */
+  background-image: url("/static/img/endofmatch-bg.png");
   background-repeat: no-repeat;
+  background-size: cover;
 }
 h1 {
   font-size: 40px;
@@ -23,7 +23,7 @@ h1 {
   padding: 10px 0px;
   font-size: 40px;
   font-family: "FuturaLTBold";
-  color: #fff;
+  color: #000;
   text-transform: uppercase;
 }
 #logo {
