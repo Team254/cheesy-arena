@@ -39,6 +39,7 @@ body {
   background-color: #fff;
   padding: 10px;
   height: 85%;
+  border: 2px solid #000;
 }
 #header {
   width: 100%;
