@@ -352,6 +352,7 @@ html {
 #sponsor img {
   max-width: 800px;
   max-height: 400px;
+  opacity: 0.9;
 }
 #allianceSelectionCentering {
   position: absolute;
