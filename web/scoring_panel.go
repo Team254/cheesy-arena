@@ -99,7 +99,6 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	} else {
 		realtimeScore = &web.arena.BlueRealtimeScore
 	}
-	score := &(*realtimeScore).CurrentScore
 
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
@@ -128,6 +127,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
+		score := &(*realtimeScore).CurrentScore
 		scoreChanged := false
 
 		if command == "commitMatch" {
