@@ -150,7 +150,7 @@ html {
   background-size: 100%;
 }
 .blinds.background {
-  background-image: url("/static/img/endofmatch-bg.png");
+  background-image: url("/static/img/endofmatch-bg.png?v=1");
 }
 .blindsCenter {
   position: absolute;

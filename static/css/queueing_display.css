@@ -12,7 +12,7 @@ html {
 }
 body {
   height: 100%;
-  background-image: url("/static/img/endofmatch-bg.png");
+  background-image: url("/static/img/endofmatch-bg.png?v=1");
   background-repeat: no-repeat;
   background-size: cover;
 }

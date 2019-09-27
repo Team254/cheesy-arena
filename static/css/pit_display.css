@@ -13,7 +13,7 @@ html {
 body {
   height: 100%;
   background-repeat: no-repeat;
-  background-image: url("/static/img/endofmatch-bg.png");
+  background-image: url("/static/img/endofmatch-bg.png?v=1");
   font-family: "FuturaLT";
   background-size: cover;
 }
