@@ -41,15 +41,6 @@ ip dhcp pool dhcppool
 !
 !
 !
-crypto pki trustpoint TP-self-signed-408577536
- enrollment selfsigned
- subject-name cn=IOS-Self-Signed-Certificate-408577536
- revocation-check none
- rsakeypair TP-self-signed-408577536
-!
-!
-crypto pki certificate chain TP-self-signed-408577536
- certificate self-signed 01 nvram:IOS-Self-Sig#1.cer
 !
 !
 !
