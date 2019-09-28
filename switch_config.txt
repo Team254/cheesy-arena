@@ -308,6 +308,7 @@ interface Vlan60
 interface Vlan100
  ip address 10.0.100.2 255.255.255.0
 !
+ip classless
 ip http server
 ip http secure-server
 !
