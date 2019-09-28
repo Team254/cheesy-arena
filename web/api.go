@@ -184,10 +184,6 @@ func (web *Web) alliancesApiHandler(w http.ResponseWriter, r *http.Request) {
 
 // Websocket API for receiving arena status updates.
 func (web *Web) arenaWebsocketApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
-		return
-	}
-
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
 		handleWebErr(w, err)
