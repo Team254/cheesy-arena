@@ -1,7 +1,11 @@
 ! Baseline configuration for the Catalyst 3500-series switch. Load this into the switch prior to configuring
 ! Cheesy Arena to connect to it. Default password is 1234Five.
 !
-version 12.2
+!
+! Last configuration change at 13:18:54 UTC Sat Sep 28 2019
+! NVRAM config last updated at 13:18:57 UTC Sat Sep 28 2019
+!
+version 15.0
 no service pad
 service timestamps debug datetime msec
 service timestamps log datetime msec
@@ -12,23 +16,292 @@ hostname ChezySwitch
 boot-start-marker
 boot-end-marker
 !
+!
 enable secret 5 $1$kKSW$fCMwnMdYvXui1TulfyYHN/
-!
-!
 !
 no aaa new-model
 system mtu routing 1500
 ip routing
+!
+ip dhcp excluded-address 10.0.100.1 10.0.100.100
+ip dhcp excluded-address 10.0.13.1 10.0.13.100
+ip dhcp excluded-address 10.0.10.1 10.0.10.100
+ip dhcp excluded-address 10.0.8.1 10.0.8.100
+ip dhcp excluded-address 10.0.12.1 10.0.12.100
+ip dhcp excluded-address 10.0.9.1 10.0.9.100
+ip dhcp excluded-address 10.0.15.1 10.0.15.100
+ip dhcp excluded-address 10.0.5.1 10.0.5.100
+ip dhcp excluded-address 10.0.17.1 10.0.17.100
+ip dhcp excluded-address 10.0.4.1 10.0.4.100
+ip dhcp excluded-address 10.0.7.1 10.0.7.100
+ip dhcp excluded-address 10.0.6.1 10.0.6.100
+ip dhcp excluded-address 10.0.16.1 10.0.16.100
+ip dhcp excluded-address 10.33.9.1 10.33.9.100
+ip dhcp excluded-address 10.2.54.1 10.2.54.100
+ip dhcp excluded-address 10.20.73.1 10.20.73.100
+ip dhcp excluded-address 10.59.24.1 10.59.24.100
+ip dhcp excluded-address 10.34.76.1 10.34.76.100
+ip dhcp excluded-address 10.7.1.1 10.7.1.100
+ip dhcp excluded-address 10.32.56.1 10.32.56.100
+ip dhcp excluded-address 10.16.78.1 10.16.78.100
+ip dhcp excluded-address 10.64.18.1 10.64.18.100
+ip dhcp excluded-address 10.39.25.1 10.39.25.100
+ip dhcp excluded-address 10.49.4.1 10.49.4.100
+ip dhcp excluded-address 10.6.4.1 10.6.4.100
+ip dhcp excluded-address 10.0.1.1 10.0.1.100
+ip dhcp excluded-address 10.0.2.1 10.0.2.100
+ip dhcp excluded-address 10.0.3.1 10.0.3.100
+ip dhcp excluded-address 10.9.71.1 10.9.71.100
+ip dhcp excluded-address 10.10.11.1 10.10.11.100
+ip dhcp excluded-address 10.17.0.1 10.17.0.100
+ip dhcp excluded-address 10.36.47.1 10.36.47.100
+ip dhcp excluded-address 10.6.96.1 10.6.96.100
+ip dhcp excluded-address 10.51.4.1 10.51.4.100
+ip dhcp excluded-address 10.9.73.1 10.9.73.100
+ip dhcp excluded-address 10.1.14.1 10.1.14.100
+ip dhcp excluded-address 10.18.68.1 10.18.68.100
+ip dhcp excluded-address 10.21.35.1 10.21.35.100
+ip dhcp excluded-address 10.15.38.1 10.15.38.100
+ip dhcp excluded-address 10.9.68.1 10.9.68.100
+ip dhcp excluded-address 10.6.49.1 10.6.49.100
+ip dhcp excluded-address 10.50.12.1 10.50.12.100
+ip dhcp excluded-address 10.38.59.1 10.38.59.100
+ip dhcp excluded-address 10.58.18.1 10.58.18.100
+ip dhcp excluded-address 10.3.99.1 10.3.99.100
+ip dhcp excluded-address 10.58.29.1 10.58.29.100
+ip dhcp excluded-address 10.13.23.1 10.13.23.100
+ip dhcp excluded-address 10.1.15.1 10.1.15.100
+ip dhcp excluded-address 10.8.41.1 10.8.41.100
+ip dhcp excluded-address 10.1.99.1 10.1.99.100
+ip dhcp excluded-address 10.50.26.1 10.50.26.100
+ip dhcp excluded-address 10.49.90.1 10.49.90.100
+ip dhcp excluded-address 10.16.71.1 10.16.71.100
+ip dhcp excluded-address 10.54.99.1 10.54.99.100
+ip dhcp excluded-address 10.8.46.1 10.8.46.100
+ip dhcp excluded-address 10.6.68.1 10.6.68.100
+ip dhcp excluded-address 10.21.15.1 10.21.15.100
+ip dhcp excluded-address 10.36.57.1 10.36.57.100
+ip dhcp excluded-address 10.1.1.1 10.1.1.100
+ip dhcp excluded-address 10.1.33.1 10.1.33.100
+ip dhcp excluded-address 10.65.54.1 10.65.54.100
+ip dhcp excluded-address 10.2.94.1 10.2.94.100
+ip dhcp excluded-address 10.11.60.1 10.11.60.100
+ip dhcp excluded-address 10.5.99.1 10.5.99.100
+ip dhcp excluded-address 10.58.2.1 10.58.2.100
+ip dhcp excluded-address 10.5.97.1 10.5.97.100
+ip dhcp excluded-address 10.43.22.1 10.43.22.100
+ip dhcp excluded-address 10.34.73.1 10.34.73.100
+ip dhcp excluded-address 10.51.99.1 10.51.99.100
+ip dhcp excluded-address 10.65.35.1 10.65.35.100
+ip dhcp excluded-address 10.40.79.1 10.40.79.100
+ip dhcp excluded-address 10.3.30.1 10.3.30.100
+ip dhcp excluded-address 10.42.1.1 10.42.1.100
+ip dhcp excluded-address 10.45.1.1 10.45.1.100
+ip dhcp excluded-address 10.24.93.1 10.24.93.100
+ip dhcp excluded-address 10.58.5.1 10.58.5.100
+ip dhcp excluded-address 10.26.37.1 10.26.37.100
+ip dhcp excluded-address 10.26.59.1 10.26.59.100
+ip dhcp excluded-address 10.9.80.1 10.9.80.100
+ip dhcp excluded-address 10.60.72.1 10.60.72.100
+ip dhcp excluded-address 10.16.61.1 10.16.61.100
+ip dhcp excluded-address 10.11.97.1 10.11.97.100
+ip dhcp excluded-address 10.46.19.1 10.46.19.100
+ip dhcp excluded-address 10.49.99.1 10.49.99.100
+ip dhcp excluded-address 10.0.60.1 10.0.60.100
+ip dhcp excluded-address 10.42.76.1 10.42.76.100
+ip dhcp excluded-address 10.59.66.1 10.59.66.100
+ip dhcp excluded-address 10.26.58.1 10.26.58.100
+ip dhcp excluded-address 10.2.53.1 10.2.53.100
+ip dhcp excluded-address 10.91.22.1 10.91.22.100
+ip dhcp excluded-address 10.21.22.1 10.21.22.100
+ip dhcp excluded-address 10.93.23.1 10.93.23.100
+ip dhcp excluded-address 10.90.8.1 10.90.8.100
+ip dhcp excluded-address 10.61.74.1 10.61.74.100
+ip dhcp excluded-address 10.6.92.1 10.6.92.100
+ip dhcp excluded-address 10.16.62.1 10.16.62.100
+ip dhcp excluded-address 10.90.73.1 10.90.73.100
+ip dhcp excluded-address 10.91.4.1 10.91.4.100
+ip dhcp excluded-address 10.92.56.1 10.92.56.100
+ip dhcp excluded-address 10.97.1.1 10.97.1.100
+ip dhcp excluded-address 10.66.62.1 10.66.62.100
+ip dhcp excluded-address 10.12.80.1 10.12.80.100
+ip dhcp excluded-address 10.96.71.1 10.96.71.100
+ip dhcp excluded-address 10.41.71.1 10.41.71.100
+ip dhcp excluded-address 10.99.73.1 10.99.73.100
+ip dhcp excluded-address 10.52.74.1 10.52.74.100
+ip dhcp excluded-address 10.31.89.1 10.31.89.100
+ip dhcp excluded-address 10.14.25.1 10.14.25.100
+ip dhcp excluded-address 10.42.55.1 10.42.55.100
+ip dhcp excluded-address 10.32.50.1 10.32.50.100
+ip dhcp excluded-address 10.46.98.1 10.46.98.100
+ip dhcp excluded-address 10.59.40.1 10.59.40.100
+ip dhcp excluded-address 10.54.58.1 10.54.58.100
+ip dhcp excluded-address 10.98.59.1 10.98.59.100
+ip dhcp excluded-address 10.46.43.1 10.46.43.100
+ip dhcp excluded-address 10.54.96.1 10.54.96.100
+ip dhcp excluded-address 10.26.43.1 10.26.43.100
+ip dhcp excluded-address 10.91.14.1 10.91.14.100
+ip dhcp excluded-address 10.92.55.1 10.92.55.100
+ip dhcp excluded-address 10.57.0.1 10.57.0.100
+ip dhcp excluded-address 10.92.54.1 10.92.54.100
+ip dhcp excluded-address 10.58.52.1 10.58.52.100
+ip dhcp excluded-address 10.99.71.1 10.99.71.100
+ip dhcp excluded-address 10.66.57.1 10.66.57.100
+ip dhcp excluded-address 10.91.59.1 10.91.59.100
+ip dhcp excluded-address 10.63.5.1 10.63.5.100
+ip dhcp excluded-address 10.88.17.1 10.88.17.100
+ip dhcp excluded-address 10.41.59.1 10.41.59.100
+ip dhcp excluded-address 10.1.23.1 10.1.23.100
+ip dhcp excluded-address 10.86.78.1 10.86.78.100
+ip dhcp excluded-address 10.96.78.1 10.96.78.100
+ip dhcp excluded-address 10.41.70.1 10.41.70.100
+ip dhcp excluded-address 10.58.17.1 10.58.17.100
+ip dhcp excluded-address 10.34.82.1 10.34.82.100
+ip dhcp excluded-address 10.98.17.1 10.98.17.100
+ip dhcp excluded-address 10.91.35.1 10.91.35.100
+ip dhcp excluded-address 10.34.95.1 10.34.95.100
+ip dhcp excluded-address 10.91.70.1 10.91.70.100
+ip dhcp excluded-address 10.18.36.1 10.18.36.100
+ip dhcp excluded-address 10.90.12.1 10.90.12.100
+ip dhcp excluded-address 10.91.71.1 10.91.71.100
+ip dhcp excluded-address 10.28.13.1 10.28.13.100
+ip dhcp excluded-address 10.33.3.1 10.33.3.100
+ip dhcp excluded-address 10.2.99.1 10.2.99.100
+ip dhcp excluded-address 10.89.73.1 10.89.73.100
+ip dhcp excluded-address 10.94.82.1 10.94.82.100
+ip dhcp excluded-address 10.86.73.1 10.86.73.100
+ip dhcp excluded-address 10.89.71.1 10.89.71.100
+ip dhcp excluded-address 10.13.86.1 10.13.86.100
+ip dhcp excluded-address 10.66.67.1 10.66.67.100
+ip dhcp excluded-address 10.0.11.1 10.0.11.100
 ip dhcp excluded-address 10.0.100.1 10.0.100.150
+ip dhcp excluded-address 10.0.14.1 10.0.14.100
+ip dhcp excluded-address 10.29.10.1 10.29.10.100
+ip dhcp excluded-address 10.24.71.1 10.24.71.100
+ip dhcp excluded-address 10.29.90.1 10.29.90.100
+ip dhcp excluded-address 10.6.87.1 10.6.87.100
+ip dhcp excluded-address 10.35.12.1 10.35.12.100
+ip dhcp excluded-address 10.19.83.1 10.19.83.100
+ip dhcp excluded-address 10.49.11.1 10.49.11.100
+ip dhcp excluded-address 10.20.46.1 10.20.46.100
+ip dhcp excluded-address 10.58.3.1 10.58.3.100
+ip dhcp excluded-address 10.35.38.1 10.35.38.100
+ip dhcp excluded-address 10.41.83.1 10.41.83.100
+ip dhcp excluded-address 10.44.88.1 10.44.88.100
+ip dhcp excluded-address 10.25.57.1 10.25.57.100
+ip dhcp excluded-address 10.34.78.1 10.34.78.100
+ip dhcp excluded-address 10.8.42.1 10.8.42.100
+ip dhcp excluded-address 10.10.72.1 10.10.72.100
+ip dhcp excluded-address 10.33.10.1 10.33.10.100
+ip dhcp excluded-address 10.43.88.1 10.43.88.100
+ip dhcp excluded-address 10.43.68.1 10.43.68.100
+ip dhcp excluded-address 10.71.57.1 10.71.57.100
+ip dhcp excluded-address 10.0.34.1 10.0.34.100
+ip dhcp excluded-address 10.22.54.1 10.22.54.100
+ip dhcp excluded-address 10.70.25.1 10.70.25.100
+ip dhcp excluded-address 10.58.57.1 10.58.57.100
+ip dhcp excluded-address 10.51.24.1 10.51.24.100
+ip dhcp excluded-address 10.16.87.1 10.16.87.100
+ip dhcp excluded-address 10.4.79.1 10.4.79.100
+ip dhcp excluded-address 10.58.10.1 10.58.10.100
+ip dhcp excluded-address 10.16.72.1 10.16.72.100
+ip dhcp excluded-address 10.62.20.1 10.62.20.100
+ip dhcp excluded-address 10.72.30.1 10.72.30.100
+ip dhcp excluded-address 10.62.0.1 10.62.0.100
+ip dhcp excluded-address 10.35.98.1 10.35.98.100
+ip dhcp excluded-address 10.64.74.1 10.64.74.100
+ip dhcp excluded-address 10.25.51.1 10.25.51.100
+ip dhcp excluded-address 10.19.67.1 10.19.67.100
+ip dhcp excluded-address 10.7.13.1 10.7.13.100
+ip dhcp excluded-address 10.71.37.1 10.71.37.100
+ip dhcp excluded-address 10.1.28.1 10.1.28.100
+ip dhcp excluded-address 10.60.39.1 10.60.39.100
+ip dhcp excluded-address 10.69.18.1 10.69.18.100
+ip dhcp excluded-address 10.0.29.1 10.0.29.100
+ip dhcp excluded-address 10.69.81.1 10.69.81.100
+ip dhcp excluded-address 10.72.29.1 10.72.29.100
+ip dhcp excluded-address 10.68.14.1 10.68.14.100
+ip dhcp excluded-address 10.54.19.1 10.54.19.100
+ip dhcp excluded-address 10.96.57.1 10.96.57.100
+ip dhcp excluded-address 10.70.57.1 10.70.57.100
+ip dhcp excluded-address 10.69.26.1 10.69.26.100
+ip dhcp excluded-address 10.94.95.1 10.94.95.100
+ip dhcp excluded-address 10.56.78.1 10.56.78.100
+ip dhcp excluded-address 10.98.52.1 10.98.52.100
+ip dhcp excluded-address 10.99.26.1 10.99.26.100
+ip dhcp excluded-address 10.99.72.1 10.99.72.100
+ip dhcp excluded-address 10.90.72.1 10.90.72.100
+ip dhcp excluded-address 10.82.54.1 10.82.54.100
+ip dhcp excluded-address 10.30.95.1 10.30.95.100
+ip dhcp excluded-address 10.2.56.1 10.2.56.100
+ip dhcp excluded-address 10.83.23.1 10.83.23.100
+ip dhcp excluded-address 10.4.98.1 10.4.98.100
+ip dhcp excluded-address 10.29.30.1 10.29.30.100
+ip dhcp excluded-address 10.99.99.1 10.99.99.100
+ip dhcp excluded-address 10.55.7.1 10.55.7.100
+ip dhcp excluded-address 10.32.18.1 10.32.18.100
+ip dhcp excluded-address 10.27.33.1 10.27.33.100
+ip dhcp excluded-address 10.16.19.1 10.16.19.100
+ip dhcp excluded-address 10.9.72.1 10.9.72.100
+ip dhcp excluded-address 10.44.14.1 10.44.14.100
+ip dhcp excluded-address 10.99.91.1 10.99.91.100
+ip dhcp excluded-address 10.29.28.1 10.29.28.100
+ip dhcp excluded-address 10.4.43.1 10.4.43.100
+ip dhcp excluded-address 10.64.43.1 10.64.43.100
+ip dhcp excluded-address 10.21.2.1 10.21.2.100
+ip dhcp excluded-address 10.17.10.1 10.17.10.100
+ip dhcp excluded-address 10.41.38.1 10.41.38.100
+ip dhcp excluded-address 10.51.90.1 10.51.90.100
 !
 ip dhcp pool dhcppool
-   network 10.0.100.0 255.255.255.0
-   domain-name team254.com
-   dns-server 8.8.8.8 8.8.4.4 
-   lease 7
+ network 10.0.100.0 255.255.255.0
+ domain-name team254.com
+ dns-server 8.8.8.8 8.8.4.4 
+ default-router 10.0.100.1 
+ lease 7
+!
+ip dhcp pool dhcp10
+ network 10.1.14.0 255.255.255.0
+ default-router 10.1.14.61 
+ lease 7
+!
+ip dhcp pool dhcp20
+ network 10.27.33.0 255.255.255.0
+ default-router 10.27.33.61 
+ lease 7
+!
+ip dhcp pool dhcp30
+ network 10.6.4.0 255.255.255.0
+ default-router 10.6.4.61 
+ lease 7
+!
+ip dhcp pool dhcp40
+ network 10.20.46.0 255.255.255.0
+ default-router 10.20.46.61 
+ lease 7
+!
+ip dhcp pool dhcp50
+ network 10.26.59.0 255.255.255.0
+ default-router 10.26.59.61 
+ lease 7
+!
+ip dhcp pool dhcp60
+ network 10.29.10.0 255.255.255.0
+ default-router 10.29.10.61 
+ lease 7
 !
 !
 !
+!
+crypto pki trustpoint TP-self-signed-408577536
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-408577536
+ revocation-check none
+ rsakeypair TP-self-signed-408577536
+!
+!
+crypto pki certificate chain TP-self-signed-408577536
+ certificate self-signed 01 nvram:IOS-Self-Sig#1.cer
 !
 !
 !
@@ -41,9 +314,21 @@ spanning-tree extend system-id
 vlan internal allocation policy ascending
 !
 !
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
 !
 !
 interface GigabitEthernet0/1
+ switchport access vlan 100
  switchport trunk encapsulation dot1q
  switchport trunk native vlan 100
  switchport mode trunk
@@ -54,6 +339,7 @@ interface GigabitEthernet0/2
  switchport mode trunk
 !
 interface GigabitEthernet0/3
+ switchport access vlan 100
  switchport trunk encapsulation dot1q
  switchport trunk native vlan 100
  switchport mode trunk
@@ -237,7 +523,9 @@ interface GigabitEthernet0/47
 !
 interface GigabitEthernet0/48
  switchport access vlan 100
- switchport mode access
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 100
+ switchport mode trunk
 !
 interface GigabitEthernet0/49
  switchport access vlan 100
@@ -259,52 +547,53 @@ interface Vlan1
  ip address 10.0.0.61 255.255.255.0
 !
 interface Vlan10
- ip address 10.0.1.61 255.255.255.0
+ ip address 10.1.14.61 255.255.255.0
  ip access-group 110 in
 !
 interface Vlan20
- ip address 10.0.2.61 255.255.255.0
+ ip address 10.27.33.61 255.255.255.0
  ip access-group 120 in
 !
 interface Vlan30
- ip address 10.0.3.61 255.255.255.0
+ ip address 10.6.4.61 255.255.255.0
  ip access-group 130 in
 !
 interface Vlan40
- ip address 10.0.4.61 255.255.255.0
+ ip address 10.20.46.61 255.255.255.0
  ip access-group 140 in
 !
 interface Vlan50
- ip address 10.0.5.61 255.255.255.0
+ ip address 10.26.59.61 255.255.255.0
  ip access-group 150 in
 !
 interface Vlan60
- ip address 10.0.6.61 255.255.255.0
+ ip address 10.29.10.61 255.255.255.0
  ip access-group 160 in
 !
 interface Vlan100
  ip address 10.0.100.2 255.255.255.0
 !
-ip classless
-no ip http server
-no ip http secure-server
+ip http server
+ip http secure-server
 !
 !
-access-list 110 permit ip 10.0.1.0 0.0.0.255 host 10.0.100.5
+!
+access-list 110 permit ip 10.1.14.0 0.0.0.255 host 10.0.100.5
 access-list 110 permit udp any eq bootpc any eq bootps
-access-list 120 permit ip 10.0.2.0 0.0.0.255 host 10.0.100.5
+access-list 120 permit ip 10.27.33.0 0.0.0.255 host 10.0.100.5
 access-list 120 permit udp any eq bootpc any eq bootps
-access-list 130 permit ip 10.0.3.0 0.0.0.255 host 10.0.100.5
+access-list 130 permit ip 10.6.4.0 0.0.0.255 host 10.0.100.5
 access-list 130 permit udp any eq bootpc any eq bootps
-access-list 140 permit ip 10.0.4.0 0.0.0.255 host 10.0.100.5
+access-list 140 permit ip 10.20.46.0 0.0.0.255 host 10.0.100.5
 access-list 140 permit udp any eq bootpc any eq bootps
-access-list 150 permit ip 10.0.5.0 0.0.0.255 host 10.0.100.5
+access-list 150 permit ip 10.26.59.0 0.0.0.255 host 10.0.100.5
 access-list 150 permit udp any eq bootpc any eq bootps
-access-list 160 permit ip 10.0.6.0 0.0.0.255 host 10.0.100.5
+access-list 160 permit ip 10.29.10.0 0.0.0.255 host 10.0.100.5
 access-list 160 permit udp any eq bootpc any eq bootps
 !
 snmp-server community 1234Five RO
 !
+vstack
 !
 line con 0
  exec-timeout 0 0
