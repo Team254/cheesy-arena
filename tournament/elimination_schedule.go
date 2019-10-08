@@ -44,6 +44,34 @@ func UpdateEliminationSchedule(database *model.Database, startTime time.Time) (b
 	return len(winner) > 0, err
 }
 
+// Updates the alliance, if necessary, to include whoever played in the match, in case there was a substitute.
+func UpdateAlliance(database *model.Database, matchTeamIds [3]int, allianceId int) error {
+	allianceTeams, err := database.GetTeamsByAlliance(allianceId)
+	if err != nil {
+		return err
+	}
+
+	for _, teamId := range matchTeamIds {
+		found := false
+		for _, allianceTeam := range allianceTeams {
+			if teamId == allianceTeam.TeamId {
+				found = true
+				break
+			}
+		}
+		if !found {
+			newAllianceTeam := model.AllianceTeam{AllianceId: allianceId, PickPosition: len(allianceTeams),
+				TeamId: teamId}
+			allianceTeams = append(allianceTeams, newAllianceTeam)
+			if err := database.CreateAllianceTeam(&newAllianceTeam); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // Recursively traverses the elimination bracket downwards, creating matches as necessary. Returns the winner
 // of the given round if known.
 func buildEliminationMatchSet(database *model.Database, round int, group int,
