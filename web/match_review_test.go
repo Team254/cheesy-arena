@@ -39,7 +39,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	web := setupTestWeb(t)
 
 	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
-		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006}
+		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, ElimRedAlliance: 1, ElimBlueAlliance: 2}
 	web.arena.Database.CreateMatch(&match)
 	matchResult := model.BuildTestMatchResult(match.Id, 1)
 	matchResult.MatchType = match.Type
@@ -79,7 +79,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	web := setupTestWeb(t)
 
 	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: "complete", Winner: "R", Red1: 1001,
-		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006}
+		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, ElimRedAlliance: 1, ElimBlueAlliance: 2}
 	web.arena.Database.CreateMatch(&match)
 	tournament.CreateTestAlliances(web.arena.Database, 2)
 
