@@ -57,7 +57,8 @@ Schedule generation is fast because pregenerated schedules are included with the
 Cheesy Arena includes support for, but doesn't require, networking hardware similar to that used in official FRC events. Teams are issued their own SSIDs and WPA keys, and when connected to Cheesy Arena are isolated to a VLAN which prevents any communication other than between the driver station, robot, and event server. The network hardware is configured via SSH and Telnet commands for the new set of teams when each mach is loaded.
 
 ## PLC integration
-Cheesy Arena has the ability to integrate with an Allen-Bradley PLC setup similar to the one that FIRST uses, to read field sensors and control lights and motors. The PLC hardware travels with the Chezy Champs field.
+Cheesy Arena has the ability to integrate with an Allen-Bradley PLC setup similar to the one that FIRST uses, to read field sensors and control lights and motors. The PLC hardware travels with the Chezy Champs field.<br>
+The PLC code can be found [Here](https://github.com/ejordan376/Cheesy-PLC)
 
 ## LED hardware
 Due to the prohibitive cost of the LEDs and LED controllers used on official fields, a custom solution was developed for Chezy Champs using consumer-grade LED strips and embedded microcontrollers.
