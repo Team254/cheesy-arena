@@ -753,10 +753,12 @@ func (arena *Arena) handlePlcOutput() {
 		arena.Plc.SetCargoShipMagnets(true)
 		arena.Plc.SetRocketLights(false, false)
 	case AutoPeriod:
+		arena.Plc.SetStackLights(false, false, false, true)
 		fallthrough
 	case PausePeriod:
 		arena.Plc.SetCargoShipLights(false)
 	case TeleopPeriod:
+		arena.Plc.SetStackLights(false, false, false, true)
 		if arena.lastMatchState != TeleopPeriod {
 			arena.Plc.SetSandstormUp(true)
 			go func() {
