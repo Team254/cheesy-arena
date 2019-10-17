@@ -54,7 +54,9 @@ interface GigabitEthernet0/2
  switchport mode trunk
 !
 interface GigabitEthernet0/3
- switchport mode access
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan 100
+ switchport mode trunk
 !
 interface GigabitEthernet0/4
  switchport trunk encapsulation dot1q

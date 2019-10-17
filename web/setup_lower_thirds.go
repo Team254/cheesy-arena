@@ -149,6 +149,7 @@ func (web *Web) saveLowerThird(lowerThird *model.LowerThird) error {
 
 	// Create or update lower third.
 	if oldLowerThird == nil {
+		lowerThird.DisplayOrder = web.arena.Database.GetNextLowerThirdDisplayOrder()
 		err = web.arena.Database.CreateLowerThird(lowerThird)
 	} else {
 		err = web.arena.Database.SaveLowerThird(lowerThird)
@@ -159,6 +160,7 @@ func (web *Web) saveLowerThird(lowerThird *model.LowerThird) error {
 	return nil
 }
 
+// Swaps the lower third having the given ID with the one immediately above or below it.
 func (web *Web) reorderLowerThird(id int, moveUp bool) error {
 	lowerThird, err := web.arena.Database.GetLowerThirdById(id)
 	if err != nil {
@@ -186,7 +188,7 @@ func (web *Web) reorderLowerThird(id int, moveUp bool) error {
 		// The one to move is already at the limit; return an error to prevent a page reload.
 		return fmt.Errorf("Already at the limit.")
 	}
-	adjacentLowerThird, err := web.arena.Database.GetLowerThirdById(lowerThirds[lowerThirdIndex].Id)
+	adjacentLowerThird := &lowerThirds[lowerThirdIndex]
 	if err != nil {
 		return err
 	}

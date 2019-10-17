@@ -13,10 +13,6 @@ import (
 
 // Renders the field monitor display.
 func (web *Web) fieldMonitorDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	if !web.enforceDisplayConfiguration(w, r, map[string]string{"reversed": "false"}) {
 		return
 	}
@@ -38,10 +34,6 @@ func (web *Web) fieldMonitorDisplayHandler(w http.ResponseWriter, r *http.Reques
 
 // The websocket endpoint for the field monitor display client to receive status updates.
 func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)

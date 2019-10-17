@@ -53,9 +53,9 @@
           {{end}}
         </div>
         <div class="col-lg-1 avatars text-right">
-          <img class="avatar" src="/static/img/avatars/{{$match.Red1}}.png" /><br />
-          <img class="avatar" src="/static/img/avatars/{{$match.Red2}}.png" /><br />
-          <img class="avatar" src="/static/img/avatars/{{$match.Red3}}.png" />
+          <img class="avatar" src="/api/teams/{{$match.Red1}}/avatar" /><br />
+          <img class="avatar" src="/api/teams/{{$match.Red2}}/avatar" /><br />
+          <img class="avatar" src="/api/teams/{{$match.Red3}}/avatar" />
         </div>
         <div class="col-lg-2 red-teams">
           {{$match.Red1}}<br />{{$match.Red2}}<br />{{$match.Red3}}
@@ -64,9 +64,9 @@
           {{$match.Blue1}}<br />{{$match.Blue2}}<br />{{$match.Blue3}}
         </div>
         <div class="col-lg-1 avatars">
-          <img class="avatar" src="/static/img/avatars/{{$match.Blue1}}.png" /><br />
-          <img class="avatar" src="/static/img/avatars/{{$match.Blue2}}.png" /><br />
-          <img class="avatar" src="/static/img/avatars/{{$match.Blue3}}.png" />
+          <img class="avatar" src="/api/teams/{{$match.Blue1}}/avatar" /><br />
+          <img class="avatar" src="/api/teams/{{$match.Blue2}}/avatar" /><br />
+          <img class="avatar" src="/api/teams/{{$match.Blue3}}/avatar" />
         </div>
       </div>
     {{end}}

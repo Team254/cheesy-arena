@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -82,8 +84,8 @@ func TestRankingsApi(t *testing.T) {
 func TestSponsorSlidesApi(t *testing.T) {
 	web := setupTestWeb(t)
 
-	slide1 := model.SponsorSlide{1, "subtitle", "line1", "line2", "image", 2}
-	slide2 := model.SponsorSlide{2, "Chezy Sponsaur", "Teh", "Chezy Pofs", "ejface.jpg", 54}
+	slide1 := model.SponsorSlide{1, "subtitle", "line1", "line2", "image", 2, 0}
+	slide2 := model.SponsorSlide{2, "Chezy Sponsaur", "Teh", "Chezy Pofs", "ejface.jpg", 54, 1}
 	web.arena.Database.CreateSponsorSlide(&slide1)
 	web.arena.Database.CreateSponsorSlide(&slide2)
 
@@ -122,4 +124,20 @@ func TestAlliancesApi(t *testing.T) {
 			assert.Equal(t, 2451, alliances[1][1].TeamId)
 		}
 	}
+}
+
+func TestArenaWebsocketApi(t *testing.T) {
+	web := setupTestWeb(t)
+
+	server, wsUrl := web.startTestServer()
+	defer server.Close()
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/api/arena/websocket", nil)
+	assert.Nil(t, err)
+	defer conn.Close()
+	ws := websocket.NewTestWebsocket(conn)
+
+	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "matchLoad")
+	readWebsocketType(t, ws, "matchTime")
 }

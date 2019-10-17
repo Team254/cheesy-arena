@@ -376,11 +376,36 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 
 		if match.ShouldUpdateEliminationMatches() {
+			if err = tournament.UpdateAlliance(web.arena.Database, [3]int{match.Red1, match.Red2, match.Red3},
+				match.ElimRedAlliance); err != nil {
+				return err
+			}
+			if err = tournament.UpdateAlliance(web.arena.Database, [3]int{match.Blue1, match.Blue2, match.Blue3},
+				match.ElimBlueAlliance); err != nil {
+				return err
+			}
+
 			// Generate any subsequent elimination matches.
-			_, err = tournament.UpdateEliminationSchedule(web.arena.Database,
+			isTournamentWon, err := tournament.UpdateEliminationSchedule(web.arena.Database,
 				time.Now().Add(time.Second*tournament.ElimMatchSpacingSec))
 			if err != nil {
 				return err
+			}
+
+			// Generate awards if the tournament is over.
+			if isTournamentWon {
+				var winnerAllianceId, finalistAllianceId int
+				if match.Winner == "R" {
+					winnerAllianceId = match.ElimRedAlliance
+					finalistAllianceId = match.ElimBlueAlliance
+				} else if match.Winner == "B" {
+					winnerAllianceId = match.ElimBlueAlliance
+					finalistAllianceId = match.ElimRedAlliance
+				}
+				if err = tournament.CreateOrUpdateWinnerAndFinalistAwards(web.arena.Database, winnerAllianceId,
+					finalistAllianceId); err != nil {
+					return err
+				}
 			}
 		}
 

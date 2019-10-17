@@ -115,17 +115,11 @@
         </fieldset>
         <fieldset>
           <legend>Authentication</legend>
-          <p>Configure passwords to enable HTTP Basic authentication, or leave blank to disable.</p>
+          <p>Configure password to enable authentication, or leave blank to disable.</p>
           <div class="form-group">
             <label class="col-lg-5 control-label">Password for 'admin' user</label>
             <div class="col-lg-7">
               <input type="password" class="form-control" name="adminPassword" value="{{.AdminPassword}}">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Password for 'reader' user</label>
-            <div class="col-lg-7">
-              <input type="password" class="form-control" name="readerPassword" value="{{.ReaderPassword}}">
             </div>
           </div>
         </fieldset>
@@ -199,6 +193,42 @@
             <label class="col-lg-5 control-label">Switch Password</label>
             <div class="col-lg-7">
               <input type="password" class="form-control" name="switchPassword" value="{{.SwitchPassword}}">
+            </div>
+          </div>
+          <p>If you have a second access point available and want to use one for each alliance to increase available
+            bandwidth, configure the second one below.</p>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Second AP Address</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="ap2Address" value="{{.Ap2Address}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Second AP Username</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="ap2Username" value="{{.Ap2Username}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Second AP Password</label>
+            <div class="col-lg-7">
+              <input type="password" class="form-control" name="ap2Password" value="{{.Ap2Password}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Second AP Team Channel (5GHz)</label>
+            <div class="col-lg-7">
+              <select class="form-control" name="ap2TeamChannel" value="{{.Ap2TeamChannel}}">
+                <option{{if eq .Ap2TeamChannel 0}} selected{{end}}>Disabled</option>
+                <option{{if eq .Ap2TeamChannel 36}} selected{{end}}>36</option>
+                <option{{if eq .Ap2TeamChannel 40}} selected{{end}}>40</option>
+                <option{{if eq .Ap2TeamChannel 44}} selected{{end}}>44</option>
+                <option{{if eq .Ap2TeamChannel 48}} selected{{end}}>48</option>
+                <option{{if eq .Ap2TeamChannel 149}} selected{{end}}>149</option>
+                <option{{if eq .Ap2TeamChannel 153}} selected{{end}}>153</option>
+                <option{{if eq .Ap2TeamChannel 157}} selected{{end}}>157</option>
+                <option{{if eq .Ap2TeamChannel 161}} selected{{end}}>161</option>
+              </select>
             </div>
           </div>
         </fieldset>

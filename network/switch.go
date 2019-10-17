@@ -41,7 +41,7 @@ func NewSwitch(address, password string) *Switch {
 }
 
 // Sets up wired networks for the given set of teams.
-func (sw *Switch) ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *model.Team) error {
+func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	// Make sure multiple configurations aren't being set at the same time.
 	sw.mutex.Lock()
 	defer sw.mutex.Unlock()
@@ -75,12 +75,12 @@ func (sw *Switch) ConfigureTeamEthernet(red1, red2, red3, blue1, blue2, blue3 *m
 				team.Id%100)
 		}
 	}
-	replaceTeamVlan(red1, red1Vlan)
-	replaceTeamVlan(red2, red2Vlan)
-	replaceTeamVlan(red3, red3Vlan)
-	replaceTeamVlan(blue1, blue1Vlan)
-	replaceTeamVlan(blue2, blue2Vlan)
-	replaceTeamVlan(blue3, blue3Vlan)
+	replaceTeamVlan(teams[0], red1Vlan)
+	replaceTeamVlan(teams[1], red2Vlan)
+	replaceTeamVlan(teams[2], red3Vlan)
+	replaceTeamVlan(teams[3], blue1Vlan)
+	replaceTeamVlan(teams[4], blue2Vlan)
+	replaceTeamVlan(teams[5], blue3Vlan)
 
 	// Build the command to remove the team VLANs that are no longer needed.
 	removeTeamVlansCommand := ""

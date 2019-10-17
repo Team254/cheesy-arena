@@ -12,6 +12,7 @@ type SponsorSlide struct {
 	Line2          string
 	Image          string
 	DisplayTimeSec int
+	DisplayOrder   int
 }
 
 func (database *Database) CreateSponsorSlide(sponsorSlide *SponsorSlide) error {
@@ -44,6 +45,12 @@ func (database *Database) TruncateSponsorSlides() error {
 
 func (database *Database) GetAllSponsorSlides() ([]SponsorSlide, error) {
 	var sponsorSlides []SponsorSlide
-	err := database.sponsorSlideMap.Select(&sponsorSlides, "SELECT * FROM sponsor_slides ORDER BY id")
+	err := database.sponsorSlideMap.Select(&sponsorSlides, "SELECT * FROM sponsor_slides ORDER BY displayorder")
 	return sponsorSlides, err
+}
+
+func (database *Database) GetNextSponsorSlideDisplayOrder() int {
+	var count int
+	_ = database.sponsorSlideMap.SelectOne(&count, "SELECT MAX(displayorder) + 1 FROM sponsor_slides")
+	return count
 }

@@ -7,10 +7,15 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
 	"net/http"
+	"os"
+	"strconv"
 )
 
 type MatchResultWithSummary struct {
@@ -31,10 +36,6 @@ type RankingWithNickname struct {
 
 // Generates a JSON dump of the matches and results.
 func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	vars := mux.Vars(r)
 	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
 	if err != nil {
@@ -75,10 +76,6 @@ func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a JSON dump of the sponsor slides for use by the audience display.
 func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	sponsors, err := web.arena.Database.GetAllSponsorSlides()
 	if err != nil {
 		handleWebErr(w, err)
@@ -105,10 +102,6 @@ func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) 
 
 // Generates a JSON dump of the qualification rankings, primarily for use by the pit display.
 func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
@@ -169,10 +162,6 @@ func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 
 // Generates a JSON dump of the alliances.
 func (web *Web) alliancesApiHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	alliances, err := web.arena.Database.GetAllAlliances()
 	if err != nil {
 		handleWebErr(w, err)
@@ -191,4 +180,34 @@ func (web *Web) alliancesApiHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+}
+
+// Websocket API for receiving arena status updates.
+func (web *Web) arenaWebsocketApiHandler(w http.ResponseWriter, r *http.Request) {
+	ws, err := websocket.NewWebsocket(w, r)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	defer ws.Close()
+
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
+	ws.HandleNotifiers(web.arena.MatchTimingNotifier, web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier)
+}
+
+// Serves the avatar for a given team, or a default if none exists.
+func (web *Web) teamAvatarsApiHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	teamId, err := strconv.Atoi(vars["teamId"])
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	avatarPath := fmt.Sprintf("%s/%d.png", partner.AvatarsDir, teamId)
+	if _, err := os.Stat(avatarPath); os.IsNotExist(err) {
+		avatarPath = fmt.Sprintf("%s/0.png", partner.AvatarsDir)
+	}
+
+	http.ServeFile(w, r, avatarPath)
 }

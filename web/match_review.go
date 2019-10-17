@@ -26,10 +26,6 @@ type MatchReviewListItem struct {
 
 // Shows the match review interface.
 func (web *Web) matchReviewHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	practiceMatches, err := web.buildMatchReviewList("practice")
 	if err != nil {
 		handleWebErr(w, err)

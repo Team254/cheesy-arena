@@ -16,7 +16,7 @@ func TestPlaceholderDisplay(t *testing.T) {
 
 	recorder := web.getHttpResponse("/displays/audience")
 	assert.Equal(t, 302, recorder.Code)
-	assert.Contains(t, recorder.Header().Get("Location"), "displayId=874")
+	assert.Contains(t, recorder.Header().Get("Location"), "displayId=100")
 
 	recorder = web.getHttpResponse("/display?displayId=1")
 	assert.Equal(t, 200, recorder.Code)

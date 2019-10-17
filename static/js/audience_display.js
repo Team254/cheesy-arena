@@ -450,7 +450,7 @@ var initializeSponsorDisplay = function() {
 };
 
 var getAvatarUrl = function(teamId) {
-  return "/static/img/avatars/" + teamId + ".png";
+  return "/api/teams/" + teamId + "/avatar";
 };
 
 $(function() {
@@ -475,9 +475,6 @@ $(function() {
     overlayCenteringHideParams = overlayCenteringBottomHideParams;
     overlayCenteringShowParams = overlayCenteringBottomShowParams;
   }
-
-  // Fall back to a blank avatar if one doesn't exist for the team.
-  $(".avatar, .final-avatar").attr("onerror", "this.src='" + getAvatarUrl(0) + "';");
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {

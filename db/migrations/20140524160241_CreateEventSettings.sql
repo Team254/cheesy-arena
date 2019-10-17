@@ -17,12 +17,15 @@ CREATE TABLE event_settings (
   apteamchannel int,
   apadminchannel int,
   apadminwpakey VARCHAR(255),
+  ap2address VARCHAR(255),
+  ap2username VARCHAR(255),
+  ap2password VARCHAR(255),
+  ap2teamchannel int,
   switchaddress VARCHAR(255),
   switchpassword VARCHAR(255),
   plcaddress VARCHAR(255),
   tbadownloadenabled bool,
   adminpassword VARCHAR(255),
-  readerpassword VARCHAR(255),
   habdockingthreshold int
 );
 

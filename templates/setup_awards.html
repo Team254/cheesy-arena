@@ -1,0 +1,92 @@
+{{/*
+  Copyright 2019 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  UI for configuring the awards.
+*/}}
+{{define "title"}}Awards Configuration{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <div class="well">
+      <legend>Awards Configuration</legend>
+      {{range $award := .Awards}}
+        <form class="form-horizontal existing" method="POST">
+          <div class="form-group">
+            <div class="col-lg-8">
+              <input type="hidden" name="id" value="{{$award.Id}}" />
+              <div class="form-group">
+                <label class="col-sm-5 control-label">Award Name</label>
+                <div class="col-sm-7">
+                  <input type="text" class="form-control" name="awardName" value="{{$award.AwardName}}"
+                      placeholder="Safety Award">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-5 control-label">Team Awarded</label>
+                <div class="col-sm-7">
+                  <select class="form-control" name="teamId">
+                    <option value="0">No Team</option>
+                    {{range $team := $.Teams}}
+                      <option value="{{$team.Id}}"{{if eq $award.TeamId $team.Id}}}} selected{{end}}>
+                        {{$team.Id}} - {{$team.Nickname}}
+                      </option>
+                    {{end}}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-5 control-label">Person Awarded</label>
+                <div class="col-sm-7">
+                  <input type="text" class="form-control" name="personName" value="{{$award.PersonName}}">
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
+              {{if gt $award.Id 0}}
+                <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="delete">
+                  Delete
+                </button>
+              {{end}}
+            </div>
+          </div>
+        </form>
+      {{end}}
+      Winner and Finalist awards will be automatically generated once the playoff tournament is complete.
+      {{if .EventSettings.TbaPublishingEnabled}}
+        <br /><br />
+        <div class="row text-center">
+          <div class="form-group">
+            <button type="button" class="btn btn-info" onclick="$('#confirmPublishAwards').modal('show');">
+              Publish Awards to TBA
+            </button>
+          </div>
+        </div>
+      {{end}}
+    </div>
+  </div>
+</div>
+<div id="confirmPublishAwards" class="modal" style="top: 20%;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h4 class="modal-title">Confirm</h4>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to publish the awards to The Blue Alliance? This will overwrite any existing award
+          data.</p>
+      </div>
+      <div class="modal-footer">
+        <form class="form-horizontal" action="/setup/awards/publish" method="POST">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Publish Awards</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+{{end}}

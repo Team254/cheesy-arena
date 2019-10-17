@@ -20,7 +20,7 @@ func TestGetNonexistentMatch(t *testing.T) {
 func TestMatchCrud(t *testing.T) {
 	db := setupTestDb(t)
 
-	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
+	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
 		5, false, 6, false, "", time.Now().UTC(), time.Now().UTC(), ""}
 	db.CreateMatch(&match)
 	match2, err := db.GetMatchById(1)
@@ -45,7 +45,7 @@ func TestMatchCrud(t *testing.T) {
 func TestTruncateMatches(t *testing.T) {
 	db := setupTestDb(t)
 
-	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
+	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
 		5, false, 6, false, "", time.Now().UTC(), time.Now().UTC(), ""}
 	db.CreateMatch(&match)
 	db.TruncateMatches()
@@ -57,13 +57,17 @@ func TestTruncateMatches(t *testing.T) {
 func TestGetMatchesByElimRoundGroup(t *testing.T) {
 	db := setupTestDb(t)
 
-	match := Match{Type: "elimination", DisplayName: "SF1-1", ElimRound: 2, ElimGroup: 1, ElimInstance: 1}
+	match := Match{Type: "elimination", DisplayName: "SF1-1", ElimRound: 2, ElimGroup: 1, ElimInstance: 1,
+		ElimRedAlliance: 8, ElimBlueAlliance: 4}
 	db.CreateMatch(&match)
-	match2 := Match{Type: "elimination", DisplayName: "SF2-2", ElimRound: 2, ElimGroup: 2, ElimInstance: 2}
+	match2 := Match{Type: "elimination", DisplayName: "SF2-2", ElimRound: 2, ElimGroup: 2, ElimInstance: 2,
+		ElimRedAlliance: 2, ElimBlueAlliance: 3}
 	db.CreateMatch(&match2)
-	match3 := Match{Type: "elimination", DisplayName: "SF2-1", ElimRound: 2, ElimGroup: 2, ElimInstance: 1}
+	match3 := Match{Type: "elimination", DisplayName: "SF2-1", ElimRound: 2, ElimGroup: 2, ElimInstance: 1,
+		ElimRedAlliance: 8, ElimBlueAlliance: 4}
 	db.CreateMatch(&match3)
-	match4 := Match{Type: "elimination", DisplayName: "QF2-1", ElimRound: 4, ElimGroup: 2, ElimInstance: 1}
+	match4 := Match{Type: "elimination", DisplayName: "QF2-1", ElimRound: 4, ElimGroup: 2, ElimInstance: 1,
+		ElimRedAlliance: 4, ElimBlueAlliance: 5}
 	db.CreateMatch(&match4)
 	match5 := Match{Type: "practice", DisplayName: "1"}
 	db.CreateMatch(&match5)
@@ -82,13 +86,13 @@ func TestGetMatchesByElimRoundGroup(t *testing.T) {
 func TestGetMatchesByType(t *testing.T) {
 	db := setupTestDb(t)
 
-	match := Match{0, "qualification", "1", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
+	match := Match{0, "qualification", "1", time.Now().UTC(), 0, 0, 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
 		5, false, 6, false, "", time.Now().UTC(), time.Now().UTC(), ""}
 	db.CreateMatch(&match)
-	match2 := Match{0, "practice", "1", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false, 5,
+	match2 := Match{0, "practice", "1", time.Now().UTC(), 0, 0, 0, 0, 0, 1, false, 2, false, 3, false, 4, false, 5,
 		false, 6, false, "", time.Now().UTC(), time.Now().UTC(), ""}
 	db.CreateMatch(&match2)
-	match3 := Match{0, "practice", "2", time.Now().UTC(), 0, 0, 0, 1, false, 2, false, 3, false, 4, false, 5,
+	match3 := Match{0, "practice", "2", time.Now().UTC(), 0, 0, 0, 0, 0, 1, false, 2, false, 3, false, 4, false, 5,
 		false, 6, false, "", time.Now().UTC(), time.Now().UTC(), ""}
 	db.CreateMatch(&match3)
 

@@ -125,6 +125,27 @@ func TestPublishingErrors(t *testing.T) {
 	assert.NotNil(t, client.PublishAlliances(database))
 }
 
+func TestPublishAwards(t *testing.T) {
+	database := setupTestDb(t)
+
+	database.CreateAward(&model.Award{0, model.JudgedAward, "Saftey Award", 254, ""})
+	database.CreateAward(&model.Award{0, model.JudgedAward, "Spirt Award", 0, "Bob Dorough"})
+
+	// Mock the TBA server.
+	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Contains(t, r.URL.String(), "event/my_event_code")
+		var reader bytes.Buffer
+		reader.ReadFrom(r.Body)
+		assert.Equal(t, "[{\"name_str\":\"Saftey Award\",\"team_key\":\"frc254\",\"awardee\":\"\"},"+
+			"{\"name_str\":\"Spirt Award\",\"team_key\":\"frc0\",\"awardee\":\"Bob Dorough\"}]", reader.String())
+	}))
+	defer tbaServer.Close()
+	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
+	client.BaseUrl = tbaServer.URL
+
+	assert.Nil(t, client.PublishAwards(database))
+}
+
 func setupTestDb(t *testing.T) *model.Database {
 	return model.SetupTestDb(t, "partner")
 }

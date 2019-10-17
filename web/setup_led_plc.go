@@ -6,14 +6,8 @@
 package web
 
 import (
-	"fmt"
-	"github.com/Team254/cheesy-arena/field"
-	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
-	"github.com/mitchellh/mapstructure"
-	"io"
-	"log"
 	"net/http"
 )
 
@@ -31,13 +25,10 @@ func (web *Web) ledPlcGetHandler(w http.ResponseWriter, r *http.Request) {
 	plc := web.arena.Plc
 	data := struct {
 		*model.EventSettings
-		InputNames        []string
-		RegisterNames     []string
-		CoilNames         []string
-		LedModeNames      map[led.StripMode]string
-		VaultLedModeNames map[led.VaultMode]string
-	}{web.arena.EventSettings, plc.GetInputNames(), plc.GetRegisterNames(), plc.GetCoilNames(), led.StripModeNames,
-		led.VaultModeNames}
+		InputNames    []string
+		RegisterNames []string
+		CoilNames     []string
+	}{web.arena.EventSettings, plc.GetInputNames(), plc.GetRegisterNames(), plc.GetCoilNames()}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -58,36 +49,6 @@ func (web *Web) ledPlcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer ws.Close()
 
-	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
-	go ws.HandleNotifiers(web.arena.LedModeNotifier, web.arena.Plc.IoChangeNotifier)
-
-	// Loop, waiting for commands and responding to them, until the client closes the connection.
-	for {
-		messageType, data, err := ws.Read()
-		if err != nil {
-			if err == io.EOF {
-				// Client has closed the connection; nothing to do here.
-				return
-			}
-			log.Println(err)
-			return
-		}
-
-		switch messageType {
-		case "setLedMode":
-			if web.arena.MatchState != field.PreMatch && web.arena.MatchState != field.TimeoutActive &&
-				web.arena.MatchState != field.PostTimeout {
-				ws.WriteError("Arena must be in pre-match state")
-				continue
-			}
-			var modeMessage field.LedModeMessage
-			err = mapstructure.Decode(data, &modeMessage)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-		default:
-			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
-		}
-	}
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
+	ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier)
 }

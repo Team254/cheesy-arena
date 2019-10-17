@@ -23,11 +23,14 @@ type EventSettings struct {
 	ApTeamChannel          int
 	ApAdminChannel         int
 	ApAdminWpaKey          string
+	Ap2Address             string
+	Ap2Username            string
+	Ap2Password            string
+	Ap2TeamChannel         int
 	SwitchAddress          string
 	SwitchPassword         string
 	PlcAddress             string
 	AdminPassword          string
-	ReaderPassword         string
 	HabDockingThreshold    int
 }
 
@@ -46,6 +49,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.ApTeamChannel = 157
 		eventSettings.ApAdminChannel = 0
 		eventSettings.ApAdminWpaKey = "1234Five"
+		eventSettings.Ap2TeamChannel = 0
 		eventSettings.HabDockingThreshold = 15
 
 		err = database.eventSettingsMap.Insert(eventSettings)

@@ -13,10 +13,6 @@ import (
 
 // Renders the announcer display which shows team info and scores for the current match.
 func (web *Web) announcerDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	if !web.enforceDisplayConfiguration(w, r, nil) {
 		return
 	}
@@ -39,10 +35,6 @@ func (web *Web) announcerDisplayHandler(w http.ResponseWriter, r *http.Request) 
 
 // The websocket endpoint for the announcer display client to send control commands and receive status updates.
 func (web *Web) announcerDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsReader(w, r) {
-		return
-	}
-
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)
