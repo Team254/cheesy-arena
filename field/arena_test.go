@@ -52,6 +52,39 @@ func TestAssignTeam(t *testing.T) {
 	}
 }
 
+func TestPrestartMatch(t *testing.T) {
+	arena := setupTestArena(t)
+
+	team1 := model.Team{Id: 1}
+	err := arena.Database.CreateTeam(&team1)
+	assert.Nil(t, err)
+	team2 := model.Team{Id: 2}
+	err = arena.Database.CreateTeam(&team2)
+	assert.Nil(t, err)
+	team3 := model.Team{Id: 3}
+	err = arena.Database.CreateTeam(&team3)
+	assert.Nil(t, err)
+	team4 := model.Team{Id: 4}
+	err = arena.Database.CreateTeam(&team4)
+	assert.Nil(t, err)
+	team5 := model.Team{Id: 5}
+	err = arena.Database.CreateTeam(&team5)
+	assert.Nil(t, err)
+	team6 := model.Team{Id: 6}
+	err = arena.Database.CreateTeam(&team6)
+	assert.Nil(t, err)
+
+	err = arena.PrestartMatch(1, 2, 3, 4, 5, 6)
+	assert.Nil(t, err)
+
+	assert.Equal(t, team1, *arena.AllianceStations["R1"].Team)
+	assert.Equal(t, team2, *arena.AllianceStations["R2"].Team)
+	assert.Equal(t, team3, *arena.AllianceStations["R3"].Team)
+	assert.Equal(t, team4, *arena.AllianceStations["B1"].Team)
+	assert.Equal(t, team5, *arena.AllianceStations["B2"].Team)
+	assert.Equal(t, team6, *arena.AllianceStations["B3"].Team)
+}
+
 func TestArenaCheckCanStartMatch(t *testing.T) {
 	arena := setupTestArena(t)
 

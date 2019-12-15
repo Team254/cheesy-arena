@@ -17,6 +17,7 @@ type EventSettings struct {
 	TbaSecretId            string
 	TbaSecret              string
 	NetworkSecurityEnabled bool
+	NetworkConfigRT        bool
 	ApAddress              string
 	ApUsername             string
 	ApPassword             string
@@ -51,6 +52,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.ApAdminWpaKey = "1234Five"
 		eventSettings.Ap2TeamChannel = 0
 		eventSettings.HabDockingThreshold = 15
+		eventSettings.NetworkConfigRT = true
 
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {

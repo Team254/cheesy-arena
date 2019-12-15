@@ -196,6 +196,25 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
+		case "prestartMatch":
+			args := struct {
+				R1 int
+				R2 int
+				R3 int
+				B1 int
+				B2 int
+				B3 int
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
+			err = web.arena.PrestartMatch(args.R1, args.R2, args.R3, args.B1, args.B2, args.B3)
+			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
 		case "toggleBypass":
 			station, ok := data.(string)
 			if !ok {

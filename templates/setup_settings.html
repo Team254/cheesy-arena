@@ -134,6 +134,12 @@
             </div>
           </div>
           <div class="form-group">
+            <label class="col-lg-7 control-label">Enable real-time network configuration</label>
+            <div class="col-lg-1 checkbox">
+              <input type="checkbox" name="networkConfigRT"{{if .NetworkConfigRT}} checked{{end}}>
+            </div>
+          </div>
+          <div class="form-group">
             <label class="col-lg-5 control-label">AP Address</label>
             <div class="col-lg-7">
               <input type="text" class="form-control" name="apAddress" value="{{.ApAddress}}">

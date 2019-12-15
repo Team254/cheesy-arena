@@ -285,6 +285,16 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, false, web.arena.AllianceStations["R3"].Bypass)
 
+	// Test prestartMatch
+	ws.Write("prestartMatch", map[string]interface{}{"R1": 1, "R2": 2, "R3": 3, "B1": 4, "B2": 5, "B3": 6})
+	readWebsocketType(t, ws, "arenaStatus")
+	assert.Equal(t, 1, web.arena.CurrentMatch.Red1)
+	assert.Equal(t, 2, web.arena.CurrentMatch.Red2)
+	assert.Equal(t, 3, web.arena.CurrentMatch.Red3)
+	assert.Equal(t, 4, web.arena.CurrentMatch.Blue1)
+	assert.Equal(t, 5, web.arena.CurrentMatch.Blue2)
+	assert.Equal(t, 6, web.arena.CurrentMatch.Blue3)
+
 	// Go through match flow.
 	ws.Write("abortMatch", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "Cannot abort match")

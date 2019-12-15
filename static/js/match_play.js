@@ -23,6 +23,29 @@ var toggleBypassPreMatchScore = function() {
   websocket.send("toggleBypassPreMatchScore");
 };
 
+// Parse team number.  If NaN, use defaultNumber
+var parseTeamNum = function(position, defaultNumber) {
+  var num = parseInt($(`input[data='${position}']`).val());
+  if (isNaN(num)) {
+    num = defaultNumber;
+    $(`input[data='${position}']`).val(num);
+  }
+
+  return num;
+};
+
+// Sends a websocket message to prestart field network
+var preStart = function() {
+  websocket.send("prestartMatch", {
+     R1: parseTeamNum('R1', 1),
+     R2: parseTeamNum('R2', 2),
+     R3: parseTeamNum('R3', 3),
+     B1: parseTeamNum('B1', 4),
+     B2: parseTeamNum('B2', 5),
+     B3: parseTeamNum('B3', 6)
+  });
+};
+
 // Sends a websocket message to start the match.
 var startMatch = function() {
   websocket.send("startMatch",
@@ -145,6 +168,7 @@ var handleArenaStatus = function(data) {
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
       $("#startTimeout").prop("disabled", false);
+      $("#preStart").prop("disabled", false);
       break;
     case "START_MATCH":
     case "WARMUP_PERIOD":
@@ -157,6 +181,7 @@ var handleArenaStatus = function(data) {
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
       $("#startTimeout").prop("disabled", true);
+      $("#preStart").prop("disabled", true);
       break;
     case "POST_MATCH":
       $("#startMatch").prop("disabled", true);
@@ -165,6 +190,7 @@ var handleArenaStatus = function(data) {
       $("#discardResults").prop("disabled", false);
       $("#editResults").prop("disabled", false);
       $("#startTimeout").prop("disabled", true);
+      $("#preStart").prop("disabled", false);
       break;
     case "TIMEOUT_ACTIVE":
       $("#startMatch").prop("disabled", true);
@@ -173,6 +199,7 @@ var handleArenaStatus = function(data) {
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
       $("#startTimeout").prop("disabled", true);
+      $("#preStart").prop("disabled", false);
       break;
     case "POST_TIMEOUT":
       $("#startMatch").prop("disabled", true);
@@ -181,6 +208,7 @@ var handleArenaStatus = function(data) {
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
       $("#startTimeout").prop("disabled", true);
+      $("#preStart").prop("disabled", false);
       break;
   }
 

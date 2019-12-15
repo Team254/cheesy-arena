@@ -226,6 +226,54 @@ func (arena *Arena) LoadNextMatch() error {
 	return arena.LoadMatch(nextMatch)
 }
 
+// Assigns teams to the given stations, also substituting it into the match record.
+func (arena *Arena) PrestartMatch(R1 int, R2 int, R3 int, B1 int, B2 int, B3 int) error {
+	if !arena.CurrentMatch.ShouldAllowSubstitution() {
+		return fmt.Errorf("Can't substitute teams for qualification matches.")
+	}
+
+	arena.CurrentMatch.Red1 = R1
+	arena.CurrentMatch.Red2 = R2
+	arena.CurrentMatch.Red3 = R3
+	arena.CurrentMatch.Blue1 = B1
+	arena.CurrentMatch.Blue2 = B2
+	arena.CurrentMatch.Blue3 = B3
+
+	err := arena.assignTeam(R1, "R1")
+	if err != nil {
+		return err
+	}
+	err = arena.assignTeam(R2, "R2")
+	if err != nil {
+		return err
+	}
+	err = arena.assignTeam(R3, "R3")
+	if err != nil {
+		return err
+	}
+	err = arena.assignTeam(B1, "B1")
+	if err != nil {
+		return err
+	}
+	err = arena.assignTeam(B2, "B2")
+	if err != nil {
+		return err
+	}
+	err = arena.assignTeam(B3, "B3")
+	if err != nil {
+		return err
+	}
+
+	arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
+		arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
+		arena.AllianceStations["B3"].Team})
+
+	if arena.CurrentMatch.Type != "test" {
+		arena.Database.SaveMatch(arena.CurrentMatch)
+	}
+	return nil
+}
+
 // Assigns the given team to the given station, also substituting it into the match record.
 func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 	if !arena.CurrentMatch.ShouldAllowSubstitution() {
