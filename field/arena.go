@@ -401,7 +401,7 @@ func (arena *Arena) Update() {
 	case AutoPeriod:
 		auto = true
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+arena.EventSettings.DurationAuto) {
 			auto = false
 			sendDsPacket = true
 			if game.MatchTiming.PauseDurationSec > 0 {
@@ -415,7 +415,7 @@ func (arena *Arena) Update() {
 	case PausePeriod:
 		auto = false
 		enabled = false
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+arena.EventSettings.DurationAuto+
 			game.MatchTiming.PauseDurationSec) {
 			arena.MatchState = TeleopPeriod
 			auto = false
@@ -425,8 +425,8 @@ func (arena *Arena) Update() {
 	case TeleopPeriod:
 		auto = false
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
-			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+arena.EventSettings.DurationAuto+
+			game.MatchTiming.PauseDurationSec+arena.EventSettings.DurationTeleop) {
 			arena.MatchState = PostMatch
 			auto = false
 			enabled = false
