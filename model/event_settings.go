@@ -9,6 +9,8 @@ type EventSettings struct {
 	Id                     int
 	Name                   string
 	NumElimAlliances       int
+	DurationAuto           int
+	DurationTeleop         int
 	SelectionRound2Order   string
 	SelectionRound3Order   string
 	TBADownloadEnabled     bool
@@ -43,6 +45,8 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		// Database record doesn't exist yet; create it now.
 		eventSettings.Name = "Untitled Event"
 		eventSettings.NumElimAlliances = 8
+		eventSettings.DurationAuto = 15
+		eventSettings.DurationTeleop = 135
 		eventSettings.SelectionRound2Order = "L"
 		eventSettings.SelectionRound3Order = ""
 		eventSettings.TBADownloadEnabled = true

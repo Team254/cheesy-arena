@@ -148,6 +148,8 @@ func (arena *Arena) generateMatchTimeMessage() interface{} {
 }
 
 func (arena *Arena) generateMatchTimingMessage() interface{} {
+	game.MatchTiming.TeleopDurationSec = arena.EventSettings.DurationTeleop
+	game.MatchTiming.AutoDurationSec = arena.EventSettings.DurationAuto
 	return &game.MatchTiming
 }
 

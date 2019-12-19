@@ -48,6 +48,8 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	eventSettings.NumElimAlliances = numAlliances
+	eventSettings.DurationAuto, _ = strconv.Atoi(r.PostFormValue("durationAuto"))
+	eventSettings.DurationTeleop, _ = strconv.Atoi(r.PostFormValue("durationTeleop"))
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
 	eventSettings.TBADownloadEnabled = r.PostFormValue("TBADownloadEnabled") == "on"
