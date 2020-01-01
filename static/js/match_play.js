@@ -23,12 +23,13 @@ var toggleBypassPreMatchScore = function() {
   websocket.send("toggleBypassPreMatchScore");
 };
 
-// Parse team number.  If NaN, use defaultNumber
-var parseTeamNum = function(position, defaultNumber) {
-  var num = parseInt($(`input[data='${position}']`).val());
+// Parse team number.  If NaN, use 0
+var parseTeamNum = function(position) {
+  var input = $("input[data='" + position + "']");
+  var num = parseInt(input.val());
   if (isNaN(num)) {
-    num = defaultNumber;
-    $(`input[data='${position}']`).val(num);
+    num = 0;
+    input.val("");
   }
 
   return num;
@@ -37,12 +38,12 @@ var parseTeamNum = function(position, defaultNumber) {
 // Sends a websocket message to prestart field network
 var preStart = function() {
   websocket.send("prestartMatch", {
-     R1: parseTeamNum('R1', 1),
-     R2: parseTeamNum('R2', 2),
-     R3: parseTeamNum('R3', 3),
-     B1: parseTeamNum('B1', 4),
-     B2: parseTeamNum('B2', 5),
-     B3: parseTeamNum('B3', 6)
+     R1: parseTeamNum('R1'),
+     R2: parseTeamNum('R2'),
+     R3: parseTeamNum('R3'),
+     B1: parseTeamNum('B1'),
+     B2: parseTeamNum('B2'),
+     B3: parseTeamNum('B3')
   });
 };
 
