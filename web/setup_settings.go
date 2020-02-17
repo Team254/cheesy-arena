@@ -92,6 +92,9 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Force reload on all displays
+	web.arena.ReloadDisplaysNotifier.Notify()
+	
 	if eventSettings.AdminPassword != previousAdminPassword {
 		// Delete any existing user sessions to force a logout.
 		if err := web.arena.Database.TruncateUserSessions(); err != nil {
