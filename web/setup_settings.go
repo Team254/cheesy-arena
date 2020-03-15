@@ -48,8 +48,6 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	eventSettings.NumElimAlliances = numAlliances
-	eventSettings.DurationAuto, _ = strconv.Atoi(r.PostFormValue("durationAuto"))
-	eventSettings.DurationTeleop, _ = strconv.Atoi(r.PostFormValue("durationTeleop"))
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
 	eventSettings.TBADownloadEnabled = r.PostFormValue("TBADownloadEnabled") == "on"
@@ -72,6 +70,12 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.SwitchPassword = r.PostFormValue("switchPassword")
 	eventSettings.PlcAddress = r.PostFormValue("plcAddress")
 	eventSettings.AdminPassword = r.PostFormValue("adminPassword")
+	eventSettings.WarmupDurationSec, _ = strconv.Atoi(r.PostFormValue("warmupDurationSec"))
+	eventSettings.AutoDurationSec, _ = strconv.Atoi(r.PostFormValue("autoDurationSec"))
+	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))
+	eventSettings.TeleopDurationSec, _ = strconv.Atoi(r.PostFormValue("teleopDurationSec"))
+	eventSettings.Warning1RemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warning1RemainingDurationSec"))
+	eventSettings.Warning2RemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warning2RemainingDurationSec"))
 	eventSettings.HabDockingThreshold, _ = strconv.Atoi(r.PostFormValue("habDockingThreshold"))
 
 	if eventSettings.Ap2TeamChannel != 0 && eventSettings.Ap2TeamChannel == eventSettings.ApTeamChannel {

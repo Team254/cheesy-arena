@@ -26,6 +26,12 @@ CREATE TABLE event_settings (
   plcaddress VARCHAR(255),
   tbadownloadenabled bool,
   adminpassword VARCHAR(255),
+  warmupdurationsec int,
+  autodurationsec int,
+  pausedurationsec int,
+  teleopdurationsec int,
+  warning1remainingdurationsec int,
+  warning2remainingdurationsec int,
   habdockingthreshold int
 );
 

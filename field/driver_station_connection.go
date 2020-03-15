@@ -223,15 +223,15 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	case TimeoutActive:
 		fallthrough
 	case PostTimeout:
-		matchSecondsRemaining = arena.EventSettings.DurationAuto
+		matchSecondsRemaining = game.MatchTiming.AutoDurationSec
 	case StartMatch:
 		fallthrough
 	case AutoPeriod:
-		matchSecondsRemaining = arena.EventSettings.DurationAuto - int(arena.MatchTimeSec())
+		matchSecondsRemaining = game.MatchTiming.AutoDurationSec - int(arena.MatchTimeSec())
 	case PausePeriod:
-		matchSecondsRemaining = arena.EventSettings.DurationTeleop
+		matchSecondsRemaining = game.MatchTiming.TeleopDurationSec
 	case TeleopPeriod:
-		matchSecondsRemaining = arena.EventSettings.DurationAuto + arena.EventSettings.DurationTeleop +
+		matchSecondsRemaining = game.MatchTiming.AutoDurationSec + game.MatchTiming.TeleopDurationSec +
 			game.MatchTiming.PauseDurationSec - int(arena.MatchTimeSec())
 	default:
 		matchSecondsRemaining = 0

@@ -31,18 +31,6 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-5 control-label">Autonomous Duration (secs)</label>
-            <div class="col-lg-7">
-              <input type="text" class="form-control" name="durationAuto" value="{{.DurationAuto}}">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Teleop Duration (secs)</label>
-            <div class="col-lg-7">
-              <input type="text" class="form-control" name="durationTeleop" value="{{.DurationTeleop}}">
-            </div>
-          </div>
-          <div class="form-group">
             <label class="col-lg-5 control-label">Round 2 Selection Order</label>
             <div class="col-lg-7">
               <div class="radio">
@@ -259,6 +247,38 @@
             <label class="col-lg-5 control-label">Hab Docking RP Threshold</label>
             <div class="col-lg-7">
               <input type="text" class="form-control" name="habDockingThreshold" value="{{.HabDockingThreshold}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Autonomous Period Duration (seconds)</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="autoDurationSec" value="{{.AutoDurationSec}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Pause Duration (seconds)</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="pauseDurationSec" value="{{.PauseDurationSec}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Teleoperated Period Duration (seconds)</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="teleopDurationSec" value="{{.TeleopDurationSec}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">First Warning Remaining Duration (seconds)</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="warning1RemainingDurationSec"
+                value="{{.Warning1RemainingDurationSec}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Second Warning Remaining Duration (seconds)</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" name="warning2RemainingDurationSec"
+                value="{{.Warning2RemainingDurationSec}}">
             </div>
           </div>
         </fieldset>

@@ -13,11 +13,18 @@ type MatchSound struct {
 
 // List of sounds and how many seconds into the match they are played. A negative time indicates that the sound can only
 // be triggered explicitly.
-var MatchSounds = []*MatchSound{
-	{"start", "wav", 0},
-	{"resume", "wav", 15},
-	{"warning1", "wav", 120},
-	{"warning2", "wav", 130},
-	{"end", "wav", 150},
-	{"abort", "mp3", -1},
+var MatchSounds []*MatchSound
+
+func UpdateMatchSounds() {
+	MatchSounds = []*MatchSound{
+		{"start", "wav", 0},
+		{"resume", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec)},
+		{"warning1", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec +
+			MatchTiming.TeleopDurationSec - MatchTiming.Warning1RemainingDurationSec)},
+		{"warning2", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec +
+			MatchTiming.TeleopDurationSec - MatchTiming.Warning2RemainingDurationSec)},
+		{"end", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec +
+			MatchTiming.TeleopDurationSec)},
+		{"abort", "mp3", -1},
+	}
 }

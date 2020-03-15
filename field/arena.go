@@ -85,6 +85,7 @@ type AllianceStation struct {
 // Creates the arena and sets it to its initial state.
 func NewArena(dbPath string) (*Arena, error) {
 	arena := new(Arena)
+	arena.configureNotifiers()
 
 	var err error
 	arena.Database, err = model.OpenDatabase(dbPath)
@@ -105,8 +106,6 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.AllianceStations["B3"] = new(AllianceStation)
 
 	arena.Displays = make(map[string]*Display)
-
-	arena.configureNotifiers()
 
 	arena.ScoringPanelRegistry.initialize()
 
@@ -150,6 +149,15 @@ func (arena *Arena) LoadSettings() error {
 			log.Printf("Failed to configure admin WiFi: %s", err.Error())
 		}
 	}
+
+	game.MatchTiming.WarmupDurationSec = settings.WarmupDurationSec
+	game.MatchTiming.AutoDurationSec = settings.AutoDurationSec
+	game.MatchTiming.PauseDurationSec = settings.PauseDurationSec
+	game.MatchTiming.TeleopDurationSec = settings.TeleopDurationSec
+	game.MatchTiming.Warning1RemainingDurationSec = settings.Warning1RemainingDurationSec
+	game.MatchTiming.Warning2RemainingDurationSec = settings.Warning2RemainingDurationSec
+	game.UpdateMatchSounds()
+	arena.MatchTimingNotifier.Notify()
 
 	game.HabDockingThreshold = settings.HabDockingThreshold
 
@@ -401,7 +409,7 @@ func (arena *Arena) Update() {
 	case AutoPeriod:
 		auto = true
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+arena.EventSettings.DurationAuto) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) {
 			auto = false
 			sendDsPacket = true
 			if game.MatchTiming.PauseDurationSec > 0 {
@@ -415,7 +423,7 @@ func (arena *Arena) Update() {
 	case PausePeriod:
 		auto = false
 		enabled = false
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+arena.EventSettings.DurationAuto+
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
 			game.MatchTiming.PauseDurationSec) {
 			arena.MatchState = TeleopPeriod
 			auto = false
@@ -425,8 +433,8 @@ func (arena *Arena) Update() {
 	case TeleopPeriod:
 		auto = false
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+arena.EventSettings.DurationAuto+
-			game.MatchTiming.PauseDurationSec+arena.EventSettings.DurationTeleop) {
+		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
+			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) {
 			arena.MatchState = PostMatch
 			auto = false
 			enabled = false
