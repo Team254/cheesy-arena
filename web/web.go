@@ -66,7 +66,7 @@ func NewWeb(arena *field.Arena) *Web {
 
 // Starts the webserver and blocks, waiting on requests. Does not return until the application exits.
 func (web *Web) ServeWebInterface(port int) {
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
+	http.Handle("/static/", http.StripPrefix("/static/", addNoCacheHeader(http.FileServer(http.Dir("static/")))))
 	http.Handle("/", web.newHandler())
 	log.Printf("Serving HTTP requests on port %d", port)
 
@@ -89,6 +89,14 @@ func (web *Web) indexHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+}
+
+// Adds a "Cache-Control: no-cache" header to the given handler to force browser validation of last modified time.
+func addNoCacheHeader(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Cache-Control", "no-cache")
+		handler.ServeHTTP(w, r)
+	})
 }
 
 // Sets up the mapping between URLs and handlers.
