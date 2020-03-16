@@ -1,7 +1,7 @@
 // Copyright 2018 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Client-side logic for the field setup page.
+// Client-side logic for the Field Testing page.
 
 var websocket;
 
@@ -24,7 +24,7 @@ var handlePlcIoChange = function(data) {
 
 $(function() {
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/setup/led_plc/websocket", {
+  websocket = new CheesyWebsocket("/setup/field_testing/websocket", {
     plcIoChange: function(event) { handlePlcIoChange(event.data); }
   });
 });

@@ -10,12 +10,12 @@ import (
 	"testing"
 )
 
-func TestSetupLedPlcWebsocket(t *testing.T) {
+func TestSetupFieldTestingWebsocket(t *testing.T) {
 	web := setupTestWeb(t)
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/setup/led_plc/websocket", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/setup/field_testing/websocket", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
 	ws := websocket.NewTestWebsocket(conn)

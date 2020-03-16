@@ -1,7 +1,7 @@
 // Copyright 2018 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Web routes for testing the field LEDs and PLC.
+// Web routes for testing the field sounds, LEDs, and PLC.
 
 package web
 
@@ -11,13 +11,13 @@ import (
 	"net/http"
 )
 
-// Shows the LED/PLC test page.
-func (web *Web) ledPlcGetHandler(w http.ResponseWriter, r *http.Request) {
+// Shows the Field Testing page.
+func (web *Web) fieldTestingGetHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/setup_led_plc.html", "templates/base.html")
+	template, err := web.parseFiles("templates/setup_field_testing.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -36,8 +36,8 @@ func (web *Web) ledPlcGetHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// The websocket endpoint for sending realtime updates to the LED/PLC test page.
-func (web *Web) ledPlcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+// The websocket endpoint for sending realtime updates to the Field Testing page.
+func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
