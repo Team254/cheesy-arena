@@ -30,8 +30,7 @@ CREATE TABLE event_settings (
   autodurationsec int,
   pausedurationsec int,
   teleopdurationsec int,
-  warning1remainingdurationsec int,
-  warning2remainingdurationsec int,
+  warningremainingdurationsec int,
   habdockingthreshold int
 );
 

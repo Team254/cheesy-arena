@@ -6,11 +6,10 @@
 package game
 
 var MatchTiming = struct {
-	WarmupDurationSec            int
-	AutoDurationSec              int
-	PauseDurationSec             int
-	TeleopDurationSec            int
-	Warning1RemainingDurationSec int
-	Warning2RemainingDurationSec int
-	TimeoutDurationSec           int
-}{0, 15, 0, 135, 30, 20, 0}
+	WarmupDurationSec           int
+	AutoDurationSec             int
+	PauseDurationSec            int
+	TeleopDurationSec           int
+	WarningRemainingDurationSec int
+	TimeoutDurationSec          int
+}{0, 15, 2, 135, 30, 0}

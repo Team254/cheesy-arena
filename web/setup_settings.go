@@ -74,8 +74,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.AutoDurationSec, _ = strconv.Atoi(r.PostFormValue("autoDurationSec"))
 	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))
 	eventSettings.TeleopDurationSec, _ = strconv.Atoi(r.PostFormValue("teleopDurationSec"))
-	eventSettings.Warning1RemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warning1RemainingDurationSec"))
-	eventSettings.Warning2RemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warning2RemainingDurationSec"))
+	eventSettings.WarningRemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warningRemainingDurationSec"))
 	eventSettings.HabDockingThreshold, _ = strconv.Atoi(r.PostFormValue("habDockingThreshold"))
 
 	if eventSettings.Ap2TeamChannel != 0 && eventSettings.Ap2TeamChannel == eventSettings.ApTeamChannel {

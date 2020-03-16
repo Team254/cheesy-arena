@@ -154,8 +154,7 @@ func (arena *Arena) LoadSettings() error {
 	game.MatchTiming.AutoDurationSec = settings.AutoDurationSec
 	game.MatchTiming.PauseDurationSec = settings.PauseDurationSec
 	game.MatchTiming.TeleopDurationSec = settings.TeleopDurationSec
-	game.MatchTiming.Warning1RemainingDurationSec = settings.Warning1RemainingDurationSec
-	game.MatchTiming.Warning2RemainingDurationSec = settings.Warning2RemainingDurationSec
+	game.MatchTiming.WarningRemainingDurationSec = settings.WarningRemainingDurationSec
 	game.UpdateMatchSounds()
 	arena.MatchTimingNotifier.Notify()
 

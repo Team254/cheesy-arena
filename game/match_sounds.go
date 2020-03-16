@@ -18,13 +18,14 @@ var MatchSounds []*MatchSound
 func UpdateMatchSounds() {
 	MatchSounds = []*MatchSound{
 		{"start", "wav", 0},
+		{"end", "wav", float64(MatchTiming.AutoDurationSec)},
 		{"resume", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec)},
-		{"warning1", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec +
-			MatchTiming.TeleopDurationSec - MatchTiming.Warning1RemainingDurationSec)},
-		{"warning2", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec +
-			MatchTiming.TeleopDurationSec - MatchTiming.Warning2RemainingDurationSec)},
+		{"warning", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec +
+			MatchTiming.TeleopDurationSec - MatchTiming.WarningRemainingDurationSec)},
 		{"end", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec +
 			MatchTiming.TeleopDurationSec)},
-		{"abort", "mp3", -1},
+		{"abort", "wav", -1},
+		{"rotation", "wav", -1},
+		{"position", "wav", -1},
 	}
 }
