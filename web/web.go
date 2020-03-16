@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -58,6 +59,9 @@ func NewWeb(arena *field.Arena) *Web {
 				seq[i] = i + 1
 			}
 			return seq
+		},
+		"toUpper": func(str string) string {
+			return strings.ToUpper(str)
 		},
 	}
 

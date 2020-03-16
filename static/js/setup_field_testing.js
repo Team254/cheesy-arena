@@ -5,6 +5,11 @@
 
 var websocket;
 
+// Sends a websocket message to play a given game sound on the audience display.
+var playSound = function(sound) {
+  websocket.send("playSound", sound);
+};
+
 // Handles a websocket message to update the PLC IO status.
 var handlePlcIoChange = function(data) {
   $.each(data.Inputs, function(index, input) {

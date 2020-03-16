@@ -7,6 +7,18 @@
 {{define "title"}}Field Testing{{end}}
 {{define "body"}}
 <div class="row">
+  <div class="col-lg-3">
+    <div class="well">
+      <legend>Game Sounds</legend>
+      {{range $sound := .MatchSounds}}
+        <p>
+          <button type="button" class="btn btn-sm btn-info btn-game-sound" onclick="playSound('{{$sound.Name}}');">
+            <i class="glyphicon glyphicon-play"></i>&nbsp;&nbsp;{{toUpper $sound.Name}}
+          </button>
+        </p>
+      {{end}}
+    </div>
+  </div>
   <div class="col-lg-7">
     <div class="well">
       <legend>PLC</legend>

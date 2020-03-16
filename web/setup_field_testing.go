@@ -6,8 +6,12 @@
 package web
 
 import (
+	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
+	"io"
+	"log"
 	"net/http"
 )
 
@@ -25,10 +29,11 @@ func (web *Web) fieldTestingGetHandler(w http.ResponseWriter, r *http.Request) {
 	plc := web.arena.Plc
 	data := struct {
 		*model.EventSettings
+		MatchSounds   []*game.MatchSound
 		InputNames    []string
 		RegisterNames []string
 		CoilNames     []string
-	}{web.arena.EventSettings, plc.GetInputNames(), plc.GetRegisterNames(), plc.GetCoilNames()}
+	}{web.arena.EventSettings, game.MatchSounds, plc.GetInputNames(), plc.GetRegisterNames(), plc.GetCoilNames()}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -49,6 +54,32 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	}
 	defer ws.Close()
 
-	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier)
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
+	go ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier)
+
+	// Loop, waiting for commands and responding to them, until the client closes the connection.
+	for {
+		messageType, data, err := ws.Read()
+		if err != nil {
+			if err == io.EOF {
+				// Client has closed the connection; nothing to do here.
+				return
+			}
+			log.Println(err)
+			return
+		}
+
+		switch messageType {
+		case "playSound":
+			sound, ok := data.(string)
+			if !ok {
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			web.arena.PlaySoundNotifier.NotifyWithMessage(sound)
+		default:
+			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			continue
+		}
+	}
 }
