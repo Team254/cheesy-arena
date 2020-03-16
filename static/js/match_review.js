@@ -51,9 +51,7 @@ var renderResults = function(alliance) {
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
       getInputElement(alliance, "Foul" + k + "Team", v.TeamId).prop("checked", true);
-      getInputElement(alliance, "Foul" + k + "RuleNumber").val(v.RuleNumber);
-      getInputElement(alliance, "Foul" + k + "IsTechnical").prop("checked", v.IsTechnical);
-      getInputElement(alliance, "Foul" + k + "IsRankingPoint").prop("checked", v.IsRankingPoint);
+      getSelectElement(alliance, "Foul" + k + "RuleId").val(v.RuleId);
       getInputElement(alliance, "Foul" + k + "Time").val(v.TimeInMatchSec);
     });
   }
@@ -99,9 +97,7 @@ var updateResults = function(alliance) {
   result.score.Fouls = [];
   for (var i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {
     var prefix = alliance + "Foul" + i;
-    var foul = {TeamId: parseInt(formData[prefix + "Team"]), RuleNumber: formData[prefix + "RuleNumber"],
-                IsTechnical: formData[prefix + "IsTechnical"] === "on",
-                IsRankingPoint: formData[prefix + "IsRankingPoint"] === "on",
+    var foul = {TeamId: parseInt(formData[prefix + "Team"]), RuleId: parseInt(formData[prefix + "RuleId"]),
                 TimeInMatchSec: parseFloat(formData[prefix + "Time"])};
     result.score.Fouls.push(foul);
   }

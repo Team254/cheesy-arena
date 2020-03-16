@@ -201,14 +201,16 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		BlueScoreSummary *game.ScoreSummary
 		RedFouls         []game.Foul
 		BlueFouls        []game.Foul
+		RulesViolated    map[int]*game.Rule
 		RedCards         map[string]string
 		BlueCards        map[string]string
 		SeriesStatus     string
 		SeriesLeader     string
 	}{arena.SavedMatch.CapitalizedType(), arena.SavedMatch, arena.SavedMatchResult.RedScoreSummary(),
-		arena.SavedMatchResult.BlueScoreSummary(), populateFoulDescriptions(arena.SavedMatchResult.RedScore.Fouls),
-		populateFoulDescriptions(arena.SavedMatchResult.BlueScore.Fouls), arena.SavedMatchResult.RedCards,
-		arena.SavedMatchResult.BlueCards, seriesStatus, seriesLeader}
+		arena.SavedMatchResult.BlueScoreSummary(), arena.SavedMatchResult.RedScore.Fouls,
+		arena.SavedMatchResult.BlueScore.Fouls,
+		getRulesViolated(arena.SavedMatchResult.RedScore.Fouls, arena.SavedMatchResult.BlueScore.Fouls),
+		arena.SavedMatchResult.RedCards, arena.SavedMatchResult.BlueCards, seriesStatus, seriesLeader}
 }
 
 func (arena *Arena) generateScoringStatusMessage() interface{} {
@@ -236,17 +238,14 @@ func getAudienceAllianceScoreFields(allianceScore *RealtimeScore,
 	return fields
 }
 
-// Copy the description from the rules to the fouls so that they are available to the announcer.
-func populateFoulDescriptions(fouls []game.Foul) []game.Foul {
-	foulsCopy := make([]game.Foul, len(fouls))
-	copy(foulsCopy, fouls)
-	for i := range foulsCopy {
-		for _, rule := range game.Rules {
-			if foulsCopy[i].RuleNumber == rule.RuleNumber {
-				foulsCopy[i].Description = rule.Description
-				break
-			}
-		}
+// Produce a map of rules that were violated by either alliance so that they are available to the announcer.
+func getRulesViolated(redFouls, blueFouls []game.Foul) map[int]*game.Rule {
+	rules := make(map[int]*game.Rule)
+	for _, foul := range redFouls {
+		rules[foul.RuleId] = game.GetRuleById(foul.RuleId)
 	}
-	return foulsCopy
+	for _, foul := range blueFouls {
+		rules[foul.RuleId] = game.GetRuleById(foul.RuleId)
+	}
+	return rules
 }

@@ -32,6 +32,10 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, false, blueSummary.CompleteRocket)
 	assert.Equal(t, true, blueSummary.HabDocking)
 
+	// Test invalid foul.
+	redScore.Fouls[0].RuleId = 0
+	assert.Equal(t, 13, blueScore.Summarize(redScore.Fouls).FoulPoints)
+
 	// Test rocket completion boundary conditions.
 	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls).CompleteRocket)
 	redScore.RocketFarLeftBays[1] = BayHatch
@@ -41,7 +45,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls).CompleteRocket)
 	redScore.RocketNearLeftBays[2] = BayHatch
 	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).CompleteRocket)
-	redScore.Fouls[1].IsRankingPoint = true
+	redScore.Fouls[2].RuleId = 15
 	assert.Equal(t, true, redScore.Summarize(redScore.Fouls).CompleteRocket)
 
 	// Test hab docking boundary conditions.
@@ -119,12 +123,7 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.Fouls[0].RuleNumber = "G1000"
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.Fouls[0].IsTechnical = !score2.Fouls[0].IsTechnical
+	score2.Fouls[0].RuleId = 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 

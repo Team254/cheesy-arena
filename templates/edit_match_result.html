@@ -158,22 +158,16 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-4 control-label">Rule Violated</label>
-            <div class="col-lg-3">
-              <input type="text" class="form-control input-sm"
-                  name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleNumber">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-4 control-label">Is Technical</label>
-            <div class="col-lg-3">
-              <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsTechnical">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-4 control-label">Free Ranking Point</label>
-            <div class="col-lg-3">
-              <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsRankingPoint">
+            <label class="col-lg-4 control-label">Rule</label>
+            <div class="col-lg-7">
+              <select class="form-control" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleId">
+                {{range $rule := .Rules}}
+                  <option value="{{$rule.Id}}">{{$rule.RuleNumber}}
+                      [{{if $rule.IsTechnical}}Tech {{end}}Foul{{if $rule.IsRankingPoint}}+RP{{end}}]:
+                      {{$rule.Description}}
+                  </option>
+                {{end}}
+              </select>
             </div>
           </div>
           <div class="form-group">

@@ -50,11 +50,18 @@ var handleRealtimeScore = function(data) {
 
 // Handles a websocket message to populate the final score data.
 var handleScorePosted = function(data) {
+  $.each(data.RedFouls, function(i, foul) {
+    Object.assign(foul, data.RulesViolated[foul.RuleId]);
+  });
+  $.each(data.BlueFouls, function(i, foul) {
+    Object.assign(foul, data.RulesViolated[foul.RuleId]);
+  });
+
   $("#scoreMatchName").text(data.MatchType + " Match " + data.Match.DisplayName);
   $("#redScoreDetails").html(matchResultTemplate({score: data.RedScoreSummary, fouls: data.RedFouls,
-      cards: data.RedCards}));
+      rulesViolated: data.RulesViolated, cards: data.RedCards}));
   $("#blueScoreDetails").html(matchResultTemplate({score: data.BlueScoreSummary, fouls: data.BlueFouls,
-      cards: data.BlueCards}));
+    rulesViolated: data.RulesViolated, cards: data.BlueCards}));
   $("#matchResult").modal("show");
 
   // Activate tooltips above the foul listings.

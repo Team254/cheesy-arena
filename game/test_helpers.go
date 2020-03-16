@@ -7,9 +7,9 @@ package game
 
 func TestScore1() *Score {
 	fouls := []Foul{
-		{Rule{"G18", true, false, ""}, 25, 150},
-		{Rule{"G20", true, false, ""}, 1868, 0},
-		{Rule{"G22", false, false, ""}, 25, 25.2},
+		{18, 25, 150},
+		{20, 1868, 0},
+		{21, 25, 25.2},
 	}
 	return &Score{
 		RobotStartLevels: [3]int{2, 1, 2},

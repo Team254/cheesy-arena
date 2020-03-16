@@ -70,11 +70,11 @@ func (web *Web) refereePanelHandler(w http.ResponseWriter, r *http.Request) {
 		BlueFouls        []game.Foul
 		RedCards         map[string]string
 		BlueCards        map[string]string
-		Rules            []game.Rule
+		Rules            map[int]*game.Rule
 		EntryEnabled     bool
 	}{web.arena.EventSettings, matchType, match.DisplayName, red1, red2, red3, blue1, blue2, blue3,
 		web.arena.RedRealtimeScore.CurrentScore.Fouls, web.arena.BlueRealtimeScore.CurrentScore.Fouls,
-		web.arena.RedRealtimeScore.Cards, web.arena.BlueRealtimeScore.Cards, game.Rules,
+		web.arena.RedRealtimeScore.Cards, web.arena.BlueRealtimeScore.Cards, game.GetAllRules(),
 		!(web.arena.RedRealtimeScore.FoulsCommitted && web.arena.BlueRealtimeScore.FoulsCommitted)}
 	err = template.ExecuteTemplate(w, "referee_panel.html", data)
 	if err != nil {
@@ -114,11 +114,9 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		switch messageType {
 		case "addFoul":
 			args := struct {
-				Alliance       string
-				TeamId         int
-				Rule           string
-				IsTechnical    bool
-				IsRankingPoint bool
+				Alliance string
+				TeamId   int
+				RuleId   int
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -127,9 +125,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 
 			// Add the foul to the correct alliance's list.
-			foul := game.Foul{Rule: game.Rule{RuleNumber: args.Rule, IsTechnical: args.IsTechnical,
-				IsRankingPoint: args.IsRankingPoint},
-				TeamId: args.TeamId, TimeInMatchSec: web.arena.MatchTimeSec()}
+			foul := game.Foul{RuleId: args.RuleId, TeamId: args.TeamId, TimeInMatchSec: web.arena.MatchTimeSec()}
 			if args.Alliance == "red" {
 				web.arena.RedRealtimeScore.CurrentScore.Fouls =
 					append(web.arena.RedRealtimeScore.CurrentScore.Fouls, foul)
@@ -142,9 +138,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			args := struct {
 				Alliance       string
 				TeamId         int
-				Rule           string
-				IsTechnical    bool
-				IsRankingPoint bool
+				RuleId         int
 				TimeInMatchSec float64
 			}{}
 			err = mapstructure.Decode(data, &args)
@@ -154,9 +148,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 
 			// Remove the foul from the correct alliance's list.
-			deleteFoul := game.Foul{Rule: game.Rule{RuleNumber: args.Rule, IsTechnical: args.IsTechnical,
-				IsRankingPoint: args.IsRankingPoint},
-				TeamId: args.TeamId, TimeInMatchSec: args.TimeInMatchSec}
+			deleteFoul := game.Foul{RuleId: args.RuleId, TeamId: args.TeamId, TimeInMatchSec: args.TimeInMatchSec}
 			var fouls *[]game.Foul
 			if args.Alliance == "red" {
 				fouls = &web.arena.RedRealtimeScore.CurrentScore.Fouls

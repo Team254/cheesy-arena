@@ -7,6 +7,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -91,7 +92,8 @@ func (web *Web) matchReviewEditGetHandler(w http.ResponseWriter, r *http.Request
 		*model.EventSettings
 		Match           *model.Match
 		MatchResultJson *model.MatchResultDb
-	}{web.arena.EventSettings, match, matchResultJson}
+		Rules           map[int]*game.Rule
+	}{web.arena.EventSettings, match, matchResultJson, game.GetAllRules()}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)

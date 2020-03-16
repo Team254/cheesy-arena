@@ -63,7 +63,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 
 	// Update the score to something else.
 	postBody := "redScoreJson={\"RobotEndLevels\":[0,3,0]}&blueScoreJson={\"CargoBays\":[0,2,1,2,2,0,1]," +
-		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
+		"\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
 
@@ -95,7 +95,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 
 	// Update the score to something else.
 	postBody := "redScoreJson={\"RocketNearLeftBays\":[1,0,2]}&blueScoreJson={\"RocketFarRightBays\":[2,2,2]," +
-		"\"Fouls\":[{\"TeamId\":973,\"Rule\":\"G22\"}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
+		"\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
 

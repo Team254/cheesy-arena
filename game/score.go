@@ -96,7 +96,10 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	} else {
 		// Check for the opponent fouls that automatically trigger the ranking point.
 		for _, foul := range opponentFouls {
-			if foul.IsRankingPoint {
+			if foul.Rule() == nil {
+				continue
+			}
+			if foul.Rule().IsRankingPoint {
 				summary.CompleteRocket = true
 				break
 			}
