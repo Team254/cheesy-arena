@@ -11,7 +11,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"io/ioutil"
 	"net/http"
@@ -101,10 +100,9 @@ type TbaRanking struct {
 	TeamKey    string `json:"team_key"`
 	Rank       int    `json:"rank"`
 	RP         float32
-	ParkClimb  int
 	Auto       int
-	Ownership  int
-	Vault      int
+	Endgame    int
+	Teleop     int
 	WinLossTie string
 	Dqs        int `json:"dqs"`
 	Played     int `json:"played"`
@@ -386,12 +384,12 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "ParkClimb", "Auto", "Ownership", "Vault", "WinLossTie"}
+	breakdowns := []string{"RP", "Auto", "Endgame", "Teleop", "WinLossTie"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank,
-			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.CargoPoints, ranking.HatchPanelPoints,
-			ranking.HabClimbPoints, ranking.SandstormBonusPoints,
+			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.AutoPoints, ranking.EndgamePoints,
+			ranking.TeleopPoints,
 			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
 			ranking.Played}
 	}
@@ -534,68 +532,71 @@ func createTbaAlliance(teamIds [3]int, surrogates [3]bool, score *int, cards map
 
 func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResult, alliance string) *TbaScoreBreakdown {
 	var breakdown TbaScoreBreakdown
-	var score *game.Score
-	var scoreSummary, opponentScoreSummary *game.ScoreSummary
-	if alliance == "red" {
-		score = matchResult.RedScore
-		scoreSummary = matchResult.RedScoreSummary()
-		opponentScoreSummary = matchResult.BlueScoreSummary()
-	} else {
-		score = matchResult.BlueScore
-		scoreSummary = matchResult.BlueScoreSummary()
-		opponentScoreSummary = matchResult.RedScoreSummary()
-	}
+	// TODO(pat): Update for 2020.
+	/*
+		var score *game.Score
+		var scoreSummary, opponentScoreSummary *game.ScoreSummary
+		if alliance == "red" {
+			score = matchResult.RedScore
+			scoreSummary = matchResult.RedScoreSummary()
+			opponentScoreSummary = matchResult.BlueScoreSummary()
+		} else {
+			score = matchResult.BlueScore
+			scoreSummary = matchResult.BlueScoreSummary()
+			opponentScoreSummary = matchResult.RedScoreSummary()
+		}
 
-	breakdown.PreMatchLevelRobot1 = habLevelMapping[score.RobotStartLevels[0]]
-	breakdown.PreMatchLevelRobot2 = habLevelMapping[score.RobotStartLevels[1]]
-	breakdown.PreMatchLevelRobot3 = habLevelMapping[score.RobotStartLevels[2]]
-	breakdown.PreMatchBay1 = bayStatusMapping[score.CargoBaysPreMatch[0]]
-	breakdown.PreMatchBay2 = bayStatusMapping[score.CargoBaysPreMatch[1]]
-	breakdown.PreMatchBay3 = bayStatusMapping[score.CargoBaysPreMatch[2]]
-	breakdown.PreMatchBay6 = bayStatusMapping[score.CargoBaysPreMatch[5]]
-	breakdown.PreMatchBay7 = bayStatusMapping[score.CargoBaysPreMatch[6]]
-	breakdown.PreMatchBay8 = bayStatusMapping[score.CargoBaysPreMatch[7]]
-	breakdown.HabLineRobot1 = sandstormBonusMapping[score.SandstormBonuses[0]]
-	breakdown.HabLineRobot2 = sandstormBonusMapping[score.SandstormBonuses[1]]
-	breakdown.HabLineRobot3 = sandstormBonusMapping[score.SandstormBonuses[2]]
-	breakdown.SandstormBonusPoints = scoreSummary.SandstormBonusPoints
-	breakdown.Bay1 = bayStatusMapping[score.CargoBays[0]]
-	breakdown.Bay2 = bayStatusMapping[score.CargoBays[1]]
-	breakdown.Bay3 = bayStatusMapping[score.CargoBays[2]]
-	breakdown.Bay4 = bayStatusMapping[score.CargoBays[3]]
-	breakdown.Bay5 = bayStatusMapping[score.CargoBays[4]]
-	breakdown.Bay6 = bayStatusMapping[score.CargoBays[5]]
-	breakdown.Bay7 = bayStatusMapping[score.CargoBays[6]]
-	breakdown.Bay8 = bayStatusMapping[score.CargoBays[7]]
-	breakdown.LowLeftRocketNear = bayStatusMapping[score.RocketNearLeftBays[0]]
-	breakdown.MidLeftRocketNear = bayStatusMapping[score.RocketNearLeftBays[1]]
-	breakdown.TopLeftRocketNear = bayStatusMapping[score.RocketNearLeftBays[2]]
-	breakdown.LowRightRocketNear = bayStatusMapping[score.RocketNearRightBays[0]]
-	breakdown.MidRightRocketNear = bayStatusMapping[score.RocketNearRightBays[1]]
-	breakdown.TopRightRocketNear = bayStatusMapping[score.RocketNearRightBays[2]]
-	breakdown.LowLeftRocketFar = bayStatusMapping[score.RocketFarLeftBays[0]]
-	breakdown.MidLeftRocketFar = bayStatusMapping[score.RocketFarLeftBays[1]]
-	breakdown.TopLeftRocketFar = bayStatusMapping[score.RocketFarLeftBays[2]]
-	breakdown.LowRightRocketFar = bayStatusMapping[score.RocketFarRightBays[0]]
-	breakdown.MidRightRocketFar = bayStatusMapping[score.RocketFarRightBays[1]]
-	breakdown.TopRightRocketFar = bayStatusMapping[score.RocketFarRightBays[2]]
-	breakdown.CargoPoints = scoreSummary.CargoPoints
-	breakdown.HatchPanelPoints = scoreSummary.HatchPanelPoints
-	breakdown.EndgameRobot1 = habLevelMapping[score.RobotEndLevels[0]]
-	breakdown.EndgameRobot2 = habLevelMapping[score.RobotEndLevels[1]]
-	breakdown.EndgameRobot3 = habLevelMapping[score.RobotEndLevels[2]]
-	breakdown.HabClimbPoints = scoreSummary.HabClimbPoints
-	breakdown.TeleopPoints = scoreSummary.CargoPoints + scoreSummary.HatchPanelPoints + scoreSummary.HabClimbPoints
-	breakdown.CompleteRocketRankingPoint = scoreSummary.CompleteRocket
-	breakdown.HabDockingRankingPoint = scoreSummary.HabDocking
-	breakdown.FoulPoints = scoreSummary.FoulPoints
-	breakdown.TotalPoints = scoreSummary.Score
-	if match.ShouldUpdateRankings() {
-		// Calculate and set the ranking points for the match.
-		var ranking game.Ranking
-		ranking.AddScoreSummary(scoreSummary, opponentScoreSummary, false)
-		breakdown.RP = ranking.RankingPoints
-	}
+		breakdown.PreMatchLevelRobot1 = habLevelMapping[score.RobotStartLevels[0]]
+		breakdown.PreMatchLevelRobot2 = habLevelMapping[score.RobotStartLevels[1]]
+		breakdown.PreMatchLevelRobot3 = habLevelMapping[score.RobotStartLevels[2]]
+		breakdown.PreMatchBay1 = bayStatusMapping[score.CargoBaysPreMatch[0]]
+		breakdown.PreMatchBay2 = bayStatusMapping[score.CargoBaysPreMatch[1]]
+		breakdown.PreMatchBay3 = bayStatusMapping[score.CargoBaysPreMatch[2]]
+		breakdown.PreMatchBay6 = bayStatusMapping[score.CargoBaysPreMatch[5]]
+		breakdown.PreMatchBay7 = bayStatusMapping[score.CargoBaysPreMatch[6]]
+		breakdown.PreMatchBay8 = bayStatusMapping[score.CargoBaysPreMatch[7]]
+		breakdown.HabLineRobot1 = sandstormBonusMapping[score.SandstormBonuses[0]]
+		breakdown.HabLineRobot2 = sandstormBonusMapping[score.SandstormBonuses[1]]
+		breakdown.HabLineRobot3 = sandstormBonusMapping[score.SandstormBonuses[2]]
+		breakdown.SandstormBonusPoints = scoreSummary.SandstormBonusPoints
+		breakdown.Bay1 = bayStatusMapping[score.CargoBays[0]]
+		breakdown.Bay2 = bayStatusMapping[score.CargoBays[1]]
+		breakdown.Bay3 = bayStatusMapping[score.CargoBays[2]]
+		breakdown.Bay4 = bayStatusMapping[score.CargoBays[3]]
+		breakdown.Bay5 = bayStatusMapping[score.CargoBays[4]]
+		breakdown.Bay6 = bayStatusMapping[score.CargoBays[5]]
+		breakdown.Bay7 = bayStatusMapping[score.CargoBays[6]]
+		breakdown.Bay8 = bayStatusMapping[score.CargoBays[7]]
+		breakdown.LowLeftRocketNear = bayStatusMapping[score.RocketNearLeftBays[0]]
+		breakdown.MidLeftRocketNear = bayStatusMapping[score.RocketNearLeftBays[1]]
+		breakdown.TopLeftRocketNear = bayStatusMapping[score.RocketNearLeftBays[2]]
+		breakdown.LowRightRocketNear = bayStatusMapping[score.RocketNearRightBays[0]]
+		breakdown.MidRightRocketNear = bayStatusMapping[score.RocketNearRightBays[1]]
+		breakdown.TopRightRocketNear = bayStatusMapping[score.RocketNearRightBays[2]]
+		breakdown.LowLeftRocketFar = bayStatusMapping[score.RocketFarLeftBays[0]]
+		breakdown.MidLeftRocketFar = bayStatusMapping[score.RocketFarLeftBays[1]]
+		breakdown.TopLeftRocketFar = bayStatusMapping[score.RocketFarLeftBays[2]]
+		breakdown.LowRightRocketFar = bayStatusMapping[score.RocketFarRightBays[0]]
+		breakdown.MidRightRocketFar = bayStatusMapping[score.RocketFarRightBays[1]]
+		breakdown.TopRightRocketFar = bayStatusMapping[score.RocketFarRightBays[2]]
+		breakdown.CargoPoints = scoreSummary.CargoPoints
+		breakdown.HatchPanelPoints = scoreSummary.HatchPanelPoints
+		breakdown.EndgameRobot1 = habLevelMapping[score.RobotEndLevels[0]]
+		breakdown.EndgameRobot2 = habLevelMapping[score.RobotEndLevels[1]]
+		breakdown.EndgameRobot3 = habLevelMapping[score.RobotEndLevels[2]]
+		breakdown.HabClimbPoints = scoreSummary.HabClimbPoints
+		breakdown.TeleopPoints = scoreSummary.CargoPoints + scoreSummary.HatchPanelPoints + scoreSummary.HabClimbPoints
+		breakdown.CompleteRocketRankingPoint = scoreSummary.CompleteRocket
+		breakdown.HabDockingRankingPoint = scoreSummary.HabDocking
+		breakdown.FoulPoints = scoreSummary.FoulPoints
+		breakdown.TotalPoints = scoreSummary.Score
+		if match.ShouldUpdateRankings() {
+			// Calculate and set the ranking points for the match.
+			var ranking game.Ranking
+			ranking.AddScoreSummary(scoreSummary, opponentScoreSummary, false)
+			breakdown.RP = ranking.RankingPoints
+		}
+	*/
 
 	return &breakdown
 }

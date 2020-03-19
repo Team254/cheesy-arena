@@ -158,7 +158,8 @@ func (arena *Arena) LoadSettings() error {
 	game.UpdateMatchSounds()
 	arena.MatchTimingNotifier.Notify()
 
-	game.HabDockingThreshold = settings.HabDockingThreshold
+	// TODO(pat): Customize 2020 scoring settings here.
+	//game.HabDockingThreshold = settings.HabDockingThreshold
 
 	return nil
 }
@@ -638,8 +639,7 @@ func (arena *Arena) checkCanStartMatch() error {
 		return err
 	}
 
-	if !arena.BypassPreMatchScore && (!arena.RedRealtimeScore.CurrentScore.IsValidPreMatch() ||
-		!arena.BlueRealtimeScore.CurrentScore.IsValidPreMatch()) {
+	if !arena.BypassPreMatchScore {
 		return fmt.Errorf("Cannot start match until pre-match scoring is set")
 	}
 
@@ -734,8 +734,7 @@ func (arena *Arena) handlePlcOutput() {
 		// not input, or blinking green if ready.
 		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
-		preMatchScoreReady := arena.BypassPreMatchScore || arena.RedRealtimeScore.CurrentScore.IsValidPreMatch() &&
-			arena.BlueRealtimeScore.CurrentScore.IsValidPreMatch()
+		preMatchScoreReady := arena.BypassPreMatchScore
 		greenStackLight := redAllianceReady && blueAllianceReady && preMatchScoreReady &&
 			arena.Plc.GetCycleState(2, 0, 2)
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, !preMatchScoreReady, greenStackLight)
@@ -775,7 +774,7 @@ func (arena *Arena) handlePlcOutput() {
 		}
 		arena.Plc.SetCargoShipLights(false)
 		arena.Plc.SetCargoShipMagnets(false)
-		arena.Plc.SetRocketLights(arena.RedScoreSummary().CompleteRocket, arena.BlueScoreSummary().CompleteRocket)
+		arena.Plc.SetRocketLights(false, false)
 	}
 }
 

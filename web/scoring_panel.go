@@ -8,7 +8,6 @@ package web
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/field"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
@@ -93,12 +92,15 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		handleWebErr(w, fmt.Errorf("Invalid alliance '%s'.", alliance))
 		return
 	}
-	var realtimeScore **field.RealtimeScore
-	if alliance == "red" {
-		realtimeScore = &web.arena.RedRealtimeScore
-	} else {
-		realtimeScore = &web.arena.BlueRealtimeScore
-	}
+	// TODO(pat): Update for 2020.
+	/*
+		var realtimeScore **field.RealtimeScore
+		if alliance == "red" {
+			realtimeScore = &web.arena.RedRealtimeScore
+		} else {
+			realtimeScore = &web.arena.BlueRealtimeScore
+		}
+	*/
 
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
@@ -127,7 +129,8 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
-		score := &(*realtimeScore).CurrentScore
+		// TODO(pat): Update for 2020.
+		//score := &(*realtimeScore).CurrentScore
 		scoreChanged := false
 
 		if command == "commitMatch" {
@@ -139,27 +142,30 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(alliance, ws)
 			web.arena.ScoringStatusNotifier.Notify()
 		} else if number, err := strconv.Atoi(command); err == nil && number >= 1 && number <= 9 {
-			// Handle per-robot scoring fields.
-			if number <= 3 && web.arena.MatchState == field.PreMatch {
-				index := number - 1
-				score.RobotStartLevels[index]++
-				if score.RobotStartLevels[index] == 4 {
-					score.RobotStartLevels[index] = 0
+			// TODO(pat): Update for 2020.
+			/*
+				// Handle per-robot scoring fields.
+				if number <= 3 && web.arena.MatchState == field.PreMatch {
+					index := number - 1
+					score.RobotStartLevels[index]++
+					if score.RobotStartLevels[index] == 4 {
+						score.RobotStartLevels[index] = 0
+					}
+					scoreChanged = true
+				} else if number > 3 && number <= 6 && web.arena.MatchState != field.PreMatch {
+					index := number - 4
+					score.SandstormBonuses[index] =
+						!score.SandstormBonuses[index]
+					scoreChanged = true
+				} else if number > 6 && web.arena.MatchState != field.PreMatch {
+					index := number - 7
+					score.RobotEndLevels[index]++
+					if score.RobotEndLevels[index] == 4 {
+						score.RobotEndLevels[index] = 0
+					}
+					scoreChanged = true
 				}
-				scoreChanged = true
-			} else if number > 3 && number <= 6 && web.arena.MatchState != field.PreMatch {
-				index := number - 4
-				score.SandstormBonuses[index] =
-					!score.SandstormBonuses[index]
-				scoreChanged = true
-			} else if number > 6 && web.arena.MatchState != field.PreMatch {
-				index := number - 7
-				score.RobotEndLevels[index]++
-				if score.RobotEndLevels[index] == 4 {
-					score.RobotEndLevels[index] = 0
-				}
-				scoreChanged = true
-			}
+			*/
 		} else {
 			// Handle cargo bays.
 			var bayMapping *bayMapping
@@ -170,36 +176,38 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				}
 			}
 			if bayMapping != nil {
-				element := bayMapping.RedElement
-				index := bayMapping.RedIndex
-				if alliance == "blue" {
-					element = bayMapping.BlueElement
-					index = bayMapping.BlueIndex
-				}
-				switch element {
-				case "cargoShip":
-					scoreChanged = web.toggleCargoShipBay(&score.CargoBays[index], index)
-				case "rocketNearLeft":
-					scoreChanged = web.toggleRocketBay(&score.RocketNearLeftBays[index])
-				case "rocketNearRight":
-					scoreChanged = web.toggleRocketBay(&score.RocketNearRightBays[index])
-				case "rocketFarLeft":
-					scoreChanged = web.toggleRocketBay(&score.RocketFarLeftBays[index])
-				case "rocketFarRight":
-					scoreChanged = web.toggleRocketBay(&score.RocketFarRightBays[index])
-				}
+				// TODO(pat): Update for 2020.
+				/*
+					element := bayMapping.RedElement
+					index := bayMapping.RedIndex
+					if alliance == "blue" {
+						element = bayMapping.BlueElement
+						index = bayMapping.BlueIndex
+					}
+					switch element {
+					case "cargoShip":
+						scoreChanged = web.toggleCargoShipBay(&score.CargoBays[index], index)
+					case "rocketNearLeft":
+						scoreChanged = web.toggleRocketBay(&score.RocketNearLeftBays[index])
+					case "rocketNearRight":
+						scoreChanged = web.toggleRocketBay(&score.RocketNearRightBays[index])
+					case "rocketFarLeft":
+						scoreChanged = web.toggleRocketBay(&score.RocketFarLeftBays[index])
+					case "rocketFarRight":
+						scoreChanged = web.toggleRocketBay(&score.RocketFarRightBays[index])
+					}
+				*/
 			}
 		}
 
 		if scoreChanged {
-			if web.arena.MatchState == field.PreMatch {
-				score.CargoBaysPreMatch = score.CargoBays
-			}
 			web.arena.RealtimeScoreNotifier.Notify()
 		}
 	}
 }
 
+// TODO(pat): Update for 2020.
+/*
 // Advances the given cargo ship bay through the states applicable to the current status of the field.
 func (web *Web) toggleCargoShipBay(bay *game.BayStatus, index int) bool {
 	if (index == 3 || index == 4) && web.arena.MatchState == field.PreMatch {
@@ -242,3 +250,4 @@ func (web *Web) toggleRocketBay(bay *game.BayStatus) bool {
 	}
 	return false
 }
+*/

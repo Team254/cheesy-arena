@@ -76,16 +76,6 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	}
 
 	// Check scoring constraints.
-	arena.RedRealtimeScore.CurrentScore = *game.TestScoreValidPreMatch()
-	err = arena.checkCanStartMatch()
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Cannot start match until pre-match scoring is set")
-	}
-	arena.BlueRealtimeScore.CurrentScore = *game.TestScoreValidPreMatch()
-	assert.Nil(t, arena.checkCanStartMatch())
-	arena.RedRealtimeScore.CurrentScore = game.Score{}
-	arena.BlueRealtimeScore.CurrentScore = game.Score{}
-	assert.NotNil(t, arena.checkCanStartMatch())
 	arena.BypassPreMatchScore = true
 	assert.Nil(t, arena.checkCanStartMatch())
 

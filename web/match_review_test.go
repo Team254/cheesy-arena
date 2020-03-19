@@ -49,8 +49,8 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
-	assert.Contains(t, recorder.Body.String(), ">71<") // The red score
-	assert.Contains(t, recorder.Body.String(), ">72<") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">217<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">252<") // The blue score
 
 	// Check response for non-existent match.
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", 12345))
@@ -62,17 +62,18 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), " QF4-3 ")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"RobotEndLevels\":[0,3,0]}&blueScoreJson={\"CargoBays\":[0,2,1,2,2,0,1]," +
+	postBody := "redScoreJson={\"RobotEndLevels\":[0,3,0]}&blueScoreJson={\"AutoCellsOuter\":[3, 4]," +
 		"\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
 
+	// TODO(pat): Update for 2020.
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
-	assert.Contains(t, recorder.Body.String(), ">15<") // The red score
-	assert.Contains(t, recorder.Body.String(), ">19<") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">0<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">0<") // The blue score
 }
 
 func TestMatchReviewCreateNewResult(t *testing.T) {
@@ -99,10 +100,11 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
 
+	// TODO(pat): Update for 2020.
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
-	assert.Contains(t, recorder.Body.String(), ">10<") // The red score
-	assert.Contains(t, recorder.Body.String(), ">15<") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">0<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">0<") // The blue score
 }

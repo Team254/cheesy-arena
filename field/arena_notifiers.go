@@ -234,7 +234,6 @@ func getAudienceAllianceScoreFields(allianceScore *RealtimeScore,
 	fields := new(audienceAllianceScoreFields)
 	fields.Score = &allianceScore.CurrentScore
 	fields.ScoreSummary = allianceScoreSummary
-	fields.IsPreMatchScoreReady = allianceScore.CurrentScore.IsValidPreMatch()
 	return fields
 }
 

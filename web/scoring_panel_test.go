@@ -5,7 +5,6 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/field"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
@@ -54,53 +53,56 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "matchTime")
 	readWebsocketType(t, blueWs, "realtimeScore")
 
-	// Send a some pre-match scoring commands.
-	redWs.Write("1", nil)
-	blueWs.Write("2", nil)
-	blueWs.Write("2", nil)
-	blueWs.Write("2", nil)
-	blueWs.Write("2", nil)
-	for i := 0; i < 5; i++ {
-		readWebsocketType(t, redWs, "realtimeScore")
-		readWebsocketType(t, blueWs, "realtimeScore")
-	}
-	assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.RobotStartLevels[0])
-	assert.Equal(t, 0, web.arena.BlueRealtimeScore.CurrentScore.RobotStartLevels[1])
-	redWs.Write("e", nil)
-	redWs.Write("i", nil)
-	redWs.Write("i", nil)
-	redWs.Write("v", nil)
-	redWs.Write("q", nil)
-	redWs.Write(",", nil)
-	for i := 0; i < 3; i++ {
-		readWebsocketType(t, redWs, "realtimeScore")
-		readWebsocketType(t, blueWs, "realtimeScore")
-	}
-	assert.Equal(t, [8]game.BayStatus{1, 0, 0, 0, 0, 0, 0, 3},
-		web.arena.RedRealtimeScore.CurrentScore.CargoBaysPreMatch)
-	assert.Equal(t, [8]game.BayStatus{1, 0, 0, 0, 0, 0, 0, 3}, web.arena.RedRealtimeScore.CurrentScore.CargoBays)
-	assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketNearLeftBays)
-	assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketNearRightBays)
-	assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketFarLeftBays)
-	assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketFarRightBays)
+	// TODO(pat): Update for 2020.
+	/*
+		// Send a some pre-match scoring commands.
+		redWs.Write("1", nil)
+		blueWs.Write("2", nil)
+		blueWs.Write("2", nil)
+		blueWs.Write("2", nil)
+		blueWs.Write("2", nil)
+		for i := 0; i < 5; i++ {
+			readWebsocketType(t, redWs, "realtimeScore")
+			readWebsocketType(t, blueWs, "realtimeScore")
+		}
+		assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.RobotStartLevels[0])
+		assert.Equal(t, 0, web.arena.BlueRealtimeScore.CurrentScore.RobotStartLevels[1])
+		redWs.Write("e", nil)
+		redWs.Write("i", nil)
+		redWs.Write("i", nil)
+		redWs.Write("v", nil)
+		redWs.Write("q", nil)
+		redWs.Write(",", nil)
+		for i := 0; i < 3; i++ {
+			readWebsocketType(t, redWs, "realtimeScore")
+			readWebsocketType(t, blueWs, "realtimeScore")
+		}
+		assert.Equal(t, [8]game.BayStatus{1, 0, 0, 0, 0, 0, 0, 3},
+			web.arena.RedRealtimeScore.CurrentScore.CargoBaysPreMatch)
+		assert.Equal(t, [8]game.BayStatus{1, 0, 0, 0, 0, 0, 0, 3}, web.arena.RedRealtimeScore.CurrentScore.CargoBays)
+		assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketNearLeftBays)
+		assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketNearRightBays)
+		assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketFarLeftBays)
+		assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketFarRightBays)
 
-	// Send some in-match scoring commands.
-	web.arena.MatchState = field.AutoPeriod
-	redWs.Write("e", nil)
-	redWs.Write("i", nil)
-	redWs.Write("k", nil)
-	redWs.Write("4", nil)
-	blueWs.Write("9", nil)
-	for i := 0; i < 5; i++ {
-		readWebsocketType(t, redWs, "realtimeScore")
-		readWebsocketType(t, blueWs, "realtimeScore")
-	}
-	assert.Equal(t, [8]game.BayStatus{1, 0, 0, 0, 0, 0, 0, 3},
-		web.arena.RedRealtimeScore.CurrentScore.CargoBaysPreMatch)
-	assert.Equal(t, [8]game.BayStatus{2, 0, 0, 0, 0, 0, 0, 2}, web.arena.RedRealtimeScore.CurrentScore.CargoBays)
-	assert.Equal(t, [3]game.BayStatus{0, 1, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketFarRightBays)
-	assert.True(t, web.arena.RedRealtimeScore.CurrentScore.SandstormBonuses[0])
-	assert.Equal(t, 1, web.arena.BlueRealtimeScore.CurrentScore.RobotEndLevels[2])
+		// Send some in-match scoring commands.
+		web.arena.MatchState = field.AutoPeriod
+		redWs.Write("e", nil)
+		redWs.Write("i", nil)
+		redWs.Write("k", nil)
+		redWs.Write("4", nil)
+		blueWs.Write("9", nil)
+		for i := 0; i < 5; i++ {
+			readWebsocketType(t, redWs, "realtimeScore")
+			readWebsocketType(t, blueWs, "realtimeScore")
+		}
+		assert.Equal(t, [8]game.BayStatus{1, 0, 0, 0, 0, 0, 0, 3},
+			web.arena.RedRealtimeScore.CurrentScore.CargoBaysPreMatch)
+		assert.Equal(t, [8]game.BayStatus{2, 0, 0, 0, 0, 0, 0, 2}, web.arena.RedRealtimeScore.CurrentScore.CargoBays)
+		assert.Equal(t, [3]game.BayStatus{0, 1, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketFarRightBays)
+		assert.True(t, web.arena.RedRealtimeScore.CurrentScore.SandstormBonuses[0])
+		assert.Equal(t, 1, web.arena.BlueRealtimeScore.CurrentScore.RobotEndLevels[2])
+	*/
 
 	// Test committing logic.
 	redWs.Write("commitMatch", nil)

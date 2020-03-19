@@ -13,47 +13,36 @@ func TestScoreSummary(t *testing.T) {
 	blueScore := TestScore2()
 
 	redSummary := redScore.Summarize(blueScore.Fouls)
-	assert.Equal(t, 30, redSummary.CargoPoints)
-	assert.Equal(t, 20, redSummary.HatchPanelPoints)
-	assert.Equal(t, 12, redSummary.HabClimbPoints)
-	assert.Equal(t, 9, redSummary.SandstormBonusPoints)
+	assert.Equal(t, 10, redSummary.InitiationLinePoints)
+	assert.Equal(t, 84, redSummary.AutoPowerCellPoints)
+	assert.Equal(t, 94, redSummary.AutoPoints)
+	assert.Equal(t, 38, redSummary.TeleopPowerCellPoints)
+	assert.Equal(t, 10, redSummary.ControlPanelPoints)
+	assert.Equal(t, 75, redSummary.EndgamePoints)
 	assert.Equal(t, 0, redSummary.FoulPoints)
-	assert.Equal(t, 71, redSummary.Score)
-	assert.Equal(t, true, redSummary.CompleteRocket)
-	assert.Equal(t, false, redSummary.HabDocking)
+	assert.Equal(t, 217, redSummary.Score)
+	assert.Equal(t, [3]bool{true, true, false}, redSummary.StagesAtCapacity)
+	assert.Equal(t, [3]bool{true, true, false}, redSummary.StagesActivated)
+	assert.Equal(t, false, redSummary.ControlPanelRankingPoint)
+	assert.Equal(t, true, redSummary.EndgameRankingPoint)
 
 	blueSummary := blueScore.Summarize(redScore.Fouls)
-	assert.Equal(t, 18, blueSummary.CargoPoints)
-	assert.Equal(t, 4, blueSummary.HatchPanelPoints)
-	assert.Equal(t, 21, blueSummary.HabClimbPoints)
-	assert.Equal(t, 6, blueSummary.SandstormBonusPoints)
-	assert.Equal(t, 23, blueSummary.FoulPoints)
-	assert.Equal(t, 72, blueSummary.Score)
-	assert.Equal(t, false, blueSummary.CompleteRocket)
-	assert.Equal(t, true, blueSummary.HabDocking)
+	assert.Equal(t, 5, blueSummary.InitiationLinePoints)
+	assert.Equal(t, 12, blueSummary.AutoPowerCellPoints)
+	assert.Equal(t, 17, blueSummary.AutoPoints)
+	assert.Equal(t, 122, blueSummary.TeleopPowerCellPoints)
+	assert.Equal(t, 30, blueSummary.ControlPanelPoints)
+	assert.Equal(t, 50, blueSummary.EndgamePoints)
+	assert.Equal(t, 33, blueSummary.FoulPoints)
+	assert.Equal(t, 252, blueSummary.Score)
+	assert.Equal(t, [3]bool{true, true, true}, blueSummary.StagesAtCapacity)
+	assert.Equal(t, [3]bool{true, true, true}, blueSummary.StagesActivated)
+	assert.Equal(t, true, blueSummary.ControlPanelRankingPoint)
+	assert.Equal(t, false, blueSummary.EndgameRankingPoint)
 
 	// Test invalid foul.
 	redScore.Fouls[0].RuleId = 0
-	assert.Equal(t, 13, blueScore.Summarize(redScore.Fouls).FoulPoints)
-
-	// Test rocket completion boundary conditions.
-	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls).CompleteRocket)
-	redScore.RocketFarLeftBays[1] = BayHatch
-	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).CompleteRocket)
-	redScore.RocketNearLeftBays[1] = BayHatchCargo
-	redScore.RocketNearRightBays[1] = BayHatchCargo
-	assert.Equal(t, true, redScore.Summarize(blueScore.Fouls).CompleteRocket)
-	redScore.RocketNearLeftBays[2] = BayHatch
-	assert.Equal(t, false, redScore.Summarize(blueScore.Fouls).CompleteRocket)
-	redScore.Fouls[2].RuleId = 15
-	assert.Equal(t, true, redScore.Summarize(redScore.Fouls).CompleteRocket)
-
-	// Test hab docking boundary conditions.
-	assert.Equal(t, true, blueScore.Summarize(redScore.Fouls).HabDocking)
-	HabDockingThreshold = 24
-	assert.Equal(t, false, blueScore.Summarize(redScore.Fouls).HabDocking)
-	blueScore.RobotEndLevels[0] = 3
-	assert.Equal(t, true, blueScore.Summarize(redScore.Fouls).HabDocking)
+	assert.Equal(t, 18, blueScore.Summarize(redScore.Fouls).FoulPoints)
 
 	// Test elimination disqualification.
 	redScore.ElimDq = true
@@ -61,6 +50,80 @@ func TestScoreSummary(t *testing.T) {
 	assert.NotEqual(t, 0, blueScore.Summarize(blueScore.Fouls).Score)
 	blueScore.ElimDq = true
 	assert.Equal(t, 0, blueScore.Summarize(redScore.Fouls).Score)
+}
+
+func TestScoreSummaryBoundaryConditions(t *testing.T) {
+	// Test control panel boundary conditions.
+	score := TestScore2()
+	summary := score.Summarize(score.Fouls)
+	assert.Equal(t, StageExtra, score.CellCountingStage())
+	assert.Equal(t, [3]bool{true, true, true}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]bool{true, true, true}, summary.StagesActivated)
+	assert.Equal(t, true, summary.ControlPanelRankingPoint)
+	assert.Equal(t, 219, summary.Score)
+
+	score.TeleopCellsInner[0]--
+	summary = score.Summarize(score.Fouls)
+	assert.Equal(t, Stage1, score.CellCountingStage())
+	assert.Equal(t, [3]bool{false, false, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]bool{false, false, false}, summary.StagesActivated)
+	assert.Equal(t, false, summary.ControlPanelRankingPoint)
+	assert.Equal(t, 186, summary.Score)
+	score.TeleopCellsInner[0]++
+
+	score.TeleopPeriodStarted = false
+	summary = score.Summarize(score.Fouls)
+	assert.Equal(t, Stage1, score.CellCountingStage())
+	assert.Equal(t, [3]bool{true, false, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]bool{false, false, false}, summary.StagesActivated)
+	assert.Equal(t, false, summary.ControlPanelRankingPoint)
+	assert.Equal(t, 189, summary.Score)
+	score.TeleopPeriodStarted = true
+
+	score.TeleopCellsOuter[1]--
+	summary = score.Summarize(score.Fouls)
+	assert.Equal(t, Stage2, score.CellCountingStage())
+	assert.Equal(t, [3]bool{true, false, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]bool{true, false, false}, summary.StagesActivated)
+	assert.Equal(t, false, summary.ControlPanelRankingPoint)
+	assert.Equal(t, 187, summary.Score)
+	score.TeleopCellsOuter[1]++
+
+	score.RotationControl = false
+	summary = score.Summarize(score.Fouls)
+	assert.Equal(t, Stage2, score.CellCountingStage())
+	assert.Equal(t, [3]bool{true, true, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]bool{true, false, false}, summary.StagesActivated)
+	assert.Equal(t, false, summary.ControlPanelRankingPoint)
+	assert.Equal(t, 189, summary.Score)
+	score.RotationControl = true
+
+	score.TeleopCellsInner[2] -= 3
+	summary = score.Summarize(score.Fouls)
+	assert.Equal(t, Stage3, score.CellCountingStage())
+	assert.Equal(t, [3]bool{true, true, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]bool{true, true, false}, summary.StagesActivated)
+	assert.Equal(t, false, summary.ControlPanelRankingPoint)
+	assert.Equal(t, 190, summary.Score)
+	score.TeleopCellsInner[2] += 3
+
+	score.PositionControl = false
+	summary = score.Summarize(score.Fouls)
+	assert.Equal(t, Stage3, score.CellCountingStage())
+	assert.Equal(t, [3]bool{true, true, true}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]bool{true, true, false}, summary.StagesActivated)
+	assert.Equal(t, false, summary.ControlPanelRankingPoint)
+	assert.Equal(t, 199, summary.Score)
+
+	// Test endgame boundary conditions.
+	score = TestScore1()
+	assert.Equal(t, true, score.Summarize(score.Fouls).EndgameRankingPoint)
+	score.EndgameStatuses[0] = None
+	assert.Equal(t, false, score.Summarize(score.Fouls).EndgameRankingPoint)
+	score.RungIsLevel = true
+	assert.Equal(t, true, score.Summarize(score.Fouls).EndgameRankingPoint)
+	score.EndgameStatuses[2] = Park
+	assert.Equal(t, false, score.Summarize(score.Fouls).EndgameRankingPoint)
 }
 
 func TestScoreEquals(t *testing.T) {
@@ -73,47 +136,63 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score1.Equals(score3))
 	assert.False(t, score3.Equals(score1))
 
-	score2.RobotStartLevels[2] = 3
+	score2 = TestScore1()
+	score2.ExitedInitiationLine[0] = false
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.SandstormBonuses[0] = false
+	score2.AutoCellsBottom[1] = 3
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.CargoBaysPreMatch[7] = BayCargo
+	score2.AutoCellsOuter[0] = 7
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.CargoBays[5] = BayHatchCargo
+	score2.AutoCellsInner[1] = 8
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.RocketNearLeftBays[0] = BayEmpty
+	score2.TeleopPeriodStarted = !score2.TeleopPeriodStarted
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.RocketNearRightBays[1] = BayHatchCargo
+	score2.TeleopCellsBottom[2] = 30
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.RocketFarLeftBays[2] = BayCargo
+	score2.TeleopCellsOuter[1] = 31
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.RocketFarRightBays[0] = BayHatch
+	score2.TeleopCellsInner[0] = 32
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.RobotEndLevels[1] = 2
+	score2.RotationControl = !score2.RotationControl
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.PositionControl = !score2.PositionControl
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.EndgameStatuses[1] = None
+	assert.False(t, score1.Equals(score2))
+	assert.False(t, score2.Equals(score1))
+
+	score2 = TestScore1()
+	score2.RungIsLevel = !score2.RungIsLevel
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
@@ -141,62 +220,4 @@ func TestScoreEquals(t *testing.T) {
 	score2.ElimDq = !score2.ElimDq
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
-}
-
-func TestIsValidPreMatch(t *testing.T) {
-	score := &Score{}
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.RobotStartLevels = [3]int{1, 2, 3}
-	score.CargoBaysPreMatch = [8]BayStatus{1, 3, 3, 0, 0, 1, 1, 3}
-	score.CargoBays = score.CargoBaysPreMatch
-	assert.True(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.RobotStartLevels[0] = 0
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.SandstormBonuses[1] = true
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.RobotEndLevels[2] = 3
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.CargoBaysPreMatch[0] = BayEmpty
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.CargoBaysPreMatch[1] = BayHatchCargo
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.CargoBaysPreMatch[3] = BayHatch
-	score.CargoBaysPreMatch[4] = BayCargo
-	score.CargoBaysPreMatch[5] = BayEmpty
-	score.CargoBaysPreMatch[6] = BayEmpty
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.CargoBays[0] = BayCargo
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.RocketNearLeftBays[0] = BayHatch
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.RocketNearRightBays[1] = BayHatchCargo
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.RocketFarLeftBays[2] = BayCargo
-	assert.False(t, score.IsValidPreMatch())
-
-	score = TestScoreValidPreMatch()
-	score.RocketFarRightBays[0] = BayHatchCargo
-	assert.False(t, score.IsValidPreMatch())
 }
