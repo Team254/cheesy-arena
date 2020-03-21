@@ -31,6 +31,9 @@ type Rankings []*Ranking
 func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentScore *ScoreSummary, disqualified bool) {
 	fields.Played += 1
 
+	// Store a random value to be used as the last tiebreaker if necessary.
+	fields.Random = rand.Float64()
+
 	if disqualified {
 		// Don't award any points.
 		fields.Disqualifications += 1
@@ -58,9 +61,6 @@ func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentSco
 	fields.AutoPoints += ownScore.AutoPoints
 	fields.EndgamePoints += ownScore.EndgamePoints
 	fields.TeleopPoints += ownScore.TeleopPowerCellPoints + ownScore.ControlPanelPoints
-
-	// Store a random value to be used as the last tiebreaker if necessary.
-	fields.Random = rand.Float64()
 }
 
 // Helper function to implement the required interface for Sort.

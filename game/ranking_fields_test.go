@@ -32,7 +32,7 @@ func TestAddScoreSummary(t *testing.T) {
 
 	// Add a disqualification.
 	rankingFields.AddScoreSummary(blueSummary, redSummary, true)
-	assert.Equal(t, RankingFields{6, 205, 200, 248, 0.6559562651954052, 1, 1, 1, 1, 4}, rankingFields)
+	assert.Equal(t, RankingFields{6, 205, 200, 248, 0.05434383959970039, 1, 1, 1, 1, 4}, rankingFields)
 }
 
 func TestSortRankings(t *testing.T) {
