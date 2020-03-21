@@ -41,7 +41,7 @@ body[data-mode=fieldReset] .mode#fieldReset {
   bottom: 0;
   left: 0;
   right: 0;
-  width: 70%;
+  height: 105%;
   margin: auto auto;
 }
 
