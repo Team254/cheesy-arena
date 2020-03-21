@@ -126,6 +126,30 @@ func TestScoreSummaryBoundaryConditions(t *testing.T) {
 	assert.Equal(t, false, score.Summarize(score.Fouls).EndgameRankingPoint)
 }
 
+func TestScoreSummaryRankingPointFoul(t *testing.T) {
+	fouls := []Foul{{14, 0, 0}}
+	score1 := TestScore1()
+	score2 := TestScore2()
+
+	summary := score1.Summarize([]Foul{})
+	assert.Equal(t, 0, summary.FoulPoints)
+	assert.Equal(t, false, summary.ControlPanelRankingPoint)
+	assert.Equal(t, true, summary.EndgameRankingPoint)
+	summary = score1.Summarize(fouls)
+	assert.Equal(t, 0, summary.FoulPoints)
+	assert.Equal(t, true, summary.ControlPanelRankingPoint)
+	assert.Equal(t, true, summary.EndgameRankingPoint)
+
+	summary = score2.Summarize([]Foul{})
+	assert.Equal(t, 0, summary.FoulPoints)
+	assert.Equal(t, true, summary.ControlPanelRankingPoint)
+	assert.Equal(t, false, summary.EndgameRankingPoint)
+	summary = score2.Summarize(fouls)
+	assert.Equal(t, 0, summary.FoulPoints)
+	assert.Equal(t, true, summary.ControlPanelRankingPoint)
+	assert.Equal(t, false, summary.EndgameRankingPoint)
+}
+
 func TestScoreEquals(t *testing.T) {
 	score1 := TestScore1()
 	score2 := TestScore1()

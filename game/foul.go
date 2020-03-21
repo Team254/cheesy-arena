@@ -18,7 +18,7 @@ func (foul *Foul) Rule() *Rule {
 
 // Returns the number of points that the foul adds to the opposing alliance's score.
 func (foul *Foul) PointValue() int {
-	if foul.Rule() == nil {
+	if foul.Rule() == nil || foul.Rule().IsRankingPoint {
 		return 0
 	}
 	if foul.Rule().IsTechnical {

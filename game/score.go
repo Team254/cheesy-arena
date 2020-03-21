@@ -123,6 +123,14 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 		summary.FoulPoints += foul.PointValue()
 	}
 
+	// Check for the opponent fouls that automatically trigger a ranking point.
+	for _, foul := range opponentFouls {
+		if foul.Rule() != nil && foul.Rule().IsRankingPoint {
+			summary.ControlPanelRankingPoint = true
+			break
+		}
+	}
+
 	summary.Score = summary.AutoPoints + summary.TeleopPowerCellPoints + summary.ControlPanelPoints +
 		summary.EndgamePoints + summary.FoulPoints
 
