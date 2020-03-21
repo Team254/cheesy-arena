@@ -75,7 +75,9 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))
 	eventSettings.TeleopDurationSec, _ = strconv.Atoi(r.PostFormValue("teleopDurationSec"))
 	eventSettings.WarningRemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warningRemainingDurationSec"))
-	eventSettings.HabDockingThreshold, _ = strconv.Atoi(r.PostFormValue("habDockingThreshold"))
+	eventSettings.Stage1Capacity, _ = strconv.Atoi(r.PostFormValue("stage1Capacity"))
+	eventSettings.Stage2Capacity, _ = strconv.Atoi(r.PostFormValue("stage2Capacity"))
+	eventSettings.Stage3Capacity, _ = strconv.Atoi(r.PostFormValue("stage3Capacity"))
 
 	if eventSettings.Ap2TeamChannel != 0 && eventSettings.Ap2TeamChannel == eventSettings.ApTeamChannel {
 		web.renderSettings(w, r, "Cannot use same channel for both access points.")

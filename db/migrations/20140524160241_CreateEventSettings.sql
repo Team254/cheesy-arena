@@ -31,7 +31,9 @@ CREATE TABLE event_settings (
   pausedurationsec int,
   teleopdurationsec int,
   warningremainingdurationsec int,
-  habdockingthreshold int
+  stage1capacity int,
+  stage2capacity int,
+  stage3capacity int
 );
 
 -- +goose Down

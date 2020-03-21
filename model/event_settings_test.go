@@ -16,7 +16,8 @@ func TestEventSettingsReadWrite(t *testing.T) {
 	assert.Equal(t, EventSettings{Id: 0, Name: "Untitled Event", NumElimAlliances: 8, SelectionRound2Order: "L",
 		SelectionRound3Order: "", TBADownloadEnabled: true, ApTeamChannel: 157, ApAdminChannel: 0,
 		ApAdminWpaKey: "1234Five", WarmupDurationSec: 0, AutoDurationSec: 15, PauseDurationSec: 2,
-		TeleopDurationSec: 135, WarningRemainingDurationSec: 30, HabDockingThreshold: 15}, *eventSettings)
+		TeleopDurationSec: 135, WarningRemainingDurationSec: 30, Stage1Capacity: 9, Stage2Capacity: 20,
+		Stage3Capacity: 20}, *eventSettings)
 
 	eventSettings.Name = "Chezy Champs"
 	eventSettings.NumElimAlliances = 6

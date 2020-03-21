@@ -158,8 +158,9 @@ func (arena *Arena) LoadSettings() error {
 	game.UpdateMatchSounds()
 	arena.MatchTimingNotifier.Notify()
 
-	// TODO(pat): Customize 2020 scoring settings here.
-	//game.HabDockingThreshold = settings.HabDockingThreshold
+	game.StageCapacities[game.Stage1] = settings.Stage1Capacity
+	game.StageCapacities[game.Stage2] = settings.Stage2Capacity
+	game.StageCapacities[game.Stage3] = settings.Stage3Capacity
 
 	return nil
 }

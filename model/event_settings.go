@@ -38,7 +38,9 @@ type EventSettings struct {
 	PauseDurationSec            int
 	TeleopDurationSec           int
 	WarningRemainingDurationSec int
-	HabDockingThreshold         int
+	Stage1Capacity              int
+	Stage2Capacity              int
+	Stage3Capacity              int
 }
 
 const eventSettingsId = 0
@@ -62,7 +64,9 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		eventSettings.PauseDurationSec = game.MatchTiming.PauseDurationSec
 		eventSettings.TeleopDurationSec = game.MatchTiming.TeleopDurationSec
 		eventSettings.WarningRemainingDurationSec = game.MatchTiming.WarningRemainingDurationSec
-		eventSettings.HabDockingThreshold = 15
+		eventSettings.Stage1Capacity = game.StageCapacities[game.Stage1]
+		eventSettings.Stage2Capacity = game.StageCapacities[game.Stage2]
+		eventSettings.Stage3Capacity = game.StageCapacities[game.Stage3]
 
 		err = database.eventSettingsMap.Insert(eventSettings)
 		if err != nil {
