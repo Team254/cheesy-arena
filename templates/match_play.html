@@ -40,9 +40,11 @@
                     <a href="/match_play/{{$match.Id}}/load">
                       <b class="btn btn-info btn-xs">Load</b>
                     </a>
-                    <a href="/match_play/{{$match.Id}}/show_result">
-                      <b class="btn btn-info btn-xs">Show Result</b>
-                    </a>
+                    {{if eq $match.Status "complete"}}
+                      <a href="/match_play/{{$match.Id}}/show_result">
+                        <b class="btn btn-info btn-xs">Show Result</b>
+                      </a>
+                    {{end}}
                   </td>
                 </tr>
               {{end}}
