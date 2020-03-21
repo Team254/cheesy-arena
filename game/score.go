@@ -25,6 +25,7 @@ type ScoreSummary struct {
 	AutoPowerCellPoints      int
 	AutoPoints               int
 	TeleopPowerCellPoints    int
+	PowerCellPoints          int
 	ControlPanelPoints       int
 	EndgamePoints            int
 	FoulPoints               int
@@ -97,6 +98,7 @@ func (score *Score) Summarize(opponentFouls []Foul, teleopStarted bool) *ScoreSu
 		summary.TeleopPowerCellPoints += 2 * score.TeleopCellsOuter[i]
 		summary.TeleopPowerCellPoints += 3 * score.TeleopCellsInner[i]
 	}
+	summary.PowerCellPoints = summary.AutoPowerCellPoints + summary.TeleopPowerCellPoints
 
 	// Calculate control panel points and stages.
 	for i := Stage1; i <= Stage3; i++ {
