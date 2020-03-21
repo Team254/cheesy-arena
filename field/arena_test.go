@@ -70,13 +70,6 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 		assert.Contains(t, err.Error(), "Cannot start match until all robots are connected or bypassed")
 	}
 	arena.AllianceStations["B3"].Bypass = true
-	err = arena.checkCanStartMatch()
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Cannot start match until pre-match scoring is set")
-	}
-
-	// Check scoring constraints.
-	arena.BypassPreMatchScore = true
 	assert.Nil(t, arena.checkCanStartMatch())
 
 	// Check PLC constraints.
@@ -119,7 +112,6 @@ func TestArenaMatchFlow(t *testing.T) {
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].DsConn.RobotLinked = true
-	arena.BypassPreMatchScore = true
 	err = arena.StartMatch()
 	assert.Nil(t, err)
 	arena.Update()
@@ -218,7 +210,6 @@ func TestArenaStateEnforcement(t *testing.T) {
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].Bypass = true
-	arena.BypassPreMatchScore = true
 
 	err := arena.LoadMatch(new(model.Match))
 	assert.Nil(t, err)
@@ -325,7 +316,6 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	for _, station := range arena.AllianceStations {
 		station.DsConn.RobotLinked = true
 	}
-	arena.BypassPreMatchScore = true
 	err = arena.StartMatch()
 	assert.Nil(t, err)
 	arena.MatchState = PreMatch
@@ -499,7 +489,6 @@ func TestAstop(t *testing.T) {
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].Bypass = true
-	arena.BypassPreMatchScore = true
 	err = arena.StartMatch()
 	assert.Nil(t, err)
 	arena.Update()
@@ -605,7 +594,6 @@ func TestArenaTimeout(t *testing.T) {
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].Bypass = true
-	arena.BypassPreMatchScore = true
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
 	assert.NotNil(t, arena.StartTimeout(1))
@@ -642,7 +630,6 @@ func TestSaveTeamHasConnected(t *testing.T) {
 	arena.AllianceStations["B2"].DsConn = &DriverStationConnection{TeamId: 105, RobotLinked: true}
 	arena.AllianceStations["B3"].DsConn = &DriverStationConnection{TeamId: 106, RobotLinked: true}
 	arena.AllianceStations["B3"].Team.City = "Sand Hosay" // Change some other field to verify that it isn't saved.
-	arena.BypassPreMatchScore = true
 	assert.Nil(t, arena.StartMatch())
 
 	// Check that the connection status was saved for the teams that just linked for the first time.

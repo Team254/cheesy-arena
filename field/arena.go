@@ -68,7 +68,6 @@ type Arena struct {
 	AllianceStationDisplayMode string
 	AllianceSelectionAlliances [][]model.AllianceTeam
 	LowerThird                 *model.LowerThird
-	BypassPreMatchScore        bool
 	MuteMatchSounds            bool
 	matchAborted               bool
 	soundsPlayed               map[*game.MatchSound]struct{}
@@ -338,7 +337,6 @@ func (arena *Arena) ResetMatch() error {
 	arena.AllianceStations["B1"].Bypass = false
 	arena.AllianceStations["B2"].Bypass = false
 	arena.AllianceStations["B3"].Bypass = false
-	arena.BypassPreMatchScore = false
 	arena.MuteMatchSounds = false
 	return nil
 }
@@ -640,10 +638,6 @@ func (arena *Arena) checkCanStartMatch() error {
 		return err
 	}
 
-	if !arena.BypassPreMatchScore {
-		return fmt.Errorf("Cannot start match until pre-match scoring is set")
-	}
-
 	if arena.EventSettings.PlcAddress != "" {
 		if !arena.Plc.IsHealthy {
 			return fmt.Errorf("Cannot start match while PLC is not healthy.")
@@ -735,11 +729,9 @@ func (arena *Arena) handlePlcOutput() {
 		// not input, or blinking green if ready.
 		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
-		preMatchScoreReady := arena.BypassPreMatchScore
-		greenStackLight := redAllianceReady && blueAllianceReady && preMatchScoreReady &&
-			arena.Plc.GetCycleState(2, 0, 2)
-		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, !preMatchScoreReady, greenStackLight)
-		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady && preMatchScoreReady)
+		greenStackLight := redAllianceReady && blueAllianceReady && arena.Plc.GetCycleState(2, 0, 2)
+		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, greenStackLight)
+		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady)
 
 		// Turn off lights if all teams become ready.
 		if redAllianceReady && blueAllianceReady {

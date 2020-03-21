@@ -42,9 +42,8 @@ type MatchTimeMessage struct {
 }
 
 type audienceAllianceScoreFields struct {
-	Score                *game.Score
-	ScoreSummary         *game.ScoreSummary
-	IsPreMatchScoreReady bool
+	Score        *game.Score
+	ScoreSummary *game.ScoreSummary
 }
 
 // Instantiates notifiers and configures their message producing methods.
@@ -92,11 +91,10 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 		AllianceStations map[string]*AllianceStation
 		TeamWifiStatuses map[string]network.TeamWifiStatus
 		MatchState
-		BypassPreMatchScore bool
-		CanStartMatch       bool
-		PlcIsHealthy        bool
-		FieldEstop          bool
-	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState, arena.BypassPreMatchScore,
+		CanStartMatch bool
+		PlcIsHealthy  bool
+		FieldEstop    bool
+	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState,
 		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy, arena.Plc.GetFieldEstop()}
 }
 

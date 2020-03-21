@@ -207,8 +207,6 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				continue
 			}
 			web.arena.AllianceStations[station].Bypass = !web.arena.AllianceStations[station].Bypass
-		case "toggleBypassPreMatchScore":
-			web.arena.BypassPreMatchScore = !web.arena.BypassPreMatchScore
 		case "startMatch":
 			args := struct {
 				MuteMatchSounds bool

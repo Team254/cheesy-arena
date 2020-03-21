@@ -296,7 +296,6 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web.arena.AllianceStations["B1"].Bypass = true
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
-	web.arena.BypassPreMatchScore = true
 	ws.Write("startMatch", nil)
 	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, field.StartMatch, web.arena.MatchState)
@@ -356,7 +355,6 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.AllianceStations["B1"].Bypass = true
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
-	web.arena.BypassPreMatchScore = true
 	assert.Nil(t, web.arena.StartMatch())
 	web.arena.Update()
 	messages := readWebsocketMultiple(t, ws, 4)
