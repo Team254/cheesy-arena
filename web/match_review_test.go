@@ -62,18 +62,17 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), " QF4-3 ")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"RobotEndLevels\":[0,3,0]}&blueScoreJson={\"AutoCellsOuter\":[3, 4]," +
+	postBody := "redScoreJson={\"EndgameStatuses\":[0,2,1]}&blueScoreJson={\"AutoCellsOuter\":[3, 4]," +
 		"\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
 
-	// TODO(pat): Update for 2020.
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
-	assert.Contains(t, recorder.Body.String(), ">0<") // The red score
-	assert.Contains(t, recorder.Body.String(), ">0<") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">33<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">28<") // The blue score
 }
 
 func TestMatchReviewCreateNewResult(t *testing.T) {
@@ -95,16 +94,15 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), " QF4-3 ")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"RocketNearLeftBays\":[1,0,2]}&blueScoreJson={\"RocketFarRightBays\":[2,2,2]," +
+	postBody := "redScoreJson={\"TeleopCellsBottom\":[5,1,7,2]}&blueScoreJson={\"TeleopCellsInner\":[2,2,2,2]," +
 		"\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
 	assert.Equal(t, 303, recorder.Code)
 
-	// TODO(pat): Update for 2020.
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
-	assert.Contains(t, recorder.Body.String(), ">0<") // The red score
-	assert.Contains(t, recorder.Body.String(), ">0<") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">18<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">24<") // The blue score
 }

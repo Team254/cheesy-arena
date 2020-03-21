@@ -32,21 +32,26 @@ var renderResults = function(alliance) {
   $("#" + alliance + "Score").html(scoreContent);
 
   // Set the values of the form fields from the JSON results data.
-  for (var i = 0; i < 3; i++) {
+  for (var i = 0; i < 4; i++) {
     var i1 = i + 1;
-    getInputElement(alliance, "RobotStartLevel" + i1, result.score.RobotStartLevels[i]).prop("checked", true);
-    getInputElement(alliance, "SandstormBonus" + i1).prop("checked", result.score.SandstormBonuses[i]);
-    getInputElement(alliance, "RobotEndLevel" + i1, result.score.RobotEndLevels[i]).prop("checked", true);
-    getSelectElement(alliance, "RocketNearLeftBay" + i1).val(result.score.RocketNearLeftBays[i]);
-    getSelectElement(alliance, "RocketNearRightBay" + i1).val(result.score.RocketNearRightBays[i]);
-    getSelectElement(alliance, "RocketFarLeftBay" + i1).val(result.score.RocketFarLeftBays[i]);
-    getSelectElement(alliance, "RocketFarRightBay" + i1).val(result.score.RocketFarRightBays[i]);
+
+    if (i < 2) {
+      getInputElement(alliance, "AutoCellsBottom" + i1).val(result.score.AutoCellsBottom[i]);
+      getInputElement(alliance, "AutoCellsOuter" + i1).val(result.score.AutoCellsOuter[i]);
+      getInputElement(alliance, "AutoCellsInner" + i1).val(result.score.AutoCellsInner[i]);
+    }
+
+    if (i < 3) {
+      getInputElement(alliance, "ExitedInitiationLine" + i1).prop("checked", result.score.ExitedInitiationLine[i]);
+      getInputElement(alliance, "EndgameStatuses" + i1, result.score.EndgameStatuses[i]).prop("checked", true);
+    }
+
+    getInputElement(alliance, "TeleopCellsBottom" + i1).val(result.score.TeleopCellsBottom[i]);
+    getInputElement(alliance, "TeleopCellsOuter" + i1).val(result.score.TeleopCellsOuter[i]);
+    getInputElement(alliance, "TeleopCellsInner" + i1).val(result.score.TeleopCellsInner[i]);
   }
-  for (var i = 0; i < 8; i++) {
-    var i1 = i + 1;
-    getSelectElement(alliance, "CargoBayPreMatch" + i1).val(result.score.CargoBaysPreMatch[i]);
-    getSelectElement(alliance, "CargoBay" + i1).val(result.score.CargoBays[i]);
-  }
+  getInputElement(alliance, "ControlPanelStatus", result.score.ControlPanelStatus).prop("checked", true);
+  getInputElement(alliance, "RungIsLevel").prop("checked", result.score.RungIsLevel);
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
@@ -71,28 +76,34 @@ var updateResults = function(alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.RobotStartLevels = [];
-  result.score.SandstormBonuses = [];
-  result.score.CargoBaysPreMatch = [];
-  result.score.CargoBays = [];
-  result.score.RocketNearLeftBays = [];
-  result.score.RocketNearRightBays = [];
-  result.score.RocketFarLeftBays = [];
-  result.score.RocketFarRightBays = [];
-  result.score.RobotEndLevels = [];
-  for (var i = 0; i < 3; i++) {
-    result.score.RobotStartLevels[i] = parseInt(formData[alliance + "RobotStartLevel" + (i + 1)]);
-    result.score.SandstormBonuses[i] = formData[alliance + "SandstormBonus" + (i + 1)] === "on";
-    result.score.RobotEndLevels[i] = parseInt(formData[alliance + "RobotEndLevel" + (i + 1)]);
-    result.score.RocketNearLeftBays[i] = parseInt(formData[alliance + "RocketNearLeftBay" + (i + 1)]);
-    result.score.RocketNearRightBays[i] = parseInt(formData[alliance + "RocketNearRightBay" + (i + 1)]);
-    result.score.RocketFarLeftBays[i] = parseInt(formData[alliance + "RocketFarLeftBay" + (i + 1)]);
-    result.score.RocketFarRightBays[i] = parseInt(formData[alliance + "RocketFarRightBay" + (i + 1)]);
+  result.score.ExitedInitiationLine = [];
+  result.score.AutoCellsBottom = [];
+  result.score.AutoCellsOuter = [];
+  result.score.AutoCellsInner = [];
+  result.score.TeleopCellsBottom = [];
+  result.score.TeleopCellsOuter = [];
+  result.score.TeleopCellsInner = [];
+  result.score.EndgameStatuses = [];
+  for (var i = 0; i < 4; i++) {
+    var i1 = i + 1;
+
+    if (i < 2) {
+      result.score.AutoCellsBottom[i] = parseInt(formData[alliance + "AutoCellsBottom" + i1]);
+      result.score.AutoCellsOuter[i] = parseInt(formData[alliance + "AutoCellsOuter" + i1]);
+      result.score.AutoCellsInner[i] = parseInt(formData[alliance + "AutoCellsInner" + i1]);
+    }
+
+    if (i < 3) {
+      result.score.ExitedInitiationLine[i] = formData[alliance + "ExitedInitiationLine" + i1] === "on";
+      result.score.EndgameStatuses[i] = parseInt(formData[alliance + "EndgameStatuses" + i1]);
+    }
+
+    result.score.TeleopCellsBottom[i] = parseInt(formData[alliance + "TeleopCellsBottom" + i1]);
+    result.score.TeleopCellsOuter[i] = parseInt(formData[alliance + "TeleopCellsOuter" + i1]);
+    result.score.TeleopCellsInner[i] = parseInt(formData[alliance + "TeleopCellsInner" + i1]);
   }
-  for (var i = 0; i < 8; i++) {
-    result.score.CargoBaysPreMatch[i] = parseInt(formData[alliance + "CargoBayPreMatch" + (i + 1)]);
-    result.score.CargoBays[i] = parseInt(formData[alliance + "CargoBay" + (i + 1)]);
-  }
+  result.score.ControlPanelStatus = parseInt(formData[alliance + "ControlPanelStatus"]);
+  result.score.RungIsLevel = formData[alliance + "RungIsLevel"] === "on";
 
   result.score.Fouls = [];
   for (var i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {
