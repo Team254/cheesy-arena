@@ -10,16 +10,14 @@ type Score struct {
 	AutoCellsBottom      [2]int
 	AutoCellsOuter       [2]int
 	AutoCellsInner       [2]int
-	TeleopPeriodStarted  bool
 	TeleopCellsBottom    [4]int
 	TeleopCellsOuter     [4]int
 	TeleopCellsInner     [4]int
-	RotationControl      bool
-	PositionControl      bool
-	EndgameStatuses      [3]EndgameStatus
-	RungIsLevel          bool
-	Fouls                []Foul
-	ElimDq               bool
+	ControlPanelStatus
+	EndgameStatuses [3]EndgameStatus
+	RungIsLevel     bool
+	Fouls           []Foul
+	ElimDq          bool
 }
 
 type ScoreSummary struct {
@@ -54,17 +52,25 @@ const (
 	StageExtra
 )
 
+type ControlPanelStatus int
+
+const (
+	ControlPanelNone ControlPanelStatus = iota
+	ControlPanelRotation
+	ControlPanelPosition
+)
+
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
 
 const (
-	None EndgameStatus = iota
-	Park
-	Hang
+	EndgameNone EndgameStatus = iota
+	EndgamePark
+	EndgameHang
 )
 
 // Calculates and returns the summary fields used for ranking and display.
-func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
+func (score *Score) Summarize(opponentFouls []Foul, teleopStarted bool) *ScoreSummary {
 	summary := new(ScoreSummary)
 
 	// Leave the score at zero if the team was disqualified.
@@ -94,8 +100,8 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 
 	// Calculate control panel points and stages.
 	for i := Stage1; i <= Stage3; i++ {
-		summary.StagesAtCapacity[i] = score.StageAtCapacity(i)
-		summary.StagesActivated[i] = score.StageActivated(i)
+		summary.StagesAtCapacity[i] = score.stageAtCapacity(i, teleopStarted)
+		summary.StagesActivated[i] = score.stageActivated(i, teleopStarted)
 	}
 	if summary.StagesActivated[Stage2] {
 		summary.ControlPanelPoints += 10
@@ -106,14 +112,16 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	}
 
 	// Calculate endgame points.
+	anyHang := false
 	for _, status := range score.EndgameStatuses {
-		if status == Park {
+		if status == EndgamePark {
 			summary.EndgamePoints += 5
-		} else if status == Hang {
+		} else if status == EndgameHang {
 			summary.EndgamePoints += 25
+			anyHang = true
 		}
 	}
-	if summary.EndgamePoints > 0 && score.RungIsLevel {
+	if score.RungIsLevel && anyHang {
 		summary.EndgamePoints += 15
 	}
 	summary.EndgameRankingPoint = summary.EndgamePoints >= 65
@@ -143,12 +151,10 @@ func (score *Score) Equals(other *Score) bool {
 		score.AutoCellsBottom != other.AutoCellsBottom ||
 		score.AutoCellsOuter != other.AutoCellsOuter ||
 		score.AutoCellsInner != other.AutoCellsInner ||
-		score.TeleopPeriodStarted != other.TeleopPeriodStarted ||
 		score.TeleopCellsBottom != other.TeleopCellsBottom ||
 		score.TeleopCellsOuter != other.TeleopCellsOuter ||
 		score.TeleopCellsInner != other.TeleopCellsInner ||
-		score.RotationControl != other.RotationControl ||
-		score.PositionControl != other.PositionControl ||
+		score.ControlPanelStatus != other.ControlPanelStatus ||
 		score.EndgameStatuses != other.EndgameStatuses ||
 		score.RungIsLevel != other.RungIsLevel ||
 		score.ElimDq != other.ElimDq ||
@@ -166,22 +172,22 @@ func (score *Score) Equals(other *Score) bool {
 }
 
 // Returns the Stage (1-3) that the score represents, in terms of which Stage scored power cells should count towards.
-func (score *Score) CellCountingStage() Stage {
-	if score.StageActivated(Stage3) {
+func (score *Score) CellCountingStage(teleopStarted bool) Stage {
+	if score.stageActivated(Stage3, teleopStarted) {
 		return StageExtra
 	}
-	if score.StageActivated(Stage2) {
+	if score.stageActivated(Stage2, teleopStarted) {
 		return Stage3
 	}
-	if score.StageActivated(Stage1) {
+	if score.stageActivated(Stage1, teleopStarted) {
 		return Stage2
 	}
 	return Stage1
 }
 
 // Returns true if the preconditions are satisfied for the given Stage to be activated.
-func (score *Score) StageAtCapacity(stage Stage) bool {
-	if stage > Stage1 && !score.StageActivated(stage-1) {
+func (score *Score) stageAtCapacity(stage Stage, teleopStarted bool) bool {
+	if stage > Stage1 && !score.stageActivated(stage-1, teleopStarted) {
 		return false
 	}
 	if capacity, ok := StageCapacities[stage]; ok && score.stagePowerCells(stage) >= capacity {
@@ -191,15 +197,15 @@ func (score *Score) StageAtCapacity(stage Stage) bool {
 }
 
 // Returns true if the given Stage has been activated.
-func (score *Score) StageActivated(stage Stage) bool {
-	if score.StageAtCapacity(stage) {
+func (score *Score) stageActivated(stage Stage, teleopStarted bool) bool {
+	if score.stageAtCapacity(stage, teleopStarted) {
 		switch stage {
 		case Stage1:
-			return score.TeleopPeriodStarted
+			return teleopStarted
 		case Stage2:
-			return score.RotationControl
+			return score.ControlPanelStatus >= ControlPanelRotation
 		case Stage3:
-			return score.PositionControl
+			return score.ControlPanelStatus == ControlPanelPosition
 		}
 	}
 	return false

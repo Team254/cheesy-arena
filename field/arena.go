@@ -507,12 +507,14 @@ func (arena *Arena) Run() {
 
 // Calculates the red alliance score summary for the given realtime snapshot.
 func (arena *Arena) RedScoreSummary() *game.ScoreSummary {
-	return arena.RedRealtimeScore.CurrentScore.Summarize(arena.BlueRealtimeScore.CurrentScore.Fouls)
+	return arena.RedRealtimeScore.CurrentScore.Summarize(arena.BlueRealtimeScore.CurrentScore.Fouls,
+		arena.MatchState >= TeleopPeriod)
 }
 
 // Calculates the blue alliance score summary for the given realtime snapshot.
 func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
-	return arena.BlueRealtimeScore.CurrentScore.Summarize(arena.RedRealtimeScore.CurrentScore.Fouls)
+	return arena.BlueRealtimeScore.CurrentScore.Summarize(arena.RedRealtimeScore.CurrentScore.Fouls,
+		arena.MatchState >= TeleopPeriod)
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.

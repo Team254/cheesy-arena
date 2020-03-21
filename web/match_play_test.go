@@ -236,8 +236,8 @@ func TestCommitCards(t *testing.T) {
 	matchResult.RedCards = map[string]string{"1": "red"}
 	err = web.commitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
-	assert.Equal(t, 0, matchResult.RedScoreSummary().Score)
-	assert.NotEqual(t, 0, matchResult.BlueScoreSummary().Score)
+	assert.Equal(t, 0, matchResult.RedScoreSummary(true).Score)
+	assert.NotEqual(t, 0, matchResult.BlueScoreSummary(true).Score)
 }
 
 func TestMatchPlayWebsocketCommands(t *testing.T) {

@@ -14,8 +14,8 @@ func TestAddScoreSummary(t *testing.T) {
 	rand.Seed(0)
 	redScore := TestScore1()
 	blueScore := TestScore2()
-	redSummary := redScore.Summarize(blueScore.Fouls)
-	blueSummary := blueScore.Summarize(redScore.Fouls)
+	redSummary := redScore.Summarize(blueScore.Fouls, true)
+	blueSummary := blueScore.Summarize(redScore.Fouls, true)
 	rankingFields := RankingFields{}
 
 	// Add a loss.

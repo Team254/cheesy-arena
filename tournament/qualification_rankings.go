@@ -131,9 +131,9 @@ func addMatchResultToRankings(rankings map[int]*game.Ranking, teamId int, matchR
 	}
 
 	if isRed {
-		ranking.AddScoreSummary(matchResult.RedScoreSummary(), matchResult.BlueScoreSummary(), disqualified)
+		ranking.AddScoreSummary(matchResult.RedScoreSummary(true), matchResult.BlueScoreSummary(true), disqualified)
 	} else {
-		ranking.AddScoreSummary(matchResult.BlueScoreSummary(), matchResult.RedScoreSummary(), disqualified)
+		ranking.AddScoreSummary(matchResult.BlueScoreSummary(true), matchResult.RedScoreSummary(true), disqualified)
 	}
 }
 

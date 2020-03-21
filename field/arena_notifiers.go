@@ -204,8 +204,8 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		BlueCards        map[string]string
 		SeriesStatus     string
 		SeriesLeader     string
-	}{arena.SavedMatch.CapitalizedType(), arena.SavedMatch, arena.SavedMatchResult.RedScoreSummary(),
-		arena.SavedMatchResult.BlueScoreSummary(), arena.SavedMatchResult.RedScore.Fouls,
+	}{arena.SavedMatch.CapitalizedType(), arena.SavedMatch, arena.SavedMatchResult.RedScoreSummary(true),
+		arena.SavedMatchResult.BlueScoreSummary(true), arena.SavedMatchResult.RedScore.Fouls,
 		arena.SavedMatchResult.BlueScore.Fouls,
 		getRulesViolated(arena.SavedMatchResult.RedScore.Fouls, arena.SavedMatchResult.BlueScore.Fouls),
 		arena.SavedMatchResult.RedCards, arena.SavedMatchResult.BlueCards, seriesStatus, seriesLeader}
