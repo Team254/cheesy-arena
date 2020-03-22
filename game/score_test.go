@@ -22,7 +22,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 75, redSummary.EndgamePoints)
 	assert.Equal(t, 0, redSummary.FoulPoints)
 	assert.Equal(t, 217, redSummary.Score)
-	assert.Equal(t, [3]bool{true, true, false}, redSummary.StagesAtCapacity)
+	assert.Equal(t, [3]int{0, 0, 18}, redSummary.StagePowerCellsRemaining)
 	assert.Equal(t, [3]bool{true, true, false}, redSummary.StagesActivated)
 	assert.Equal(t, false, redSummary.ControlPanelRankingPoint)
 	assert.Equal(t, true, redSummary.EndgameRankingPoint)
@@ -37,7 +37,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 50, blueSummary.EndgamePoints)
 	assert.Equal(t, 33, blueSummary.FoulPoints)
 	assert.Equal(t, 252, blueSummary.Score)
-	assert.Equal(t, [3]bool{true, true, true}, blueSummary.StagesAtCapacity)
+	assert.Equal(t, [3]int{0, 0, 0}, blueSummary.StagePowerCellsRemaining)
 	assert.Equal(t, [3]bool{true, true, true}, blueSummary.StagesActivated)
 	assert.Equal(t, true, blueSummary.ControlPanelRankingPoint)
 	assert.Equal(t, false, blueSummary.EndgameRankingPoint)
@@ -96,7 +96,7 @@ func TestScoreSummaryBoundaryConditions(t *testing.T) {
 	score := TestScore2()
 	summary := score.Summarize(score.Fouls, true)
 	assert.Equal(t, StageExtra, score.CellCountingStage(true))
-	assert.Equal(t, [3]bool{true, true, true}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]int{0, 0, 0}, summary.StagePowerCellsRemaining)
 	assert.Equal(t, [3]bool{true, true, true}, summary.StagesActivated)
 	assert.Equal(t, true, summary.ControlPanelRankingPoint)
 	assert.Equal(t, 219, summary.Score)
@@ -104,7 +104,7 @@ func TestScoreSummaryBoundaryConditions(t *testing.T) {
 	score.TeleopCellsInner[0]--
 	summary = score.Summarize(score.Fouls, true)
 	assert.Equal(t, Stage1, score.CellCountingStage(true))
-	assert.Equal(t, [3]bool{false, false, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]int{1, 0, 0}, summary.StagePowerCellsRemaining)
 	assert.Equal(t, [3]bool{false, false, false}, summary.StagesActivated)
 	assert.Equal(t, false, summary.ControlPanelRankingPoint)
 	assert.Equal(t, 186, summary.Score)
@@ -112,42 +112,42 @@ func TestScoreSummaryBoundaryConditions(t *testing.T) {
 
 	summary = score.Summarize(score.Fouls, false)
 	assert.Equal(t, Stage1, score.CellCountingStage(false))
-	assert.Equal(t, [3]bool{true, false, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]int{0, 0, 0}, summary.StagePowerCellsRemaining)
 	assert.Equal(t, [3]bool{false, false, false}, summary.StagesActivated)
 	assert.Equal(t, false, summary.ControlPanelRankingPoint)
 	assert.Equal(t, 189, summary.Score)
 
-	score.TeleopCellsOuter[1]--
+	score.TeleopCellsOuter[1] -= 2
 	summary = score.Summarize(score.Fouls, true)
 	assert.Equal(t, Stage2, score.CellCountingStage(true))
-	assert.Equal(t, [3]bool{true, false, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]int{0, 2, 0}, summary.StagePowerCellsRemaining)
 	assert.Equal(t, [3]bool{true, false, false}, summary.StagesActivated)
 	assert.Equal(t, false, summary.ControlPanelRankingPoint)
-	assert.Equal(t, 187, summary.Score)
-	score.TeleopCellsOuter[1]++
+	assert.Equal(t, 185, summary.Score)
+	score.TeleopCellsOuter[1] += 2
 
 	score.ControlPanelStatus = ControlPanelNone
 	summary = score.Summarize(score.Fouls, true)
 	assert.Equal(t, Stage2, score.CellCountingStage(true))
-	assert.Equal(t, [3]bool{true, true, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]int{0, 0, 0}, summary.StagePowerCellsRemaining)
 	assert.Equal(t, [3]bool{true, false, false}, summary.StagesActivated)
 	assert.Equal(t, false, summary.ControlPanelRankingPoint)
 	assert.Equal(t, 189, summary.Score)
 	score.ControlPanelStatus = ControlPanelPosition
 
-	score.TeleopCellsInner[2] -= 3
+	score.TeleopCellsInner[2] -= 5
 	summary = score.Summarize(score.Fouls, true)
 	assert.Equal(t, Stage3, score.CellCountingStage(true))
-	assert.Equal(t, [3]bool{true, true, false}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]int{0, 0, 3}, summary.StagePowerCellsRemaining)
 	assert.Equal(t, [3]bool{true, true, false}, summary.StagesActivated)
 	assert.Equal(t, false, summary.ControlPanelRankingPoint)
-	assert.Equal(t, 190, summary.Score)
-	score.TeleopCellsInner[2] += 3
+	assert.Equal(t, 184, summary.Score)
+	score.TeleopCellsInner[2] += 5
 
 	score.ControlPanelStatus = ControlPanelRotation
 	summary = score.Summarize(score.Fouls, true)
 	assert.Equal(t, Stage3, score.CellCountingStage(true))
-	assert.Equal(t, [3]bool{true, true, true}, summary.StagesAtCapacity)
+	assert.Equal(t, [3]int{0, 0, 0}, summary.StagePowerCellsRemaining)
 	assert.Equal(t, [3]bool{true, true, false}, summary.StagesActivated)
 	assert.Equal(t, false, summary.ControlPanelRankingPoint)
 	assert.Equal(t, 199, summary.Score)

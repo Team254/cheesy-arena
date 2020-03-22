@@ -5,6 +5,8 @@
 
 package game
 
+import "math"
+
 type Score struct {
 	ExitedInitiationLine [3]bool
 	AutoCellsBottom      [2]int
@@ -30,7 +32,7 @@ type ScoreSummary struct {
 	EndgamePoints            int
 	FoulPoints               int
 	Score                    int
-	StagesAtCapacity         [3]bool
+	StagePowerCellsRemaining [3]int
 	StagesActivated          [3]bool
 	ControlPanelRankingPoint bool
 	EndgameRankingPoint      bool
@@ -102,8 +104,8 @@ func (score *Score) Summarize(opponentFouls []Foul, teleopStarted bool) *ScoreSu
 
 	// Calculate control panel points and stages.
 	for i := Stage1; i <= Stage3; i++ {
-		summary.StagesAtCapacity[i] = score.stageAtCapacity(i, teleopStarted)
 		summary.StagesActivated[i] = score.stageActivated(i, teleopStarted)
+		summary.StagePowerCellsRemaining[i] = int(math.Max(0, float64(StageCapacities[i]-score.stagePowerCells(i))))
 	}
 	if summary.StagesActivated[Stage2] {
 		summary.ControlPanelPoints += 10

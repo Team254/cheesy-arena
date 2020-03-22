@@ -27,7 +27,8 @@ var logoUp = "10px";
 var logoDown = $("#logo").css("top");
 var scoreIn = $(".score").css("width");
 var scoreMid = "135px";
-var scoreOut = "205px";
+var scoreOut = "255px";
+var scoreFieldsOut = "40px";
 
 // Handles a websocket message to change which screen is displayed.
 var handleAudienceDisplayMode = function(targetScreen) {
@@ -82,8 +83,14 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HabClimbPoints);
-  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HabClimbPoints);
+  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints);
+  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints);
+
+  for (var i = 0; i < 3; i++) {
+    var i1 = i + 1;
+    setPowerCellText($("#" + redSide + "Stage" + i1), data.Red.ScoreSummary, i);
+    setPowerCellText($("#" + blueSide + "Stage" + i1), data.Blue.ScoreSummary, i);
+  }
 };
 
 // Handles a websocket message to populate the final score data.
@@ -95,15 +102,15 @@ var handleScorePosted = function(data) {
   $("#" + redSide + "FinalTeam1Avatar").attr("src", getAvatarUrl(data.Match.Red1));
   $("#" + redSide + "FinalTeam2Avatar").attr("src", getAvatarUrl(data.Match.Red2));
   $("#" + redSide + "FinalTeam3Avatar").attr("src", getAvatarUrl(data.Match.Red3));
-  $("#" + redSide + "FinalSandstormBonusPoints").text(data.RedScoreSummary.SandstormBonusPoints);
-  $("#" + redSide + "FinalHatchPanelPoints").text(data.RedScoreSummary.HatchPanelPoints);
-  $("#" + redSide + "FinalCargoPoints").text(data.RedScoreSummary.CargoPoints);
-  $("#" + redSide + "FinalHabClimbPoints").text(data.RedScoreSummary.HabClimbPoints);
+  $("#" + redSide + "FinalInitiationLinePoints").text(data.RedScoreSummary.InitiationLinePoints);
+  $("#" + redSide + "FinalPowerCellPoints").text(data.RedScoreSummary.PowerCellPoints);
+  $("#" + redSide + "FinalControlPanelPoints").text(data.RedScoreSummary.ControlPanelPoints);
+  $("#" + redSide + "FinalEndgamePoints").text(data.RedScoreSummary.EndgamePoints);
   $("#" + redSide + "FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
-  $("#" + redSide + "FinalCompleteRocket").html(data.RedScoreSummary.CompleteRocket ? "&#x2714;" : "&#x2718;");
-  $("#" + redSide + "FinalCompleteRocket").attr("data-checked", data.RedScoreSummary.CompleteRocket);
-  $("#" + redSide + "FinalHabDocking").html(data.RedScoreSummary.HabDocking ? "&#x2714;" : "&#x2718;");
-  $("#" + redSide + "FinalHabDocking").attr("data-checked", data.RedScoreSummary.HabDocking);
+  $("#" + redSide + "FinalControlPanelRankingPoint").html(data.RedScoreSummary.ControlPanelRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + redSide + "FinalControlPanelRankingPoint").attr("data-checked", data.RedScoreSummary.ControlPanelRankingPoint);
+  $("#" + redSide + "FinalEndgameRankingPoint").html(data.RedScoreSummary.EndgameRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + redSide + "FinalEndgameRankingPoint").attr("data-checked", data.RedScoreSummary.EndgameRankingPoint);
   $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
   $("#" + blueSide + "FinalTeam1").text(data.Match.Blue1);
   $("#" + blueSide + "FinalTeam2").text(data.Match.Blue2);
@@ -111,15 +118,15 @@ var handleScorePosted = function(data) {
   $("#" + blueSide + "FinalTeam1Avatar").attr("src", getAvatarUrl(data.Match.Blue1));
   $("#" + blueSide + "FinalTeam2Avatar").attr("src", getAvatarUrl(data.Match.Blue2));
   $("#" + blueSide + "FinalTeam3Avatar").attr("src", getAvatarUrl(data.Match.Blue3));
-  $("#" + blueSide + "FinalSandstormBonusPoints").text(data.BlueScoreSummary.SandstormBonusPoints);
-  $("#" + blueSide + "FinalHatchPanelPoints").text(data.BlueScoreSummary.HatchPanelPoints);
-  $("#" + blueSide + "FinalCargoPoints").text(data.BlueScoreSummary.CargoPoints);
-  $("#" + blueSide + "FinalHabClimbPoints").text(data.BlueScoreSummary.HabClimbPoints);
+  $("#" + blueSide + "FinalInitiationLinePoints").text(data.BlueScoreSummary.InitiationLinePoints);
+  $("#" + blueSide + "FinalPowerCellPoints").text(data.BlueScoreSummary.PowerCellPoints);
+  $("#" + blueSide + "FinalControlPanelPoints").text(data.BlueScoreSummary.ControlPanelPoints);
+  $("#" + blueSide + "FinalEndgamePoints").text(data.BlueScoreSummary.EndgamePoints);
   $("#" + blueSide + "FinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
-  $("#" + blueSide + "FinalCompleteRocket").html(data.BlueScoreSummary.CompleteRocket ? "&#x2714;" : "&#x2718;");
-  $("#" + blueSide + "FinalCompleteRocket").attr("data-checked", data.BlueScoreSummary.CompleteRocket);
-  $("#" + blueSide + "FinalHabDocking").html(data.BlueScoreSummary.HabDocking ? "&#x2714;" : "&#x2718;");
-  $("#" + blueSide + "FinalHabDocking").attr("data-checked", data.BlueScoreSummary.HabDocking);
+  $("#" + blueSide + "FinalControlPanelRankingPoint").html(data.BlueScoreSummary.ControlPanelRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + blueSide + "FinalControlPanelRankingPoint").attr("data-checked", data.BlueScoreSummary.ControlPanelRankingPoint);
+  $("#" + blueSide + "FinalEndgameRankingPoint").html(data.BlueScoreSummary.EndgameRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + blueSide + "FinalEndgameRankingPoint").attr("data-checked", data.BlueScoreSummary.EndgameRankingPoint);
   $("#finalSeriesStatus").text(data.SeriesStatus);
   $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
   $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);
@@ -181,10 +188,13 @@ var transitionIntroToInMatch = function(callback) {
   $(".avatars").transition({queue: false, opacity: 0}, 500, "ease", function() {
     $(".avatars").hide();
   });
+  $(".score-fields").css("display", "flex");
+  $(".score-fields").transition({queue: false, width: scoreFieldsOut}, 500, "ease");
   $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
   $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function() {
     $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
     $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
+    $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
   });
 };
 
@@ -203,21 +213,27 @@ var transitionIntroToBlank = function(callback) {
 var transitionBlankToInMatch = function(callback) {
   $("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function() {
     $(".teams").css("display", "flex");
+    $(".score-fields").css("display", "flex");
+    $(".score-fields").transition({queue: false, width: scoreFieldsOut}, 500, "ease");
     $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
     $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function() {
       $("#eventMatchInfo").css("display", "flex");
       $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
       $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
       $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease");
+      $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
     });
   });
 };
 
 var transitionInMatchToIntro = function(callback) {
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear");
+  $(".score-fields").transition({queue: false, opacity: 0}, 300, "ease");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
+    $(".score-fields").transition({queue: false, width: 0}, 500, "ease");
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease");
     $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function() {
+      $(".score-fields").hide();
       $(".avatars").css("display", "flex");
       $(".avatars").transition({queue: false, opacity: 1}, 500, "ease", callback);
     });
@@ -227,11 +243,14 @@ var transitionInMatchToIntro = function(callback) {
 var transitionInMatchToBlank = function(callback) {
   $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear");
+  $(".score-fields").transition({queue: false, opacity: 0}, 300, "ease");
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#eventMatchInfo").hide();
+    $(".score-fields").transition({queue: false, width: 0}, 500, "ease");
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease");
     $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function() {
       $(".teams").hide();
+      $(".score-fields").hide();
       $("#overlayCentering").transition(overlayCenteringHideParams, 1000, "ease", callback);
     });
   });
@@ -451,6 +470,20 @@ var initializeSponsorDisplay = function() {
 
 var getAvatarUrl = function(teamId) {
   return "/api/teams/" + teamId + "/avatar";
+};
+
+// Populates the given element on the overlay to represent the given power cell stage.
+var setPowerCellText = function(element, scoreSummary, stage) {
+  var text = "&nbsp;";
+  var opacity = 1;
+  if (scoreSummary.StagesActivated[stage]) {
+    text = "I".repeat(stage + 1);
+    opacity = 0.4;
+  } else if (stage === 0 || scoreSummary.StagesActivated[stage - 1]) {
+    text = scoreSummary.StagePowerCellsRemaining[stage];
+  }
+  element.html(text);
+  element.css("opacity", opacity);
 };
 
 $(function() {

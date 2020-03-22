@@ -97,7 +97,7 @@
   {{"{{#each fouls}}"}}
     <div class="row">
       <div class="col-lg-3 col-lg-offset-1">
-        {{"{{#if IsTechnical}}"}}Tech {{"{{/if}}"}}Foul{{"{{#if IsRankingPoint}}"}}+RP{{"{{/if}}"}}
+        {{"{{#if IsRankingPoint}}"}}Free RP{{"{{else}}"}}{{"{{#if IsTechnical}}"}}Tech {{"{{/if}}"}}Foul{{"{{/if}}"}}
       </div>
       <div class="col-lg-3">Team {{"{{TeamId}}"}}</div>
       <div class="col-lg-3" data-toggle="tooltip" title="{{"{{Description}}"}}">{{"{{RuleNumber}}"}}</div>

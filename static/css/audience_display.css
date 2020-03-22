@@ -57,10 +57,13 @@ html {
   width: 0;
   height: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+}
+.score-right {
+  justify-content: flex-end;
 }
 .avatars {
-  width: 50px;
+  min-width: 50px;
   height: 100%;
   display: none;
   flex-direction: column;
@@ -78,6 +81,19 @@ html {
   align-items: center;
   font-family: "FuturaLTBold";
   font-size: 55px;
+  color: #fff;
+  opacity: 0;
+}
+.score-fields {
+  height: 100%;
+  width: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  font-family: "FuturaLTBold";
+  font-size: 20px;
+  line-height: 25px;
   color: #fff;
   opacity: 0;
 }
