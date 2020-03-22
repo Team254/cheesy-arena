@@ -74,16 +74,6 @@ const (
 	stackLightBlue
 	stackLightBuzzer
 	fieldResetLight
-	cargoShipMagnetRed
-	cargoShipMagnetBlue
-	cargoShipLightRed
-	cargoShipLightBlue
-	sandstormUpRed
-	sandstormUpBlue
-	rocketLightRedNear
-	rocketLightRedFar
-	rocketLightBlueNear
-	rocketLightBlueFar
 	coilCount
 )
 
@@ -108,7 +98,7 @@ func (plc *Plc) Run() {
 				err := plc.connect()
 				if err != nil {
 					log.Printf("PLC error: %v", err)
-					//time.Sleep(time.Second * plcRetryIntevalSec)
+					time.Sleep(time.Second * plcRetryIntevalSec)
 					plc.IsHealthy = false
 					continue
 				}
@@ -179,28 +169,6 @@ func (plc *Plc) SetStackBuzzer(state bool) {
 
 func (plc *Plc) SetFieldResetLight(state bool) {
 	plc.coils[fieldResetLight] = state
-}
-
-func (plc *Plc) SetSandstormUp(state bool) {
-	plc.coils[sandstormUpRed] = state
-	plc.coils[sandstormUpBlue] = state
-}
-
-func (plc *Plc) SetCargoShipLights(state bool) {
-	plc.coils[cargoShipLightRed] = state
-	plc.coils[cargoShipLightBlue] = state
-}
-
-func (plc *Plc) SetCargoShipMagnets(state bool) {
-	plc.coils[cargoShipMagnetRed] = state
-	plc.coils[cargoShipMagnetBlue] = state
-}
-
-func (plc *Plc) SetRocketLights(red, blue bool) {
-	plc.coils[rocketLightRedNear] = red
-	plc.coils[rocketLightRedFar] = red
-	plc.coils[rocketLightBlueNear] = blue
-	plc.coils[rocketLightBlueFar] = blue
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {

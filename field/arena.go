@@ -21,8 +21,7 @@ const (
 	dsPacketPeriodMs         = 250
 	matchEndScoreDwellSec    = 3
 	postTimeoutSec           = 4
-	sandstormUpSec           = 1
-	preLoadNextMatchDelaySec = 10
+	preLoadNextMatchDelaySec = 5
 )
 
 // Progression of match states.
@@ -742,10 +741,6 @@ func (arena *Arena) handlePlcOutput() {
 		if redAllianceReady && blueAllianceReady {
 			arena.Plc.SetFieldResetLight(false)
 		}
-
-		arena.Plc.SetCargoShipLights(true)
-		arena.Plc.SetCargoShipMagnets(true)
-		arena.Plc.SetRocketLights(false, false)
 	case PostMatch:
 		if arena.FieldReset {
 			arena.Plc.SetFieldResetLight(true)
@@ -753,26 +748,14 @@ func (arena *Arena) handlePlcOutput() {
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
 			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
-		arena.Plc.SetCargoShipLights(true)
-		arena.Plc.SetCargoShipMagnets(true)
-		arena.Plc.SetRocketLights(false, false)
 	case AutoPeriod:
 		arena.Plc.SetStackLights(false, false, false, true)
 		fallthrough
 	case PausePeriod:
-		arena.Plc.SetCargoShipLights(false)
 	case TeleopPeriod:
 		arena.Plc.SetStackLights(false, false, false, true)
 		if arena.lastMatchState != TeleopPeriod {
-			arena.Plc.SetSandstormUp(true)
-			go func() {
-				time.Sleep(sandstormUpSec * time.Second)
-				arena.Plc.SetSandstormUp(false)
-			}()
 		}
-		arena.Plc.SetCargoShipLights(false)
-		arena.Plc.SetCargoShipMagnets(false)
-		arena.Plc.SetRocketLights(false, false)
 	}
 }
 
