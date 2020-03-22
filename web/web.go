@@ -189,6 +189,7 @@ func (web *Web) newHandler() http.Handler {
 
 // Writes the given error out as plain text with a status code of 500.
 func handleWebErr(w http.ResponseWriter, err error) {
+	log.Printf("HTTP request error: %v", err)
 	http.Error(w, "Internal server error: "+err.Error(), 500)
 }
 

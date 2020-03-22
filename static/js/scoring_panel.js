@@ -29,31 +29,44 @@ var handleRealtimeScore = function(data) {
     realtimeScore = data.Blue;
   }
   var score = realtimeScore.Score;
+  var summary = realtimeScore.ScoreSummary;
 
   for (var i = 0; i < 3; i++) {
     var i1 = i + 1;
-    $("#robotStartLevel" + i1 + ">.value").text(getRobotStartLevelText(score.RobotStartLevels[i]));
-    $("#robotStartLevel" + i1).attr("data-value", score.RobotStartLevels[i]);
-    $("#sandstormBonus" + i1 + ">.value").text(score.SandstormBonuses[i] ? "Yes" : "No");
-    $("#sandstormBonus" + i1).attr("data-value", score.SandstormBonuses[i]);
-    $("#robotEndLevel" + i1 + ">.value").text(getRobotEndLevelText(score.RobotEndLevels[i]));
-    $("#robotEndLevel" + i1).attr("data-value", score.RobotEndLevels[i]);
-    getBay("rocketNearLeft", i).attr("data-value", score.RocketNearLeftBays[i]);
-    getBay("rocketNearRight", i).attr("data-value", score.RocketNearRightBays[i]);
-    getBay("rocketFarLeft", i).attr("data-value", score.RocketFarLeftBays[i]);
-    getBay("rocketFarRight", i).attr("data-value", score.RocketFarRightBays[i]);
-  }
-  for (var i = 0; i < 8; i++) {
-    getBay("cargoShip", i).attr("data-value", score.CargoBays[i]);
+    $("#exitedInitiationLine" + i1 + ">.value").text(score.ExitedInitiationLine[i] ? "Yes" : "No");
+    $("#exitedInitiationLine" + i1).attr("data-value", score.ExitedInitiationLine[i]);
+    $("#endgameStatus" + i1 + ">.value").text(getEndgameStatusText(score.EndgameStatuses[i]));
+    $("#endgameStatus" + i1).attr("data-value", score.EndgameStatuses[i]);
+    setGoalValue($("#autoCellsInner"), score.AutoCellsInner);
+    setGoalValue($("#autoCellsOuter"), score.AutoCellsOuter);
+    setGoalValue($("#autoCellsBottom"), score.AutoCellsBottom);
+    setGoalValue($("#teleopCellsInner"), score.TeleopCellsInner);
+    setGoalValue($("#teleopCellsOuter"), score.TeleopCellsOuter);
+    setGoalValue($("#teleopCellsBottom"), score.TeleopCellsBottom);
   }
 
-  if (matchStates[data.MatchState] === "PRE_MATCH") {
-    if (realtimeScore.IsPreMatchScoreReady) {
-      $("#preMatchMessage").hide();
-    } else {
-      $("#preMatchMessage").css("display", "flex");
-    }
+  if (score.ControlPanelStatus >= 1) {
+    $("#rotationControl>.value").text("Yes");
+    $("#rotationControl").attr("data-value", true);
+  } else if (summary.StagePowerCellsRemaining[1] === 0) {
+    $("#rotationControl>.value").text("Unlocked");
+    $("#rotationControl").attr("data-value", false);
+  } else {
+    $("#rotationControl>.value").text("Disabled (" + summary.StagePowerCellsRemaining[1] + " left)");
+    $("#rotationControl").attr("data-value", "disabled");
   }
+  if (score.ControlPanelStatus === 2) {
+    $("#positionControl>.value").text("Yes");
+    $("#positionControl").attr("data-value", true);
+  } else if (summary.StagePowerCellsRemaining[2] === 0) {
+    $("#positionControl>.value").text("Unlocked");
+    $("#positionControl").attr("data-value", false);
+  } else {
+    $("#positionControl>.value").text("Disabled (" + summary.StagePowerCellsRemaining[2] + " left)");
+    $("#positionControl").attr("data-value", "disabled");
+  }
+  $("#rungIsLevel>.value").text(score.RungIsLevel ? "Yes" : "No");
+  $("#rungIsLevel").attr("data-value", score.RungIsLevel);
 };
 
 // Handles a websocket message to update the match status.
@@ -93,42 +106,30 @@ var commitMatchScore = function() {
   $("#commitMatchScore").hide();
 };
 
-// Returns the display text corresponding to the given integer start level value.
-var getRobotStartLevelText = function(level) {
+// Returns the display text corresponding to the given integer endgame status value.
+var getEndgameStatusText = function(level) {
   switch (level) {
     case 1:
-      return "1";
+      return "Park";
     case 2:
-      return "2";
-    case 3:
-      return "No-Show";
+      return "Hang";
     default:
-      return " ";
+      return "None";
   }
 };
 
-// Returns the display text corresponding to the given integer end level value.
-var getRobotEndLevelText = function(level) {
-  switch (level) {
-    case 1:
-      return "1";
-    case 2:
-      return "2";
-    case 3:
-      return "3";
-    default:
-      return "Not On";
-  }
+// Updates the power cell count for a goal, given the element and score values.
+var setGoalValue = function(element, powerCells) {
+  var total = 0;
+  $.each(powerCells, function(k, v) {
+    total += v;
+  });
+  element.text(total);
 };
-
-// Returns the bay element matching the given parameters.
-var getBay = function(type, index) {
-  return $("#bay" + bayMappings[type][index]);
-}
 
 $(function() {
   alliance = window.location.href.split("/").slice(-1)[0];
-  $(".alliance-color").attr("data-alliance", alliance);
+  $("#alliance").attr("data-alliance", alliance);
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/panels/scoring/" + alliance + "/websocket", {

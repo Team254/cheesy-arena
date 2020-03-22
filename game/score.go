@@ -190,7 +190,7 @@ func (score *Score) CellCountingStage(teleopStarted bool) Stage {
 }
 
 // Returns true if the preconditions are satisfied for the given Stage to be activated.
-func (score *Score) stageAtCapacity(stage Stage, teleopStarted bool) bool {
+func (score *Score) StageAtCapacity(stage Stage, teleopStarted bool) bool {
 	if stage > Stage1 && !score.stageActivated(stage-1, teleopStarted) {
 		return false
 	}
@@ -202,7 +202,7 @@ func (score *Score) stageAtCapacity(stage Stage, teleopStarted bool) bool {
 
 // Returns true if the given Stage has been activated.
 func (score *Score) stageActivated(stage Stage, teleopStarted bool) bool {
-	if score.stageAtCapacity(stage, teleopStarted) {
+	if score.StageAtCapacity(stage, teleopStarted) {
 		switch stage {
 		case Stage1:
 			return teleopStarted

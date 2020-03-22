@@ -7,74 +7,85 @@
 {{define "title"}}Scoring Panel{{end}}
 {{define "body"}}
 <div id="matchName">&nbsp;</div>
-<div id="robots">
-  <div id="robotHeader">
-    <div class="robot-field">&nbsp;</div>
-    <div class="robot-field">Start Hab Level</div>
-    <div class="robot-field">Sandstorm Bonus?</div>
-    <div class="robot-field">End Hab Level</div>
+<div id="alliance">
+  <div class="scoring-section">
+    <div class="scoring-header">
+      <div>&nbsp;</div>
+      <div>Exited Initiation Line?</div>
+      <div>Endgame Status</div>
+    </div>
+    {{range $i := seq 3}}
+      <div>
+        <div id="team{{$i}}" class="team robot-field"></div>
+        <div id="exitedInitiationLine{{$i}}" class="boolean robot-field" onclick="handleClick('{{$i}}');">
+          <div class="shortcut">{{$i}}</div>
+          <div class="value"></div>
+          <div class="shortcut"></div>
+        </div>
+        <div id="endgameStatus{{$i}}" class="endgame-status robot-field" onclick="handleClick('{{add $i 3}}');">
+          <div class="shortcut">{{add $i 3}}</div>
+          <div class="value"></div>
+          <div class="shortcut"></div>
+        </div>
+      </div>
+    {{end}}
   </div>
-  {{range $i := seq 3}}
-    <div>
-      <div id="team{{$i}}" class="team robot-field"></div>
-      <div id="robotStartLevel{{$i}}" class="robot-start-level robot-field" onclick="handleClick('{{$i}}');">
-        <div class="robot-shortcut">{{$i}}</div>
-        <div class="value"></div>
-        <div class="robot-shortcut"></div>
+  {{if eq .EventSettings.PlcAddress ""}}
+    <div id="elements">
+      <div class="scoring-section">
+        <div>
+          <div>&nbsp;</div>
+          <div class="goal-header">Inner</div>
+          <div class="goal-header">Outer</div>
+          <div class="goal-header">Lower</div>
+        </div>
+        <div>
+          <div class="goal-period">Auto</div>
+          {{template "goal" dict "period" "auto" "level" "Inner" "plus" "W" "minus" "Q"}}
+          {{template "goal" dict "period" "auto" "level" "Outer" "plus" "S" "minus" "A"}}
+          {{template "goal" dict "period" "auto" "level" "Bottom" "plus" "X" "minus" "Z"}}
+        </div>
+        <div>
+          <div class="goal-period">Teleop</div>
+          {{template "goal" dict "period" "teleop" "level" "Inner" "plus" "R" "minus" "E"}}
+          {{template "goal" dict "period" "teleop" "level" "Outer" "plus" "F" "minus" "D"}}
+          {{template "goal" dict "period" "teleop" "level" "Bottom" "plus" "V" "minus" "C"}}
+        </div>
       </div>
-      <div id="sandstormBonus{{$i}}" class="sandstorm-bonus robot-field" onclick="handleClick('{{add $i 3}}');">
-        <div class="robot-shortcut">{{add $i 3}}</div>
-        <div class="value"></div>
-        <div class="robot-shortcut"></div>
-      </div>
-      <div id="robotEndLevel{{$i}}" class="robot-end-level robot-field" onclick="handleClick('{{add $i 6}}');">
-        <div class="robot-shortcut">{{add $i 6}}</div>
-        <div class="value"></div>
-        <div class="robot-shortcut"></div>
+      <div class="scoring-section">
+        <div class="scoring-header">
+          <div>Rotation Control</div>
+          <div>Position Control</div>
+          <div>Rung Is Level</div>
+        </div>
+        <div>
+          <div id="rotationControl" class="control-panel robot-field" onclick="handleClick('O');">
+            <div class="shortcut">O</div>
+            <div class="value"></div>
+            <div class="shortcut"></div>
+          </div>
+          <div id="positionControl" class="control-panel robot-field" onclick="handleClick('P');">
+            <div class="shortcut">P</div>
+            <div class="value"></div>
+            <div class="shortcut"></div>
+          </div>
+          <div id="rungIsLevel" class="boolean robot-field" onclick="handleClick('L');">
+            <div class="shortcut">L</div>
+            <div class="value"></div>
+            <div class="shortcut"></div>
+          </div>
+        </div>
       </div>
     </div>
   {{end}}
 </div>
-<div id="scoringElements">
-  <div class="rocket">
-    <div class="rocket-outline alliance-color">
-      <div class="outer-rocket">{{template "rocketHalf" dict "startBayId" 0 "vars" $}}</div>
-      <div class="inner-rocket">{{template "rocketHalf" dict "startBayId" 3 "vars" $}}</div>
-    </div>
-  </div>
-  <div id="centerColumn">
-    <div id="cargoShipContainer">
-      <div id="cargoShip" class="alliance-color">
-        <div class="cargo-ship-side">
-          {{template "bay" dict "id" 6 "vars" $}}{{template "bay" dict "id" 13 "vars" $}}
-        </div>
-        <div class="cargo-ship-side">
-          {{template "bay" dict "id" 7 "vars" $}}{{template "bay" dict "id" 12 "vars" $}}
-        </div>
-        <div class="cargo-ship-side">
-          {{template "bay" dict "id" 8 "vars" $}}{{template "bay" dict "id" 11 "vars" $}}
-        </div>
-        <div class="cargo-ship-front">
-          {{template "bay" dict "id" 9 "vars" $}}{{template "bay" dict "id" 10 "vars" $}}
-        </div>
-      </div>
-    </div>
-    <div id="instructions">Click or use the labeled keyboard shortcuts to toggle each element</div>
-    <div id="preMatchMessage">Set pre-match state of robots and cargo ship</div>
-    <div id="commitMatchScore">
-      <button type="button" class="btn btn-success" onclick="commitMatchScore();">
-        Commit Final Match Score
-      </button>
-    </div>
-    <div id="postMatchMessage">Waiting for the next match...</div>
-  </div>
-  <div class="rocket">
-    <div class="rocket-outline alliance-color">
-      <div class="inner-rocket">{{template "rocketHalf" dict "startBayId" 14 "vars" $}}</div>
-      <div class="outer-rocket">{{template "rocketHalf" dict "startBayId" 17 "vars" $}}</div>
-    </div>
-  </div>
+<div id="instructions">Click or use the labeled keyboard shortcuts to toggle each element</div>
+<div id="commitMatchScore">
+  <button type="button" class="btn btn-info" onclick="commitMatchScore();">
+    Commit Final Match Score
+  </button>
 </div>
+<div id="postMatchMessage">Waiting for the next match...</div>
 {{end}}
 {{define "head"}}
 <link href="/static/css/scoring_panel.css" rel="stylesheet">
@@ -82,27 +93,15 @@
 {{define "script"}}
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/scoring_panel.js"></script>
-<script>
-  var bayMappings = {"cargoShip": [], "rocketNearLeft": [], "rocketNearRight": [], "rocketFarLeft": [],
-    "rocketFarRight": []};
-  {{range $mapping := .BayMappings}}
-    {{if eq $.Alliance "red"}}
-      bayMappings["{{$mapping.RedElement}}"][{{$mapping.RedIndex}}] = {{$mapping.BayId}};
-    {{else}}
-      bayMappings["{{$mapping.BlueElement}}"][{{$mapping.BlueIndex}}] = {{$mapping.BayId}};
-    {{end}}
-  {{end}}
-</script>
 {{end}}
-{{define "rocketHalf"}}
-  {{template "bay" dict "id" .startBayId "vars" .vars}}
-  {{template "bay" dict "id" (add .startBayId 1) "vars" .vars}}
-  {{template "bay" dict "id" (add .startBayId 2) "vars" .vars}}
-{{end}}
-{{define "bay"}}
-  <div id="bay{{.id}}" class="bay" onclick="handleClick('{{(index .vars.BayMappings .id).Shortcut}}');">
-    <div class="shortcut">{{(index .vars.BayMappings .id).Shortcut}}</div>
-    <div class="hatch-panel"></div>
-    <div class="cargo"></div>
+{{define "goal"}}
+<div class="goal">
+  <div class="number-button minus" onclick="handleClick('{{.minus}}');">
+    <div class="shortcut">{{.minus}}</div>-<div class="shortcut" style="opacity: 0;">{{.minus}}</div>
   </div>
+  <div id="{{.period}}Cells{{.level}}"></div>
+  <div class="number-button plus" onclick="handleClick('{{.plus}}');">
+    <div class="shortcut">{{.plus}}</div>+<div class="shortcut" style="opacity: 0;">{{.plus}}</div>
+  </div>
+</div>
 {{end}}
