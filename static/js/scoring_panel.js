@@ -78,12 +78,10 @@ var handleMatchTime = function(data) {
       $("#commitMatchScore").hide();
       break;
     case "POST_MATCH":
-      $("#preMatchMessage").hide();
       $("#postMatchMessage").hide();
       $("#commitMatchScore").css("display", "flex");
       break;
     default:
-      $("#preMatchMessage").hide();
       $("#postMatchMessage").hide();
       $("#commitMatchScore").hide();
   }
