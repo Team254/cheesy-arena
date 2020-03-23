@@ -87,11 +87,16 @@ func (plc *Plc) SetAddress(address string) {
 	}
 }
 
+// Returns true if the PLC is enabled in the configurations.
+func (plc *Plc) IsEnabled() bool {
+	return plc.address != ""
+}
+
 // Loops indefinitely to read inputs from and write outputs to PLC.
 func (plc *Plc) Run() {
 	for {
 		if plc.handler == nil {
-			if plc.address == "" {
+			if !plc.IsEnabled() {
 				// No PLC is configured; just allow the loop to continue to simulate inputs and outputs.
 				plc.IsHealthy = false
 			} else {
@@ -137,13 +142,13 @@ func (plc *Plc) Run() {
 
 // Returns the state of the field emergency stop button (true if e-stop is active).
 func (plc *Plc) GetFieldEstop() bool {
-	return plc.address != "" && !plc.inputs[fieldEstop]
+	return plc.IsEnabled() && !plc.inputs[fieldEstop]
 }
 
 // Returns the state of the red and blue driver station emergency stop buttons (true if e-stop is active).
 func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 	var redEstops, blueEstops [3]bool
-	if plc.address != "" {
+	if plc.IsEnabled() {
 		redEstops[0] = !plc.inputs[redEstop1]
 		redEstops[1] = !plc.inputs[redEstop2]
 		redEstops[2] = !plc.inputs[redEstop3]

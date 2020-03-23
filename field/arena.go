@@ -647,7 +647,7 @@ func (arena *Arena) checkCanStartMatch() error {
 		return err
 	}
 
-	if arena.EventSettings.PlcAddress != "" {
+	if arena.Plc.IsEnabled() {
 		if !arena.Plc.IsHealthy {
 			return fmt.Errorf("Cannot start match while PLC is not healthy.")
 		}

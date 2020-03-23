@@ -39,8 +39,9 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := struct {
 		*model.EventSettings
-		Alliance string
-	}{web.arena.EventSettings, alliance}
+		PlcIsEnabled bool
+		Alliance     string
+	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), alliance}
 	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)

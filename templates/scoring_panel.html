@@ -30,7 +30,7 @@
       </div>
     {{end}}
   </div>
-  {{if eq .EventSettings.PlcAddress ""}}
+  {{if not .PlcIsEnabled}}
     <div id="elements">
       <div class="scoring-section">
         <div>
