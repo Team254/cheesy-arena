@@ -138,6 +138,8 @@ type TbaPublishedAward struct {
 }
 
 var exitedInitLineMapping = map[bool]string{false: "None", true: "Exited"}
+var controlPanelColorMapping = map[game.ControlPanelColor]string{game.ColorUnknown: "Unknown", game.ColorRed: "Red",
+	game.ColorGreen: "Green", game.ColorBlue: "Blue", game.ColorYellow: "Yellow"}
 var endgameMapping = []string{"None", "Park", "Hang"}
 var rungIsLevelMapping = map[bool]string{false: "NotLevel", true: "IsLevel"}
 
@@ -543,8 +545,7 @@ func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResul
 	breakdown.Stage1Activated = scoreSummary.StagesActivated[0]
 	breakdown.Stage2Activated = scoreSummary.StagesActivated[1]
 	breakdown.Stage3Activated = scoreSummary.StagesActivated[2]
-	// TODO(pat): Add once the Arena logic is in place.
-	// breakdown.Stage3TargetColor =
+	breakdown.Stage3TargetColor = controlPanelColorMapping[score.Stage3TargetColor]
 	breakdown.EndgameRobot1 = endgameMapping[score.EndgameStatuses[0]]
 	breakdown.EndgameRobot2 = endgameMapping[score.EndgameStatuses[1]]
 	breakdown.EndgameRobot3 = endgameMapping[score.EndgameStatuses[2]]

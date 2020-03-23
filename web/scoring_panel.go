@@ -81,7 +81,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
-		web.arena.ReloadDisplaysNotifier)
+		web.arena.ControlPanelColorNotifier, web.arena.ReloadDisplaysNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
@@ -189,6 +189,20 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					score.ControlPanelStatus = game.ControlPanelRotation
 				}
 				scoreChanged = true
+			case "K":
+				if score.ControlPanelStatus == game.ControlPanelRotation {
+					var controlPanel *game.ControlPanel
+					if alliance == "red" {
+						controlPanel = web.arena.RedControlPanel
+					} else {
+						controlPanel = web.arena.BlueControlPanel
+					}
+					controlPanel.CurrentColor++
+					if controlPanel.CurrentColor == 5 {
+						controlPanel.CurrentColor = 1
+					}
+					web.arena.ControlPanelColorNotifier.Notify()
+				}
 			case "P":
 				if score.ControlPanelStatus == game.ControlPanelPosition {
 					score.ControlPanelStatus = game.ControlPanelRotation

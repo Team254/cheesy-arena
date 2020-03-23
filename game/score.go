@@ -16,10 +16,11 @@ type Score struct {
 	TeleopCellsOuter     [4]int
 	TeleopCellsInner     [4]int
 	ControlPanelStatus
-	EndgameStatuses [3]EndgameStatus
-	RungIsLevel     bool
-	Fouls           []Foul
-	ElimDq          bool
+	EndgameStatuses   [3]EndgameStatus
+	RungIsLevel       bool
+	Fouls             []Foul
+	ElimDq            bool
+	Stage3TargetColor ControlPanelColor
 }
 
 type ScoreSummary struct {
@@ -53,14 +54,6 @@ const (
 	Stage2
 	Stage3
 	StageExtra
-)
-
-type ControlPanelStatus int
-
-const (
-	ControlPanelNone ControlPanelStatus = iota
-	ControlPanelRotation
-	ControlPanelPosition
 )
 
 // Represents the state of a robot at the end of the match.

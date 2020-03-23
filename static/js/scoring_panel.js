@@ -20,6 +20,24 @@ var handleMatchLoad = function(data) {
   }
 };
 
+// Handles a websocket message to update the match status.
+var handleMatchTime = function(data) {
+  switch (matchStates[data.MatchState]) {
+    case "PRE_MATCH":
+      // Pre-match message state is set in handleRealtimeScore().
+      $("#postMatchMessage").hide();
+      $("#commitMatchScore").hide();
+      break;
+    case "POST_MATCH":
+      $("#postMatchMessage").hide();
+      $("#commitMatchScore").css("display", "flex");
+      break;
+    default:
+      $("#postMatchMessage").hide();
+      $("#commitMatchScore").hide();
+  }
+};
+
 // Handles a websocket message to update the realtime scoring fields.
 var handleRealtimeScore = function(data) {
   var realtimeScore;
@@ -67,24 +85,20 @@ var handleRealtimeScore = function(data) {
   }
   $("#rungIsLevel>.value").text(score.RungIsLevel ? "Yes" : "No");
   $("#rungIsLevel").attr("data-value", score.RungIsLevel);
+  $("#controlPanelColor").attr("data-control-panel-status", score.ControlPanelStatus)
 };
 
-// Handles a websocket message to update the match status.
-var handleMatchTime = function(data) {
-  switch (matchStates[data.MatchState]) {
-    case "PRE_MATCH":
-      // Pre-match message state is set in handleRealtimeScore().
-      $("#postMatchMessage").hide();
-      $("#commitMatchScore").hide();
-      break;
-    case "POST_MATCH":
-      $("#postMatchMessage").hide();
-      $("#commitMatchScore").css("display", "flex");
-      break;
-    default:
-      $("#postMatchMessage").hide();
-      $("#commitMatchScore").hide();
+// Handles a websocket message to update the Control Panel color.
+var handleControlPanelColor = function(data) {
+  var color;
+  if (alliance === "red") {
+    color = data.RedControlPanelColor;
+  } else {
+    color = data.BlueControlPanelColor;
   }
+
+  $("#controlPanelColor>.value").text(getControlPanelColorText(color));
+  $("#controlPanelColor").attr("data-value", color);
 };
 
 // Handles a keyboard event and sends the appropriate websocket message.
@@ -116,6 +130,22 @@ var getEndgameStatusText = function(level) {
   }
 };
 
+// Returns the display text corresponding to the given integer Control Panel color value.
+var getControlPanelColorText = function(level) {
+  switch (level) {
+    case 1:
+      return "Red";
+    case 2:
+      return "Green";
+    case 3:
+      return "Blue";
+    case 4:
+      return "Yellow";
+    default:
+      return "Unknown";
+  }
+};
+
 // Updates the power cell count for a goal, given the element and score values.
 var setGoalValue = function(element, powerCells) {
   var total = 0;
@@ -133,7 +163,8 @@ $(function() {
   websocket = new CheesyWebsocket("/panels/scoring/" + alliance + "/websocket", {
     matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); }
+    realtimeScore: function(event) { handleRealtimeScore(event.data); },
+    controlPanelColor: function(event) { handleControlPanelColor(event.data); }
   });
 
   $(document).keypress(handleKeyPress);

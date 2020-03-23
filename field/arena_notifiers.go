@@ -29,6 +29,7 @@ type ArenaNotifiers struct {
 	ReloadDisplaysNotifier             *websocket.Notifier
 	ScorePostedNotifier                *websocket.Notifier
 	ScoringStatusNotifier              *websocket.Notifier
+	ControlPanelColorNotifier          *websocket.Notifier
 }
 
 type DisplayConfigurationMessage struct {
@@ -65,6 +66,7 @@ func (arena *Arena) configureNotifiers() {
 	arena.ReloadDisplaysNotifier = websocket.NewNotifier("reload", nil)
 	arena.ScorePostedNotifier = websocket.NewNotifier("scorePosted", arena.generateScorePostedMessage)
 	arena.ScoringStatusNotifier = websocket.NewNotifier("scoringStatus", arena.generateScoringStatusMessage)
+	arena.ControlPanelColorNotifier = websocket.NewNotifier("controlPanelColor", arena.generateControlPanelColorMessage)
 }
 
 func (arena *Arena) generateAllianceSelectionMessage() interface{} {
@@ -224,6 +226,13 @@ func (arena *Arena) generateScoringStatusMessage() interface{} {
 		arena.alliancePostMatchScoreReady("red"), arena.alliancePostMatchScoreReady("blue"),
 		arena.ScoringPanelRegistry.GetNumPanels("red"), arena.ScoringPanelRegistry.GetNumScoreCommitted("red"),
 		arena.ScoringPanelRegistry.GetNumPanels("blue"), arena.ScoringPanelRegistry.GetNumScoreCommitted("blue")}
+}
+
+func (arena *Arena) generateControlPanelColorMessage() interface{} {
+	return &struct {
+		RedControlPanelColor  game.ControlPanelColor
+		BlueControlPanelColor game.ControlPanelColor
+	}{arena.RedControlPanel.CurrentColor, arena.BlueControlPanel.CurrentColor}
 }
 
 // Constructs the data object for one alliance sent to the audience display for the realtime scoring overlay.

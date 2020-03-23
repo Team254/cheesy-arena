@@ -50,9 +50,11 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, redWs, "matchLoad")
 	readWebsocketType(t, redWs, "matchTime")
 	readWebsocketType(t, redWs, "realtimeScore")
+	readWebsocketType(t, redWs, "controlPanelColor")
 	readWebsocketType(t, blueWs, "matchLoad")
 	readWebsocketType(t, blueWs, "matchTime")
 	readWebsocketType(t, blueWs, "realtimeScore")
+	readWebsocketType(t, blueWs, "controlPanelColor")
 
 	// Send some autonomous period scoring commands.
 	web.arena.MatchState = field.AutoPeriod
@@ -79,6 +81,7 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	blueWs.Write("5", nil)
 	blueWs.Write("5", nil)
 	blueWs.Write("L", nil)
+	blueWs.Write("k", nil)
 	for i := 0; i < 6; i++ {
 		readWebsocketType(t, redWs, "realtimeScore")
 		readWebsocketType(t, blueWs, "realtimeScore")
@@ -106,9 +109,13 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	web.arena.ResetMatch()
 	web.arena.LoadTestMatch()
 	readWebsocketType(t, redWs, "matchLoad")
-	readWebsocketType(t, redWs, "realtimeScore")
+	messages := readWebsocketMultiple(t, redWs, 2)
+	assert.Contains(t, messages, "realtimeScore")
+	assert.Contains(t, messages, "controlPanelColor")
 	readWebsocketType(t, blueWs, "matchLoad")
-	readWebsocketType(t, blueWs, "realtimeScore")
+	messages = readWebsocketMultiple(t, blueWs, 2)
+	assert.Contains(t, messages, "realtimeScore")
+	assert.Contains(t, messages, "controlPanelColor")
 	assert.Equal(t, field.NewRealtimeScore(), web.arena.RedRealtimeScore)
 	assert.Equal(t, field.NewRealtimeScore(), web.arena.BlueRealtimeScore)
 	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red"))

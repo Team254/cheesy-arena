@@ -70,6 +70,8 @@ type Arena struct {
 	MuteMatchSounds            bool
 	matchAborted               bool
 	soundsPlayed               map[*game.MatchSound]struct{}
+	RedControlPanel            *game.ControlPanel
+	BlueControlPanel           *game.ControlPanel
 }
 
 type AllianceStation struct {
@@ -206,10 +208,13 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.FieldVolunteers = false
 	arena.FieldReset = false
 	arena.ScoringPanelRegistry.resetScoreCommitted()
+	arena.RedControlPanel = new(game.ControlPanel)
+	arena.BlueControlPanel = new(game.ControlPanel)
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
 	arena.RealtimeScoreNotifier.Notify()
+	arena.ControlPanelColorNotifier.Notify()
 	arena.AllianceStationDisplayMode = "match"
 	arena.AllianceStationDisplayModeNotifier.Notify()
 
@@ -686,6 +691,23 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	arena.lastDsPacketTime = time.Now()
 }
 
+// Sends a game data packet encoded with the given Control Panel target color to the given stations.
+func (arena *Arena) sendGameDataPacket(color game.ControlPanelColor, stations ...string) {
+	gameData := game.GetGameDataForColor(color)
+	log.Printf("Sending game data packet '%s' to stations %v", gameData, stations)
+	for _, station := range stations {
+		if allianceStation, ok := arena.AllianceStations[station]; ok {
+			dsConn := allianceStation.DsConn
+			if dsConn != nil {
+				err := dsConn.sendGameDataPacket(gameData)
+				if err != nil {
+					log.Printf("Error sending game data packet to Team %d: %v", dsConn.TeamId, err)
+				}
+			}
+		}
+	}
+}
+
 // Returns the alliance station identifier for the given team, or the empty string if the team is not present
 // in the current match.
 func (arena *Arena) getAssignedAllianceStation(teamId int) string {
@@ -716,6 +738,26 @@ func (arena *Arena) handlePlcInput() {
 		arena.MatchState == PostTimeout {
 		// Don't do anything if we're outside the match, otherwise we may overwrite manual edits.
 		return
+	}
+
+	redScore := &arena.RedRealtimeScore.CurrentScore
+	oldRedScore := *redScore
+	blueScore := &arena.BlueRealtimeScore.CurrentScore
+	oldBlueScore := *blueScore
+
+	if redScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
+		redScore.Stage3TargetColor == game.ColorUnknown ||
+		blueScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
+			blueScore.Stage3TargetColor == game.ColorUnknown {
+		// Determine the position control target colors and send packets to inform the driver stations.
+		redScore.Stage3TargetColor = arena.RedControlPanel.GetStage3TargetColor()
+		blueScore.Stage3TargetColor = arena.BlueControlPanel.GetStage3TargetColor()
+		arena.sendGameDataPacket(redScore.Stage3TargetColor, "R1", "R2", "R3")
+		arena.sendGameDataPacket(blueScore.Stage3TargetColor, "B1", "B2", "B3")
+	}
+
+	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
+		arena.RealtimeScoreNotifier.Notify()
 	}
 }
 
