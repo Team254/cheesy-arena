@@ -14,17 +14,22 @@ var handleAllianceStationDisplayMode = function(targetScreen) {
   if (station === "") {
     // Don't do anything if this screen hasn't been assigned a position yet.
   } else {
-    $("body").attr("data-mode", targetScreen);
-    switch (station[1]) {
-      case "1":
-        $("body").attr("data-position", "right");
-        break;
-      case "2":
-        $("body").attr("data-position", "middle");
-        break;
-      case "3":
-        $("body").attr("data-position", "left");
-        break;
+    var body = $("body");
+    body.attr("data-mode", targetScreen);
+    if (targetScreen === "timeout") {
+      body.attr("data-position", "middle");
+    } else {
+      switch (station[1]) {
+        case "1":
+          body.attr("data-position", "right");
+          break;
+        case "2":
+          body.attr("data-position", "middle");
+          break;
+        case "3":
+          body.attr("data-position", "left");
+          break;
+      }
     }
   }
 };

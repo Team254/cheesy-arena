@@ -356,8 +356,8 @@ func (arena *Arena) StartTimeout(durationSec int) error {
 	arena.MatchState = TimeoutActive
 	arena.MatchStartTime = time.Now()
 	arena.LastMatchTimeSec = -1
-	arena.AudienceDisplayMode = "timeout"
-	arena.AudienceDisplayModeNotifier.Notify()
+	arena.AllianceStationDisplayMode = "timeout"
+	arena.AllianceStationDisplayModeNotifier.Notify()
 
 	return nil
 }
@@ -468,6 +468,8 @@ func (arena *Arena) Update() {
 				time.Sleep(time.Second * matchEndScoreDwellSec)
 				arena.AudienceDisplayMode = "blank"
 				arena.AudienceDisplayModeNotifier.Notify()
+				arena.AllianceStationDisplayMode = "logo"
+				arena.AllianceStationDisplayModeNotifier.Notify()
 			}()
 		}
 	case PostTimeout:
