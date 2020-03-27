@@ -2,6 +2,7 @@
 CREATE TABLE rankings (
   teamid INTEGER PRIMARY KEY,
   rank int,
+  previousrank int,
   rankingfieldsjson text
 );
 

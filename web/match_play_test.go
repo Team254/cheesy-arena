@@ -121,7 +121,7 @@ func TestCommitMatch(t *testing.T) {
 
 	// Committing test match should do nothing.
 	match := &model.Match{Id: 0, Type: "test", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
-	err := web.commitMatchScore(match, &model.MatchResult{MatchId: match.Id}, false)
+	err := web.commitMatchScore(match, &model.MatchResult{MatchId: match.Id}, true)
 	assert.Nil(t, err)
 	matchResult, err := web.arena.Database.GetMatchResultForMatch(match.Id)
 	assert.Nil(t, err)
@@ -134,7 +134,7 @@ func TestCommitMatch(t *testing.T) {
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.BlueScore = &game.Score{ExitedInitiationLine: [3]bool{true, false, false}}
-	err = web.commitMatchScore(match, matchResult, false)
+	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, matchResult.PlayNumber)
 	match, _ = web.arena.Database.GetMatchById(1)
@@ -143,7 +143,7 @@ func TestCommitMatch(t *testing.T) {
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.RedScore = &game.Score{ExitedInitiationLine: [3]bool{true, false, true}}
-	err = web.commitMatchScore(match, matchResult, false)
+	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, matchResult.PlayNumber)
 	match, _ = web.arena.Database.GetMatchById(1)
@@ -151,7 +151,7 @@ func TestCommitMatch(t *testing.T) {
 
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	err = web.commitMatchScore(match, matchResult, false)
+	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 3, matchResult.PlayNumber)
 	match, _ = web.arena.Database.GetMatchById(1)
@@ -162,7 +162,7 @@ func TestCommitMatch(t *testing.T) {
 	web.arena.EventSettings.TbaPublishingEnabled = true
 	var writer bytes.Buffer
 	log.SetOutput(&writer)
-	err = web.commitMatchScore(match, matchResult, false)
+	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous publishing to happen.
 	assert.Contains(t, writer.String(), "Failed to publish matches")
@@ -181,13 +181,13 @@ func TestCommitEliminationTie(t *testing.T) {
 			Fouls:            []game.Foul{{RuleId: 1}, {RuleId: 2}, {RuleId: 4}}},
 		BlueScore: &game.Score{},
 	}
-	err := web.commitMatchScore(match, matchResult, false)
+	err := web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner)
 	match.Type = "elimination"
 	web.arena.Database.SaveMatch(match)
-	web.commitMatchScore(match, matchResult, false)
+	web.commitMatchScore(match, matchResult, true)
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, "T", match.Winner) // No elimination tiebreakers.
 }
@@ -203,7 +203,7 @@ func TestCommitCards(t *testing.T) {
 	matchResult := model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.BlueCards = map[string]string{"5": "yellow"}
-	err := web.commitMatchScore(match, matchResult, false)
+	err := web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	team, _ = web.arena.Database.GetTeamById(5)
 	assert.True(t, team.YellowCard)
@@ -211,7 +211,7 @@ func TestCommitCards(t *testing.T) {
 	// Check that editing a match result removes a yellow card from a team.
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	err = web.commitMatchScore(match, matchResult, false)
+	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	team, _ = web.arena.Database.GetTeamById(5)
 	assert.False(t, team.YellowCard)
@@ -220,7 +220,7 @@ func TestCommitCards(t *testing.T) {
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.BlueCards = map[string]string{"5": "red"}
-	err = web.commitMatchScore(match, matchResult, false)
+	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	team, _ = web.arena.Database.GetTeamById(5)
 	assert.True(t, team.YellowCard)
@@ -234,7 +234,7 @@ func TestCommitCards(t *testing.T) {
 	matchResult = model.BuildTestMatchResult(match.Id, 10)
 	matchResult.MatchType = match.Type
 	matchResult.RedCards = map[string]string{"1": "red"}
-	err = web.commitMatchScore(match, matchResult, false)
+	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 0, matchResult.RedScoreSummary(true).Score)
 	assert.NotEqual(t, 0, matchResult.BlueScoreSummary(true).Score)

@@ -7,6 +7,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
@@ -143,6 +144,15 @@ func (web *Web) matchPlayShowResultHandler(w http.ResponseWriter, r *http.Reques
 	if matchResult == nil {
 		handleWebErr(w, fmt.Errorf("No result found for match ID %d.", matchId))
 		return
+	}
+	if match.ShouldUpdateRankings() {
+		web.arena.SavedRankings, err = web.arena.Database.GetAllRankings()
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+	} else {
+		web.arena.SavedRankings = game.Rankings{}
 	}
 	web.arena.SavedMatch = match
 	web.arena.SavedMatchResult = matchResult
@@ -312,7 +322,9 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 }
 
 // Saves the given match and result to the database, supplanting any previous result for the match.
-func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchResult, loadToShowBuffer bool) error {
+func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchResult, isMatchReviewEdit bool) error {
+	var updatedRankings game.Rankings
+
 	if match.Type == "elimination" {
 		// Adjust the score if necessary for an elimination DQ.
 		matchResult.CorrectEliminationScore()
@@ -368,10 +380,11 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 		if match.ShouldUpdateRankings() {
 			// Recalculate all the rankings.
-			err = tournament.CalculateRankings(web.arena.Database)
+			rankings, err := tournament.CalculateRankings(web.arena.Database, isMatchReviewEdit)
 			if err != nil {
 				return err
 			}
+			updatedRankings = rankings
 		}
 
 		if match.ShouldUpdateEliminationMatches() {
@@ -432,10 +445,11 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 	}
 
-	if loadToShowBuffer {
+	if !isMatchReviewEdit {
 		// Store the result in the buffer to be shown in the audience display.
 		web.arena.SavedMatch = match
 		web.arena.SavedMatchResult = matchResult
+		web.arena.SavedRankings = updatedRankings
 		web.arena.ScorePostedNotifier.Notify()
 	}
 
@@ -450,7 +464,7 @@ func (web *Web) getCurrentMatchResult() *model.MatchResult {
 
 // Saves the realtime result as the final score for the match currently loaded into the arena.
 func (web *Web) commitCurrentMatchScore() error {
-	return web.commitMatchScore(web.arena.CurrentMatch, web.getCurrentMatchResult(), true)
+	return web.commitMatchScore(web.arena.CurrentMatch, web.getCurrentMatchResult(), false)
 }
 
 // Helper function to implement the required interface for Sort.

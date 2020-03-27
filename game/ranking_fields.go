@@ -21,12 +21,13 @@ type RankingFields struct {
 }
 
 type Ranking struct {
-	TeamId int
-	Rank   int
+	TeamId       int
+	Rank         int
+	PreviousRank int
 	RankingFields
 }
 
-type Rankings []*Ranking
+type Rankings []Ranking
 
 func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentScore *ScoreSummary, disqualified bool) {
 	fields.Played += 1

@@ -134,7 +134,7 @@ func (web *Web) matchReviewEditPostHandler(w http.ResponseWriter, r *http.Reques
 
 		http.Redirect(w, r, "/match_play", 303)
 	} else {
-		err = web.commitMatchScore(match, matchResult, false)
+		err = web.commitMatchScore(match, matchResult, true)
 		if err != nil {
 			handleWebErr(w, err)
 			return

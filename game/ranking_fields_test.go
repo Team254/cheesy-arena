@@ -38,16 +38,16 @@ func TestAddScoreSummary(t *testing.T) {
 func TestSortRankings(t *testing.T) {
 	// Check tiebreakers.
 	rankings := make(Rankings, 10)
-	rankings[0] = &Ranking{1, 0, RankingFields{50, 50, 50, 50, 0.49, 3, 2, 1, 0, 10}}
-	rankings[1] = &Ranking{2, 0, RankingFields{50, 50, 50, 50, 0.51, 3, 2, 1, 0, 10}}
-	rankings[2] = &Ranking{3, 0, RankingFields{50, 50, 50, 49, 0.50, 3, 2, 1, 0, 10}}
-	rankings[3] = &Ranking{4, 0, RankingFields{50, 50, 50, 51, 0.50, 3, 2, 1, 0, 10}}
-	rankings[4] = &Ranking{5, 0, RankingFields{50, 50, 49, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[5] = &Ranking{6, 0, RankingFields{50, 50, 51, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[6] = &Ranking{7, 0, RankingFields{50, 49, 50, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[7] = &Ranking{8, 0, RankingFields{50, 51, 50, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[8] = &Ranking{9, 0, RankingFields{49, 50, 50, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[9] = &Ranking{10, 0, RankingFields{51, 50, 50, 50, 0.50, 3, 2, 1, 0, 10}}
+	rankings[0] = Ranking{1, 0, 0, RankingFields{50, 50, 50, 50, 0.49, 3, 2, 1, 0, 10}}
+	rankings[1] = Ranking{2, 0, 0, RankingFields{50, 50, 50, 50, 0.51, 3, 2, 1, 0, 10}}
+	rankings[2] = Ranking{3, 0, 0, RankingFields{50, 50, 50, 49, 0.50, 3, 2, 1, 0, 10}}
+	rankings[3] = Ranking{4, 0, 0, RankingFields{50, 50, 50, 51, 0.50, 3, 2, 1, 0, 10}}
+	rankings[4] = Ranking{5, 0, 0, RankingFields{50, 50, 49, 50, 0.50, 3, 2, 1, 0, 10}}
+	rankings[5] = Ranking{6, 0, 0, RankingFields{50, 50, 51, 50, 0.50, 3, 2, 1, 0, 10}}
+	rankings[6] = Ranking{7, 0, 0, RankingFields{50, 49, 50, 50, 0.50, 3, 2, 1, 0, 10}}
+	rankings[7] = Ranking{8, 0, 0, RankingFields{50, 51, 50, 50, 0.50, 3, 2, 1, 0, 10}}
+	rankings[8] = Ranking{9, 0, 0, RankingFields{49, 50, 50, 50, 0.50, 3, 2, 1, 0, 10}}
+	rankings[9] = Ranking{10, 0, 0, RankingFields{51, 50, 50, 50, 0.50, 3, 2, 1, 0, 10}}
 	sort.Sort(rankings)
 	assert.Equal(t, 10, rankings[0].TeamId)
 	assert.Equal(t, 8, rankings[1].TeamId)
@@ -62,9 +62,9 @@ func TestSortRankings(t *testing.T) {
 
 	// Check with unequal number of matches played.
 	rankings = make(Rankings, 3)
-	rankings[0] = &Ranking{1, 0, RankingFields{10, 25, 25, 25, 0.49, 3, 2, 1, 0, 5}}
-	rankings[1] = &Ranking{2, 0, RankingFields{19, 50, 50, 50, 0.51, 3, 2, 1, 0, 9}}
-	rankings[2] = &Ranking{3, 0, RankingFields{20, 50, 50, 50, 0.51, 3, 2, 1, 0, 10}}
+	rankings[0] = Ranking{1, 0, 0, RankingFields{10, 25, 25, 25, 0.49, 3, 2, 1, 0, 5}}
+	rankings[1] = Ranking{2, 0, 0, RankingFields{19, 50, 50, 50, 0.51, 3, 2, 1, 0, 9}}
+	rankings[2] = Ranking{3, 0, 0, RankingFields{20, 50, 50, 50, 0.51, 3, 2, 1, 0, 10}}
 	sort.Sort(rankings)
 	assert.Equal(t, 2, rankings[0].TeamId)
 	assert.Equal(t, 3, rankings[1].TeamId)

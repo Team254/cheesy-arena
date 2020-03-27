@@ -64,6 +64,7 @@ type Arena struct {
 	AudienceDisplayMode        string
 	SavedMatch                 *model.Match
 	SavedMatchResult           *model.MatchResult
+	SavedRankings              game.Rankings
 	AllianceStationDisplayMode string
 	AllianceSelectionAlliances [][]model.AllianceTeam
 	LowerThird                 *model.LowerThird
