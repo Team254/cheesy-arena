@@ -68,6 +68,7 @@ type Arena struct {
 	AllianceStationDisplayMode string
 	AllianceSelectionAlliances [][]model.AllianceTeam
 	LowerThird                 *model.LowerThird
+	ShowLowerThird             bool
 	MuteMatchSounds            bool
 	matchAborted               bool
 	soundsPlayed               map[*game.MatchSound]struct{}

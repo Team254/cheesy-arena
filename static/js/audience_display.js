@@ -155,20 +155,29 @@ var handleAllianceSelection = function(alliances) {
 
 // Handles a websocket message to populate and/or show/hide a lower third.
 var handleLowerThird = function(data) {
-  if (data === null) {
-    return;
+  if (data.LowerThird !== null) {
+    if (data.LowerThird.BottomText === "") {
+      $("#lowerThirdTop").hide();
+      $("#lowerThirdBottom").hide();
+      $("#lowerThirdSingle").text(data.LowerThird.TopText);
+      $("#lowerThirdSingle").show();
+    } else {
+      $("#lowerThirdSingle").hide();
+      $("#lowerThirdTop").text(data.LowerThird.TopText);
+      $("#lowerThirdBottom").text(data.LowerThird.BottomText);
+      $("#lowerThirdTop").show();
+      $("#lowerThirdBottom").show();
+    }
   }
-  if (data.BottomText === "") {
-    $("#lowerThirdTop").hide();
-    $("#lowerThirdBottom").hide();
-    $("#lowerThirdSingle").text(data.TopText);
-    $("#lowerThirdSingle").show();
-  } else {
-    $("#lowerThirdSingle").hide();
-    $("#lowerThirdTop").text(data.TopText);
-    $("#lowerThirdBottom").text(data.BottomText);
-    $("#lowerThirdTop").show();
-    $("#lowerThirdBottom").show();
+
+  var lowerThirdElement = $("#lowerThird");
+  if (data.ShowLowerThird && !lowerThirdElement.is(":visible")) {
+    lowerThirdElement.show();
+    lowerThirdElement.transition({queue: false, left: "150px"}, 750, "ease");
+  } else if (!data.ShowLowerThird && lowerThirdElement.is(":visible")) {
+    lowerThirdElement.transition({queue: false, left: "-1000px"}, 1000, "ease", function () {
+      lowerThirdElement.hide();
+    });
   }
 };
 
@@ -314,20 +323,6 @@ var transitionBlankToAllianceSelection = function(callback) {
 
 var transitionAllianceSelectionToBlank = function(callback) {
   $('#allianceSelectionCentering').transition({queue: false, right: "-60em"}, 500, "ease", callback);
-};
-
-var transitionBlankToLowerThird = function(callback) {
-  $("#lowerThird").show();
-  $("#lowerThird").transition({queue: false, left: "150px"}, 750, "ease", callback);
-};
-
-var transitionLowerThirdToBlank = function(callback) {
-  $("#lowerThird").transition({queue: false, left: "-1000px"}, 1000, "ease", function() {
-    $("#lowerThird").hide();
-    if (callback) {
-      callback();
-    }
-  });
 };
 
 var transitionBlankToSponsor = function(callback) {
@@ -547,7 +542,6 @@ $(function() {
       logo: transitionBlankToLogo,
       sponsor: transitionBlankToSponsor,
       allianceSelection: transitionBlankToAllianceSelection,
-      lowerThird: transitionBlankToLowerThird,
       timeout: transitionBlankToTimeout
     },
     intro: {
@@ -576,9 +570,6 @@ $(function() {
     },
     allianceSelection: {
       blank: transitionAllianceSelectionToBlank
-    },
-    lowerThird: {
-      blank: transitionLowerThirdToBlank
     },
     timeout: {
       blank: transitionTimeoutToBlank,

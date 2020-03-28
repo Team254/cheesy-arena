@@ -118,7 +118,10 @@ func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
 }
 
 func (arena *Arena) generateLowerThirdMessage() interface{} {
-	return arena.LowerThird
+	return &struct {
+		LowerThird     *model.LowerThird
+		ShowLowerThird bool
+	}{arena.LowerThird, arena.ShowLowerThird}
 }
 
 func (arena *Arena) generateMatchLoadMessage() interface{} {
