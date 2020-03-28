@@ -489,7 +489,7 @@ var setPowerCellText = function(element, scoreSummary, stage) {
 // Returns the string to be displayed next to the team number on the final score screen, to indicate change in rank.
 var getRankingText = function(teamId, rankings) {
   var ranking = rankings[teamId];
-  if (ranking === null || ranking.Rank === 0) {
+  if (ranking === undefined || ranking.Rank === 0) {
     return "";
   }
   var arrow = "";

@@ -88,7 +88,7 @@ var formatTeam = function(team) {
 // Returns the string to be displayed to indicate change in rank.
 var getRankingText = function(teamId, rankings) {
   var ranking = rankings[teamId];
-  if (ranking === null || ranking.Rank === 0) {
+  if (ranking === undefined || ranking.Rank === 0) {
     return "";
   }
   var arrow = "";
