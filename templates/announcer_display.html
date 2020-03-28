@@ -112,6 +112,15 @@
       </div>
     {{"{{/if}}"}}
   {{"{{/eachMapEntry}}"}}
+  <h4>Rankings</h4>
+  {{"{{#eachMapEntry rankings}}"}}
+  {{"{{#if this.value}}"}}
+  <div class="row">
+    <div class="col-lg-4 col-lg-offset-1">Team {{"{{this.key}}"}}</div>
+    <div class="col-lg-7">{{"{{{this.value}}}"}}</div>
+  </div>
+  {{"{{/if}}"}}
+  {{"{{/eachMapEntry}}"}}
 </script>
 {{end}}
 {{define "head"}}

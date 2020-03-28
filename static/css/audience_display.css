@@ -206,7 +206,7 @@ html {
 }
 #finalScore {
   position: fixed;
-  width: 950px;
+  width: 1200px;
   height: 550px;
   top: 65px;
   bottom: 0;
@@ -241,6 +241,7 @@ html {
   float: left;
   width: 50%;
   height: 9%;
+  overflow: hidden;
   line-height: 50px;
   text-align: center;
   color: #fff;
@@ -249,6 +250,11 @@ html {
 }
 .final-teams span {
   margin: 0 10px;
+}
+.final-teams span sup {
+  margin-left: 3px;
+  font-size: 18px;
+  vertical-align: super;
 }
 .final-avatar {
   height: 35px;

@@ -194,11 +194,17 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		}
 	}
 
+	rankings := make(map[int]game.Ranking, len(arena.SavedRankings))
+	for _, ranking := range arena.SavedRankings {
+		rankings[ranking.TeamId] = ranking
+	}
+
 	return &struct {
 		MatchType        string
 		Match            *model.Match
 		RedScoreSummary  *game.ScoreSummary
 		BlueScoreSummary *game.ScoreSummary
+		Rankings         map[int]game.Ranking
 		RedFouls         []game.Foul
 		BlueFouls        []game.Foul
 		RulesViolated    map[int]*game.Rule
@@ -207,7 +213,7 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		SeriesStatus     string
 		SeriesLeader     string
 	}{arena.SavedMatch.CapitalizedType(), arena.SavedMatch, arena.SavedMatchResult.RedScoreSummary(true),
-		arena.SavedMatchResult.BlueScoreSummary(true), arena.SavedMatchResult.RedScore.Fouls,
+		arena.SavedMatchResult.BlueScoreSummary(true), rankings, arena.SavedMatchResult.RedScore.Fouls,
 		arena.SavedMatchResult.BlueScore.Fouls,
 		getRulesViolated(arena.SavedMatchResult.RedScore.Fouls, arena.SavedMatchResult.BlueScore.Fouls),
 		arena.SavedMatchResult.RedCards, arena.SavedMatchResult.BlueCards, seriesStatus, seriesLeader}

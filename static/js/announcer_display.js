@@ -57,11 +57,20 @@ var handleScorePosted = function(data) {
     Object.assign(foul, data.RulesViolated[foul.RuleId]);
   });
 
+  var redRankings = {};
+  redRankings[data.Match.Red1] = getRankingText(data.Match.Red1, data.Rankings);
+  redRankings[data.Match.Red2] = getRankingText(data.Match.Red2, data.Rankings);
+  redRankings[data.Match.Red3] = getRankingText(data.Match.Red3, data.Rankings);
+  var blueRankings = {};
+  blueRankings[data.Match.Blue1] = getRankingText(data.Match.Blue1, data.Rankings);
+  blueRankings[data.Match.Blue2] = getRankingText(data.Match.Blue2, data.Rankings);
+  blueRankings[data.Match.Blue3] = getRankingText(data.Match.Blue3, data.Rankings);
+
   $("#scoreMatchName").text(data.MatchType + " Match " + data.Match.DisplayName);
   $("#redScoreDetails").html(matchResultTemplate({score: data.RedScoreSummary, fouls: data.RedFouls,
-      rulesViolated: data.RulesViolated, cards: data.RedCards}));
+      rulesViolated: data.RulesViolated, cards: data.RedCards, rankings: redRankings}));
   $("#blueScoreDetails").html(matchResultTemplate({score: data.BlueScoreSummary, fouls: data.BlueFouls,
-    rulesViolated: data.RulesViolated, cards: data.BlueCards}));
+    rulesViolated: data.RulesViolated, cards: data.BlueCards, rankings: blueRankings}));
   $("#matchResult").modal("show");
 
   // Activate tooltips above the foul listings.
@@ -74,6 +83,25 @@ var formatTeam = function(team) {
     team.Accomplishments = team.Accomplishments.replace(/[\r\n]+/g, "<br />");
   }
   return team;
+};
+
+// Returns the string to be displayed to indicate change in rank.
+var getRankingText = function(teamId, rankings) {
+  var ranking = rankings[teamId];
+  if (ranking === null || ranking.Rank === 0) {
+    return "";
+  }
+  var arrow = "";
+  if (ranking.Rank > ranking.PreviousRank && ranking.PreviousRank > 0) {
+    arrow = "&#11015;";
+  } else if (ranking.Rank < ranking.PreviousRank) {
+    arrow = "&#11014;";
+  }
+  var previousRank = "";
+  if (ranking.PreviousRank > 0) {
+    previousRank = " (was " + ranking.PreviousRank + ")";
+  }
+  return ranking.Rank + arrow + previousRank;
 };
 
 $(function() {
