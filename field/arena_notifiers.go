@@ -179,9 +179,9 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		matches, _ := arena.Database.GetMatchesByElimRoundGroup(arena.SavedMatch.ElimRound, arena.SavedMatch.ElimGroup)
 		var redWins, blueWins int
 		for _, match := range matches {
-			if match.Winner == "R" {
+			if match.Status == model.RedWonMatch {
 				redWins++
-			} else if match.Winner == "B" {
+			} else if match.Status == model.BlueWonMatch {
 				blueWins++
 			}
 		}

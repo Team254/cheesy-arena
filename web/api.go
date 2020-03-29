@@ -137,7 +137,7 @@ func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	highestPlayedMatch := ""
 	for _, match := range matches {
-		if match.Status == "complete" {
+		if match.IsComplete() {
 			highestPlayedMatch = match.DisplayName
 		}
 	}

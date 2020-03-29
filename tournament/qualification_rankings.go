@@ -20,7 +20,7 @@ func CalculateRankings(database *model.Database, preservePreviousRank bool) (gam
 	}
 	rankings := make(map[int]*game.Ranking)
 	for _, match := range matches {
-		if match.Status != "complete" {
+		if !match.IsComplete() {
 			continue
 		}
 		matchResult, err := database.GetMatchResultForMatch(match.Id)
@@ -93,7 +93,7 @@ func CalculateTeamCards(database *model.Database, matchType string) error {
 		return err
 	}
 	for _, match := range matches {
-		if match.Status != "complete" {
+		if !match.IsComplete() {
 			continue
 		}
 		matchResult, err := database.GetMatchResultForMatch(match.Id)

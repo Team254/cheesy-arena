@@ -64,7 +64,7 @@ func TestRankingsApi(t *testing.T) {
 	ranking2 := RankingWithNickname{*game.TestRanking1(), "ChezyPof"}
 	web.arena.Database.CreateRanking(&ranking1.Ranking)
 	web.arena.Database.CreateRanking(&ranking2.Ranking)
-	web.arena.Database.CreateMatch(&model.Match{Type: "qualification", DisplayName: "29", Status: "complete"})
+	web.arena.Database.CreateMatch(&model.Match{Type: "qualification", DisplayName: "29", Status: model.RedWonMatch})
 	web.arena.Database.CreateMatch(&model.Match{Type: "qualification", DisplayName: "30"})
 	web.arena.Database.CreateTeam(&model.Team{Id: 254, Nickname: "ChezyPof"})
 	web.arena.Database.CreateTeam(&model.Team{Id: 1114, Nickname: "Simbots"})

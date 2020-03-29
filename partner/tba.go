@@ -319,7 +319,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 		var scoreBreakdown map[string]*TbaScoreBreakdown
 		var redScore, blueScore *int
 		var redCards, blueCards map[string]string
-		if match.Status == "complete" {
+		if match.IsComplete() {
 			matchResult, err := database.GetMatchResultForMatch(match.Id)
 			if err != nil {
 				return err

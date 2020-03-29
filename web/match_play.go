@@ -25,7 +25,7 @@ type MatchPlayListItem struct {
 	Id          int
 	DisplayName string
 	Time        string
-	Status      string
+	Status      model.MatchStatus
 	ColorClass  string
 }
 
@@ -357,16 +357,15 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 
 		// Update and save the match record to the database.
-		match.Status = "complete"
 		match.ScoreCommittedAt = time.Now()
 		redScore := matchResult.RedScoreSummary(true)
 		blueScore := matchResult.BlueScoreSummary(true)
 		if redScore.Score > blueScore.Score {
-			match.Winner = "R"
+			match.Status = model.RedWonMatch
 		} else if redScore.Score < blueScore.Score {
-			match.Winner = "B"
+			match.Status = model.BlueWonMatch
 		} else {
-			match.Winner = "T"
+			match.Status = model.TieMatch
 		}
 		err := web.arena.Database.SaveMatch(match)
 		if err != nil {
@@ -407,10 +406,10 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			// Generate awards if the tournament is over.
 			if isTournamentWon {
 				var winnerAllianceId, finalistAllianceId int
-				if match.Winner == "R" {
+				if match.Status == model.RedWonMatch {
 					winnerAllianceId = match.ElimRedAlliance
 					finalistAllianceId = match.ElimBlueAlliance
-				} else if match.Winner == "B" {
+				} else if match.Status == model.BlueWonMatch {
 					winnerAllianceId = match.ElimBlueAlliance
 					finalistAllianceId = match.ElimRedAlliance
 				}
@@ -474,7 +473,7 @@ func (list MatchPlayList) Len() int {
 
 // Helper function to implement the required interface for Sort.
 func (list MatchPlayList) Less(i, j int) bool {
-	return list[i].Status != "complete" && list[j].Status == "complete"
+	return list[i].Status == model.MatchNotPlayed && list[j].Status != model.MatchNotPlayed
 }
 
 // Helper function to implement the required interface for Sort.
@@ -495,12 +494,12 @@ func (web *Web) buildMatchPlayList(matchType string) (MatchPlayList, error) {
 		matchPlayList[i].DisplayName = match.TypePrefix() + match.DisplayName
 		matchPlayList[i].Time = match.Time.Local().Format("3:04 PM")
 		matchPlayList[i].Status = match.Status
-		switch match.Winner {
-		case "R":
+		switch match.Status {
+		case model.RedWonMatch:
 			matchPlayList[i].ColorClass = "danger"
-		case "B":
+		case model.BlueWonMatch:
 			matchPlayList[i].ColorClass = "info"
-		case "T":
+		case model.TieMatch:
 			matchPlayList[i].ColorClass = "warning"
 		default:
 			matchPlayList[i].ColorClass = ""

@@ -377,12 +377,12 @@ func TestLoadNextMatch(t *testing.T) {
 
 	arena.Database.CreateTeam(&model.Team{Id: 1114})
 	practiceMatch1 := model.Match{Type: "practice", DisplayName: "1"}
-	practiceMatch2 := model.Match{Type: "practice", DisplayName: "2", Status: "complete"}
+	practiceMatch2 := model.Match{Type: "practice", DisplayName: "2", Status: model.RedWonMatch}
 	practiceMatch3 := model.Match{Type: "practice", DisplayName: "3"}
 	arena.Database.CreateMatch(&practiceMatch1)
 	arena.Database.CreateMatch(&practiceMatch2)
 	arena.Database.CreateMatch(&practiceMatch3)
-	qualificationMatch1 := model.Match{Type: "qualification", DisplayName: "1", Status: "complete"}
+	qualificationMatch1 := model.Match{Type: "qualification", DisplayName: "1", Status: model.BlueWonMatch}
 	qualificationMatch2 := model.Match{Type: "qualification", DisplayName: "2"}
 	arena.Database.CreateMatch(&qualificationMatch1)
 	arena.Database.CreateMatch(&qualificationMatch2)
@@ -391,12 +391,12 @@ func TestLoadNextMatch(t *testing.T) {
 	assert.Equal(t, 0, arena.CurrentMatch.Id)
 	err := arena.SubstituteTeam(1114, "R1")
 	assert.Nil(t, err)
-	arena.CurrentMatch.Status = "complete"
+	arena.CurrentMatch.Status = model.TieMatch
 	err = arena.LoadNextMatch()
 	assert.Nil(t, err)
 	assert.Equal(t, 0, arena.CurrentMatch.Id)
 	assert.Equal(t, 0, arena.CurrentMatch.Red1)
-	assert.NotEqual(t, "complete", arena.CurrentMatch.Status)
+	assert.Equal(t, false, arena.CurrentMatch.IsComplete())
 
 	// Other matches should be loaded by type until they're all complete.
 	err = arena.LoadMatch(&practiceMatch2)
@@ -404,12 +404,12 @@ func TestLoadNextMatch(t *testing.T) {
 	err = arena.LoadNextMatch()
 	assert.Nil(t, err)
 	assert.Equal(t, practiceMatch1.Id, arena.CurrentMatch.Id)
-	practiceMatch1.Status = "complete"
+	practiceMatch1.Status = model.RedWonMatch
 	arena.Database.SaveMatch(&practiceMatch1)
 	err = arena.LoadNextMatch()
 	assert.Nil(t, err)
 	assert.Equal(t, practiceMatch3.Id, arena.CurrentMatch.Id)
-	practiceMatch3.Status = "complete"
+	practiceMatch3.Status = model.BlueWonMatch
 	arena.Database.SaveMatch(&practiceMatch3)
 	err = arena.LoadNextMatch()
 	assert.Nil(t, err)
@@ -735,9 +735,9 @@ func setMatch(database *model.Database, match *model.Match, matchTime time.Time,
 	match.Time = matchTime
 	match.StartedAt = startedAt
 	if isComplete {
-		match.Status = "complete"
+		match.Status = model.TieMatch
 	} else {
-		match.Status = ""
+		match.Status = model.MatchNotPlayed
 	}
 	_ = database.SaveMatch(match)
 }

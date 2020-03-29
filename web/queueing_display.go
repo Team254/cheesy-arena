@@ -30,7 +30,7 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var upcomingMatches []model.Match
 	for i, match := range matches {
-		if match.Status == "complete" {
+		if match.IsComplete() {
 			continue
 		}
 		upcomingMatches = append(upcomingMatches, match)

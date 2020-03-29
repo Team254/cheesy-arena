@@ -21,10 +21,9 @@ CREATE TABLE matches (
   blue2issurrogate bool,
   blue3 int,
   blue3issurrogate bool,
-  status VARCHAR(16),
   startedat DATETIME,
   scorecommittedat DATETIME,
-  winner VARCHAR(16)
+  status VARCHAR(16)
 );
 CREATE UNIQUE INDEX type_displayname ON matches(type, displayname);
 

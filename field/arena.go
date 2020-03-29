@@ -586,7 +586,7 @@ func (arena *Arena) getNextMatch(excludeCurrent bool) (*model.Match, error) {
 		return nil, err
 	}
 	for _, match := range matches {
-		if match.Status != "complete" && !(excludeCurrent && match.Id == arena.CurrentMatch.Id) {
+		if !match.IsComplete() && !(excludeCurrent && match.Id == arena.CurrentMatch.Id) {
 			return &match, nil
 		}
 	}
@@ -882,7 +882,7 @@ func (arena *Arena) getEventStatusMessage() string {
 		// Only practice and qualification matches have a strict schedule.
 		return ""
 	}
-	if currentMatch.Status == "complete" {
+	if currentMatch.IsComplete() {
 		// This is a replay or otherwise unpredictable situation.
 		return ""
 	}

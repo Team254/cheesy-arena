@@ -33,7 +33,7 @@ func UpdateEliminationSchedule(database *model.Database, startTime time.Time) (b
 	}
 	matchIndex := 0
 	for _, match := range matches {
-		if match.Status == "complete" {
+		if match.IsComplete() {
 			continue
 		}
 		match.Time = startTime.Add(time.Duration(matchIndex*ElimMatchSpacingSec) * time.Second)
@@ -152,7 +152,7 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 	}
 	var unplayedMatches []*model.Match
 	for _, match := range matches {
-		if match.Status != "complete" {
+		if !match.IsComplete() {
 			// Update the teams in the match if they are not yet set or are incorrect.
 			if len(redAlliance) != 0 && !(match.Red1 == redAlliance[0].TeamId && match.Red2 == redAlliance[1].TeamId &&
 				match.Red3 == redAlliance[2].TeamId) {
@@ -183,16 +183,16 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 		}
 
 		// Check who won.
-		switch match.Winner {
-		case "R":
+		switch match.Status {
+		case model.RedWonMatch:
 			redWins += 1
-		case "B":
+		case model.BlueWonMatch:
 			blueWins += 1
-		case "T":
+		case model.TieMatch:
 			ties = append(ties, &match)
 		default:
 			return []model.AllianceTeam{}, fmt.Errorf("Completed match %d has invalid winner '%s'", match.Id,
-				match.Winner)
+				match.Status)
 		}
 	}
 
