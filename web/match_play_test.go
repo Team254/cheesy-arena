@@ -258,6 +258,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "scoringStatus")
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
+	readWebsocketType(t, ws, "eventStatus")
 
 	// Test that a server-side error is communicated to the client.
 	ws.Write("nonexistenttype", nil)
@@ -348,6 +349,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	readWebsocketType(t, ws, "scoringStatus")
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
+	readWebsocketType(t, ws, "eventStatus")
 
 	web.arena.AllianceStations["R1"].Bypass = true
 	web.arena.AllianceStations["R2"].Bypass = true

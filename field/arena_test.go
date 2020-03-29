@@ -644,3 +644,100 @@ func TestSaveTeamHasConnected(t *testing.T) {
 		assert.Equal(t, "San Jose", teams[5].City)
 	}
 }
+
+func TestEventStatusMessage(t *testing.T) {
+	arena := setupTestArena(t)
+
+	arena.LoadTestMatch()
+	assert.Equal(t, "", arena.getEventStatusMessage())
+
+	arena.Database.CreateMatch(&model.Match{Type: "qualification", DisplayName: "1"})
+	arena.Database.CreateMatch(&model.Match{Type: "qualification", DisplayName: "2"})
+	matches, _ := arena.Database.GetMatchesByType("qualification")
+	assert.Equal(t, 2, len(matches))
+
+	setMatch(arena.Database, &matches[0], time.Now().Add(300*time.Second), time.Time{}, false)
+	arena.CurrentMatch = &matches[0]
+	arena.MatchState = PreMatch
+	assert.Equal(t, "Event is running on schedule", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[0], time.Now().Add(60*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running on schedule", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[0], time.Now().Add(-60*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running on schedule", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[0], time.Now().Add(-120*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running on schedule", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[0], time.Now().Add(-180*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running 3 minutes late", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[0], time.Now().Add(181*time.Second), time.Now(), false)
+	arena.MatchState = AutoPeriod
+	assert.Equal(t, "Event is running 3 minutes early", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[0], time.Now().Add(-300*time.Second), time.Now().Add(-601*time.Second), false)
+	setMatch(arena.Database, &matches[1], time.Now().Add(481*time.Second), time.Time{}, false)
+	arena.MatchState = PostMatch
+	assert.Equal(t, "Event is running 5 minutes early", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now().Add(181*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running 3 minutes early", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now().Add(-60*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running on schedule", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now().Add(-180*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running 3 minutes late", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[0], time.Now().Add(-300*time.Second), time.Now().Add(-601*time.Second), true)
+	assert.Equal(t, "", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now().Add(900*time.Second), time.Time{}, false)
+	arena.CurrentMatch = &matches[1]
+	arena.MatchState = PreMatch
+	assert.Equal(t, "Event is running on schedule", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now().Add(899*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running 5 minutes early", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now().Add(60*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running on schedule", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now().Add(-120*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running on schedule", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now().Add(-180*time.Second), time.Time{}, false)
+	assert.Equal(t, "Event is running 3 minutes late", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now().Add(-180*time.Second), time.Now().Add(-541*time.Second), false)
+	arena.MatchState = TeleopPeriod
+	assert.Equal(t, "Event is running 6 minutes early", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now(), time.Now().Add(481*time.Second), false)
+	arena.MatchState = PostMatch
+	assert.Equal(t, "Event is running 8 minutes late", arena.getEventStatusMessage())
+
+	setMatch(arena.Database, &matches[1], time.Now(), time.Now().Add(481*time.Second), true)
+	assert.Equal(t, "", arena.getEventStatusMessage())
+
+	// Check other match types.
+	arena.MatchState = PreMatch
+	arena.CurrentMatch = &model.Match{Type: "practice", Time: time.Now().Add(-181 * time.Second)}
+	assert.Equal(t, "Event is running 3 minutes late", arena.getEventStatusMessage())
+
+	arena.CurrentMatch = &model.Match{Type: "elimination", Time: time.Now().Add(-181 * time.Second)}
+	assert.Equal(t, "", arena.getEventStatusMessage())
+}
+
+func setMatch(database *model.Database, match *model.Match, matchTime time.Time, startedAt time.Time, isComplete bool) {
+	match.Time = matchTime
+	match.StartedAt = startedAt
+	if isComplete {
+		match.Status = "complete"
+	} else {
+		match.Status = ""
+	}
+	_ = database.SaveMatch(match)
+}

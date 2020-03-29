@@ -225,6 +225,11 @@ var handleAllianceStationDisplayMode = function(data) {
   $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);
 };
 
+// Handles a websocket message to update the event status message.
+var handleEventStatus = function(data) {
+  $("#eventStatusMessage").text(data);
+};
+
 $(function() {
   // Activate tooltips above the status headers.
   $("[data-toggle=tooltip]").tooltip({"placement": "top"});
@@ -234,9 +239,10 @@ $(function() {
     allianceStationDisplayMode: function(event) { handleAllianceStationDisplayMode(event.data); },
     arenaStatus: function(event) { handleArenaStatus(event.data); },
     audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
+    eventStatus: function(event) { handleEventStatus(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    scoringStatus: function(event) { handleScoringStatus(event.data); }
+    scoringStatus: function(event) { handleScoringStatus(event.data); },
   });
 });

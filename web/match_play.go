@@ -177,7 +177,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.MatchTimingNotifier, web.arena.ArenaStatusNotifier, web.arena.MatchTimeNotifier,
 		web.arena.RealtimeScoreNotifier, web.arena.ScoringStatusNotifier, web.arena.AudienceDisplayModeNotifier,
-		web.arena.AllianceStationDisplayModeNotifier)
+		web.arena.AllianceStationDisplayModeNotifier, web.arena.EventStatusNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {

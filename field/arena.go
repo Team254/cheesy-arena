@@ -13,15 +13,19 @@ import (
 	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/plc"
 	"log"
+	"math"
 	"time"
 )
 
 const (
 	arenaLoopPeriodMs        = 10
 	dsPacketPeriodMs         = 250
+	periodicTaskPeriodSec    = 30
 	matchEndScoreDwellSec    = 3
 	postTimeoutSec           = 4
 	preLoadNextMatchDelaySec = 5
+	earlyLateThresholdMin    = 2.5
+	MaxMatchGapMin           = 20
 )
 
 // Progression of match states.
@@ -59,6 +63,8 @@ type Arena struct {
 	RedRealtimeScore           *RealtimeScore
 	BlueRealtimeScore          *RealtimeScore
 	lastDsPacketTime           time.Time
+	lastPeriodicTaskTime       time.Time
+	EventStatusMessage         string
 	FieldVolunteers            bool
 	FieldReset                 bool
 	AudienceDisplayMode        string
@@ -512,6 +518,10 @@ func (arena *Arena) Run() {
 
 	for {
 		arena.Update()
+		if time.Since(arena.lastPeriodicTaskTime).Seconds() >= periodicTaskPeriodSec {
+			arena.lastPeriodicTaskTime = time.Now()
+			go arena.runPeriodicTasks()
+		}
 		time.Sleep(time.Millisecond * arenaLoopPeriodMs)
 	}
 }
@@ -853,4 +863,74 @@ func (arena *Arena) playSound(name string) {
 func (arena *Arena) alliancePostMatchScoreReady(alliance string) bool {
 	numPanels := arena.ScoringPanelRegistry.GetNumPanels(alliance)
 	return numPanels > 0 && arena.ScoringPanelRegistry.GetNumScoreCommitted(alliance) >= numPanels
+}
+
+// Performs any actions that need to run at the interval specified by periodicTaskPeriodSec.
+func (arena *Arena) runPeriodicTasks() {
+	// Check how early or late the event is running and publish an update to the displays that show it.
+	newEventStatusMessage := arena.getEventStatusMessage()
+	if newEventStatusMessage != arena.EventStatusMessage {
+		arena.EventStatusMessage = newEventStatusMessage
+		arena.EventStatusNotifier.Notify()
+	}
+}
+
+// Updates the string that indicates how early or late the event is running.
+func (arena *Arena) getEventStatusMessage() string {
+	currentMatch := arena.CurrentMatch
+	if currentMatch.Type != "practice" && currentMatch.Type != "qualification" {
+		// Only practice and qualification matches have a strict schedule.
+		return ""
+	}
+	if currentMatch.Status == "complete" {
+		// This is a replay or otherwise unpredictable situation.
+		return ""
+	}
+
+	var minutesLate float64
+	if arena.MatchState > PreMatch && arena.MatchState < PostMatch {
+		// The match is in progress; simply calculate lateness from its start time.
+		minutesLate = currentMatch.StartedAt.Sub(currentMatch.Time).Minutes()
+	} else {
+		// We need to check the adjacent matches to accurately determine lateness.
+		matches, _ := arena.Database.GetMatchesByType(currentMatch.Type)
+
+		previousMatchIndex := -1
+		nextMatchIndex := len(matches)
+		for i, match := range matches {
+			if match.Id == currentMatch.Id {
+				previousMatchIndex = i - 1
+				nextMatchIndex = i + 1
+				break
+			}
+		}
+
+		if arena.MatchState == PreMatch {
+			currentMinutesLate := time.Now().Sub(currentMatch.Time).Minutes()
+			if previousMatchIndex >= 0 &&
+				currentMatch.Time.Sub(matches[previousMatchIndex].Time).Minutes() <= MaxMatchGapMin {
+				previousMatch := matches[previousMatchIndex]
+				previousMinutesLate := previousMatch.StartedAt.Sub(previousMatch.Time).Minutes()
+				minutesLate = math.Max(previousMinutesLate, currentMinutesLate)
+			} else {
+				minutesLate = math.Max(currentMinutesLate, 0)
+			}
+		} else if arena.MatchState == PostMatch {
+			currentMinutesLate := currentMatch.StartedAt.Sub(currentMatch.Time).Minutes()
+			if nextMatchIndex < len(matches) {
+				nextMatch := matches[nextMatchIndex]
+				nextMinutesLate := time.Now().Sub(nextMatch.Time).Minutes()
+				minutesLate = math.Max(currentMinutesLate, nextMinutesLate)
+			} else {
+				minutesLate = currentMinutesLate
+			}
+		}
+	}
+
+	if minutesLate > earlyLateThresholdMin {
+		return fmt.Sprintf("Event is running %d minutes late", int(minutesLate))
+	} else if minutesLate < -earlyLateThresholdMin {
+		return fmt.Sprintf("Event is running %d minutes early", int(-minutesLate))
+	}
+	return "Event is running on schedule"
 }

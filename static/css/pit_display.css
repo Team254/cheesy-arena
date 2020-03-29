@@ -75,3 +75,11 @@ body {
   padding-left: 0;
   padding-right: 0;
 }
+#eventStatusMessage {
+  margin-top: 10px;
+  font-size: 25px;
+  font-family: "FuturaLTBold";
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+}

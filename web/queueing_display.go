@@ -6,7 +6,7 @@
 package web
 
 import (
-	"fmt"
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
@@ -14,9 +14,7 @@ import (
 )
 
 const (
-	earlyLateThresholdMin = 2
-	maxGapMin             = 20
-	numMatchesToShow      = 5
+	numMatchesToShow = 5
 )
 
 // Renders the queueing display that shows upcoming matches and timing information.
@@ -41,7 +39,7 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Don't include any more matches if there is a significant gap before the next one.
-		if i+1 < len(matches) && matches[i+1].Time.Sub(match.Time) > maxGapMin*time.Minute {
+		if i+1 < len(matches) && matches[i+1].Time.Sub(match.Time) > field.MaxMatchGapMin*time.Minute {
 			break
 		}
 	}
@@ -56,9 +54,7 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		*model.EventSettings
 		MatchTypePrefix string
 		Matches         []model.Match
-		StatusMessage   string
-	}{web.arena.EventSettings, web.arena.CurrentMatch.TypePrefix(), upcomingMatches,
-		generateEventStatusMessage(web.arena.CurrentMatch.Type, matches)}
+	}{web.arena.EventSettings, web.arena.CurrentMatch.TypePrefix(), upcomingMatches}
 	err = template.ExecuteTemplate(w, "queueing_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -84,35 +80,5 @@ func (web *Web) queueingDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
 	ws.HandleNotifiers(web.arena.MatchTimingNotifier, web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier,
-		web.arena.DisplayConfigurationNotifier, web.arena.ReloadDisplaysNotifier)
-}
-
-// Returns a message indicating how early or late the event is running.
-func generateEventStatusMessage(matchType string, matches []model.Match) string {
-	if matchType != "practice" && matchType != "qualification" {
-		// Only practice and qualification matches have a strict schedule.
-		return ""
-	}
-	if len(matches) == 0 || matches[len(matches)-1].Status == "complete" {
-		// All matches of the current type are complete.
-		return ""
-	}
-
-	for i := len(matches) - 1; i >= 0; i-- {
-		match := matches[i]
-		if match.Status == "complete" {
-			if i+1 < len(matches) && matches[i+1].Time.Sub(match.Time) > maxGapMin*time.Minute {
-				break
-			} else {
-				minutesLate := match.StartedAt.Sub(match.Time).Minutes()
-				if minutesLate > earlyLateThresholdMin {
-					return fmt.Sprintf("Event is running %d minutes late", int(minutesLate))
-				} else if minutesLate < -earlyLateThresholdMin {
-					return fmt.Sprintf("Event is running %d minutes early", int(-minutesLate))
-				}
-			}
-		}
-	}
-
-	return "Event is running on schedule"
+		web.arena.EventStatusNotifier, web.arena.DisplayConfigurationNotifier, web.arena.ReloadDisplaysNotifier)
 }

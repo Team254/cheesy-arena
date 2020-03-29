@@ -49,5 +49,6 @@ func (web *Web) pitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reques
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(web.arena.DisplayConfigurationNotifier, web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(web.arena.EventStatusNotifier, web.arena.DisplayConfigurationNotifier,
+		web.arena.ReloadDisplaysNotifier)
 }
