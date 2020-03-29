@@ -30,7 +30,7 @@
 </div>
 
 <script id="displayTemplate" type="text/x-handlebars-template">
-  <tr>
+  <tr{{"{{#unless ConnectionCount}}"}} class="danger"{{"{{/unless}}"}}>
     <td>{{"{{Id}}"}}</td>
     <td>{{"{{ConnectionCount}}"}}</td>
     <td>{{"{{IpAddress}}"}}</td>

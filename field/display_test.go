@@ -6,6 +6,7 @@ package field
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestDisplayFromUrl(t *testing.T) {
@@ -122,4 +123,48 @@ func TestDisplayUpdateError(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "doesn't exist")
 	}
+}
+
+func TestDisplayPurge(t *testing.T) {
+	arena := setupTestArena(t)
+
+	// Unnamed placeholder gets immediately purged upon disconnection.
+	display := &Display{Id: "254", Type: PlaceholderDisplay, Configuration: map[string]string{}}
+	arena.RegisterDisplay(display)
+	assert.Contains(t, arena.Displays, "254")
+	arena.MarkDisplayDisconnected(display)
+	assert.NotContains(t, arena.Displays, "254")
+
+	// Named placeholder does not get immediately purged upon disconnection.
+	display.Nickname = "Bob"
+	arena.RegisterDisplay(display)
+	assert.Contains(t, arena.Displays, "254")
+	arena.MarkDisplayDisconnected(display)
+	assert.Contains(t, arena.Displays, "254")
+
+	// Unnamed configured display does not get immediately purged upon disconnection.
+	display = &Display{Id: "1114", Type: FieldMonitorDisplay, Configuration: map[string]string{}}
+	arena.RegisterDisplay(display)
+	assert.Contains(t, arena.Displays, "1114")
+	arena.MarkDisplayDisconnected(display)
+	assert.Contains(t, arena.Displays, "1114")
+	arena.purgeDisconnectedDisplays()
+	assert.Contains(t, arena.Displays, "1114")
+
+	// Unnamed configured display gets purged by periodic task.
+	arena.RegisterDisplay(display)
+	assert.Contains(t, arena.Displays, "1114")
+	arena.MarkDisplayDisconnected(display)
+	arena.Displays["1114"].lastConnectedTime = time.Now().Add(-displayPurgeTtlMin * time.Minute)
+	arena.purgeDisconnectedDisplays()
+	assert.NotContains(t, arena.Displays, "1114")
+
+	// Named configured display does not get purged by periodic task.
+	display.Nickname = "Brunhilda"
+	arena.RegisterDisplay(display)
+	assert.Contains(t, arena.Displays, "1114")
+	arena.MarkDisplayDisconnected(display)
+	arena.Displays["1114"].lastConnectedTime = time.Now().Add(-displayPurgeTtlMin * time.Minute)
+	arena.purgeDisconnectedDisplays()
+	assert.Contains(t, arena.Displays, "1114")
 }

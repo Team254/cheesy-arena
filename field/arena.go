@@ -873,6 +873,9 @@ func (arena *Arena) runPeriodicTasks() {
 		arena.EventStatusMessage = newEventStatusMessage
 		arena.EventStatusNotifier.Notify()
 	}
+
+	// Clean up the list of displays.
+	arena.purgeDisconnectedDisplays()
 }
 
 // Updates the string that indicates how early or late the event is running.

@@ -13,10 +13,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 const (
-	minDisplayId = 100
+	minDisplayId       = 100
+	displayPurgeTtlMin = 30
 )
 
 type DisplayType int
@@ -58,12 +60,13 @@ var displayTypePaths = map[DisplayType]string{
 var displayRegistryMutex sync.Mutex
 
 type Display struct {
-	Id              string
-	Nickname        string
-	Type            DisplayType
-	Configuration   map[string]string
-	IpAddress       string
-	ConnectionCount int
+	Id                string
+	Nickname          string
+	Type              DisplayType
+	Configuration     map[string]string
+	IpAddress         string
+	ConnectionCount   int
+	lastConnectedTime time.Time
 }
 
 // Parses the given display URL path and query string to extract the configuration.
@@ -159,6 +162,7 @@ func (arena *Arena) RegisterDisplay(display *Display) {
 		} else {
 			display.ConnectionCount = 1
 		}
+		display.lastConnectedTime = time.Now()
 		arena.Displays[display.Id] = display
 	}
 	arena.DisplayConfigurationNotifier.Notify()
@@ -194,6 +198,25 @@ func (arena *Arena) MarkDisplayDisconnected(display *Display) {
 		} else {
 			existingDisplay.ConnectionCount -= 1
 		}
+		existingDisplay.lastConnectedTime = time.Now()
+		arena.DisplayConfigurationNotifier.Notify()
+	}
+}
+
+// Removes any displays from the list that haven't had any active connections for a while and don't have a nickname.
+func (arena *Arena) purgeDisconnectedDisplays() {
+	displayRegistryMutex.Lock()
+	defer displayRegistryMutex.Unlock()
+
+	deleted := false
+	for id, display := range arena.Displays {
+		if display.ConnectionCount == 0 && display.Nickname == "" &&
+			time.Now().Sub(display.lastConnectedTime).Minutes() >= displayPurgeTtlMin {
+			delete(arena.Displays, id)
+			deleted = true
+		}
+	}
+	if deleted {
 		arena.DisplayConfigurationNotifier.Notify()
 	}
 }
