@@ -38,14 +38,14 @@ var reloadAllDisplays = function() {
 var handleDisplayConfiguration = function(data) {
   $("#displayContainer").empty();
 
-  $.each(data.Displays, function(displayId, display) {
+  $.each(data, function(displayId, display) {
     var displayRow = displayTemplate(display);
     $("#displayContainer").append(displayRow);
-    $("#displayNickname" + displayId).val(display.Nickname);
-    $("#displayType" + displayId).val(display.Type);
+    $("#displayNickname" + displayId).val(display.DisplayConfiguration.Nickname);
+    $("#displayType" + displayId).val(display.DisplayConfiguration.Type);
 
     // Convert configuration map to query string format.
-    var configurationString = $.map(Object.entries(display.Configuration), function(entry) {
+    var configurationString = $.map(Object.entries(display.DisplayConfiguration.Configuration), function(entry) {
       return entry.join("=");
     }).join("&");
     $("#displayConfiguration" + displayId).val(configurationString);

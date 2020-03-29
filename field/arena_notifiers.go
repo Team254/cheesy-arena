@@ -33,11 +33,6 @@ type ArenaNotifiers struct {
 	ControlPanelColorNotifier          *websocket.Notifier
 }
 
-type DisplayConfigurationMessage struct {
-	Displays    map[string]*Display
-	DisplayUrls map[string]string
-}
-
 type MatchTimeMessage struct {
 	MatchState
 	MatchTimeSec int
@@ -107,16 +102,14 @@ func (arena *Arena) generateAudienceDisplayModeMessage() interface{} {
 }
 
 func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
+	// Notify() for this notifier must always called from a method that has a lock on the display mutex.
 	// Make a copy of the map to avoid potential data races; otherwise the same map would get iterated through as it is
-	// serialized to JSON.
-	displaysCopy := make(map[string]*Display)
-	displayUrls := make(map[string]string)
+	// serialized to JSON, outside the mutex lock.
+	displaysCopy := make(map[string]Display)
 	for displayId, display := range arena.Displays {
-		displaysCopy[displayId] = display
-		displayUrls[displayId] = display.ToUrl()
+		displaysCopy[displayId] = *display
 	}
-
-	return &DisplayConfigurationMessage{displaysCopy, displayUrls}
+	return displaysCopy
 }
 
 func (arena *Arena) generateEventStatusMessage() interface{} {

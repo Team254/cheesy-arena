@@ -36,13 +36,13 @@ func TestAllianceStationDisplayWebsocket(t *testing.T) {
 	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "displayConfiguration")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	readWebsocketType(t, ws, "arenaStatus")
 	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
-	readWebsocketType(t, ws, "displayConfiguration")
 
 	// Change to a different screen.
 	web.arena.AllianceStationDisplayMode = "logo"

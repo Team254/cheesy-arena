@@ -39,7 +39,7 @@ func (web *Web) pitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reques
 		handleWebErr(w, err)
 		return
 	}
-	defer web.arena.MarkDisplayDisconnected(display)
+	defer web.arena.MarkDisplayDisconnected(display.DisplayConfiguration.Id)
 
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
@@ -49,6 +49,5 @@ func (web *Web) pitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reques
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(web.arena.EventStatusNotifier, web.arena.DisplayConfigurationNotifier,
-		web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(display.Notifier, web.arena.EventStatusNotifier, web.arena.ReloadDisplaysNotifier)
 }

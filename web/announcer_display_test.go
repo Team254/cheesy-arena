@@ -29,13 +29,13 @@ func TestAnnouncerDisplayWebsocket(t *testing.T) {
 	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "displayConfiguration")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "scorePosted")
 	readWebsocketType(t, ws, "audienceDisplayMode")
-	readWebsocketType(t, ws, "displayConfiguration")
 
 	web.arena.MatchLoadNotifier.Notify()
 	readWebsocketType(t, ws, "matchLoad")

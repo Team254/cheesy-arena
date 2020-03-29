@@ -40,7 +40,7 @@ func (web *Web) allianceStationDisplayWebsocketHandler(w http.ResponseWriter, r 
 		handleWebErr(w, err)
 		return
 	}
-	defer web.arena.MarkDisplayDisconnected(display)
+	defer web.arena.MarkDisplayDisconnected(display.DisplayConfiguration.Id)
 
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
@@ -50,7 +50,7 @@ func (web *Web) allianceStationDisplayWebsocketHandler(w http.ResponseWriter, r 
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(web.arena.MatchTimingNotifier, web.arena.AllianceStationDisplayModeNotifier,
+	ws.HandleNotifiers(display.Notifier, web.arena.MatchTimingNotifier, web.arena.AllianceStationDisplayModeNotifier,
 		web.arena.ArenaStatusNotifier, web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier,
-		web.arena.RealtimeScoreNotifier, web.arena.DisplayConfigurationNotifier, web.arena.ReloadDisplaysNotifier)
+		web.arena.RealtimeScoreNotifier, web.arena.ReloadDisplaysNotifier)
 }

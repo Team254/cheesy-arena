@@ -40,13 +40,11 @@ var CheesyWebsocket = function(path, events) {
   // Insert an event to allow reconfiguration if this is a display.
   if (!events.hasOwnProperty("displayConfiguration")) {
     events.displayConfiguration = function (event) {
-      if (displayId in event.data.DisplayUrls) {
-        var newUrl = event.data.DisplayUrls[displayId];
+      var newUrl = event.data;
 
-        // Reload the display if the configuration has changed.
-        if (newUrl !== window.location.pathname + window.location.search) {
-          window.location = newUrl;
-        }
+      // Reload the display if the configuration has changed.
+      if (newUrl !== window.location.pathname + window.location.search) {
+        window.location = newUrl;
       }
     };
   }

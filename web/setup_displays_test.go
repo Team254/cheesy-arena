@@ -32,37 +32,37 @@ func TestSetupDisplaysWebsocket(t *testing.T) {
 
 	// Should get a few status updates right after connection.
 	message := readDisplayConfiguration(t, ws)
-	assert.Empty(t, message.Displays)
-	assert.Empty(t, message.DisplayUrls)
+	assert.Empty(t, message)
 
 	// Connect a couple of displays and verify the resulting configuration messages.
 	displayConn1, _, _ := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/display/websocket?displayId=1", nil)
 	defer displayConn1.Close()
+	displayWs1 := websocket.NewTestWebsocket(displayConn1)
+	assert.Equal(t, "/display?displayId=1", readWebsocketType(t, displayWs1, "displayConfiguration"))
 	readDisplayConfiguration(t, ws)
 	displayConn2, _, _ := gorillawebsocket.DefaultDialer.Dial(wsUrl+
 		"/displays/alliance_station/websocket?displayId=2&station=R2", nil)
 	defer displayConn2.Close()
-	expectedDisplay1 := &field.Display{Id: "1", Type: field.PlaceholderDisplay, Configuration: map[string]string{},
-		ConnectionCount: 1, IpAddress: "127.0.0.1"}
-	expectedDisplay2 := &field.Display{Id: "2", Type: field.AllianceStationDisplay,
-		Configuration: map[string]string{"station": "R2"}, ConnectionCount: 1, IpAddress: "127.0.0.1"}
 	message = readDisplayConfiguration(t, ws)
-	if assert.Equal(t, 2, len(message.Displays)) {
-		assert.Equal(t, expectedDisplay1, message.Displays["1"])
-		assert.Equal(t, expectedDisplay2, message.Displays["2"])
-		assert.Equal(t, expectedDisplay1.ToUrl(), message.DisplayUrls["1"])
-		assert.Equal(t, expectedDisplay2.ToUrl(), message.DisplayUrls["2"])
+	if assert.Equal(t, 2, len(message)) {
+		assert.Equal(t, field.DisplayConfiguration{"1", "", field.PlaceholderDisplay, map[string]string{}},
+			message["1"].DisplayConfiguration)
+		assert.Equal(t, 1, message["1"].ConnectionCount)
+		assert.Equal(t, "127.0.0.1", message["1"].IpAddress)
+		assert.Equal(t, field.DisplayConfiguration{"2", "", field.AllianceStationDisplay,
+			map[string]string{"station": "R2"}}, message["2"].DisplayConfiguration)
+		assert.Equal(t, 1, message["2"].ConnectionCount)
+		assert.Equal(t, "127.0.0.1", message["2"].IpAddress)
 	}
 
 	// Reconfigure a display and verify the result.
-	expectedDisplay1.Nickname = "Audience Display"
-	expectedDisplay1.Type = field.AudienceDisplay
-	expectedDisplay1.Configuration["background"] = "#00f"
-	expectedDisplay1.Configuration["reversed"] = "true"
-	ws.Write("configureDisplay", expectedDisplay1)
+	displayConfig := field.DisplayConfiguration{Id: "1", Nickname: "Audience Display", Type: field.AudienceDisplay,
+		Configuration: map[string]string{"background": "#00f", "reversed": "true"}}
+	ws.Write("configureDisplay", displayConfig)
 	message = readDisplayConfiguration(t, ws)
-	assert.Equal(t, expectedDisplay1, message.Displays["1"])
-	assert.Equal(t, expectedDisplay1.ToUrl(), message.DisplayUrls["1"])
+	assert.Equal(t, displayConfig, message["1"].DisplayConfiguration)
+	assert.Equal(t, "/displays/audience?displayId=1&nickname=Audience+Display&background=%2300f&reversed=true",
+		readWebsocketType(t, displayWs1, "displayConfiguration"))
 }
 
 func TestSetupDisplaysWebsocketReloadDisplays(t *testing.T) {
@@ -82,7 +82,7 @@ func TestSetupDisplaysWebsocketReloadDisplays(t *testing.T) {
 	displayConn, _, _ := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/display/websocket?displayId=1", nil)
 	defer displayConn.Close()
 	displayWs := websocket.NewTestWebsocket(displayConn)
-	readDisplayConfiguration(t, displayWs)
+	assert.Equal(t, "/display?displayId=1", readWebsocketType(t, displayWs, "displayConfiguration"))
 	readDisplayConfiguration(t, ws)
 
 	// Reset a display selectively and verify the resulting message.
@@ -92,10 +92,10 @@ func TestSetupDisplaysWebsocketReloadDisplays(t *testing.T) {
 	assert.Equal(t, nil, readWebsocketType(t, displayWs, "reload"))
 }
 
-func readDisplayConfiguration(t *testing.T, ws *websocket.Websocket) *field.DisplayConfigurationMessage {
+func readDisplayConfiguration(t *testing.T, ws *websocket.Websocket) map[string]field.Display {
 	message := readWebsocketType(t, ws, "displayConfiguration")
-	var displayConfigurationMessage field.DisplayConfigurationMessage
+	var displayConfigurationMessage map[string]field.Display
 	err := mapstructure.Decode(message, &displayConfigurationMessage)
 	assert.Nil(t, err)
-	return &displayConfigurationMessage
+	return displayConfigurationMessage
 }

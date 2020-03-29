@@ -39,7 +39,7 @@ func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *ht
 		handleWebErr(w, err)
 		return
 	}
-	defer web.arena.MarkDisplayDisconnected(display)
+	defer web.arena.MarkDisplayDisconnected(display.DisplayConfiguration.Id)
 
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
@@ -49,6 +49,5 @@ func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *ht
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(web.arena.ArenaStatusNotifier, web.arena.DisplayConfigurationNotifier,
-		web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(display.Notifier, web.arena.ArenaStatusNotifier, web.arena.ReloadDisplaysNotifier)
 }

@@ -37,15 +37,15 @@ func TestPlaceholderDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "displayConfiguration")
 
 	if assert.Contains(t, web.arena.Displays, "123") {
-		assert.Equal(t, "blop", web.arena.Displays["123"].Nickname)
-		if assert.Equal(t, 1, len(web.arena.Displays["123"].Configuration)) {
-			assert.Equal(t, "b", web.arena.Displays["123"].Configuration["a"])
+		assert.Equal(t, "blop", web.arena.Displays["123"].DisplayConfiguration.Nickname)
+		if assert.Equal(t, 1, len(web.arena.Displays["123"].DisplayConfiguration.Configuration)) {
+			assert.Equal(t, "b", web.arena.Displays["123"].DisplayConfiguration.Configuration["a"])
 		}
 	}
 
 	// Reconfigure the display and verify that the new configuration is received.
-	display := &field.Display{Id: "123", Nickname: "Alliance", Type: field.AllianceStationDisplay,
+	displayConfig := field.DisplayConfiguration{Id: "123", Nickname: "Alliance", Type: field.AllianceStationDisplay,
 		Configuration: map[string]string{"station": "B2"}}
-	web.arena.UpdateDisplay(display)
+	web.arena.UpdateDisplay(displayConfig)
 	readWebsocketType(t, ws, "displayConfiguration")
 }
