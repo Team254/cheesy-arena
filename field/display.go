@@ -208,7 +208,7 @@ func (arena *Arena) MarkDisplayDisconnected(displayId string) {
 	defer displayRegistryMutex.Unlock()
 
 	if existingDisplay, ok := arena.Displays[displayId]; ok {
-		if existingDisplay.DisplayConfiguration.Type == PlaceholderDisplay &&
+		if existingDisplay.ConnectionCount == 1 && existingDisplay.DisplayConfiguration.Type == PlaceholderDisplay &&
 			existingDisplay.DisplayConfiguration.Nickname == "" &&
 			len(existingDisplay.DisplayConfiguration.Configuration) == 0 {
 			// If the display is an unconfigured placeholder, just remove it entirely to prevent clutter.
