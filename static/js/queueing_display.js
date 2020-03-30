@@ -30,7 +30,7 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the event status message.
 var handleEventStatus = function(data) {
-  $("#eventStatusMessage").text(data);
+  $("#earlyLateMessage").text(data.EarlyLateMessage);
 };
 
 $(function() {

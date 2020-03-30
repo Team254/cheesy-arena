@@ -75,7 +75,7 @@ body {
   padding-left: 0;
   padding-right: 0;
 }
-#eventStatusMessage {
+#earlyLateMessage {
   margin-top: 10px;
   font-size: 25px;
   font-family: "FuturaLTBold";

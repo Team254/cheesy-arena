@@ -299,6 +299,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web.arena.AllianceStations["B3"].Bypass = true
 	ws.Write("startMatch", nil)
 	readWebsocketType(t, ws, "arenaStatus")
+	readWebsocketType(t, ws, "eventStatus")
 	assert.Equal(t, field.StartMatch, web.arena.MatchState)
 	ws.Write("commitResults", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "Cannot reset match")
@@ -359,12 +360,14 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.AllianceStations["B3"].Bypass = true
 	assert.Nil(t, web.arena.StartMatch())
 	web.arena.Update()
-	messages := readWebsocketMultiple(t, ws, 4)
+	messages := readWebsocketMultiple(t, ws, 5)
 	_, ok := messages["matchTime"]
 	assert.True(t, ok)
 	_, ok = messages["audienceDisplayMode"]
 	assert.True(t, ok)
 	_, ok = messages["allianceStationDisplayMode"]
+	assert.True(t, ok)
+	_, ok = messages["eventStatus"]
 	assert.True(t, ok)
 	web.arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
 	web.arena.Update()

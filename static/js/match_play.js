@@ -227,7 +227,12 @@ var handleAllianceStationDisplayMode = function(data) {
 
 // Handles a websocket message to update the event status message.
 var handleEventStatus = function(data) {
-  $("#eventStatusMessage").text(data);
+  if (data.CycleTime === "") {
+    $("#cycleTimeMessage").text("Last cycle time: Unknown");
+  } else {
+    $("#cycleTimeMessage").text("Last cycle time: " + data.CycleTime);
+  }
+  $("#earlyLateMessage").text(data.EarlyLateMessage);
 };
 
 $(function() {

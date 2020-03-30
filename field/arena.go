@@ -13,7 +13,6 @@ import (
 	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/plc"
 	"log"
-	"math"
 	"time"
 )
 
@@ -64,7 +63,7 @@ type Arena struct {
 	BlueRealtimeScore          *RealtimeScore
 	lastDsPacketTime           time.Time
 	lastPeriodicTaskTime       time.Time
-	EventStatusMessage         string
+	EventStatus                EventStatus
 	FieldVolunteers            bool
 	FieldReset                 bool
 	AudienceDisplayMode        string
@@ -289,6 +288,7 @@ func (arena *Arena) StartMatch() error {
 		if arena.CurrentMatch.Type != "test" {
 			arena.Database.SaveMatch(arena.CurrentMatch)
 		}
+		arena.updateCycleTime(arena.CurrentMatch.StartedAt)
 
 		// Save the missed packet count to subtract it from the running count.
 		for _, allianceStation := range arena.AllianceStations {
@@ -867,73 +867,6 @@ func (arena *Arena) alliancePostMatchScoreReady(alliance string) bool {
 
 // Performs any actions that need to run at the interval specified by periodicTaskPeriodSec.
 func (arena *Arena) runPeriodicTasks() {
-	// Check how early or late the event is running and publish an update to the displays that show it.
-	newEventStatusMessage := arena.getEventStatusMessage()
-	if newEventStatusMessage != arena.EventStatusMessage {
-		arena.EventStatusMessage = newEventStatusMessage
-		arena.EventStatusNotifier.Notify()
-	}
-
-	// Clean up the list of displays.
+	arena.updateEarlyLateMessage()
 	arena.purgeDisconnectedDisplays()
-}
-
-// Updates the string that indicates how early or late the event is running.
-func (arena *Arena) getEventStatusMessage() string {
-	currentMatch := arena.CurrentMatch
-	if currentMatch.Type != "practice" && currentMatch.Type != "qualification" {
-		// Only practice and qualification matches have a strict schedule.
-		return ""
-	}
-	if currentMatch.IsComplete() {
-		// This is a replay or otherwise unpredictable situation.
-		return ""
-	}
-
-	var minutesLate float64
-	if arena.MatchState > PreMatch && arena.MatchState < PostMatch {
-		// The match is in progress; simply calculate lateness from its start time.
-		minutesLate = currentMatch.StartedAt.Sub(currentMatch.Time).Minutes()
-	} else {
-		// We need to check the adjacent matches to accurately determine lateness.
-		matches, _ := arena.Database.GetMatchesByType(currentMatch.Type)
-
-		previousMatchIndex := -1
-		nextMatchIndex := len(matches)
-		for i, match := range matches {
-			if match.Id == currentMatch.Id {
-				previousMatchIndex = i - 1
-				nextMatchIndex = i + 1
-				break
-			}
-		}
-
-		if arena.MatchState == PreMatch {
-			currentMinutesLate := time.Now().Sub(currentMatch.Time).Minutes()
-			if previousMatchIndex >= 0 &&
-				currentMatch.Time.Sub(matches[previousMatchIndex].Time).Minutes() <= MaxMatchGapMin {
-				previousMatch := matches[previousMatchIndex]
-				previousMinutesLate := previousMatch.StartedAt.Sub(previousMatch.Time).Minutes()
-				minutesLate = math.Max(previousMinutesLate, currentMinutesLate)
-			} else {
-				minutesLate = math.Max(currentMinutesLate, 0)
-			}
-		} else if arena.MatchState == PostMatch {
-			currentMinutesLate := currentMatch.StartedAt.Sub(currentMatch.Time).Minutes()
-			if nextMatchIndex < len(matches) {
-				nextMatch := matches[nextMatchIndex]
-				nextMinutesLate := time.Now().Sub(nextMatch.Time).Minutes()
-				minutesLate = math.Max(currentMinutesLate, nextMinutesLate)
-			} else {
-				minutesLate = currentMinutesLate
-			}
-		}
-	}
-
-	if minutesLate > earlyLateThresholdMin {
-		return fmt.Sprintf("Event is running %d minutes late", int(minutesLate))
-	} else if minutesLate < -earlyLateThresholdMin {
-		return fmt.Sprintf("Event is running %d minutes early", int(-minutesLate))
-	}
-	return "Event is running on schedule"
 }

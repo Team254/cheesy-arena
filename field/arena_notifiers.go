@@ -113,7 +113,7 @@ func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
 }
 
 func (arena *Arena) generateEventStatusMessage() interface{} {
-	return arena.EventStatusMessage
+	return arena.EventStatus
 }
 
 func (arena *Arena) generateLowerThirdMessage() interface{} {

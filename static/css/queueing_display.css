@@ -54,7 +54,7 @@ h1 {
 .avatars {
   line-height: 51px;
 }
-#eventStatusMessage {
+#earlyLateMessage {
   font-size: 25px;
   font-family: "FuturaLTBold";
   color: #fff;
