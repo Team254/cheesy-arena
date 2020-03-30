@@ -105,3 +105,6 @@ td[data-plc-value="true"] {
   width: 110px;
   text-align: left;
 }
+input[data-changed="true"], select[data-changed="true"] {
+  border: 2px solid #f00;
+}

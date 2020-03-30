@@ -34,16 +34,20 @@
     <td>{{"{{DisplayConfiguration.Id}}"}}</td>
     <td>{{"{{ConnectionCount}}"}}</td>
     <td>{{"{{IpAddress}}"}}</td>
-    <td><input type="text" id="displayNickname{{"{{DisplayConfiguration.Id}}"}}" size="30" /></td>
     <td>
-      <select id="displayType{{"{{DisplayConfiguration.Id}}"}}">
+      <input type="text" id="displayNickname{{"{{DisplayConfiguration.Id}}"}}" size="30"
+          oninput="markChanged(this);" />
+    </td>
+    <td>
+      <select id="displayType{{"{{DisplayConfiguration.Id}}"}}" onchange="markChanged(this);">
         {{range $type, $typeName := .DisplayTypeNames}}
           <option value="{{$type}}">{{$typeName}}</option>
         {{end}}
       </select>
     </td>
     <td>
-      <input type="text" id="displayConfiguration{{"{{DisplayConfiguration.Id}}"}}" size="50" />
+      <input type="text" id="displayConfiguration{{"{{DisplayConfiguration.Id}}"}}" size="50"
+          oninput="markChanged(this);" />
     </td>
     <td>
       <button type="button" class="btn btn-info btn-xs" title="Save Changes"
