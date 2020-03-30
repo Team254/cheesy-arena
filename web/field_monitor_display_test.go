@@ -31,4 +31,5 @@ func TestFieldMonitorDisplayWebsocket(t *testing.T) {
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, ws, "displayConfiguration")
 	readWebsocketType(t, ws, "arenaStatus")
+	readWebsocketType(t, ws, "eventStatus")
 }

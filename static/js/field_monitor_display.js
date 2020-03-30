@@ -98,6 +98,16 @@ var handleArenaStatus = function(data) {
   });
 };
 
+// Handles a websocket message to update the event status message.
+var handleEventStatus = function(data) {
+  if (data.CycleTime === "") {
+    $("#cycleTimeMessage").text("Last cycle time: Unknown");
+  } else {
+    $("#cycleTimeMessage").text("Last cycle time: " + data.CycleTime);
+  }
+  $("#earlyLateMessage").text(data.EarlyLateMessage);
+};
+
 $(function() {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
@@ -114,6 +124,7 @@ $(function() {
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/field_monitor/websocket", {
-    arenaStatus: function(event) { handleArenaStatus(event.data); }
+    arenaStatus: function(event) { handleArenaStatus(event.data); },
+    eventStatus: function(event) { handleEventStatus(event.data); },
   });
 });

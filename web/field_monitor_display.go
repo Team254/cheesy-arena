@@ -49,5 +49,6 @@ func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *ht
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(display.Notifier, web.arena.ArenaStatusNotifier, web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(display.Notifier, web.arena.ArenaStatusNotifier, web.arena.EventStatusNotifier,
+		web.arena.ReloadDisplaysNotifier)
 }

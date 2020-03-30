@@ -31,8 +31,4 @@ func TestPitDisplayWebsocket(t *testing.T) {
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, ws, "displayConfiguration")
 	readWebsocketType(t, ws, "eventStatus")
-
-	// Check forced reloading as that is the only purpose the pit websocket serves.
-	web.arena.ReloadDisplaysNotifier.Notify()
-	readWebsocketType(t, ws, "reload")
 }

@@ -21,7 +21,16 @@ body {
   justify-content: center;
 }
 .position-row {
-  height: 33.3%;
+  height: 31%;
+}
+#eventStatusRow {
+  height: 7%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background-color: #333;
+  font-size: 1.5vw;
+  text-transform: uppercase;
 }
 .left-position, .right-position {
   width: 8%;
