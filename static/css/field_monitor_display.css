@@ -5,9 +5,6 @@
 
 html {
   height: 100%;
-  cursor: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
   overflow: hidden;
 }
 body {
@@ -74,7 +71,7 @@ body {
   width: 100%;
 }
 .team-box {
-  width: 25%;
+  width: 20%;
   height: 100%;
   font-size: 2.5vw;
   background-color: #333;

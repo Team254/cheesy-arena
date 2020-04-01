@@ -44,13 +44,17 @@
   <div id="{{.side}}Team{{.position}}" class="team">
     <div id="{{.side}}Team{{.position}}Id" class="team-id center"></div>
     <div class="team-box-row">
-      <div id="{{.side}}Team{{.position}}Ds" class="team-box center">DS</div>
-      <div id="{{.side}}Team{{.position}}Radio" class="team-box center">
+      <div id="{{.side}}Team{{.position}}Ethernet" class="team-box center"
+          title="Driver Station Ethernet Connected&#10;Trip Time (ms)">ETH</div>
+      <div id="{{.side}}Team{{.position}}Ds" class="team-box center"
+          title="Driver Station Software Running&#10;Missed Packets">DS</div>
+      <div id="{{.side}}Team{{.position}}Radio" class="team-box center" title="Field Access Point Configured Team">
         <i class="glyphicon glyphicon-signal"></i>
         <span></span>
       </div>
-      <div id="{{.side}}Team{{.position}}Robot" class="team-box center"></div>
-      <div id="{{.side}}Team{{.position}}Bypass" class="team-box center"></div>
+      <div id="{{.side}}Team{{.position}}Robot" class="team-box center"
+          title="Battery Voltage&#10;Seconds Since Last Connected"></div>
+      <div id="{{.side}}Team{{.position}}Bypass" class="team-box center" title="Emergency-Stopped or Bypassed"></div>
     </div>
   </div>
 {{end}}

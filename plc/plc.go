@@ -159,6 +159,20 @@ func (plc *Plc) GetTeamEstops() ([3]bool, [3]bool) {
 	return redEstops, blueEstops
 }
 
+// Returns whether anything is connected to each station's designated Ethernet port on the SCC.
+func (plc *Plc) GetEthernetConnected() ([3]bool, [3]bool) {
+	return [3]bool{
+			plc.inputs[redConnected1],
+			plc.inputs[redConnected2],
+			plc.inputs[redConnected3],
+		},
+		[3]bool{
+			plc.inputs[blueConnected1],
+			plc.inputs[blueConnected2],
+			plc.inputs[blueConnected3],
+		}
+}
+
 // Set the on/off state of the stack lights on the scoring table.
 func (plc *Plc) SetStackLights(red, blue, orange, green bool) {
 	plc.coils[stackLightRed] = red

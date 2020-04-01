@@ -82,11 +82,12 @@ type Arena struct {
 }
 
 type AllianceStation struct {
-	DsConn *DriverStationConnection
-	Astop  bool
-	Estop  bool
-	Bypass bool
-	Team   *model.Team
+	DsConn   *DriverStationConnection
+	Ethernet bool
+	Astop    bool
+	Estop    bool
+	Bypass   bool
+	Team     *model.Team
 }
 
 // Creates the arena and sets it to its initial state.
@@ -747,6 +748,13 @@ func (arena *Arena) handlePlcInput() {
 	arena.handleEstop("B1", blueEstops[0])
 	arena.handleEstop("B2", blueEstops[1])
 	arena.handleEstop("B3", blueEstops[2])
+	redEthernets, blueEthernets := arena.Plc.GetEthernetConnected()
+	arena.AllianceStations["R1"].Ethernet = redEthernets[0]
+	arena.AllianceStations["R2"].Ethernet = redEthernets[1]
+	arena.AllianceStations["R3"].Ethernet = redEthernets[2]
+	arena.AllianceStations["B1"].Ethernet = blueEthernets[0]
+	arena.AllianceStations["B2"].Ethernet = blueEthernets[1]
+	arena.AllianceStations["B3"].Ethernet = blueEthernets[2]
 
 	if arena.MatchState == PreMatch || arena.MatchState == PostMatch || arena.MatchState == TimeoutActive ||
 		arena.MatchState == PostTimeout {

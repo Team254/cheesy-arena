@@ -19,6 +19,7 @@ var handleArenaStatus = function(data) {
       teamElementPrefix = "#" + blueSide + "Team" + station[1];
     }
     var teamIdElement = $(teamElementPrefix + "Id");
+    var teamEthernetElement = $(teamElementPrefix + "Ethernet");
     var teamDsElement = $(teamElementPrefix + "Ds");
     var teamRadioElement = $(teamElementPrefix + "Radio");
     var teamRadioTextElement = $(teamElementPrefix + "Radio span");
@@ -47,6 +48,14 @@ var handleArenaStatus = function(data) {
       teamIdElement.attr("data-status", "");
     }
 
+    // Format the Ethernet status box.
+    teamEthernetElement.attr("data-status-ok", stationStatus.Ethernet ? "true" : "");
+    if (stationStatus.DsConn && stationStatus.DsConn.DsRobotTripTimeMs > 0) {
+      teamEthernetElement.text(stationStatus.DsConn.DsRobotTripTimeMs);
+    } else {
+      teamEthernetElement.text("ETH");
+    }
+
     var wifiStatus = data.TeamWifiStatuses[station];
     teamRadioTextElement.text(wifiStatus.TeamId);
 
@@ -54,6 +63,7 @@ var handleArenaStatus = function(data) {
       // Format the driver station status box.
       var dsConn = stationStatus.DsConn;
       teamDsElement.attr("data-status-ok", dsConn.DsLinked);
+      teamDsElement.text(dsConn.MissedPacketCount);
 
       // Format the radio status box according to the connection status of the robot radio.
       var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
@@ -69,6 +79,7 @@ var handleArenaStatus = function(data) {
       }
     } else {
       teamDsElement.attr("data-status-ok", "");
+      teamDsElement.text("DS");
       teamRobotElement.attr("data-status-ok", "");
       teamRobotElement.text("RBT");
 
