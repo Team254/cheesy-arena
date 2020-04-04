@@ -416,7 +416,7 @@ func (arena *Arena) Update() {
 	case AutoPeriod:
 		auto = true
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) {
+		if matchTimeSec >= game.GetDurationToAutoEnd().Seconds() {
 			auto = false
 			sendDsPacket = true
 			if game.MatchTiming.PauseDurationSec > 0 {
@@ -430,8 +430,7 @@ func (arena *Arena) Update() {
 	case PausePeriod:
 		auto = false
 		enabled = false
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
-			game.MatchTiming.PauseDurationSec) {
+		if matchTimeSec >= game.GetDurationToTeleopStart().Seconds() {
 			arena.MatchState = TeleopPeriod
 			auto = false
 			enabled = true
@@ -443,8 +442,7 @@ func (arena *Arena) Update() {
 	case TeleopPeriod:
 		auto = false
 		enabled = true
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+
-			game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) {
+		if matchTimeSec >= game.GetDurationToTeleopEnd().Seconds() {
 			arena.MatchState = PostMatch
 			auto = false
 			enabled = false
@@ -761,7 +759,33 @@ func (arena *Arena) handlePlcInput() {
 	oldRedScore := *redScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
 	oldBlueScore := *blueScore
+	matchStartTime := arena.MatchStartTime
+	currentTime := time.Now()
 
+	if arena.Plc.IsEnabled() {
+		// Handle power ports.
+		redPortCells, bluePortCells := arena.Plc.GetPowerPortCells()
+		redPowerPort := arena.RedRealtimeScore.powerPort
+		redPowerPort.UpdateState(redPortCells, redScore.CellCountingStage(arena.MatchState >= TeleopPeriod),
+			matchStartTime, currentTime)
+		redScore.AutoCellsBottom = redPowerPort.AutoCellsBottom
+		redScore.AutoCellsOuter = redPowerPort.AutoCellsOuter
+		redScore.AutoCellsInner = redPowerPort.AutoCellsInner
+		redScore.TeleopCellsBottom = redPowerPort.TeleopCellsBottom
+		redScore.TeleopCellsOuter = redPowerPort.TeleopCellsOuter
+		redScore.TeleopCellsInner = redPowerPort.TeleopCellsInner
+		bluePowerPort := arena.BlueRealtimeScore.powerPort
+		bluePowerPort.UpdateState(bluePortCells, blueScore.CellCountingStage(arena.MatchState >= TeleopPeriod),
+			matchStartTime, currentTime)
+		blueScore.AutoCellsBottom = bluePowerPort.AutoCellsBottom
+		blueScore.AutoCellsOuter = bluePowerPort.AutoCellsOuter
+		blueScore.AutoCellsInner = bluePowerPort.AutoCellsInner
+		blueScore.TeleopCellsBottom = bluePowerPort.TeleopCellsBottom
+		blueScore.TeleopCellsOuter = bluePowerPort.TeleopCellsOuter
+		blueScore.TeleopCellsInner = bluePowerPort.TeleopCellsInner
+	}
+
+	// Check if either alliance has reached Stage 3 capacity.
 	if redScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
 		redScore.Stage3TargetColor == game.ColorUnknown ||
 		blueScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&

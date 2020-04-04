@@ -152,7 +152,7 @@ func (plc *Plc) Run() {
 			isHealthy := true
 			isHealthy = isHealthy && plc.writeCoils()
 			isHealthy = isHealthy && plc.readInputs()
-			isHealthy = isHealthy && plc.readCounters()
+			isHealthy = isHealthy && plc.readRegisters()
 			if !isHealthy {
 				plc.resetConnection()
 			}
@@ -206,6 +206,20 @@ func (plc *Plc) GetEthernetConnected() ([3]bool, [3]bool) {
 			plc.inputs[blueConnected1],
 			plc.inputs[blueConnected2],
 			plc.inputs[blueConnected3],
+		}
+}
+
+// Returns the total number of power cells scored since match start in each level of the red and blue power ports.
+func (plc *Plc) GetPowerPortCells() ([3]int, [3]int) {
+	return [3]int{
+			int(plc.registers[redPowerPortBottom]),
+			int(plc.registers[redPowerPortOuter]),
+			int(plc.registers[redPowerPortInner]),
+		},
+		[3]int{
+			int(plc.registers[bluePowerPortBottom]),
+			int(plc.registers[bluePowerPortOuter]),
+			int(plc.registers[bluePowerPortInner]),
 		}
 }
 
@@ -297,7 +311,7 @@ func (plc *Plc) readInputs() bool {
 	return true
 }
 
-func (plc *Plc) readCounters() bool {
+func (plc *Plc) readRegisters() bool {
 	if len(plc.registers) == 0 {
 		return true
 	}
@@ -308,7 +322,7 @@ func (plc *Plc) readCounters() bool {
 		return false
 	}
 	if len(registers)/2 < len(plc.registers) {
-		log.Printf("Insufficient length of PLC counters: got %d bytes, expected %d words.", len(registers),
+		log.Printf("Insufficient length of PLC registers: got %d bytes, expected %d words.", len(registers),
 			len(plc.registers))
 		return false
 	}
