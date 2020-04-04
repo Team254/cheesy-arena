@@ -77,8 +77,6 @@ type Arena struct {
 	MuteMatchSounds            bool
 	matchAborted               bool
 	soundsPlayed               map[*game.MatchSound]struct{}
-	RedControlPanel            *game.ControlPanel
-	BlueControlPanel           *game.ControlPanel
 }
 
 type AllianceStation struct {
@@ -216,13 +214,10 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.FieldVolunteers = false
 	arena.FieldReset = false
 	arena.ScoringPanelRegistry.resetScoreCommitted()
-	arena.RedControlPanel = new(game.ControlPanel)
-	arena.BlueControlPanel = new(game.ControlPanel)
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
 	arena.RealtimeScoreNotifier.Notify()
-	arena.ControlPanelColorNotifier.Notify()
 	arena.AllianceStationDisplayMode = "match"
 	arena.AllianceStationDisplayModeNotifier.Notify()
 
@@ -772,8 +767,8 @@ func (arena *Arena) handlePlcInput() {
 		blueScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
 			blueScore.Stage3TargetColor == game.ColorUnknown {
 		// Determine the position control target colors and send packets to inform the driver stations.
-		redScore.Stage3TargetColor = arena.RedControlPanel.GetStage3TargetColor()
-		blueScore.Stage3TargetColor = arena.BlueControlPanel.GetStage3TargetColor()
+		redScore.Stage3TargetColor = arena.RedRealtimeScore.ControlPanel.GetStage3TargetColor()
+		blueScore.Stage3TargetColor = arena.BlueRealtimeScore.ControlPanel.GetStage3TargetColor()
 		arena.sendGameDataPacket(redScore.Stage3TargetColor, "R1", "R2", "R3")
 		arena.sendGameDataPacket(blueScore.Stage3TargetColor, "B1", "B2", "B3")
 	}

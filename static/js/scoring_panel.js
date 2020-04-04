@@ -85,20 +85,9 @@ var handleRealtimeScore = function(data) {
   }
   $("#rungIsLevel>.value").text(score.RungIsLevel ? "Yes" : "No");
   $("#rungIsLevel").attr("data-value", score.RungIsLevel);
+  $("#controlPanelColor>.value").text(getControlPanelColorText(realtimeScore.ControlPanel.CurrentColor));
+  $("#controlPanelColor").attr("data-value", realtimeScore.ControlPanel.CurrentColor);
   $("#controlPanelColor").attr("data-control-panel-status", score.ControlPanelStatus)
-};
-
-// Handles a websocket message to update the Control Panel color.
-var handleControlPanelColor = function(data) {
-  var color;
-  if (alliance === "red") {
-    color = data.RedControlPanelColor;
-  } else {
-    color = data.BlueControlPanelColor;
-  }
-
-  $("#controlPanelColor>.value").text(getControlPanelColorText(color));
-  $("#controlPanelColor").attr("data-value", color);
 };
 
 // Handles a keyboard event and sends the appropriate websocket message.
@@ -164,7 +153,6 @@ $(function() {
     matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    controlPanelColor: function(event) { handleControlPanelColor(event.data); }
   });
 
   $(document).keypress(handleKeyPress);
