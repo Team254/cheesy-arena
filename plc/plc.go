@@ -52,6 +52,10 @@ const (
 	blueConnected1
 	blueConnected2
 	blueConnected3
+	redRungIsLevel
+	blueRungIsLevel
+	redPowerPortJam
+	bluePowerPortJam
 	inputCount
 )
 
@@ -59,7 +63,28 @@ const (
 type register int
 
 const (
-	registerCount register = iota
+	fieldIoConnection register = iota
+	redPowerPortBottom
+	redPowerPortOuter
+	redPowerPortInner
+	bluePowerPortBottom
+	bluePowerPortOuter
+	bluePowerPortInner
+	redControlPanelRed
+	redControlPanelGreen
+	redControlPanelBlue
+	redControlPanelIntensity
+	blueControlPanelRed
+	blueControlPanelGreen
+	blueControlPanelBlue
+	blueControlPanelIntensity
+	redControlPanelColor
+	blueControlPanelColor
+	redControlPanelLastColor
+	blueControlPanelLastColor
+	redControlPanelSegments
+	blueControlPanelSegments
+	registerCount
 )
 
 // Coils
@@ -74,6 +99,17 @@ const (
 	stackLightBlue
 	stackLightBuzzer
 	fieldResetLight
+	powerPortMotors
+	redStage1Light
+	redStage2Light
+	redStage3Light
+	blueStage1Light
+	blueStage2Light
+	blueStage3Light
+	redTrussLight
+	blueTrussLight
+	redControlPanelLight
+	blueControlPanelLight
 	coilCount
 )
 
