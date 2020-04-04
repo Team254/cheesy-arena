@@ -128,14 +128,16 @@ var handleEventStatus = function(data) {
 
 // Makes the team notes section editable and handles saving edits to the server.
 var editFtaNotes = function(element) {
-  var teamNotesElement = $(element);
+  var teamNotesTextElement = $(element);
   var textArea = $("<textarea />");
-  textArea.val(teamNotesElement.text());
-  teamNotesElement.replaceWith(textArea);
+  textArea.val(teamNotesTextElement.text());
+  teamNotesTextElement.replaceWith(textArea);
   textArea.focus();
   textArea.blur(function() {
-    textArea.replaceWith(teamNotesElement);
-    websocket.send("updateTeamNotes", { station: teamNotesElement.attr("data-station"), notes: textArea.val()});
+    textArea.replaceWith(teamNotesTextElement);
+    if (textArea.val() !== teamNotesTextElement.text()) {
+      websocket.send("updateTeamNotes", { station: teamNotesTextElement.attr("data-station"), notes: textArea.val()});
+    }
   });
 };
 
