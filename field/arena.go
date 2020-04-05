@@ -662,6 +662,11 @@ func (arena *Arena) checkCanStartMatch() error {
 		if arena.Plc.GetFieldEstop() {
 			return fmt.Errorf("Cannot start match while field emergency stop is active.")
 		}
+		for name, status := range arena.Plc.GetArmorBlockStatuses() {
+			if !status {
+				return fmt.Errorf("Cannot start match while PLC ArmorBlock '%s' is not connected.", name)
+			}
+		}
 	}
 
 	return nil

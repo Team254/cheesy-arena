@@ -123,6 +123,9 @@
           <p>
             <span class="label label-scoring" id="plcStatus"></span><br />
             <span class="label label-scoring" id="fieldEstop">E-Stop</span>
+            {{range $name, $status := .PlcArmorBlockStatuses}}
+              <br /><span class="label label-scoring" id="plc{{$name}}Status">{{$name}}</span>
+            {{end}}
           </p>
         {{end}}
         </div>

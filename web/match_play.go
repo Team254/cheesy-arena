@@ -72,14 +72,15 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	isReplay := matchResult != nil
 	data := struct {
 		*model.EventSettings
-		PlcIsEnabled      bool
-		MatchesByType     map[string]MatchPlayList
-		CurrentMatchType  string
-		Match             *model.Match
-		AllowSubstitution bool
-		IsReplay          bool
+		PlcIsEnabled          bool
+		MatchesByType         map[string]MatchPlayList
+		CurrentMatchType      string
+		Match                 *model.Match
+		AllowSubstitution     bool
+		IsReplay              bool
+		PlcArmorBlockStatuses map[string]bool
 	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), matchesByType, currentMatchType, web.arena.CurrentMatch,
-		web.arena.CurrentMatch.ShouldAllowSubstitution(), isReplay}
+		web.arena.CurrentMatch.ShouldAllowSubstitution(), isReplay, web.arena.Plc.GetArmorBlockStatuses()}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)

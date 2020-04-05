@@ -89,11 +89,13 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 		AllianceStations map[string]*AllianceStation
 		TeamWifiStatuses map[string]network.TeamWifiStatus
 		MatchState
-		CanStartMatch bool
-		PlcIsHealthy  bool
-		FieldEstop    bool
+		CanStartMatch         bool
+		PlcIsHealthy          bool
+		FieldEstop            bool
+		PlcArmorBlockStatuses map[string]bool
 	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState,
-		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy, arena.Plc.GetFieldEstop()}
+		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy, arena.Plc.GetFieldEstop(),
+		arena.Plc.GetArmorBlockStatuses()}
 }
 
 func (arena *Arena) generateAudienceDisplayModeMessage() interface{} {

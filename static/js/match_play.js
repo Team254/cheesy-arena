@@ -187,6 +187,9 @@ var handleArenaStatus = function(data) {
     $("#plcStatus").attr("data-ready", false);
   }
   $("#fieldEstop").attr("data-ready", !data.FieldEstop);
+  $.each(data.PlcArmorBlockStatuses, function(name, status) {
+    $("#plc" + name + "Status").attr("data-ready", status);
+  });
 };
 
 // Handles a websocket message to update the match time countdown.

@@ -11,6 +11,7 @@ import (
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/goburrow/modbus"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -114,6 +115,17 @@ const (
 	coilCount
 )
 
+// Bitmask for decoding fieldIoConnection into individual ArmorBlock connection statuses.
+type armorBlock int
+
+const (
+	redDs armorBlock = iota
+	blueDs
+	shieldGenerator
+	controlPanel
+	armorBlockCount
+)
+
 func (plc *Plc) SetAddress(address string) {
 	plc.address = address
 	plc.resetConnection()
@@ -175,6 +187,15 @@ func (plc *Plc) Run() {
 
 		time.Sleep(time.Until(startTime.Add(time.Millisecond * plcLoopPeriodMs)))
 	}
+}
+
+// Returns a map of ArmorBlocks I/O module names to whether they are connected properly.
+func (plc *Plc) GetArmorBlockStatuses() map[string]bool {
+	statuses := make(map[string]bool, armorBlockCount)
+	for i := 0; i < int(armorBlockCount); i++ {
+		statuses[strings.Title(armorBlock(i).String())] = plc.registers[fieldIoConnection]&(1<<i) > 0
+	}
+	return statuses
 }
 
 // Returns the state of the field emergency stop button (true if e-stop is active).
