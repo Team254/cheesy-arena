@@ -16,11 +16,11 @@ type Score struct {
 	TeleopCellsOuter     [4]int
 	TeleopCellsInner     [4]int
 	ControlPanelStatus
-	EndgameStatuses   [3]EndgameStatus
-	RungIsLevel       bool
-	Fouls             []Foul
-	ElimDq            bool
-	Stage3TargetColor ControlPanelColor
+	EndgameStatuses            [3]EndgameStatus
+	RungIsLevel                bool
+	Fouls                      []Foul
+	ElimDq                     bool
+	PositionControlTargetColor ControlPanelColor
 }
 
 type ScoreSummary struct {

@@ -7,6 +7,7 @@ package plc
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/goburrow/modbus"
 	"log"
@@ -210,7 +211,7 @@ func (plc *Plc) GetEthernetConnected() ([3]bool, [3]bool) {
 }
 
 // Returns the total number of power cells scored since match start in each level of the red and blue power ports.
-func (plc *Plc) GetPowerPortCells() ([3]int, [3]int) {
+func (plc *Plc) GetPowerPorts() ([3]int, [3]int) {
 	return [3]int{
 			int(plc.registers[redPowerPortBottom]),
 			int(plc.registers[redPowerPortOuter]),
@@ -221,6 +222,12 @@ func (plc *Plc) GetPowerPortCells() ([3]int, [3]int) {
 			int(plc.registers[bluePowerPortOuter]),
 			int(plc.registers[bluePowerPortInner]),
 		}
+}
+
+// Returns the current color and number of segment transitions for each of the red and blue control panels.
+func (plc *Plc) GetControlPanels() (game.ControlPanelColor, int, game.ControlPanelColor, int) {
+	return game.ControlPanelColor(plc.registers[redControlPanelColor]), int(plc.registers[redControlPanelSegments]),
+		game.ControlPanelColor(plc.registers[blueControlPanelColor]), int(plc.registers[blueControlPanelSegments])
 }
 
 // Set the on/off state of the stack lights on the scoring table.

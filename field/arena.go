@@ -761,13 +761,13 @@ func (arena *Arena) handlePlcInput() {
 	oldBlueScore := *blueScore
 	matchStartTime := arena.MatchStartTime
 	currentTime := time.Now()
+	teleopStarted := arena.MatchState >= TeleopPeriod
 
 	if arena.Plc.IsEnabled() {
 		// Handle power ports.
-		redPortCells, bluePortCells := arena.Plc.GetPowerPortCells()
+		redPortCells, bluePortCells := arena.Plc.GetPowerPorts()
 		redPowerPort := arena.RedRealtimeScore.powerPort
-		redPowerPort.UpdateState(redPortCells, redScore.CellCountingStage(arena.MatchState >= TeleopPeriod),
-			matchStartTime, currentTime)
+		redPowerPort.UpdateState(redPortCells, redScore.CellCountingStage(teleopStarted), matchStartTime, currentTime)
 		redScore.AutoCellsBottom = redPowerPort.AutoCellsBottom
 		redScore.AutoCellsOuter = redPowerPort.AutoCellsOuter
 		redScore.AutoCellsInner = redPowerPort.AutoCellsInner
@@ -775,26 +775,39 @@ func (arena *Arena) handlePlcInput() {
 		redScore.TeleopCellsOuter = redPowerPort.TeleopCellsOuter
 		redScore.TeleopCellsInner = redPowerPort.TeleopCellsInner
 		bluePowerPort := arena.BlueRealtimeScore.powerPort
-		bluePowerPort.UpdateState(bluePortCells, blueScore.CellCountingStage(arena.MatchState >= TeleopPeriod),
-			matchStartTime, currentTime)
+		bluePowerPort.UpdateState(bluePortCells, blueScore.CellCountingStage(teleopStarted), matchStartTime,
+			currentTime)
 		blueScore.AutoCellsBottom = bluePowerPort.AutoCellsBottom
 		blueScore.AutoCellsOuter = bluePowerPort.AutoCellsOuter
 		blueScore.AutoCellsInner = bluePowerPort.AutoCellsInner
 		blueScore.TeleopCellsBottom = bluePowerPort.TeleopCellsBottom
 		blueScore.TeleopCellsOuter = bluePowerPort.TeleopCellsOuter
 		blueScore.TeleopCellsInner = bluePowerPort.TeleopCellsInner
+
+		// Handle control panel.
+		redColor, redSegmentCount, blueColor, blueSegmentCount := arena.Plc.GetControlPanels()
+		redControlPanel := arena.RedRealtimeScore.ControlPanel
+		redControlPanel.CurrentColor = redColor
+		redControlPanel.UpdateState(redSegmentCount, redScore.StageAtCapacity(game.Stage2, teleopStarted),
+			redScore.StageAtCapacity(game.Stage3, teleopStarted), currentTime)
+		redScore.ControlPanelStatus = redControlPanel.ControlPanelStatus
+		blueControlPanel := arena.BlueRealtimeScore.ControlPanel
+		blueControlPanel.CurrentColor = blueColor
+		blueControlPanel.UpdateState(blueSegmentCount, blueScore.StageAtCapacity(game.Stage2, teleopStarted),
+			blueScore.StageAtCapacity(game.Stage3, teleopStarted), currentTime)
+		blueScore.ControlPanelStatus = blueControlPanel.ControlPanelStatus
 	}
 
 	// Check if either alliance has reached Stage 3 capacity.
 	if redScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
-		redScore.Stage3TargetColor == game.ColorUnknown ||
+		redScore.PositionControlTargetColor == game.ColorUnknown ||
 		blueScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
-			blueScore.Stage3TargetColor == game.ColorUnknown {
+			blueScore.PositionControlTargetColor == game.ColorUnknown {
 		// Determine the position control target colors and send packets to inform the driver stations.
-		redScore.Stage3TargetColor = arena.RedRealtimeScore.ControlPanel.GetStage3TargetColor()
-		blueScore.Stage3TargetColor = arena.BlueRealtimeScore.ControlPanel.GetStage3TargetColor()
-		arena.sendGameDataPacket(redScore.Stage3TargetColor, "R1", "R2", "R3")
-		arena.sendGameDataPacket(blueScore.Stage3TargetColor, "B1", "B2", "B3")
+		redScore.PositionControlTargetColor = arena.RedRealtimeScore.ControlPanel.GetPositionControlTargetColor()
+		blueScore.PositionControlTargetColor = arena.BlueRealtimeScore.ControlPanel.GetPositionControlTargetColor()
+		arena.sendGameDataPacket(redScore.PositionControlTargetColor, "R1", "R2", "R3")
+		arena.sendGameDataPacket(blueScore.PositionControlTargetColor, "B1", "B2", "B3")
 	}
 
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {

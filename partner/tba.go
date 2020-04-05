@@ -545,7 +545,7 @@ func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResul
 	breakdown.Stage1Activated = scoreSummary.StagesActivated[0]
 	breakdown.Stage2Activated = scoreSummary.StagesActivated[1]
 	breakdown.Stage3Activated = scoreSummary.StagesActivated[2]
-	breakdown.Stage3TargetColor = controlPanelColorMapping[score.Stage3TargetColor]
+	breakdown.Stage3TargetColor = controlPanelColorMapping[score.PositionControlTargetColor]
 	breakdown.EndgameRobot1 = endgameMapping[score.EndgameStatuses[0]]
 	breakdown.EndgameRobot2 = endgameMapping[score.EndgameStatuses[1]]
 	breakdown.EndgameRobot3 = endgameMapping[score.EndgameStatuses[2]]
