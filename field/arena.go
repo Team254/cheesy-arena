@@ -796,6 +796,11 @@ func (arena *Arena) handlePlcInput() {
 		blueControlPanel.UpdateState(blueSegmentCount, blueScore.StageAtCapacity(game.Stage2, teleopStarted),
 			blueScore.StageAtCapacity(game.Stage3, teleopStarted), currentTime)
 		blueScore.ControlPanelStatus = blueControlPanel.ControlPanelStatus
+
+		// Handle shield generator rungs.
+		if game.ShouldAssessRung(matchStartTime, currentTime) {
+			redScore.RungIsLevel, blueScore.RungIsLevel = arena.Plc.GetRungs()
+		}
 	}
 
 	// Check if either alliance has reached Stage 3 capacity.

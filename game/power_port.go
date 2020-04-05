@@ -9,11 +9,6 @@ import (
 	"time"
 )
 
-const (
-	powerPortAutoGracePeriodSec   = 5
-	powerPortTeleopGracePeriodSec = 5
-)
-
 type PowerPort struct {
 	AutoCellsBottom   [2]int
 	AutoCellsOuter    [2]int

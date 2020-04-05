@@ -230,6 +230,11 @@ func (plc *Plc) GetControlPanels() (game.ControlPanelColor, int, game.ControlPan
 		game.ControlPanelColor(plc.registers[blueControlPanelColor]), int(plc.registers[blueControlPanelSegments])
 }
 
+// Returns whether each of the red and blue rungs is level.
+func (plc *Plc) GetRungs() (bool, bool) {
+	return plc.inputs[redRungIsLevel], plc.inputs[blueRungIsLevel]
+}
+
 // Set the on/off state of the stack lights on the scoring table.
 func (plc *Plc) SetStackLights(red, blue, orange, green bool) {
 	plc.coils[stackLightRed] = red
