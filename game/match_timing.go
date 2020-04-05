@@ -9,7 +9,7 @@ import "time"
 
 const (
 	powerPortAutoGracePeriodSec   = 5
-	powerPortTeleopGracePeriodSec = 5
+	PowerPortTeleopGracePeriodSec = 5
 	rungAssessmentDelaySec        = 5
 )
 

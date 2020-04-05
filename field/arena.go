@@ -766,7 +766,7 @@ func (arena *Arena) handlePlcInput() {
 	if arena.Plc.IsEnabled() {
 		// Handle power ports.
 		redPortCells, bluePortCells := arena.Plc.GetPowerPorts()
-		redPowerPort := arena.RedRealtimeScore.powerPort
+		redPowerPort := &arena.RedRealtimeScore.powerPort
 		redPowerPort.UpdateState(redPortCells, redScore.CellCountingStage(teleopStarted), matchStartTime, currentTime)
 		redScore.AutoCellsBottom = redPowerPort.AutoCellsBottom
 		redScore.AutoCellsOuter = redPowerPort.AutoCellsOuter
@@ -774,7 +774,7 @@ func (arena *Arena) handlePlcInput() {
 		redScore.TeleopCellsBottom = redPowerPort.TeleopCellsBottom
 		redScore.TeleopCellsOuter = redPowerPort.TeleopCellsOuter
 		redScore.TeleopCellsInner = redPowerPort.TeleopCellsInner
-		bluePowerPort := arena.BlueRealtimeScore.powerPort
+		bluePowerPort := &arena.BlueRealtimeScore.powerPort
 		bluePowerPort.UpdateState(bluePortCells, blueScore.CellCountingStage(teleopStarted), matchStartTime,
 			currentTime)
 		blueScore.AutoCellsBottom = bluePowerPort.AutoCellsBottom
@@ -786,12 +786,12 @@ func (arena *Arena) handlePlcInput() {
 
 		// Handle control panel.
 		redColor, redSegmentCount, blueColor, blueSegmentCount := arena.Plc.GetControlPanels()
-		redControlPanel := arena.RedRealtimeScore.ControlPanel
+		redControlPanel := &arena.RedRealtimeScore.ControlPanel
 		redControlPanel.CurrentColor = redColor
 		redControlPanel.UpdateState(redSegmentCount, redScore.StageAtCapacity(game.Stage2, teleopStarted),
 			redScore.StageAtCapacity(game.Stage3, teleopStarted), currentTime)
 		redScore.ControlPanelStatus = redControlPanel.ControlPanelStatus
-		blueControlPanel := arena.BlueRealtimeScore.ControlPanel
+		blueControlPanel := &arena.BlueRealtimeScore.ControlPanel
 		blueControlPanel.CurrentColor = blueColor
 		blueControlPanel.UpdateState(blueSegmentCount, blueScore.StageAtCapacity(game.Stage2, teleopStarted),
 			blueScore.StageAtCapacity(game.Stage3, teleopStarted), currentTime)
@@ -820,7 +820,13 @@ func (arena *Arena) handlePlcInput() {
 	}
 }
 
+// Updates the PLC's coils based on its inputs and the current scoring state.
 func (arena *Arena) handlePlcOutput() {
+	matchStartTime := arena.MatchStartTime
+	currentTime := time.Now()
+	redScore := &arena.RedRealtimeScore.CurrentScore
+	blueScore := &arena.BlueRealtimeScore.CurrentScore
+
 	switch arena.MatchState {
 	case PreMatch:
 		if arena.lastMatchState != PreMatch {
@@ -849,14 +855,48 @@ func (arena *Arena) handlePlcOutput() {
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
 			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
+
+		if arena.lastMatchState != PostMatch {
+			go func() {
+				time.Sleep(time.Second * game.PowerPortTeleopGracePeriodSec)
+				arena.Plc.SetPowerPortMotors(false)
+			}()
+		}
+		arena.Plc.SetStageActivatedLights([3]bool{false, false, false}, [3]bool{false, false, false})
+		arena.Plc.SetControlPanelLights(false, false)
 	case AutoPeriod:
-		arena.Plc.SetStackLights(false, false, false, true)
+		arena.Plc.SetPowerPortMotors(true)
 		fallthrough
 	case PausePeriod:
+		fallthrough
 	case TeleopPeriod:
-		arena.Plc.SetStackLights(false, false, false, true)
-		if arena.lastMatchState != TeleopPeriod {
+		arena.Plc.SetStageActivatedLights(arena.RedScoreSummary().StagesActivated,
+			arena.BlueScoreSummary().StagesActivated)
+
+		controlPanelLightState := func(state game.ControlPanelLightState) bool {
+			switch state {
+			case game.ControlPanelLightOn:
+				return true
+			case game.ControlPanelLightFlashing:
+				return arena.Plc.GetCycleState(2, 0, 2)
+			default:
+				return false
+			}
 		}
+		arena.Plc.SetControlPanelLights(
+			controlPanelLightState(arena.RedRealtimeScore.ControlPanel.ControlPanelLightState),
+			controlPanelLightState(arena.BlueRealtimeScore.ControlPanel.ControlPanelLightState))
+
+		// If the PLC reports a ball jam, blink the orange light and the power port color.
+		redJam, blueJam := arena.Plc.GetPowerPortJams()
+		blink := arena.Plc.GetCycleState(2, 0, 2)
+		arena.Plc.SetStackLights(redJam && blink, blueJam && blink, (redJam || blueJam) && !blink, true)
+	}
+
+	if game.ShouldAssessRung(matchStartTime, currentTime) {
+		arena.Plc.SetShieldGeneratorLights(redScore.RungIsLevel, blueScore.RungIsLevel)
+	} else {
+		arena.Plc.SetShieldGeneratorLights(false, false)
 	}
 }
 

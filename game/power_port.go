@@ -23,7 +23,7 @@ type PowerPort struct {
 func (powerPort *PowerPort) UpdateState(portCells [3]int, stage Stage, matchStartTime, currentTime time.Time) {
 	autoValidityDuration := GetDurationToAutoEnd() + powerPortAutoGracePeriodSec*time.Second
 	autoValidityCutoff := matchStartTime.Add(autoValidityDuration)
-	teleopValidityDuration := GetDurationToTeleopEnd() + powerPortTeleopGracePeriodSec*time.Second
+	teleopValidityDuration := GetDurationToTeleopEnd() + PowerPortTeleopGracePeriodSec*time.Second
 	teleopValidityCutoff := matchStartTime.Add(teleopValidityDuration)
 
 	newBottomCells := portCells[0] - totalPortCells(powerPort.AutoCellsBottom, powerPort.TeleopCellsBottom)
