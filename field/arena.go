@@ -214,6 +214,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.FieldVolunteers = false
 	arena.FieldReset = false
 	arena.ScoringPanelRegistry.resetScoreCommitted()
+	arena.Plc.ResetMatch()
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
@@ -404,6 +405,7 @@ func (arena *Arena) Update() {
 			enabled = true
 			sendDsPacket = true
 		}
+		arena.Plc.ResetMatch()
 	case WarmupPeriod:
 		auto = true
 		enabled = false
