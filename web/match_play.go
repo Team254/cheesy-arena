@@ -7,6 +7,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
@@ -24,7 +25,7 @@ type MatchPlayListItem struct {
 	Id          int
 	DisplayName string
 	Time        string
-	Status      string
+	Status      model.MatchStatus
 	ColorClass  string
 }
 
@@ -71,13 +72,15 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	isReplay := matchResult != nil
 	data := struct {
 		*model.EventSettings
-		MatchesByType     map[string]MatchPlayList
-		CurrentMatchType  string
-		Match             *model.Match
-		AllowSubstitution bool
-		IsReplay          bool
-	}{web.arena.EventSettings, matchesByType, currentMatchType, web.arena.CurrentMatch,
-		web.arena.CurrentMatch.ShouldAllowSubstitution(), isReplay}
+		PlcIsEnabled          bool
+		MatchesByType         map[string]MatchPlayList
+		CurrentMatchType      string
+		Match                 *model.Match
+		AllowSubstitution     bool
+		IsReplay              bool
+		PlcArmorBlockStatuses map[string]bool
+	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), matchesByType, currentMatchType, web.arena.CurrentMatch,
+		web.arena.CurrentMatch.ShouldAllowSubstitution(), isReplay, web.arena.Plc.GetArmorBlockStatuses()}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -143,6 +146,15 @@ func (web *Web) matchPlayShowResultHandler(w http.ResponseWriter, r *http.Reques
 		handleWebErr(w, fmt.Errorf("No result found for match ID %d.", matchId))
 		return
 	}
+	if match.ShouldUpdateRankings() {
+		web.arena.SavedRankings, err = web.arena.Database.GetAllRankings()
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+	} else {
+		web.arena.SavedRankings = game.Rankings{}
+	}
 	web.arena.SavedMatch = match
 	web.arena.SavedMatchResult = matchResult
 	web.arena.ScorePostedNotifier.Notify()
@@ -166,7 +178,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.MatchTimingNotifier, web.arena.ArenaStatusNotifier, web.arena.MatchTimeNotifier,
 		web.arena.RealtimeScoreNotifier, web.arena.ScoringStatusNotifier, web.arena.AudienceDisplayModeNotifier,
-		web.arena.AllianceStationDisplayModeNotifier)
+		web.arena.AllianceStationDisplayModeNotifier, web.arena.EventStatusNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
@@ -207,8 +219,6 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				continue
 			}
 			web.arena.AllianceStations[station].Bypass = !web.arena.AllianceStations[station].Bypass
-		case "toggleBypassPreMatchScore":
-			web.arena.BypassPreMatchScore = !web.arena.BypassPreMatchScore
 		case "startMatch":
 			args := struct {
 				MuteMatchSounds bool
@@ -313,7 +323,9 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 }
 
 // Saves the given match and result to the database, supplanting any previous result for the match.
-func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchResult, loadToShowBuffer bool) error {
+func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchResult, isMatchReviewEdit bool) error {
+	var updatedRankings game.Rankings
+
 	if match.Type == "elimination" {
 		// Adjust the score if necessary for an elimination DQ.
 		matchResult.CorrectEliminationScore()
@@ -346,16 +358,15 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 
 		// Update and save the match record to the database.
-		match.Status = "complete"
 		match.ScoreCommittedAt = time.Now()
-		redScore := matchResult.RedScoreSummary()
-		blueScore := matchResult.BlueScoreSummary()
+		redScore := matchResult.RedScoreSummary(true)
+		blueScore := matchResult.BlueScoreSummary(true)
 		if redScore.Score > blueScore.Score {
-			match.Winner = "R"
+			match.Status = model.RedWonMatch
 		} else if redScore.Score < blueScore.Score {
-			match.Winner = "B"
+			match.Status = model.BlueWonMatch
 		} else {
-			match.Winner = "T"
+			match.Status = model.TieMatch
 		}
 		err := web.arena.Database.SaveMatch(match)
 		if err != nil {
@@ -369,10 +380,11 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 		if match.ShouldUpdateRankings() {
 			// Recalculate all the rankings.
-			err = tournament.CalculateRankings(web.arena.Database)
+			rankings, err := tournament.CalculateRankings(web.arena.Database, isMatchReviewEdit)
 			if err != nil {
 				return err
 			}
+			updatedRankings = rankings
 		}
 
 		if match.ShouldUpdateEliminationMatches() {
@@ -395,10 +407,10 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			// Generate awards if the tournament is over.
 			if isTournamentWon {
 				var winnerAllianceId, finalistAllianceId int
-				if match.Winner == "R" {
+				if match.Status == model.RedWonMatch {
 					winnerAllianceId = match.ElimRedAlliance
 					finalistAllianceId = match.ElimBlueAlliance
-				} else if match.Winner == "B" {
+				} else if match.Status == model.BlueWonMatch {
 					winnerAllianceId = match.ElimBlueAlliance
 					finalistAllianceId = match.ElimRedAlliance
 				}
@@ -433,10 +445,11 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 	}
 
-	if loadToShowBuffer {
+	if !isMatchReviewEdit {
 		// Store the result in the buffer to be shown in the audience display.
 		web.arena.SavedMatch = match
 		web.arena.SavedMatchResult = matchResult
+		web.arena.SavedRankings = updatedRankings
 		web.arena.ScorePostedNotifier.Notify()
 	}
 
@@ -451,7 +464,7 @@ func (web *Web) getCurrentMatchResult() *model.MatchResult {
 
 // Saves the realtime result as the final score for the match currently loaded into the arena.
 func (web *Web) commitCurrentMatchScore() error {
-	return web.commitMatchScore(web.arena.CurrentMatch, web.getCurrentMatchResult(), true)
+	return web.commitMatchScore(web.arena.CurrentMatch, web.getCurrentMatchResult(), false)
 }
 
 // Helper function to implement the required interface for Sort.
@@ -461,7 +474,7 @@ func (list MatchPlayList) Len() int {
 
 // Helper function to implement the required interface for Sort.
 func (list MatchPlayList) Less(i, j int) bool {
-	return list[i].Status != "complete" && list[j].Status == "complete"
+	return list[i].Status == model.MatchNotPlayed && list[j].Status != model.MatchNotPlayed
 }
 
 // Helper function to implement the required interface for Sort.
@@ -482,12 +495,12 @@ func (web *Web) buildMatchPlayList(matchType string) (MatchPlayList, error) {
 		matchPlayList[i].DisplayName = match.TypePrefix() + match.DisplayName
 		matchPlayList[i].Time = match.Time.Local().Format("3:04 PM")
 		matchPlayList[i].Status = match.Status
-		switch match.Winner {
-		case "R":
+		switch match.Status {
+		case model.RedWonMatch:
 			matchPlayList[i].ColorClass = "danger"
-		case "B":
+		case model.BlueWonMatch:
 			matchPlayList[i].ColorClass = "info"
-		case "T":
+		case model.TieMatch:
 			matchPlayList[i].ColorClass = "warning"
 		default:
 			matchPlayList[i].ColorClass = ""

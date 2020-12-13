@@ -36,6 +36,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "displayConfiguration")
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "matchLoad")
@@ -44,7 +45,6 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "scorePosted")
 	readWebsocketType(t, ws, "allianceSelection")
 	readWebsocketType(t, ws, "lowerThird")
-	readWebsocketType(t, ws, "displayConfiguration")
 
 	// Run through a match cycle.
 	web.arena.MatchLoadNotifier.Notify()
@@ -55,7 +55,6 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	web.arena.AllianceStations["B1"].Bypass = true
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
-	web.arena.BypassPreMatchScore = true
 	web.arena.StartMatch()
 	web.arena.Update()
 	web.arena.Update()

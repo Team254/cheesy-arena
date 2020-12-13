@@ -26,10 +26,10 @@
           <h4>Fouls</h4>
           <table class="table">
             {{range $foul := .RedFouls}}
-              {{template "foul" dict "foul" $foul "color" "red"}}
+              {{template "foul" dict "foul" $foul "color" "red" "rules" $.Rules}}
             {{end}}
             {{range $foul := .BlueFouls}}
-              {{template "foul" dict "foul" $foul "color" "blue"}}
+              {{template "foul" dict "foul" $foul "color" "blue" "rules" $.Rules}}
             {{end}}
           </table>
           <h4>Yellow/Red Cards</h4>
@@ -58,19 +58,20 @@
           </div>
           <div class="row">
             {{range $rule := .Rules}}
-              <a class="btn btn-sm
-                  {{if $rule.IsTechnical}}btn-danger{{else if $rule.IsRankingPoint}}btn-primary
-                  {{else}}btn-warning{{end}}
-                  btn-referee btn-rule"
-                  data-rule="{{$rule.RuleNumber}}" data-is-technical="{{$rule.IsTechnical}}"
-                  data-is-ranking-point="{{$rule.IsRankingPoint}}" onclick="setFoulRule(this);"
-                  data-toggle="tooltip" title="{{$rule.Description}}">
+              <a class="btn btn-sm {{if $rule.IsTechnical}}btn-danger{{else if $rule.IsRankingPoint}}btn-primary
+                  {{else}}btn-warning{{end}} btn-referee btn-rule"
+                  data-rule-id="{{$rule.Id}}" onclick="setFoulRule(this);" data-toggle="tooltip"
+                  title="{{$rule.Description}}">
                 {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>
                 {{else if $rule.IsRankingPoint}}<sup>RP</sup>{{end}}
               </a>
             {{end}}
           </div>
-          <br />
+          <p>Note: Tooltips do not contain the entire text of the rule, and depending on the circumstances the
+            prescribed penalty may not be a foul or tech foul.
+            <br />
+            If a rule does not appear here, it is because the penalty is either a yellow/red card or a free score for
+            the opponent, and should be applied directly.</p>
           <div class="row text-center">
             <a class="btn btn-sm btn-default btn-referee btn-referee-wide" onclick="clearFoul();">Clear Foul</a>
             <button type="button" class="btn btn-sm btn-success btn-referee btn-referee-wide" id="commit"
@@ -108,10 +109,13 @@
   <tr class="row-{{.color}}">
     <td>{{.foul.TeamId}}</td>
     <td>
-      {{.foul.RuleNumber}}{{if .foul.IsTechnical}}<sup>T</sup>{{else if .foul.IsRankingPoint}}<sup>RP</sup>{{end}}
+      {{$rule := index .rules .foul.RuleId}}
+      {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>{{else if $rule.IsRankingPoint}}<sup>RP</sup>{{end}}
     </td>
-    <td><a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.RuleNumber}}',
-          {{.foul.IsTechnical}}, {{.foul.IsRankingPoint}}, {{.foul.TimeInMatchSec}});">Delete</a></td>
+    <td>
+      <a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.RuleId}}',
+          {{.foul.TimeInMatchSec}});">Delete</a>
+    </td>
   </tr>
 {{end}}
 {{define "card"}}

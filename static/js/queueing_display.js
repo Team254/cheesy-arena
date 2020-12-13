@@ -28,11 +28,17 @@ var handleMatchTime = function(data) {
   });
 };
 
+// Handles a websocket message to update the event status message.
+var handleEventStatus = function(data) {
+  $("#earlyLateMessage").text(data.EarlyLateMessage);
+};
+
 $(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/queueing/websocket", {
+    eventStatus: function(event) { handleEventStatus(event.data); },
     matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); }
+    matchTiming: function(event) { handleMatchTiming(event.data); },
   });
 });

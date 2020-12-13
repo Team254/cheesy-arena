@@ -46,13 +46,13 @@ func TestSetupLowerThirds(t *testing.T) {
 	time.Sleep(time.Millisecond * 10)
 	lowerThird, _ = web.arena.Database.GetLowerThirdById(2)
 	assert.Equal(t, "Top Text 5", lowerThird.TopText)
-	assert.Equal(t, "lowerThird", web.arena.AudienceDisplayMode)
+	assert.Equal(t, true, web.arena.ShowLowerThird)
 
 	ws.Write("hideLowerThird", model.LowerThird{2, "Top Text 6", "Bottom Text 1", 0, 0})
 	time.Sleep(time.Millisecond * 10)
 	lowerThird, _ = web.arena.Database.GetLowerThirdById(2)
 	assert.Equal(t, "Top Text 6", lowerThird.TopText)
-	assert.Equal(t, "blank", web.arena.AudienceDisplayMode)
+	assert.Equal(t, false, web.arena.ShowLowerThird)
 
 	ws.Write("reorderLowerThird", map[string]interface{}{"Id": 2, "moveUp": false})
 	time.Sleep(time.Millisecond * 100)

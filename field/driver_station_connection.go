@@ -385,3 +385,26 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 		}
 	}
 }
+
+// Sends a TCP packet containing the given game data to the driver station.
+func (dsConn *DriverStationConnection) sendGameDataPacket(gameData string) error {
+	byteData := []byte(gameData)
+	size := len(byteData)
+	packet := make([]byte, size+4)
+
+	packet[0] = 0              // Packet size
+	packet[1] = byte(size + 2) // Packet size
+	packet[2] = 28             // Packet type
+	packet[3] = byte(size)     // Data size
+
+	// Fill the rest of the packet with the data.
+	for i, character := range byteData {
+		packet[i+4] = character
+	}
+
+	if dsConn.tcpConn != nil {
+		_, err := dsConn.tcpConn.Write(packet)
+		return err
+	}
+	return nil
+}

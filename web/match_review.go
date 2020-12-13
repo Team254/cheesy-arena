@@ -7,6 +7,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -91,7 +92,8 @@ func (web *Web) matchReviewEditGetHandler(w http.ResponseWriter, r *http.Request
 		*model.EventSettings
 		Match           *model.Match
 		MatchResultJson *model.MatchResultDb
-	}{web.arena.EventSettings, match, matchResultJson}
+		Rules           map[int]*game.Rule
+	}{web.arena.EventSettings, match, matchResultJson, game.GetAllRules()}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -132,7 +134,7 @@ func (web *Web) matchReviewEditPostHandler(w http.ResponseWriter, r *http.Reques
 
 		http.Redirect(w, r, "/match_play", 303)
 	} else {
-		err = web.commitMatchScore(match, matchResult, false)
+		err = web.commitMatchScore(match, matchResult, true)
 		if err != nil {
 			handleWebErr(w, err)
 			return
@@ -191,15 +193,15 @@ func (web *Web) buildMatchReviewList(matchType string) ([]MatchReviewListItem, e
 			return []MatchReviewListItem{}, err
 		}
 		if matchResult != nil {
-			matchReviewList[i].RedScore = matchResult.RedScoreSummary().Score
-			matchReviewList[i].BlueScore = matchResult.BlueScoreSummary().Score
+			matchReviewList[i].RedScore = matchResult.RedScoreSummary(true).Score
+			matchReviewList[i].BlueScore = matchResult.BlueScoreSummary(true).Score
 		}
-		switch match.Winner {
-		case "R":
+		switch match.Status {
+		case model.RedWonMatch:
 			matchReviewList[i].ColorClass = "danger"
-		case "B":
+		case model.BlueWonMatch:
 			matchReviewList[i].ColorClass = "info"
-		case "T":
+		case model.TieMatch:
 			matchReviewList[i].ColorClass = "warning"
 		default:
 			matchReviewList[i].ColorClass = ""

@@ -13,6 +13,7 @@ import (
 type RankingDb struct {
 	TeamId            int
 	Rank              int
+	PreviousRank      int
 	RankingFieldsJson string
 }
 
@@ -59,7 +60,7 @@ func (database *Database) TruncateRankings() error {
 	return database.rankingMap.TruncateTables()
 }
 
-func (database *Database) GetAllRankings() ([]game.Ranking, error) {
+func (database *Database) GetAllRankings() (game.Rankings, error) {
 	var rankingDbs []RankingDb
 	err := database.rankingMap.Select(&rankingDbs, "SELECT * FROM rankings ORDER BY rank")
 	if err != nil {
@@ -90,7 +91,7 @@ func (database *Database) ReplaceAllRankings(rankings game.Rankings) error {
 	}
 
 	for _, ranking := range rankings {
-		rankingDb, err := serializeRanking(ranking)
+		rankingDb, err := serializeRanking(&ranking)
 		if err != nil {
 			transaction.Rollback()
 			return err
@@ -107,7 +108,7 @@ func (database *Database) ReplaceAllRankings(rankings game.Rankings) error {
 
 // Converts the nested struct MatchResult to the DB version that has JSON fields.
 func serializeRanking(ranking *game.Ranking) (*RankingDb, error) {
-	rankingDb := RankingDb{TeamId: ranking.TeamId, Rank: ranking.Rank}
+	rankingDb := RankingDb{TeamId: ranking.TeamId, Rank: ranking.Rank, PreviousRank: ranking.PreviousRank}
 	if err := serializeHelper(&rankingDb.RankingFieldsJson, ranking.RankingFields); err != nil {
 		return nil, err
 	}
@@ -116,7 +117,7 @@ func serializeRanking(ranking *game.Ranking) (*RankingDb, error) {
 
 // Converts the DB Ranking with JSON fields to the nested struct version.
 func (rankingDb *RankingDb) deserialize() (*game.Ranking, error) {
-	ranking := game.Ranking{TeamId: rankingDb.TeamId, Rank: rankingDb.Rank}
+	ranking := game.Ranking{TeamId: rankingDb.TeamId, Rank: rankingDb.Rank, PreviousRank: rankingDb.PreviousRank}
 	if err := json.Unmarshal([]byte(rankingDb.RankingFieldsJson), &ranking.RankingFields); err != nil {
 		return nil, err
 	}

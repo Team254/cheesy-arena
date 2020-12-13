@@ -70,7 +70,14 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.SwitchPassword = r.PostFormValue("switchPassword")
 	eventSettings.PlcAddress = r.PostFormValue("plcAddress")
 	eventSettings.AdminPassword = r.PostFormValue("adminPassword")
-	eventSettings.HabDockingThreshold, _ = strconv.Atoi(r.PostFormValue("habDockingThreshold"))
+	eventSettings.WarmupDurationSec, _ = strconv.Atoi(r.PostFormValue("warmupDurationSec"))
+	eventSettings.AutoDurationSec, _ = strconv.Atoi(r.PostFormValue("autoDurationSec"))
+	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))
+	eventSettings.TeleopDurationSec, _ = strconv.Atoi(r.PostFormValue("teleopDurationSec"))
+	eventSettings.WarningRemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warningRemainingDurationSec"))
+	eventSettings.Stage1Capacity, _ = strconv.Atoi(r.PostFormValue("stage1Capacity"))
+	eventSettings.Stage2Capacity, _ = strconv.Atoi(r.PostFormValue("stage2Capacity"))
+	eventSettings.Stage3Capacity, _ = strconv.Atoi(r.PostFormValue("stage3Capacity"))
 
 	if eventSettings.Ap2TeamChannel != 0 && eventSettings.Ap2TeamChannel == eventSettings.ApTeamChannel {
 		web.renderSettings(w, r, "Cannot use same channel for both access points.")

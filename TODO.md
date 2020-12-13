@@ -18,16 +18,9 @@ Cheesy Arena To-Do List
 * Referee interface: add timer starting at field reset to track time limit for calling timeouts/backups
 * Mobile compatibility for announcer display
 
-### Cheesy Arena Lite - a game-agnostic version
-* Configurable match period timing
-* Realtime scoring: just a simple single number input, plus API
-* Final score screen: just show point total and remove breakdowns
-* Genericize logos
-* Manual input of match name
-* Remove match scheduling and team standings functionality
-
 ### Development tasks
 * Generate more schedules and find an automated way to evaluate them
+* Switch to a more modern JavaScript paradigm than jQuery, such as ES6
 * JavaScript unit testing
 * Fix Handlebars and golang html/template confict
 * [Selenium](http://www.seleniumhq.org) testing

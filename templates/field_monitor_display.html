@@ -8,6 +8,9 @@
 <html>
   <head>
     <title>Field Monitor - {{.EventSettings.Name}} - Cheesy Arena</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no" />
     <link rel="shortcut icon" href="/static/img/favicon.ico">
     <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
     <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
@@ -17,6 +20,10 @@
     {{template "row" dict "leftPosition" "1" "rightPosition" "3"}}
     {{template "row" dict "leftPosition" "2" "rightPosition" "2"}}
     {{template "row" dict "leftPosition" "3" "rightPosition" "1"}}
+    <div id="eventStatusRow">
+      <div id="cycleTimeMessage"></div>
+      <div id="earlyLateMessage"></div>
+    </div>
   </body>
   <script src="/static/js/lib/jquery.min.js"></script>
   <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
@@ -38,15 +45,23 @@
 
 {{define "team"}}
   <div id="{{.side}}Team{{.position}}" class="team">
-    <div id="{{.side}}Team{{.position}}Id" class="team-id center"></div>
+    <div id="{{.side}}Team{{.position}}Id" class="team-id center fta-dependent"></div>
+    <div id="{{.side}}Team{{.position}}Notes" class="team-notes fta-dependent" title="FTA Notes">
+      <i class="glyphicon glyphicon-comment"></i>
+      <div onclick="editFtaNotes(this);"></div>
+    </div>
     <div class="team-box-row">
-      <div id="{{.side}}Team{{.position}}Ds" class="team-box center">DS</div>
-      <div id="{{.side}}Team{{.position}}Radio" class="team-box center">
+      <div id="{{.side}}Team{{.position}}Ethernet" class="team-box center"
+          title="Driver Station Ethernet Connected&#10;Trip Time (ms)">ETH</div>
+      <div id="{{.side}}Team{{.position}}Ds" class="team-box center"
+          title="Driver Station Software Running&#10;Missed Packets">DS</div>
+      <div id="{{.side}}Team{{.position}}Radio" class="team-box center" title="Field Access Point Configured Team">
         <i class="glyphicon glyphicon-signal"></i>
         <span></span>
       </div>
-      <div id="{{.side}}Team{{.position}}Robot" class="team-box center"></div>
-      <div id="{{.side}}Team{{.position}}Bypass" class="team-box center"></div>
+      <div id="{{.side}}Team{{.position}}Robot" class="team-box center"
+          title="Battery Voltage&#10;Seconds Since Last Connected"></div>
+      <div id="{{.side}}Team{{.position}}Bypass" class="team-box center" title="Emergency-Stopped or Bypassed"></div>
     </div>
   </div>
 {{end}}

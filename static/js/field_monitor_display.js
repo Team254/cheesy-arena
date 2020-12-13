@@ -19,11 +19,16 @@ var handleArenaStatus = function(data) {
       teamElementPrefix = "#" + blueSide + "Team" + station[1];
     }
     var teamIdElement = $(teamElementPrefix + "Id");
+    var teamNotesElement = $(teamElementPrefix + "Notes");
+    var teamNotesTextElement = $(teamElementPrefix + "Notes div");
+    var teamEthernetElement = $(teamElementPrefix + "Ethernet");
     var teamDsElement = $(teamElementPrefix + "Ds");
     var teamRadioElement = $(teamElementPrefix + "Radio");
     var teamRadioTextElement = $(teamElementPrefix + "Radio span");
     var teamRobotElement = $(teamElementPrefix + "Robot");
     var teamBypassElement = $(teamElementPrefix + "Bypass");
+
+    teamNotesTextElement.attr("data-station", station);
 
     if (stationStatus.Team) {
       // Set the team number and status.
@@ -41,10 +46,21 @@ var handleArenaStatus = function(data) {
         }
       }
       teamIdElement.attr("data-status", status);
+      teamNotesTextElement.text(stationStatus.Team.FtaNotes);
+      teamNotesElement.attr("data-status", status);
     } else {
       // No team is present in this position for this match; blank out the status.
       teamIdElement.text("");
-      teamIdElement.attr("data-status", "");
+      teamNotesTextElement.text("");
+      teamNotesElement.attr("data-status", "");
+    }
+
+    // Format the Ethernet status box.
+    teamEthernetElement.attr("data-status-ok", stationStatus.Ethernet ? "true" : "");
+    if (stationStatus.DsConn && stationStatus.DsConn.DsRobotTripTimeMs > 0) {
+      teamEthernetElement.text(stationStatus.DsConn.DsRobotTripTimeMs);
+    } else {
+      teamEthernetElement.text("ETH");
     }
 
     var wifiStatus = data.TeamWifiStatuses[station];
@@ -54,6 +70,7 @@ var handleArenaStatus = function(data) {
       // Format the driver station status box.
       var dsConn = stationStatus.DsConn;
       teamDsElement.attr("data-status-ok", dsConn.DsLinked);
+      teamDsElement.text(dsConn.MissedPacketCount);
 
       // Format the radio status box according to the connection status of the robot radio.
       var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
@@ -69,6 +86,7 @@ var handleArenaStatus = function(data) {
       }
     } else {
       teamDsElement.attr("data-status-ok", "");
+      teamDsElement.text("DS");
       teamRobotElement.attr("data-status-ok", "");
       teamRobotElement.text("RBT");
 
@@ -98,6 +116,31 @@ var handleArenaStatus = function(data) {
   });
 };
 
+// Handles a websocket message to update the event status message.
+var handleEventStatus = function(data) {
+  if (data.CycleTime === "") {
+    $("#cycleTimeMessage").text("Last cycle time: Unknown");
+  } else {
+    $("#cycleTimeMessage").text("Last cycle time: " + data.CycleTime);
+  }
+  $("#earlyLateMessage").text(data.EarlyLateMessage);
+};
+
+// Makes the team notes section editable and handles saving edits to the server.
+var editFtaNotes = function(element) {
+  var teamNotesTextElement = $(element);
+  var textArea = $("<textarea />");
+  textArea.val(teamNotesTextElement.text());
+  teamNotesTextElement.replaceWith(textArea);
+  textArea.focus();
+  textArea.blur(function() {
+    textArea.replaceWith(teamNotesTextElement);
+    if (textArea.val() !== teamNotesTextElement.text()) {
+      websocket.send("updateTeamNotes", { station: teamNotesTextElement.attr("data-station"), notes: textArea.val()});
+    }
+  });
+};
+
 $(function() {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
@@ -111,9 +154,11 @@ $(function() {
   }
   $(".reversible-left").attr("data-reversed", reversed);
   $(".reversible-right").attr("data-reversed", reversed);
+  $(".fta-dependent").attr("data-fta", urlParams.get("fta"));
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/field_monitor/websocket", {
-    arenaStatus: function(event) { handleArenaStatus(event.data); }
+    arenaStatus: function(event) { handleArenaStatus(event.data); },
+    eventStatus: function(event) { handleEventStatus(event.data); },
   });
 });

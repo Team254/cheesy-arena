@@ -26,104 +26,62 @@
 <div id="scoreTemplate" style="display: none;">
   <div class="well well-{{"{{alliance}}"}}">
     <fieldset>
-      <legend>Pre-Match</legend>
-      <b>Robot Starting Levels</b>
-      <div class="form-group">
-        {{range $i := seq 3}}
-          <div class="row">
-            <label class="col-lg-4 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-            <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}RobotStartLevel{{$i}}" value="1">Level 1
-            </div>
-            <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}RobotStartLevel{{$i}}" value="2">Level 2
-            </div>
-            <div class="radio col-lg-4">
-              <input type="radio" name="{{"{{alliance}}"}}RobotStartLevel{{$i}}" value="3">No-Show
-            </div>
-          </div>
-        {{end}}
-      </div>
-      <b>Cargo Ship Prepopulation</b>
-      <p>Counting starts nearest center field on scoring table side and wraps around</p>
-      <div class="form-group">
-        {{range $i, $unused := seq 2}}
-          <div class="row">
-            {{range $j := seq 4}}
-              {{$bayNumber := add $j (multiply $i 4)}}
-              <div class="col-lg-3">
-                {{$bayNumber}}:
-                <select name="{{"{{alliance}}"}}CargoBayPreMatch{{$bayNumber}}">
-                  <option value="0">Empty</option>
-                  <option value="1">Null Hatch</option>
-                  <option value="3">Cargo</option>
-                </select>
-              </div>
-            {{end}}
-          </div>
-        {{end}}
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>In-Match</legend>
-      <b>Sandstorm Bonus</b>
+      <legend>Autonomous</legend>
+      <b>Exited Initiation Line</b>
       <div class="form-group">
         <div class="row">
           {{range $i := seq 3}}
             <div class="col-lg-4">
               <label class="col-lg-8 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-              <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}SandstormBonus{{$i}}">
+              <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}ExitedInitiationLine{{$i}}">
             </div>
           {{end}}
         </div>
       </div>
-      <b>Cargo Ship</b>
-      <p>Counting starts nearest center field on scoring table side and wraps around</p>
+      <b>Power Cells</b>
+      {{template "powerCells" dict "period" "Auto" "stages" 2}}
+    </fieldset>
+    <fieldset>
+      <legend>Teleoperated</legend>
+      <b>Power Cells</b>
+      {{template "powerCells" dict "period" "Teleop" "stages" 4}}
+      <b>Control Panel</b>
       <div class="form-group">
-        {{range $i, $unused := seq 2}}
-          <div class="row">
-            {{range $j := seq 4}}
-              {{$bayNumber := add $j (multiply $i 4)}}
-              <div class="col-lg-3">
-                {{$bayNumber}}:
-                <select name="{{"{{alliance}}"}}CargoBay{{$bayNumber}}">
-                  <option value="0">Empty</option>
-                  <option value="1">Hatch Only</option>
-                  <option value="2">H+Cargo</option>
-                </select>
-              </div>
-            {{end}}
+        <div class="row">
+          <div class="radio col-lg-3 col-lg-offset-1">
+            <input type="radio" name="{{"{{alliance}}"}}ControlPanelStatus" value="0">None
           </div>
-        {{end}}
-      </div>
-      <b>Rockets</b>
-      <div class="form-group">
-        <div class="row text-center">
-          {{template "rocketHalf" dict "rocketName" "Near Left" "rocketId" "NearLeft"}}
-          {{template "rocketHalf" dict "rocketName" "Near Right" "rocketId" "NearRight"}}
-          {{template "rocketHalf" dict "rocketName" "Far Left" "rocketId" "FarLeft"}}
-          {{template "rocketHalf" dict "rocketName" "Far Right" "rocketId" "FarRight"}}
+          <div class="radio col-lg-4">
+            <input type="radio" name="{{"{{alliance}}"}}ControlPanelStatus" value="1">Rotation Control
+          </div>
+          <div class="radio col-lg-4">
+            <input type="radio" name="{{"{{alliance}}"}}ControlPanelStatus" value="2">Position Control
+          </div>
         </div>
       </div>
-      <b>Robot Ending Levels</b>
+    </fieldset>
+    <fieldset>
+      <legend>Endgame</legend>
+      <b>Robot Status</b>
       <div class="form-group">
         {{range $i := seq 3}}
           <div class="row">
-            <label class="col-lg-2 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-            <div class="radio col-lg-3">
-              <input type="radio" name="{{"{{alliance}}"}}RobotEndLevel{{$i}}" value="0">Not On Hab
+            <label class="col-lg-2 col-lg-offset-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+            <div class="radio col-lg-2">
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="0">None
             </div>
             <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}RobotEndLevel{{$i}}" value="1">Level 1
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1">Park
             </div>
             <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}RobotEndLevel{{$i}}" value="2">Level 2
-            </div>
-            <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}RobotEndLevel{{$i}}" value="3">Level 3
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2">Hang
             </div>
           </div>
         {{end}}
+        <div class="row">
+          <label class="col-lg-3 control-label">Rung Is Level</label>
+          <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}RungIsLevel">
+        </div>
       </div>
     </fieldset>
     <fieldset>
@@ -158,22 +116,16 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-4 control-label">Rule Violated</label>
-            <div class="col-lg-3">
-              <input type="text" class="form-control input-sm"
-                  name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleNumber">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-4 control-label">Is Technical</label>
-            <div class="col-lg-3">
-              <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsTechnical">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-4 control-label">Free Ranking Point</label>
-            <div class="col-lg-3">
-              <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsRankingPoint">
+            <label class="col-lg-4 control-label">Rule</label>
+            <div class="col-lg-7">
+              <select class="form-control" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleId">
+                {{range $rule := .Rules}}
+                  <option value="{{$rule.Id}}">{{$rule.RuleNumber}}
+                      [{{if $rule.IsRankingPoint}}Free RP{{else}}{{if $rule.IsTechnical}}Tech {{end}}Foul{{end}}]:
+                      {{$rule.Description}}
+                  </option>
+                {{end}}
+              </select>
             </div>
           </div>
           <div class="form-group">
@@ -235,18 +187,26 @@
   renderResults("blue");
 </script>
 {{end}}
-{{define "rocketHalf"}}
-  <div class="col-lg-3">
-    <div class="row">{{.rocketName}}</div>
-    <div class="row">H: {{template "rocketBay" dict "rocketId" .rocketId "level" "3"}}</div>
-    <div class="row">M: {{template "rocketBay" dict "rocketId" .rocketId "level" "2"}}</div>
-    <div class="row">L: {{template "rocketBay" dict "rocketId" .rocketId "level" "1"}}</div>
+{{define "powerCells"}}
+  <div class="form-group">
+    <div class="row">
+      <label class="col-lg-2 col-lg-offset-3 text-center">Stage 1</label>
+      {{range $i := seq (add .stages -1)}}
+        <label class="col-lg-2 text-center">{{if lt $i 3}}Stage {{add $i 1}}{{else}}Extra{{end}}</label>
+      {{end}}
+    </div>
+    {{template "powerCellGoal" dict "period" .period "stages" .stages "goal" "Inner"}}
+    {{template "powerCellGoal" dict "period" .period "stages" .stages "goal" "Outer"}}
+    {{template "powerCellGoal" dict "period" .period "stages" .stages "goal" "Bottom"}}
   </div>
 {{end}}
-{{define "rocketBay"}}
-  <select name="{{"{{alliance}}"}}Rocket{{.rocketId}}Bay{{.level}}">
-    <option value="0">Empty</option>
-    <option value="1">Hatch Only</option>
-    <option value="2">H+Cargo</option>
-  </select>
+{{define "powerCellGoal"}}
+  <div class="row">
+    <label class="col-lg-2 col-lg-offset-1">{{.goal}}</label>
+    {{range $i := seq .stages}}
+      <div class="col-lg-2">
+        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cells{{$.goal}}{{$i}}">
+      </div>
+    {{end}}
+  </div>
 {{end}}

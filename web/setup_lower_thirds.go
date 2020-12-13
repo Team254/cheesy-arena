@@ -97,9 +97,8 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 			}
 			web.saveLowerThird(&lowerThird)
 			web.arena.LowerThird = &lowerThird
+			web.arena.ShowLowerThird = true
 			web.arena.LowerThirdNotifier.Notify()
-			web.arena.AudienceDisplayMode = "lowerThird"
-			web.arena.AudienceDisplayModeNotifier.Notify()
 			continue
 		case "hideLowerThird":
 			var lowerThird model.LowerThird
@@ -109,8 +108,8 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				continue
 			}
 			web.saveLowerThird(&lowerThird)
-			web.arena.AudienceDisplayMode = "blank"
-			web.arena.AudienceDisplayModeNotifier.Notify()
+			web.arena.ShowLowerThird = false
+			web.arena.LowerThirdNotifier.Notify()
 			continue
 		case "reorderLowerThird":
 			args := struct {

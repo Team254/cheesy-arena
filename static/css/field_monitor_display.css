@@ -5,9 +5,6 @@
 
 html {
   height: 100%;
-  cursor: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
   overflow: hidden;
 }
 body {
@@ -21,7 +18,16 @@ body {
   justify-content: center;
 }
 .position-row {
-  height: 33.3%;
+  height: 31%;
+}
+#eventStatusRow {
+  height: 7%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background-color: #333;
+  font-size: 1.5vw;
+  text-transform: uppercase;
 }
 .left-position, .right-position {
   width: 8%;
@@ -38,25 +44,29 @@ body {
   width: 42%;
   height: 100%;
   background-color: #333;
-  font-size: 13vw;
   display: flex;
   flex-direction: column;
 }
 .team-id {
   width: 100%;
   height: 80%;
+  font-size: 13vw;
 }
-.team-id[data-status=no-link] {
+.team-id[data-fta="true"] {
+  height: 40%;
+  font-size: 6vw;
+}
+.team-id[data-status=no-link], .team-notes[data-status=no-link] {
   background-color: #963;
 }
-.team-id[data-status=ds-linked] {
+.team-id[data-status=ds-linked], .team-notes[data-status=ds-linked]  {
   background-color: #ff0;
   color: #333;
 }
-.team-id[data-status=robot-linked] {
+.team-id[data-status=robot-linked], .team-notes[data-status=robot-linked]  {
   background-color: #0a3;
 }
-.team-id[data-status=radio-linked] {
+.team-id[data-status=radio-linked], .team-notes[data-status=radio-linked]  {
   background-color: #ff00ff;
 }
 .team-box-row {
@@ -65,7 +75,7 @@ body {
   width: 100%;
 }
 .team-box {
-  width: 25%;
+  width: 20%;
   height: 100%;
   font-size: 2.5vw;
   background-color: #333;
@@ -78,4 +88,25 @@ body {
 }
 .team-box i {
   margin-right: 0.5vw;
+}
+.team-notes[data-fta="true"] {
+  height: 40%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5vw;
+  font-size: 1vw;
+}
+.team-notes[data-fta="false"] {
+  display: none;
+}
+.team-notes div {
+  width: 96%;
+  height: 96%;
+  white-space: pre;
+}
+textarea {
+  width: 96%;
+  height: 96%;
+  background-color: #ccc;
+  color: #000;
 }

@@ -33,6 +33,9 @@ body[data-mode=match] .mode#match {
 body[data-mode=fieldReset] .mode#fieldReset {
   display: table;
 }
+body[data-mode=timeout] .mode#match {
+  display: block;
+}
 
 /* Logo Mode */
 #logo #logoImg {
@@ -41,7 +44,7 @@ body[data-mode=fieldReset] .mode#fieldReset {
   bottom: 0;
   left: 0;
   right: 0;
-  width: 70%;
+  height: 105%;
   margin: auto auto;
 }
 
@@ -66,20 +69,21 @@ body[data-mode=fieldReset] .mode#fieldReset {
   height: 100%;
 }
 #match[data-state=WARMUP_PERIOD], #match[data-state=AUTO_PERIOD], #match[data-state=PAUSE_PERIOD],
-    #match[data-state=TELEOP_PERIOD], #match[data-state=POST_MATCH] {
+    #match[data-state=TELEOP_PERIOD], #match[data-state=POST_MATCH], #match[data-state=TIMEOUT_ACTIVE],
+    #match[data-state=POST_TIMEOUT] {
   background-color: #fff;
   color: #000;
 }
 #preMatch, #inMatch {
   display: none;
 }
-#match[data-state=PRE_MATCH] #preMatch, #match[data-state=TIMEOUT_ACTIVE] #preMatch,
-    #match[data-state=POST_TIMEOUT] #preMatch {
+#match[data-state=PRE_MATCH] #preMatch {
   display: block;
 }
 #match[data-state=WARMUP_PERIOD] #inMatch, #match[data-state=AUTO_PERIOD] #inMatch,
     #match[data-state=PAUSE_PERIOD] #inMatch, #match[data-state=TELEOP_PERIOD] #inMatch,
-    #match[data-state=POST_MATCH] #inMatch {
+    #match[data-state=POST_MATCH] #inMatch, #match[data-state=TIMEOUT_ACTIVE] #inMatch,
+    #match[data-state=POST_TIMEOUT] #inMatch {
   display: block;
 }
 

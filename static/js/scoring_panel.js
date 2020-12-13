@@ -20,42 +20,6 @@ var handleMatchLoad = function(data) {
   }
 };
 
-// Handles a websocket message to update the realtime scoring fields.
-var handleRealtimeScore = function(data) {
-  var realtimeScore;
-  if (alliance === "red") {
-    realtimeScore = data.Red;
-  } else {
-    realtimeScore = data.Blue;
-  }
-  var score = realtimeScore.Score;
-
-  for (var i = 0; i < 3; i++) {
-    var i1 = i + 1;
-    $("#robotStartLevel" + i1 + ">.value").text(getRobotStartLevelText(score.RobotStartLevels[i]));
-    $("#robotStartLevel" + i1).attr("data-value", score.RobotStartLevels[i]);
-    $("#sandstormBonus" + i1 + ">.value").text(score.SandstormBonuses[i] ? "Yes" : "No");
-    $("#sandstormBonus" + i1).attr("data-value", score.SandstormBonuses[i]);
-    $("#robotEndLevel" + i1 + ">.value").text(getRobotEndLevelText(score.RobotEndLevels[i]));
-    $("#robotEndLevel" + i1).attr("data-value", score.RobotEndLevels[i]);
-    getBay("rocketNearLeft", i).attr("data-value", score.RocketNearLeftBays[i]);
-    getBay("rocketNearRight", i).attr("data-value", score.RocketNearRightBays[i]);
-    getBay("rocketFarLeft", i).attr("data-value", score.RocketFarLeftBays[i]);
-    getBay("rocketFarRight", i).attr("data-value", score.RocketFarRightBays[i]);
-  }
-  for (var i = 0; i < 8; i++) {
-    getBay("cargoShip", i).attr("data-value", score.CargoBays[i]);
-  }
-
-  if (matchStates[data.MatchState] === "PRE_MATCH") {
-    if (realtimeScore.IsPreMatchScoreReady) {
-      $("#preMatchMessage").hide();
-    } else {
-      $("#preMatchMessage").css("display", "flex");
-    }
-  }
-};
-
 // Handles a websocket message to update the match status.
 var handleMatchTime = function(data) {
   switch (matchStates[data.MatchState]) {
@@ -65,15 +29,65 @@ var handleMatchTime = function(data) {
       $("#commitMatchScore").hide();
       break;
     case "POST_MATCH":
-      $("#preMatchMessage").hide();
       $("#postMatchMessage").hide();
       $("#commitMatchScore").css("display", "flex");
       break;
     default:
-      $("#preMatchMessage").hide();
       $("#postMatchMessage").hide();
       $("#commitMatchScore").hide();
   }
+};
+
+// Handles a websocket message to update the realtime scoring fields.
+var handleRealtimeScore = function(data) {
+  var realtimeScore;
+  if (alliance === "red") {
+    realtimeScore = data.Red;
+  } else {
+    realtimeScore = data.Blue;
+  }
+  var score = realtimeScore.Score;
+  var summary = realtimeScore.ScoreSummary;
+
+  for (var i = 0; i < 3; i++) {
+    var i1 = i + 1;
+    $("#exitedInitiationLine" + i1 + ">.value").text(score.ExitedInitiationLine[i] ? "Yes" : "No");
+    $("#exitedInitiationLine" + i1).attr("data-value", score.ExitedInitiationLine[i]);
+    $("#endgameStatus" + i1 + ">.value").text(getEndgameStatusText(score.EndgameStatuses[i]));
+    $("#endgameStatus" + i1).attr("data-value", score.EndgameStatuses[i]);
+    setGoalValue($("#autoCellsInner"), score.AutoCellsInner);
+    setGoalValue($("#autoCellsOuter"), score.AutoCellsOuter);
+    setGoalValue($("#autoCellsBottom"), score.AutoCellsBottom);
+    setGoalValue($("#teleopCellsInner"), score.TeleopCellsInner);
+    setGoalValue($("#teleopCellsOuter"), score.TeleopCellsOuter);
+    setGoalValue($("#teleopCellsBottom"), score.TeleopCellsBottom);
+  }
+
+  if (score.ControlPanelStatus >= 1) {
+    $("#rotationControl>.value").text("Yes");
+    $("#rotationControl").attr("data-value", true);
+  } else if (summary.StagePowerCellsRemaining[1] === 0) {
+    $("#rotationControl>.value").text("Unlocked");
+    $("#rotationControl").attr("data-value", false);
+  } else {
+    $("#rotationControl>.value").text("Disabled (" + summary.StagePowerCellsRemaining[1] + " left)");
+    $("#rotationControl").attr("data-value", "disabled");
+  }
+  if (score.ControlPanelStatus === 2) {
+    $("#positionControl>.value").text("Yes");
+    $("#positionControl").attr("data-value", true);
+  } else if (summary.StagePowerCellsRemaining[2] === 0) {
+    $("#positionControl>.value").text("Unlocked");
+    $("#positionControl").attr("data-value", false);
+  } else {
+    $("#positionControl>.value").text("Disabled (" + summary.StagePowerCellsRemaining[2] + " left)");
+    $("#positionControl").attr("data-value", "disabled");
+  }
+  $("#rungIsLevel>.value").text(score.RungIsLevel ? "Yes" : "No");
+  $("#rungIsLevel").attr("data-value", score.RungIsLevel);
+  $("#controlPanelColor>.value").text(getControlPanelColorText(realtimeScore.ControlPanel.CurrentColor));
+  $("#controlPanelColor").attr("data-value", realtimeScore.ControlPanel.CurrentColor);
+  $("#controlPanelColor").attr("data-control-panel-status", score.ControlPanelStatus)
 };
 
 // Handles a keyboard event and sends the appropriate websocket message.
@@ -93,48 +107,52 @@ var commitMatchScore = function() {
   $("#commitMatchScore").hide();
 };
 
-// Returns the display text corresponding to the given integer start level value.
-var getRobotStartLevelText = function(level) {
+// Returns the display text corresponding to the given integer endgame status value.
+var getEndgameStatusText = function(level) {
   switch (level) {
     case 1:
-      return "1";
+      return "Park";
     case 2:
-      return "2";
-    case 3:
-      return "No-Show";
+      return "Hang";
     default:
-      return " ";
+      return "None";
   }
 };
 
-// Returns the display text corresponding to the given integer end level value.
-var getRobotEndLevelText = function(level) {
+// Returns the display text corresponding to the given integer Control Panel color value.
+var getControlPanelColorText = function(level) {
   switch (level) {
     case 1:
-      return "1";
+      return "Red";
     case 2:
-      return "2";
+      return "Green";
     case 3:
-      return "3";
+      return "Blue";
+    case 4:
+      return "Yellow";
     default:
-      return "Not On";
+      return "Unknown";
   }
 };
 
-// Returns the bay element matching the given parameters.
-var getBay = function(type, index) {
-  return $("#bay" + bayMappings[type][index]);
-}
+// Updates the power cell count for a goal, given the element and score values.
+var setGoalValue = function(element, powerCells) {
+  var total = 0;
+  $.each(powerCells, function(k, v) {
+    total += v;
+  });
+  element.text(total);
+};
 
 $(function() {
   alliance = window.location.href.split("/").slice(-1)[0];
-  $(".alliance-color").attr("data-alliance", alliance);
+  $("#alliance").attr("data-alliance", alliance);
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/panels/scoring/" + alliance + "/websocket", {
     matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); }
+    realtimeScore: function(event) { handleRealtimeScore(event.data); },
   });
 
   $(document).keypress(handleKeyPress);

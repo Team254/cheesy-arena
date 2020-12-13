@@ -10,6 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/google/uuid"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -67,7 +68,11 @@ func (web *Web) userIsAdmin(w http.ResponseWriter, r *http.Request) bool {
 	if session != nil && session.Username == adminUser {
 		return true
 	} else {
-		http.Redirect(w, r, "/login?redirect="+r.URL.Path, 307)
+		redirect := r.URL.Path
+		if r.URL.RawQuery != "" {
+			redirect += "?" + r.URL.RawQuery
+		}
+		http.Redirect(w, r, "/login?redirect="+url.QueryEscape(redirect), 307)
 		return false
 	}
 }

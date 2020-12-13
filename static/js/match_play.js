@@ -18,11 +18,6 @@ var toggleBypass = function(station) {
   websocket.send("toggleBypass", station);
 };
 
-// Sends a websocket message to toggle the bypass state for the pre-match scoring.
-var toggleBypassPreMatchScore = function() {
-  websocket.send("toggleBypassPreMatchScore");
-};
-
 // Sends a websocket message to start the match.
 var startMatch = function() {
   websocket.send("startMatch",
@@ -184,8 +179,6 @@ var handleArenaStatus = function(data) {
       break;
   }
 
-  $("#bypassPreMatchScore").prop("checked", data.BypassPreMatchScore);
-
   if (data.PlcIsHealthy) {
     $("#plcStatus").text("Connected");
     $("#plcStatus").attr("data-ready", true);
@@ -194,6 +187,9 @@ var handleArenaStatus = function(data) {
     $("#plcStatus").attr("data-ready", false);
   }
   $("#fieldEstop").attr("data-ready", !data.FieldEstop);
+  $.each(data.PlcArmorBlockStatuses, function(name, status) {
+    $("#plc" + name + "Status").attr("data-ready", status);
+  });
 };
 
 // Handles a websocket message to update the match time countdown.
@@ -208,10 +204,6 @@ var handleMatchTime = function(data) {
 var handleRealtimeScore = function(data) {
   $("#redScore").text(data.Red.ScoreSummary.Score);
   $("#blueScore").text(data.Blue.ScoreSummary.Score);
-  if (matchStates[data.MatchState] == "PRE_MATCH") {
-    $("#redPreMatchScoreStatus").attr("data-ready", data.Red.IsPreMatchScoreReady);
-    $("#bluePreMatchScoreStatus").attr("data-ready", data.Blue.IsPreMatchScoreReady);
-  }
 };
 
 // Handles a websocket message to update the audience display screen selector.
@@ -236,6 +228,16 @@ var handleAllianceStationDisplayMode = function(data) {
   $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);
 };
 
+// Handles a websocket message to update the event status message.
+var handleEventStatus = function(data) {
+  if (data.CycleTime === "") {
+    $("#cycleTimeMessage").text("Last cycle time: Unknown");
+  } else {
+    $("#cycleTimeMessage").text("Last cycle time: " + data.CycleTime);
+  }
+  $("#earlyLateMessage").text(data.EarlyLateMessage);
+};
+
 $(function() {
   // Activate tooltips above the status headers.
   $("[data-toggle=tooltip]").tooltip({"placement": "top"});
@@ -245,9 +247,10 @@ $(function() {
     allianceStationDisplayMode: function(event) { handleAllianceStationDisplayMode(event.data); },
     arenaStatus: function(event) { handleArenaStatus(event.data); },
     audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
+    eventStatus: function(event) { handleEventStatus(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    scoringStatus: function(event) { handleScoringStatus(event.data); }
+    scoringStatus: function(event) { handleScoringStatus(event.data); },
   });
 });

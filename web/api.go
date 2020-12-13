@@ -54,8 +54,8 @@ func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
 		var matchResultWithSummary *MatchResultWithSummary
 		if matchResult != nil {
 			matchResultWithSummary = &MatchResultWithSummary{MatchResult: *matchResult}
-			matchResultWithSummary.RedSummary = matchResult.RedScoreSummary()
-			matchResultWithSummary.BlueSummary = matchResult.BlueScoreSummary()
+			matchResultWithSummary.RedSummary = matchResult.RedScoreSummary(true)
+			matchResultWithSummary.BlueSummary = matchResult.BlueScoreSummary(true)
 		}
 		matchesWithResults[i].Result = matchResultWithSummary
 	}
@@ -137,7 +137,7 @@ func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	highestPlayedMatch := ""
 	for _, match := range matches {
-		if match.Status == "complete" {
+		if match.IsComplete() {
 			highestPlayedMatch = match.DisplayName
 		}
 	}

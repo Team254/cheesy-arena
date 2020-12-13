@@ -63,7 +63,7 @@ func (notifier *Notifier) notifyListener(listener chan messageEnvelope, message 
 	case listener <- message:
 		// The notification was sent and received successfully.
 	default:
-		log.Println("Failed to send a notification due to blocked listener.")
+		log.Printf("Failed to send a '%s' notification due to blocked listener.", notifier.messageType)
 	}
 }
 

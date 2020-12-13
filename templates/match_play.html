@@ -40,9 +40,11 @@
                     <a href="/match_play/{{$match.Id}}/load">
                       <b class="btn btn-info btn-xs">Load</b>
                     </a>
-                    <a href="/match_play/{{$match.Id}}/show_result">
-                      <b class="btn btn-info btn-xs">Show Result</b>
-                    </a>
+                    {{if ne $match.Status ""}}
+                      <a href="/match_play/{{$match.Id}}/show_result">
+                        <b class="btn btn-info btn-xs">Show Result</b>
+                      </a>
+                    {{end}}
                   </td>
                 </tr>
               {{end}}
@@ -112,23 +114,18 @@
     <div class="row">
       <div class="col-lg-12 well">
         <div class="col-lg-3">
-          <p>Pre-Match Scoring</p>
-          <p><span class="label label-scoring" id="redPreMatchScoreStatus">Red Scoring</span><br />
-            <span class="label label-scoring" id="bluePreMatchScoreStatus">Blue Scoring</span></p>
-            <div class="checkbox">
-              <label>
-                <input type="checkbox" id="bypassPreMatchScore" onchange="toggleBypassPreMatchScore();">Bypass
-              </label>
-            </div>
-          <p>Post-Match Scoring</p>
+          <p>Scoring</p>
           <p><span class="label label-scoring" id="refereeScoreStatus">Referee</span><br />
             <span class="label label-scoring" id="redScoreStatus"></span><br />
             <span class="label label-scoring" id="blueScoreStatus"></span></p>
-        {{if .EventSettings.PlcAddress}}
+        {{if .PlcIsEnabled}}
           <p>PLC Status</p>
           <p>
             <span class="label label-scoring" id="plcStatus"></span><br />
             <span class="label label-scoring" id="fieldEstop">E-Stop</span>
+            {{range $name, $status := .PlcArmorBlockStatuses}}
+              <br /><span class="label label-scoring" id="plc{{$name}}Status">{{$name}}</span>
+            {{end}}
           </p>
         {{end}}
         </div>
@@ -199,6 +196,12 @@
                        onclick="setAllianceStationDisplay();">Logo
               </label>
             </div>
+            <div class="radio">
+              <label>
+                <input type="radio" name="allianceStationDisplay" value="timeout"
+                       onclick="setAllianceStationDisplay();">Timeout
+              </label>
+            </div>
           </div>
         </div>
         <div class="col-lg-3">
@@ -215,6 +218,11 @@
             Start
           </button>
         </div>
+      </div>
+      <div class="row">
+        <div id="cycleTimeMessage" class="col-lg-5 col-lg-offset-1"></div>
+        <div id="earlyLateMessage" class="col-lg-5 text-right"></div>
+        <div class="col-lg-1"></div>
       </div>
     </div>
   </div>

@@ -8,29 +8,32 @@ package game
 import "math/rand"
 
 type RankingFields struct {
-	RankingPoints        int
-	CargoPoints          int
-	HatchPanelPoints     int
-	HabClimbPoints       int
-	SandstormBonusPoints int
-	Random               float64
-	Wins                 int
-	Losses               int
-	Ties                 int
-	Disqualifications    int
-	Played               int
+	RankingPoints     int
+	AutoPoints        int
+	EndgamePoints     int
+	TeleopPoints      int
+	Random            float64
+	Wins              int
+	Losses            int
+	Ties              int
+	Disqualifications int
+	Played            int
 }
 
 type Ranking struct {
-	TeamId int
-	Rank   int
+	TeamId       int
+	Rank         int
+	PreviousRank int
 	RankingFields
 }
 
-type Rankings []*Ranking
+type Rankings []Ranking
 
 func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentScore *ScoreSummary, disqualified bool) {
 	fields.Played += 1
+
+	// Store a random value to be used as the last tiebreaker if necessary.
+	fields.Random = rand.Float64()
 
 	if disqualified {
 		// Don't award any points.
@@ -48,21 +51,17 @@ func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentSco
 	} else {
 		fields.Losses += 1
 	}
-	if ownScore.CompleteRocket {
+	if ownScore.ControlPanelRankingPoint {
 		fields.RankingPoints += 1
 	}
-	if ownScore.HabDocking {
+	if ownScore.EndgameRankingPoint {
 		fields.RankingPoints += 1
 	}
 
 	// Assign tiebreaker points.
-	fields.CargoPoints += ownScore.CargoPoints
-	fields.HatchPanelPoints += ownScore.HatchPanelPoints
-	fields.HabClimbPoints += ownScore.HabClimbPoints
-	fields.SandstormBonusPoints += ownScore.SandstormBonusPoints
-
-	// Store a random value to be used as the last tiebreaker if necessary.
-	fields.Random = rand.Float64()
+	fields.AutoPoints += ownScore.AutoPoints
+	fields.EndgamePoints += ownScore.EndgamePoints
+	fields.TeleopPoints += ownScore.TeleopPowerCellPoints + ownScore.ControlPanelPoints
 }
 
 // Helper function to implement the required interface for Sort.
@@ -77,19 +76,16 @@ func (rankings Rankings) Less(i, j int) bool {
 
 	// Use cross-multiplication to keep it in integer math.
 	if a.RankingPoints*b.Played == b.RankingPoints*a.Played {
-		if a.CargoPoints*b.Played == b.CargoPoints*a.Played {
-			if a.HatchPanelPoints*b.Played == b.HatchPanelPoints*a.Played {
-				if a.HabClimbPoints*b.Played == b.HabClimbPoints*a.Played {
-					if a.SandstormBonusPoints*b.Played == b.SandstormBonusPoints*a.Played {
-						return a.Random > b.Random
-					}
-					return a.SandstormBonusPoints*b.Played > b.SandstormBonusPoints*a.Played
+		if a.AutoPoints*b.Played == b.AutoPoints*a.Played {
+			if a.EndgamePoints*b.Played == b.EndgamePoints*a.Played {
+				if a.TeleopPoints*b.Played == b.TeleopPoints*a.Played {
+					return a.Random > b.Random
 				}
-				return a.HabClimbPoints*b.Played > b.HabClimbPoints*a.Played
+				return a.TeleopPoints*b.Played > b.TeleopPoints*a.Played
 			}
-			return a.HatchPanelPoints*b.Played > b.HatchPanelPoints*a.Played
+			return a.EndgamePoints*b.Played > b.EndgamePoints*a.Played
 		}
-		return a.CargoPoints*b.Played > b.CargoPoints*a.Played
+		return a.AutoPoints*b.Played > b.AutoPoints*a.Played
 	}
 	return a.RankingPoints*b.Played > b.RankingPoints*a.Played
 }

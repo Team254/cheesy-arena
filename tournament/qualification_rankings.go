@@ -13,19 +13,19 @@ import (
 )
 
 // Determines the rankings from the stored match results, and saves them to the database.
-func CalculateRankings(database *model.Database) error {
+func CalculateRankings(database *model.Database, preservePreviousRank bool) (game.Rankings, error) {
 	matches, err := database.GetMatchesByType("qualification")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	rankings := make(map[int]*game.Ranking)
 	for _, match := range matches {
-		if match.Status != "complete" {
+		if !match.IsComplete() {
 			continue
 		}
 		matchResult, err := database.GetMatchResultForMatch(match.Id)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if !match.Red1IsSurrogate {
 			addMatchResultToRankings(rankings, match.Red1, matchResult, true)
@@ -47,16 +47,33 @@ func CalculateRankings(database *model.Database) error {
 		}
 	}
 
+	// Retrieve old rankings so that we can display changes in rank as a result of this calculation.
+	oldRankings, err := database.GetAllRankings()
+	if err != nil {
+		return nil, err
+	}
+	oldRankingsMap := make(map[int]game.Ranking, len(oldRankings))
+	for _, ranking := range oldRankings {
+		oldRankingsMap[ranking.TeamId] = ranking
+	}
+
 	sortedRankings := sortRankings(rankings)
 	for rank, ranking := range sortedRankings {
-		ranking.Rank = rank + 1
+		sortedRankings[rank].Rank = rank + 1
+		if oldRank, ok := oldRankingsMap[ranking.TeamId]; ok {
+			if preservePreviousRank {
+				sortedRankings[rank].PreviousRank = oldRank.PreviousRank
+			} else {
+				sortedRankings[rank].PreviousRank = oldRank.Rank
+			}
+		}
 	}
 	err = database.ReplaceAllRankings(sortedRankings)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return nil
+	return sortedRankings, nil
 }
 
 // Checks all the match results for yellow and red cards, and updates the team model accordingly.
@@ -76,7 +93,7 @@ func CalculateTeamCards(database *model.Database, matchType string) error {
 		return err
 	}
 	for _, match := range matches {
-		if match.Status != "complete" {
+		if !match.IsComplete() {
 			continue
 		}
 		matchResult, err := database.GetMatchResultForMatch(match.Id)
@@ -131,16 +148,16 @@ func addMatchResultToRankings(rankings map[int]*game.Ranking, teamId int, matchR
 	}
 
 	if isRed {
-		ranking.AddScoreSummary(matchResult.RedScoreSummary(), matchResult.BlueScoreSummary(), disqualified)
+		ranking.AddScoreSummary(matchResult.RedScoreSummary(true), matchResult.BlueScoreSummary(true), disqualified)
 	} else {
-		ranking.AddScoreSummary(matchResult.BlueScoreSummary(), matchResult.RedScoreSummary(), disqualified)
+		ranking.AddScoreSummary(matchResult.BlueScoreSummary(true), matchResult.RedScoreSummary(true), disqualified)
 	}
 }
 
 func sortRankings(rankings map[int]*game.Ranking) game.Rankings {
 	var sortedRankings game.Rankings
 	for _, ranking := range rankings {
-		sortedRankings = append(sortedRankings, ranking)
+		sortedRankings = append(sortedRankings, *ranking)
 	}
 	sort.Sort(sortedRankings)
 	return sortedRankings

@@ -79,13 +79,20 @@ var setHighestPlayedMatch = function(highestPlayedMatch) {
   }
 };
 
+// Handles a websocket message to update the event status message.
+var handleEventStatus = function(data) {
+  $("#earlyLateMessage").text(data.EarlyLateMessage);
+};
+
 $(function() {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
   scrollMsPerRow = urlParams.get("scrollMsPerRow");
 
   // Set up the websocket back to the server. Used only for remote forcing of reloads.
-  websocket = new CheesyWebsocket("/displays/pit/websocket", {});
+  websocket = new CheesyWebsocket("/displays/pit/websocket", {
+    eventStatus: function(event) { handleEventStatus(event.data); },
+  });
 
   updateStaticRankings();
 });

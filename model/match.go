@@ -33,11 +33,19 @@ type Match struct {
 	Blue2IsSurrogate bool
 	Blue3            int
 	Blue3IsSurrogate bool
-	Status           string
 	StartedAt        time.Time
 	ScoreCommittedAt time.Time
-	Winner           string
+	Status           MatchStatus
 }
+
+type MatchStatus string
+
+const (
+	RedWonMatch    MatchStatus = "R"
+	BlueWonMatch   MatchStatus = "B"
+	TieMatch       MatchStatus = "T"
+	MatchNotPlayed MatchStatus = ""
+)
 
 var ElimRoundNames = map[int]string{1: "F", 2: "SF", 4: "QF", 8: "EF"}
 
@@ -94,6 +102,10 @@ func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
 	err := database.matchMap.Select(&matches,
 		"SELECT * FROM matches WHERE type = ? ORDER BY elimround desc, eliminstance, elimgroup, id", matchType)
 	return matches, err
+}
+
+func (match *Match) IsComplete() bool {
+	return match.Status != MatchNotPlayed
 }
 
 func (match *Match) CapitalizedType() string {

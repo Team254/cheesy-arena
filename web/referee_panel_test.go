@@ -37,13 +37,12 @@ func TestRefereePanelWebsocket(t *testing.T) {
 	foulData := struct {
 		Alliance       string
 		TeamId         int
-		Rule           string
-		IsTechnical    bool
+		RuleId         int
 		TimeInMatchSec float64
-	}{"red", 256, "G22", false, 0}
+	}{"red", 256, 1, 0}
 	ws.Write("addFoul", foulData)
 	foulData.TeamId = 359
-	foulData.IsTechnical = true
+	foulData.RuleId = 3
 	ws.Write("addFoul", foulData)
 	foulData.Alliance = "blue"
 	foulData.TeamId = 1680
@@ -53,17 +52,14 @@ func TestRefereePanelWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "reload")
 	if assert.Equal(t, 2, len(web.arena.RedRealtimeScore.CurrentScore.Fouls)) {
 		assert.Equal(t, 256, web.arena.RedRealtimeScore.CurrentScore.Fouls[0].TeamId)
-		assert.Equal(t, "G22", web.arena.RedRealtimeScore.CurrentScore.Fouls[0].RuleNumber)
-		assert.Equal(t, false, web.arena.RedRealtimeScore.CurrentScore.Fouls[0].IsTechnical)
+		assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.Fouls[0].RuleId)
 		assert.Equal(t, 0.0, web.arena.RedRealtimeScore.CurrentScore.Fouls[0].TimeInMatchSec)
 		assert.Equal(t, 359, web.arena.RedRealtimeScore.CurrentScore.Fouls[1].TeamId)
-		assert.Equal(t, "G22", web.arena.RedRealtimeScore.CurrentScore.Fouls[1].RuleNumber)
-		assert.Equal(t, true, web.arena.RedRealtimeScore.CurrentScore.Fouls[1].IsTechnical)
+		assert.Equal(t, 3, web.arena.RedRealtimeScore.CurrentScore.Fouls[1].RuleId)
 	}
 	if assert.Equal(t, 1, len(web.arena.BlueRealtimeScore.CurrentScore.Fouls)) {
 		assert.Equal(t, 1680, web.arena.BlueRealtimeScore.CurrentScore.Fouls[0].TeamId)
-		assert.Equal(t, "G22", web.arena.BlueRealtimeScore.CurrentScore.Fouls[0].RuleNumber)
-		assert.Equal(t, true, web.arena.BlueRealtimeScore.CurrentScore.Fouls[0].IsTechnical)
+		assert.Equal(t, 3, web.arena.BlueRealtimeScore.CurrentScore.Fouls[0].RuleId)
 		assert.Equal(t, 0.0, web.arena.BlueRealtimeScore.CurrentScore.Fouls[0].TimeInMatchSec)
 	}
 	assert.False(t, web.arena.RedRealtimeScore.FoulsCommitted)

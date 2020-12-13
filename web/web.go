@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -59,6 +60,9 @@ func NewWeb(arena *field.Arena) *Web {
 			}
 			return seq
 		},
+		"toUpper": func(str string) string {
+			return strings.ToUpper(str)
+		},
 	}
 
 	return web
@@ -66,7 +70,7 @@ func NewWeb(arena *field.Arena) *Web {
 
 // Starts the webserver and blocks, waiting on requests. Does not return until the application exits.
 func (web *Web) ServeWebInterface(port int) {
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
+	http.Handle("/static/", http.StripPrefix("/static/", addNoCacheHeader(http.FileServer(http.Dir("static/")))))
 	http.Handle("/", web.newHandler())
 	log.Printf("Serving HTTP requests on port %d", port)
 
@@ -89,6 +93,14 @@ func (web *Web) indexHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+}
+
+// Adds a "Cache-Control: no-cache" header to the given handler to force browser validation of last modified time.
+func addNoCacheHeader(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Cache-Control", "no-cache")
+		handler.ServeHTTP(w, r)
+	})
 }
 
 // Sets up the mapping between URLs and handlers.
@@ -151,8 +163,8 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/setup/db/save", web.saveDbHandler).Methods("GET")
 	router.HandleFunc("/setup/displays", web.displaysGetHandler).Methods("GET")
 	router.HandleFunc("/setup/displays/websocket", web.displaysWebsocketHandler).Methods("GET")
-	router.HandleFunc("/setup/led_plc", web.ledPlcGetHandler).Methods("GET")
-	router.HandleFunc("/setup/led_plc/websocket", web.ledPlcWebsocketHandler).Methods("GET")
+	router.HandleFunc("/setup/field_testing", web.fieldTestingGetHandler).Methods("GET")
+	router.HandleFunc("/setup/field_testing/websocket", web.fieldTestingWebsocketHandler).Methods("GET")
 	router.HandleFunc("/setup/lower_thirds", web.lowerThirdsGetHandler).Methods("GET")
 	router.HandleFunc("/setup/lower_thirds/websocket", web.lowerThirdsWebsocketHandler).Methods("GET")
 	router.HandleFunc("/setup/schedule", web.scheduleGetHandler).Methods("GET")
@@ -177,6 +189,7 @@ func (web *Web) newHandler() http.Handler {
 
 // Writes the given error out as plain text with a status code of 500.
 func handleWebErr(w http.ResponseWriter, err error) {
+	log.Printf("HTTP request error: %v", err)
 	http.Error(w, "Internal server error: "+err.Error(), 500)
 }
 

@@ -57,10 +57,13 @@ html {
   width: 0;
   height: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
+}
+.score-right {
+  justify-content: flex-end;
 }
 .avatars {
-  width: 50px;
+  min-width: 50px;
   height: 100%;
   display: none;
   flex-direction: column;
@@ -81,6 +84,19 @@ html {
   color: #fff;
   opacity: 0;
 }
+.score-fields {
+  height: 100%;
+  width: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  font-family: "FuturaLTBold";
+  font-size: 20px;
+  line-height: 25px;
+  color: #fff;
+  opacity: 0;
+}
 #matchCircle {
   position: absolute;
   top: -25px;
@@ -92,12 +108,12 @@ html {
 }
 #logo {
   position: relative;
-  top: 15px;
-  height: 120px;
+  top: 30px;
+  height: 90px;
 }
 #matchTime {
   position: relative;
-  top: -26px;
+  top: 1px;
   height: 60px;
   color: #222;
   font-family: "FuturaLTBold";
@@ -185,12 +201,12 @@ html {
 }
 #blindsLogo {
   position: relative;
-  top: 17px;
-  height: 275px;
+  top: 37px;
+  height: 250px;
 }
 #finalScore {
   position: fixed;
-  width: 950px;
+  width: 1200px;
   height: 550px;
   top: 65px;
   bottom: 0;
@@ -225,6 +241,7 @@ html {
   float: left;
   width: 50%;
   height: 9%;
+  overflow: hidden;
   line-height: 50px;
   text-align: center;
   color: #fff;
@@ -233,6 +250,11 @@ html {
 }
 .final-teams span {
   margin: 0 10px;
+}
+.final-teams span sup {
+  margin-left: 3px;
+  font-size: 18px;
+  vertical-align: super;
 }
 .final-avatar {
   height: 35px;
@@ -371,8 +393,8 @@ html {
   font-size: 3.5em;
 }
 #allianceSelectionTable img {
-  width: 5em;
-  margin: -0.3em;
+  width: 6em;
+  margin: -0.2em;
 }
 #allianceSelectionTable tr:nth-child(even) {
   background-color: #ccc;

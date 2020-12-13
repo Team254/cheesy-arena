@@ -68,13 +68,13 @@ func (web *Web) displaysWebsocketHandler(w http.ResponseWriter, r *http.Request)
 
 		switch messageType {
 		case "configureDisplay":
-			var display field.Display
-			err = mapstructure.Decode(data, &display)
+			var displayConfig field.DisplayConfiguration
+			err = mapstructure.Decode(data, &displayConfig)
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
 			}
-			if err = web.arena.UpdateDisplay(&display); err != nil {
+			if err = web.arena.UpdateDisplay(displayConfig); err != nil {
 				ws.WriteError(err.Error())
 				continue
 			}

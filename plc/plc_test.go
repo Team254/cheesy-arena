@@ -34,3 +34,32 @@ func TestBoolToByte(t *testing.T) {
 		assert.Equal(t, bools, byteToBool(bytes, len(bools)))
 	}
 }
+
+func TestGetArmorBlockStatuses(t *testing.T) {
+	var plc Plc
+
+	plc.registers[fieldIoConnection] = 0
+	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": false, "ShieldGenerator": false, "ControlPanel": false},
+		plc.GetArmorBlockStatuses())
+	plc.registers[fieldIoConnection] = 1
+	assert.Equal(t, map[string]bool{"RedDs": true, "BlueDs": false, "ShieldGenerator": false, "ControlPanel": false},
+		plc.GetArmorBlockStatuses())
+	plc.registers[fieldIoConnection] = 2
+	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": true, "ShieldGenerator": false, "ControlPanel": false},
+		plc.GetArmorBlockStatuses())
+	plc.registers[fieldIoConnection] = 4
+	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": false, "ShieldGenerator": true, "ControlPanel": false},
+		plc.GetArmorBlockStatuses())
+	plc.registers[fieldIoConnection] = 8
+	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": false, "ShieldGenerator": false, "ControlPanel": true},
+		plc.GetArmorBlockStatuses())
+	plc.registers[fieldIoConnection] = 5
+	assert.Equal(t, map[string]bool{"RedDs": true, "BlueDs": false, "ShieldGenerator": true, "ControlPanel": false},
+		plc.GetArmorBlockStatuses())
+	plc.registers[fieldIoConnection] = 10
+	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": true, "ShieldGenerator": false, "ControlPanel": true},
+		plc.GetArmorBlockStatuses())
+	plc.registers[fieldIoConnection] = 15
+	assert.Equal(t, map[string]bool{"RedDs": true, "BlueDs": true, "ShieldGenerator": true, "ControlPanel": true},
+		plc.GetArmorBlockStatuses())
+}

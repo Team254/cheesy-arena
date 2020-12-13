@@ -11,7 +11,8 @@ CREATE TABLE teams (
   accomplishments VARCHAR(1000),
   wpakey VARCHAR(16),
   yellowcard bool,
-  hasconnected bool
+  hasconnected bool,
+  ftanotes VARCHAR(1000)
 );
 
 -- +goose Down

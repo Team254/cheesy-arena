@@ -50,61 +50,46 @@ type TbaAlliance struct {
 }
 
 type TbaScoreBreakdown struct {
-	PreMatchLevelRobot1        string `json:"preMatchLevelRobot1"`
-	PreMatchLevelRobot2        string `json:"preMatchLevelRobot2"`
-	PreMatchLevelRobot3        string `json:"preMatchLevelRobot3"`
-	PreMatchBay1               string `json:"preMatchBay1"`
-	PreMatchBay2               string `json:"preMatchBay2"`
-	PreMatchBay3               string `json:"preMatchBay3"`
-	PreMatchBay6               string `json:"preMatchBay6"`
-	PreMatchBay7               string `json:"preMatchBay7"`
-	PreMatchBay8               string `json:"preMatchBay8"`
-	HabLineRobot1              string `json:"habLineRobot1"`
-	HabLineRobot2              string `json:"habLineRobot2"`
-	HabLineRobot3              string `json:"habLineRobot3"`
-	SandstormBonusPoints       int    `json:"sandStormBonusPoints"`
-	Bay1                       string `json:"bay1"`
-	Bay2                       string `json:"bay2"`
-	Bay3                       string `json:"bay3"`
-	Bay4                       string `json:"bay4"`
-	Bay5                       string `json:"bay5"`
-	Bay6                       string `json:"bay6"`
-	Bay7                       string `json:"bay7"`
-	Bay8                       string `json:"bay8"`
-	LowLeftRocketNear          string `json:"lowLeftRocketNear"`
-	MidLeftRocketNear          string `json:"midLeftRocketNear"`
-	TopLeftRocketNear          string `json:"topLeftRocketNear"`
-	LowRightRocketNear         string `json:"lowRightRocketNear"`
-	MidRightRocketNear         string `json:"midRightRocketNear"`
-	TopRightRocketNear         string `json:"topRightRocketNear"`
-	LowLeftRocketFar           string `json:"lowLeftRocketFar"`
-	MidLeftRocketFar           string `json:"midLeftRocketFar"`
-	TopLeftRocketFar           string `json:"topLeftRocketFar"`
-	LowRightRocketFar          string `json:"lowRightRocketFar"`
-	MidRightRocketFar          string `json:"midRightRocketFar"`
-	TopRightRocketFar          string `json:"topRightRocketFar"`
-	CargoPoints                int    `json:"cargoPoints"`
-	HatchPanelPoints           int    `json:"hatchPanelPoints"`
-	EndgameRobot1              string `json:"endgameRobot1"`
-	EndgameRobot2              string `json:"endgameRobot2"`
-	EndgameRobot3              string `json:"endgameRobot3"`
-	HabClimbPoints             int    `json:"habClimbPoints"`
-	TeleopPoints               int    `json:"teleopPoints"`
-	CompleteRocketRankingPoint bool   `json:"completeRocketRankingPoint"`
-	HabDockingRankingPoint     bool   `json:"habDockingRankingPoint"`
-	FoulPoints                 int    `json:"foulPoints"`
-	TotalPoints                int    `json:"totalPoints"`
-	RP                         int    `json:"rp"`
+	InitLineRobot1                string `json:"initLineRobot1"`
+	InitLineRobot2                string `json:"initLineRobot2"`
+	InitLineRobot3                string `json:"initLineRobot3"`
+	AutoCellsBottom               int    `json:"autoCellsBottom"`
+	AutoCellsOuter                int    `json:"autoCellsOuter"`
+	AutoCellsInner                int    `json:"autoCellsInner"`
+	TeleopCellsBottom             int    `json:"teleopCellsBottom"`
+	TeleopCellsOuter              int    `json:"teleopCellsOuter"`
+	TeleopCellsInner              int    `json:"teleopCellsInner"`
+	Stage1Activated               bool   `json:"stage1Activated"`
+	Stage2Activated               bool   `json:"stage2Activated"`
+	Stage3Activated               bool   `json:"stage3Activated"`
+	Stage3TargetColor             string `json:"stage3TargetColor"`
+	EndgameRobot1                 string `json:"endgameRobot1"`
+	EndgameRobot2                 string `json:"endgameRobot2"`
+	EndgameRobot3                 string `json:"endgameRobot3"`
+	EndgameRungIsLevel            string `json:"endgameRungIsLevel"`
+	FoulCount                     int    `json:"foulCount"`
+	TechFoulCount                 int    `json:"techFoulCount"`
+	AutoInitLinePoints            int    `json:"autoInitLinePoints"`
+	AutoCellPoints                int    `json:"autoCellPoints"`
+	AutoPoints                    int    `json:"autoPoints"`
+	TeleopCellPoints              int    `json:"teleopCellPoints"`
+	ControlPanelPoints            int    `json:"controlPanelPoints"`
+	EndgamePoints                 int    `json:"endgamePoints"`
+	TeleopPoints                  int    `json:"teleopPoints"`
+	FoulPoints                    int    `json:"foulPoints"`
+	TotalPoints                   int    `json:"totalPoints"`
+	ShieldEnergizedRankingPoint   bool   `json:"shieldEnergizedRankingPoint"`
+	ShieldOperationalRankingPoint bool   `json:"shieldOperationalRankingPoint"`
+	RP                            int    `json:"rp"`
 }
 
 type TbaRanking struct {
 	TeamKey    string `json:"team_key"`
 	Rank       int    `json:"rank"`
 	RP         float32
-	ParkClimb  int
 	Auto       int
-	Ownership  int
-	Vault      int
+	Endgame    int
+	Teleop     int
 	WinLossTie string
 	Dqs        int `json:"dqs"`
 	Played     int `json:"played"`
@@ -152,9 +137,11 @@ type TbaPublishedAward struct {
 	Awardee string `json:"awardee"`
 }
 
-var habLevelMapping = []string{"None", "HabLevel1", "HabLevel2", "HabLevel3"}
-var bayStatusMapping = []string{"None", "Panel", "PanelAndCargo", "Cargo"}
-var sandstormBonusMapping = map[bool]string{false: "None", true: "CrossedHabLineInSandstorm"}
+var exitedInitLineMapping = map[bool]string{false: "None", true: "Exited"}
+var controlPanelColorMapping = map[game.ControlPanelColor]string{game.ColorUnknown: "Unknown", game.ColorRed: "Red",
+	game.ColorGreen: "Green", game.ColorBlue: "Blue", game.ColorYellow: "Yellow"}
+var endgameMapping = []string{"None", "Park", "Hang"}
+var rungIsLevelMapping = map[bool]string{false: "NotLevel", true: "IsLevel"}
 
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
 	return &TbaClient{BaseUrl: tbaBaseUrl, eventCode: eventCode, secretId: secretId, secret: secret,
@@ -332,7 +319,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 		var scoreBreakdown map[string]*TbaScoreBreakdown
 		var redScore, blueScore *int
 		var redCards, blueCards map[string]string
-		if match.Status == "complete" {
+		if match.IsComplete() {
 			matchResult, err := database.GetMatchResultForMatch(match.Id)
 			if err != nil {
 				return err
@@ -386,12 +373,12 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "ParkClimb", "Auto", "Ownership", "Vault", "WinLossTie"}
+	breakdowns := []string{"RP", "Auto", "Endgame", "Teleop", "WinLossTie"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank,
-			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.CargoPoints, ranking.HatchPanelPoints,
-			ranking.HabClimbPoints, ranking.SandstormBonusPoints,
+			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.AutoPoints, ranking.EndgamePoints,
+			ranking.TeleopPoints,
 			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
 			ranking.Played}
 	}
@@ -538,58 +525,53 @@ func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResul
 	var scoreSummary, opponentScoreSummary *game.ScoreSummary
 	if alliance == "red" {
 		score = matchResult.RedScore
-		scoreSummary = matchResult.RedScoreSummary()
-		opponentScoreSummary = matchResult.BlueScoreSummary()
+		scoreSummary = matchResult.RedScoreSummary(true)
+		opponentScoreSummary = matchResult.BlueScoreSummary(true)
 	} else {
 		score = matchResult.BlueScore
-		scoreSummary = matchResult.BlueScoreSummary()
-		opponentScoreSummary = matchResult.RedScoreSummary()
+		scoreSummary = matchResult.BlueScoreSummary(true)
+		opponentScoreSummary = matchResult.RedScoreSummary(true)
 	}
 
-	breakdown.PreMatchLevelRobot1 = habLevelMapping[score.RobotStartLevels[0]]
-	breakdown.PreMatchLevelRobot2 = habLevelMapping[score.RobotStartLevels[1]]
-	breakdown.PreMatchLevelRobot3 = habLevelMapping[score.RobotStartLevels[2]]
-	breakdown.PreMatchBay1 = bayStatusMapping[score.CargoBaysPreMatch[0]]
-	breakdown.PreMatchBay2 = bayStatusMapping[score.CargoBaysPreMatch[1]]
-	breakdown.PreMatchBay3 = bayStatusMapping[score.CargoBaysPreMatch[2]]
-	breakdown.PreMatchBay6 = bayStatusMapping[score.CargoBaysPreMatch[5]]
-	breakdown.PreMatchBay7 = bayStatusMapping[score.CargoBaysPreMatch[6]]
-	breakdown.PreMatchBay8 = bayStatusMapping[score.CargoBaysPreMatch[7]]
-	breakdown.HabLineRobot1 = sandstormBonusMapping[score.SandstormBonuses[0]]
-	breakdown.HabLineRobot2 = sandstormBonusMapping[score.SandstormBonuses[1]]
-	breakdown.HabLineRobot3 = sandstormBonusMapping[score.SandstormBonuses[2]]
-	breakdown.SandstormBonusPoints = scoreSummary.SandstormBonusPoints
-	breakdown.Bay1 = bayStatusMapping[score.CargoBays[0]]
-	breakdown.Bay2 = bayStatusMapping[score.CargoBays[1]]
-	breakdown.Bay3 = bayStatusMapping[score.CargoBays[2]]
-	breakdown.Bay4 = bayStatusMapping[score.CargoBays[3]]
-	breakdown.Bay5 = bayStatusMapping[score.CargoBays[4]]
-	breakdown.Bay6 = bayStatusMapping[score.CargoBays[5]]
-	breakdown.Bay7 = bayStatusMapping[score.CargoBays[6]]
-	breakdown.Bay8 = bayStatusMapping[score.CargoBays[7]]
-	breakdown.LowLeftRocketNear = bayStatusMapping[score.RocketNearLeftBays[0]]
-	breakdown.MidLeftRocketNear = bayStatusMapping[score.RocketNearLeftBays[1]]
-	breakdown.TopLeftRocketNear = bayStatusMapping[score.RocketNearLeftBays[2]]
-	breakdown.LowRightRocketNear = bayStatusMapping[score.RocketNearRightBays[0]]
-	breakdown.MidRightRocketNear = bayStatusMapping[score.RocketNearRightBays[1]]
-	breakdown.TopRightRocketNear = bayStatusMapping[score.RocketNearRightBays[2]]
-	breakdown.LowLeftRocketFar = bayStatusMapping[score.RocketFarLeftBays[0]]
-	breakdown.MidLeftRocketFar = bayStatusMapping[score.RocketFarLeftBays[1]]
-	breakdown.TopLeftRocketFar = bayStatusMapping[score.RocketFarLeftBays[2]]
-	breakdown.LowRightRocketFar = bayStatusMapping[score.RocketFarRightBays[0]]
-	breakdown.MidRightRocketFar = bayStatusMapping[score.RocketFarRightBays[1]]
-	breakdown.TopRightRocketFar = bayStatusMapping[score.RocketFarRightBays[2]]
-	breakdown.CargoPoints = scoreSummary.CargoPoints
-	breakdown.HatchPanelPoints = scoreSummary.HatchPanelPoints
-	breakdown.EndgameRobot1 = habLevelMapping[score.RobotEndLevels[0]]
-	breakdown.EndgameRobot2 = habLevelMapping[score.RobotEndLevels[1]]
-	breakdown.EndgameRobot3 = habLevelMapping[score.RobotEndLevels[2]]
-	breakdown.HabClimbPoints = scoreSummary.HabClimbPoints
-	breakdown.TeleopPoints = scoreSummary.CargoPoints + scoreSummary.HatchPanelPoints + scoreSummary.HabClimbPoints
-	breakdown.CompleteRocketRankingPoint = scoreSummary.CompleteRocket
-	breakdown.HabDockingRankingPoint = scoreSummary.HabDocking
+	breakdown.InitLineRobot1 = exitedInitLineMapping[score.ExitedInitiationLine[0]]
+	breakdown.InitLineRobot2 = exitedInitLineMapping[score.ExitedInitiationLine[1]]
+	breakdown.InitLineRobot3 = exitedInitLineMapping[score.ExitedInitiationLine[2]]
+	breakdown.AutoCellsBottom = sumPowerCells(score.AutoCellsBottom[:])
+	breakdown.AutoCellsOuter = sumPowerCells(score.AutoCellsOuter[:])
+	breakdown.AutoCellsInner = sumPowerCells(score.AutoCellsInner[:])
+	breakdown.TeleopCellsBottom = sumPowerCells(score.TeleopCellsBottom[:])
+	breakdown.TeleopCellsOuter = sumPowerCells(score.TeleopCellsOuter[:])
+	breakdown.TeleopCellsInner = sumPowerCells(score.TeleopCellsInner[:])
+	breakdown.Stage1Activated = scoreSummary.StagesActivated[0]
+	breakdown.Stage2Activated = scoreSummary.StagesActivated[1]
+	breakdown.Stage3Activated = scoreSummary.StagesActivated[2]
+	breakdown.Stage3TargetColor = controlPanelColorMapping[score.PositionControlTargetColor]
+	breakdown.EndgameRobot1 = endgameMapping[score.EndgameStatuses[0]]
+	breakdown.EndgameRobot2 = endgameMapping[score.EndgameStatuses[1]]
+	breakdown.EndgameRobot3 = endgameMapping[score.EndgameStatuses[2]]
+	breakdown.EndgameRungIsLevel = rungIsLevelMapping[score.RungIsLevel]
+	for _, foul := range score.Fouls {
+		if foul.Rule() != nil && !foul.Rule().IsRankingPoint {
+			if foul.Rule().IsTechnical {
+				breakdown.TechFoulCount++
+			} else {
+				breakdown.FoulCount++
+			}
+		}
+	}
+	breakdown.AutoInitLinePoints = scoreSummary.InitiationLinePoints
+	breakdown.AutoCellPoints = scoreSummary.AutoPowerCellPoints
+	breakdown.AutoPoints = scoreSummary.AutoPoints
+	breakdown.TeleopCellPoints = scoreSummary.TeleopPowerCellPoints
+	breakdown.ControlPanelPoints = scoreSummary.ControlPanelPoints
+	breakdown.EndgamePoints = scoreSummary.EndgamePoints
+	breakdown.TeleopPoints = scoreSummary.TeleopPowerCellPoints + scoreSummary.ControlPanelPoints +
+		scoreSummary.EndgamePoints
 	breakdown.FoulPoints = scoreSummary.FoulPoints
 	breakdown.TotalPoints = scoreSummary.Score
+	breakdown.ShieldEnergizedRankingPoint = scoreSummary.ControlPanelRankingPoint
+	breakdown.ShieldOperationalRankingPoint = scoreSummary.EndgameRankingPoint
+
 	if match.ShouldUpdateRankings() {
 		// Calculate and set the ranking points for the match.
 		var ranking game.Ranking
@@ -629,4 +611,13 @@ func (client *TbaClient) PublishAwards(database *model.Database) error {
 		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
 	}
 	return nil
+}
+
+// Returns the sum of all values in the slice representing different stages for a power cell goal.
+func sumPowerCells(cells []int) int {
+	var total int
+	for _, cell := range cells {
+		total += cell
+	}
+	return total
 }

@@ -54,53 +54,40 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "matchTime")
 	readWebsocketType(t, blueWs, "realtimeScore")
 
-	// Send a some pre-match scoring commands.
-	redWs.Write("1", nil)
-	blueWs.Write("2", nil)
-	blueWs.Write("2", nil)
-	blueWs.Write("2", nil)
-	blueWs.Write("2", nil)
-	for i := 0; i < 5; i++ {
-		readWebsocketType(t, redWs, "realtimeScore")
-		readWebsocketType(t, blueWs, "realtimeScore")
-	}
-	assert.Equal(t, 1, web.arena.RedRealtimeScore.CurrentScore.RobotStartLevels[0])
-	assert.Equal(t, 0, web.arena.BlueRealtimeScore.CurrentScore.RobotStartLevels[1])
-	redWs.Write("e", nil)
-	redWs.Write("i", nil)
-	redWs.Write("i", nil)
-	redWs.Write("v", nil)
-	redWs.Write("q", nil)
-	redWs.Write(",", nil)
-	for i := 0; i < 3; i++ {
-		readWebsocketType(t, redWs, "realtimeScore")
-		readWebsocketType(t, blueWs, "realtimeScore")
-	}
-	assert.Equal(t, [8]game.BayStatus{1, 0, 0, 0, 0, 0, 0, 3},
-		web.arena.RedRealtimeScore.CurrentScore.CargoBaysPreMatch)
-	assert.Equal(t, [8]game.BayStatus{1, 0, 0, 0, 0, 0, 0, 3}, web.arena.RedRealtimeScore.CurrentScore.CargoBays)
-	assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketNearLeftBays)
-	assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketNearRightBays)
-	assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketFarLeftBays)
-	assert.Equal(t, [3]game.BayStatus{0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketFarRightBays)
-
-	// Send some in-match scoring commands.
+	// Send some autonomous period scoring commands.
 	web.arena.MatchState = field.AutoPeriod
-	redWs.Write("e", nil)
-	redWs.Write("i", nil)
-	redWs.Write("k", nil)
-	redWs.Write("4", nil)
-	blueWs.Write("9", nil)
-	for i := 0; i < 5; i++ {
+	redWs.Write("1", nil)
+	redWs.Write("3", nil)
+	redWs.Write("w", nil)
+	redWs.Write("X", nil)
+	redWs.Write("x", nil)
+	redWs.Write("z", nil)
+	for i := 0; i < 6; i++ {
 		readWebsocketType(t, redWs, "realtimeScore")
 		readWebsocketType(t, blueWs, "realtimeScore")
 	}
-	assert.Equal(t, [8]game.BayStatus{1, 0, 0, 0, 0, 0, 0, 3},
-		web.arena.RedRealtimeScore.CurrentScore.CargoBaysPreMatch)
-	assert.Equal(t, [8]game.BayStatus{2, 0, 0, 0, 0, 0, 0, 2}, web.arena.RedRealtimeScore.CurrentScore.CargoBays)
-	assert.Equal(t, [3]game.BayStatus{0, 1, 0}, web.arena.RedRealtimeScore.CurrentScore.RocketFarRightBays)
-	assert.True(t, web.arena.RedRealtimeScore.CurrentScore.SandstormBonuses[0])
-	assert.Equal(t, 1, web.arena.BlueRealtimeScore.CurrentScore.RobotEndLevels[2])
+	assert.Equal(t, [3]bool{true, false, true}, web.arena.RedRealtimeScore.CurrentScore.ExitedInitiationLine)
+	assert.Equal(t, [2]int{1, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsBottom)
+	assert.Equal(t, [2]int{0, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsOuter)
+	assert.Equal(t, [2]int{1, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsInner)
+
+	// Send some teleoperated period scoring commands.
+	web.arena.MatchState = field.TeleopPeriod
+	blueWs.Write("f", nil)
+	blueWs.Write("F", nil)
+	blueWs.Write("o", nil)
+	blueWs.Write("5", nil)
+	blueWs.Write("5", nil)
+	blueWs.Write("L", nil)
+	blueWs.Write("k", nil)
+	for i := 0; i < 6; i++ {
+		readWebsocketType(t, redWs, "realtimeScore")
+		readWebsocketType(t, blueWs, "realtimeScore")
+	}
+	assert.Equal(t, [4]int{2, 0, 0, 0}, web.arena.BlueRealtimeScore.CurrentScore.TeleopCellsOuter)
+	assert.Equal(t, [3]game.EndgameStatus{game.EndgameNone, game.EndgameHang, game.EndgameNone},
+		web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses)
+	assert.Equal(t, true, web.arena.BlueRealtimeScore.CurrentScore.RungIsLevel)
 
 	// Test committing logic.
 	redWs.Write("commitMatch", nil)

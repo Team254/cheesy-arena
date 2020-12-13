@@ -54,18 +54,16 @@ func (web *Web) enforceDisplayConfiguration(w http.ResponseWriter, r *http.Reque
 
 // Constructs, registers, and returns the display object for the given incoming websocket request.
 func (web *Web) registerDisplay(r *http.Request) (*field.Display, error) {
-	display, err := field.DisplayFromUrl(r.URL.Path, r.URL.Query())
+	displayConfig, err := field.DisplayFromUrl(r.URL.Path, r.URL.Query())
 	if err != nil {
 		return nil, err
 	}
 
 	// Extract the source IP address of the request and store it in the display object.
-	if ipAddress := r.Header.Get("X-Real-IP"); ipAddress != "" {
-		display.IpAddress = ipAddress
-	} else {
-		display.IpAddress = regexp.MustCompile("(.*):\\d+$").FindStringSubmatch(r.RemoteAddr)[1]
+	var ipAddress string
+	if ipAddress = r.Header.Get("X-Real-IP"); ipAddress == "" {
+		ipAddress = regexp.MustCompile("(.*):\\d+$").FindStringSubmatch(r.RemoteAddr)[1]
 	}
 
-	web.arena.RegisterDisplay(display)
-	return display, nil
+	return web.arena.RegisterDisplay(displayConfig, ipAddress), nil
 }
