@@ -42,8 +42,8 @@ type ScoreSummary struct {
 // Defines the number of power cells that must be scored within each Stage before it can be activated.
 var StageCapacities = map[Stage]int{
 	Stage1: 9,
-	Stage2: 20,
-	Stage3: 20,
+	Stage2: 15,
+	Stage3: 15,
 }
 
 // Represents a Stage towards whose capacity scored power cells are counted.
@@ -101,7 +101,7 @@ func (score *Score) Summarize(opponentFouls []Foul, teleopStarted bool) *ScoreSu
 		summary.StagePowerCellsRemaining[i] = int(math.Max(0, float64(StageCapacities[i]-score.stagePowerCells(i))))
 	}
 	if summary.StagesActivated[Stage2] {
-		summary.ControlPanelPoints += 10
+		summary.ControlPanelPoints += 15
 	}
 	if summary.StagesActivated[Stage3] {
 		summary.ControlPanelPoints += 20
