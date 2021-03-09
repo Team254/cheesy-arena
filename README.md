@@ -30,7 +30,7 @@ Teams may use Cheesy Arena freely for practice, scrimmages, and off-season event
 1. Download [Go](https://golang.org/doc/install)
 1. Set up your [Go workspace](https://golang.org/doc/code.html)
 1. If you're using Windows and don't already have a working version of GCC (needed to compile a dependency), install [TDM-GCC](https://jmeubank.github.io/tdm-gcc/).
-1. Download the Cheesy Arena source and dependencies with `go get github.com/Team254/cheesy-arena`
+1. Download the Cheesy Arena source and dependencies with `GO111MODULE=off go get github.com/Team254/cheesy-arena`
 1. Compile the code with `go build`
 1. Run the `cheesy-arena` or `cheesy-arena.exe` binary
 1. Navigate to http://localhost:8080 in your browser (Google Chrome recommended)
