@@ -7,16 +7,17 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/field"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/websocket"
-	"github.com/gorilla/mux"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/websocket"
+	"github.com/gorilla/mux"
 )
 
 // Renders the scoring interface which enables input of scores in real-time.
@@ -123,6 +124,40 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 		} else {
 			switch strings.ToUpper(command) {
+			case "CI":
+				// Don't read score from counter if not in match
+				if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
+					if web.arena.MatchState == field.AutoPeriod {
+						if incrementGoal(score.AutoCellsInner[:],
+							score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
+							scoreChanged = true
+						}
+					}
+					if web.arena.MatchState == field.TeleopPeriod {
+						if incrementGoal(score.TeleopCellsInner[:],
+							score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
+							scoreChanged = true
+						}
+					}
+				}
+
+			case "CO":
+				// Don't read score from counter if not in match
+				if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
+					if web.arena.MatchState == field.AutoPeriod {
+						if incrementGoal(score.AutoCellsOuter[:],
+							score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
+							scoreChanged = true
+						}
+					}
+					if web.arena.MatchState == field.TeleopPeriod {
+						if incrementGoal(score.TeleopCellsOuter[:],
+							score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
+							scoreChanged = true
+						}
+					}
+				}
+
 			case "Q":
 				if decrementGoal(score.AutoCellsInner[:],
 					score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
