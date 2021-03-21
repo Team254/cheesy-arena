@@ -109,8 +109,6 @@ var handleScorePosted = function(data) {
   $("#" + redSide + "FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
   $("#" + redSide + "FinalControlPanelRankingPoint").html(data.RedScoreSummary.ControlPanelRankingPoint ? "&#x2714;" : "&#x2718;");
   $("#" + redSide + "FinalControlPanelRankingPoint").attr("data-checked", data.RedScoreSummary.ControlPanelRankingPoint);
-  $("#" + redSide + "FinalEndgameRankingPoint").html(data.RedScoreSummary.EndgameRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + redSide + "FinalEndgameRankingPoint").attr("data-checked", data.RedScoreSummary.EndgameRankingPoint);
   $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
   $("#" + blueSide + "FinalTeam1").html(data.Match.Blue1 + "" + getRankingText(data.Match.Blue1, data.Rankings));
   $("#" + blueSide + "FinalTeam2").html(data.Match.Blue2 + "" + getRankingText(data.Match.Blue2, data.Rankings));
@@ -125,8 +123,6 @@ var handleScorePosted = function(data) {
   $("#" + blueSide + "FinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
   $("#" + blueSide + "FinalControlPanelRankingPoint").html(data.BlueScoreSummary.ControlPanelRankingPoint ? "&#x2714;" : "&#x2718;");
   $("#" + blueSide + "FinalControlPanelRankingPoint").attr("data-checked", data.BlueScoreSummary.ControlPanelRankingPoint);
-  $("#" + blueSide + "FinalEndgameRankingPoint").html(data.BlueScoreSummary.EndgameRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + blueSide + "FinalEndgameRankingPoint").attr("data-checked", data.BlueScoreSummary.EndgameRankingPoint);
   $("#finalSeriesStatus").text(data.SeriesStatus);
   $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
   $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);
