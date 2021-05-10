@@ -19,5 +19,6 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/stretchr/testify v1.7.0
 	github.com/ziutek/mymysql v1.5.4 // indirect
+	go.etcd.io/bbolt v1.3.5 // indirect
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 )

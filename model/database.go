@@ -12,7 +12,9 @@ import (
 	"fmt"
 	"github.com/jmoiron/modl"
 	_ "github.com/mattn/go-sqlite3"
+	"go.etcd.io/bbolt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,6 +25,7 @@ const backupsDir = "db/backups"
 const migrationsDir = "db/migrations"
 
 var BaseDir = "." // Mutable for testing
+var recordTypes = []interface{}{}
 
 type Database struct {
 	Path             string
@@ -38,6 +41,8 @@ type Database struct {
 	scheduleBlockMap *modl.DbMap
 	awardMap         *modl.DbMap
 	userSessionMap   *modl.DbMap
+	bolt             *bbolt.DB
+	tables           map[interface{}]*table
 }
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
@@ -64,11 +69,29 @@ func OpenDatabase(filename string) (*Database, error) {
 	database.db = db
 	database.mapTables()
 
+	database.bolt, err = bbolt.Open(database.Path+".bolt", 0644, &bbolt.Options{NoSync: true, Timeout: time.Second})
+	if err != nil {
+		return nil, err
+	}
+
+	// Register tables.
+	database.tables = make(map[interface{}]*table)
+	for _, recordType := range recordTypes {
+		table, err := database.newTable(recordType)
+		if err != nil {
+			return nil, err
+		}
+		database.tables[recordType] = table
+	}
+
 	return &database, nil
 }
 
 func (database *Database) Close() {
 	database.db.Close()
+	if err := database.bolt.Close(); err != nil {
+		log.Println(err)
+	}
 }
 
 // Creates a copy of the current database and saves it to the backups directory.
