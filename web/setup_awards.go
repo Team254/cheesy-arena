@@ -55,7 +55,7 @@ func (web *Web) awardsPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	awardId, _ := strconv.Atoi(r.PostFormValue("id"))
+	awardId, _ := strconv.ParseInt(r.PostFormValue("id"), 10, 64)
 	if r.PostFormValue("action") == "delete" {
 		if err := tournament.DeleteAward(web.arena.Database, awardId); err != nil {
 			handleWebErr(w, err)

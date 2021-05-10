@@ -5,57 +5,73 @@
 
 package model
 
+import (
+	"sort"
+)
+
 type LowerThird struct {
-	Id           int
+	Id           int64 `db:"id"`
 	TopText      string
 	BottomText   string
 	DisplayOrder int
-	AwardId      int
+	AwardId      int64
 }
 
 func (database *Database) CreateLowerThird(lowerThird *LowerThird) error {
-	return database.lowerThirdMap.Insert(lowerThird)
+	return database.tables[LowerThird{}].create(lowerThird)
 }
 
-func (database *Database) GetLowerThirdById(id int) (*LowerThird, error) {
-	lowerThird := new(LowerThird)
-	err := database.lowerThirdMap.Get(lowerThird, id)
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		lowerThird = nil
-		err = nil
-	}
+func (database *Database) GetLowerThirdById(id int64) (*LowerThird, error) {
+	var lowerThird *LowerThird
+	err := database.tables[LowerThird{}].getById(id, &lowerThird)
 	return lowerThird, err
 }
 
-func (database *Database) SaveLowerThird(lowerThird *LowerThird) error {
-	_, err := database.lowerThirdMap.Update(lowerThird)
-	return err
+func (database *Database) UpdateLowerThird(lowerThird *LowerThird) error {
+	return database.tables[LowerThird{}].update(lowerThird)
 }
 
-func (database *Database) DeleteLowerThird(lowerThird *LowerThird) error {
-	_, err := database.lowerThirdMap.Delete(lowerThird)
-	return err
+func (database *Database) DeleteLowerThird(id int64) error {
+	return database.tables[LowerThird{}].delete(id)
 }
 
 func (database *Database) TruncateLowerThirds() error {
-	return database.lowerThirdMap.TruncateTables()
+	return database.tables[LowerThird{}].truncate()
 }
 
 func (database *Database) GetAllLowerThirds() ([]LowerThird, error) {
 	var lowerThirds []LowerThird
-	err := database.lowerThirdMap.Select(&lowerThirds, "SELECT * FROM lower_thirds ORDER BY displayorder")
-	return lowerThirds, err
+	if err := database.tables[LowerThird{}].getAll(&lowerThirds); err != nil {
+		return nil, err
+	}
+	sort.Slice(lowerThirds, func(i, j int) bool {
+		return lowerThirds[i].DisplayOrder < lowerThirds[j].DisplayOrder
+	})
+	return lowerThirds, nil
 }
 
-func (database *Database) GetLowerThirdsByAwardId(awardId int) ([]LowerThird, error) {
-	var lowerThirds []LowerThird
-	err := database.lowerThirdMap.Select(&lowerThirds, "SELECT * FROM lower_thirds WHERE awardid = ? ORDER BY id",
-		awardId)
-	return lowerThirds, err
+func (database *Database) GetLowerThirdsByAwardId(awardId int64) ([]LowerThird, error) {
+	lowerThirds, err := database.GetAllLowerThirds()
+	if err != nil {
+		return nil, err
+	}
+
+	var matchingLowerThirds []LowerThird
+	for _, lowerThird := range lowerThirds {
+		if lowerThird.AwardId == awardId {
+			matchingLowerThirds = append(matchingLowerThirds, lowerThird)
+		}
+	}
+	return matchingLowerThirds, nil
 }
 
 func (database *Database) GetNextLowerThirdDisplayOrder() int {
-	var count int
-	_ = database.lowerThirdMap.SelectOne(&count, "SELECT MAX(displayorder) + 1 FROM lower_thirds")
-	return count
+	lowerThirds, err := database.GetAllLowerThirds()
+	if err != nil {
+		return 0
+	}
+	if len(lowerThirds) == 0 {
+		return 1
+	}
+	return lowerThirds[len(lowerThirds)-1].DisplayOrder + 1
 }

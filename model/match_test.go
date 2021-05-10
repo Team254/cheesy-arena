@@ -11,6 +11,7 @@ import (
 
 func TestGetNonexistentMatch(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	match, err := db.GetMatchById(1114)
 	assert.Nil(t, err)
@@ -19,6 +20,7 @@ func TestGetNonexistentMatch(t *testing.T) {
 
 func TestMatchCrud(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
 		5, false, 6, false, time.Now().UTC(), time.Now().UTC(), MatchNotPlayed}
@@ -44,6 +46,7 @@ func TestMatchCrud(t *testing.T) {
 
 func TestTruncateMatches(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	match := Match{0, "qualification", "254", time.Now().UTC(), 0, 0, 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
 		5, false, 6, false, time.Now().UTC(), time.Now().UTC(), MatchNotPlayed}
@@ -56,6 +59,7 @@ func TestTruncateMatches(t *testing.T) {
 
 func TestGetMatchesByElimRoundGroup(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	match := Match{Type: "elimination", DisplayName: "SF1-1", ElimRound: 2, ElimGroup: 1, ElimInstance: 1,
 		ElimRedAlliance: 8, ElimBlueAlliance: 4}
@@ -85,6 +89,7 @@ func TestGetMatchesByElimRoundGroup(t *testing.T) {
 
 func TestGetMatchesByType(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	match := Match{0, "qualification", "1", time.Now().UTC(), 0, 0, 0, 0, 0, 1, false, 2, false, 3, false, 4, false,
 		5, false, 6, false, time.Now().UTC(), time.Now().UTC(), MatchNotPlayed}

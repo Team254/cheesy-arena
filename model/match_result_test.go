@@ -11,6 +11,7 @@ import (
 
 func TestGetNonexistentMatchResult(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	match, err := db.GetMatchResultForMatch(1114)
 	assert.Nil(t, err)
@@ -19,9 +20,10 @@ func TestGetNonexistentMatchResult(t *testing.T) {
 
 func TestMatchResultCrud(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	matchResult := BuildTestMatchResult(254, 5)
-	db.CreateMatchResult(matchResult)
+	assert.Nil(t, db.CreateMatchResult(matchResult))
 	matchResult2, err := db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)
 	assert.Equal(t, matchResult, matchResult2)
@@ -40,6 +42,7 @@ func TestMatchResultCrud(t *testing.T) {
 
 func TestTruncateMatchResults(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	matchResult := BuildTestMatchResult(254, 1)
 	db.CreateMatchResult(matchResult)
@@ -51,6 +54,7 @@ func TestTruncateMatchResults(t *testing.T) {
 
 func TestGetMatchResultForMatch(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	matchResult := BuildTestMatchResult(254, 2)
 	db.CreateMatchResult(matchResult)

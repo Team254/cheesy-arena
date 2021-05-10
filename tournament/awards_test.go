@@ -125,12 +125,12 @@ func TestCreateOrUpdateWinnerAndFinalistAwards(t *testing.T) {
 	assert.Nil(t, err)
 	awards, _ = database.GetAllAwards()
 	if assert.Equal(t, 6, len(awards)) {
-		assert.Equal(t, model.Award{1, model.FinalistAward, "Finalist", 2, ""}, awards[0])
-		assert.Equal(t, model.Award{2, model.FinalistAward, "Finalist", 20, ""}, awards[1])
-		assert.Equal(t, model.Award{3, model.FinalistAward, "Finalist", 200, ""}, awards[2])
-		assert.Equal(t, model.Award{4, model.WinnerAward, "Winner", 1, ""}, awards[3])
-		assert.Equal(t, model.Award{5, model.WinnerAward, "Winner", 10, ""}, awards[4])
-		assert.Equal(t, model.Award{6, model.WinnerAward, "Winner", 100, ""}, awards[5])
+		assert.Equal(t, model.Award{7, model.FinalistAward, "Finalist", 2, ""}, awards[0])
+		assert.Equal(t, model.Award{8, model.FinalistAward, "Finalist", 20, ""}, awards[1])
+		assert.Equal(t, model.Award{9, model.FinalistAward, "Finalist", 200, ""}, awards[2])
+		assert.Equal(t, model.Award{10, model.WinnerAward, "Winner", 1, ""}, awards[3])
+		assert.Equal(t, model.Award{11, model.WinnerAward, "Winner", 10, ""}, awards[4])
+		assert.Equal(t, model.Award{12, model.WinnerAward, "Winner", 100, ""}, awards[5])
 	}
 	lowerThirds, _ = database.GetAllLowerThirds()
 	if assert.Equal(t, 8, len(lowerThirds)) {

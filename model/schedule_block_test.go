@@ -11,6 +11,7 @@ import (
 
 func TestScheduleBlockCrud(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	scheduleBlock1 := ScheduleBlock{0, "practice", time.Now().UTC(), 10, 600}
 	assert.Nil(t, db.CreateScheduleBlock(&scheduleBlock1))

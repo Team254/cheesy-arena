@@ -5,8 +5,10 @@
 
 package model
 
+import "sort"
+
 type Award struct {
-	Id         int
+	Id         int64 `db:"id"`
 	Type       AwardType
 	AwardName  string
 	TeamId     int
@@ -22,41 +24,49 @@ const (
 )
 
 func (database *Database) CreateAward(award *Award) error {
-	return database.awardMap.Insert(award)
+	return database.tables[Award{}].create(award)
 }
 
-func (database *Database) GetAwardById(id int) (*Award, error) {
-	award := new(Award)
-	err := database.awardMap.Get(award, id)
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		award = nil
-		err = nil
-	}
+func (database *Database) GetAwardById(id int64) (*Award, error) {
+	var award *Award
+	err := database.tables[Award{}].getById(id, &award)
 	return award, err
 }
 
-func (database *Database) SaveAward(award *Award) error {
-	_, err := database.awardMap.Update(award)
-	return err
+func (database *Database) UpdateAward(award *Award) error {
+	return database.tables[Award{}].update(award)
 }
 
-func (database *Database) DeleteAward(award *Award) error {
-	_, err := database.awardMap.Delete(award)
-	return err
+func (database *Database) DeleteAward(id int64) error {
+	return database.tables[Award{}].delete(id)
 }
 
 func (database *Database) TruncateAwards() error {
-	return database.awardMap.TruncateTables()
+	return database.tables[Award{}].truncate()
 }
 
 func (database *Database) GetAllAwards() ([]Award, error) {
 	var awards []Award
-	err := database.awardMap.Select(&awards, "SELECT * FROM awards ORDER BY id")
-	return awards, err
+	if err := database.tables[Award{}].getAll(&awards); err != nil {
+		return nil, err
+	}
+	sort.Slice(awards, func(i, j int) bool {
+		return awards[i].Id < awards[j].Id
+	})
+	return awards, nil
 }
 
 func (database *Database) GetAwardsByType(awardType AwardType) ([]Award, error) {
-	var awards []Award
-	err := database.awardMap.Select(&awards, "SELECT * FROM awards WHERE type = ? ORDER BY id", awardType)
-	return awards, err
+	awards, err := database.GetAllAwards()
+	if err != nil {
+		return nil, err
+	}
+
+	var matchingAwards []Award
+	for _, award := range awards {
+		if award.Type == awardType {
+			matchingAwards = append(matchingAwards, award)
+		}
+	}
+	return matchingAwards, nil
 }

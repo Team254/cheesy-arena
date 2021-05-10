@@ -10,6 +10,7 @@ import (
 
 func TestGetNonexistentAlliance(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	allianceTeams, err := db.GetTeamsByAlliance(1114)
 	assert.Nil(t, err)
@@ -18,6 +19,7 @@ func TestGetNonexistentAlliance(t *testing.T) {
 
 func TestAllianceTeamCrud(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	allianceTeam := AllianceTeam{0, 1, 0, 254}
 	db.CreateAllianceTeam(&allianceTeam)
@@ -27,13 +29,13 @@ func TestAllianceTeamCrud(t *testing.T) {
 	assert.Equal(t, allianceTeam, allianceTeams[0])
 
 	allianceTeam.TeamId = 1114
-	db.SaveAllianceTeam(&allianceTeam)
+	db.UpdateAllianceTeam(&allianceTeam)
 	allianceTeams, err = db.GetTeamsByAlliance(1)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(allianceTeams))
 	assert.Equal(t, allianceTeam.TeamId, allianceTeams[0].TeamId)
 
-	db.DeleteAllianceTeam(&allianceTeam)
+	db.DeleteAllianceTeam(allianceTeam.Id)
 	allianceTeams, err = db.GetTeamsByAlliance(1)
 	assert.Nil(t, err)
 	assert.Empty(t, allianceTeams)
@@ -41,6 +43,7 @@ func TestAllianceTeamCrud(t *testing.T) {
 
 func TestGetTeamsByAlliance(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	BuildTestAlliances(db)
 	allianceTeams, err := db.GetTeamsByAlliance(1)
@@ -61,6 +64,7 @@ func TestGetTeamsByAlliance(t *testing.T) {
 
 func TestTruncateAllianceTeams(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	allianceTeam := AllianceTeam{0, 1, 0, 254}
 	db.CreateAllianceTeam(&allianceTeam)
@@ -72,6 +76,7 @@ func TestTruncateAllianceTeams(t *testing.T) {
 
 func TestGetAllAlliances(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	alliances, err := db.GetAllAlliances()
 	assert.Nil(t, err)

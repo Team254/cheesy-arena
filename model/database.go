@@ -14,7 +14,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"go.etcd.io/bbolt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,7 +24,11 @@ const backupsDir = "db/backups"
 const migrationsDir = "db/migrations"
 
 var BaseDir = "." // Mutable for testing
-var recordTypes = []interface{}{}
+var recordTypes = []interface{}{
+	AllianceTeam{},
+	Award{},
+	LowerThird{},
+}
 
 type Database struct {
 	Path             string
@@ -35,11 +38,8 @@ type Database struct {
 	matchResultMap   *modl.DbMap
 	rankingMap       *modl.DbMap
 	teamMap          *modl.DbMap
-	allianceTeamMap  *modl.DbMap
-	lowerThirdMap    *modl.DbMap
 	sponsorSlideMap  *modl.DbMap
 	scheduleBlockMap *modl.DbMap
-	awardMap         *modl.DbMap
 	userSessionMap   *modl.DbMap
 	bolt             *bbolt.DB
 	tables           map[interface{}]*table
@@ -87,11 +87,9 @@ func OpenDatabase(filename string) (*Database, error) {
 	return &database, nil
 }
 
-func (database *Database) Close() {
+func (database *Database) Close() error {
 	database.db.Close()
-	if err := database.bolt.Close(); err != nil {
-		log.Println(err)
-	}
+	return database.bolt.Close()
 }
 
 // Creates a copy of the current database and saves it to the backups directory.
@@ -138,20 +136,11 @@ func (database *Database) mapTables() {
 	database.teamMap = modl.NewDbMap(database.db, dialect)
 	database.teamMap.AddTableWithName(Team{}, "teams").SetKeys(false, "Id")
 
-	database.allianceTeamMap = modl.NewDbMap(database.db, dialect)
-	database.allianceTeamMap.AddTableWithName(AllianceTeam{}, "alliance_teams").SetKeys(true, "Id")
-
-	database.lowerThirdMap = modl.NewDbMap(database.db, dialect)
-	database.lowerThirdMap.AddTableWithName(LowerThird{}, "lower_thirds").SetKeys(true, "Id")
-
 	database.sponsorSlideMap = modl.NewDbMap(database.db, dialect)
 	database.sponsorSlideMap.AddTableWithName(SponsorSlide{}, "sponsor_slides").SetKeys(true, "Id")
 
 	database.scheduleBlockMap = modl.NewDbMap(database.db, dialect)
 	database.scheduleBlockMap.AddTableWithName(ScheduleBlock{}, "schedule_blocks").SetKeys(true, "Id")
-
-	database.awardMap = modl.NewDbMap(database.db, dialect)
-	database.awardMap.AddTableWithName(Award{}, "awards").SetKeys(true, "Id")
 
 	database.userSessionMap = modl.NewDbMap(database.db, dialect)
 	database.userSessionMap.AddTableWithName(UserSession{}, "user_sessions").SetKeys(true, "Id")

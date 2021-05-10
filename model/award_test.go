@@ -10,6 +10,7 @@ import (
 
 func TestGetNonexistentAward(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	award, err := db.GetAwardById(1114)
 	assert.Nil(t, err)
@@ -18,15 +19,17 @@ func TestGetNonexistentAward(t *testing.T) {
 
 func TestAwardCrud(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	award := Award{0, JudgedAward, "Saftey Award", 254, ""}
-	db.CreateAward(&award)
+	assert.Nil(t, db.CreateAward(&award))
 	award2, err := db.GetAwardById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, award, *award2)
 
+	award2.Id = 0
 	award2.AwardName = "Spirit Award"
-	db.CreateAward(award2)
+	assert.Nil(t, db.CreateAward(award2))
 	awards, err := db.GetAllAwards()
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(awards)) {
@@ -36,13 +39,13 @@ func TestAwardCrud(t *testing.T) {
 
 	award.TeamId = 0
 	award.PersonName = "Travus Cubington"
-	db.SaveAward(&award)
+	assert.Nil(t, db.UpdateAward(&award))
 	award2, err = db.GetAwardById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, award.TeamId, award2.TeamId)
 	assert.Equal(t, award.PersonName, award2.PersonName)
 
-	db.DeleteAward(&award)
+	assert.Nil(t, db.DeleteAward(award.Id))
 	award2, err = db.GetAwardById(1)
 	assert.Nil(t, err)
 	assert.Nil(t, award2)
@@ -50,6 +53,7 @@ func TestAwardCrud(t *testing.T) {
 
 func TestTruncateAwards(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	award := Award{0, JudgedAward, "Saftey Award", 254, ""}
 	db.CreateAward(&award)
@@ -61,6 +65,7 @@ func TestTruncateAwards(t *testing.T) {
 
 func TestGetAwardsByType(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	award1 := Award{0, WinnerAward, "Event Winner", 1114, ""}
 	db.CreateAward(&award1)

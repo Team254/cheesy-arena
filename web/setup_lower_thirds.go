@@ -83,7 +83,7 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				ws.WriteError(err.Error())
 				continue
 			}
-			err = web.arena.Database.DeleteLowerThird(&lowerThird)
+			err = web.arena.Database.DeleteLowerThird(lowerThird.Id)
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
@@ -113,7 +113,7 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 			continue
 		case "reorderLowerThird":
 			args := struct {
-				Id     int
+				Id     int64
 				MoveUp bool
 			}{}
 			err = mapstructure.Decode(data, &args)
@@ -151,7 +151,7 @@ func (web *Web) saveLowerThird(lowerThird *model.LowerThird) error {
 		lowerThird.DisplayOrder = web.arena.Database.GetNextLowerThirdDisplayOrder()
 		err = web.arena.Database.CreateLowerThird(lowerThird)
 	} else {
-		err = web.arena.Database.SaveLowerThird(lowerThird)
+		err = web.arena.Database.UpdateLowerThird(lowerThird)
 	}
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (web *Web) saveLowerThird(lowerThird *model.LowerThird) error {
 }
 
 // Swaps the lower third having the given ID with the one immediately above or below it.
-func (web *Web) reorderLowerThird(id int, moveUp bool) error {
+func (web *Web) reorderLowerThird(id int64, moveUp bool) error {
 	lowerThird, err := web.arena.Database.GetLowerThirdById(id)
 	if err != nil {
 		return err
@@ -195,11 +195,11 @@ func (web *Web) reorderLowerThird(id int, moveUp bool) error {
 	// Swap their display orders and save.
 	lowerThird.DisplayOrder, adjacentLowerThird.DisplayOrder =
 		adjacentLowerThird.DisplayOrder, lowerThird.DisplayOrder
-	err = web.arena.Database.SaveLowerThird(lowerThird)
+	err = web.arena.Database.UpdateLowerThird(lowerThird)
 	if err != nil {
 		return err
 	}
-	err = web.arena.Database.SaveLowerThird(adjacentLowerThird)
+	err = web.arena.Database.UpdateLowerThird(adjacentLowerThird)
 	if err != nil {
 		return err
 	}

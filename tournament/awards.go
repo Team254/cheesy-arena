@@ -28,7 +28,7 @@ func CreateOrUpdateAward(database *model.Database, award *model.Award, createInt
 	if award.Id == 0 {
 		err = database.CreateAward(award)
 	} else {
-		err = database.SaveAward(award)
+		err = database.UpdateAward(award)
 	}
 	if err != nil {
 		return err
@@ -68,26 +68,18 @@ func CreateOrUpdateAward(database *model.Database, award *model.Award, createInt
 }
 
 // Deletes the given award and any associated lower thirds.
-func DeleteAward(database *model.Database, awardId int) error {
-	var award *model.Award
-	award, err := database.GetAwardById(awardId)
-	if err != nil {
-		return err
-	}
-	if award == nil {
-		return fmt.Errorf("Award with ID %d does not exist.", awardId)
-	}
-	if err = database.DeleteAward(award); err != nil {
+func DeleteAward(database *model.Database, awardId int64) error {
+	if err := database.DeleteAward(awardId); err != nil {
 		return err
 	}
 
 	// Delete lower thirds.
-	lowerThirds, err := database.GetLowerThirdsByAwardId(award.Id)
+	lowerThirds, err := database.GetLowerThirdsByAwardId(awardId)
 	if err != nil {
 		return err
 	}
 	for _, lowerThird := range lowerThirds {
-		if err = database.DeleteLowerThird(&lowerThird); err != nil {
+		if err = database.DeleteLowerThird(lowerThird.Id); err != nil {
 			return err
 		}
 	}
@@ -160,7 +152,7 @@ func createOrUpdateAwardLowerThird(database *model.Database, lowerThird *model.L
 	if index < len(existingLowerThirds) {
 		lowerThird.Id = existingLowerThirds[index].Id
 		lowerThird.DisplayOrder = existingLowerThirds[index].DisplayOrder
-		return database.SaveLowerThird(lowerThird)
+		return database.UpdateLowerThird(lowerThird)
 	} else {
 		lowerThird.DisplayOrder = database.GetNextLowerThirdDisplayOrder()
 		return database.CreateLowerThird(lowerThird)

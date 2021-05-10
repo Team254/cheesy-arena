@@ -11,6 +11,7 @@ import (
 
 func TestGetNonexistentUserSession(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	session, err := db.GetUserSessionByToken("blorpy")
 	assert.Nil(t, err)
@@ -19,6 +20,7 @@ func TestGetNonexistentUserSession(t *testing.T) {
 
 func TestUserSessionCrud(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	session := UserSession{0, "token1", "Bertha", time.Now()}
 	err := db.CreateUserSession(&session)
@@ -37,6 +39,7 @@ func TestUserSessionCrud(t *testing.T) {
 
 func TestTruncateUserSessions(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	session := UserSession{0, "token1", "Bertha", time.Now()}
 	db.CreateUserSession(&session)

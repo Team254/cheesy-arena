@@ -11,6 +11,7 @@ import (
 
 func TestGetNonexistentRanking(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	ranking, err := db.GetRankingForTeam(1114)
 	assert.Nil(t, err)
@@ -19,9 +20,10 @@ func TestGetNonexistentRanking(t *testing.T) {
 
 func TestRankingCrud(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	ranking := game.TestRanking1()
-	db.CreateRanking(ranking)
+	assert.Nil(t, db.CreateRanking(ranking))
 	ranking2, err := db.GetRankingForTeam(254)
 	assert.Nil(t, err)
 	assert.Equal(t, ranking, ranking2)
@@ -31,15 +33,11 @@ func TestRankingCrud(t *testing.T) {
 	ranking2, err = db.GetRankingForTeam(254)
 	assert.Nil(t, err)
 	assert.Equal(t, ranking.Random, ranking2.Random)
-
-	db.DeleteRanking(ranking)
-	ranking2, err = db.GetRankingForTeam(254)
-	assert.Nil(t, err)
-	assert.Nil(t, ranking2)
 }
 
 func TestTruncateRankings(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	ranking := game.TestRanking1()
 	db.CreateRanking(ranking)
@@ -51,6 +49,7 @@ func TestTruncateRankings(t *testing.T) {
 
 func TestGetAllRankings(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	rankings, err := db.GetAllRankings()
 	assert.Nil(t, err)
@@ -58,7 +57,7 @@ func TestGetAllRankings(t *testing.T) {
 
 	numRankings := 20
 	for i := 1; i <= numRankings; i++ {
-		db.CreateRanking(&game.Ranking{TeamId: i})
+		assert.Nil(t, db.CreateRanking(&game.Ranking{TeamId: i, Rank: i}))
 	}
 	rankings, err = db.GetAllRankings()
 	assert.Nil(t, err)

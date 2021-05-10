@@ -10,6 +10,7 @@ import (
 
 func TestEventSettingsReadWrite(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	eventSettings, err := db.GetEventSettings()
 	assert.Nil(t, err)

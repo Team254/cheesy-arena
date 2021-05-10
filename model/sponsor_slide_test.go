@@ -10,6 +10,7 @@ import (
 
 func TestGetNonexistentSponsorSlide(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	sponsorSlide, err := db.GetSponsorSlideById(1114)
 	assert.Nil(t, err)
@@ -18,11 +19,12 @@ func TestGetNonexistentSponsorSlide(t *testing.T) {
 
 func TestSponsorSlideCrud(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	assert.Equal(t, 0, db.GetNextSponsorSlideDisplayOrder())
 
 	sponsorSlide := SponsorSlide{0, "Subtitle", "Line 1", "Line 2", "", 10, 0}
-	db.CreateSponsorSlide(&sponsorSlide)
+	assert.Nil(t, db.CreateSponsorSlide(&sponsorSlide))
 	sponsorSlide2, err := db.GetSponsorSlideById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, sponsorSlide, *sponsorSlide2)
@@ -42,6 +44,7 @@ func TestSponsorSlideCrud(t *testing.T) {
 
 func TestTruncateSponsorSlides(t *testing.T) {
 	db := setupTestDb(t)
+	defer db.Close()
 
 	sponsorSlide := SponsorSlide{0, "Subtitle", "Line 1", "Line 2", "", 10, 0}
 	db.CreateSponsorSlide(&sponsorSlide)
