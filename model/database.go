@@ -24,25 +24,22 @@ const backupsDir = "db/backups"
 const migrationsDir = "db/migrations"
 
 var BaseDir = "." // Mutable for testing
-var recordTypes = []interface{}{
-	AllianceTeam{},
-	Award{},
-	LowerThird{},
-}
 
 type Database struct {
-	Path             string
-	db               *sql.DB
-	eventSettingsMap *modl.DbMap
-	matchMap         *modl.DbMap
-	matchResultMap   *modl.DbMap
-	rankingMap       *modl.DbMap
-	teamMap          *modl.DbMap
-	sponsorSlideMap  *modl.DbMap
-	scheduleBlockMap *modl.DbMap
-	userSessionMap   *modl.DbMap
-	bolt             *bbolt.DB
-	tables           map[interface{}]*table
+	Path               string
+	db                 *sql.DB
+	rankingMap         *modl.DbMap
+	teamMap            *modl.DbMap
+	sponsorSlideMap    *modl.DbMap
+	scheduleBlockMap   *modl.DbMap
+	userSessionMap     *modl.DbMap
+	bolt               *bbolt.DB
+	allianceTeamTable  *table
+	awardTable         *table
+	eventSettingsTable *table
+	lowerThirdTable    *table
+	matchTable         *table
+	matchResultTable   *table
 }
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
@@ -75,13 +72,23 @@ func OpenDatabase(filename string) (*Database, error) {
 	}
 
 	// Register tables.
-	database.tables = make(map[interface{}]*table)
-	for _, recordType := range recordTypes {
-		table, err := database.newTable(recordType)
-		if err != nil {
-			return nil, err
-		}
-		database.tables[recordType] = table
+	if database.allianceTeamTable, err = database.newTable(AllianceTeam{}); err != nil {
+		return nil, err
+	}
+	if database.awardTable, err = database.newTable(Award{}); err != nil {
+		return nil, err
+	}
+	if database.eventSettingsTable, err = database.newTable(EventSettings{}); err != nil {
+		return nil, err
+	}
+	if database.lowerThirdTable, err = database.newTable(LowerThird{}); err != nil {
+		return nil, err
+	}
+	if database.matchTable, err = database.newTable(Match{}); err != nil {
+		return nil, err
+	}
+	if database.matchResultTable, err = database.newTable(MatchResult{}); err != nil {
+		return nil, err
 	}
 
 	return &database, nil
@@ -120,15 +127,6 @@ func (database *Database) Backup(eventName, reason string) error {
 // Sets up table-object associations.
 func (database *Database) mapTables() {
 	dialect := new(modl.SqliteDialect)
-
-	database.eventSettingsMap = modl.NewDbMap(database.db, dialect)
-	database.eventSettingsMap.AddTableWithName(EventSettings{}, "event_settings").SetKeys(false, "Id")
-
-	database.matchMap = modl.NewDbMap(database.db, dialect)
-	database.matchMap.AddTableWithName(Match{}, "matches").SetKeys(true, "Id")
-
-	database.matchResultMap = modl.NewDbMap(database.db, dialect)
-	database.matchResultMap.AddTableWithName(MatchResultDb{}, "match_results").SetKeys(true, "Id")
 
 	database.rankingMap = modl.NewDbMap(database.db, dialect)
 	database.rankingMap.AddTableWithName(RankingDb{}, "rankings").SetKeys(false, "TeamId")

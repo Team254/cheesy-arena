@@ -7,12 +7,13 @@ package model
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 )
 
 type Match struct {
-	Id               int
+	Id               int64 `db:"id"`
 	Type             string
 	DisplayName      string
 	Time             time.Time
@@ -50,58 +51,82 @@ const (
 var ElimRoundNames = map[int]string{1: "F", 2: "SF", 4: "QF", 8: "EF"}
 
 func (database *Database) CreateMatch(match *Match) error {
-	return database.matchMap.Insert(match)
+	return database.matchTable.create(match)
 }
 
-func (database *Database) GetMatchById(id int) (*Match, error) {
-	match := new(Match)
-	err := database.matchMap.Get(match, id)
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		match = nil
-		err = nil
-	}
+func (database *Database) GetMatchById(id int64) (*Match, error) {
+	var match *Match
+	err := database.matchTable.getById(id, &match)
 	return match, err
 }
 
-func (database *Database) SaveMatch(match *Match) error {
-	_, err := database.matchMap.Update(match)
-	return err
+func (database *Database) UpdateMatch(match *Match) error {
+	return database.matchTable.update(match)
 }
 
-func (database *Database) DeleteMatch(match *Match) error {
-	_, err := database.matchMap.Delete(match)
-	return err
+func (database *Database) DeleteMatch(id int64) error {
+	return database.matchTable.delete(id)
 }
 
 func (database *Database) TruncateMatches() error {
-	return database.matchMap.TruncateTables()
+	return database.matchTable.truncate()
 }
 
 func (database *Database) GetMatchByName(matchType string, displayName string) (*Match, error) {
 	var matches []Match
-	err := database.matchMap.Select(&matches, "SELECT * FROM matches WHERE type = ? AND displayname = ?",
-		matchType, displayName)
-	if err != nil {
+	if err := database.matchTable.getAll(&matches); err != nil {
 		return nil, err
 	}
-	if len(matches) == 0 {
-		return nil, nil
+
+	for _, match := range matches {
+		if match.Type == matchType && match.DisplayName == displayName {
+			return &match, nil
+		}
 	}
-	return &matches[0], err
+	return nil, nil
 }
 
 func (database *Database) GetMatchesByElimRoundGroup(round int, group int) ([]Match, error) {
-	var matches []Match
-	err := database.matchMap.Select(&matches, "SELECT * FROM matches WHERE type = 'elimination' AND "+
-		"elimround = ? AND elimgroup = ? ORDER BY eliminstance", round, group)
-	return matches, err
+	matches, err := database.GetMatchesByType("elimination")
+	if err != nil {
+		return nil, err
+	}
+
+	var matchingMatches []Match
+	for _, match := range matches {
+		if match.ElimRound == round && match.ElimGroup == group {
+			matchingMatches = append(matchingMatches, match)
+		}
+	}
+	return matchingMatches, nil
 }
 
 func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
 	var matches []Match
-	err := database.matchMap.Select(&matches,
-		"SELECT * FROM matches WHERE type = ? ORDER BY elimround desc, eliminstance, elimgroup, id", matchType)
-	return matches, err
+	if err := database.matchTable.getAll(&matches); err != nil {
+		return nil, err
+	}
+
+	var matchingMatches []Match
+	for _, match := range matches {
+		if match.Type == matchType {
+			matchingMatches = append(matchingMatches, match)
+		}
+	}
+
+	sort.Slice(matchingMatches, func(i, j int) bool {
+		if matchingMatches[i].ElimRound == matchingMatches[j].ElimRound {
+			if matchingMatches[i].ElimInstance == matchingMatches[j].ElimInstance {
+				if matchingMatches[i].ElimGroup == matchingMatches[j].ElimGroup {
+					return matchingMatches[i].Id < matchingMatches[j].Id
+				}
+				return matchingMatches[i].ElimGroup < matchingMatches[j].ElimGroup
+			}
+			return matchingMatches[i].ElimInstance < matchingMatches[j].ElimInstance
+		}
+		return matchingMatches[i].ElimRound > matchingMatches[j].ElimRound
+	})
+	return matchingMatches, nil
 }
 
 func (match *Match) IsComplete() bool {

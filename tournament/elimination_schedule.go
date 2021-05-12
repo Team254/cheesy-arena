@@ -37,7 +37,9 @@ func UpdateEliminationSchedule(database *model.Database, startTime time.Time) (b
 			continue
 		}
 		match.Time = startTime.Add(time.Duration(matchIndex*ElimMatchSpacingSec) * time.Second)
-		database.SaveMatch(&match)
+		if err = database.UpdateMatch(&match); err != nil {
+			return false, err
+		}
 		matchIndex++
 	}
 
@@ -145,12 +147,12 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 
 	// Check if the match set exists already and if it has been won.
 	var redWins, blueWins, numIncomplete int
-	var ties []*model.Match
+	var ties []model.Match
 	matches, err := database.GetMatchesByElimRoundGroup(round, group)
 	if err != nil {
 		return []model.AllianceTeam{}, err
 	}
-	var unplayedMatches []*model.Match
+	var unplayedMatches []model.Match
 	for _, match := range matches {
 		if !match.IsComplete() {
 			// Update the teams in the match if they are not yet set or are incorrect.
@@ -158,16 +160,20 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 				match.Red3 == redAlliance[2].TeamId) {
 				positionRedTeams(&match, redAlliance)
 				match.ElimRedAlliance = redAlliance[0].AllianceId
-				database.SaveMatch(&match)
+				if err = database.UpdateMatch(&match); err != nil {
+					return nil, err
+				}
 			}
 			if len(blueAlliance) != 0 && !(match.Blue1 == blueAlliance[0].TeamId &&
 				match.Blue2 == blueAlliance[1].TeamId && match.Blue3 == blueAlliance[2].TeamId) {
 				positionBlueTeams(&match, blueAlliance)
 				match.ElimBlueAlliance = blueAlliance[0].AllianceId
-				database.SaveMatch(&match)
+				if err = database.UpdateMatch(&match); err != nil {
+					return nil, err
+				}
 			}
 
-			unplayedMatches = append(unplayedMatches, &match)
+			unplayedMatches = append(unplayedMatches, match)
 			numIncomplete += 1
 			continue
 		}
@@ -189,7 +195,7 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 		case model.BlueWonMatch:
 			blueWins += 1
 		case model.TieMatch:
-			ties = append(ties, &match)
+			ties = append(ties, match)
 		default:
 			return []model.AllianceTeam{}, fmt.Errorf("Completed match %d has invalid winner '%s'", match.Id,
 				match.Status)
@@ -199,7 +205,7 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 	// Delete any superfluous matches if the round is won.
 	if redWins == 2 || blueWins == 2 {
 		for _, match := range unplayedMatches {
-			err = database.DeleteMatch(match)
+			err = database.DeleteMatch(match.Id)
 			if err != nil {
 				return []model.AllianceTeam{}, err
 			}

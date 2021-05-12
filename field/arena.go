@@ -271,7 +271,7 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 	arena.MatchLoadNotifier.Notify()
 
 	if arena.CurrentMatch.Type != "test" {
-		arena.Database.SaveMatch(arena.CurrentMatch)
+		arena.Database.UpdateMatch(arena.CurrentMatch)
 	}
 	return nil
 }
@@ -283,7 +283,7 @@ func (arena *Arena) StartMatch() error {
 		// Save the match start time and game-specifc data to the database for posterity.
 		arena.CurrentMatch.StartedAt = time.Now()
 		if arena.CurrentMatch.Type != "test" {
-			arena.Database.SaveMatch(arena.CurrentMatch)
+			arena.Database.UpdateMatch(arena.CurrentMatch)
 		}
 		arena.updateCycleTime(arena.CurrentMatch.StartedAt)
 

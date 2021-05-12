@@ -24,7 +24,7 @@ func SetupTestDb(t *testing.T, uniqueName string) *Database {
 	return database
 }
 
-func BuildTestMatchResult(matchId int, playNumber int) *MatchResult {
+func BuildTestMatchResult(matchId int64, playNumber int) *MatchResult {
 	matchResult := &MatchResult{MatchId: matchId, PlayNumber: playNumber, MatchType: "qualification"}
 	matchResult.RedScore = game.TestScore1()
 	matchResult.BlueScore = game.TestScore2()

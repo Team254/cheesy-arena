@@ -29,12 +29,12 @@ func TestMatchResultCrud(t *testing.T) {
 	assert.Equal(t, matchResult, matchResult2)
 
 	matchResult.BlueScore.EndgameStatuses = [3]game.EndgameStatus{game.EndgameHang, game.EndgameNone, game.EndgamePark}
-	db.SaveMatchResult(matchResult)
+	assert.Nil(t, db.UpdateMatchResult(matchResult))
 	matchResult2, err = db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)
 	assert.Equal(t, matchResult, matchResult2)
 
-	db.DeleteMatchResult(matchResult)
+	assert.Nil(t, db.DeleteMatchResult(matchResult.Id))
 	matchResult2, err = db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)
 	assert.Nil(t, matchResult2)
@@ -45,8 +45,8 @@ func TestTruncateMatchResults(t *testing.T) {
 	defer db.Close()
 
 	matchResult := BuildTestMatchResult(254, 1)
-	db.CreateMatchResult(matchResult)
-	db.TruncateMatchResults()
+	assert.Nil(t, db.CreateMatchResult(matchResult))
+	assert.Nil(t, db.TruncateMatchResults())
 	matchResult2, err := db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)
 	assert.Nil(t, matchResult2)
@@ -57,11 +57,11 @@ func TestGetMatchResultForMatch(t *testing.T) {
 	defer db.Close()
 
 	matchResult := BuildTestMatchResult(254, 2)
-	db.CreateMatchResult(matchResult)
+	assert.Nil(t, db.CreateMatchResult(matchResult))
 	matchResult2 := BuildTestMatchResult(254, 5)
-	db.CreateMatchResult(matchResult2)
+	assert.Nil(t, db.CreateMatchResult(matchResult2))
 	matchResult3 := BuildTestMatchResult(254, 4)
-	db.CreateMatchResult(matchResult3)
+	assert.Nil(t, db.CreateMatchResult(matchResult3))
 
 	// Should return the match result with the highest play number (i.e. the most recent).
 	matchResult4, err := db.GetMatchResultForMatch(254)

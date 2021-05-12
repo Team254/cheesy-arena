@@ -6,6 +6,7 @@
 package tournament
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"sort"
@@ -99,6 +100,9 @@ func CalculateTeamCards(database *model.Database, matchType string) error {
 		matchResult, err := database.GetMatchResultForMatch(match.Id)
 		if err != nil {
 			return err
+		}
+		if matchResult == nil {
+			return fmt.Errorf("found no match result for match %d", match.Id)
 		}
 
 		// Mark the team as having a yellow card if they got either a yellow or red in a previous match.

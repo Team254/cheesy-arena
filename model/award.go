@@ -24,30 +24,30 @@ const (
 )
 
 func (database *Database) CreateAward(award *Award) error {
-	return database.tables[Award{}].create(award)
+	return database.awardTable.create(award)
 }
 
 func (database *Database) GetAwardById(id int64) (*Award, error) {
 	var award *Award
-	err := database.tables[Award{}].getById(id, &award)
+	err := database.awardTable.getById(id, &award)
 	return award, err
 }
 
 func (database *Database) UpdateAward(award *Award) error {
-	return database.tables[Award{}].update(award)
+	return database.awardTable.update(award)
 }
 
 func (database *Database) DeleteAward(id int64) error {
-	return database.tables[Award{}].delete(id)
+	return database.awardTable.delete(id)
 }
 
 func (database *Database) TruncateAwards() error {
-	return database.tables[Award{}].truncate()
+	return database.awardTable.truncate()
 }
 
 func (database *Database) GetAllAwards() ([]Award, error) {
 	var awards []Award
-	if err := database.tables[Award{}].getAll(&awards); err != nil {
+	if err := database.awardTable.getAll(&awards); err != nil {
 		return nil, err
 	}
 	sort.Slice(awards, func(i, j int) bool {

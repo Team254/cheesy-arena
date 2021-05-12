@@ -5,22 +5,21 @@
 
 var scoreTemplate = Handlebars.compile($("#scoreTemplate").html());
 var allianceResults = {};
+var matchResult;
 
 // Hijack the form submission to inject the data in JSON form so that it's easier for the server to parse.
 $("form").submit(function() {
   updateResults("red");
   updateResults("blue");
 
-  var redScoreJson = JSON.stringify(allianceResults["red"].score);
-  var blueScoreJson = JSON.stringify(allianceResults["blue"].score);
-  var redCardsJson = JSON.stringify(allianceResults["red"].cards);
-  var blueCardsJson = JSON.stringify(allianceResults["blue"].cards);
+  matchResult.RedScore = allianceResults["red"].score;
+  matchResult.BlueScore = allianceResults["blue"].score;
+  matchResult.RedCards = allianceResults["red"].cards;
+  matchResult.BlueCards = allianceResults["blue"].cards;
+  var matchResultJson = JSON.stringify(matchResult);
 
   // Inject the JSON data into the form as hidden inputs.
-  $("<input />").attr("type", "hidden").attr("name", "redScoreJson").attr("value", redScoreJson).appendTo("form");
-  $("<input />").attr("type", "hidden").attr("name", "blueScoreJson").attr("value", blueScoreJson).appendTo("form");
-  $("<input />").attr("type", "hidden").attr("name", "redCardsJson").attr("value", redCardsJson).appendTo("form");
-  $("<input />").attr("type", "hidden").attr("name", "blueCardsJson").attr("value", blueCardsJson).appendTo("form");
+  $("<input />").attr("type", "hidden").attr("name", "matchResultJson").attr("value", matchResultJson).appendTo("form");
 
   return true;
 });

@@ -40,10 +40,10 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 
 	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: model.RedWonMatch, Red1: 1001,
 		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, ElimRedAlliance: 1, ElimBlueAlliance: 2}
-	web.arena.Database.CreateMatch(&match)
+	assert.Nil(t, web.arena.Database.CreateMatch(&match))
 	matchResult := model.BuildTestMatchResult(match.Id, 1)
 	matchResult.MatchType = match.Type
-	web.arena.Database.CreateMatchResult(matchResult)
+	assert.Nil(t, web.arena.Database.CreateMatchResult(matchResult))
 	tournament.CreateTestAlliances(web.arena.Database, 2)
 
 	recorder := web.getHttpResponse("/match_review")
@@ -62,10 +62,14 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), " QF4-3 ")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"EndgameStatuses\":[0,2,1]}&blueScoreJson={\"AutoCellsOuter\":[3, 4]," +
-		"\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
+	postBody := fmt.Sprintf(
+		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"EndgameStatuses\":[0,2,1]},\"BlueScore\":{"+
+			"\"AutoCellsOuter\":[3, 4],\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},\"RedCards\":{\"105\":\"yellow\"},"+
+			"\"BlueCards\":{}}",
+		match.Id,
+	)
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
-	assert.Equal(t, 303, recorder.Code)
+	assert.Equal(t, 303, recorder.Code, recorder.Body.String())
 
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")
@@ -94,10 +98,14 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), " QF4-3 ")
 
 	// Update the score to something else.
-	postBody := "redScoreJson={\"TeleopCellsBottom\":[5,1,7,2]}&blueScoreJson={\"TeleopCellsInner\":[2,2,2,2]," +
-		"\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]}&redCardsJson={\"105\":\"yellow\"}&blueCardsJson={}"
+	postBody := fmt.Sprintf(
+		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"TeleopCellsBottom\":[5,1,7,2]},\"BlueScore\":"+
+			"{\"TeleopCellsInner\":[2,2,2,2],\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},\"RedCards\":"+
+			"{\"105\":\"yellow\"},\"BlueCards\":{}}",
+		match.Id,
+	)
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
-	assert.Equal(t, 303, recorder.Code)
+	assert.Equal(t, 303, recorder.Code, recorder.Body.String())
 
 	// Check for the updated scores back on the match list page.
 	recorder = web.getHttpResponse("/match_review")

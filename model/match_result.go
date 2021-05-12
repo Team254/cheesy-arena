@@ -6,30 +6,18 @@
 package model
 
 import (
-	"encoding/json"
 	"github.com/Team254/cheesy-arena/game"
 )
 
 type MatchResult struct {
-	Id         int
-	MatchId    int
+	Id         int64 `db:"id"`
+	MatchId    int64
 	PlayNumber int
 	MatchType  string
 	RedScore   *game.Score
 	BlueScore  *game.Score
 	RedCards   map[string]string
 	BlueCards  map[string]string
-}
-
-type MatchResultDb struct {
-	Id            int
-	MatchId       int
-	PlayNumber    int
-	MatchType     string
-	RedScoreJson  string
-	BlueScoreJson string
-	RedCardsJson  string
-	BlueCardsJson string
 }
 
 // Returns a new match result object with empty slices instead of nil.
@@ -43,55 +31,35 @@ func NewMatchResult() *MatchResult {
 }
 
 func (database *Database) CreateMatchResult(matchResult *MatchResult) error {
-	matchResultDb, err := matchResult.Serialize()
-	if err != nil {
-		return err
-	}
-	err = database.matchResultMap.Insert(matchResultDb)
-	if err != nil {
-		return err
-	}
-	matchResult.Id = matchResultDb.Id
-	return nil
+	return database.matchResultTable.create(matchResult)
 }
 
-func (database *Database) GetMatchResultForMatch(matchId int) (*MatchResult, error) {
-	var matchResults []MatchResultDb
-	query := "SELECT * FROM match_results WHERE matchid = ? ORDER BY playnumber DESC LIMIT 1"
-	err := database.matchResultMap.Select(&matchResults, query, matchId)
-	if err != nil {
+func (database *Database) GetMatchResultForMatch(matchId int64) (*MatchResult, error) {
+	var matchResults []MatchResult
+	if err := database.matchResultTable.getAll(&matchResults); err != nil {
 		return nil, err
 	}
-	if len(matchResults) == 0 {
-		return nil, nil
+
+	var mostRecentMatchResult *MatchResult
+	for i, matchResult := range matchResults {
+		if matchResult.MatchId == matchId &&
+			(mostRecentMatchResult == nil || matchResult.PlayNumber > mostRecentMatchResult.PlayNumber) {
+			mostRecentMatchResult = &matchResults[i]
+		}
 	}
-	matchResult, err := matchResults[0].Deserialize()
-	if err != nil {
-		return nil, err
-	}
-	return matchResult, err
+	return mostRecentMatchResult, nil
 }
 
-func (database *Database) SaveMatchResult(matchResult *MatchResult) error {
-	matchResultDb, err := matchResult.Serialize()
-	if err != nil {
-		return err
-	}
-	_, err = database.matchResultMap.Update(matchResultDb)
-	return err
+func (database *Database) UpdateMatchResult(matchResult *MatchResult) error {
+	return database.matchResultTable.update(matchResult)
 }
 
-func (database *Database) DeleteMatchResult(matchResult *MatchResult) error {
-	matchResultDb, err := matchResult.Serialize()
-	if err != nil {
-		return err
-	}
-	_, err = database.matchResultMap.Delete(matchResultDb)
-	return err
+func (database *Database) DeleteMatchResult(id int64) error {
+	return database.matchResultTable.delete(id)
 }
 
 func (database *Database) TruncateMatchResults() error {
-	return database.matchResultMap.TruncateTables()
+	return database.matchResultTable.truncate()
 }
 
 // Calculates and returns the summary fields used for ranking and display for the red alliance.
@@ -119,42 +87,4 @@ func (matchResult *MatchResult) CorrectEliminationScore() {
 	}
 
 	// No elimination tiebreakers.
-}
-
-// Converts the nested struct MatchResult to the DB version that has JSON fields.
-func (matchResult *MatchResult) Serialize() (*MatchResultDb, error) {
-	matchResultDb := MatchResultDb{Id: matchResult.Id, MatchId: matchResult.MatchId,
-		PlayNumber: matchResult.PlayNumber, MatchType: matchResult.MatchType}
-	if err := serializeHelper(&matchResultDb.RedScoreJson, matchResult.RedScore); err != nil {
-		return nil, err
-	}
-	if err := serializeHelper(&matchResultDb.BlueScoreJson, matchResult.BlueScore); err != nil {
-		return nil, err
-	}
-	if err := serializeHelper(&matchResultDb.RedCardsJson, matchResult.RedCards); err != nil {
-		return nil, err
-	}
-	if err := serializeHelper(&matchResultDb.BlueCardsJson, matchResult.BlueCards); err != nil {
-		return nil, err
-	}
-	return &matchResultDb, nil
-}
-
-// Converts the DB MatchResult with JSON fields to the nested struct version.
-func (matchResultDb *MatchResultDb) Deserialize() (*MatchResult, error) {
-	matchResult := MatchResult{Id: matchResultDb.Id, MatchId: matchResultDb.MatchId,
-		PlayNumber: matchResultDb.PlayNumber, MatchType: matchResultDb.MatchType}
-	if err := json.Unmarshal([]byte(matchResultDb.RedScoreJson), &matchResult.RedScore); err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal([]byte(matchResultDb.BlueScoreJson), &matchResult.BlueScore); err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal([]byte(matchResultDb.RedCardsJson), &matchResult.RedCards); err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal([]byte(matchResultDb.BlueCardsJson), &matchResult.BlueCards); err != nil {
-		return nil, err
-	}
-	return &matchResult, nil
 }

@@ -15,12 +15,12 @@ type AllianceTeam struct {
 }
 
 func (database *Database) CreateAllianceTeam(allianceTeam *AllianceTeam) error {
-	return database.tables[AllianceTeam{}].create(allianceTeam)
+	return database.allianceTeamTable.create(allianceTeam)
 }
 
 func (database *Database) GetTeamsByAlliance(allianceId int) ([]AllianceTeam, error) {
 	var allianceTeams []AllianceTeam
-	if err := database.tables[AllianceTeam{}].getAll(&allianceTeams); err != nil {
+	if err := database.allianceTeamTable.getAll(&allianceTeams); err != nil {
 		return nil, err
 	}
 	sort.Slice(allianceTeams, func(i, j int) bool {
@@ -37,20 +37,20 @@ func (database *Database) GetTeamsByAlliance(allianceId int) ([]AllianceTeam, er
 }
 
 func (database *Database) UpdateAllianceTeam(allianceTeam *AllianceTeam) error {
-	return database.tables[AllianceTeam{}].update(allianceTeam)
+	return database.allianceTeamTable.update(allianceTeam)
 }
 
 func (database *Database) DeleteAllianceTeam(id int64) error {
-	return database.tables[AllianceTeam{}].delete(id)
+	return database.allianceTeamTable.delete(id)
 }
 
 func (database *Database) TruncateAllianceTeams() error {
-	return database.tables[AllianceTeam{}].truncate()
+	return database.allianceTeamTable.truncate()
 }
 
 func (database *Database) GetAllAlliances() ([][]AllianceTeam, error) {
 	var allianceTeams []AllianceTeam
-	if err := database.tables[AllianceTeam{}].getAll(&allianceTeams); err != nil {
+	if err := database.allianceTeamTable.getAll(&allianceTeams); err != nil {
 		return nil, err
 	}
 	sort.Slice(allianceTeams, func(i, j int) bool {

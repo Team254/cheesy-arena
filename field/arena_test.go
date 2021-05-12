@@ -388,13 +388,13 @@ func TestLoadNextMatch(t *testing.T) {
 	arena.Database.CreateMatch(&qualificationMatch2)
 
 	// Test match should be followed by another, empty test match.
-	assert.Equal(t, 0, arena.CurrentMatch.Id)
+	assert.Equal(t, int64(0), arena.CurrentMatch.Id)
 	err := arena.SubstituteTeam(1114, "R1")
 	assert.Nil(t, err)
 	arena.CurrentMatch.Status = model.TieMatch
 	err = arena.LoadNextMatch()
 	assert.Nil(t, err)
-	assert.Equal(t, 0, arena.CurrentMatch.Id)
+	assert.Equal(t, int64(0), arena.CurrentMatch.Id)
 	assert.Equal(t, 0, arena.CurrentMatch.Red1)
 	assert.Equal(t, false, arena.CurrentMatch.IsComplete())
 
@@ -405,15 +405,15 @@ func TestLoadNextMatch(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, practiceMatch1.Id, arena.CurrentMatch.Id)
 	practiceMatch1.Status = model.RedWonMatch
-	arena.Database.SaveMatch(&practiceMatch1)
+	arena.Database.UpdateMatch(&practiceMatch1)
 	err = arena.LoadNextMatch()
 	assert.Nil(t, err)
 	assert.Equal(t, practiceMatch3.Id, arena.CurrentMatch.Id)
 	practiceMatch3.Status = model.BlueWonMatch
-	arena.Database.SaveMatch(&practiceMatch3)
+	arena.Database.UpdateMatch(&practiceMatch3)
 	err = arena.LoadNextMatch()
 	assert.Nil(t, err)
-	assert.Equal(t, 0, arena.CurrentMatch.Id)
+	assert.Equal(t, int64(0), arena.CurrentMatch.Id)
 	assert.Equal(t, "test", arena.CurrentMatch.Type)
 
 	err = arena.LoadMatch(&qualificationMatch1)

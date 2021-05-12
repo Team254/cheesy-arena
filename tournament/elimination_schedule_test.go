@@ -747,8 +747,8 @@ func TestEliminationScheduleTeamPositions(t *testing.T) {
 	// Shuffle the team positions and check that the subsequent matches in the same round have the same ones.
 	match1.Red1, match1.Red2 = match1.Red2, match1.Red1
 	match2.Blue1, match2.Blue3 = match2.Blue3, match2.Blue1
-	database.SaveMatch(&match1)
-	database.SaveMatch(&match2)
+	database.UpdateMatch(&match1)
+	database.UpdateMatch(&match2)
 	scoreMatch(database, "SF1-1", model.RedWonMatch)
 	scoreMatch(database, "SF2-1", model.BlueWonMatch)
 	UpdateEliminationSchedule(database, time.Unix(1000, 0))
@@ -792,5 +792,5 @@ func assertMatch(t *testing.T, match model.Match, displayName string, redAllianc
 func scoreMatch(database *model.Database, displayName string, winner model.MatchStatus) {
 	match, _ := database.GetMatchByName("elimination", displayName)
 	match.Status = winner
-	database.SaveMatch(match)
+	database.UpdateMatch(match)
 }

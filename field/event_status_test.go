@@ -122,5 +122,5 @@ func setMatch(database *model.Database, match *model.Match, matchTime time.Time,
 	} else {
 		match.Status = model.MatchNotPlayed
 	}
-	_ = database.SaveMatch(match)
+	_ = database.UpdateMatch(match)
 }

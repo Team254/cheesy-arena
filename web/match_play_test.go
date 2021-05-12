@@ -128,9 +128,8 @@ func TestCommitMatch(t *testing.T) {
 	assert.Nil(t, matchResult)
 
 	// Committing the same match more than once should create a second match result record.
-	match.Id = 1
 	match.Type = "qualification"
-	web.arena.Database.CreateMatch(match)
+	assert.Nil(t, web.arena.Database.CreateMatch(match))
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.BlueScore = &game.Score{ExitedInitiationLine: [3]bool{true, false, false}}
@@ -164,7 +163,7 @@ func TestCommitMatch(t *testing.T) {
 	log.SetOutput(&writer)
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
-	time.Sleep(time.Millisecond * 10) // Allow some time for the asynchronous publishing to happen.
+	time.Sleep(time.Millisecond * 100) // Allow some time for the asynchronous publishing to happen.
 	assert.Contains(t, writer.String(), "Failed to publish matches")
 	assert.Contains(t, writer.String(), "Failed to publish rankings")
 }
@@ -186,7 +185,7 @@ func TestCommitEliminationTie(t *testing.T) {
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, model.TieMatch, match.Status)
 	match.Type = "elimination"
-	web.arena.Database.SaveMatch(match)
+	web.arena.Database.UpdateMatch(match)
 	web.commitMatchScore(match, matchResult, true)
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, model.TieMatch, match.Status) // No elimination tiebreakers.
@@ -199,7 +198,7 @@ func TestCommitCards(t *testing.T) {
 	team := &model.Team{Id: 5}
 	web.arena.Database.CreateTeam(team)
 	match := &model.Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
-	web.arena.Database.CreateMatch(match)
+	assert.Nil(t, web.arena.Database.CreateMatch(match))
 	matchResult := model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.BlueCards = map[string]string{"5": "yellow"}
@@ -230,12 +229,11 @@ func TestCommitCards(t *testing.T) {
 	match.Type = "elimination"
 	match.ElimRedAlliance = 1
 	match.ElimBlueAlliance = 2
-	web.arena.Database.SaveMatch(match)
-	matchResult = model.BuildTestMatchResult(match.Id, 10)
+	web.arena.Database.UpdateMatch(match)
+	matchResult = model.BuildTestMatchResult(match.Id, 0)
 	matchResult.MatchType = match.Type
 	matchResult.RedCards = map[string]string{"1": "red"}
-	err = web.commitMatchScore(match, matchResult, true)
-	assert.Nil(t, err)
+	assert.Nil(t, web.commitMatchScore(match, matchResult, true))
 	assert.Equal(t, 0, matchResult.RedScoreSummary(true).Score)
 	assert.NotEqual(t, 0, matchResult.BlueScoreSummary(true).Score)
 }

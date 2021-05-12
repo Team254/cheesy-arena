@@ -14,7 +14,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 
 	eventSettings, err := db.GetEventSettings()
 	assert.Nil(t, err)
-	assert.Equal(t, EventSettings{Id: 0, Name: "Untitled Event", NumElimAlliances: 8, SelectionRound2Order: "L",
+	assert.Equal(t, EventSettings{Id: 1, Name: "Untitled Event", NumElimAlliances: 8, SelectionRound2Order: "L",
 		SelectionRound3Order: "", TBADownloadEnabled: true, ApTeamChannel: 157, ApAdminChannel: 0,
 		ApAdminWpaKey: "1234Five", WarmupDurationSec: 0, AutoDurationSec: 15, PauseDurationSec: 2,
 		TeleopDurationSec: 135, WarningRemainingDurationSec: 30, Stage1Capacity: 9, Stage2Capacity: 15,
@@ -24,7 +24,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 	eventSettings.NumElimAlliances = 6
 	eventSettings.SelectionRound2Order = "F"
 	eventSettings.SelectionRound3Order = "L"
-	err = db.SaveEventSettings(eventSettings)
+	err = db.UpdateEventSettings(eventSettings)
 	assert.Nil(t, err)
 	eventSettings2, err := db.GetEventSettings()
 	assert.Nil(t, err)

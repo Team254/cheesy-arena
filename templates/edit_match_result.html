@@ -176,13 +176,11 @@
 <script src="/static/js/match_review.js"></script>
 <script>
   var matchId = {{.Match.Id}};
-  var allianceResults = {};
+  matchResult = jQuery.parseJSON('{{.MatchResultJson}}');
   allianceResults["red"] = {alliance: "red", team1: {{.Match.Red1}}, team2: {{.Match.Red2}},
-      team3: {{.Match.Red3}}, score: jQuery.parseJSON('{{.MatchResultJson.RedScoreJson}}'),
-      cards: jQuery.parseJSON('{{.MatchResultJson.RedCardsJson}}')};
+      team3: {{.Match.Red3}}, score: matchResult.RedScore, cards: matchResult.RedCards};
   allianceResults["blue"] = {alliance: "blue", team1: {{.Match.Blue1}}, team2: {{.Match.Blue2}},
-      team3: {{.Match.Blue3}}, score: jQuery.parseJSON('{{.MatchResultJson.BlueScoreJson}}'),
-      cards: jQuery.parseJSON('{{.MatchResultJson.BlueCardsJson}}')};
+      team3: {{.Match.Blue3}}, score: matchResult.BlueScore, cards: matchResult.BlueCards};
   renderResults("red");
   renderResults("blue");
 </script>

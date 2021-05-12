@@ -33,12 +33,12 @@ func TestMatchCrud(t *testing.T) {
 	assert.Equal(t, match, *match3)
 
 	match.Status = RedWonMatch
-	db.SaveMatch(&match)
+	db.UpdateMatch(&match)
 	match2, err = db.GetMatchById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, match.Status, match2.Status)
 
-	db.DeleteMatch(&match)
+	db.DeleteMatch(match.Id)
 	match2, err = db.GetMatchById(1)
 	assert.Nil(t, err)
 	assert.Nil(t, match2)

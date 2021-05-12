@@ -84,7 +84,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := web.arena.Database.SaveEventSettings(eventSettings)
+	err := web.arena.Database.UpdateEventSettings(eventSettings)
 	if err != nil {
 		handleWebErr(w, err)
 		return

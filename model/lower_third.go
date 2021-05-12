@@ -18,30 +18,30 @@ type LowerThird struct {
 }
 
 func (database *Database) CreateLowerThird(lowerThird *LowerThird) error {
-	return database.tables[LowerThird{}].create(lowerThird)
+	return database.lowerThirdTable.create(lowerThird)
 }
 
 func (database *Database) GetLowerThirdById(id int64) (*LowerThird, error) {
 	var lowerThird *LowerThird
-	err := database.tables[LowerThird{}].getById(id, &lowerThird)
+	err := database.lowerThirdTable.getById(id, &lowerThird)
 	return lowerThird, err
 }
 
 func (database *Database) UpdateLowerThird(lowerThird *LowerThird) error {
-	return database.tables[LowerThird{}].update(lowerThird)
+	return database.lowerThirdTable.update(lowerThird)
 }
 
 func (database *Database) DeleteLowerThird(id int64) error {
-	return database.tables[LowerThird{}].delete(id)
+	return database.lowerThirdTable.delete(id)
 }
 
 func (database *Database) TruncateLowerThirds() error {
-	return database.tables[LowerThird{}].truncate()
+	return database.lowerThirdTable.truncate()
 }
 
 func (database *Database) GetAllLowerThirds() ([]LowerThird, error) {
 	var lowerThirds []LowerThird
-	if err := database.tables[LowerThird{}].getAll(&lowerThirds); err != nil {
+	if err := database.lowerThirdTable.getAll(&lowerThirds); err != nil {
 		return nil, err
 	}
 	sort.Slice(lowerThirds, func(i, j int) bool {
