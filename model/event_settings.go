@@ -8,7 +8,7 @@ package model
 import "github.com/Team254/cheesy-arena/game"
 
 type EventSettings struct {
-	Id                          int64 `db:"id"`
+	Id                          int `db:"id"`
 	Name                        string
 	NumElimAlliances            int
 	SelectionRound2Order        string

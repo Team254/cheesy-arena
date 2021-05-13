@@ -8,7 +8,7 @@ package model
 import "sort"
 
 type AllianceTeam struct {
-	Id           int64 `db:"id"`
+	Id           int `db:"id"`
 	AllianceId   int
 	PickPosition int
 	TeamId       int
@@ -40,7 +40,7 @@ func (database *Database) UpdateAllianceTeam(allianceTeam *AllianceTeam) error {
 	return database.allianceTeamTable.update(allianceTeam)
 }
 
-func (database *Database) DeleteAllianceTeam(id int64) error {
+func (database *Database) DeleteAllianceTeam(id int) error {
 	return database.allianceTeamTable.delete(id)
 }
 

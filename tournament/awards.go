@@ -68,7 +68,7 @@ func CreateOrUpdateAward(database *model.Database, award *model.Award, createInt
 }
 
 // Deletes the given award and any associated lower thirds.
-func DeleteAward(database *model.Database, awardId int64) error {
+func DeleteAward(database *model.Database, awardId int) error {
 	if err := database.DeleteAward(awardId); err != nil {
 		return err
 	}

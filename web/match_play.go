@@ -22,7 +22,7 @@ import (
 )
 
 type MatchPlayListItem struct {
-	Id          int64
+	Id          int
 	DisplayName string
 	Time        string
 	Status      model.MatchStatus
@@ -95,7 +95,7 @@ func (web *Web) matchPlayLoadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	matchId, _ := strconv.ParseInt(vars["matchId"], 10, 64)
+	matchId, _ := strconv.Atoi(vars["matchId"])
 	var match *model.Match
 	var err error
 	if matchId == 0 {
@@ -127,7 +127,7 @@ func (web *Web) matchPlayShowResultHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	vars := mux.Vars(r)
-	matchId, _ := strconv.ParseInt(vars["matchId"], 10, 64)
+	matchId, _ := strconv.Atoi(vars["matchId"])
 	match, err := web.arena.Database.GetMatchById(matchId)
 	if err != nil {
 		handleWebErr(w, err)

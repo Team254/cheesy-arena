@@ -113,7 +113,7 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 			continue
 		case "reorderLowerThird":
 			args := struct {
-				Id     int64
+				Id     int
 				MoveUp bool
 			}{}
 			err = mapstructure.Decode(data, &args)
@@ -160,7 +160,7 @@ func (web *Web) saveLowerThird(lowerThird *model.LowerThird) error {
 }
 
 // Swaps the lower third having the given ID with the one immediately above or below it.
-func (web *Web) reorderLowerThird(id int64, moveUp bool) error {
+func (web *Web) reorderLowerThird(id int, moveUp bool) error {
 	lowerThird, err := web.arena.Database.GetLowerThirdById(id)
 	if err != nil {
 		return err

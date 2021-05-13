@@ -16,7 +16,7 @@ import (
 )
 
 type MatchReviewListItem struct {
-	Id          int64
+	Id          int
 	DisplayName string
 	Time        string
 	RedTeams    []int
@@ -152,7 +152,7 @@ func (web *Web) getMatchResultFromRequest(r *http.Request) (*model.Match, *model
 		return web.arena.CurrentMatch, web.getCurrentMatchResult(), true, nil
 	}
 
-	matchId, _ := strconv.ParseInt(vars["matchId"], 10, 64)
+	matchId, _ := strconv.Atoi(vars["matchId"])
 	match, err := web.arena.Database.GetMatchById(matchId)
 	if err != nil {
 		return nil, nil, false, err

@@ -10,18 +10,18 @@ import (
 )
 
 type LowerThird struct {
-	Id           int64 `db:"id"`
+	Id           int `db:"id"`
 	TopText      string
 	BottomText   string
 	DisplayOrder int
-	AwardId      int64
+	AwardId      int
 }
 
 func (database *Database) CreateLowerThird(lowerThird *LowerThird) error {
 	return database.lowerThirdTable.create(lowerThird)
 }
 
-func (database *Database) GetLowerThirdById(id int64) (*LowerThird, error) {
+func (database *Database) GetLowerThirdById(id int) (*LowerThird, error) {
 	var lowerThird *LowerThird
 	err := database.lowerThirdTable.getById(id, &lowerThird)
 	return lowerThird, err
@@ -31,7 +31,7 @@ func (database *Database) UpdateLowerThird(lowerThird *LowerThird) error {
 	return database.lowerThirdTable.update(lowerThird)
 }
 
-func (database *Database) DeleteLowerThird(id int64) error {
+func (database *Database) DeleteLowerThird(id int) error {
 	return database.lowerThirdTable.delete(id)
 }
 
@@ -50,7 +50,7 @@ func (database *Database) GetAllLowerThirds() ([]LowerThird, error) {
 	return lowerThirds, nil
 }
 
-func (database *Database) GetLowerThirdsByAwardId(awardId int64) ([]LowerThird, error) {
+func (database *Database) GetLowerThirdsByAwardId(awardId int) ([]LowerThird, error) {
 	lowerThirds, err := database.GetAllLowerThirds()
 	if err != nil {
 		return nil, err

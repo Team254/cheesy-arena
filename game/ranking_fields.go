@@ -21,7 +21,7 @@ type RankingFields struct {
 }
 
 type Ranking struct {
-	TeamId       int
+	TeamId       int `db:"id,manual"`
 	Rank         int
 	PreviousRank int
 	RankingFields

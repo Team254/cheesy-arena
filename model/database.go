@@ -10,6 +10,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/jmoiron/modl"
 	_ "github.com/mattn/go-sqlite3"
 	"go.etcd.io/bbolt"
@@ -28,8 +29,6 @@ var BaseDir = "." // Mutable for testing
 type Database struct {
 	Path               string
 	db                 *sql.DB
-	rankingMap         *modl.DbMap
-	teamMap            *modl.DbMap
 	sponsorSlideMap    *modl.DbMap
 	scheduleBlockMap   *modl.DbMap
 	userSessionMap     *modl.DbMap
@@ -40,6 +39,8 @@ type Database struct {
 	lowerThirdTable    *table
 	matchTable         *table
 	matchResultTable   *table
+	rankingTable       *table
+	teamTable          *table
 }
 
 // Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
@@ -90,6 +91,12 @@ func OpenDatabase(filename string) (*Database, error) {
 	if database.matchResultTable, err = database.newTable(MatchResult{}); err != nil {
 		return nil, err
 	}
+	if database.rankingTable, err = database.newTable(game.Ranking{}); err != nil {
+		return nil, err
+	}
+	if database.teamTable, err = database.newTable(Team{}); err != nil {
+		return nil, err
+	}
 
 	return &database, nil
 }
@@ -127,12 +134,6 @@ func (database *Database) Backup(eventName, reason string) error {
 // Sets up table-object associations.
 func (database *Database) mapTables() {
 	dialect := new(modl.SqliteDialect)
-
-	database.rankingMap = modl.NewDbMap(database.db, dialect)
-	database.rankingMap.AddTableWithName(RankingDb{}, "rankings").SetKeys(false, "TeamId")
-
-	database.teamMap = modl.NewDbMap(database.db, dialect)
-	database.teamMap.AddTableWithName(Team{}, "teams").SetKeys(false, "Id")
 
 	database.sponsorSlideMap = modl.NewDbMap(database.db, dialect)
 	database.sponsorSlideMap.AddTableWithName(SponsorSlide{}, "sponsor_slides").SetKeys(true, "Id")

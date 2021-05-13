@@ -29,12 +29,12 @@ func TestTeamCrud(t *testing.T) {
 	assert.Equal(t, team, *team2)
 
 	team.Name = "Updated name"
-	db.SaveTeam(&team)
+	db.UpdateTeam(&team)
 	team2, err = db.GetTeamById(254)
 	assert.Nil(t, err)
 	assert.Equal(t, team.Name, team2.Name)
 
-	db.DeleteTeam(&team)
+	db.DeleteTeam(team.Id)
 	team2, err = db.GetTeamById(254)
 	assert.Nil(t, err)
 	assert.Nil(t, team2)

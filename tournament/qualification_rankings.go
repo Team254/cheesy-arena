@@ -122,7 +122,7 @@ func CalculateTeamCards(database *model.Database, matchType string) error {
 
 	// Save the teams to the database.
 	for _, team := range teamsMap {
-		err = database.SaveTeam(&team)
+		err = database.UpdateTeam(&team)
 		if err != nil {
 			return err
 		}
@@ -132,7 +132,9 @@ func CalculateTeamCards(database *model.Database, matchType string) error {
 }
 
 // Incrementally accounts for the given match result in the set of rankings that are being built.
-func addMatchResultToRankings(rankings map[int]*game.Ranking, teamId int, matchResult *model.MatchResult, isRed bool) {
+func addMatchResultToRankings(
+	rankings map[int]*game.Ranking, teamId int, matchResult *model.MatchResult, isRed bool,
+) {
 	ranking := rankings[teamId]
 	if ranking == nil {
 		ranking = &game.Ranking{TeamId: teamId}

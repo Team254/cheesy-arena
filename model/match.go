@@ -13,7 +13,7 @@ import (
 )
 
 type Match struct {
-	Id               int64 `db:"id"`
+	Id               int `db:"id"`
 	Type             string
 	DisplayName      string
 	Time             time.Time
@@ -54,7 +54,7 @@ func (database *Database) CreateMatch(match *Match) error {
 	return database.matchTable.create(match)
 }
 
-func (database *Database) GetMatchById(id int64) (*Match, error) {
+func (database *Database) GetMatchById(id int) (*Match, error) {
 	var match *Match
 	err := database.matchTable.getById(id, &match)
 	return match, err
@@ -64,7 +64,7 @@ func (database *Database) UpdateMatch(match *Match) error {
 	return database.matchTable.update(match)
 }
 
-func (database *Database) DeleteMatch(id int64) error {
+func (database *Database) DeleteMatch(id int) error {
 	return database.matchTable.delete(id)
 }
 

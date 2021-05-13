@@ -91,7 +91,7 @@ func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *ht
 				if allianceStation, ok := web.arena.AllianceStations[args.Station]; ok {
 					if allianceStation.Team != nil {
 						allianceStation.Team.FtaNotes = args.Notes
-						if err := web.arena.Database.SaveTeam(allianceStation.Team); err != nil {
+						if err := web.arena.Database.UpdateTeam(allianceStation.Team); err != nil {
 							ws.WriteError(err.Error())
 						}
 						web.arena.ArenaStatusNotifier.Notify()

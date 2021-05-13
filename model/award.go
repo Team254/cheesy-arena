@@ -8,7 +8,7 @@ package model
 import "sort"
 
 type Award struct {
-	Id         int64 `db:"id"`
+	Id         int `db:"id"`
 	Type       AwardType
 	AwardName  string
 	TeamId     int
@@ -27,7 +27,7 @@ func (database *Database) CreateAward(award *Award) error {
 	return database.awardTable.create(award)
 }
 
-func (database *Database) GetAwardById(id int64) (*Award, error) {
+func (database *Database) GetAwardById(id int) (*Award, error) {
 	var award *Award
 	err := database.awardTable.getById(id, &award)
 	return award, err
@@ -37,7 +37,7 @@ func (database *Database) UpdateAward(award *Award) error {
 	return database.awardTable.update(award)
 }
 
-func (database *Database) DeleteAward(id int64) error {
+func (database *Database) DeleteAward(id int) error {
 	return database.awardTable.delete(id)
 }
 

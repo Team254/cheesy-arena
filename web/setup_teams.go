@@ -80,7 +80,7 @@ func (web *Web) teamsRefreshHandler(w http.ResponseWriter, r *http.Request) {
 			handleWebErr(w, err)
 			return
 		}
-		if err = web.arena.Database.SaveTeam(&team); err != nil {
+		if err = web.arena.Database.UpdateTeam(&team); err != nil {
 			handleWebErr(w, err)
 			return
 		}
@@ -176,7 +176,7 @@ func (web *Web) teamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	team.HasConnected = r.PostFormValue("hasConnected") == "on"
-	err = web.arena.Database.SaveTeam(team)
+	err = web.arena.Database.UpdateTeam(team)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -206,7 +206,7 @@ func (web *Web) teamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("Error: No such team: %d", teamId), 400)
 		return
 	}
-	err = web.arena.Database.DeleteTeam(team)
+	err = web.arena.Database.DeleteTeam(team.Id)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -247,7 +247,7 @@ func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Reque
 	for _, team := range teams {
 		if len(team.WpaKey) == 0 || generateAllKeys {
 			team.WpaKey = uniuri.NewLen(wpaKeyLength)
-			web.arena.Database.SaveTeam(&team)
+			web.arena.Database.UpdateTeam(&team)
 		}
 	}
 

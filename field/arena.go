@@ -300,7 +300,7 @@ func (arena *Arena) StartMatch() error {
 			if allianceStation.Team != nil && !allianceStation.Team.HasConnected && allianceStation.DsConn != nil &&
 				allianceStation.DsConn.RobotLinked {
 				allianceStation.Team.HasConnected = true
-				arena.Database.SaveTeam(allianceStation.Team)
+				arena.Database.UpdateTeam(allianceStation.Team)
 			}
 		}
 

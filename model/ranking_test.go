@@ -29,7 +29,7 @@ func TestRankingCrud(t *testing.T) {
 	assert.Equal(t, ranking, ranking2)
 
 	ranking.Random = 0.1114
-	db.SaveRanking(ranking)
+	db.UpdateRanking(ranking)
 	ranking2, err = db.GetRankingForTeam(254)
 	assert.Nil(t, err)
 	assert.Equal(t, ranking.Random, ranking2.Random)

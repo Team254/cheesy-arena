@@ -10,8 +10,8 @@ import (
 )
 
 type MatchResult struct {
-	Id         int64 `db:"id"`
-	MatchId    int64
+	Id         int `db:"id"`
+	MatchId    int
 	PlayNumber int
 	MatchType  string
 	RedScore   *game.Score
@@ -34,7 +34,7 @@ func (database *Database) CreateMatchResult(matchResult *MatchResult) error {
 	return database.matchResultTable.create(matchResult)
 }
 
-func (database *Database) GetMatchResultForMatch(matchId int64) (*MatchResult, error) {
+func (database *Database) GetMatchResultForMatch(matchId int) (*MatchResult, error) {
 	var matchResults []MatchResult
 	if err := database.matchResultTable.getAll(&matchResults); err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (database *Database) UpdateMatchResult(matchResult *MatchResult) error {
 	return database.matchResultTable.update(matchResult)
 }
 
-func (database *Database) DeleteMatchResult(id int64) error {
+func (database *Database) DeleteMatchResult(id int) error {
 	return database.matchResultTable.delete(id)
 }
 

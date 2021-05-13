@@ -6,120 +6,53 @@
 package model
 
 import (
-	"encoding/json"
 	"github.com/Team254/cheesy-arena/game"
+	"sort"
 )
 
-type RankingDb struct {
-	TeamId            int
-	Rank              int
-	PreviousRank      int
-	RankingFieldsJson string
-}
-
 func (database *Database) CreateRanking(ranking *game.Ranking) error {
-	rankingDb, err := serializeRanking(ranking)
-	if err != nil {
-		return err
-	}
-	return database.rankingMap.Insert(rankingDb)
+	return database.rankingTable.create(ranking)
 }
 
 func (database *Database) GetRankingForTeam(teamId int) (*game.Ranking, error) {
-	rankingDb := new(RankingDb)
-	err := database.rankingMap.Get(rankingDb, teamId)
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		return nil, nil
-	}
-	ranking, err := rankingDb.deserialize()
-	if err != nil {
-		return nil, err
-	}
+	var ranking *game.Ranking
+	err := database.rankingTable.getById(teamId, &ranking)
 	return ranking, err
 }
 
-func (database *Database) SaveRanking(ranking *game.Ranking) error {
-	rankingDb, err := serializeRanking(ranking)
-	if err != nil {
-		return err
-	}
-	_, err = database.rankingMap.Update(rankingDb)
-	return err
+func (database *Database) UpdateRanking(ranking *game.Ranking) error {
+	return database.rankingTable.update(ranking)
 }
 
-func (database *Database) DeleteRanking(ranking *game.Ranking) error {
-	rankingDb, err := serializeRanking(ranking)
-	if err != nil {
-		return err
-	}
-	_, err = database.rankingMap.Delete(rankingDb)
-	return err
+func (database *Database) DeleteRanking(teamId int) error {
+	return database.rankingTable.delete(teamId)
 }
 
 func (database *Database) TruncateRankings() error {
-	return database.rankingMap.TruncateTables()
+	return database.rankingTable.truncate()
 }
 
 func (database *Database) GetAllRankings() (game.Rankings, error) {
-	var rankingDbs []RankingDb
-	err := database.rankingMap.Select(&rankingDbs, "SELECT * FROM rankings ORDER BY rank")
-	if err != nil {
+	var rankings []game.Ranking
+	if err := database.rankingTable.getAll(&rankings); err != nil {
 		return nil, err
 	}
-	var rankings []game.Ranking
-	for _, rankingDb := range rankingDbs {
-		ranking, err := rankingDb.deserialize()
-		if err != nil {
-			return nil, err
-		}
-		rankings = append(rankings, *ranking)
-	}
-	return rankings, err
+	sort.Slice(rankings, func(i, j int) bool {
+		return rankings[i].Rank < rankings[j].Rank
+	})
+	return rankings, nil
 }
 
-// Deletes the existing rankings and inserts the given ones as a replacement, in a single transaction.
+// Deletes the existing rankings and inserts the given ones as a replacement.
 func (database *Database) ReplaceAllRankings(rankings game.Rankings) error {
-	transaction, err := database.rankingMap.Begin()
-	if err != nil {
-		return err
-	}
-
-	_, err = transaction.Exec("DELETE FROM rankings")
-	if err != nil {
-		transaction.Rollback()
+	if err := database.rankingTable.truncate(); err != nil {
 		return err
 	}
 
 	for _, ranking := range rankings {
-		rankingDb, err := serializeRanking(&ranking)
-		if err != nil {
-			transaction.Rollback()
-			return err
-		}
-		err = transaction.Insert(rankingDb)
-		if err != nil {
-			transaction.Rollback()
+		if err := database.CreateRanking(&ranking); err != nil {
 			return err
 		}
 	}
-
-	return transaction.Commit()
-}
-
-// Converts the nested struct MatchResult to the DB version that has JSON fields.
-func serializeRanking(ranking *game.Ranking) (*RankingDb, error) {
-	rankingDb := RankingDb{TeamId: ranking.TeamId, Rank: ranking.Rank, PreviousRank: ranking.PreviousRank}
-	if err := serializeHelper(&rankingDb.RankingFieldsJson, ranking.RankingFields); err != nil {
-		return nil, err
-	}
-	return &rankingDb, nil
-}
-
-// Converts the DB Ranking with JSON fields to the nested struct version.
-func (rankingDb *RankingDb) deserialize() (*game.Ranking, error) {
-	ranking := game.Ranking{TeamId: rankingDb.TeamId, Rank: rankingDb.Rank, PreviousRank: rankingDb.PreviousRank}
-	if err := json.Unmarshal([]byte(rankingDb.RankingFieldsJson), &ranking.RankingFields); err != nil {
-		return nil, err
-	}
-	return &ranking, nil
+	return nil
 }
