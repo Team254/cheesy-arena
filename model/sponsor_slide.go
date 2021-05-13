@@ -5,8 +5,10 @@
 
 package model
 
+import "sort"
+
 type SponsorSlide struct {
-	Id             int
+	Id             int `db:"id"`
 	Subtitle       string
 	Line1          string
 	Line2          string
@@ -16,41 +18,45 @@ type SponsorSlide struct {
 }
 
 func (database *Database) CreateSponsorSlide(sponsorSlide *SponsorSlide) error {
-	return database.sponsorSlideMap.Insert(sponsorSlide)
+	return database.sponsorSlideTable.create(sponsorSlide)
 }
 
 func (database *Database) GetSponsorSlideById(id int) (*SponsorSlide, error) {
-	sponsorSlide := new(SponsorSlide)
-	err := database.sponsorSlideMap.Get(sponsorSlide, id)
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		sponsorSlide = nil
-		err = nil
-	}
+	var sponsorSlide *SponsorSlide
+	err := database.sponsorSlideTable.getById(id, &sponsorSlide)
 	return sponsorSlide, err
 }
 
-func (database *Database) SaveSponsorSlide(sponsorSlide *SponsorSlide) error {
-	_, err := database.sponsorSlideMap.Update(sponsorSlide)
-	return err
+func (database *Database) UpdateSponsorSlide(sponsorSlide *SponsorSlide) error {
+	return database.sponsorSlideTable.update(sponsorSlide)
 }
 
-func (database *Database) DeleteSponsorSlide(sponsorSlide *SponsorSlide) error {
-	_, err := database.sponsorSlideMap.Delete(sponsorSlide)
-	return err
+func (database *Database) DeleteSponsorSlide(id int) error {
+	return database.sponsorSlideTable.delete(id)
 }
 
 func (database *Database) TruncateSponsorSlides() error {
-	return database.sponsorSlideMap.TruncateTables()
+	return database.sponsorSlideTable.truncate()
 }
 
 func (database *Database) GetAllSponsorSlides() ([]SponsorSlide, error) {
 	var sponsorSlides []SponsorSlide
-	err := database.sponsorSlideMap.Select(&sponsorSlides, "SELECT * FROM sponsor_slides ORDER BY displayorder")
-	return sponsorSlides, err
+	if err := database.sponsorSlideTable.getAll(&sponsorSlides); err != nil {
+		return nil, err
+	}
+	sort.Slice(sponsorSlides, func(i, j int) bool {
+		return sponsorSlides[i].DisplayOrder < sponsorSlides[j].DisplayOrder
+	})
+	return sponsorSlides, nil
 }
 
 func (database *Database) GetNextSponsorSlideDisplayOrder() int {
-	var count int
-	_ = database.sponsorSlideMap.SelectOne(&count, "SELECT MAX(displayorder) + 1 FROM sponsor_slides")
-	return count
+	sponsorSlides, err := database.GetAllSponsorSlides()
+	if err != nil {
+		return 0
+	}
+	if len(sponsorSlides) == 0 {
+		return 1
+	}
+	return sponsorSlides[len(sponsorSlides)-1].DisplayOrder + 1
 }

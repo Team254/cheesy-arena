@@ -56,7 +56,7 @@ func (web *Web) sponsorSlidesPostHandler(w http.ResponseWriter, r *http.Request)
 	}
 	switch r.PostFormValue("action") {
 	case "delete":
-		err := web.arena.Database.DeleteSponsorSlide(sponsorSlide)
+		err := web.arena.Database.DeleteSponsorSlide(sponsorSlide.Id)
 		if err != nil {
 			handleWebErr(w, err)
 			return
@@ -76,7 +76,7 @@ func (web *Web) sponsorSlidesPostHandler(w http.ResponseWriter, r *http.Request)
 			sponsorSlide.Line2 = r.PostFormValue("line2")
 			sponsorSlide.Image = r.PostFormValue("image")
 			sponsorSlide.DisplayTimeSec = displayTimeSec
-			err = web.arena.Database.SaveSponsorSlide(sponsorSlide)
+			err = web.arena.Database.UpdateSponsorSlide(sponsorSlide)
 		}
 		if err != nil {
 			handleWebErr(w, err)
@@ -133,11 +133,11 @@ func (web *Web) reorderSponsorSlide(id int, moveUp bool) error {
 	// Swap their display orders and save.
 	sponsorSlide.DisplayOrder, adjacentSponsorSlide.DisplayOrder =
 		adjacentSponsorSlide.DisplayOrder, sponsorSlide.DisplayOrder
-	err = web.arena.Database.SaveSponsorSlide(sponsorSlide)
+	err = web.arena.Database.UpdateSponsorSlide(sponsorSlide)
 	if err != nil {
 		return err
 	}
-	err = web.arena.Database.SaveSponsorSlide(adjacentSponsorSlide)
+	err = web.arena.Database.UpdateSponsorSlide(adjacentSponsorSlide)
 	if err != nil {
 		return err
 	}

@@ -21,22 +21,22 @@ func TestSponsorSlideCrud(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	assert.Equal(t, 0, db.GetNextSponsorSlideDisplayOrder())
+	assert.Equal(t, 1, db.GetNextSponsorSlideDisplayOrder())
 
-	sponsorSlide := SponsorSlide{0, "Subtitle", "Line 1", "Line 2", "", 10, 0}
+	sponsorSlide := SponsorSlide{0, "Subtitle", "Line 1", "Line 2", "", 10, 1}
 	assert.Nil(t, db.CreateSponsorSlide(&sponsorSlide))
 	sponsorSlide2, err := db.GetSponsorSlideById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, sponsorSlide, *sponsorSlide2)
-	assert.Equal(t, 1, db.GetNextSponsorSlideDisplayOrder())
+	assert.Equal(t, 2, db.GetNextSponsorSlideDisplayOrder())
 
 	sponsorSlide.Line1 = "Blorpy"
-	db.SaveSponsorSlide(&sponsorSlide)
+	db.UpdateSponsorSlide(&sponsorSlide)
 	sponsorSlide2, err = db.GetSponsorSlideById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, sponsorSlide.Line1, sponsorSlide2.Line1)
 
-	db.DeleteSponsorSlide(&sponsorSlide)
+	db.DeleteSponsorSlide(sponsorSlide.Id)
 	sponsorSlide2, err = db.GetSponsorSlideById(1)
 	assert.Nil(t, err)
 	assert.Nil(t, sponsorSlide2)
@@ -52,5 +52,5 @@ func TestTruncateSponsorSlides(t *testing.T) {
 	sponsorSlide2, err := db.GetSponsorSlideById(1)
 	assert.Nil(t, err)
 	assert.Nil(t, sponsorSlide2)
-	assert.Equal(t, 0, db.GetNextSponsorSlideDisplayOrder())
+	assert.Equal(t, 1, db.GetNextSponsorSlideDisplayOrder())
 }

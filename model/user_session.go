@@ -8,31 +8,34 @@ package model
 import "time"
 
 type UserSession struct {
-	Id        int
+	Id        int `db:"id"`
 	Token     string
 	Username  string
 	CreatedAt time.Time
 }
 
 func (database *Database) CreateUserSession(session *UserSession) error {
-	return database.userSessionMap.Insert(session)
+	return database.userSessionTable.create(session)
 }
 
 func (database *Database) GetUserSessionByToken(token string) (*UserSession, error) {
-	session := new(UserSession)
-	err := database.userSessionMap.SelectOne(session, "SELECT * FROM user_sessions WHERE token = ?", token)
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		session = nil
-		err = nil
+	var userSessions []UserSession
+	if err := database.userSessionTable.getAll(&userSessions); err != nil {
+		return nil, err
 	}
-	return session, err
+
+	for _, userSession := range userSessions {
+		if userSession.Token == token {
+			return &userSession, nil
+		}
+	}
+	return nil, nil
 }
 
-func (database *Database) DeleteUserSession(session *UserSession) error {
-	_, err := database.userSessionMap.Delete(session)
-	return err
+func (database *Database) DeleteUserSession(id int) error {
+	return database.userSessionTable.delete(id)
 }
 
 func (database *Database) TruncateUserSessions() error {
-	return database.userSessionMap.TruncateTables()
+	return database.userSessionTable.truncate()
 }

@@ -21,7 +21,6 @@ func SetupTestArena(t *testing.T, uniqueName string) *Arena {
 	model.BaseDir = ".."
 	dbPath := filepath.Join(model.BaseDir, fmt.Sprintf("%s_test.db", uniqueName))
 	os.Remove(dbPath)
-	os.Remove(dbPath + ".bolt")
 	arena, err := NewArena(dbPath)
 	assert.Nil(t, err)
 	return arena

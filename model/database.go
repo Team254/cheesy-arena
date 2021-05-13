@@ -1,18 +1,13 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Functions for manipulating the per-event SQLite datastore.
+// Functions for manipulating the per-event Bolt datastore.
 
 package model
 
 import (
-	"bitbucket.org/liamstask/goose/lib/goose"
-	"database/sql"
-	"encoding/json"
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
-	"github.com/jmoiron/modl"
-	_ "github.com/mattn/go-sqlite3"
 	"go.etcd.io/bbolt"
 	"io"
 	"os"
@@ -22,16 +17,11 @@ import (
 )
 
 const backupsDir = "db/backups"
-const migrationsDir = "db/migrations"
 
 var BaseDir = "." // Mutable for testing
 
 type Database struct {
 	Path               string
-	db                 *sql.DB
-	sponsorSlideMap    *modl.DbMap
-	scheduleBlockMap   *modl.DbMap
-	userSessionMap     *modl.DbMap
 	bolt               *bbolt.DB
 	allianceTeamTable  *table
 	awardTable         *table
@@ -40,34 +30,17 @@ type Database struct {
 	matchTable         *table
 	matchResultTable   *table
 	rankingTable       *table
+	scheduleBlockTable *table
+	sponsorSlideTable  *table
 	teamTable          *table
+	userSessionTable   *table
 }
 
-// Opens the SQLite database at the given path, creating it if it doesn't exist, and runs any pending
-// migrations.
+// Opens the Bolt database at the given path, creating it if it doesn't exist.
 func OpenDatabase(filename string) (*Database, error) {
-	// Find and run the migrations using goose. This also auto-creates the DB.
 	database := Database{Path: filename}
-	migrationsPath := filepath.Join(BaseDir, migrationsDir)
-	dbDriver := goose.DBDriver{"sqlite3", database.Path, "github.com/mattn/go-sqlite3", &goose.Sqlite3Dialect{}}
-	dbConf := goose.DBConf{MigrationsDir: migrationsPath, Env: "prod", Driver: dbDriver}
-	target, err := goose.GetMostRecentDBVersion(migrationsPath)
-	if err != nil {
-		return nil, err
-	}
-	err = goose.RunMigrations(&dbConf, migrationsPath, target)
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := sql.Open("sqlite3", database.Path)
-	if err != nil {
-		return nil, err
-	}
-	database.db = db
-	database.mapTables()
-
-	database.bolt, err = bbolt.Open(database.Path+".bolt", 0644, &bbolt.Options{NoSync: true, Timeout: time.Second})
+	var err error
+	database.bolt, err = bbolt.Open(database.Path, 0644, &bbolt.Options{NoSync: true, Timeout: time.Second})
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +67,16 @@ func OpenDatabase(filename string) (*Database, error) {
 	if database.rankingTable, err = database.newTable(game.Ranking{}); err != nil {
 		return nil, err
 	}
+	if database.scheduleBlockTable, err = database.newTable(ScheduleBlock{}); err != nil {
+		return nil, err
+	}
+	if database.sponsorSlideTable, err = database.newTable(SponsorSlide{}); err != nil {
+		return nil, err
+	}
 	if database.teamTable, err = database.newTable(Team{}); err != nil {
+		return nil, err
+	}
+	if database.userSessionTable, err = database.newTable(UserSession{}); err != nil {
 		return nil, err
 	}
 
@@ -102,7 +84,6 @@ func OpenDatabase(filename string) (*Database, error) {
 }
 
 func (database *Database) Close() error {
-	database.db.Close()
 	return database.bolt.Close()
 }
 
@@ -128,28 +109,5 @@ func (database *Database) Backup(eventName, reason string) error {
 	if _, err := io.Copy(dest, src); err != nil {
 		return err
 	}
-	return nil
-}
-
-// Sets up table-object associations.
-func (database *Database) mapTables() {
-	dialect := new(modl.SqliteDialect)
-
-	database.sponsorSlideMap = modl.NewDbMap(database.db, dialect)
-	database.sponsorSlideMap.AddTableWithName(SponsorSlide{}, "sponsor_slides").SetKeys(true, "Id")
-
-	database.scheduleBlockMap = modl.NewDbMap(database.db, dialect)
-	database.scheduleBlockMap.AddTableWithName(ScheduleBlock{}, "schedule_blocks").SetKeys(true, "Id")
-
-	database.userSessionMap = modl.NewDbMap(database.db, dialect)
-	database.userSessionMap.AddTableWithName(UserSession{}, "user_sessions").SetKeys(true, "Id")
-}
-
-func serializeHelper(target *string, source interface{}) error {
-	bytes, err := json.Marshal(source)
-	if err != nil {
-		return err
-	}
-	*target = string(bytes)
 	return nil
 }

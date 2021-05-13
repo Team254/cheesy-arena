@@ -5,6 +5,9 @@ package web
 
 import (
 	"bytes"
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"mime/multipart"
@@ -44,63 +47,61 @@ func TestSetupSettingsInvalidValues(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "must be between 2 and 16")
 }
 
-// TODO(pat): Re-enable this test once fully migrated over to Bolt.
-//func TestSetupSettingsClearDb(t *testing.T) {
-//	web := setupTestWeb(t)
-//
-//	web.arena.Database.CreateTeam(new(model.Team))
-//	web.arena.Database.CreateMatch(&model.Match{Type: "qualification"})
-//	web.arena.Database.CreateMatchResult(new(model.MatchResult))
-//	web.arena.Database.CreateRanking(new(game.Ranking))
-//	web.arena.Database.CreateAllianceTeam(new(model.AllianceTeam))
-//	recorder := web.postHttpResponse("/setup/db/clear", "")
-//	assert.Equal(t, 303, recorder.Code)
-//
-//	teams, _ := web.arena.Database.GetAllTeams()
-//	assert.NotEmpty(t, teams)
-//	matches, _ := web.arena.Database.GetMatchesByType("qualification")
-//	assert.Empty(t, matches)
-//	rankings, _ := web.arena.Database.GetAllRankings()
-//	assert.Empty(t, rankings)
-//	tournament.CalculateRankings(web.arena.Database, false)
-//	assert.Empty(t, rankings)
-//	alliances, _ := web.arena.Database.GetAllAlliances()
-//	assert.Empty(t, alliances)
-//}
+func TestSetupSettingsClearDb(t *testing.T) {
+	web := setupTestWeb(t)
 
-// TODO(pat): Re-enable this test once fully migrated over to Bolt.
-//func TestSetupSettingsBackupRestoreDb(t *testing.T) {
-//	web := setupTestWeb(t)
-//
-//	// Modify a parameter so that we know when the database has been restored.
-//	web.arena.EventSettings.Name = "Chezy Champs"
-//	assert.Nil(t, web.arena.Database.UpdateEventSettings(web.arena.EventSettings))
-//
-//	// Back up the database.
-//	recorder := web.getHttpResponse("/setup/db/save")
-//	assert.Equal(t, 200, recorder.Code)
-//	assert.Equal(t, "application/octet-stream", recorder.HeaderMap["Content-Type"][0])
-//	backupBody := recorder.Body
-//
-//	// Wipe the database to reset the defaults.
-//	web = setupTestWeb(t)
-//	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
-//
-//	// Check restoring with a missing file.
-//	recorder = web.postHttpResponse("/setup/db/restore", "")
-//	assert.Contains(t, recorder.Body.String(), "No database backup file was specified")
-//	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
-//
-//	// Check restoring with a corrupt file.
-//	recorder = web.postFileHttpResponse("/setup/db/restore", "databaseFile",
-//		bytes.NewBufferString("invalid"))
-//	assert.Contains(t, recorder.Body.String(), "Could not read uploaded database backup file")
-//	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
-//
-//	// Check restoring with the backup retrieved before.
-//	recorder = web.postFileHttpResponse("/setup/db/restore", "databaseFile", backupBody)
-//	assert.Equal(t, "Chezy Champs", web.arena.EventSettings.Name)
-//}
+	assert.Nil(t, web.arena.Database.CreateTeam(&model.Team{Id: 254}))
+	assert.Nil(t, web.arena.Database.CreateMatch(&model.Match{Type: "qualification"}))
+	assert.Nil(t, web.arena.Database.CreateMatchResult(new(model.MatchResult)))
+	assert.Nil(t, web.arena.Database.CreateRanking(&game.Ranking{TeamId: 254}))
+	assert.Nil(t, web.arena.Database.CreateAllianceTeam(new(model.AllianceTeam)))
+	recorder := web.postHttpResponse("/setup/db/clear", "")
+	assert.Equal(t, 303, recorder.Code)
+
+	teams, _ := web.arena.Database.GetAllTeams()
+	assert.NotEmpty(t, teams)
+	matches, _ := web.arena.Database.GetMatchesByType("qualification")
+	assert.Empty(t, matches)
+	rankings, _ := web.arena.Database.GetAllRankings()
+	assert.Empty(t, rankings)
+	tournament.CalculateRankings(web.arena.Database, false)
+	assert.Empty(t, rankings)
+	alliances, _ := web.arena.Database.GetAllAlliances()
+	assert.Empty(t, alliances)
+}
+
+func TestSetupSettingsBackupRestoreDb(t *testing.T) {
+	web := setupTestWeb(t)
+
+	// Modify a parameter so that we know when the database has been restored.
+	web.arena.EventSettings.Name = "Chezy Champs"
+	assert.Nil(t, web.arena.Database.UpdateEventSettings(web.arena.EventSettings))
+
+	// Back up the database.
+	recorder := web.getHttpResponse("/setup/db/save")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "application/octet-stream", recorder.HeaderMap["Content-Type"][0])
+	backupBody := recorder.Body
+
+	// Wipe the database to reset the defaults.
+	web = setupTestWeb(t)
+	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
+
+	// Check restoring with a missing file.
+	recorder = web.postHttpResponse("/setup/db/restore", "")
+	assert.Contains(t, recorder.Body.String(), "No database backup file was specified")
+	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
+
+	// Check restoring with a corrupt file.
+	recorder = web.postFileHttpResponse("/setup/db/restore", "databaseFile",
+		bytes.NewBufferString("invalid"))
+	assert.Contains(t, recorder.Body.String(), "Could not read uploaded database backup file")
+	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
+
+	// Check restoring with the backup retrieved before.
+	recorder = web.postFileHttpResponse("/setup/db/restore", "databaseFile", backupBody)
+	assert.Equal(t, "Chezy Champs", web.arena.EventSettings.Name)
+}
 
 func (web *Web) postFileHttpResponse(path string, paramName string, file *bytes.Buffer) *httptest.ResponseRecorder {
 	body := new(bytes.Buffer)

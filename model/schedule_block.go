@@ -6,11 +6,12 @@
 package model
 
 import (
+	"sort"
 	"time"
 )
 
 type ScheduleBlock struct {
-	Id              int
+	Id              int `db:"id"`
 	MatchType       string
 	StartTime       time.Time
 	NumMatches      int
@@ -18,21 +19,42 @@ type ScheduleBlock struct {
 }
 
 func (database *Database) CreateScheduleBlock(block *ScheduleBlock) error {
-	return database.scheduleBlockMap.Insert(block)
+	return database.scheduleBlockTable.create(block)
 }
 
 func (database *Database) GetScheduleBlocksByMatchType(matchType string) ([]ScheduleBlock, error) {
-	var blocks []ScheduleBlock
-	err := database.scheduleBlockMap.Select(&blocks, "SELECT * FROM schedule_blocks WHERE matchtype = ? ORDER BY "+
-		"starttime ", matchType)
-	return blocks, err
+	var scheduleBlocks []ScheduleBlock
+	if err := database.scheduleBlockTable.getAll(&scheduleBlocks); err != nil {
+		return nil, err
+	}
+
+	var matchingScheduleBlocks []ScheduleBlock
+	for _, scheduleBlock := range scheduleBlocks {
+		if scheduleBlock.MatchType == matchType {
+			matchingScheduleBlocks = append(matchingScheduleBlocks, scheduleBlock)
+		}
+	}
+
+	sort.Slice(matchingScheduleBlocks, func(i, j int) bool {
+		return matchingScheduleBlocks[i].StartTime.Before(matchingScheduleBlocks[j].StartTime)
+	})
+	return matchingScheduleBlocks, nil
 }
 
 func (database *Database) DeleteScheduleBlocksByMatchType(matchType string) error {
-	_, err := database.scheduleBlockMap.Exec("DELETE FROM schedule_blocks WHERE matchtype = ?", matchType)
-	return err
+	scheduleBlocks, err := database.GetScheduleBlocksByMatchType(matchType)
+	if err != nil {
+		return err
+	}
+
+	for _, scheduleBlock := range scheduleBlocks {
+		if err = database.scheduleBlockTable.delete(scheduleBlock.Id); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (database *Database) TruncateScheduleBlocks() error {
-	return database.scheduleBlockMap.TruncateTables()
+	return database.scheduleBlockTable.truncate()
 }

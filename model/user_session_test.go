@@ -31,7 +31,7 @@ func TestUserSessionCrud(t *testing.T) {
 	assert.Equal(t, session.Username, session2.Username)
 	assert.True(t, session.CreatedAt.Equal(session2.CreatedAt))
 
-	db.DeleteUserSession(&session)
+	db.DeleteUserSession(session.Id)
 	session2, err = db.GetUserSessionByToken("token1")
 	assert.Nil(t, err)
 	assert.Nil(t, session2)
