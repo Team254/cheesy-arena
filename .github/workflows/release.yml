@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Build Linux bundle
         run: |
-          rm cheesy-arena*
+          rm -f cheesy-arena*
           GOOS=linux GOARCH=amd64 go build
           zip -r -X cheesy-arena.{{ github.ref }}.linux.x64.zip LICENSE README.md access_point_config.tar.gz \
               cheesy-arena fix_avatar_colors_for_overlay font schedules static switch_config.txt templates tunnel
