@@ -47,7 +47,6 @@ jobs:
           zip -r -X ${{ env.LINUX_X64_FILENAME }} cheesy-arena
 
       - name: Upload Linux bundle
-        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -66,7 +65,6 @@ jobs:
           zip -r -X ${{ env.MACOS_X64_FILENAME }} cheesy-arena
 
       - name: Upload MacOS x64 bundle
-        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -85,7 +83,6 @@ jobs:
           zip -r -X ${{ env.MACOS_M1_FILENAME }} cheesy-arena
 
       - name: Upload MacOS M1 bundle
-        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -104,7 +101,6 @@ jobs:
           zip -r -X ${{ env.WINDOWS_X64_FILENAME }} cheesy-arena
 
       - name: Upload Windows bundle
-        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
