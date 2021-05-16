@@ -12,8 +12,8 @@ jobs:
     steps:
       - name: Set additional environment variables
         run: |
-          echo ::set-env name=TAG::$(echo ${GITHUB_REF:10})
-          echo ::set-env name=LINUX_X64_FILENAME::$(echo cheesy-arena.${TAG}.linux.x64.zip)
+          echo "TAG=${GITHUB_REF:10}" >> $GITHUB_ENV
+          echo "LINUX_X64_FILENAME=cheesy-arena.$TAG.linux.x64.zip" >> $GITHUB_ENV
       - name: Install Go
         uses: actions/setup-go@v2
         with:
