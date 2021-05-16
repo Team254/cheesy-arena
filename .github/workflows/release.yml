@@ -20,9 +20,9 @@ jobs:
       - name: Build Linux bundle
         run: |
           rm -rf cheesy-arena*
-          GOOS=linux GOARCH=amd64 go build
           mkdir cheesy-arena
-          cp -r cheesy-arena ${{ env.ASSET_FILES }} cheesy-arena/
+          GOOS=linux GOARCH=amd64 go build -o cheesy-arena/
+          cp -r ${{ env.ASSET_FILES }} cheesy-arena/
           zip -r -X ${{ env.LINUX_X64_FILENAME }} cheesy-arena
       - name: Create release
         id: create_release
