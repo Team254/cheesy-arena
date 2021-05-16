@@ -1,0 +1,43 @@
+on:
+  push:
+    tags:
+      - "v*""
+name: Create Release
+jobs:
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.x
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Build Linux bundle
+        run: |
+          rm cheesy-arena*
+          GOOS=linux GOARCH=amd64 go build
+          zip -r -X cheesy-arena.{{ github.ref }}.linux.x64.zip LICENSE README.md access_point_config.tar.gz \
+              cheesy-arena fix_avatar_colors_for_overlay font schedules static switch_config.txt templates tunnel
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Cheesy Arena ${{ github.ref }}
+          body: This is a pre-built release of Cheesy Arena for various supported operating systems.
+          draft: false
+          prerelease: false
+      - name: Upload Linux bundle
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./cheesy-arena.{{ github.ref }}.linux.x64.zip
+          asset_name: cheesy-arena.{{ github.ref }}.linux.x64.zip
+          asset_content_type: application/zip
