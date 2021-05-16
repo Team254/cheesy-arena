@@ -96,18 +96,23 @@ func (database *Database) Backup(eventName, reason string) error {
 	}
 	filename := fmt.Sprintf("%s/%s_%s_%s.db", backupsPath, strings.Replace(eventName, " ", "_", -1),
 		time.Now().Format("20060102150405"), reason)
-	src, err := os.Open(database.Path)
-	if err != nil {
-		return err
-	}
-	defer src.Close()
+
 	dest, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer dest.Close()
-	if _, err := io.Copy(dest, src); err != nil {
+
+	if err = database.WriteBackup(dest); err != nil {
 		return err
 	}
 	return nil
+}
+
+// Takes a snapshot of Bolt database and writes it to the given writer.
+func (database *Database) WriteBackup(writer io.Writer) error {
+	return database.bolt.View(func(tx *bbolt.Tx) error {
+		_, err := tx.WriteTo(writer)
+		return err
+	})
 }

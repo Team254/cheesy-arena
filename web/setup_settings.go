@@ -114,16 +114,14 @@ func (web *Web) saveDbHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbFile, err := os.Open(web.arena.Database.Path)
-	defer dbFile.Close()
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
 	filename := fmt.Sprintf("%s-%s.db", strings.Replace(web.arena.EventSettings.Name, " ", "_", -1),
 		time.Now().Format("20060102150405"))
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
-	http.ServeContent(w, r, "", time.Now(), dbFile)
+
+	if err := web.arena.Database.WriteBackup(w); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }
 
 // Accepts an event database file as an upload and loads it.
