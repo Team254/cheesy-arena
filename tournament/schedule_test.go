@@ -29,12 +29,12 @@ func TestNonExistentSchedule(t *testing.T) {
 }
 
 func TestMalformedSchedule(t *testing.T) {
-	filename := fmt.Sprintf("%s/6_1.csv", filepath.Join(model.BaseDir, schedulesDir))
+	filename := fmt.Sprintf("%s/5_1.csv", filepath.Join(model.BaseDir, schedulesDir))
 	scheduleFile, _ := os.Create(filename)
 	defer os.Remove(filename)
 	scheduleFile.WriteString("1,0,2,0,3,0,4,0,5,0,6,0\n6,0,5,0,4,0,3,0,2,0,1,0\n")
 	scheduleFile.Close()
-	teams := make([]model.Team, 6)
+	teams := make([]model.Team, 5)
 	scheduleBlocks := []model.ScheduleBlock{{0, "", time.Unix(0, 0).UTC(), 1, 60}}
 	_, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
 	expectedErr := "Schedule file contains 2 matches, expected 1"
