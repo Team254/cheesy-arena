@@ -19,10 +19,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestNonExistentSchedule(t *testing.T) {
-	teams := make([]model.Team, 6)
+	teams := make([]model.Team, 5)
 	scheduleBlocks := []model.ScheduleBlock{{0, "", time.Unix(0, 0).UTC(), 2, 60}}
 	_, err := BuildRandomSchedule(teams, scheduleBlocks, "test")
-	expectedErr := "No schedule template exists for 6 teams and 2 matches"
+	expectedErr := "No schedule template exists for 5 teams and 2 matches"
 	if assert.NotNil(t, err) {
 		assert.Equal(t, expectedErr, err.Error())
 	}

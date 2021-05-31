@@ -60,14 +60,14 @@ func TestSetupScheduleErrors(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "No team list is configured.")
 
 	// Insufficient number of teams.
-	for i := 0; i < 17; i++ {
+	for i := 0; i < 5; i++ {
 		web.arena.Database.CreateTeam(&model.Team{Id: i + 101})
 	}
 	postData = "numScheduleBlocks=1&startTime0=2014-01-01 09:00:00 AM&numMatches0=7&matchSpacingSec0=480&" +
 		"matchType=practice"
 	recorder = web.postHttpResponse("/setup/schedule/generate", postData)
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "There must be at least 18 teams to generate a schedule.")
+	assert.Contains(t, recorder.Body.String(), "There must be at least 6 teams to generate a schedule.")
 
 	// More matches per team than schedules exist for.
 	web.arena.Database.CreateTeam(&model.Team{Id: 118})
@@ -75,7 +75,7 @@ func TestSetupScheduleErrors(t *testing.T) {
 		"matchType=practice"
 	recorder = web.postHttpResponse("/setup/schedule/generate", postData)
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "No schedule template exists for 18 teams and 233 matches")
+	assert.Contains(t, recorder.Body.String(), "No schedule template exists for 6 teams and 700 matches")
 
 	// Incomplete scheduling data received.
 	postData = "numScheduleBlocks=1&startTime0=2014-01-01 09:00:00 AM&numMatches0=&matchSpacingSec0=480&" +
