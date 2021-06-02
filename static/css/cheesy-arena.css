@@ -75,10 +75,12 @@
   font-size: 16px;
 }
 .label-scoring {
-  background-color: #e66;
+  background-color: #fc0;
+  color:#333
 }
 .label-scoring[data-ready=true] {
-  background-color: #0c6;
+  background-color: #007acc;
+  color:white;
 }
 .nowrap {
   white-space: nowrap;
