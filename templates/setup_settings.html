@@ -269,21 +269,38 @@
             </div>
           </div>
           <div class="form-group">
+            <label class="col-lg-8 control-label">Remove Control Panel (i.e. Chezy Champs rules)</label>
+            <div class="col-lg-1 checkbox">
+              <input type="checkbox" id="controlPanelDisabled" name="controlPanelDisabled"
+                {{if .ControlPanelDisabled}} checked{{end}} onchange="controlPanelDisabledChanged();">
+            </div>
+          </div>
+          <div class="form-group">
             <label class="col-lg-5 control-label">Stage 1 Capacity</label>
             <div class="col-lg-7">
-              <input type="text" class="form-control" name="stage1Capacity" value="{{.Stage1Capacity}}">
+              <input type="text" class="form-control" id="stage1Capacity" name="stage1Capacity"
+                value="{{.Stage1Capacity}}">
             </div>
           </div>
           <div class="form-group">
             <label class="col-lg-5 control-label">Stage 2 Capacity</label>
             <div class="col-lg-7">
-              <input type="text" class="form-control" name="stage2Capacity" value="{{.Stage2Capacity}}">
+              <input type="text" class="form-control" id="stage2Capacity" name="stage2Capacity"
+                value="{{.Stage2Capacity}}">
             </div>
           </div>
           <div class="form-group">
             <label class="col-lg-5 control-label">Stage 3 Capacity</label>
             <div class="col-lg-7">
-              <input type="text" class="form-control" name="stage3Capacity" value="{{.Stage3Capacity}}">
+              <input type="text" class="form-control" id="stage3Capacity" name="stage3Capacity"
+                value="{{.Stage3Capacity}}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">Power Cells to Score for RP When Control Panel Disabled</label>
+            <div class="col-lg-7">
+              <input type="text" class="form-control" id="capacityWhenControlPanelDisabled"
+                name="capacityWhenControlPanelDisabled" value="{{.CapacityWhenControlPanelDisabled}}">
             </div>
           </div>
         </fieldset>
@@ -355,4 +372,14 @@
 </div>
 {{end}}
 {{define "script"}}
+<script>
+  var controlPanelDisabledChanged = function () {
+    let controlPanelDisabled = $("#controlPanelDisabled").prop("checked");
+    $("#stage1Capacity").prop("readonly", controlPanelDisabled);
+    $("#stage2Capacity").prop("readonly", controlPanelDisabled);
+    $("#stage3Capacity").prop("readonly", controlPanelDisabled);
+    $("#capacityWhenControlPanelDisabled").prop("readonly", !controlPanelDisabled);
+  };
+  controlPanelDisabledChanged();
+</script>
 {{end}}

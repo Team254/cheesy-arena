@@ -78,6 +78,9 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.Stage1Capacity, _ = strconv.Atoi(r.PostFormValue("stage1Capacity"))
 	eventSettings.Stage2Capacity, _ = strconv.Atoi(r.PostFormValue("stage2Capacity"))
 	eventSettings.Stage3Capacity, _ = strconv.Atoi(r.PostFormValue("stage3Capacity"))
+	eventSettings.ControlPanelDisabled = r.PostFormValue("controlPanelDisabled") == "on"
+	eventSettings.CapacityWhenControlPanelDisabled, _ =
+		strconv.Atoi(r.PostFormValue("capacityWhenControlPanelDisabled"))
 
 	if eventSettings.Ap2TeamChannel != 0 && eventSettings.Ap2TeamChannel == eventSettings.ApTeamChannel {
 		web.renderSettings(w, r, "Cannot use same channel for both access points.")

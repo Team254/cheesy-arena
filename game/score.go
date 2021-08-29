@@ -39,6 +39,9 @@ type ScoreSummary struct {
 	EndgameRankingPoint      bool
 }
 
+var ControlPanelDisabled = false
+var CapacityWhenControlPanelDisabled = 50
+
 // Defines the number of power cells that must be scored within each Stage before it can be activated.
 var StageCapacities = map[Stage]int{
 	Stage1: 9,
@@ -96,16 +99,23 @@ func (score *Score) Summarize(opponentFouls []Foul, teleopStarted bool) *ScoreSu
 	summary.PowerCellPoints = summary.AutoPowerCellPoints + summary.TeleopPowerCellPoints
 
 	// Calculate control panel points and stages.
-	for i := Stage1; i <= Stage3; i++ {
-		summary.StagesActivated[i] = score.stageActivated(i, teleopStarted)
-		summary.StagePowerCellsRemaining[i] = int(math.Max(0, float64(StageCapacities[i]-score.stagePowerCells(i))))
-	}
-	if summary.StagesActivated[Stage2] {
-		summary.ControlPanelPoints += 15
-	}
-	if summary.StagesActivated[Stage3] {
-		summary.ControlPanelPoints += 20
-		summary.ControlPanelRankingPoint = true
+	if ControlPanelDisabled {
+		totalCells := score.stagePowerCells(Stage1)
+		summary.ControlPanelRankingPoint = totalCells >= CapacityWhenControlPanelDisabled
+		summary.StagePowerCellsRemaining[Stage1] =
+			int(math.Max(0, float64(CapacityWhenControlPanelDisabled-totalCells)))
+	} else {
+		for i := Stage1; i <= Stage3; i++ {
+			summary.StagesActivated[i] = score.stageActivated(i, teleopStarted)
+			summary.StagePowerCellsRemaining[i] = int(math.Max(0, float64(StageCapacities[i]-score.stagePowerCells(i))))
+		}
+		if summary.StagesActivated[Stage2] {
+			summary.ControlPanelPoints += 15
+		}
+		if summary.StagesActivated[Stage3] {
+			summary.ControlPanelPoints += 20
+			summary.ControlPanelRankingPoint = true
+		}
 	}
 
 	// Calculate endgame points.
@@ -170,6 +180,10 @@ func (score *Score) Equals(other *Score) bool {
 
 // Returns the Stage (1-3) that the score represents, in terms of which Stage scored power cells should count towards.
 func (score *Score) CellCountingStage(teleopStarted bool) Stage {
+	if ControlPanelDisabled {
+		return Stage1
+	}
+
 	if score.stageActivated(Stage3, teleopStarted) {
 		return StageExtra
 	}

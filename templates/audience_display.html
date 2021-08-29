@@ -91,7 +91,9 @@
           <span class="valign-cell">
             <span id="leftFinalInitiationLinePoints"></span><br />
             <span id="leftFinalPowerCellPoints"></span><br />
-            <span id="leftFinalControlPanelPoints"></span><br />
+            {{if not .EventSettings.ControlPanelDisabled}}
+              <span id="leftFinalControlPanelPoints"></span><br />
+            {{end}}
             <span id="leftFinalEndgamePoints"></span><br />
             <span id="leftFinalFoulPoints"></span><br />
             <span id="leftFinalControlPanelRankingPoint"></span><br />
@@ -100,15 +102,24 @@
         </div>
         <div class="final-breakdown" id="centerFinalBreakdown">
           <span class="valign-cell">
-            Initiation Line<br />Power Cell<br />Control Panel<br />Endgame<br />Foul<br />
-            Shield Energized<br />Shield Operational
+            Initiation Line<br />
+            Power Cell<br />
+            {{if not .EventSettings.ControlPanelDisabled}}
+              Control Panel<br />
+            {{end}}
+            Endgame<br />
+            Foul<br />
+            Shield Energized<br />
+            Shield Operational
           </span>
         </div>
         <div class="final-breakdown" id="rightFinalBreakdown">
           <span class="valign-cell">
             <span id="rightFinalInitiationLinePoints"></span><br />
             <span id="rightFinalPowerCellPoints"></span><br />
-            <span id="rightFinalControlPanelPoints"></span><br />
+            {{if not .EventSettings.ControlPanelDisabled}}
+              <span id="rightFinalControlPanelPoints"></span><br />
+            {{end}}
             <span id="rightFinalEndgamePoints"></span><br />
             <span id="rightFinalFoulPoints"></span><br />
             <span id="rightFinalControlPanelRankingPoint"></span><br />

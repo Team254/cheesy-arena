@@ -167,6 +167,8 @@ func (arena *Arena) LoadSettings() error {
 	game.StageCapacities[game.Stage1] = settings.Stage1Capacity
 	game.StageCapacities[game.Stage2] = settings.Stage2Capacity
 	game.StageCapacities[game.Stage3] = settings.Stage3Capacity
+	game.ControlPanelDisabled = settings.ControlPanelDisabled
+	game.CapacityWhenControlPanelDisabled = settings.CapacityWhenControlPanelDisabled
 
 	return nil
 }
@@ -792,17 +794,19 @@ func (arena *Arena) handlePlcInput() {
 		blueScore.TeleopCellsInner = bluePowerPort.TeleopCellsInner
 
 		// Handle control panel.
-		redColor, redSegmentCount, blueColor, blueSegmentCount := arena.Plc.GetControlPanels()
-		redControlPanel := &arena.RedRealtimeScore.ControlPanel
-		redControlPanel.CurrentColor = redColor
-		redControlPanel.UpdateState(redSegmentCount, redScore.StageAtCapacity(game.Stage2, teleopStarted),
-			redScore.StageAtCapacity(game.Stage3, teleopStarted), currentTime)
-		redScore.ControlPanelStatus = redControlPanel.ControlPanelStatus
-		blueControlPanel := &arena.BlueRealtimeScore.ControlPanel
-		blueControlPanel.CurrentColor = blueColor
-		blueControlPanel.UpdateState(blueSegmentCount, blueScore.StageAtCapacity(game.Stage2, teleopStarted),
-			blueScore.StageAtCapacity(game.Stage3, teleopStarted), currentTime)
-		blueScore.ControlPanelStatus = blueControlPanel.ControlPanelStatus
+		if !arena.EventSettings.ControlPanelDisabled {
+			redColor, redSegmentCount, blueColor, blueSegmentCount := arena.Plc.GetControlPanels()
+			redControlPanel := &arena.RedRealtimeScore.ControlPanel
+			redControlPanel.CurrentColor = redColor
+			redControlPanel.UpdateState(redSegmentCount, redScore.StageAtCapacity(game.Stage2, teleopStarted),
+				redScore.StageAtCapacity(game.Stage3, teleopStarted), currentTime)
+			redScore.ControlPanelStatus = redControlPanel.ControlPanelStatus
+			blueControlPanel := &arena.BlueRealtimeScore.ControlPanel
+			blueControlPanel.CurrentColor = blueColor
+			blueControlPanel.UpdateState(blueSegmentCount, blueScore.StageAtCapacity(game.Stage2, teleopStarted),
+				blueScore.StageAtCapacity(game.Stage3, teleopStarted), currentTime)
+			blueScore.ControlPanelStatus = blueControlPanel.ControlPanelStatus
+		}
 
 		// Handle shield generator rungs.
 		if game.ShouldAssessRung(matchStartTime, currentTime) {
@@ -810,16 +814,18 @@ func (arena *Arena) handlePlcInput() {
 		}
 	}
 
-	// Check if either alliance has reached Stage 3 capacity.
-	if redScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
-		redScore.PositionControlTargetColor == game.ColorUnknown ||
-		blueScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
-			blueScore.PositionControlTargetColor == game.ColorUnknown {
-		// Determine the position control target colors and send packets to inform the driver stations.
-		redScore.PositionControlTargetColor = arena.RedRealtimeScore.ControlPanel.GetPositionControlTargetColor()
-		blueScore.PositionControlTargetColor = arena.BlueRealtimeScore.ControlPanel.GetPositionControlTargetColor()
-		arena.sendGameDataPacket(redScore.PositionControlTargetColor, "R1", "R2", "R3")
-		arena.sendGameDataPacket(blueScore.PositionControlTargetColor, "B1", "B2", "B3")
+	if !arena.EventSettings.ControlPanelDisabled {
+		// Check if either alliance has reached Stage 3 capacity.
+		if redScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
+			redScore.PositionControlTargetColor == game.ColorUnknown ||
+			blueScore.StageAtCapacity(game.Stage3, arena.MatchState >= TeleopPeriod) &&
+				blueScore.PositionControlTargetColor == game.ColorUnknown {
+			// Determine the position control target colors and send packets to inform the driver stations.
+			redScore.PositionControlTargetColor = arena.RedRealtimeScore.ControlPanel.GetPositionControlTargetColor()
+			blueScore.PositionControlTargetColor = arena.BlueRealtimeScore.ControlPanel.GetPositionControlTargetColor()
+			arena.sendGameDataPacket(redScore.PositionControlTargetColor, "R1", "R2", "R3")
+			arena.sendGameDataPacket(blueScore.PositionControlTargetColor, "B1", "B2", "B3")
+		}
 	}
 
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {

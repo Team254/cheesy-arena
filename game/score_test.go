@@ -9,6 +9,8 @@ import (
 )
 
 func TestScoreSummary(t *testing.T) {
+	ControlPanelDisabled = false
+
 	redScore := TestScore1()
 	blueScore := TestScore2()
 
@@ -54,7 +56,57 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 0, blueScore.Summarize(redScore.Fouls, true).Score)
 }
 
+func TestScoreSummaryControlPanelDisabled(t *testing.T) {
+	ControlPanelDisabled = true
+	CapacityWhenControlPanelDisabled = 24
+
+	score := Score{}
+	scoreSummary := score.Summarize([]Foul{}, true)
+	assert.False(t, scoreSummary.ControlPanelRankingPoint)
+	assert.Equal(t, 24, scoreSummary.StagePowerCellsRemaining[Stage1])
+	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage2])
+	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage3])
+
+	score.AutoCellsBottom[Stage1] = 1
+	score.AutoCellsOuter[Stage1] = 2
+	score.AutoCellsInner[Stage1] = 3
+	score.AutoCellsBottom[Stage2] = 100
+	score.AutoCellsOuter[Stage2] = 100
+	score.AutoCellsInner[Stage2] = 100
+	score.TeleopCellsBottom[Stage1] = 4
+	score.TeleopCellsOuter[Stage1] = 5
+	score.TeleopCellsInner[Stage1] = 6
+	score.TeleopCellsBottom[Stage2] = 100
+	score.TeleopCellsOuter[Stage2] = 100
+	score.TeleopCellsInner[Stage2] = 100
+	score.TeleopCellsBottom[Stage3] = 100
+	score.TeleopCellsOuter[Stage3] = 100
+	score.TeleopCellsInner[Stage3] = 100
+	score.TeleopCellsBottom[StageExtra] = 100
+	score.TeleopCellsOuter[StageExtra] = 100
+	score.TeleopCellsInner[StageExtra] = 100
+	scoreSummary = score.Summarize([]Foul{}, true)
+	assert.False(t, scoreSummary.ControlPanelRankingPoint)
+	assert.Equal(t, 3, scoreSummary.StagePowerCellsRemaining[Stage1])
+	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage2])
+	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage3])
+
+	score.TeleopCellsBottom[Stage1] = 10
+	score.TeleopCellsOuter[Stage1] = 10
+	score.TeleopCellsInner[Stage1] = 10
+	scoreSummary = score.Summarize([]Foul{}, true)
+	assert.True(t, scoreSummary.ControlPanelRankingPoint)
+	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage1])
+	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage2])
+	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage3])
+	assert.False(t, scoreSummary.StagesActivated[Stage1])
+	assert.False(t, scoreSummary.StagesActivated[Stage2])
+	assert.False(t, scoreSummary.StagesActivated[Stage3])
+}
+
 func TestScoreSummaryRungIsLevel(t *testing.T) {
+	ControlPanelDisabled = false
+
 	var score Score
 	assert.Equal(t, 0, score.Summarize([]Foul{}, true).EndgamePoints)
 	score.RungIsLevel = true
@@ -92,6 +144,8 @@ func TestScoreSummaryRungIsLevel(t *testing.T) {
 }
 
 func TestScoreSummaryBoundaryConditions(t *testing.T) {
+	ControlPanelDisabled = false
+
 	// Test control panel boundary conditions.
 	score := TestScore2()
 	summary := score.Summarize(score.Fouls, true)
@@ -164,6 +218,8 @@ func TestScoreSummaryBoundaryConditions(t *testing.T) {
 }
 
 func TestScoreSummaryRankingPointFoul(t *testing.T) {
+	ControlPanelDisabled = false
+
 	fouls := []Foul{{14, 0, 0}}
 	score1 := TestScore1()
 	score2 := TestScore2()
