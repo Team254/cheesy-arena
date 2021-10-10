@@ -489,9 +489,9 @@ var getRankingText = function(teamId, rankings) {
   }
   var arrow = "";
   if (ranking.Rank > ranking.PreviousRank && ranking.PreviousRank > 0) {
-    arrow = "&#11015;";
+    arrow = "<span class='rank-down'>&#9660;</span>";
   } else if (ranking.Rank < ranking.PreviousRank) {
-    arrow = "&#11014;";
+    arrow = "<span class='rank-up'>&#9650;</span>";
   }
   return "<sup>" + ranking.Rank + arrow + "</sup>";
 };

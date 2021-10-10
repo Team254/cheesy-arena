@@ -248,10 +248,10 @@ html {
   font-family: "FuturaLT";
   font-size: 32px;
 }
-.final-teams span {
+.final-teams>span {
   margin: 0 10px;
 }
-.final-teams span sup {
+.final-teams>span>sup {
   margin-left: 3px;
   font-size: 18px;
   vertical-align: super;
@@ -268,6 +268,12 @@ html {
 }
 #rightFinalTeams {
   padding-left: 5%;
+}
+.rank-up {
+  color: #0c3;
+}
+.rank-down {
+  color: #f33;
 }
 .final-breakdown {
   float: left;
