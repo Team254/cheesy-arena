@@ -49,6 +49,10 @@ var setAllianceStationDisplay = function() {
   websocket.send("setAllianceStationDisplay", $("input[name=allianceStationDisplay]:checked").val());
 };
 
+var forceReset = function () {
+  websocket.send("forceReset");
+};
+
 // Sends a websocket message to start the timeout.
 var startTimeout = function() {
   var duration = $("#timeoutDuration").val().split(":");

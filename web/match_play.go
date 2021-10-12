@@ -7,18 +7,19 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/tournament"
-	"github.com/Team254/cheesy-arena/websocket"
-	"github.com/gorilla/mux"
-	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
 	"net/http"
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
+	"github.com/Team254/cheesy-arena/websocket"
+	"github.com/gorilla/mux"
+	"github.com/mitchellh/mapstructure"
 )
 
 type MatchPlayListItem struct {
@@ -308,6 +309,10 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
+		case "forceReset":
+			web.arena.ForceFieldReset = true
+			log.Println("Forcing field reset lights.")
+			continue
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue

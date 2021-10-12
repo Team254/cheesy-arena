@@ -7,13 +7,14 @@ package field
 
 import (
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
 	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/plc"
-	"log"
-	"time"
 )
 
 const (
@@ -77,6 +78,7 @@ type Arena struct {
 	MuteMatchSounds            bool
 	matchAborted               bool
 	soundsPlayed               map[*game.MatchSound]struct{}
+	ForceFieldReset            bool
 }
 
 type AllianceStation struct {
@@ -861,9 +863,15 @@ func (arena *Arena) handlePlcOutput() {
 		if redAllianceReady && blueAllianceReady {
 			arena.Plc.SetFieldResetLight(false)
 		}
-	case PostMatch:
-		if arena.FieldReset {
+
+		if arena.ForceFieldReset {
 			arena.Plc.SetFieldResetLight(true)
+			arena.ForceFieldReset = false
+		}
+	case PostMatch:
+		if arena.FieldReset || arena.ForceFieldReset {
+			arena.Plc.SetFieldResetLight(true)
+			arena.ForceFieldReset = false
 		}
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
 			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
@@ -904,6 +912,9 @@ func (arena *Arena) handlePlcOutput() {
 		redJam, blueJam := arena.Plc.GetPowerPortJams()
 		blink := arena.Plc.GetCycleState(2, 0, 2)
 		arena.Plc.SetStackLights(redJam && blink, blueJam && blink, (redJam || blueJam) && !blink, true)
+
+		// Just in case someone pushed it during the match:
+		arena.ForceFieldReset = false
 	}
 
 	if game.ShouldAssessRung(matchStartTime, currentTime) {
