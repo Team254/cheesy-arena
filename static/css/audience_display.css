@@ -247,6 +247,56 @@ html {
   color: #fff;
   font-family: "FuturaLT";
   font-size: 32px;
+  /*margin-top: px;*/
+}
+.final-team {
+  display: inline-block;
+}
+.rank-box {
+  text-align: center;
+  margin-right: 0.3em;
+  display: inline-block;
+  padding: 0 5px 0 5px;
+  height: 44px;
+  font-size: 18pt; 
+  width: 42px;
+}
+.rank-box.rank-up {
+  color: #fff;
+  background-color: #0a3;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+.rank-box.rank-down {
+  color: #fff;
+  background-color: #c11;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+.rank-box.rank-same {
+  color: #000;
+  background-color: #aaa; 
+  border-radius: 3px;
+}
+.arrow-up {
+  width: 0;
+  height: 0;
+  position: absolute;
+
+  border-left: 21px solid transparent;
+  border-right: 21px solid transparent;
+  border-bottom: 15px solid #0a3;
+  top: 195px;
+}
+.arrow-down {
+  width: 0;
+  height: 0;
+  position: absolute;
+
+  border-left: 21px solid transparent;
+  border-right: 21px solid transparent;
+  border-top: 15px solid #c11;
+  top: 253px;
 }
 .final-teams>span {
   margin: 0 10px;

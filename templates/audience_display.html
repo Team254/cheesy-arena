@@ -78,9 +78,9 @@
         <div class="final-score reversible-left" id="leftFinalScore"></div>
         <div class="final-score reversible-right" id="rightFinalScore"></div>
         <div class="final-teams" id="leftFinalTeams">
-          <span id="leftFinalTeam1"></span><img class="final-avatar" id="leftFinalTeam1Avatar" src="" />
-          <span id="leftFinalTeam2"></span><img class="final-avatar" id="leftFinalTeam2Avatar" src="" />
-          <span id="leftFinalTeam3"></span><img class="final-avatar" id="leftFinalTeam3Avatar" src="" />
+          <div class="final-team" id="leftFinalTeam1"></div><img class="final-avatar" id="leftFinalTeam1Avatar" src="" />
+          <div class="final-team" id="leftFinalTeam2"></div><img class="final-avatar" id="leftFinalTeam2Avatar" src="" />
+          <div class="final-team" id="leftFinalTeam3"></div><img class="final-avatar" id="leftFinalTeam3Avatar" src="" />
         </div>
         <div class="final-teams" id="rightFinalTeams">
           <img class="final-avatar" id="rightFinalTeam1Avatar" src="" /><span id="rightFinalTeam1"></span>
@@ -89,6 +89,7 @@
         </div>
         <div class="final-breakdown" id="leftFinalBreakdown">
           <span class="valign-cell">
+            <span></span><br />
             <span id="leftFinalInitiationLinePoints"></span><br />
             <span id="leftFinalPowerCellPoints"></span><br />
             {{if not .EventSettings.ControlPanelDisabled}}
@@ -102,6 +103,7 @@
         </div>
         <div class="final-breakdown" id="centerFinalBreakdown">
           <span class="valign-cell">
+            <br />
             Initiation Line<br />
             Power Cell<br />
             {{if not .EventSettings.ControlPanelDisabled}}
@@ -115,6 +117,7 @@
         </div>
         <div class="final-breakdown" id="rightFinalBreakdown">
           <span class="valign-cell">
+            <span></span><br />
             <span id="rightFinalInitiationLinePoints"></span><br />
             <span id="rightFinalPowerCellPoints"></span><br />
             {{if not .EventSettings.ControlPanelDisabled}}
