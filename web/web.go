@@ -7,14 +7,15 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/field"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -150,6 +151,9 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/panels/referee/websocket", web.refereePanelWebsocketHandler).Methods("GET")
 	router.HandleFunc("/reports/csv/rankings", web.rankingsCsvReportHandler).Methods("GET")
 	router.HandleFunc("/reports/pdf/rankings", web.rankingsPdfReportHandler).Methods("GET")
+	router.HandleFunc("/reports/csv/backups", web.backupsCsvReportHandler).Methods("GET")
+	router.HandleFunc("/reports/pdf/backups", web.backupsPdfReportHandler).Methods("GET")
+	router.HandleFunc("/reports/pdf/coupons", web.couponsReportHandler).Methods("GET")
 	router.HandleFunc("/reports/csv/schedule/{type}", web.scheduleCsvReportHandler).Methods("GET")
 	router.HandleFunc("/reports/pdf/schedule/{type}", web.schedulePdfReportHandler).Methods("GET")
 	router.HandleFunc("/reports/csv/teams", web.teamsCsvReportHandler).Methods("GET")
