@@ -1,0 +1,3 @@
+Rank,Called,TeamId,RankingPoints
+{{range $ranking := .}}{{$ranking.Rank}},{{$ranking.Called}},{{$ranking.TeamId}},{{$ranking.RankingPoints}}
+{{end}}
