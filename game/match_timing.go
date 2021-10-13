@@ -11,6 +11,7 @@ const (
 	powerPortAutoGracePeriodSec   = 5
 	PowerPortTeleopGracePeriodSec = 5
 	rungAssessmentDelaySec        = 5
+	RungAssessmentFlashPeriodMs   = 500 // ms
 )
 
 var MatchTiming = struct {
