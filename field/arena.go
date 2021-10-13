@@ -873,9 +873,18 @@ func (arena *Arena) handlePlcOutput() {
 			go func() {
 				time.Sleep(time.Second * game.PowerPortTeleopGracePeriodSec)
 				arena.Plc.SetPowerPortMotors(false)
+				// Begin flashing lights on the truss to signal scoring of
+				// climbs.
+				for i := 0; i < 3; i++ {
+					arena.Plc.SetStageActivatedLights([3]bool{true, true, true}, [3]bool{true, true, true})
+					time.Sleep(time.Millisecond * game.RungAssessmentFlashPeriodMs)
+					arena.Plc.SetStageActivatedLights([3]bool{false, false, false}, [3]bool{false, false, false})
+					time.Sleep(time.Millisecond * game.RungAssessmentFlashPeriodMs)
+				}
 			}()
+			// Turn off the once lights at the end of the match.
+			arena.Plc.SetStageActivatedLights([3]bool{false, false, false}, [3]bool{false, false, false})
 		}
-		arena.Plc.SetStageActivatedLights([3]bool{false, false, false}, [3]bool{false, false, false})
 		arena.Plc.SetControlPanelLights(false, false)
 	case AutoPeriod:
 		arena.Plc.SetPowerPortMotors(true)
