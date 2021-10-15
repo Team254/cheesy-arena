@@ -486,6 +486,20 @@ func (arena *Arena) Update() {
 		}
 	}
 
+	switch arena.MatchState {
+	case PostMatch:
+		fallthrough
+	case PreMatch:
+		fallthrough
+	case TimeoutActive:
+		fallthrough
+	case PostTimeout:
+		if arena.ForceFieldReset {
+			arena.AllianceStationDisplayMode = "fieldReset"
+			arena.AllianceStationDisplayModeNotifier.Notify()
+		}
+	}
+
 	// Send a match tick notification if passing an integer second threshold or if the match state changed.
 	if int(matchTimeSec) != int(arena.LastMatchTimeSec) || arena.MatchState != arena.lastMatchState {
 		arena.MatchTimeNotifier.Notify()
@@ -866,12 +880,10 @@ func (arena *Arena) handlePlcOutput() {
 
 		if arena.ForceFieldReset {
 			arena.Plc.SetFieldResetLight(true)
-			arena.ForceFieldReset = false
 		}
 	case PostMatch:
 		if arena.FieldReset || arena.ForceFieldReset {
 			arena.Plc.SetFieldResetLight(true)
-			arena.ForceFieldReset = false
 		}
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
 			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
@@ -921,9 +933,6 @@ func (arena *Arena) handlePlcOutput() {
 		redJam, blueJam := arena.Plc.GetPowerPortJams()
 		blink := arena.Plc.GetCycleState(2, 0, 2)
 		arena.Plc.SetStackLights(redJam && blink, blueJam && blink, (redJam || blueJam) && !blink, true)
-
-		// Just in case someone pushed it during the match:
-		arena.ForceFieldReset = false
 	}
 
 	if game.ShouldAssessRung(matchStartTime, currentTime) {
@@ -931,6 +940,11 @@ func (arena *Arena) handlePlcOutput() {
 	} else {
 		arena.Plc.SetShieldGeneratorLights(false, false)
 	}
+
+	// Force this to only be true for at most one program scan, preventing the
+	// notifiers from being spammed. If the field cannot be made green right
+	// now, this effectively swallows the event.
+	arena.ForceFieldReset = false
 }
 
 func (arena *Arena) handleEstop(station string, state bool) {
