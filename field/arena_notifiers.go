@@ -7,11 +7,12 @@ package field
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
 	"github.com/Team254/cheesy-arena/websocket"
-	"strconv"
 )
 
 type ArenaNotifiers struct {
@@ -93,9 +94,10 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 		PlcIsHealthy          bool
 		FieldEstop            bool
 		PlcArmorBlockStatuses map[string]bool
+		AwardsMode            bool
 	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState,
 		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy, arena.Plc.GetFieldEstop(),
-		arena.Plc.GetArmorBlockStatuses()}
+		arena.Plc.GetArmorBlockStatuses(), arena.AwardsMode}
 }
 
 func (arena *Arena) generateAudienceDisplayModeMessage() interface{} {

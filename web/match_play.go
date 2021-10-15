@@ -313,6 +313,8 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			web.arena.ForceFieldReset = true
 			log.Println("Forcing field reset lights.")
 			continue
+		case "toggleAwardsMode":
+			web.arena.AwardsMode = !web.arena.AwardsMode
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue

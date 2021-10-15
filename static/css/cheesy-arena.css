@@ -108,3 +108,6 @@ td[data-plc-value="true"] {
 input[data-changed="true"], select[data-changed="true"] {
   border: 2px solid #f00;
 }
+.award-grad {
+ background:linear-gradient(45deg, #dc3b3e, #3b99dc 50%, #3bdc90 75%, rgb(255 141 0) 100%);
+}

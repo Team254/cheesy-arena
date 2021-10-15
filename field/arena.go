@@ -79,6 +79,7 @@ type Arena struct {
 	matchAborted               bool
 	soundsPlayed               map[*game.MatchSound]struct{}
 	ForceFieldReset            bool
+	AwardsMode                 bool
 }
 
 type AllianceStation struct {
@@ -861,6 +862,16 @@ func (arena *Arena) handlePlcOutput() {
 		if arena.lastMatchState != PreMatch {
 			arena.Plc.SetFieldResetLight(true)
 		}
+
+		if arena.AwardsMode {
+			arena.Plc.SetShieldGeneratorLights(true, true)
+			arena.Plc.SetControlPanelLights(true, true)
+			arena.Plc.SetStageActivatedLights([3]bool{true, true, true}, [3]bool{true, true, true})
+		} else {
+			arena.Plc.SetShieldGeneratorLights(false, false)
+			arena.Plc.SetControlPanelLights(false, false)
+			arena.Plc.SetStageActivatedLights([3]bool{false, false, false}, [3]bool{false, false, false})
+		}
 		fallthrough
 	case TimeoutActive:
 		fallthrough
@@ -890,6 +901,9 @@ func (arena *Arena) handlePlcOutput() {
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
 
 		if arena.lastMatchState != PostMatch {
+			// Turn off the once lights at the end of the match.
+			arena.Plc.SetStageActivatedLights([3]bool{false, false, false}, [3]bool{false, false, false})
+
 			go func() {
 				time.Sleep(time.Second * game.PowerPortTeleopGracePeriodSec)
 				arena.Plc.SetPowerPortMotors(false)
@@ -902,8 +916,6 @@ func (arena *Arena) handlePlcOutput() {
 					time.Sleep(time.Millisecond * game.RungAssessmentFlashPeriodMs)
 				}
 			}()
-			// Turn off the once lights at the end of the match.
-			arena.Plc.SetStageActivatedLights([3]bool{false, false, false}, [3]bool{false, false, false})
 		}
 		arena.Plc.SetControlPanelLights(false, false)
 	case AutoPeriod:
