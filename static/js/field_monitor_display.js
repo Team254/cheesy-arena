@@ -37,7 +37,9 @@ var handleArenaStatus = function(data) {
       if (stationStatus.Bypass) {
         status = "";
       } else if (stationStatus.DsConn) {
-        if (stationStatus.DsConn.RobotLinked) {
+        if (stationStatus.DsConn.WrongStation) {
+          status = "wrong-station";
+        } else if (stationStatus.DsConn.RobotLinked) {
           status = "robot-linked";
         } else if (stationStatus.DsConn.RadioLinked) {
           status = "radio-linked";
