@@ -69,6 +69,9 @@ body {
 .team-id[data-status=radio-linked], .team-notes[data-status=radio-linked]  {
   background-color: #ff00ff;
 }
+.team-id[data-status=wrong-station], .team-notes[data-status=wrong-station]  {
+  background-color: #246f92;
+}
 .team-box-row {
   display: flex;
   height: 20%;
