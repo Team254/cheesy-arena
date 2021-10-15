@@ -142,6 +142,7 @@ var handleArenaStatus = function(data) {
   if (data.AwardsMode && !$("#toggleAwardsMode").hasClass("award-grad")) {
     $("#toggleAwardsMode").addClass("award-grad");
   } else {
+    // This makes it flicker, it was a bug, but it's more fun this way.
     if ($("#toggleAwardsMode").hasClass("award-grad")) {
       $("#toggleAwardsMode").removeClass("award-grad");
     }
@@ -188,6 +189,7 @@ var handleArenaStatus = function(data) {
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
       $("#startTimeout").prop("disabled", true);
+      $("#toggleAwardsMode").prop("disabled", true);
       break;
     case "POST_TIMEOUT":
       $("#startMatch").prop("disabled", true);
@@ -196,6 +198,7 @@ var handleArenaStatus = function(data) {
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
       $("#startTimeout").prop("disabled", true);
+      $("#toggleAwardsMode").prop("disabled", false);
       break;
   }
 
