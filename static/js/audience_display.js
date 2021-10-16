@@ -118,9 +118,9 @@ var handleScorePosted = function(data) {
   //$("#" + blueSide + "FinalTeam1").html(data.Match.Blue1 + "" + getRankingText(data.Match.Blue1, data.Rankings));
   //$("#" + blueSide + "FinalTeam2").html(data.Match.Blue2 + "" + getRankingText(data.Match.Blue2, data.Rankings));
   //$("#" + blueSide + "FinalTeam3").html(data.Match.Blue3 + "" + getRankingText(data.Match.Blue3, data.Rankings));
-  $("#" + blueSide + "FinalTeam1").html(getRankingText(data.Match.Blue1, data.Rankings) + "" + data.Match.Blue1);
-  $("#" + blueSide + "FinalTeam2").html(getRankingText(data.Match.Blue2, data.Rankings) + "" + data.Match.Blue2);
-  $("#" + blueSide + "FinalTeam3").html(getRankingText(data.Match.Blue3, data.Rankings) + "" + data.Match.Blue3);
+  $("#" + blueSide + "FinalTeam1").html(getNewRankingText(data.Match.Blue1, data.Rankings) + "" + data.Match.Blue1);
+  $("#" + blueSide + "FinalTeam2").html(getNewRankingText(data.Match.Blue2, data.Rankings) + "" + data.Match.Blue2);
+  $("#" + blueSide + "FinalTeam3").html(getNewRankingText(data.Match.Blue3, data.Rankings) + "" + data.Match.Blue3);
   $("#" + blueSide + "FinalTeam1Avatar").attr("src", getAvatarUrl(data.Match.Blue1));
   $("#" + blueSide + "FinalTeam2Avatar").attr("src", getAvatarUrl(data.Match.Blue2));
   $("#" + blueSide + "FinalTeam3Avatar").attr("src", getAvatarUrl(data.Match.Blue3));
