@@ -8,6 +8,7 @@ package web
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -266,8 +267,10 @@ func (web *Web) couponsReportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	eventName := web.arena.EventSettings.Name
+	// Find the smallest integer larger than the number of alliances divided by 4
+	pageCount := int(math.Ceil(float64(len(alliances)) / 4.0))
 
-	for page := 0; page < len(alliances)/4; page++ {
+	for page := 0; page < pageCount; page++ {
 		heightAcc := cTopMargin
 		pdf.AddPage()
 		for i := page * 4; i < page*4+4 && i < len(alliances); i++ {

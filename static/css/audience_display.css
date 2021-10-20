@@ -273,7 +273,7 @@ html {
   border-top-right-radius: 3px;
 }
 .rank-box.rank-same {
-  color: #000;
+  color: #222;
   background-color: #aaa; 
   border-radius: 3px;
 }
@@ -327,7 +327,7 @@ html {
 .final-breakdown {
   float: left;
   width: 33%;
-  height: 44%;
+  height: 44.5%;
   padding: 0px 20px;
   display: table;
   text-align: center;
@@ -497,4 +497,7 @@ html {
   display: none;
   font-family: "FuturaLTBold";
   line-height: 87px;
+}
+.prescore-spacer {
+  height: 5px;
 }
