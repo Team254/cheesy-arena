@@ -494,9 +494,9 @@ var getNewRankingText = function(teamId, rankings) {
   }
 
   if (ranking.Rank > ranking.PreviousRank && ranking.PreviousRank > 0) {
-    return "<div class='rank-box rank-up'>" + ranking.Rank + "</div><div class='arrow-up'></div>";
-  } else if (ranking.Rank < ranking.PreviousRank) {
     return "<div class='rank-box rank-down'>" + ranking.Rank + "</div><div class='arrow-down'></div>";
+  } else if (ranking.Rank < ranking.PreviousRank) {
+    return "<div class='rank-box rank-up'>" + ranking.Rank + "</div><div class='arrow-up'></div>";
   }
   return "<div class='rank-box rank-same'>" + ranking.Rank + "</div>";
 };
