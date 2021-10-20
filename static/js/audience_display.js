@@ -67,6 +67,26 @@ var handleMatchLoad = function(data) {
   $("#" + blueSide + "Team2Avatar").attr("src", getAvatarUrl(data.Match.Blue2));
   $("#" + blueSide + "Team3Avatar").attr("src", getAvatarUrl(data.Match.Blue3));
   $("#matchName").text(data.MatchType + " " + data.Match.DisplayName);
+
+  if (data.MatchType == "Playoff") {
+    $("#" + redSide + "SeriesStatus").css("display", "none");
+    $("#" + blueSide + "SeriesStatus").css("display", "none");
+    $("#centerSeriesStatus div").css("display", "none");
+    if (data.SeriesLeader == "red") {
+      $("#" + redSide + "SeriesMsg").html(data.SeriesStatus);
+      $("#" + redSide + "SeriesStatus").css("display", "block");
+    } else if (data.SeriesLeader == "blue") {
+      $("#" + blueSide + "SeriesMsg").html(data.SeriesStatus);
+      $("#" + blueSide + "SeriesStatus").css("display", "block");
+    } else {
+      $("#centerSeriesMsg").html(data.SeriesStatus);
+      $("#centerSeriesStatus div").css("display", "block");
+    }
+  } else {
+    $("#" + redSide + "SeriesStatus").css("display", "none");
+    $("#" + blueSide + "SeriesStatus").css("display", "none");
+    $("#centerSeriesStatus div").css("display", "none");
+  }
 };
 
 // Handles a websocket message to update the match time countdown.

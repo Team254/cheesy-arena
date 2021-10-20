@@ -141,12 +141,20 @@ func (arena *Arena) generateMatchLoadMessage() interface{} {
 		}
 	}
 
+	var seriesStatus, seriesLeader string
+	if arena.CurrentMatch.Type == "elimination" {
+		seriesStatus, seriesLeader = arena.getSeriesStatus(arena.CurrentMatch)
+	}
+
 	return &struct {
-		MatchType string
-		Match     *model.Match
-		Teams     map[string]*model.Team
-		Rankings  map[string]*game.Ranking
-	}{arena.CurrentMatch.CapitalizedType(), arena.CurrentMatch, teams, rankings}
+		MatchType    string
+		Match        *model.Match
+		Teams        map[string]*model.Team
+		Rankings     map[string]*game.Ranking
+		SeriesStatus string
+		SeriesLeader string
+	}{arena.CurrentMatch.CapitalizedType(), arena.CurrentMatch, teams, rankings,
+		seriesStatus, seriesLeader}
 }
 
 func (arena *Arena) generateMatchTimeMessage() interface{} {
@@ -169,35 +177,41 @@ func (arena *Arena) generateRealtimeScoreMessage() interface{} {
 	return &fields
 }
 
-func (arena *Arena) generateScorePostedMessage() interface{} {
-	// For elimination matches, summarize the state of the series.
+func (arena *Arena) getSeriesStatus(match *model.Match) (string, string) {
 	var seriesStatus, seriesLeader string
-	if arena.SavedMatch.Type == "elimination" {
-		matches, _ := arena.Database.GetMatchesByElimRoundGroup(arena.SavedMatch.ElimRound, arena.SavedMatch.ElimGroup)
-		var redWins, blueWins int
-		for _, match := range matches {
-			if match.Status == model.RedWonMatch {
-				redWins++
-			} else if match.Status == model.BlueWonMatch {
-				blueWins++
-			}
+	matches, _ := arena.Database.GetMatchesByElimRoundGroup(match.ElimRound, match.ElimGroup)
+	var redWins, blueWins int
+	for _, match := range matches {
+		if match.Status == model.RedWonMatch {
+			redWins++
+		} else if match.Status == model.BlueWonMatch {
+			blueWins++
 		}
+	}
 
-		if redWins == 2 {
-			seriesStatus = fmt.Sprintf("Red Wins Series %d-%d", redWins, blueWins)
-			seriesLeader = "red"
-		} else if blueWins == 2 {
-			seriesStatus = fmt.Sprintf("Blue Wins Series %d-%d", blueWins, redWins)
-			seriesLeader = "blue"
-		} else if redWins > blueWins {
-			seriesStatus = fmt.Sprintf("Red Leads Series %d-%d", redWins, blueWins)
-			seriesLeader = "red"
-		} else if blueWins > redWins {
-			seriesStatus = fmt.Sprintf("Blue Leads Series %d-%d", blueWins, redWins)
-			seriesLeader = "blue"
-		} else {
-			seriesStatus = fmt.Sprintf("Series Tied %d-%d", redWins, blueWins)
-		}
+	if redWins == 2 {
+		seriesStatus = fmt.Sprintf("Red Wins Series %d-%d", redWins, blueWins)
+		seriesLeader = "red"
+	} else if blueWins == 2 {
+		seriesStatus = fmt.Sprintf("Blue Wins Series %d-%d", blueWins, redWins)
+		seriesLeader = "blue"
+	} else if redWins > blueWins {
+		seriesStatus = fmt.Sprintf("Red Leads Series %d-%d", redWins, blueWins)
+		seriesLeader = "red"
+	} else if blueWins > redWins {
+		seriesStatus = fmt.Sprintf("Blue Leads Series %d-%d", blueWins, redWins)
+		seriesLeader = "blue"
+	} else {
+		seriesStatus = fmt.Sprintf("Series Tied %d-%d", redWins, blueWins)
+	}
+	return seriesStatus, seriesLeader
+}
+
+func (arena *Arena) generateScorePostedMessage() interface{} {
+	var seriesStatus, seriesLeader string
+	// For elimination matches, summarize the state of the series.
+	if arena.SavedMatch.Type == "elimination" {
+		seriesStatus, seriesLeader = arena.getSeriesStatus(arena.SavedMatch)
 	}
 
 	rankings := make(map[int]game.Ranking, len(arena.SavedRankings))
@@ -233,7 +247,6 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 
 		blueScore := arena.SavedMatchResult.BlueScoreSummary(true).Score
 		redScore := arena.SavedMatchResult.RedScoreSummary(true).Score
-		log.Printf("high score: %v, bluescore: %v, redscore: %v", highScore, blueScore, redScore)
 
 		if blueScore > highScore && blueScore > redScore {
 			blueHighScore = true

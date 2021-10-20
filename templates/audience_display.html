@@ -17,12 +17,18 @@
     <div id="overlayCentering">
       <div id="matchOverlay">
         <div id="matchOverlayTop">
+          <div class="center-series-status-container" id="centerSeriesStatus">
+            <div class="series-status center-series-status" id="centerSeriesMsg">Series tied 1-1</div>
+          </div>
           <div class="teams" id="leftTeams">
             <div id="leftTeam1"></div>
             <div id="leftTeam2"></div>
             <div id="leftTeam3"></div>
           </div>
           <div class="score reversible-left">
+            <div class="series-status reversible-left" id="leftSeriesStatus">
+              <div id="leftSeriesMsg">Red leads series 0-1</div>
+            </div>
             <div class="avatars">
               <img class="avatar" id="leftTeam1Avatar" src="" />
               <img class="avatar" id="leftTeam2Avatar" src="" />
@@ -36,6 +42,9 @@
             <div class="score-number" id="leftScoreNumber"></div>
           </div>
           <div class="score score-right reversible-right">
+            <div class="series-status series-status-right reversible-right" id="rightSeriesStatus">
+              <div id="rightSeriesMsg">Blue leads series 0-1</div>
+            </div>
             <div class="score-number" id="rightScoreNumber"></div>
             <div class="score-fields">
               <div id="rightStage1"></div>
