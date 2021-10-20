@@ -319,6 +319,10 @@ html {
 .final-team {
   display: inline-block;
 }
+.rank-spacer {
+  display:inline-block;
+  width: 42px;
+}
 .rank-box {
   text-align: center;
   margin-right: 0.3em;
