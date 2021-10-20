@@ -7,6 +7,7 @@ package field
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/Team254/cheesy-arena/game"
@@ -204,6 +205,48 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		rankings[ranking.TeamId] = ranking
 	}
 
+	matchNumber := arena.SavedMatch.Id
+	var redHighScore, blueHighScore bool
+	if arena.SavedMatch.DisplayName != "1" {
+		highScore := 0
+		for match := 1; match < matchNumber; match++ {
+			m, err := arena.Database.GetMatchResultForMatch(match)
+			if err != nil {
+				log.Printf("Error loading previous match: %v", err)
+				continue
+			}
+			if m == nil {
+				continue
+			}
+			if m.MatchType != "qualification" && m.MatchType != "elimination" {
+				continue
+			}
+			blueScore := m.BlueScoreSummary(true).Score
+			redScore := m.RedScoreSummary(true).Score
+			if blueScore > highScore {
+				highScore = blueScore
+			}
+			if redScore > highScore {
+				highScore = redScore
+			}
+		}
+
+		blueScore := arena.SavedMatchResult.BlueScoreSummary(true).Score
+		redScore := arena.SavedMatchResult.RedScoreSummary(true).Score
+		log.Printf("high score: %v, bluescore: %v, redscore: %v", highScore, blueScore, redScore)
+
+		if blueScore > highScore && blueScore > redScore {
+			blueHighScore = true
+		}
+		if redScore > highScore && redScore > blueScore {
+			redHighScore = true
+		}
+		if blueScore > highScore && blueScore == redScore {
+			blueHighScore = true
+			redHighScore = true
+		}
+	}
+
 	return &struct {
 		MatchType        string
 		Match            *model.Match
@@ -217,11 +260,14 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		BlueCards        map[string]string
 		SeriesStatus     string
 		SeriesLeader     string
+		RedHighScore     bool
+		BlueHighScore    bool
 	}{arena.SavedMatch.CapitalizedType(), arena.SavedMatch, arena.SavedMatchResult.RedScoreSummary(true),
 		arena.SavedMatchResult.BlueScoreSummary(true), rankings, arena.SavedMatchResult.RedScore.Fouls,
 		arena.SavedMatchResult.BlueScore.Fouls,
 		getRulesViolated(arena.SavedMatchResult.RedScore.Fouls, arena.SavedMatchResult.BlueScore.Fouls),
-		arena.SavedMatchResult.RedCards, arena.SavedMatchResult.BlueCards, seriesStatus, seriesLeader}
+		arena.SavedMatchResult.RedCards, arena.SavedMatchResult.BlueCards, seriesStatus, seriesLeader,
+		redHighScore, blueHighScore}
 }
 
 func (arena *Arena) generateScoringStatusMessage() interface{} {

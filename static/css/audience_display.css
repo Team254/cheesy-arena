@@ -204,6 +204,31 @@ html {
   top: 37px;
   height: 250px;
 }
+.high-score {
+  display: none;
+  position: absolute;
+  top: -40px;
+  height: 50px;
+  width: 50%;
+  background-color: #444;
+  font-family: "FuturaLTBold";
+  color: #fff;
+  font-size: 25px;
+  border-top: 2px solid #333;
+  border-left: 2px solid #333;
+  padding-left: 10%;
+  padding-right: 10%;
+  margin-left: -2px;
+}
+.high-score-right {
+  right: -2px;
+  text-align: right;
+  border-right: 2px solid #333;
+  margin-left: 0;
+}
+.high-score div {
+  margin-top: 8px;
+}
 #finalScore {
   position: fixed;
   width: 1200px;

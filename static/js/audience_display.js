@@ -130,6 +130,17 @@ var handleScorePosted = function(data) {
   $("#finalSeriesStatus").text(data.SeriesStatus);
   $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
   $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);
+
+  if (data.BlueHighScore) {
+    $("#" + blueSide + "HighScore").css("display", "block");
+  } else {
+    $("#" + blueSide + "HighScore").css("display", "none");
+  }
+  if (data.RedHighScore) {
+    $("#" + redSide + "HighScore").css("display", "block");
+  } else {
+    $("#" + redSide + "HighScore").css("display", "none");
+  }
 };
 
 // Handles a websocket message to play a sound to signal match start/stop/etc.
@@ -272,7 +283,9 @@ var transitionBlankToLogoLuma = function(callback) {
 
 var transitionLogoLumaToBlank = function(callback) {
   $(".blindsCenter.blank").transition({queue: false, rotateY: "360deg"}, 500, "ease");
-  $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 500, "ease");
+  $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 500, "ease", function (){
+    setTimeout(callback, 500);
+  });
 };
 
 var transitionBlankToLogo = function(callback) {
