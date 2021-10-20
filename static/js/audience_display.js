@@ -265,6 +265,16 @@ var transitionInMatchToBlank = function(callback) {
   });
 };
 
+var transitionBlankToLogoLuma = function(callback) {
+  $(".blindsCenter.blank").transition({ queue: false, rotateY: "180deg" }, 500, "ease");
+  $(".blindsCenter.full").transition({ queue: false, rotateY: "0deg" }, 500, "ease", callback);
+};
+
+var transitionLogoLumaToBlank = function(callback) {
+  $(".blindsCenter.blank").transition({queue: false, rotateY: "360deg"}, 500, "ease");
+  $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 500, "ease");
+};
+
 var transitionBlankToLogo = function(callback) {
   $(".blindsCenter.blank").css({rotateY: "0deg"});
   $(".blindsCenter.full").css({rotateY: "-180deg"});
@@ -541,7 +551,8 @@ $(function() {
       logo: transitionBlankToLogo,
       sponsor: transitionBlankToSponsor,
       allianceSelection: transitionBlankToAllianceSelection,
-      timeout: transitionBlankToTimeout
+      timeout: transitionBlankToTimeout,
+      logoluma: transitionBlankToLogoLuma
     },
     intro: {
       blank: transitionIntroToBlank,
@@ -573,6 +584,9 @@ $(function() {
     timeout: {
       blank: transitionTimeoutToBlank,
       intro: transitionTimeoutToIntro
+    },
+    logoluma: {
+      blank: transitionLogoLumaToBlank
     }
   }
 });
