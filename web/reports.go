@@ -8,7 +8,6 @@ package web
 import (
 	"errors"
 	"fmt"
-	"math"
 	"net/http"
 	"strconv"
 
@@ -110,7 +109,7 @@ func (web *Web) findBackupTeams(rankings game.Rankings) (game.Rankings, map[int]
 	}
 
 	if len(picks) == 0 {
-		return nil, nil, errors.New("backup reports are unavilable until alliances have been selected")
+		return nil, nil, errors.New("backup teams report is unavailable until alliances have been selected")
 	}
 
 	pickedTeams := make(map[int]bool)
@@ -146,7 +145,7 @@ type backupTeam struct {
 }
 
 // Generates a CSV-formatted report of the qualification rankings.
-func (web *Web) backupsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) backupTeamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {
 		handleWebErr(w, err)
@@ -154,13 +153,12 @@ func (web *Web) backupsCsvReportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	rankings, pickedBackups, err := web.findBackupTeams(rankings)
-	_ = pickedBackups
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	// Copy the list of teams that are eligble backups and annotate them with
+	// Copy the list of teams that are eligible backups and annotate them with
 	// whether or not they've been picked already.
 	var backupTeams []backupTeam
 	for _, r := range rankings {
@@ -211,7 +209,7 @@ func (web *Web) backupsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	// Render table header row.
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
-	pdf.CellFormat(195, rowHeight, "Backup Report - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
+	pdf.CellFormat(195, rowHeight, "Backup Teams - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
 	pdf.CellFormat(colWidths["Rank"], rowHeight, "Rank", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Called"], rowHeight, "Called?", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
@@ -239,7 +237,7 @@ func (web *Web) backupsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// Coupon constants used in laying out the elminations coupons.
+// Coupon constants used in laying out the playoff alliance coupons.
 const (
 	// All units in mm
 	cHPad       = 5
@@ -249,10 +247,10 @@ const (
 	cSideMargin = 10
 	cTopMargin  = 10
 	cImgWidth   = 25
-	cWOffset    = 10
+	cWOffset    = 5
 )
 
-func (web *Web) couponsReportHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
 	pdf.SetLineWidth(1)
 
@@ -262,15 +260,13 @@ func (web *Web) couponsReportHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(alliances) == 0 {
-		handleWebErr(w, errors.New("coupon report is unavailable until alliances have been selected"))
+		handleWebErr(w, errors.New("playoff alliance coupons report is unavailable until alliances have been selected"))
 		return
 	}
 
 	eventName := web.arena.EventSettings.Name
-	// Find the smallest integer larger than the number of alliances divided by 4
-	pageCount := int(math.Ceil(float64(len(alliances)) / 4.0))
 
-	for page := 0; page < pageCount; page++ {
+	for page := 0; page < (len(alliances)+3)/4; page++ {
 		heightAcc := cTopMargin
 		pdf.AddPage()
 		for i := page * 4; i < page*4+4 && i < len(alliances); i++ {
@@ -308,7 +304,7 @@ func drawTimeoutCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, t
 	drawCenteredText(pdf, "Timeout Coupon", x, y+10)
 
 	pdf.SetFont("Arial", "", 14)
-	drawCenteredText(pdf, fmt.Sprintf("Alliance %v    Captain %v", allianceNumber, teamId), x, y+20)
+	drawCenteredText(pdf, fmt.Sprintf("Alliance: %v    Captain: %v", allianceNumber, teamId), x, y+20)
 	drawEventWatermark(pdf, x, y, eventName)
 }
 
@@ -320,32 +316,26 @@ func drawBackupCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, te
 	drawCenteredText(pdf, "Backup Coupon", x, y+10)
 
 	pdf.SetFont("Arial", "", 14)
-	drawCenteredText(pdf, fmt.Sprintf("Alliance %v    Captain %v", allianceNumber, teamId), x, y+20)
+	drawCenteredText(pdf, fmt.Sprintf("Alliance: %v    Captain: %v", allianceNumber, teamId), x, y+20)
 	drawEventWatermark(pdf, x, y, eventName)
 }
 
 func drawEventWatermark(pdf gofpdf.Pdf, x float64, y float64, name string) {
+	pdf.SetFont("Arial", "B", 11)
+	pdf.SetTextColor(200, 200, 200)
+	textWidth := pdf.GetStringWidth(name)
+
 	// Left mark
 	pdf.TransformBegin()
-	offset := pdf.GetStringWidth(name) / 2
-	pdf.SetFont("Arial", "B", 11)
-	leftX := x - (cWidth / 2)
-	bottomY := y + (cHeight / 2)
-	pdf.TransformRotate(90, leftX, bottomY)
-	pdf.SetTextColor(200, 200, 200)
-	pdf.Text(leftX-offset+(cHeight/2)+cWOffset, bottomY+5, name)
+	pdf.TransformRotate(90, x, y)
+	pdf.Text(x-textWidth/2, y-cWidth/2+cWOffset, name)
 	pdf.TransformEnd()
 
 	// Right mark
 	pdf.TransformBegin()
-	offset = pdf.GetStringWidth(name) / 2
-	pdf.SetFont("Arial", "B", 11)
-	rightX := x + (cWidth / 2)
-	topY := y - (cHeight / 2)
-	pdf.TransformRotate(270, rightX, topY)
-	pdf.Text(rightX-offset+(cHeight/2)-cWOffset, topY+5, name)
+	pdf.TransformRotate(270, x, y)
+	pdf.Text(x-textWidth/2, y-cWidth/2+cWOffset, name)
 	pdf.TransformEnd()
-	pdf.SetTextColor(0, 0, 0)
 }
 
 func drawCenteredText(pdf gofpdf.Pdf, txt string, x float64, y float64) {
@@ -354,9 +344,8 @@ func drawCenteredText(pdf gofpdf.Pdf, txt string, x float64, y float64) {
 }
 
 func drawPdfLogo(pdf gofpdf.Pdf, x float64, y float64, width float64) {
-	pdf.ImageOptions("static/img/game-logo.png", x-(width/2), y-25, width, 0, false, gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
-	// Centering dot used for testing
-	//pdf.Circle(x, y, 2, "F")
+	pdf.ImageOptions("static/img/game-logo.png", x-(width/2), y-25, width, 0, false,
+		gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
 }
 
 // Generates a CSV-formatted report of the match schedule.

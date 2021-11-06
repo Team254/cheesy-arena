@@ -901,14 +901,12 @@ func (arena *Arena) handlePlcOutput() {
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
 
 		if arena.lastMatchState != PostMatch {
-			// Turn off the once lights at the end of the match.
+			// Turn off the truss lights at the end of the match.
 			arena.Plc.SetStageActivatedLights([3]bool{false, false, false}, [3]bool{false, false, false})
-
 			go func() {
 				time.Sleep(time.Second * game.PowerPortTeleopGracePeriodSec)
 				arena.Plc.SetPowerPortMotors(false)
-				// Begin flashing lights on the truss to signal scoring of
-				// climbs.
+				// Begin flashing lights on the truss to signal scoring of climbs.
 				for i := 0; i < 3; i++ {
 					arena.Plc.SetStageActivatedLights([3]bool{true, true, true}, [3]bool{true, true, true})
 					time.Sleep(time.Millisecond * game.RungAssessmentFlashPeriodMs)

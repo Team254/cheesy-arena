@@ -320,17 +320,19 @@ html {
   display: inline-block;
 }
 .rank-spacer {
-  display:inline-block;
+  display: inline-block;
   width: 42px;
 }
 .rank-box {
   text-align: center;
-  margin-right: 0.3em;
+  margin-right: 2px;
   display: inline-block;
-  padding: 0 5px 0 5px;
-  height: 44px;
-  font-size: 18pt; 
-  width: 42px;
+  height: 25px;
+  line-height: 25px;
+  font-size: 13pt;
+  width: 28px;
+  position: relative;
+  bottom: 6px;
 }
 .rank-box.rank-up {
   color: #fff;
@@ -346,7 +348,7 @@ html {
 }
 .rank-box.rank-same {
   color: #222;
-  background-color: #aaa; 
+  background-color: #aaa;
   border-radius: 3px;
 }
 .arrow-up {
@@ -354,20 +356,20 @@ html {
   height: 0;
   position: absolute;
 
-  border-left: 21px solid transparent;
-  border-right: 21px solid transparent;
-  border-bottom: 15px solid #0a3;
-  top: 196px;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-bottom: 8px solid #0a3;
+  top: 211px;
 }
 .arrow-down {
   width: 0;
   height: 0;
   position: absolute;
 
-  border-left: 21px solid transparent;
-  border-right: 21px solid transparent;
-  border-top: 15px solid #c11;
-  top: 253px;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 8px solid #c11;
+  top: 244px;
 }
 .final-teams>span {
   margin: 0 10px;
@@ -381,6 +383,7 @@ html {
   height: 35px;
   position: relative;
   bottom: 5px;
+  margin-left: 3px;
 }
 #leftFinalTeams {
   padding-right: 5%;
