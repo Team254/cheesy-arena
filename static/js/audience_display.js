@@ -297,15 +297,11 @@ var transitionInMatchToBlank = function(callback) {
 };
 
 var transitionBlankToLogoLuma = function(callback) {
-  $(".blindsCenter.blank").transition({ queue: false, rotateY: "180deg" }, 500, "ease");
-  $(".blindsCenter.full").transition({ queue: false, rotateY: "0deg" }, 500, "ease", callback);
+  $(".blindsCenter.full").transition({ queue: false, rotateY: "0deg" }, 1000, "ease", callback);
 };
 
 var transitionLogoLumaToBlank = function(callback) {
-  $(".blindsCenter.blank").transition({queue: false, rotateY: "360deg"}, 500, "ease");
-  $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 500, "ease", function (){
-    setTimeout(callback, 500);
-  });
+  $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 1000, "ease", callback);
 };
 
 var transitionBlankToLogo = function(callback) {
