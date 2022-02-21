@@ -26,8 +26,8 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Cheesy Arena ${{ github.ref }}
-          body: This is a release of Cheesy Arena for the 2020-2021 FRC game, INFINITE RECHARGE. Download the version
-              for your operating system below. Supported operating systems are Linux, macOS (x64 and M1), and Windows.
+          body: This is a release of Cheesy Arena for the 2022 FRC game, RAPID REACT. Download the version for your
+              operating system below. Supported operating systems are Linux, macOS (x64 and M1), and Windows.
           draft: false
           prerelease: false
 

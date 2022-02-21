@@ -439,9 +439,6 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = true
 			sendDsPacket = true
-
-			// For 2020, the score calculation might change at this point without input due to Stage 1 activation.
-			arena.RealtimeScoreNotifier.Notify()
 		}
 	case TeleopPeriod:
 		auto = false
