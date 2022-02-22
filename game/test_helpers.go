@@ -7,40 +7,32 @@ package game
 
 func TestScore1() *Score {
 	fouls := []Foul{
-		{17, 25, 150},
-		{18, 1868, 0},
-		{19, 25, 25.2},
+		{13, 25, 150},
+		{14, 1868, 0},
+		{15, 25, 25.2},
 	}
 	return &Score{
-		ExitedInitiationLine: [3]bool{true, true, false},
-		AutoCellsBottom:      [2]int{2, 1},
-		AutoCellsOuter:       [2]int{6, 0},
-		AutoCellsInner:       [2]int{4, 5},
-		TeleopCellsBottom:    [4]int{0, 11, 2, 0},
-		TeleopCellsOuter:     [4]int{0, 5, 0, 0},
-		TeleopCellsInner:     [4]int{0, 5, 0, 0},
-		ControlPanelStatus:   ControlPanelRotation,
-		EndgameStatuses:      [3]EndgameStatus{EndgameHang, EndgameHang, EndgameHang},
-		RungIsLevel:          false,
-		Fouls:                fouls,
-		ElimDq:               false,
+		TaxiStatuses:     [3]bool{true, true, false},
+		AutoCargoLower:   [4]int{0, 2, 1, 0},
+		AutoCargoUpper:   [4]int{2, 0, 1, 1},
+		TeleopCargoLower: [4]int{0, 3, 2, 0},
+		TeleopCargoUpper: [4]int{0, 5, 0, 0},
+		EndgameStatuses:  [3]EndgameStatus{EndgameLow, EndgameNone, EndgameTraversal},
+		Fouls:            fouls,
+		ElimDq:           false,
 	}
 }
 
 func TestScore2() *Score {
 	return &Score{
-		ExitedInitiationLine: [3]bool{false, true, false},
-		AutoCellsBottom:      [2]int{0, 0},
-		AutoCellsOuter:       [2]int{3, 0},
-		AutoCellsInner:       [2]int{0, 0},
-		TeleopCellsBottom:    [4]int{2, 0, 2, 0},
-		TeleopCellsOuter:     [4]int{2, 14, 0, 1},
-		TeleopCellsInner:     [4]int{2, 6, 20, 0},
-		ControlPanelStatus:   ControlPanelPosition,
-		EndgameStatuses:      [3]EndgameStatus{EndgamePark, EndgamePark, EndgameHang},
-		RungIsLevel:          true,
-		Fouls:                []Foul{},
-		ElimDq:               false,
+		TaxiStatuses:     [3]bool{false, true, false},
+		AutoCargoLower:   [4]int{0, 0, 0, 1},
+		AutoCargoUpper:   [4]int{1, 1, 1, 0},
+		TeleopCargoLower: [4]int{2, 0, 2, 0},
+		TeleopCargoUpper: [4]int{2, 14, 0, 1},
+		EndgameStatuses:  [3]EndgameStatus{EndgameNone, EndgameLow, EndgameHigh},
+		Fouls:            []Foul{},
+		ElimDq:           false,
 	}
 }
 

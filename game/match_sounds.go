@@ -25,7 +25,5 @@ func UpdateMatchSounds() {
 		{"end", "wav", float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec +
 			MatchTiming.TeleopDurationSec)},
 		{"abort", "wav", -1},
-		{"rotation", "wav", -1},
-		{"position", "wav", -1},
 	}
 }
