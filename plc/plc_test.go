@@ -39,27 +39,21 @@ func TestGetArmorBlockStatuses(t *testing.T) {
 	var plc Plc
 
 	plc.registers[fieldIoConnection] = 0
-	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": false, "ShieldGenerator": false, "ControlPanel": false},
+	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": false, "Hub": false},
 		plc.GetArmorBlockStatuses())
 	plc.registers[fieldIoConnection] = 1
-	assert.Equal(t, map[string]bool{"RedDs": true, "BlueDs": false, "ShieldGenerator": false, "ControlPanel": false},
+	assert.Equal(t, map[string]bool{"RedDs": true, "BlueDs": false, "Hub": false},
 		plc.GetArmorBlockStatuses())
 	plc.registers[fieldIoConnection] = 2
-	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": true, "ShieldGenerator": false, "ControlPanel": false},
+	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": true, "Hub": false},
 		plc.GetArmorBlockStatuses())
 	plc.registers[fieldIoConnection] = 4
-	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": false, "ShieldGenerator": true, "ControlPanel": false},
-		plc.GetArmorBlockStatuses())
-	plc.registers[fieldIoConnection] = 8
-	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": false, "ShieldGenerator": false, "ControlPanel": true},
+	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": false, "Hub": true},
 		plc.GetArmorBlockStatuses())
 	plc.registers[fieldIoConnection] = 5
-	assert.Equal(t, map[string]bool{"RedDs": true, "BlueDs": false, "ShieldGenerator": true, "ControlPanel": false},
+	assert.Equal(t, map[string]bool{"RedDs": true, "BlueDs": false, "Hub": true},
 		plc.GetArmorBlockStatuses())
-	plc.registers[fieldIoConnection] = 10
-	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": true, "ShieldGenerator": false, "ControlPanel": true},
-		plc.GetArmorBlockStatuses())
-	plc.registers[fieldIoConnection] = 15
-	assert.Equal(t, map[string]bool{"RedDs": true, "BlueDs": true, "ShieldGenerator": true, "ControlPanel": true},
+	plc.registers[fieldIoConnection] = 7
+	assert.Equal(t, map[string]bool{"RedDs": true, "BlueDs": true, "Hub": true},
 		plc.GetArmorBlockStatuses())
 }
