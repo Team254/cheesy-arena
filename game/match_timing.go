@@ -9,7 +9,7 @@ import "time"
 
 const (
 	hubAutoGracePeriodSec   = 5
-	hubTeleopGracePeriodSec = 10
+	HubTeleopGracePeriodSec = 10
 )
 
 var MatchTiming = struct {

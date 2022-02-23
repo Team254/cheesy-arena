@@ -5,7 +5,6 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/field"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
@@ -54,40 +53,41 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "matchTime")
 	readWebsocketType(t, blueWs, "realtimeScore")
 
-	// Send some autonomous period scoring commands.
-	web.arena.MatchState = field.AutoPeriod
-	redWs.Write("1", nil)
-	redWs.Write("3", nil)
-	redWs.Write("w", nil)
-	redWs.Write("X", nil)
-	redWs.Write("x", nil)
-	redWs.Write("z", nil)
-	for i := 0; i < 6; i++ {
-		readWebsocketType(t, redWs, "realtimeScore")
-		readWebsocketType(t, blueWs, "realtimeScore")
-	}
-	assert.Equal(t, [3]bool{true, false, true}, web.arena.RedRealtimeScore.CurrentScore.ExitedInitiationLine)
-	assert.Equal(t, [2]int{1, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsBottom)
-	assert.Equal(t, [2]int{0, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsOuter)
-	assert.Equal(t, [2]int{1, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsInner)
-
-	// Send some teleoperated period scoring commands.
-	web.arena.MatchState = field.TeleopPeriod
-	blueWs.Write("f", nil)
-	blueWs.Write("F", nil)
-	blueWs.Write("o", nil)
-	blueWs.Write("5", nil)
-	blueWs.Write("5", nil)
-	blueWs.Write("L", nil)
-	blueWs.Write("k", nil)
-	for i := 0; i < 6; i++ {
-		readWebsocketType(t, redWs, "realtimeScore")
-		readWebsocketType(t, blueWs, "realtimeScore")
-	}
-	assert.Equal(t, [4]int{2, 0, 0, 0}, web.arena.BlueRealtimeScore.CurrentScore.TeleopCellsOuter)
-	assert.Equal(t, [3]game.EndgameStatus{game.EndgameNone, game.EndgameHang, game.EndgameNone},
-		web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses)
-	assert.Equal(t, true, web.arena.BlueRealtimeScore.CurrentScore.RungIsLevel)
+	// TODO(pat): Update for 2022.
+	//// Send some autonomous period scoring commands.
+	//web.arena.MatchState = field.AutoPeriod
+	//redWs.Write("1", nil)
+	//redWs.Write("3", nil)
+	//redWs.Write("w", nil)
+	//redWs.Write("X", nil)
+	//redWs.Write("x", nil)
+	//redWs.Write("z", nil)
+	//for i := 0; i < 6; i++ {
+	//	readWebsocketType(t, redWs, "realtimeScore")
+	//	readWebsocketType(t, blueWs, "realtimeScore")
+	//}
+	//assert.Equal(t, [3]bool{true, false, true}, web.arena.RedRealtimeScore.CurrentScore.ExitedInitiationLine)
+	//assert.Equal(t, [2]int{1, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsBottom)
+	//assert.Equal(t, [2]int{0, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsOuter)
+	//assert.Equal(t, [2]int{1, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsInner)
+	//
+	//// Send some teleoperated period scoring commands.
+	//web.arena.MatchState = field.TeleopPeriod
+	//blueWs.Write("f", nil)
+	//blueWs.Write("F", nil)
+	//blueWs.Write("o", nil)
+	//blueWs.Write("5", nil)
+	//blueWs.Write("5", nil)
+	//blueWs.Write("L", nil)
+	//blueWs.Write("k", nil)
+	//for i := 0; i < 6; i++ {
+	//	readWebsocketType(t, redWs, "realtimeScore")
+	//	readWebsocketType(t, blueWs, "realtimeScore")
+	//}
+	//assert.Equal(t, [4]int{2, 0, 0, 0}, web.arena.BlueRealtimeScore.CurrentScore.TeleopCellsOuter)
+	//assert.Equal(t, [3]game.EndgameStatus{game.EndgameNone, game.EndgameHang, game.EndgameNone},
+	//	web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses)
+	//assert.Equal(t, true, web.arena.BlueRealtimeScore.CurrentScore.RungIsLevel)
 
 	// Test committing logic.
 	redWs.Write("commitMatch", nil)

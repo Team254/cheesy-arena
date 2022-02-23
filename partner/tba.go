@@ -50,49 +50,57 @@ type TbaAlliance struct {
 }
 
 type TbaScoreBreakdown struct {
-	InitLineRobot1                string `json:"initLineRobot1"`
-	InitLineRobot2                string `json:"initLineRobot2"`
-	InitLineRobot3                string `json:"initLineRobot3"`
-	AutoCellsBottom               int    `json:"autoCellsBottom"`
-	AutoCellsOuter                int    `json:"autoCellsOuter"`
-	AutoCellsInner                int    `json:"autoCellsInner"`
-	TeleopCellsBottom             int    `json:"teleopCellsBottom"`
-	TeleopCellsOuter              int    `json:"teleopCellsOuter"`
-	TeleopCellsInner              int    `json:"teleopCellsInner"`
-	Stage1Activated               bool   `json:"stage1Activated"`
-	Stage2Activated               bool   `json:"stage2Activated"`
-	Stage3Activated               bool   `json:"stage3Activated"`
-	Stage3TargetColor             string `json:"stage3TargetColor"`
-	EndgameRobot1                 string `json:"endgameRobot1"`
-	EndgameRobot2                 string `json:"endgameRobot2"`
-	EndgameRobot3                 string `json:"endgameRobot3"`
-	EndgameRungIsLevel            string `json:"endgameRungIsLevel"`
-	FoulCount                     int    `json:"foulCount"`
-	TechFoulCount                 int    `json:"techFoulCount"`
-	AutoInitLinePoints            int    `json:"autoInitLinePoints"`
-	AutoCellPoints                int    `json:"autoCellPoints"`
-	AutoPoints                    int    `json:"autoPoints"`
-	TeleopCellPoints              int    `json:"teleopCellPoints"`
-	ControlPanelPoints            int    `json:"controlPanelPoints"`
-	EndgamePoints                 int    `json:"endgamePoints"`
-	TeleopPoints                  int    `json:"teleopPoints"`
-	FoulPoints                    int    `json:"foulPoints"`
-	TotalPoints                   int    `json:"totalPoints"`
-	ShieldEnergizedRankingPoint   bool   `json:"shieldEnergizedRankingPoint"`
-	ShieldOperationalRankingPoint bool   `json:"shieldOperationalRankingPoint"`
-	RP                            int    `json:"rp"`
+	TaxiRobot1              string `json:"taxiRobot1"`
+	TaxiRobot2              string `json:"taxiRobot2"`
+	TaxiRobot3              string `json:"taxiRobot3"`
+	AutoCargoLowerBlue      int    `json:"autoCargoLowerBlue"`
+	AutoCargoLowerFar       int    `json:"autoCargoLowerFar"`
+	AutoCargoLowerNear      int    `json:"autoCargoLowerNear"`
+	AutoCargoLowerRed       int    `json:"autoCargoLowerRed"`
+	AutoCargoUpperBlue      int    `json:"autoCargoUpperBlue"`
+	AutoCargoUpperFar       int    `json:"autoCargoUpperFar"`
+	AutoCargoUpperNear      int    `json:"autoCargoUpperNear"`
+	AutoCargoUpperRed       int    `json:"autoCargoUpperRed"`
+	AutoCargoTotal          int    `json:"autoCargoTotal"`
+	TeleopCargoLowerBlue    int    `json:"teleopCargoLowerBlue"`
+	TeleopCargoLowerFar     int    `json:"teleopCargoLowerFar"`
+	TeleopCargoLowerNear    int    `json:"teleopCargoLowerNear"`
+	TeleopCargoLowerRed     int    `json:"teleopCargoLowerRed"`
+	TeleopCargoUpperBlue    int    `json:"teleopCargoUpperBlue"`
+	TeleopCargoUpperFar     int    `json:"teleopCargoUpperFar"`
+	TeleopCargoUpperNear    int    `json:"teleopCargoUpperNear"`
+	TeleopCargoUpperRed     int    `json:"teleopCargoUpperRed"`
+	TeleopCargoTotal        int    `json:"teleopCargoTotal"`
+	MatchCargoTotal         int    `json:"matchCargoTotal"`
+	EndgameRobot1           string `json:"endgameRobot1"`
+	EndgameRobot2           string `json:"endgameRobot2"`
+	EndgameRobot3           string `json:"endgameRobot3"`
+	AutoTaxiPoints          int    `json:"autoTaxiPoints"`
+	AutoCargoPoints         int    `json:"autoCargoPoints"`
+	AutoPoints              int    `json:"autoPoints"`
+	TeleopCargoPoints       int    `json:"teleopCargoPoints"`
+	EndgamePoints           int    `json:"endgamePoints"`
+	TeleopPoints            int    `json:"teleopPoints"`
+	QuintetAchieved         bool   `json:"quintetAchieved"`
+	CargoBonusRankingPoint  bool   `json:"cargoBonusRankingPoint"`
+	HangarBonusRankingPoint bool   `json:"hangarBonusRankingPoint"`
+	FoulCount               int    `json:"foulCount"`
+	TechFoulCount           int    `json:"techFoulCount"`
+	FoulPoints              int    `json:"foulPoints"`
+	TotalPoints             int    `json:"totalPoints"`
+	RP                      int    `json:"rp"`
 }
 
 type TbaRanking struct {
-	TeamKey    string `json:"team_key"`
-	Rank       int    `json:"rank"`
-	RP         float32
-	Auto       int
-	Endgame    int
-	Teleop     int
-	WinLossTie string
-	Dqs        int `json:"dqs"`
-	Played     int `json:"played"`
+	TeamKey          string `json:"team_key"`
+	Rank             int    `json:"rank"`
+	RP               float32
+	Match            int
+	Hangar           int
+	TaxiAndAutoCargo int
+	WinLossTie       string
+	Dqs              int `json:"dqs"`
+	Played           int `json:"played"`
 }
 
 type TbaRankings struct {
@@ -137,11 +145,8 @@ type TbaPublishedAward struct {
 	Awardee string `json:"awardee"`
 }
 
-var exitedInitLineMapping = map[bool]string{false: "None", true: "Exited"}
-var controlPanelColorMapping = map[game.ControlPanelColor]string{game.ColorUnknown: "Unknown", game.ColorRed: "Red",
-	game.ColorGreen: "Green", game.ColorBlue: "Blue", game.ColorYellow: "Yellow"}
-var endgameMapping = []string{"None", "Park", "Hang"}
-var rungIsLevelMapping = map[bool]string{false: "NotLevel", true: "IsLevel"}
+var taxiMapping = map[bool]string{false: "No", true: "Yes"}
+var endgameMapping = []string{"None", "Low", "Mid", "High", "Traversal"}
 
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
 	return &TbaClient{BaseUrl: tbaBaseUrl, eventCode: eventCode, secretId: secretId, secret: secret,
@@ -373,14 +378,20 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "Auto", "Endgame", "Teleop", "WinLossTie"}
+	breakdowns := []string{"RP", "Match", "Hangar", "Auto", "WinLossTie"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
-		tbaRankings[i] = TbaRanking{getTbaTeam(ranking.TeamId), ranking.Rank,
-			float32(ranking.RankingPoints) / float32(ranking.Played), ranking.AutoPoints, ranking.EndgamePoints,
-			ranking.TeleopPoints,
-			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties), ranking.Disqualifications,
-			ranking.Played}
+		tbaRankings[i] = TbaRanking{
+			getTbaTeam(ranking.TeamId),
+			ranking.Rank,
+			float32(ranking.RankingPoints) / float32(ranking.Played),
+			ranking.MatchPoints,
+			ranking.HangarPoints,
+			ranking.TaxiAndAutoCargoPoints,
+			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties),
+			ranking.Disqualifications,
+			ranking.Played,
+		}
 	}
 	jsonBody, err := json.Marshal(TbaRankings{breakdowns, tbaRankings})
 	if err != nil {
@@ -525,31 +536,49 @@ func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResul
 	var scoreSummary, opponentScoreSummary *game.ScoreSummary
 	if alliance == "red" {
 		score = matchResult.RedScore
-		scoreSummary = matchResult.RedScoreSummary(true)
-		opponentScoreSummary = matchResult.BlueScoreSummary(true)
+		scoreSummary = matchResult.RedScoreSummary()
+		opponentScoreSummary = matchResult.BlueScoreSummary()
 	} else {
 		score = matchResult.BlueScore
-		scoreSummary = matchResult.BlueScoreSummary(true)
-		opponentScoreSummary = matchResult.RedScoreSummary(true)
+		scoreSummary = matchResult.BlueScoreSummary()
+		opponentScoreSummary = matchResult.RedScoreSummary()
 	}
 
-	breakdown.InitLineRobot1 = exitedInitLineMapping[score.ExitedInitiationLine[0]]
-	breakdown.InitLineRobot2 = exitedInitLineMapping[score.ExitedInitiationLine[1]]
-	breakdown.InitLineRobot3 = exitedInitLineMapping[score.ExitedInitiationLine[2]]
-	breakdown.AutoCellsBottom = sumPowerCells(score.AutoCellsBottom[:])
-	breakdown.AutoCellsOuter = sumPowerCells(score.AutoCellsOuter[:])
-	breakdown.AutoCellsInner = sumPowerCells(score.AutoCellsInner[:])
-	breakdown.TeleopCellsBottom = sumPowerCells(score.TeleopCellsBottom[:])
-	breakdown.TeleopCellsOuter = sumPowerCells(score.TeleopCellsOuter[:])
-	breakdown.TeleopCellsInner = sumPowerCells(score.TeleopCellsInner[:])
-	breakdown.Stage1Activated = scoreSummary.StagesActivated[0]
-	breakdown.Stage2Activated = scoreSummary.StagesActivated[1]
-	breakdown.Stage3Activated = scoreSummary.StagesActivated[2]
-	breakdown.Stage3TargetColor = controlPanelColorMapping[score.PositionControlTargetColor]
+	breakdown.TaxiRobot1 = taxiMapping[score.TaxiStatuses[0]]
+	breakdown.TaxiRobot2 = taxiMapping[score.TaxiStatuses[1]]
+	breakdown.TaxiRobot3 = taxiMapping[score.TaxiStatuses[2]]
+	breakdown.AutoCargoLowerBlue = score.AutoCargoLower[game.BlueQuadrant]
+	breakdown.AutoCargoLowerFar = score.AutoCargoLower[game.FarQuadrant]
+	breakdown.AutoCargoLowerNear = score.AutoCargoLower[game.NearQuadrant]
+	breakdown.AutoCargoLowerRed = score.AutoCargoLower[game.RedQuadrant]
+	breakdown.AutoCargoUpperBlue = score.AutoCargoUpper[game.BlueQuadrant]
+	breakdown.AutoCargoUpperFar = score.AutoCargoUpper[game.FarQuadrant]
+	breakdown.AutoCargoUpperNear = score.AutoCargoUpper[game.NearQuadrant]
+	breakdown.AutoCargoUpperRed = score.AutoCargoUpper[game.RedQuadrant]
+	breakdown.AutoCargoTotal = scoreSummary.AutoCargoCount
+	breakdown.TeleopCargoLowerBlue = score.TeleopCargoLower[game.BlueQuadrant]
+	breakdown.TeleopCargoLowerFar = score.TeleopCargoLower[game.FarQuadrant]
+	breakdown.TeleopCargoLowerNear = score.TeleopCargoLower[game.NearQuadrant]
+	breakdown.TeleopCargoLowerRed = score.TeleopCargoLower[game.RedQuadrant]
+	breakdown.TeleopCargoUpperBlue = score.TeleopCargoUpper[game.BlueQuadrant]
+	breakdown.TeleopCargoUpperFar = score.TeleopCargoUpper[game.FarQuadrant]
+	breakdown.TeleopCargoUpperNear = score.TeleopCargoUpper[game.NearQuadrant]
+	breakdown.TeleopCargoUpperRed = score.TeleopCargoUpper[game.RedQuadrant]
+	breakdown.TeleopCargoTotal = scoreSummary.CargoCount - scoreSummary.AutoCargoCount
+	breakdown.MatchCargoTotal = scoreSummary.CargoCount
 	breakdown.EndgameRobot1 = endgameMapping[score.EndgameStatuses[0]]
 	breakdown.EndgameRobot2 = endgameMapping[score.EndgameStatuses[1]]
 	breakdown.EndgameRobot3 = endgameMapping[score.EndgameStatuses[2]]
-	breakdown.EndgameRungIsLevel = rungIsLevelMapping[score.RungIsLevel]
+	breakdown.AutoTaxiPoints = scoreSummary.TaxiPoints
+	breakdown.AutoCargoPoints = scoreSummary.AutoCargoPoints
+	breakdown.AutoPoints = scoreSummary.TaxiPoints + scoreSummary.AutoCargoPoints
+	breakdown.TeleopCargoPoints = scoreSummary.CargoPoints - scoreSummary.AutoCargoPoints
+	breakdown.EndgamePoints = scoreSummary.HangarPoints
+	breakdown.TeleopPoints = scoreSummary.CargoPoints - scoreSummary.AutoCargoPoints +
+		scoreSummary.HangarPoints
+	breakdown.QuintetAchieved = scoreSummary.QuintetAchieved
+	breakdown.CargoBonusRankingPoint = scoreSummary.CargoBonusRankingPoint
+	breakdown.HangarBonusRankingPoint = scoreSummary.HangarBonusRankingPoint
 	for _, foul := range score.Fouls {
 		if foul.Rule() != nil && !foul.Rule().IsRankingPoint {
 			if foul.Rule().IsTechnical {
@@ -559,18 +588,8 @@ func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResul
 			}
 		}
 	}
-	breakdown.AutoInitLinePoints = scoreSummary.InitiationLinePoints
-	breakdown.AutoCellPoints = scoreSummary.AutoPowerCellPoints
-	breakdown.AutoPoints = scoreSummary.AutoPoints
-	breakdown.TeleopCellPoints = scoreSummary.TeleopPowerCellPoints
-	breakdown.ControlPanelPoints = scoreSummary.ControlPanelPoints
-	breakdown.EndgamePoints = scoreSummary.EndgamePoints
-	breakdown.TeleopPoints = scoreSummary.TeleopPowerCellPoints + scoreSummary.ControlPanelPoints +
-		scoreSummary.EndgamePoints
 	breakdown.FoulPoints = scoreSummary.FoulPoints
 	breakdown.TotalPoints = scoreSummary.Score
-	breakdown.ShieldEnergizedRankingPoint = scoreSummary.ControlPanelRankingPoint
-	breakdown.ShieldOperationalRankingPoint = scoreSummary.EndgameRankingPoint
 
 	if match.ShouldUpdateRankings() {
 		// Calculate and set the ranking points for the match.

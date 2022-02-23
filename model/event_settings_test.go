@@ -14,11 +14,30 @@ func TestEventSettingsReadWrite(t *testing.T) {
 
 	eventSettings, err := db.GetEventSettings()
 	assert.Nil(t, err)
-	assert.Equal(t, EventSettings{Id: 1, Name: "Untitled Event", NumElimAlliances: 8, SelectionRound2Order: "L",
-		SelectionRound3Order: "", TBADownloadEnabled: true, ApTeamChannel: 157, ApAdminChannel: 0,
-		ApAdminWpaKey: "1234Five", WarmupDurationSec: 0, AutoDurationSec: 15, PauseDurationSec: 2,
-		TeleopDurationSec: 135, WarningRemainingDurationSec: 30, Stage1Capacity: 9, Stage2Capacity: 15,
-		Stage3Capacity: 15, ControlPanelDisabled: false, CapacityWhenControlPanelDisabled: 50}, *eventSettings)
+	assert.Equal(
+		t,
+		EventSettings{
+			Id:                          1,
+			Name:                        "Untitled Event",
+			NumElimAlliances:            8,
+			SelectionRound2Order:        "L",
+			SelectionRound3Order:        "",
+			TBADownloadEnabled:          true,
+			ApTeamChannel:               157,
+			ApAdminChannel:              0,
+			ApAdminWpaKey:               "1234Five",
+			WarmupDurationSec:           0,
+			AutoDurationSec:             15,
+			PauseDurationSec:            2,
+			TeleopDurationSec:           135,
+			WarningRemainingDurationSec: 30,
+			QuintetThreshold:            5,
+			CargoBonusRankingPointThresholdWithoutQuintet: 20,
+			CargoBonusRankingPointThresholdWithQuintet:    18,
+			HangarBonusRankingPointThreshold:              16,
+		},
+		*eventSettings,
+	)
 
 	eventSettings.Name = "Chezy Champs"
 	eventSettings.NumElimAlliances = 6

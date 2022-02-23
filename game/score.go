@@ -26,9 +26,15 @@ type ScoreSummary struct {
 	MatchPoints             int
 	FoulPoints              int
 	Score                   int
+	QuintetAchieved         bool
 	CargoBonusRankingPoint  bool
 	HangarBonusRankingPoint bool
 }
+
+var QuintetThreshold = 5
+var CargoBonusRankingPointThresholdWithoutQuintet = 20
+var CargoBonusRankingPointThresholdWithQuintet = 18
+var HangarBonusRankingPointThreshold = 16
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
@@ -86,12 +92,13 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	}
 
 	// Calculate bonus ranking points.
-	if summary.AutoCargoCount >= 5 {
-		summary.CargoBonusRankingPoint = summary.CargoCount >= 18
+	if summary.AutoCargoCount >= QuintetThreshold {
+		summary.QuintetAchieved = true
+		summary.CargoBonusRankingPoint = summary.CargoCount >= CargoBonusRankingPointThresholdWithQuintet
 	} else {
-		summary.CargoBonusRankingPoint = summary.CargoCount >= 20
+		summary.CargoBonusRankingPoint = summary.CargoCount >= CargoBonusRankingPointThresholdWithoutQuintet
 	}
-	summary.HangarBonusRankingPoint = summary.HangarPoints >= 16
+	summary.HangarBonusRankingPoint = summary.HangarPoints >= HangarBonusRankingPointThreshold
 
 	// Calculate penalty points.
 	for _, foul := range opponentFouls {

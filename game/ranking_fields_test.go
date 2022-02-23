@@ -20,19 +20,19 @@ func TestAddScoreSummary(t *testing.T) {
 
 	// Add a loss.
 	rankingFields.AddScoreSummary(redSummary, blueSummary, false)
-	assert.Equal(t, RankingFields{1, 60, 19, 26, 0.9451961492941164, 0, 1, 0, 0, 1}, rankingFields)
+	assert.Equal(t, RankingFields{1, 67, 19, 30, 0.9451961492941164, 0, 1, 0, 0, 1}, rankingFields)
 
 	// Add a win.
 	rankingFields.AddScoreSummary(blueSummary, redSummary, false)
-	assert.Equal(t, RankingFields{4, 128, 33, 42, 0.24496508529377975, 1, 1, 0, 0, 2}, rankingFields)
+	assert.Equal(t, RankingFields{4, 128, 33, 46, 0.24496508529377975, 1, 1, 0, 0, 2}, rankingFields)
 
 	// Add a tie.
 	rankingFields.AddScoreSummary(redSummary, redSummary, false)
-	assert.Equal(t, RankingFields{6, 188, 52, 68, 0.6559562651954052, 1, 1, 1, 0, 3}, rankingFields)
+	assert.Equal(t, RankingFields{6, 195, 52, 76, 0.6559562651954052, 1, 1, 1, 0, 3}, rankingFields)
 
 	// Add a disqualification.
 	rankingFields.AddScoreSummary(blueSummary, redSummary, true)
-	assert.Equal(t, RankingFields{6, 188, 52, 68, 0.05434383959970039, 1, 1, 1, 1, 4}, rankingFields)
+	assert.Equal(t, RankingFields{6, 195, 52, 76, 0.05434383959970039, 1, 1, 1, 1, 4}, rankingFields)
 }
 
 func TestSortRankings(t *testing.T) {

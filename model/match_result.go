@@ -63,13 +63,13 @@ func (database *Database) TruncateMatchResults() error {
 }
 
 // Calculates and returns the summary fields used for ranking and display for the red alliance.
-func (matchResult *MatchResult) RedScoreSummary(teleopStarted bool) *game.ScoreSummary {
-	return matchResult.RedScore.Summarize(matchResult.BlueScore.Fouls, teleopStarted)
+func (matchResult *MatchResult) RedScoreSummary() *game.ScoreSummary {
+	return matchResult.RedScore.Summarize(matchResult.BlueScore.Fouls)
 }
 
 // Calculates and returns the summary fields used for ranking and display for the blue alliance.
-func (matchResult *MatchResult) BlueScoreSummary(teleopStarted bool) *game.ScoreSummary {
-	return matchResult.BlueScore.Summarize(matchResult.RedScore.Fouls, teleopStarted)
+func (matchResult *MatchResult) BlueScoreSummary() *game.ScoreSummary {
+	return matchResult.BlueScore.Summarize(matchResult.RedScore.Fouls)
 }
 
 // Checks the score for disqualifications or a tie and adjusts it appropriately.

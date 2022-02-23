@@ -154,9 +154,9 @@ func addMatchResultToRankings(
 	}
 
 	if isRed {
-		ranking.AddScoreSummary(matchResult.RedScoreSummary(true), matchResult.BlueScoreSummary(true), disqualified)
+		ranking.AddScoreSummary(matchResult.RedScoreSummary(), matchResult.BlueScoreSummary(), disqualified)
 	} else {
-		ranking.AddScoreSummary(matchResult.BlueScoreSummary(true), matchResult.RedScoreSummary(true), disqualified)
+		ranking.AddScoreSummary(matchResult.BlueScoreSummary(), matchResult.RedScoreSummary(), disqualified)
 	}
 }
 

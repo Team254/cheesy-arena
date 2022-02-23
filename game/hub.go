@@ -30,7 +30,7 @@ const (
 func (hub *Hub) UpdateState(lowerHubCounts [4]int, upperHubCounts [4]int, matchStartTime, currentTime time.Time) {
 	autoValidityDuration := GetDurationToAutoEnd() + hubAutoGracePeriodSec*time.Second
 	autoValidityCutoff := matchStartTime.Add(autoValidityDuration)
-	teleopValidityDuration := GetDurationToTeleopEnd() + hubTeleopGracePeriodSec*time.Second
+	teleopValidityDuration := GetDurationToTeleopEnd() + HubTeleopGracePeriodSec*time.Second
 	teleopValidityCutoff := matchStartTime.Add(teleopValidityDuration)
 
 	if currentTime.Before(autoValidityCutoff) {
