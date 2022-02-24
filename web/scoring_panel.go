@@ -15,6 +15,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // Renders the scoring interface which enables input of scores in real-time.
@@ -114,78 +115,52 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			} else {
 				index := number - 4
 				score.EndgameStatuses[index]++
-				if score.EndgameStatuses[index] == 4 {
+				if score.EndgameStatuses[index] == 5 {
 					score.EndgameStatuses[index] = 0
 				}
 				scoreChanged = true
 			}
-		} else {
-			// TODO(pat): Update for 2022.
-			//switch strings.ToUpper(command) {
-			//case "Q":
-			//	if decrementGoal(score.AutoCellsInner[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "A":
-			//	if decrementGoal(score.AutoCellsOuter[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "Z":
-			//	if decrementGoal(score.AutoCellsBottom[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "W":
-			//	if incrementGoal(score.AutoCellsInner[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "S":
-			//	if incrementGoal(score.AutoCellsOuter[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "X":
-			//	if incrementGoal(score.AutoCellsBottom[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "E":
-			//	if decrementGoal(score.TeleopCellsInner[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "D":
-			//	if decrementGoal(score.TeleopCellsOuter[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "C":
-			//	if decrementGoal(score.TeleopCellsBottom[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "R":
-			//	if incrementGoal(score.TeleopCellsInner[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "F":
-			//	if incrementGoal(score.TeleopCellsOuter[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
-			//case "V":
-			//	if incrementGoal(score.TeleopCellsBottom[:],
-			//		score.CellCountingStage(web.arena.MatchState >= field.TeleopPeriod)) {
-			//		scoreChanged = true
-			//	}
+		} else if !web.arena.Plc.IsEnabled() {
+			switch strings.ToUpper(command) {
+			case "Q":
+				scoreChanged = decrementGoal(score.AutoCargoUpper[:])
+			case "A":
+				scoreChanged = decrementGoal(score.AutoCargoLower[:])
+			case "W":
+				scoreChanged = incrementGoal(score.AutoCargoUpper[:])
+			case "S":
+				scoreChanged = incrementGoal(score.AutoCargoLower[:])
+			case "E":
+				scoreChanged = decrementGoal(score.TeleopCargoUpper[:])
+			case "D":
+				scoreChanged = decrementGoal(score.TeleopCargoLower[:])
+			case "R":
+				scoreChanged = incrementGoal(score.TeleopCargoUpper[:])
+			case "F":
+				scoreChanged = incrementGoal(score.TeleopCargoLower[:])
+			}
+
 		}
 
 		if scoreChanged {
 			web.arena.RealtimeScoreNotifier.Notify()
 		}
 	}
+}
+
+// Increments the cargo count for the given goal.
+func incrementGoal(goal []int) bool {
+	// Use just the first hub quadrant for manual scoring.
+	goal[0]++
+	return true
+}
+
+// Decrements the cargo for the given goal.
+func decrementGoal(goal []int) bool {
+	// Use just the first hub quadrant for manual scoring.
+	if goal[0] > 0 {
+		goal[0]--
+		return true
+	}
+	return false
 }

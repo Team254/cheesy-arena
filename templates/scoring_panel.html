@@ -11,13 +11,13 @@
   <div class="scoring-section">
     <div class="scoring-header">
       <div>&nbsp;</div>
-      <div>Exited Initiation Line?</div>
+      <div>Taxi</div>
       <div>Endgame Status</div>
     </div>
     {{range $i := seq 3}}
       <div>
         <div id="team{{$i}}" class="team robot-field"></div>
-        <div id="exitedInitiationLine{{$i}}" class="boolean robot-field" onclick="handleClick('{{$i}}');">
+        <div id="taxiStatus{{$i}}" class="boolean robot-field" onclick="handleClick('{{$i}}');">
           <div class="shortcut">{{$i}}</div>
           <div class="value"></div>
           <div class="shortcut"></div>
@@ -35,55 +35,18 @@
       <div class="scoring-section">
         <div>
           <div>&nbsp;</div>
-          <div class="goal-header">Inner</div>
-          <div class="goal-header">Outer</div>
+          <div class="goal-header">Upper</div>
           <div class="goal-header">Lower</div>
         </div>
         <div>
           <div class="goal-period">Auto</div>
-          {{template "goal" dict "period" "auto" "level" "Inner" "plus" "W" "minus" "Q"}}
-          {{template "goal" dict "period" "auto" "level" "Outer" "plus" "S" "minus" "A"}}
-          {{template "goal" dict "period" "auto" "level" "Bottom" "plus" "X" "minus" "Z"}}
+          {{template "goal" dict "period" "auto" "level" "Upper" "plus" "W" "minus" "Q"}}
+          {{template "goal" dict "period" "auto" "level" "Lower" "plus" "S" "minus" "A"}}
         </div>
         <div>
           <div class="goal-period">Teleop</div>
-          {{template "goal" dict "period" "teleop" "level" "Inner" "plus" "R" "minus" "E"}}
-          {{template "goal" dict "period" "teleop" "level" "Outer" "plus" "F" "minus" "D"}}
-          {{template "goal" dict "period" "teleop" "level" "Bottom" "plus" "V" "minus" "C"}}
-        </div>
-      </div>
-      <div class="scoring-section">
-        <div class="scoring-header">
-          {{if not .EventSettings.ControlPanelDisabled}}
-            <div>Rotation Control</div>
-            <div>Color After Rotation</div>
-            <div>Position Control</div>
-          {{end}}
-          <div>Rung Is Level</div>
-        </div>
-        <div>
-          {{if not .EventSettings.ControlPanelDisabled}}
-            <div id="rotationControl" class="control-panel robot-field" onclick="handleClick('O');">
-              <div class="shortcut">O</div>
-              <div class="value"></div>
-              <div class="shortcut"></div>
-            </div>
-            <div id="controlPanelColor" class="control-panel-color robot-field" onclick="handleClick('K');">
-              <div class="shortcut">K</div>
-              <div class="value"></div>
-              <div class="shortcut"></div>
-            </div>
-            <div id="positionControl" class="control-panel robot-field" onclick="handleClick('P');">
-              <div class="shortcut">P</div>
-              <div class="value"></div>
-              <div class="shortcut"></div>
-            </div>
-          {{end}}
-          <div id="rungIsLevel" class="boolean robot-field" onclick="handleClick('L');">
-            <div class="shortcut">L</div>
-            <div class="value"></div>
-            <div class="shortcut"></div>
-          </div>
+          {{template "goal" dict "period" "teleop" "level" "Upper" "plus" "R" "minus" "E"}}
+          {{template "goal" dict "period" "teleop" "level" "Lower" "plus" "F" "minus" "D"}}
         </div>
       </div>
     </div>
@@ -109,7 +72,7 @@
   <div class="number-button minus" onclick="handleClick('{{.minus}}');">
     <div class="shortcut">{{.minus}}</div>-<div class="shortcut" style="opacity: 0;">{{.minus}}</div>
   </div>
-  <div id="{{.period}}Cells{{.level}}"></div>
+  <div id="{{.period}}Cargo{{.level}}"></div>
   <div class="number-button plus" onclick="handleClick('{{.plus}}');">
     <div class="shortcut">{{.plus}}</div>+<div class="shortcut" style="opacity: 0;">{{.plus}}</div>
   </div>
