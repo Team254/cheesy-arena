@@ -27,38 +27,24 @@
   <div class="well well-{{"{{alliance}}"}}">
     <fieldset>
       <legend>Autonomous</legend>
-      <b>Exited Initiation Line</b>
+      <b>Taxi</b>
       <div class="form-group">
         <div class="row">
           {{range $i := seq 3}}
             <div class="col-lg-4">
               <label class="col-lg-8 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-              <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}ExitedInitiationLine{{$i}}">
+              <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}TaxiStatuses{{$i}}">
             </div>
           {{end}}
         </div>
       </div>
-      <b>Power Cells</b>
-      {{template "powerCells" dict "period" "Auto" "stages" 2}}
+      <b>Cargo</b>
+      {{template "hub" dict "period" "Auto"}}
     </fieldset>
     <fieldset>
       <legend>Teleoperated</legend>
-      <b>Power Cells</b>
-      {{template "powerCells" dict "period" "Teleop" "stages" 4}}
-      <b>Control Panel</b>
-      <div class="form-group">
-        <div class="row">
-          <div class="radio col-lg-3 col-lg-offset-1">
-            <input type="radio" name="{{"{{alliance}}"}}ControlPanelStatus" value="0">None
-          </div>
-          <div class="radio col-lg-4">
-            <input type="radio" name="{{"{{alliance}}"}}ControlPanelStatus" value="1">Rotation Control
-          </div>
-          <div class="radio col-lg-4">
-            <input type="radio" name="{{"{{alliance}}"}}ControlPanelStatus" value="2">Position Control
-          </div>
-        </div>
-      </div>
+      <b>Cargo</b>
+      {{template "hub" dict "period" "Teleop"}}
     </fieldset>
     <fieldset>
       <legend>Endgame</legend>
@@ -66,22 +52,24 @@
       <div class="form-group">
         {{range $i := seq 3}}
           <div class="row">
-            <label class="col-lg-2 col-lg-offset-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+            <label class="col-lg-1 col-lg-offset-1 control-label">{{"{{team"}}{{$i}}{{"}}"}}</label>
             <div class="radio col-lg-2">
               <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="0">None
             </div>
             <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1">Park
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1">Low
             </div>
             <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2">Hang
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2">Mid
+            </div>
+            <div class="radio col-lg-2">
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="3">High
+            </div>
+            <div class="radio col-lg-2">
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="4">Traversal
             </div>
           </div>
         {{end}}
-        <div class="row">
-          <label class="col-lg-3 control-label">Rung Is Level</label>
-          <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}RungIsLevel">
-        </div>
       </div>
     </fieldset>
     <fieldset>
@@ -185,26 +173,32 @@
   renderResults("blue");
 </script>
 {{end}}
-{{define "powerCells"}}
+{{define "hub"}}
   <div class="form-group">
     <div class="row">
-      <label class="col-lg-2 col-lg-offset-3 text-center">Stage 1</label>
-      {{range $i := seq (add .stages -1)}}
-        <label class="col-lg-2 text-center">{{if lt $i 3}}Stage {{add $i 1}}{{else}}Extra{{end}}</label>
-      {{end}}
+      <label class="col-lg-2 col-lg-offset-3 text-center">Blue</label>
+      <label class="col-lg-2 text-center">Far</label>
+      <label class="col-lg-2 text-center">Near</label>
+      <label class="col-lg-2 text-center">Red</label>
     </div>
-    {{template "powerCellGoal" dict "period" .period "stages" .stages "goal" "Inner"}}
-    {{template "powerCellGoal" dict "period" .period "stages" .stages "goal" "Outer"}}
-    {{template "powerCellGoal" dict "period" .period "stages" .stages "goal" "Bottom"}}
+    {{template "hubLevel" dict "period" .period "goal" "Upper"}}
+    {{template "hubLevel" dict "period" .period "goal" "Lower"}}
   </div>
 {{end}}
-{{define "powerCellGoal"}}
+{{define "hubLevel"}}
   <div class="row">
     <label class="col-lg-2 col-lg-offset-1">{{.goal}}</label>
-    {{range $i := seq .stages}}
-      <div class="col-lg-2">
-        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cells{{$.goal}}{{$i}}">
-      </div>
-    {{end}}
+    <div class="col-lg-2">
+      <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cargo{{$.goal}}0">
+    </div>
+    <div class="col-lg-2">
+      <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cargo{{$.goal}}1">
+    </div>
+    <div class="col-lg-2">
+      <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cargo{{$.goal}}2">
+    </div>
+    <div class="col-lg-2">
+      <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cargo{{$.goal}}3">
+    </div>
   </div>
 {{end}}
