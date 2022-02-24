@@ -31,12 +31,19 @@ type ScoreSummary struct {
 	QuintetAchieved         bool
 	CargoBonusRankingPoint  bool
 	HangarBonusRankingPoint bool
+
+	// Orbit
+	LowerCargoCount                   int
+	UpperCargoCount                   int
+	CurrentCargoRankingPointThreshold int
 }
 
-var QuintetThreshold = 5
-var CargoBonusRankingPointThresholdWithoutQuintet = 20
-var CargoBonusRankingPointThresholdWithQuintet = 18
-var HangarBonusRankingPointThreshold = 16
+var (
+	QuintetThreshold                              = 5
+	CargoBonusRankingPointThresholdWithoutQuintet = 20
+	CargoBonusRankingPointThresholdWithQuintet    = 18
+	HangarBonusRankingPointThreshold              = 16
+)
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
@@ -68,6 +75,10 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 		summary.AutoCargoCount += score.AutoCargoLower[i] + score.AutoCargoUpper[i]
 		summary.AutoCargoPoints += 2 * score.AutoCargoLower[i]
 		summary.AutoCargoPoints += 4 * score.AutoCargoUpper[i]
+
+		// Orbit
+		summary.LowerCargoCount += score.AutoCargoLower[i]
+		summary.UpperCargoCount += score.AutoCargoUpper[i]
 	}
 
 	// Calculate teleoperated period cargo points.
@@ -77,6 +88,10 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 		summary.CargoCount += score.TeleopCargoLower[i] + score.TeleopCargoUpper[i]
 		summary.CargoPoints += 1 * score.TeleopCargoLower[i]
 		summary.CargoPoints += 2 * score.TeleopCargoUpper[i]
+
+		// Orbit
+		summary.LowerCargoCount += score.TeleopCargoLower[i]
+		summary.UpperCargoCount += score.TeleopCargoUpper[i]
 	}
 
 	// Calculate endgame points.
@@ -109,6 +124,10 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	} else {
 		summary.TeleopCargoRemaining = cargoBonusRankingPointThreshold - summary.CargoCount
 	}
+
+	// Orbit
+	summary.CurrentCargoRankingPointThreshold = cargoBonusRankingPointThreshold
+
 	summary.HangarBonusRankingPoint = summary.HangarPoints >= HangarBonusRankingPointThreshold
 
 	// Calculate penalty points.

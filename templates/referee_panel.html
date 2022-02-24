@@ -15,6 +15,7 @@
     <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
     <link href="/static/css/lib/bootstrap.min.css" rel="stylesheet">
     <link href="/static/css/lib/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="/static/css/lib/swiper-budle.min.css" rel="stylesheet">
     <link href="/static/css/cheesy-arena.css" rel="stylesheet">
     <link href="/static/css/referee_panel.css" rel="stylesheet">
   </head>
@@ -32,66 +33,76 @@
               {{template "foul" dict "foul" $foul "color" "blue" "rules" $.Rules}}
             {{end}}
           </table>
-          <h4>Yellow/Red Cards</h4>
-          {{template "card" dict "team" .Red1 "alliance" "red" "cards" .RedCards}}
-          {{template "card" dict "team" .Red2 "alliance" "red" "cards" .RedCards}}
-          {{template "card" dict "team" .Red3 "alliance" "red" "cards" .RedCards}}
-          {{template "card" dict "team" .Blue1 "alliance" "blue" "cards" .BlueCards}}
-          {{template "card" dict "team" .Blue2 "alliance" "blue" "cards" .BlueCards}}
-          {{template "card" dict "team" .Blue3 "alliance" "blue" "cards" .BlueCards}}
         </div>
         <div class="col-xs-9">
-          <h4>Add Foul</h4>
+          <h4 style="text-align: center;">Team:</h4>
           <div class="row">
-            <a class="btn btn-sm btn-primary btn-referee" data-alliance="red" data-team="{{.Red1.Id}}"
-                onclick="setFoulTeam(this);">{{.Red1.Id}}</a>
-            <a class="btn btn-sm btn-primary btn-referee" data-alliance="red" data-team="{{.Red2.Id}}"
-                onclick="setFoulTeam(this);">{{.Red2.Id}}</a>
-            <a class="btn btn-sm btn-primary btn-referee" data-alliance="red" data-team="{{.Red3.Id}}"
-                onclick="setFoulTeam(this);">{{.Red3.Id}}</a>
-            <a class="btn btn-sm btn-info btn-referee" data-alliance="blue" data-team="{{.Blue1.Id}}"
-                onclick="setFoulTeam(this);">{{.Blue1.Id}}</a>
-            <a class="btn btn-sm btn-info btn-referee" data-alliance="blue" data-team="{{.Blue2.Id}}"
-                onclick="setFoulTeam(this);">{{.Blue2.Id}}</a>
-            <a class="btn btn-sm btn-info btn-referee" data-alliance="blue" data-team="{{.Blue3.Id}}"
-                onclick="setFoulTeam(this);">{{.Blue3.Id}}</a>
+            <div class="swiper-container teams-swiper">
+              <div class="swiper-wrapper">
+                <div data-alliance="red" data-team="{{.Red1.Id}}"
+                  class="btn btn-sm btn-primary btn-referee swiper-slide">{{.Red1.Id}}</div>
+                <div data-alliance="red" data-team="{{.Red2.Id}}"
+                  class="btn btn-sm btn-primary btn-referee swiper-slide">{{.Red2.Id}}</div>
+                <div data-alliance="red" data-team="{{.Red3.Id}}"
+                  class="btn btn-sm btn-primary btn-referee swiper-slide">{{.Red3.Id}}</div>
+                <div data-alliance="blue" data-team="{{.Blue1.Id}}"
+                  class="btn btn-sm btn-info btn-referee swiper-slide">{{.Blue1.Id}}</div>
+                <div data-alliance="blue" data-team="{{.Blue2.Id}}"
+                  class="btn btn-sm btn-info btn-referee swiper-slide">{{.Blue2.Id}}</div>
+                <div data-alliance="blue" data-team="{{.Blue3.Id}}"
+                  class="btn btn-sm btn-info btn-referee swiper-slide">{{.Blue3.Id}}</div>
+              </div>
+            </div>
           </div>
+          <br/>
+          <h4 style="text-align: center;">Foul:</h4>
           <div class="row">
-            {{range $rule := .Rules}}
-              <a class="btn btn-sm {{if $rule.IsTechnical}}btn-danger{{else if $rule.IsRankingPoint}}btn-primary
-                  {{else}}btn-warning{{end}} btn-referee btn-rule"
-                  data-rule-id="{{$rule.Id}}" onclick="setFoulRule(this);" data-toggle="tooltip"
-                  title="{{$rule.Description}}">
-                {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>
-                {{else if $rule.IsRankingPoint}}<sup>RP</sup>{{end}}
-              </a>
-            {{end}}
+            <div class="swiper-container rules-swiper">
+              <div class="swiper-wrapper">
+                {{range $rule := .Rules}}
+                  <div data-rule-id="{{$rule.Id}}" 
+                    class="swiper-slide">
+                    <div class="btn btn-sm {{if $rule.IsTechnical}}btn-danger{{else if $rule.IsRankingPoint}}btn-primary
+                                      {{else}}btn-warning{{end}} btn-referee">
+                      {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>{{else if $rule.IsRankingPoint}}<sup>RP</sup>{{end}}
+                    </div>
+                    <div class="rule-description">
+                      {{$rule.Description}}
+                    </div>
+                  </div>
+                {{end}}
+              </div>
+            </div>
           </div>
-          <p>Note: Tooltips do not contain the entire text of the rule, and depending on the circumstances the
-            prescribed penalty may not be a foul or tech foul.
+          <h3 style="text-align: center;"> </h3>
+          <div class="row">
+            <div class="row text-center">
+              <button type="button" class="btn btn-sm btn-success btn-referee btn-referee-wide" id="commit"
+                  onclick="commitFoul();">Add Foul</button>
+            </div>
+            <div class="row text-center">
+              <a class="btn btn-sm btn-info btn-referee btn-referee-wide"
+                  onclick="commitMatch();">Commit Match</a>
+              <a class="btn btn-sm btn-danger btn-referee btn-referee-wide"
+                  onclick="location.reload();">Refresh</a>
+            </div>
+          </div>
+          <div>
             <br />
-            If a rule does not appear here, it is because the penalty is either a yellow/red card or a free score for
-            the opponent, and should be applied directly.</p>
-          <div class="row text-center">
-            <a class="btn btn-sm btn-default btn-referee btn-referee-wide" onclick="clearFoul();">Clear Foul</a>
-            <button type="button" class="btn btn-sm btn-success btn-referee btn-referee-wide" id="commit"
-                onclick="commitFoul();">Add Foul</button>
-          </div>
-          <div class="row text-center">
-            <a class="btn btn-sm btn-warning btn-referee btn-referee-wide"
-                onclick="signalVolunteers();">Signal Volunteers</a>
-            <a class="btn btn-sm btn-success btn-referee btn-referee-wide"
-                onclick="signalReset();">Signal Reset</a>
-            <a class="btn btn-sm btn-info btn-referee btn-referee-wide"
-                onclick="commitMatch();">Commit Match</a>
-          </div>
-          <br />
-          <div class="row text-center">
-            <a class="btn btn-sm btn-danger btn-referee btn-referee-wide"
-                onclick="location.reload();">Refresh</a>
+            <h3 style="text-align: center;">Yellow/Red Cards</h3>
+            <div style="display: flex; justify-content: center;" class="row">
+              {{template "card" dict "team" .Red1 "alliance" "red" "cards" .RedCards}}
+              {{template "card" dict "team" .Red2 "alliance" "red" "cards" .RedCards}}
+              {{template "card" dict "team" .Red3 "alliance" "red" "cards" .RedCards}}
+              {{template "card" dict "team" .Blue1 "alliance" "blue" "cards" .BlueCards}}
+              {{template "card" dict "team" .Blue2 "alliance" "blue" "cards" .BlueCards}}
+              {{template "card" dict "team" .Blue3 "alliance" "blue" "cards" .BlueCards}}
+            </div>
           </div>
         </div>
-    </div>
+      </div>
+      <div class="row">
+      </div>
     {{else}}
       <div class="text-center">
         <h3>Waiting for the next match...</h3>
@@ -101,6 +112,7 @@
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
     <script src="/static/js/lib/bootstrap.min.js"></script>
+    <script src="/static/js/lib/swiper-bundle.min.js"></script>
     <script src="/static/js/cheesy-websocket.js"></script>
     <script src="/static/js/referee_panel.js"></script>
   </body>
@@ -113,6 +125,9 @@
       {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>{{else if $rule.IsRankingPoint}}<sup>RP</sup>{{end}}
     </td>
     <td>
+      {{matchTimeStamp .foul.TimeInMatchSec}}s
+    </td>
+    <td>
       <a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.RuleId}}',
           {{.foul.TimeInMatchSec}});">Delete</a>
     </td>
@@ -121,5 +136,5 @@
 {{define "card"}}
   <a class="btn btn-md btn-card" data-old-yellow-card="{{.team.YellowCard}}" data-alliance="{{.alliance}}"
       data-card-team="{{.team.Id}}" data-card="{{index .cards (print .team.Id)}}"
-      onclick="cycleCard(this);">{{.team.Id}}</a><br />
+      onclick="cycleCard(this);">{{.team.Id}}</a>
 {{end}}

@@ -64,6 +64,17 @@ func NewWeb(arena *field.Arena) *Web {
 		"toUpper": func(str string) string {
 			return strings.ToUpper(str)
 		},
+		// Orbit
+		"matchTimeStamp": func(time float64) string {
+			timeFromMatchEnd := 135 - time
+
+			if time <= 15 {
+				timeFromAutoEnd := 15 - time
+				return fmt.Sprintf("A %.0f", timeFromAutoEnd)
+			}
+
+			return fmt.Sprintf("T %.0f", timeFromMatchEnd)
+		},
 	}
 
 	return web

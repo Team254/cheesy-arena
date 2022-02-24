@@ -27,8 +27,8 @@ var logoUp = "10px";
 var logoDown = $("#logo").css("top");
 var scoreIn = $(".score").css("width");
 var scoreMid = "135px";
-var scoreOut = "255px";
-var scoreFieldsOut = "40px";
+var scoreOut = "350px";
+var scoreFieldsOut = "140px";
 
 // Handles a websocket message to change which screen is displayed.
 var handleAudienceDisplayMode = function(targetScreen) {
@@ -78,18 +78,6 @@ var handleMatchTime = function(data) {
     }
     countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
     $("#matchTime").text(countdownString);
-
-    // Set opacity of auxiliary score fields based on whether the match is in auto or teleop period.
-    var autoOpacity = 1;
-    var teleopOpacity = 0.5;
-    if (matchStates[data.MatchState] === "TELEOP_PERIOD" || matchStates[data.MatchState] === "POST_MATCH") {
-      autoOpacity = 0.5;
-      teleopOpacity = 1;
-    }
-    $("#" + redSide + "AutoCargoRemaining").css("opacity", autoOpacity);
-    $("#" + redSide + "TeleopCargoRemaining").css("opacity", teleopOpacity);
-    $("#" + blueSide + "AutoCargoRemaining").css("opacity", autoOpacity);
-    $("#" + blueSide + "TeleopCargoRemaining").css("opacity", teleopOpacity);
   });
 };
 
@@ -98,14 +86,20 @@ var handleRealtimeScore = function(data) {
   $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HangarPoints);
   $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HangarPoints);
 
-  $("#" + redSide + "AutoCargoRemaining").text(data.Red.ScoreSummary.AutoCargoRemaining);
-  $("#" + redSide + "TeleopCargoRemaining").text(data.Red.ScoreSummary.TeleopCargoRemaining);
-  $("#" + blueSide + "AutoCargoRemaining").text(data.Blue.ScoreSummary.AutoCargoRemaining);
-  $("#" + blueSide + "TeleopCargoRemaining").text(data.Blue.ScoreSummary.TeleopCargoRemaining);
+  setCargoText($("#" + redSide + "Upper"), data.Red.ScoreSummary.UpperCargoCount);
+  setCargoText($("#" + blueSide + "Upper"), data.Blue.ScoreSummary.UpperCargoCount);
+  setCargoText($("#" + redSide + "Lower"), data.Red.ScoreSummary.LowerCargoCount);
+  setCargoText($("#" + blueSide + "Lower"), data.Blue.ScoreSummary.LowerCargoCount);
+
+  setCargoText($("#" + redSide + "TotalCargo"), data.Red.ScoreSummary.CargoCount + "/");
+  setCargoText($("#" + blueSide + "TotalCargo"), + data.Blue.ScoreSummary.CargoCount + "/");
+  setCargoText($("#" + redSide + "RankingPointThreshold"), data.Red.ScoreSummary.CurrentCargoRankingPointThreshold);
+  setCargoText($("#" + blueSide + "RankingPointThreshold"), data.Blue.ScoreSummary.CurrentCargoRankingPointThreshold);
 };
 
 // Handles a websocket message to populate the final score data.
 var handleScorePosted = function(data) {
+  console.log(data)
   $("#" + redSide + "FinalScore").text(data.RedScoreSummary.Score);
   $("#" + redSide + "FinalTeam1").html(getRankingText(data.Match.Red1, data.Rankings) + "" + data.Match.Red1);
   $("#" + redSide + "FinalTeam2").html(getRankingText(data.Match.Red2, data.Rankings) + "" + data.Match.Red2);
@@ -113,14 +107,14 @@ var handleScorePosted = function(data) {
   $("#" + redSide + "FinalTeam1Avatar").attr("src", getAvatarUrl(data.Match.Red1));
   $("#" + redSide + "FinalTeam2Avatar").attr("src", getAvatarUrl(data.Match.Red2));
   $("#" + redSide + "FinalTeam3Avatar").attr("src", getAvatarUrl(data.Match.Red3));
-  $("#" + redSide + "FinalTaxiPoints").text(data.RedScoreSummary.TaxiPoints);
+  $("#" + redSide + "FinalExitedTarmacPoints").text(data.RedScoreSummary.TaxiPoints);
   $("#" + redSide + "FinalCargoPoints").text(data.RedScoreSummary.CargoPoints);
   $("#" + redSide + "FinalHangarPoints").text(data.RedScoreSummary.HangarPoints);
   $("#" + redSide + "FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
-  $("#" + redSide + "FinalCargoBonusRankingPoint").html(data.RedScoreSummary.CargoBonusRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + redSide + "FinalCargoBonusRankingPoint").attr("data-checked", data.RedScoreSummary.CargoBonusRankingPoint);
-  $("#" + redSide + "FinalHangarBonusRankingPoint").html(data.RedScoreSummary.HangarBonusRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + redSide + "FinalHangarBonusRankingPoint").attr("data-checked", data.RedScoreSummary.HangarBonusRankingPoint);
+  $("#" + redSide + "FinalCargoRankingPoint").html(data.RedScoreSummary.CargoBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + redSide + "FinalCargoRankingPoint").attr("data-checked", data.RedScoreSummary.CargoBonusRankingPoint);
+  $("#" + redSide + "FinalHangarRankingPoint").html(data.RedScoreSummary.HangarBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + redSide + "FinalHangarRankingPoint").attr("data-checked", data.RedScoreSummary.HangarBonusRankingPoint);
   $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
   $("#" + blueSide + "FinalTeam1").html(getRankingText(data.Match.Blue1, data.Rankings) + "" + data.Match.Blue1);
   $("#" + blueSide + "FinalTeam2").html(getRankingText(data.Match.Blue2, data.Rankings) + "" + data.Match.Blue2);
@@ -128,14 +122,14 @@ var handleScorePosted = function(data) {
   $("#" + blueSide + "FinalTeam1Avatar").attr("src", getAvatarUrl(data.Match.Blue1));
   $("#" + blueSide + "FinalTeam2Avatar").attr("src", getAvatarUrl(data.Match.Blue2));
   $("#" + blueSide + "FinalTeam3Avatar").attr("src", getAvatarUrl(data.Match.Blue3));
-  $("#" + blueSide + "FinalTaxiPoints").text(data.BlueScoreSummary.TaxiPoints);
+  $("#" + blueSide + "FinalExitedTarmacPoints").text(data.BlueScoreSummary.TaxiPoints);
   $("#" + blueSide + "FinalCargoPoints").text(data.BlueScoreSummary.CargoPoints);
   $("#" + blueSide + "FinalHangarPoints").text(data.BlueScoreSummary.HangarPoints);
   $("#" + blueSide + "FinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
-  $("#" + blueSide + "FinalCargoBonusRankingPoint").html(data.BlueScoreSummary.CargoBonusRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + blueSide + "FinalCargoBonusRankingPoint").attr("data-checked", data.BlueScoreSummary.CargoBonusRankingPoint);
-  $("#" + blueSide + "FinalHangarBonusRankingPoint").html(data.BlueScoreSummary.HangarBonusRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + blueSide + "FinalHangarBonusRankingPoint").attr("data-checked", data.BlueScoreSummary.HangarBonusRankingPoint);
+  $("#" + blueSide + "FinalCargoRankingPoint").html(data.BlueScoreSummary.CargoBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + blueSide + "FinalCargoRankingPoint").attr("data-checked", data.BlueScoreSummary.CargoBonusRankingPoint);
+  $("#" + blueSide + "FinalHangarRankingPoint").html(data.BlueScoreSummary.HangarBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + blueSide + "FinalHangarRankingPoint").attr("data-checked", data.BlueScoreSummary.HangarBonusRankingPoint);
   $("#finalSeriesStatus").text(data.SeriesStatus);
   $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
   $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);
@@ -482,6 +476,11 @@ var initializeSponsorDisplay = function() {
 
 var getAvatarUrl = function(teamId) {
   return "/api/teams/" + teamId + "/avatar";
+};
+
+// Populates the given element on the overlay to represent the given power cell stage.
+var setCargoText = function(element, cargoAmount) {
+  element.html(cargoAmount);
 };
 
 var getRankingText = function(teamId, rankings) {

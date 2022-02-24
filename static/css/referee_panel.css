@@ -17,8 +17,6 @@ h3, h4 {
   color: #fff;
 }
 .btn-referee {
-  width: 100px;
-  margin: 5px 5px;
   font-size: 25px;
   cursor: default;
 }
@@ -33,10 +31,6 @@ h3, h4 {
 .btn {
   cursor: default;
 }
-.btn-referee[data-selected="true"] {
-  border: 5px solid #fc0;
-  margin: 0px 5px;
-}
 tr {
   font-size: 15px;
 }
@@ -47,7 +41,7 @@ tr {
   background-color: #028fc0;
 }
 .btn-card {
-  width: 120px;
+  width: 100px;
   margin: 5px 5px;
   font-size: 30px;
   cursor: default;
@@ -63,4 +57,59 @@ tr {
 .btn-card[data-old-yellow-card="true"] {
   border: 5px solid #ff0;
   margin: 0px 5px;
+}
+.teams-swiper .swiper-slide {
+  opacity: 0.5;
+}
+
+.teams-swiper {
+  border-radius: 5px;
+  width: 70%;
+}
+
+.rules-swiper {
+  border-radius: 5px;
+  padding-bottom: 100px;
+  width: 100%;
+}
+
+.rules-swiper .btn-referee {
+  max-width: 120px;
+}
+
+.rules-swiper .swiper-slide {
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.swiper-slide .btn-referee{
+  opacity: 0.5;
+}
+
+.teams-swiper .swiper-slide[data-selected="true"] {
+  border: 3px solid #eee;
+  opacity: 1;
+  margin: 0px 5px;
+}
+
+.rules-swiper .swiper-slide[data-selected="true"] .btn-referee{
+  border: 3px solid #eee;
+  opacity: 1;
+  margin: 0px 5px;
+}
+
+.rules-swiper .rule-description {
+  position: absolute;
+  color: rgb(180, 180, 180);
+  font-style: italic;
+  top: 70px;
+  width: 50vw;
+  display: none;
+  font-size: 15pt;
+}
+
+.rules-swiper .swiper-slide[data-selected="true"] .rule-description {
+  display: inline-block;
 }
