@@ -78,6 +78,18 @@ var handleMatchTime = function(data) {
     }
     countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
     $("#matchTime").text(countdownString);
+
+    // Set opacity of auxiliary score fields based on whether the match is in auto or teleop period.
+    var autoOpacity = 1;
+    var teleopOpacity = 0.5;
+    if (matchStates[data.MatchState] === "TELEOP_PERIOD" || matchStates[data.MatchState] === "POST_MATCH") {
+      autoOpacity = 0.5;
+      teleopOpacity = 1;
+    }
+    $("#" + redSide + "AutoCargoRemaining").css("opacity", autoOpacity);
+    $("#" + redSide + "TeleopCargoRemaining").css("opacity", teleopOpacity);
+    $("#" + blueSide + "AutoCargoRemaining").css("opacity", autoOpacity);
+    $("#" + blueSide + "TeleopCargoRemaining").css("opacity", teleopOpacity);
   });
 };
 
@@ -86,11 +98,10 @@ var handleRealtimeScore = function(data) {
   $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HangarPoints);
   $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HangarPoints);
 
-  for (var i = 0; i < 3; i++) {
-    var i1 = i + 1;
-    setPowerCellText($("#" + redSide + "Stage" + i1), data.Red.ScoreSummary, i);
-    setPowerCellText($("#" + blueSide + "Stage" + i1), data.Blue.ScoreSummary, i);
-  }
+  $("#" + redSide + "AutoCargoRemaining").text(data.Red.ScoreSummary.AutoCargoRemaining);
+  $("#" + redSide + "TeleopCargoRemaining").text(data.Red.ScoreSummary.TeleopCargoRemaining);
+  $("#" + blueSide + "AutoCargoRemaining").text(data.Blue.ScoreSummary.AutoCargoRemaining);
+  $("#" + blueSide + "TeleopCargoRemaining").text(data.Blue.ScoreSummary.TeleopCargoRemaining);
 };
 
 // Handles a websocket message to populate the final score data.
@@ -471,20 +482,6 @@ var initializeSponsorDisplay = function() {
 
 var getAvatarUrl = function(teamId) {
   return "/api/teams/" + teamId + "/avatar";
-};
-
-// Populates the given element on the overlay to represent the given power cell stage.
-var setPowerCellText = function(element, scoreSummary, stage) {
-  var text = "&nbsp;";
-  var opacity = 1;
-  if (scoreSummary.StagesActivated[stage]) {
-    text = "I".repeat(stage + 1);
-    opacity = 0.4;
-  } else if (stage === 0 || scoreSummary.StagesActivated[stage - 1]) {
-    text = scoreSummary.StagePowerCellsRemaining[stage];
-  }
-  element.html(text);
-  element.css("opacity", opacity);
 };
 
 var getRankingText = function(teamId, rankings) {

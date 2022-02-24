@@ -26,6 +26,8 @@ type ScoreSummary struct {
 	MatchPoints             int
 	FoulPoints              int
 	Score                   int
+	AutoCargoRemaining      int
+	TeleopCargoRemaining    int
 	QuintetAchieved         bool
 	CargoBonusRankingPoint  bool
 	HangarBonusRankingPoint bool
@@ -92,11 +94,20 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	}
 
 	// Calculate bonus ranking points.
+	var cargoBonusRankingPointThreshold int
 	if summary.AutoCargoCount >= QuintetThreshold {
+		cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithQuintet
+		summary.AutoCargoRemaining = 0
 		summary.QuintetAchieved = true
-		summary.CargoBonusRankingPoint = summary.CargoCount >= CargoBonusRankingPointThresholdWithQuintet
 	} else {
-		summary.CargoBonusRankingPoint = summary.CargoCount >= CargoBonusRankingPointThresholdWithoutQuintet
+		cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithoutQuintet
+		summary.AutoCargoRemaining = QuintetThreshold - summary.AutoCargoCount
+	}
+	if summary.CargoCount >= cargoBonusRankingPointThreshold {
+		summary.TeleopCargoRemaining = 0
+		summary.CargoBonusRankingPoint = true
+	} else {
+		summary.TeleopCargoRemaining = cargoBonusRankingPointThreshold - summary.CargoCount
 	}
 	summary.HangarBonusRankingPoint = summary.HangarPoints >= HangarBonusRankingPointThreshold
 
