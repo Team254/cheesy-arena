@@ -29,16 +29,28 @@
               <img class="avatar" id="leftTeam3Avatar" src="" />
             </div>
             <div class="score-fields">
-              <div id="leftAutoCargoRemaining"></div>
-              <div id="leftTeleopCargoRemaining"></div>
+              <div class="score-fields-hub">
+                <div id="leftUpper"></div>
+                <div id="leftLower"></div>
+              </div>
+              <div class="score-fields-cargo-rp">
+                <div id="leftTotalCargo"></div>
+                <div id="leftRankingPointThreshold"></div>
+              </div>
             </div>
             <div class="score-number" id="leftScoreNumber"></div>
           </div>
           <div class="score score-right reversible-right">
             <div class="score-number" id="rightScoreNumber"></div>
             <div class="score-fields">
-              <div id="rightAutoCargoRemaining"></div>
-              <div id="rightTeleopCargoRemaining"></div>
+              <div class="score-fields-cargo-rp">
+                <div id="rightTotalCargo"></div>
+                <div id="rightRankingPointThreshold"></div>
+              </div>
+              <div class="score-fields-hub">
+                <div id="rightUpper"></div>
+                <div id="rightLower"></div>
+              </div>
             </div>
             <div class="avatars">
               <img class="avatar" id="rightTeam1Avatar" src="" />
@@ -87,32 +99,32 @@
         </div>
         <div class="final-breakdown" id="leftFinalBreakdown">
           <span class="valign-cell">
-            <span id="leftFinalTaxiPoints"></span><br />
+            <span id="leftFinalExitedTarmacPoints"></span><br />
             <span id="leftFinalCargoPoints"></span><br />
             <span id="leftFinalHangarPoints"></span><br />
             <span id="leftFinalFoulPoints"></span><br />
-            <span id="leftFinalCargoBonusRankingPoint"></span><br />
-            <span id="leftFinalHangarBonusRankingPoint"></span><br />
+            <span id="leftFinalCargoRankingPoint"></span><br />
+            <span id="leftFinalHangarRankingPoint"></span><br />
           </span>
         </div>
         <div class="final-breakdown" id="centerFinalBreakdown">
           <span class="valign-cell">
-            Taxi<br />
-            Cargo<br />
-            Hangar<br />
+            Exit Tarmac<br />
+            Cargo Points<br />
+            Hanger Points<br />
             Foul<br />
-            Cargo Bonus<br />
-            Hangar Bonus
+            Cargo RP Bonus<br />
+            Hangar RP Bonus
           </span>
         </div>
         <div class="final-breakdown" id="rightFinalBreakdown">
           <span class="valign-cell">
-            <span id="rightFinalTaxiPoints"></span><br />
+            <span id="rightFinalExitedTarmacPoints"></span><br />
             <span id="rightFinalCargoPoints"></span><br />
             <span id="rightFinalHangarPoints"></span><br />
             <span id="rightFinalFoulPoints"></span><br />
-            <span id="rightFinalCargoBonusRankingPoint"></span><br />
-            <span id="rightFinalHangarBonusRankingPoint"></span><br />
+            <span id="rightFinalCargoRankingPoint"></span><br />
+            <span id="rightFinalHangarRankingPoint"></span><br />
           </span>
         </div>
         <div id="finalEventMatchInfo">

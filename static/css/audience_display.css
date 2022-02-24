@@ -88,7 +88,7 @@ html {
   height: 100%;
   width: 0;
   display: none;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
   font-family: "FuturaLTBold";
@@ -96,6 +96,27 @@ html {
   line-height: 25px;
   color: #fff;
   opacity: 0;
+}
+.score-fields .score-fields-cargo-rp {
+  display: flex;
+  text-align: center;
+  flex-direction: row;
+}
+.score-fields .score-fields-hub {
+  background-color: #ca0;
+  flex-direction: column;
+  border-radius: 8px;
+  width: 40px;
+  text-align: center;
+}
+.score-fields .score-fields-hub div {
+  padding: 7px;
+}
+.score-fields .score-fields-hub > div:first-child {
+  border-bottom: solid 1px black;
+}
+.score-fields .score-fields-hub > div:last-child {
+  border-top: solid 1px black;
 }
 #matchCircle {
   position: absolute;
