@@ -83,8 +83,8 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints);
-  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints);
+  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HangarPoints);
+  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HangarPoints);
 
   for (var i = 0; i < 3; i++) {
     var i1 = i + 1;
@@ -105,7 +105,7 @@ var handleScorePosted = function(data) {
   $("#" + redSide + "FinalInitiationLinePoints").text(data.RedScoreSummary.InitiationLinePoints);
   $("#" + redSide + "FinalPowerCellPoints").text(data.RedScoreSummary.PowerCellPoints);
   $("#" + redSide + "FinalControlPanelPoints").text(data.RedScoreSummary.ControlPanelPoints);
-  $("#" + redSide + "FinalEndgamePoints").text(data.RedScoreSummary.EndgamePoints);
+  $("#" + redSide + "FinalEndgamePoints").text(data.RedScoreSummary.HangarPoints);
   $("#" + redSide + "FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
   $("#" + redSide + "FinalControlPanelRankingPoint").html(data.RedScoreSummary.ControlPanelRankingPoint ? "&#x2714;" : "&#x2718;");
   $("#" + redSide + "FinalControlPanelRankingPoint").attr("data-checked", data.RedScoreSummary.ControlPanelRankingPoint);
@@ -121,7 +121,7 @@ var handleScorePosted = function(data) {
   $("#" + blueSide + "FinalInitiationLinePoints").text(data.BlueScoreSummary.InitiationLinePoints);
   $("#" + blueSide + "FinalPowerCellPoints").text(data.BlueScoreSummary.PowerCellPoints);
   $("#" + blueSide + "FinalControlPanelPoints").text(data.BlueScoreSummary.ControlPanelPoints);
-  $("#" + blueSide + "FinalEndgamePoints").text(data.BlueScoreSummary.EndgamePoints);
+  $("#" + blueSide + "FinalEndgamePoints").text(data.BlueScoreSummary.HangarPoints);
   $("#" + blueSide + "FinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
   $("#" + blueSide + "FinalControlPanelRankingPoint").html(data.BlueScoreSummary.ControlPanelRankingPoint ? "&#x2714;" : "&#x2718;");
   $("#" + blueSide + "FinalControlPanelRankingPoint").attr("data-checked", data.BlueScoreSummary.ControlPanelRankingPoint);
