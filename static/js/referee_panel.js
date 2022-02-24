@@ -7,6 +7,50 @@ var websocket;
 var foulTeamButton;
 var foulRuleButton;
 var firstMatchLoad = true;
+var rules = [];
+
+// Setup teams swiper.
+var teamsSwiper = new Swiper(".teams-swiper", {
+  slidesPerView: 4,
+  centeredSlides: true,
+  spaceBetween: 30,
+  pagination: {
+    el: ".swiper-pagination",
+    clickable: true
+  },
+  freeMode: true,
+  freeModeSticky: true,
+  freeModeMomentum: false,
+  slideToClickedSlide: true,
+});
+
+var handleTeamsSwiperChange = function(swiper) {
+  setFoulTeam(swiper.slides[swiper.activeIndex]) 
+}
+
+teamsSwiper
+  .on("click", handleTeamsSwiperChange)
+  .on("activeIndexChange", handleTeamsSwiperChange)
+
+// Setup rules swiper.
+var rulesSwiper = new Swiper(".rules-swiper", {
+  slidesPerView: 'auto',
+  centeredSlides: true,
+  spaceBetween: 15,
+  freeMode: true,
+  slideToClickedSlide: true,
+  freeModeSticky: true,
+  freeModeMomentum: false
+});
+
+var handleRulesSwiperChange = function(swiper) {
+  var ruleIndex = swiper.activeIndex
+  setFoulRule(swiper.slides[ruleIndex]) 
+}
+
+rulesSwiper
+  .on("click", handleRulesSwiperChange)
+  .on("activeIndexChange", handleRulesSwiperChange)
 
 // Handles a click on a team button.
 var setFoulTeam = function(teamButton) {
@@ -91,6 +135,10 @@ var handleMatchLoad = function(data) {
   }
   firstMatchLoad = false;
 };
+
+var setRules = function(_rules) {
+  rules = _rules
+}
 
 $(function() {
   // Activate tooltips above the rule buttons.
