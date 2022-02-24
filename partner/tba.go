@@ -631,12 +631,3 @@ func (client *TbaClient) PublishAwards(database *model.Database) error {
 	}
 	return nil
 }
-
-// Returns the sum of all values in the slice representing different stages for a power cell goal.
-func sumPowerCells(cells []int) int {
-	var total int
-	for _, cell := range cells {
-		total += cell
-	}
-	return total
-}

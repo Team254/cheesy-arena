@@ -367,14 +367,4 @@
 </div>
 {{end}}
 {{define "script"}}
-<script>
-  var controlPanelDisabledChanged = function () {
-    let controlPanelDisabled = $("#controlPanelDisabled").prop("checked");
-    $("#stage1Capacity").prop("readonly", controlPanelDisabled);
-    $("#stage2Capacity").prop("readonly", controlPanelDisabled);
-    $("#stage3Capacity").prop("readonly", controlPanelDisabled);
-    $("#capacityWhenControlPanelDisabled").prop("readonly", !controlPanelDisabled);
-  };
-  controlPanelDisabledChanged();
-</script>
 {{end}}
