@@ -22,9 +22,7 @@ func (database *Database) CreateSponsorSlide(sponsorSlide *SponsorSlide) error {
 }
 
 func (database *Database) GetSponsorSlideById(id int) (*SponsorSlide, error) {
-	var sponsorSlide *SponsorSlide
-	err := database.sponsorSlideTable.getById(id, &sponsorSlide)
-	return sponsorSlide, err
+	return database.sponsorSlideTable.getById(id)
 }
 
 func (database *Database) UpdateSponsorSlide(sponsorSlide *SponsorSlide) error {
@@ -40,8 +38,8 @@ func (database *Database) TruncateSponsorSlides() error {
 }
 
 func (database *Database) GetAllSponsorSlides() ([]SponsorSlide, error) {
-	var sponsorSlides []SponsorSlide
-	if err := database.sponsorSlideTable.getAll(&sponsorSlides); err != nil {
+	sponsorSlides, err := database.sponsorSlideTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 	sort.Slice(sponsorSlides, func(i, j int) bool {

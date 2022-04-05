@@ -35,8 +35,8 @@ func (database *Database) CreateMatchResult(matchResult *MatchResult) error {
 }
 
 func (database *Database) GetMatchResultForMatch(matchId int) (*MatchResult, error) {
-	var matchResults []MatchResult
-	if err := database.matchResultTable.getAll(&matchResults); err != nil {
+	matchResults, err := database.matchResultTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 

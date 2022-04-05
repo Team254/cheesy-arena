@@ -23,8 +23,8 @@ func (database *Database) CreateScheduleBlock(block *ScheduleBlock) error {
 }
 
 func (database *Database) GetScheduleBlocksByMatchType(matchType string) ([]ScheduleBlock, error) {
-	var scheduleBlocks []ScheduleBlock
-	if err := database.scheduleBlockTable.getAll(&scheduleBlocks); err != nil {
+	scheduleBlocks, err := database.scheduleBlockTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 

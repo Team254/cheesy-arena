@@ -45,8 +45,8 @@ type EventSettings struct {
 }
 
 func (database *Database) GetEventSettings() (*EventSettings, error) {
-	var allEventSettings []EventSettings
-	if err := database.eventSettingsTable.getAll(&allEventSettings); err != nil {
+	allEventSettings, err := database.eventSettingsTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 	if len(allEventSettings) == 1 {

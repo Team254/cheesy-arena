@@ -28,9 +28,7 @@ func (database *Database) CreateAward(award *Award) error {
 }
 
 func (database *Database) GetAwardById(id int) (*Award, error) {
-	var award *Award
-	err := database.awardTable.getById(id, &award)
-	return award, err
+	return database.awardTable.getById(id)
 }
 
 func (database *Database) UpdateAward(award *Award) error {
@@ -46,8 +44,8 @@ func (database *Database) TruncateAwards() error {
 }
 
 func (database *Database) GetAllAwards() ([]Award, error) {
-	var awards []Award
-	if err := database.awardTable.getAll(&awards); err != nil {
+	awards, err := database.awardTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 	sort.Slice(awards, func(i, j int) bool {

@@ -23,7 +23,7 @@ func TestTableSingleCrud(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	table, err := db.newTable(validRecord{})
+	table, err := newTable[validRecord](db)
 	if !assert.Nil(t, err) {
 		return
 	}
@@ -33,31 +33,30 @@ func TestTableSingleCrud(t *testing.T) {
 	if assert.Nil(t, table.create(&record)) {
 		assert.Equal(t, 1, record.Id)
 	}
-	var record2 *validRecord
-	if assert.Nil(t, table.getById(record.Id, &record2)) {
-		assert.Equal(t, record, *record2)
-	}
+	record2, err := table.getById(record.Id)
+	assert.Equal(t, record, *record2)
+	assert.Nil(t, err)
 
 	// Test update and then read back.
 	record.IntData = 252
 	record.StringData = "Teh Chezy Pofs"
 	assert.Nil(t, table.update(&record))
-	if assert.Nil(t, table.getById(record.Id, &record2)) {
-		assert.Equal(t, record, *record2)
-	}
+	record2, err = table.getById(record.Id)
+	assert.Equal(t, record, *record2)
+	assert.Nil(t, err)
 
 	// Test delete.
 	assert.Nil(t, table.delete(record.Id))
-	if assert.Nil(t, table.getById(record.Id, &record2)) {
-		assert.Nil(t, record2)
-	}
+	record2, err = table.getById(record.Id)
+	assert.Nil(t, record2)
+	assert.Nil(t, err)
 }
 
 func TestTableMultipleCrud(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	table, err := db.newTable(validRecord{})
+	table, err := newTable[validRecord](db)
 	if !assert.Nil(t, err) {
 		return
 	}
@@ -71,8 +70,8 @@ func TestTableMultipleCrud(t *testing.T) {
 	assert.Nil(t, table.create(&record3))
 
 	// Read all records.
-	var records []validRecord
-	assert.Nil(t, table.getAll(&records))
+	records, err := table.getAll()
+	assert.Nil(t, err)
 	if assert.Equal(t, 3, len(records)) {
 		assert.Equal(t, record1, records[0])
 		assert.Equal(t, record2, records[1])
@@ -81,19 +80,19 @@ func TestTableMultipleCrud(t *testing.T) {
 
 	// Truncate the table and verify that the records no longer exist.
 	assert.Nil(t, table.truncate())
-	assert.Nil(t, table.getAll(&records))
+	records, err = table.getAll()
 	assert.Equal(t, 0, len(records))
-	var record4 *validRecord
-	if assert.Nil(t, table.getById(record1.Id, &record4)) {
-		assert.Nil(t, record4)
-	}
+	assert.Nil(t, err)
+	record4, err := table.getById(record1.Id)
+	assert.Nil(t, record4)
+	assert.Nil(t, err)
 }
 
 func TestTableWithManualId(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	table, err := db.newTable(manualIdRecord{})
+	table, err := newTable[manualIdRecord](db)
 	if !assert.Nil(t, err) {
 		return
 	}
@@ -103,23 +102,22 @@ func TestTableWithManualId(t *testing.T) {
 	if assert.Nil(t, table.create(&record)) {
 		assert.Equal(t, 254, record.Id)
 	}
-	var record2 *manualIdRecord
-	if assert.Nil(t, table.getById(record.Id, &record2)) {
-		assert.Equal(t, record, *record2)
-	}
+	record2, err := table.getById(record.Id)
+	assert.Equal(t, record, *record2)
+	assert.Nil(t, err)
 
 	// Test update and then read back.
 	record.StringData = "Teh Chezy Pofs"
 	assert.Nil(t, table.update(&record))
-	if assert.Nil(t, table.getById(record.Id, &record2)) {
-		assert.Equal(t, record, *record2)
-	}
+	record2, err = table.getById(record.Id)
+	assert.Equal(t, record, *record2)
+	assert.Nil(t, err)
 
 	// Test delete.
 	assert.Nil(t, table.delete(record.Id))
-	if assert.Nil(t, table.getById(record.Id, &record2)) {
-		assert.Nil(t, record2)
-	}
+	record2, err = table.getById(record.Id)
+	assert.Nil(t, record2)
+	assert.Nil(t, err)
 
 	// Test creating a record with a zero ID.
 	record.Id = 0
@@ -136,7 +134,7 @@ func TestNewTableErrors(t *testing.T) {
 	defer db.Close()
 
 	// Pass a non-struct as the record type.
-	table, err := db.newTable(123)
+	table, err := newTable[int](db)
 	assert.Nil(t, table)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "record type must be a struct; got int", err.Error())
@@ -146,8 +144,8 @@ func TestNewTableErrors(t *testing.T) {
 	type recordWithNoId struct {
 		StringData string
 	}
-	table, err = db.newTable(recordWithNoId{})
-	assert.Nil(t, table)
+	table2, err := newTable[recordWithNoId](db)
+	assert.Nil(t, table2)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "struct recordWithNoId has no field tagged as the id", err.Error())
 	}
@@ -156,8 +154,8 @@ func TestNewTableErrors(t *testing.T) {
 	type recordWithWrongIdType struct {
 		Id bool `db:"id"`
 	}
-	table, err = db.newTable(recordWithWrongIdType{})
-	assert.Nil(t, table)
+	table3, err := newTable[recordWithWrongIdType](db)
+	assert.Nil(t, table3)
 	if assert.NotNil(t, err) {
 		assert.Equal(
 			t, "field in struct recordWithWrongIdType tagged with 'id' must be an int; got bool", err.Error(),
@@ -169,57 +167,13 @@ func TestTableCrudErrors(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	table, err := db.newTable(validRecord{})
+	table, err := newTable[validRecord](db)
 	if !assert.Nil(t, err) {
 		return
 	}
-	type differentRecord struct {
-		StringData string
-	}
-
-	// Pass an object of the wrong type when getting a single record.
-	var record validRecord
-	err = table.getById(record.Id, record)
-	if assert.NotNil(t, err) {
-		assert.Equal(t, "input must be a ptr; got a struct", err.Error())
-	}
-	err = table.getById(record.Id, &record)
-	if assert.NotNil(t, err) {
-		assert.Equal(t, "input must be a ptr -> ptr; got a ptr -> struct", err.Error())
-	}
-	var recordTriplePointer ***validRecord
-	err = table.getById(record.Id, recordTriplePointer)
-	if assert.NotNil(t, err) {
-		assert.Equal(t, "input must be a ptr -> ptr -> struct; got a ptr -> ptr -> ptr", err.Error())
-	}
-	var differentRecordPointer *differentRecord
-	err = table.getById(record.Id, &differentRecordPointer)
-	if assert.NotNil(t, err) {
-		assert.Equal(
-			t,
-			"given record of type model.differentRecord does not match expected type for table validRecord",
-			err.Error(),
-		)
-	}
-
-	// Pass an object of the wrong type when getting all records.
-	var records []validRecord
-	err = table.getAll(records)
-	if assert.NotNil(t, err) {
-		assert.Equal(t, "input must be a ptr; got a slice", err.Error())
-	}
-
-	// Pass an object of the wrong type when creating or updating a record.
-	err = table.create(record)
-	if assert.NotNil(t, err) {
-		assert.Equal(t, "input must be a ptr; got a struct", err.Error())
-	}
-	err = table.update(record)
-	if assert.NotNil(t, err) {
-		assert.Equal(t, "input must be a ptr; got a struct", err.Error())
-	}
 
 	// Create a record with a non-zero ID.
+	var record validRecord
 	record.Id = 12345
 	err = table.create(&record)
 	if assert.NotNil(t, err) {
@@ -248,12 +202,5 @@ func TestTableCrudErrors(t *testing.T) {
 	err = table.delete(12345)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "can't delete non-existent validRecord with ID 12345", err.Error())
-	}
-
-	// Update a record with an incorrectly constructed table object.
-	table.idFieldIndex = nil
-	err = table.update(&record)
-	if assert.NotNil(t, err) {
-		assert.Equal(t, "struct validRecord has no field tagged as the id", err.Error())
 	}
 }

@@ -55,9 +55,7 @@ func (database *Database) CreateMatch(match *Match) error {
 }
 
 func (database *Database) GetMatchById(id int) (*Match, error) {
-	var match *Match
-	err := database.matchTable.getById(id, &match)
-	return match, err
+	return database.matchTable.getById(id)
 }
 
 func (database *Database) UpdateMatch(match *Match) error {
@@ -73,8 +71,8 @@ func (database *Database) TruncateMatches() error {
 }
 
 func (database *Database) GetMatchByName(matchType string, displayName string) (*Match, error) {
-	var matches []Match
-	if err := database.matchTable.getAll(&matches); err != nil {
+	matches, err := database.matchTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 
@@ -102,8 +100,8 @@ func (database *Database) GetMatchesByElimRoundGroup(round int, group int) ([]Ma
 }
 
 func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
-	var matches []Match
-	if err := database.matchTable.getAll(&matches); err != nil {
+	matches, err := database.matchTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 
