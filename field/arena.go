@@ -358,6 +358,8 @@ func (arena *Arena) StartTimeout(durationSec int) error {
 	}
 
 	game.MatchTiming.TimeoutDurationSec = durationSec
+	game.UpdateMatchSounds()
+	arena.soundsPlayed = make(map[*game.MatchSound]struct{})
 	arena.MatchTimingNotifier.Notify()
 	arena.MatchState = TimeoutActive
 	arena.MatchStartTime = time.Now()
@@ -465,7 +467,6 @@ func (arena *Arena) Update() {
 	case TimeoutActive:
 		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
 			arena.MatchState = PostTimeout
-			arena.playSound("end")
 			go func() {
 				// Leave the timer on the screen briefly at the end of the timeout period.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
@@ -837,7 +838,7 @@ func (arena *Arena) handleEstop(station string, state bool) {
 }
 
 func (arena *Arena) handleSounds(matchTimeSec float64) {
-	if arena.MatchState == PreMatch || arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout {
+	if arena.MatchState == PreMatch {
 		// Only apply this logic during a match.
 		return
 	}
@@ -847,8 +848,13 @@ func (arena *Arena) handleSounds(matchTimeSec float64) {
 			// Skip sounds with negative timestamps; they are meant to only be triggered explicitly.
 			continue
 		}
+		if sound.Timeout && !(arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout) ||
+			!sound.Timeout && (arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout) {
+			// Skip timeout sounds if this is a regular match, and vice versa.
+			continue
+		}
 		if _, ok := arena.soundsPlayed[sound]; !ok {
-			if matchTimeSec > sound.MatchTimeSec {
+			if matchTimeSec > sound.MatchTimeSec && matchTimeSec-sound.MatchTimeSec < 1 {
 				arena.playSound(sound.Name)
 				arena.soundsPlayed[sound] = struct{}{}
 			}
