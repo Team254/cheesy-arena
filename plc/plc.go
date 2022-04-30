@@ -96,8 +96,7 @@ const (
 	stackLightBlue
 	stackLightBuzzer
 	fieldResetLight
-	hubMotorsState
-	hubMotorsDirection
+	hubMotors
 	coilCount
 )
 
@@ -269,10 +268,9 @@ func (plc *Plc) SetFieldResetLight(state bool) {
 	plc.coils[fieldResetLight] = state
 }
 
-// Sets the on/off state and the direction of the agitator motors within the hub.
-func (plc *Plc) SetHubMotors(state, direction bool) {
-	plc.coils[hubMotorsState] = state
-	plc.coils[hubMotorsDirection] = direction
+// Sets the on/off state of the agitator motors within the hub.
+func (plc *Plc) SetHubMotors(state bool) {
+	plc.coils[hubMotors] = state
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {

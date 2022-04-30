@@ -13,7 +13,6 @@ import (
 	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/plc"
 	"log"
-	"math/rand"
 	"time"
 )
 
@@ -408,7 +407,7 @@ func (arena *Arena) Update() {
 			sendDsPacket = true
 		}
 		arena.Plc.ResetMatch()
-		arena.Plc.SetHubMotors(true, rand.Intn(2) == 1)
+		arena.Plc.SetHubMotors(true)
 	case WarmupPeriod:
 		auto = true
 		enabled = false
@@ -806,7 +805,7 @@ func (arena *Arena) handlePlcOutput() {
 		if arena.lastMatchState != PostMatch {
 			go func() {
 				time.Sleep(time.Second * game.HubTeleopGracePeriodSec)
-				arena.Plc.SetHubMotors(false, false)
+				arena.Plc.SetHubMotors(false)
 			}()
 		}
 	case AutoPeriod:
