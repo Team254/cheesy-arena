@@ -69,5 +69,11 @@ func UpdateMatchSounds() {
 			-1,
 			false,
 		},
+		{
+			"match_result",
+			"wav",
+			-1,
+			false,
+		},
 	}
 }

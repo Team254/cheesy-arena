@@ -370,6 +370,25 @@ func (arena *Arena) StartTimeout(durationSec int) error {
 	return nil
 }
 
+// Updates the audience display screen.
+func (arena *Arena) SetAudienceDisplayMode(mode string) {
+	if arena.AudienceDisplayMode != mode {
+		arena.AudienceDisplayMode = mode
+		arena.AudienceDisplayModeNotifier.Notify()
+		if mode == "score" {
+			arena.playSound("match_result")
+		}
+	}
+}
+
+// Updates the alliance station display screen.
+func (arena *Arena) SetAllianceStationDisplayMode(mode string) {
+	if arena.AllianceStationDisplayMode != mode {
+		arena.AllianceStationDisplayMode = mode
+		arena.AllianceStationDisplayModeNotifier.Notify()
+	}
+}
+
 // Returns the fractional number of seconds since the start of the match.
 func (arena *Arena) MatchTimeSec() float64 {
 	if arena.MatchState == PreMatch || arena.MatchState == StartMatch || arena.MatchState == PostMatch {
