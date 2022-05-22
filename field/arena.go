@@ -866,11 +866,6 @@ func (arena *Arena) handlePlcOutput() {
 	case TeleopPeriod:
 		arena.Plc.SetStackLights(false, false, false, true)
 	}
-
-	// Force this to only be true for at most one program scan, preventing the
-	// notifiers from being spammed. If the field cannot be made green right
-	// now, this effectively swallows the event.
-	arena.ForceFieldReset = false
 }
 
 func (arena *Arena) handleEstop(station string, state bool) {
