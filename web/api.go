@@ -54,8 +54,8 @@ func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
 		var matchResultWithSummary *MatchResultWithSummary
 		if matchResult != nil {
 			matchResultWithSummary = &MatchResultWithSummary{MatchResult: *matchResult}
-			matchResultWithSummary.RedSummary = matchResult.RedScoreSummary(true)
-			matchResultWithSummary.BlueSummary = matchResult.BlueScoreSummary(true)
+			matchResultWithSummary.RedSummary = matchResult.RedScoreSummary()
+			matchResultWithSummary.BlueSummary = matchResult.BlueScoreSummary()
 		}
 		matchesWithResults[i].Result = matchResultWithSummary
 	}

@@ -4,6 +4,7 @@
 package tournament
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -33,6 +34,11 @@ func TestCalculateRankings(t *testing.T) {
 		assert.Equal(t, 0, rankings[5].PreviousRank)
 	}
 
+	for _, ranking := range rankings {
+		fmt.Printf("%+v\n", ranking)
+	}
+	fmt.Println()
+
 	// Test after changing a match result.
 	matchResult3 := model.BuildTestMatchResult(3, 3)
 	matchResult3.RedScore, matchResult3.BlueScore = matchResult3.BlueScore, matchResult3.RedScore
@@ -58,6 +64,11 @@ func TestCalculateRankings(t *testing.T) {
 		assert.Equal(t, 6, rankings[5].PreviousRank)
 	}
 
+	for _, ranking := range rankings {
+		fmt.Printf("%+v\n", ranking)
+	}
+	fmt.Println()
+
 	matchResult3 = model.BuildTestMatchResult(3, 4)
 	err = database.CreateMatchResult(matchResult3)
 	assert.Nil(t, err)
@@ -80,6 +91,12 @@ func TestCalculateRankings(t *testing.T) {
 		assert.Equal(t, 2, rankings[5].TeamId)
 		assert.Equal(t, 6, rankings[5].PreviousRank)
 	}
+
+	for _, ranking := range rankings {
+		fmt.Printf("%+v\n", ranking)
+	}
+	fmt.Println()
+
 }
 
 // Sets up a schedule and results that touches on all possible variables.

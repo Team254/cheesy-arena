@@ -7,7 +7,6 @@ package plc
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/goburrow/modbus"
 	"log"
@@ -39,6 +38,7 @@ const (
 )
 
 // Discrete inputs
+//go:generate stringer -type=input
 type input int
 
 const (
@@ -55,42 +55,36 @@ const (
 	blueConnected1
 	blueConnected2
 	blueConnected3
-	redRungIsLevel
-	blueRungIsLevel
-	redPowerPortJam
-	bluePowerPortJam
 	inputCount
 )
 
 // 16-bit registers
+//go:generate stringer -type=register
 type register int
 
 const (
 	fieldIoConnection register = iota
-	redPowerPortBottom
-	redPowerPortOuter
-	redPowerPortInner
-	bluePowerPortBottom
-	bluePowerPortOuter
-	bluePowerPortInner
-	redControlPanelRed
-	redControlPanelGreen
-	redControlPanelBlue
-	redControlPanelIntensity
-	blueControlPanelRed
-	blueControlPanelGreen
-	blueControlPanelBlue
-	blueControlPanelIntensity
-	redControlPanelColor
-	blueControlPanelColor
-	redControlPanelLastColor
-	blueControlPanelLastColor
-	redControlPanelSegments
-	blueControlPanelSegments
+	redLowerHubBlue
+	redLowerHubFar
+	redLowerHubNear
+	redLowerHubRed
+	redUpperHubBlue
+	redUpperHubFar
+	redUpperHubNear
+	redUpperHubRed
+	blueLowerHubBlue
+	blueLowerHubFar
+	blueLowerHubNear
+	blueLowerHubRed
+	blueUpperHubBlue
+	blueUpperHubFar
+	blueUpperHubNear
+	blueUpperHubRed
 	registerCount
 )
 
 // Coils
+//go:generate stringer -type=coil
 type coil int
 
 const (
@@ -102,28 +96,18 @@ const (
 	stackLightBlue
 	stackLightBuzzer
 	fieldResetLight
-	powerPortMotors
-	redStage1Light
-	redStage2Light
-	redStage3Light
-	blueStage1Light
-	blueStage2Light
-	blueStage3Light
-	redTrussLight
-	blueTrussLight
-	redControlPanelLight
-	blueControlPanelLight
+	hubMotors
 	coilCount
 )
 
 // Bitmask for decoding fieldIoConnection into individual ArmorBlock connection statuses.
+//go:generate stringer -type=armorBlock
 type armorBlock int
 
 const (
 	redDs armorBlock = iota
 	blueDs
-	shieldGenerator
-	controlPanel
+	hub
 	armorBlockCount
 )
 
@@ -238,34 +222,32 @@ func (plc *Plc) ResetMatch() {
 	plc.matchResetCycles = 0
 }
 
-// Returns the total number of power cells scored since match start in each level of the red and blue power ports.
-func (plc *Plc) GetPowerPorts() ([3]int, [3]int) {
-	return [3]int{
-			int(plc.registers[redPowerPortBottom]),
-			int(plc.registers[redPowerPortOuter]),
-			int(plc.registers[redPowerPortInner]),
+// Returns the total number of cargo scored since match start in each level of the hub.
+func (plc *Plc) GetHubCounts() ([4]int, [4]int, [4]int, [4]int) {
+	return [4]int{
+			int(plc.registers[redLowerHubBlue]),
+			int(plc.registers[redLowerHubFar]),
+			int(plc.registers[redLowerHubNear]),
+			int(plc.registers[redLowerHubRed]),
 		},
-		[3]int{
-			int(plc.registers[bluePowerPortBottom]),
-			int(plc.registers[bluePowerPortOuter]),
-			int(plc.registers[bluePowerPortInner]),
+		[4]int{
+			int(plc.registers[redUpperHubBlue]),
+			int(plc.registers[redUpperHubFar]),
+			int(plc.registers[redUpperHubNear]),
+			int(plc.registers[redUpperHubRed]),
+		},
+		[4]int{
+			int(plc.registers[blueLowerHubBlue]),
+			int(plc.registers[blueLowerHubFar]),
+			int(plc.registers[blueLowerHubNear]),
+			int(plc.registers[blueLowerHubRed]),
+		},
+		[4]int{
+			int(plc.registers[blueUpperHubBlue]),
+			int(plc.registers[blueUpperHubFar]),
+			int(plc.registers[blueUpperHubNear]),
+			int(plc.registers[blueUpperHubRed]),
 		}
-}
-
-// Returns whether each of the red and blue power ports are jammed.
-func (plc *Plc) GetPowerPortJams() (bool, bool) {
-	return plc.inputs[redPowerPortJam], plc.inputs[bluePowerPortJam]
-}
-
-// Returns the current color and number of segment transitions for each of the red and blue control panels.
-func (plc *Plc) GetControlPanels() (game.ControlPanelColor, int, game.ControlPanelColor, int) {
-	return game.ControlPanelColor(plc.registers[redControlPanelColor]), int(plc.registers[redControlPanelSegments]),
-		game.ControlPanelColor(plc.registers[blueControlPanelColor]), int(plc.registers[blueControlPanelSegments])
-}
-
-// Returns whether each of the red and blue rungs is level.
-func (plc *Plc) GetRungs() (bool, bool) {
-	return plc.inputs[redRungIsLevel], plc.inputs[blueRungIsLevel]
 }
 
 // Sets the on/off state of the stack lights on the scoring table.
@@ -286,31 +268,9 @@ func (plc *Plc) SetFieldResetLight(state bool) {
 	plc.coils[fieldResetLight] = state
 }
 
-// Sets the on/off state of the agitator motors within each power port.
-func (plc *Plc) SetPowerPortMotors(state bool) {
-	plc.coils[powerPortMotors] = state
-}
-
-// Sets the on/off state of the lights mounted within the shield generator trussing.
-func (plc *Plc) SetStageActivatedLights(red, blue [3]bool) {
-	plc.coils[redStage1Light] = red[0]
-	plc.coils[redStage2Light] = red[1]
-	plc.coils[redStage3Light] = red[2]
-	plc.coils[blueStage1Light] = blue[0]
-	plc.coils[blueStage2Light] = blue[1]
-	plc.coils[blueStage3Light] = blue[2]
-}
-
-// Sets the on/off state of the red and blue alliance stack lights mounted to the control panel.
-func (plc *Plc) SetControlPanelLights(red, blue bool) {
-	plc.coils[redControlPanelLight] = red
-	plc.coils[blueControlPanelLight] = blue
-}
-
-// Sets the on/off state of the red and blue alliance stack lights mounted to the top of the shield generator.
-func (plc *Plc) SetShieldGeneratorLights(red, blue bool) {
-	plc.coils[redTrussLight] = red
-	plc.coils[blueTrussLight] = blue
+// Sets the on/off state of the agitator motors within the hub.
+func (plc *Plc) SetHubMotors(state bool) {
+	plc.coils[hubMotors] = state
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {

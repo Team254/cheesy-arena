@@ -28,9 +28,7 @@ func (database *Database) CreateTeam(team *Team) error {
 }
 
 func (database *Database) GetTeamById(id int) (*Team, error) {
-	var team *Team
-	err := database.teamTable.getById(id, &team)
-	return team, err
+	return database.teamTable.getById(id)
 }
 
 func (database *Database) UpdateTeam(team *Team) error {
@@ -46,8 +44,8 @@ func (database *Database) TruncateTeams() error {
 }
 
 func (database *Database) GetAllTeams() ([]Team, error) {
-	var teams []Team
-	if err := database.teamTable.getAll(&teams); err != nil {
+	teams, err := database.teamTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 	sort.Slice(teams, func(i, j int) bool {

@@ -15,9 +15,7 @@ func (database *Database) CreateRanking(ranking *game.Ranking) error {
 }
 
 func (database *Database) GetRankingForTeam(teamId int) (*game.Ranking, error) {
-	var ranking *game.Ranking
-	err := database.rankingTable.getById(teamId, &ranking)
-	return ranking, err
+	return database.rankingTable.getById(teamId)
 }
 
 func (database *Database) UpdateRanking(ranking *game.Ranking) error {
@@ -33,8 +31,8 @@ func (database *Database) TruncateRankings() error {
 }
 
 func (database *Database) GetAllRankings() (game.Rankings, error) {
-	var rankings []game.Ranking
-	if err := database.rankingTable.getAll(&rankings); err != nil {
+	rankings, err := database.rankingTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 	sort.Slice(rankings, func(i, j int) bool {

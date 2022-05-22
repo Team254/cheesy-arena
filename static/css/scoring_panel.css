@@ -75,34 +75,13 @@ body {
   background-color: #236;
 }
 .endgame-status[data-value="2"] {
-  background-color: #263;
-}
-.control-panel[data-value="disabled"] {
-  background-color: #333;
-}
-.control-panel[data-value="false"] {
-  background-color: #236;
-}
-.control-panel[data-value="true"] {
-  background-color: #263;
-}
-.control-panel-color[data-value="0"] {
-  background-color: #333;
-}
-.control-panel-color[data-value="0"][data-control-panel-status="1"] {
-  border: 3px solid red;
-}
-.control-panel-color[data-value="1"] {
   background-color: #633;
 }
-.control-panel-color[data-value="2"] {
+.endgame-status[data-value="3"] {
+  background-color: #652;
+}
+.endgame-status[data-value="4"] {
   background-color: #263;
-}
-.control-panel-color[data-value="3"] {
-  background-color: #236;
-}
-.control-panel-color[data-value="4"] {
-  background-color: #882;
 }
 .shortcut {
   margin: 0 0.2vw;

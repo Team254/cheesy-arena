@@ -19,8 +19,8 @@ func (database *Database) CreateAllianceTeam(allianceTeam *AllianceTeam) error {
 }
 
 func (database *Database) GetTeamsByAlliance(allianceId int) ([]AllianceTeam, error) {
-	var allianceTeams []AllianceTeam
-	if err := database.allianceTeamTable.getAll(&allianceTeams); err != nil {
+	allianceTeams, err := database.allianceTeamTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 	sort.Slice(allianceTeams, func(i, j int) bool {
@@ -49,8 +49,8 @@ func (database *Database) TruncateAllianceTeams() error {
 }
 
 func (database *Database) GetAllAlliances() ([][]AllianceTeam, error) {
-	var allianceTeams []AllianceTeam
-	if err := database.allianceTeamTable.getAll(&allianceTeams); err != nil {
+	allianceTeams, err := database.allianceTeamTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 	sort.Slice(allianceTeams, func(i, j int) bool {

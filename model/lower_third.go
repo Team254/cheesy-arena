@@ -22,9 +22,7 @@ func (database *Database) CreateLowerThird(lowerThird *LowerThird) error {
 }
 
 func (database *Database) GetLowerThirdById(id int) (*LowerThird, error) {
-	var lowerThird *LowerThird
-	err := database.lowerThirdTable.getById(id, &lowerThird)
-	return lowerThird, err
+	return database.lowerThirdTable.getById(id)
 }
 
 func (database *Database) UpdateLowerThird(lowerThird *LowerThird) error {
@@ -40,8 +38,8 @@ func (database *Database) TruncateLowerThirds() error {
 }
 
 func (database *Database) GetAllLowerThirds() ([]LowerThird, error) {
-	var lowerThirds []LowerThird
-	if err := database.lowerThirdTable.getAll(&lowerThirds); err != nil {
+	lowerThirds, err := database.lowerThirdTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 	sort.Slice(lowerThirds, func(i, j int) bool {

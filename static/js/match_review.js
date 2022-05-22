@@ -34,23 +34,16 @@ var renderResults = function(alliance) {
   for (var i = 0; i < 4; i++) {
     var i1 = i + 1;
 
-    if (i < 2) {
-      getInputElement(alliance, "AutoCellsBottom" + i1).val(result.score.AutoCellsBottom[i]);
-      getInputElement(alliance, "AutoCellsOuter" + i1).val(result.score.AutoCellsOuter[i]);
-      getInputElement(alliance, "AutoCellsInner" + i1).val(result.score.AutoCellsInner[i]);
-    }
-
     if (i < 3) {
-      getInputElement(alliance, "ExitedInitiationLine" + i1).prop("checked", result.score.ExitedInitiationLine[i]);
+      getInputElement(alliance, "TaxiStatuses" + i1).prop("checked", result.score.TaxiStatuses[i]);
       getInputElement(alliance, "EndgameStatuses" + i1, result.score.EndgameStatuses[i]).prop("checked", true);
     }
 
-    getInputElement(alliance, "TeleopCellsBottom" + i1).val(result.score.TeleopCellsBottom[i]);
-    getInputElement(alliance, "TeleopCellsOuter" + i1).val(result.score.TeleopCellsOuter[i]);
-    getInputElement(alliance, "TeleopCellsInner" + i1).val(result.score.TeleopCellsInner[i]);
+    getInputElement(alliance, "AutoCargoLower" + i).val(result.score.AutoCargoLower[i]);
+    getInputElement(alliance, "AutoCargoUpper" + i).val(result.score.AutoCargoUpper[i]);
+    getInputElement(alliance, "TeleopCargoLower" + i).val(result.score.TeleopCargoLower[i]);
+    getInputElement(alliance, "TeleopCargoUpper" + i).val(result.score.TeleopCargoUpper[i]);
   }
-  getInputElement(alliance, "ControlPanelStatus", result.score.ControlPanelStatus).prop("checked", true);
-  getInputElement(alliance, "RungIsLevel").prop("checked", result.score.RungIsLevel);
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
@@ -75,34 +68,25 @@ var updateResults = function(alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.ExitedInitiationLine = [];
-  result.score.AutoCellsBottom = [];
-  result.score.AutoCellsOuter = [];
-  result.score.AutoCellsInner = [];
-  result.score.TeleopCellsBottom = [];
-  result.score.TeleopCellsOuter = [];
-  result.score.TeleopCellsInner = [];
+  result.score.TaxiStatuses = [];
+  result.score.AutoCargoLower = [];
+  result.score.AutoCargoUpper = [];
+  result.score.TeleopCargoLower = [];
+  result.score.TeleopCargoUpper = [];
   result.score.EndgameStatuses = [];
   for (var i = 0; i < 4; i++) {
     var i1 = i + 1;
 
-    if (i < 2) {
-      result.score.AutoCellsBottom[i] = parseInt(formData[alliance + "AutoCellsBottom" + i1]);
-      result.score.AutoCellsOuter[i] = parseInt(formData[alliance + "AutoCellsOuter" + i1]);
-      result.score.AutoCellsInner[i] = parseInt(formData[alliance + "AutoCellsInner" + i1]);
-    }
-
     if (i < 3) {
-      result.score.ExitedInitiationLine[i] = formData[alliance + "ExitedInitiationLine" + i1] === "on";
+      result.score.TaxiStatuses[i] = formData[alliance + "TaxiStatuses" + i1] === "on";
       result.score.EndgameStatuses[i] = parseInt(formData[alliance + "EndgameStatuses" + i1]);
     }
 
-    result.score.TeleopCellsBottom[i] = parseInt(formData[alliance + "TeleopCellsBottom" + i1]);
-    result.score.TeleopCellsOuter[i] = parseInt(formData[alliance + "TeleopCellsOuter" + i1]);
-    result.score.TeleopCellsInner[i] = parseInt(formData[alliance + "TeleopCellsInner" + i1]);
+    result.score.AutoCargoLower[i] = parseInt(formData[alliance + "AutoCargoLower" + i]);
+    result.score.AutoCargoUpper[i] = parseInt(formData[alliance + "AutoCargoUpper" + i]);
+    result.score.TeleopCargoLower[i] = parseInt(formData[alliance + "TeleopCargoLower" + i]);
+    result.score.TeleopCargoUpper[i] = parseInt(formData[alliance + "TeleopCargoUpper" + i]);
   }
-  result.score.ControlPanelStatus = parseInt(formData[alliance + "ControlPanelStatus"]);
-  result.score.RungIsLevel = formData[alliance + "RungIsLevel"] === "on";
 
   result.score.Fouls = [];
   for (var i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {

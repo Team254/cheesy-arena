@@ -193,8 +193,8 @@ func (web *Web) buildMatchReviewList(matchType string) ([]MatchReviewListItem, e
 			return []MatchReviewListItem{}, err
 		}
 		if matchResult != nil {
-			matchReviewList[i].RedScore = matchResult.RedScoreSummary(true).Score
-			matchReviewList[i].BlueScore = matchResult.BlueScoreSummary(true).Score
+			matchReviewList[i].RedScore = matchResult.RedScoreSummary().Score
+			matchReviewList[i].BlueScore = matchResult.BlueScoreSummary().Score
 		}
 		switch match.Status {
 		case model.RedWonMatch:

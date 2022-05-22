@@ -19,8 +19,8 @@ func (database *Database) CreateUserSession(session *UserSession) error {
 }
 
 func (database *Database) GetUserSessionByToken(token string) (*UserSession, error) {
-	var userSessions []UserSession
-	if err := database.userSessionTable.getAll(&userSessions); err != nil {
+	userSessions, err := database.userSessionTable.getAll()
+	if err != nil {
 		return nil, err
 	}
 

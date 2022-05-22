@@ -98,19 +98,30 @@ var handleMatchTime = function(data) {
     }
     countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
     $("#matchTime").text(countdownString);
+
+    // Set opacity of auxiliary score fields based on whether the match is in auto or teleop period.
+    var autoOpacity = 1;
+    var teleopOpacity = 0.5;
+    if (matchStates[data.MatchState] === "TELEOP_PERIOD" || matchStates[data.MatchState] === "POST_MATCH") {
+      autoOpacity = 0.5;
+      teleopOpacity = 1;
+    }
+    $("#" + redSide + "AutoCargoRemaining").css("opacity", autoOpacity);
+    $("#" + redSide + "TeleopCargoRemaining").css("opacity", teleopOpacity);
+    $("#" + blueSide + "AutoCargoRemaining").css("opacity", autoOpacity);
+    $("#" + blueSide + "TeleopCargoRemaining").css("opacity", teleopOpacity);
   });
 };
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints);
-  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints);
+  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HangarPoints);
+  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HangarPoints);
 
-  for (var i = 0; i < 3; i++) {
-    var i1 = i + 1;
-    setPowerCellText($("#" + redSide + "Stage" + i1), data.Red.ScoreSummary, i);
-    setPowerCellText($("#" + blueSide + "Stage" + i1), data.Blue.ScoreSummary, i);
-  }
+  $("#" + redSide + "AutoCargoRemaining").text(data.Red.ScoreSummary.AutoCargoRemaining);
+  $("#" + redSide + "TeleopCargoRemaining").text(data.Red.ScoreSummary.TeleopCargoRemaining);
+  $("#" + blueSide + "AutoCargoRemaining").text(data.Blue.ScoreSummary.AutoCargoRemaining);
+  $("#" + blueSide + "TeleopCargoRemaining").text(data.Blue.ScoreSummary.TeleopCargoRemaining);
 };
 
 // Handles a websocket message to populate the final score data.
@@ -122,15 +133,14 @@ var handleScorePosted = function(data) {
   $("#" + redSide + "FinalTeam1Avatar").attr("src", getAvatarUrl(data.Match.Red1));
   $("#" + redSide + "FinalTeam2Avatar").attr("src", getAvatarUrl(data.Match.Red2));
   $("#" + redSide + "FinalTeam3Avatar").attr("src", getAvatarUrl(data.Match.Red3));
-  $("#" + redSide + "FinalInitiationLinePoints").text(data.RedScoreSummary.InitiationLinePoints);
-  $("#" + redSide + "FinalPowerCellPoints").text(data.RedScoreSummary.PowerCellPoints);
-  $("#" + redSide + "FinalControlPanelPoints").text(data.RedScoreSummary.ControlPanelPoints);
-  $("#" + redSide + "FinalEndgamePoints").text(data.RedScoreSummary.EndgamePoints);
+  $("#" + redSide + "FinalTaxiPoints").text(data.RedScoreSummary.TaxiPoints);
+  $("#" + redSide + "FinalCargoPoints").text(data.RedScoreSummary.CargoPoints);
+  $("#" + redSide + "FinalHangarPoints").text(data.RedScoreSummary.HangarPoints);
   $("#" + redSide + "FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
-  $("#" + redSide + "FinalControlPanelRankingPoint").html(data.RedScoreSummary.ControlPanelRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + redSide + "FinalControlPanelRankingPoint").attr("data-checked", data.RedScoreSummary.ControlPanelRankingPoint);
-  $("#" + redSide + "FinalEndgameRankingPoint").html(data.RedScoreSummary.EndgameRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + redSide + "FinalEndgameRankingPoint").attr("data-checked", data.RedScoreSummary.EndgameRankingPoint);
+  $("#" + redSide + "FinalCargoBonusRankingPoint").html(data.RedScoreSummary.CargoBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + redSide + "FinalCargoBonusRankingPoint").attr("data-checked", data.RedScoreSummary.CargoBonusRankingPoint);
+  $("#" + redSide + "FinalHangarBonusRankingPoint").html(data.RedScoreSummary.HangarBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + redSide + "FinalHangarBonusRankingPoint").attr("data-checked", data.RedScoreSummary.HangarBonusRankingPoint);
   $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
   $("#" + blueSide + "FinalTeam1").html(getRankingText(data.Match.Blue1, data.Rankings) + "" + data.Match.Blue1);
   $("#" + blueSide + "FinalTeam2").html(getRankingText(data.Match.Blue2, data.Rankings) + "" + data.Match.Blue2);
@@ -138,15 +148,14 @@ var handleScorePosted = function(data) {
   $("#" + blueSide + "FinalTeam1Avatar").attr("src", getAvatarUrl(data.Match.Blue1));
   $("#" + blueSide + "FinalTeam2Avatar").attr("src", getAvatarUrl(data.Match.Blue2));
   $("#" + blueSide + "FinalTeam3Avatar").attr("src", getAvatarUrl(data.Match.Blue3));
-  $("#" + blueSide + "FinalInitiationLinePoints").text(data.BlueScoreSummary.InitiationLinePoints);
-  $("#" + blueSide + "FinalPowerCellPoints").text(data.BlueScoreSummary.PowerCellPoints);
-  $("#" + blueSide + "FinalControlPanelPoints").text(data.BlueScoreSummary.ControlPanelPoints);
-  $("#" + blueSide + "FinalEndgamePoints").text(data.BlueScoreSummary.EndgamePoints);
+  $("#" + blueSide + "FinalTaxiPoints").text(data.BlueScoreSummary.TaxiPoints);
+  $("#" + blueSide + "FinalCargoPoints").text(data.BlueScoreSummary.CargoPoints);
+  $("#" + blueSide + "FinalHangarPoints").text(data.BlueScoreSummary.HangarPoints);
   $("#" + blueSide + "FinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
-  $("#" + blueSide + "FinalControlPanelRankingPoint").html(data.BlueScoreSummary.ControlPanelRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + blueSide + "FinalControlPanelRankingPoint").attr("data-checked", data.BlueScoreSummary.ControlPanelRankingPoint);
-  $("#" + blueSide + "FinalEndgameRankingPoint").html(data.BlueScoreSummary.EndgameRankingPoint ? "&#x2714;" : "&#x2718;");
-  $("#" + blueSide + "FinalEndgameRankingPoint").attr("data-checked", data.BlueScoreSummary.EndgameRankingPoint);
+  $("#" + blueSide + "FinalCargoBonusRankingPoint").html(data.BlueScoreSummary.CargoBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + blueSide + "FinalCargoBonusRankingPoint").attr("data-checked", data.BlueScoreSummary.CargoBonusRankingPoint);
+  $("#" + blueSide + "FinalHangarBonusRankingPoint").html(data.BlueScoreSummary.HangarBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + blueSide + "FinalHangarBonusRankingPoint").attr("data-checked", data.BlueScoreSummary.HangarBonusRankingPoint);
   $("#finalSeriesStatus").text(data.SeriesStatus);
   $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
   $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);
@@ -504,20 +513,6 @@ var initializeSponsorDisplay = function() {
 
 var getAvatarUrl = function(teamId) {
   return "/api/teams/" + teamId + "/avatar";
-};
-
-// Populates the given element on the overlay to represent the given power cell stage.
-var setPowerCellText = function(element, scoreSummary, stage) {
-  var text = "&nbsp;";
-  var opacity = 1;
-  if (scoreSummary.StagesActivated[stage]) {
-    text = "I".repeat(stage + 1);
-    opacity = 0.4;
-  } else if (stage === 0 || scoreSummary.StagesActivated[stage - 1]) {
-    text = scoreSummary.StagePowerCellsRemaining[stage];
-  }
-  element.html(text);
-  element.css("opacity", opacity);
 };
 
 var getRankingText = function(teamId, rankings) {

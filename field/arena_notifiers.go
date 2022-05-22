@@ -42,7 +42,6 @@ type MatchTimeMessage struct {
 type audienceAllianceScoreFields struct {
 	Score        *game.Score
 	ScoreSummary *game.ScoreSummary
-	ControlPanel *game.ControlPanel
 }
 
 // Instantiates notifiers and configures their message producing methods.
@@ -275,8 +274,8 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		SeriesLeader     string
 		RedHighScore     bool
 		BlueHighScore    bool
-	}{arena.SavedMatch.CapitalizedType(), arena.SavedMatch, arena.SavedMatchResult.RedScoreSummary(true),
-		arena.SavedMatchResult.BlueScoreSummary(true), rankings, arena.SavedMatchResult.RedScore.Fouls,
+	}{arena.SavedMatch.CapitalizedType(), arena.SavedMatch, arena.SavedMatchResult.RedScoreSummary(),
+		arena.SavedMatchResult.BlueScoreSummary(), rankings, arena.SavedMatchResult.RedScore.Fouls,
 		arena.SavedMatchResult.BlueScore.Fouls,
 		getRulesViolated(arena.SavedMatchResult.RedScore.Fouls, arena.SavedMatchResult.BlueScore.Fouls),
 		arena.SavedMatchResult.RedCards, arena.SavedMatchResult.BlueCards, seriesStatus, seriesLeader,
@@ -304,7 +303,6 @@ func getAudienceAllianceScoreFields(allianceScore *RealtimeScore,
 	fields := new(audienceAllianceScoreFields)
 	fields.Score = &allianceScore.CurrentScore
 	fields.ScoreSummary = allianceScoreSummary
-	fields.ControlPanel = &allianceScore.ControlPanel
 	return fields
 }
 

@@ -281,22 +281,20 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			}
 			continue // Skip sending the status update, as the client is about to terminate and reload.
 		case "setAudienceDisplay":
-			screen, ok := data.(string)
+			mode, ok := data.(string)
 			if !ok {
 				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
-			web.arena.AudienceDisplayMode = screen
-			web.arena.AudienceDisplayModeNotifier.Notify()
+			web.arena.SetAudienceDisplayMode(mode)
 			continue
 		case "setAllianceStationDisplay":
-			screen, ok := data.(string)
+			mode, ok := data.(string)
 			if !ok {
 				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
-			web.arena.AllianceStationDisplayMode = screen
-			web.arena.AllianceStationDisplayModeNotifier.Notify()
+			web.arena.SetAllianceStationDisplayMode(mode)
 			continue
 		case "startTimeout":
 			durationSec, ok := data.(float64)
@@ -366,8 +364,8 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 		// Update and save the match record to the database.
 		match.ScoreCommittedAt = time.Now()
-		redScore := matchResult.RedScoreSummary(true)
-		blueScore := matchResult.BlueScoreSummary(true)
+		redScore := matchResult.RedScoreSummary()
+		blueScore := matchResult.BlueScoreSummary()
 		if redScore.Score > blueScore.Score {
 			match.Status = model.RedWonMatch
 		} else if redScore.Score < blueScore.Score {

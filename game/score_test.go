@@ -9,238 +9,157 @@ import (
 )
 
 func TestScoreSummary(t *testing.T) {
-	ControlPanelDisabled = false
-
 	redScore := TestScore1()
 	blueScore := TestScore2()
 
-	redSummary := redScore.Summarize(blueScore.Fouls, true)
-	assert.Equal(t, 10, redSummary.InitiationLinePoints)
-	assert.Equal(t, 84, redSummary.AutoPowerCellPoints)
-	assert.Equal(t, 94, redSummary.AutoPoints)
-	assert.Equal(t, 38, redSummary.TeleopPowerCellPoints)
-	assert.Equal(t, 122, redSummary.PowerCellPoints)
-	assert.Equal(t, 15, redSummary.ControlPanelPoints)
-	assert.Equal(t, 75, redSummary.EndgamePoints)
+	redSummary := redScore.Summarize(blueScore.Fouls)
+	assert.Equal(t, 4, redSummary.TaxiPoints)
+	assert.Equal(t, 7, redSummary.AutoCargoCount)
+	assert.Equal(t, 26, redSummary.AutoCargoPoints)
+	assert.Equal(t, 17, redSummary.CargoCount)
+	assert.Equal(t, 44, redSummary.CargoPoints)
+	assert.Equal(t, 19, redSummary.HangarPoints)
+	assert.Equal(t, 67, redSummary.MatchPoints)
 	assert.Equal(t, 0, redSummary.FoulPoints)
-	assert.Equal(t, 222, redSummary.Score)
-	assert.Equal(t, [3]int{0, 0, 13}, redSummary.StagePowerCellsRemaining)
-	assert.Equal(t, [3]bool{true, true, false}, redSummary.StagesActivated)
-	assert.Equal(t, false, redSummary.ControlPanelRankingPoint)
-	assert.Equal(t, true, redSummary.EndgameRankingPoint)
+	assert.Equal(t, 67, redSummary.Score)
+	assert.Equal(t, true, redSummary.QuintetAchieved)
+	assert.Equal(t, false, redSummary.CargoBonusRankingPoint)
+	assert.Equal(t, true, redSummary.HangarBonusRankingPoint)
 
-	blueSummary := blueScore.Summarize(redScore.Fouls, true)
-	assert.Equal(t, 5, blueSummary.InitiationLinePoints)
-	assert.Equal(t, 12, blueSummary.AutoPowerCellPoints)
-	assert.Equal(t, 17, blueSummary.AutoPoints)
-	assert.Equal(t, 122, blueSummary.TeleopPowerCellPoints)
-	assert.Equal(t, 134, blueSummary.PowerCellPoints)
-	assert.Equal(t, 35, blueSummary.ControlPanelPoints)
-	assert.Equal(t, 50, blueSummary.EndgamePoints)
-	assert.Equal(t, 33, blueSummary.FoulPoints)
-	assert.Equal(t, 257, blueSummary.Score)
-	assert.Equal(t, [3]int{0, 0, 0}, blueSummary.StagePowerCellsRemaining)
-	assert.Equal(t, [3]bool{true, true, true}, blueSummary.StagesActivated)
-	assert.Equal(t, true, blueSummary.ControlPanelRankingPoint)
-	assert.Equal(t, false, blueSummary.EndgameRankingPoint)
+	blueSummary := blueScore.Summarize(redScore.Fouls)
+	assert.Equal(t, 2, blueSummary.TaxiPoints)
+	assert.Equal(t, 4, blueSummary.AutoCargoCount)
+	assert.Equal(t, 14, blueSummary.AutoCargoPoints)
+	assert.Equal(t, 25, blueSummary.CargoCount)
+	assert.Equal(t, 45, blueSummary.CargoPoints)
+	assert.Equal(t, 14, blueSummary.HangarPoints)
+	assert.Equal(t, 61, blueSummary.MatchPoints)
+	assert.Equal(t, 20, blueSummary.FoulPoints)
+	assert.Equal(t, 81, blueSummary.Score)
+	assert.Equal(t, false, blueSummary.QuintetAchieved)
+	assert.Equal(t, true, blueSummary.CargoBonusRankingPoint)
+	assert.Equal(t, false, blueSummary.HangarBonusRankingPoint)
 
 	// Test invalid foul.
 	redScore.Fouls[0].RuleId = 0
-	assert.Equal(t, 18, blueScore.Summarize(redScore.Fouls, true).FoulPoints)
+	assert.Equal(t, 12, blueScore.Summarize(redScore.Fouls).FoulPoints)
 
 	// Test elimination disqualification.
 	redScore.ElimDq = true
-	assert.Equal(t, 0, redScore.Summarize(blueScore.Fouls, true).Score)
-	assert.NotEqual(t, 0, blueScore.Summarize(blueScore.Fouls, true).Score)
+	assert.Equal(t, 0, redScore.Summarize(blueScore.Fouls).Score)
+	assert.NotEqual(t, 0, blueScore.Summarize(blueScore.Fouls).Score)
 	blueScore.ElimDq = true
-	assert.Equal(t, 0, blueScore.Summarize(redScore.Fouls, true).Score)
+	assert.Equal(t, 0, blueScore.Summarize(redScore.Fouls).Score)
 }
 
-func TestScoreSummaryControlPanelDisabled(t *testing.T) {
-	ControlPanelDisabled = true
-	CapacityWhenControlPanelDisabled = 24
-
-	score := Score{}
-	scoreSummary := score.Summarize([]Foul{}, true)
-	assert.False(t, scoreSummary.ControlPanelRankingPoint)
-	assert.Equal(t, 24, scoreSummary.StagePowerCellsRemaining[Stage1])
-	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage2])
-	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage3])
-
-	score.AutoCellsBottom[Stage1] = 1
-	score.AutoCellsOuter[Stage1] = 2
-	score.AutoCellsInner[Stage1] = 3
-	score.AutoCellsBottom[Stage2] = 100
-	score.AutoCellsOuter[Stage2] = 100
-	score.AutoCellsInner[Stage2] = 100
-	score.TeleopCellsBottom[Stage1] = 4
-	score.TeleopCellsOuter[Stage1] = 5
-	score.TeleopCellsInner[Stage1] = 6
-	score.TeleopCellsBottom[Stage2] = 100
-	score.TeleopCellsOuter[Stage2] = 100
-	score.TeleopCellsInner[Stage2] = 100
-	score.TeleopCellsBottom[Stage3] = 100
-	score.TeleopCellsOuter[Stage3] = 100
-	score.TeleopCellsInner[Stage3] = 100
-	score.TeleopCellsBottom[StageExtra] = 100
-	score.TeleopCellsOuter[StageExtra] = 100
-	score.TeleopCellsInner[StageExtra] = 100
-	scoreSummary = score.Summarize([]Foul{}, true)
-	assert.False(t, scoreSummary.ControlPanelRankingPoint)
-	assert.Equal(t, 3, scoreSummary.StagePowerCellsRemaining[Stage1])
-	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage2])
-	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage3])
-
-	score.TeleopCellsBottom[Stage1] = 10
-	score.TeleopCellsOuter[Stage1] = 10
-	score.TeleopCellsInner[Stage1] = 10
-	scoreSummary = score.Summarize([]Foul{}, true)
-	assert.True(t, scoreSummary.ControlPanelRankingPoint)
-	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage1])
-	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage2])
-	assert.Equal(t, 0, scoreSummary.StagePowerCellsRemaining[Stage3])
-	assert.False(t, scoreSummary.StagesActivated[Stage1])
-	assert.False(t, scoreSummary.StagesActivated[Stage2])
-	assert.False(t, scoreSummary.StagesActivated[Stage3])
-}
-
-func TestScoreSummaryRungIsLevel(t *testing.T) {
-	ControlPanelDisabled = false
-
+func TestScoreCargoBonusRankingPoint(t *testing.T) {
 	var score Score
-	assert.Equal(t, 0, score.Summarize([]Foul{}, true).EndgamePoints)
-	score.RungIsLevel = true
-	assert.Equal(t, 0, score.Summarize([]Foul{}, true).EndgamePoints)
 
-	score.RungIsLevel = false
-	score.EndgameStatuses = [3]EndgameStatus{EndgamePark, EndgamePark, EndgamePark}
-	assert.Equal(t, 15, score.Summarize([]Foul{}, true).EndgamePoints)
-	score.RungIsLevel = true
-	assert.Equal(t, 15, score.Summarize([]Foul{}, true).EndgamePoints)
+	score.AutoCargoLower[0] = 2
+	summary := score.Summarize([]Foul{})
+	assert.Equal(t, 3, summary.AutoCargoRemaining)
+	assert.Equal(t, 18, summary.TeleopCargoRemaining)
+	assert.Equal(t, false, summary.QuintetAchieved)
+	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
-	score.RungIsLevel = false
-	score.EndgameStatuses = [3]EndgameStatus{EndgameHang, EndgamePark, EndgamePark}
-	assert.Equal(t, 35, score.Summarize([]Foul{}, true).EndgamePoints)
-	score.RungIsLevel = true
-	assert.Equal(t, 50, score.Summarize([]Foul{}, true).EndgamePoints)
+	score.AutoCargoLower[0] = 17
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 0, summary.AutoCargoRemaining)
+	assert.Equal(t, 1, summary.TeleopCargoRemaining)
+	assert.Equal(t, true, summary.QuintetAchieved)
+	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
-	score.RungIsLevel = false
-	score.EndgameStatuses = [3]EndgameStatus{EndgameHang, EndgamePark, EndgameHang}
-	assert.Equal(t, 55, score.Summarize([]Foul{}, true).EndgamePoints)
-	score.RungIsLevel = true
-	assert.Equal(t, 70, score.Summarize([]Foul{}, true).EndgamePoints)
+	score.AutoCargoLower[0] = 18
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 0, summary.AutoCargoRemaining)
+	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, true, summary.QuintetAchieved)
+	assert.Equal(t, true, summary.CargoBonusRankingPoint)
 
-	score.RungIsLevel = false
-	score.EndgameStatuses = [3]EndgameStatus{EndgameHang, EndgameHang, EndgameHang}
-	assert.Equal(t, 75, score.Summarize([]Foul{}, true).EndgamePoints)
-	score.RungIsLevel = true
-	assert.Equal(t, 90, score.Summarize([]Foul{}, true).EndgamePoints)
+	score.AutoCargoLower[0] = 5
+	score.TeleopCargoLower[0] = 12
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 0, summary.AutoCargoRemaining)
+	assert.Equal(t, 1, summary.TeleopCargoRemaining)
+	assert.Equal(t, true, summary.QuintetAchieved)
+	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
-	score.RungIsLevel = false
+	score.AutoCargoLower[0] = 5
+	score.TeleopCargoLower[0] = 13
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 0, summary.AutoCargoRemaining)
+	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, true, summary.QuintetAchieved)
+	assert.Equal(t, true, summary.CargoBonusRankingPoint)
+
+	score.AutoCargoLower[0] = 3
+	score.TeleopCargoLower[0] = 6
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 2, summary.AutoCargoRemaining)
+	assert.Equal(t, 11, summary.TeleopCargoRemaining)
+	assert.Equal(t, false, summary.QuintetAchieved)
+	assert.Equal(t, false, summary.CargoBonusRankingPoint)
+
+	score.AutoCargoLower[0] = 4
+	score.TeleopCargoLower[0] = 15
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 1, summary.AutoCargoRemaining)
+	assert.Equal(t, 1, summary.TeleopCargoRemaining)
+	assert.Equal(t, false, summary.QuintetAchieved)
+	assert.Equal(t, false, summary.CargoBonusRankingPoint)
+
+	score.AutoCargoLower[0] = 4
+	score.TeleopCargoLower[0] = 16
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 1, summary.AutoCargoRemaining)
+	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, false, summary.QuintetAchieved)
+	assert.Equal(t, true, summary.CargoBonusRankingPoint)
+
+	score.AutoCargoLower[0] = 0
+	score.TeleopCargoLower[0] = 20
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 5, summary.AutoCargoRemaining)
+	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, false, summary.QuintetAchieved)
+	assert.Equal(t, true, summary.CargoBonusRankingPoint)
+}
+
+func TestScoreHangarBonusRankingPoint(t *testing.T) {
+	var score Score
+
 	score.EndgameStatuses = [3]EndgameStatus{EndgameNone, EndgameNone, EndgameNone}
-	assert.Equal(t, 0, score.Summarize([]Foul{}, true).EndgamePoints)
-	score.RungIsLevel = true
-	assert.Equal(t, 0, score.Summarize([]Foul{}, true).EndgamePoints)
-}
+	assert.Equal(t, false, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-func TestScoreSummaryBoundaryConditions(t *testing.T) {
-	ControlPanelDisabled = false
+	score.EndgameStatuses = [3]EndgameStatus{EndgameLow, EndgameLow, EndgameLow}
+	assert.Equal(t, false, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-	// Test control panel boundary conditions.
-	score := TestScore2()
-	summary := score.Summarize(score.Fouls, true)
-	assert.Equal(t, StageExtra, score.CellCountingStage(true))
-	assert.Equal(t, [3]int{0, 0, 0}, summary.StagePowerCellsRemaining)
-	assert.Equal(t, [3]bool{true, true, true}, summary.StagesActivated)
-	assert.Equal(t, true, summary.ControlPanelRankingPoint)
-	assert.Equal(t, 224, summary.Score)
+	score.EndgameStatuses = [3]EndgameStatus{EndgameLow, EndgameLow, EndgameMid}
+	assert.Equal(t, false, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-	score.TeleopCellsInner[0]--
-	summary = score.Summarize(score.Fouls, true)
-	assert.Equal(t, Stage1, score.CellCountingStage(true))
-	assert.Equal(t, [3]int{1, 0, 0}, summary.StagePowerCellsRemaining)
-	assert.Equal(t, [3]bool{false, false, false}, summary.StagesActivated)
-	assert.Equal(t, false, summary.ControlPanelRankingPoint)
-	assert.Equal(t, 186, summary.Score)
-	score.TeleopCellsInner[0]++
+	score.EndgameStatuses = [3]EndgameStatus{EndgameMid, EndgameLow, EndgameMid}
+	assert.Equal(t, true, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-	summary = score.Summarize(score.Fouls, false)
-	assert.Equal(t, Stage1, score.CellCountingStage(false))
-	assert.Equal(t, [3]int{0, 0, 0}, summary.StagePowerCellsRemaining)
-	assert.Equal(t, [3]bool{false, false, false}, summary.StagesActivated)
-	assert.Equal(t, false, summary.ControlPanelRankingPoint)
-	assert.Equal(t, 189, summary.Score)
+	score.EndgameStatuses = [3]EndgameStatus{EndgameMid, EndgameLow, EndgameNone}
+	assert.Equal(t, false, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-	score.TeleopCellsOuter[1] -= 7
-	summary = score.Summarize(score.Fouls, true)
-	assert.Equal(t, Stage2, score.CellCountingStage(true))
-	assert.Equal(t, [3]int{0, 2, 0}, summary.StagePowerCellsRemaining)
-	assert.Equal(t, [3]bool{true, false, false}, summary.StagesActivated)
-	assert.Equal(t, false, summary.ControlPanelRankingPoint)
-	assert.Equal(t, 175, summary.Score)
-	score.TeleopCellsOuter[1] += 7
+	score.EndgameStatuses = [3]EndgameStatus{EndgameHigh, EndgameLow, EndgameNone}
+	assert.Equal(t, false, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-	score.ControlPanelStatus = ControlPanelNone
-	summary = score.Summarize(score.Fouls, true)
-	assert.Equal(t, Stage2, score.CellCountingStage(true))
-	assert.Equal(t, [3]int{0, 0, 0}, summary.StagePowerCellsRemaining)
-	assert.Equal(t, [3]bool{true, false, false}, summary.StagesActivated)
-	assert.Equal(t, false, summary.ControlPanelRankingPoint)
-	assert.Equal(t, 189, summary.Score)
-	score.ControlPanelStatus = ControlPanelPosition
+	score.EndgameStatuses = [3]EndgameStatus{EndgameHigh, EndgameLow, EndgameLow}
+	assert.Equal(t, true, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-	score.TeleopCellsInner[2] -= 10
-	summary = score.Summarize(score.Fouls, true)
-	assert.Equal(t, Stage3, score.CellCountingStage(true))
-	assert.Equal(t, [3]int{0, 0, 3}, summary.StagePowerCellsRemaining)
-	assert.Equal(t, [3]bool{true, true, false}, summary.StagesActivated)
-	assert.Equal(t, false, summary.ControlPanelRankingPoint)
-	assert.Equal(t, 174, summary.Score)
-	score.TeleopCellsInner[2] += 10
+	score.EndgameStatuses = [3]EndgameStatus{EndgameHigh, EndgameMid, EndgameNone}
+	assert.Equal(t, true, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-	score.ControlPanelStatus = ControlPanelRotation
-	summary = score.Summarize(score.Fouls, true)
-	assert.Equal(t, Stage3, score.CellCountingStage(true))
-	assert.Equal(t, [3]int{0, 0, 0}, summary.StagePowerCellsRemaining)
-	assert.Equal(t, [3]bool{true, true, false}, summary.StagesActivated)
-	assert.Equal(t, false, summary.ControlPanelRankingPoint)
-	assert.Equal(t, 204, summary.Score)
+	score.EndgameStatuses = [3]EndgameStatus{EndgameHigh, EndgameNone, EndgameNone}
+	assert.Equal(t, false, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-	// Test endgame boundary conditions.
-	score = TestScore1()
-	assert.Equal(t, true, score.Summarize(score.Fouls, true).EndgameRankingPoint)
-	score.EndgameStatuses[0] = EndgameNone
-	assert.Equal(t, false, score.Summarize(score.Fouls, true).EndgameRankingPoint)
-	score.RungIsLevel = true
-	assert.Equal(t, true, score.Summarize(score.Fouls, true).EndgameRankingPoint)
-	score.EndgameStatuses[2] = EndgamePark
-	assert.Equal(t, false, score.Summarize(score.Fouls, true).EndgameRankingPoint)
-}
+	score.EndgameStatuses = [3]EndgameStatus{EndgameNone, EndgameNone, EndgameTraversal}
+	assert.Equal(t, false, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 
-func TestScoreSummaryRankingPointFoul(t *testing.T) {
-	ControlPanelDisabled = false
-
-	fouls := []Foul{{14, 0, 0}}
-	score1 := TestScore1()
-	score2 := TestScore2()
-
-	summary := score1.Summarize([]Foul{}, true)
-	assert.Equal(t, 0, summary.FoulPoints)
-	assert.Equal(t, false, summary.ControlPanelRankingPoint)
-	assert.Equal(t, true, summary.EndgameRankingPoint)
-	summary = score1.Summarize(fouls, true)
-	assert.Equal(t, 0, summary.FoulPoints)
-	assert.Equal(t, true, summary.ControlPanelRankingPoint)
-	assert.Equal(t, true, summary.EndgameRankingPoint)
-
-	summary = score2.Summarize([]Foul{}, true)
-	assert.Equal(t, 0, summary.FoulPoints)
-	assert.Equal(t, true, summary.ControlPanelRankingPoint)
-	assert.Equal(t, false, summary.EndgameRankingPoint)
-	summary = score2.Summarize(fouls, true)
-	assert.Equal(t, 0, summary.FoulPoints)
-	assert.Equal(t, true, summary.ControlPanelRankingPoint)
-	assert.Equal(t, false, summary.EndgameRankingPoint)
+	score.EndgameStatuses = [3]EndgameStatus{EndgameNone, EndgameLow, EndgameTraversal}
+	assert.Equal(t, true, score.Summarize([]Foul{}).HangarBonusRankingPoint)
 }
 
 func TestScoreEquals(t *testing.T) {
@@ -254,52 +173,32 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score3.Equals(score1))
 
 	score2 = TestScore1()
-	score2.ExitedInitiationLine[0] = false
+	score2.TaxiStatuses[0] = false
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoCellsBottom[1] = 3
+	score2.AutoCargoLower[1] = 3
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoCellsOuter[0] = 7
+	score2.AutoCargoUpper[0] = 7
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoCellsInner[1] = 8
+	score2.TeleopCargoLower[2] = 30
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.TeleopCellsBottom[2] = 30
+	score2.TeleopCargoUpper[1] = 31
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.TeleopCellsOuter[1] = 31
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.TeleopCellsInner[0] = 32
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.ControlPanelStatus = ControlPanelNone
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.EndgameStatuses[1] = EndgameNone
-	assert.False(t, score1.Equals(score2))
-	assert.False(t, score2.Equals(score1))
-
-	score2 = TestScore1()
-	score2.RungIsLevel = !score2.RungIsLevel
+	score2.EndgameStatuses[0] = EndgameNone
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 

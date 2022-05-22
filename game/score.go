@@ -1,75 +1,56 @@
-// Copyright 2020 Team 254. All Rights Reserved.
+// Copyright 2022 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
 // Model representing the instantaneous score of a match.
 
 package game
 
-import "math"
-
 type Score struct {
-	ExitedInitiationLine [3]bool
-	AutoCellsBottom      [2]int
-	AutoCellsOuter       [2]int
-	AutoCellsInner       [2]int
-	TeleopCellsBottom    [4]int
-	TeleopCellsOuter     [4]int
-	TeleopCellsInner     [4]int
-	ControlPanelStatus
-	EndgameStatuses            [3]EndgameStatus
-	RungIsLevel                bool
-	Fouls                      []Foul
-	ElimDq                     bool
-	PositionControlTargetColor ControlPanelColor
+	TaxiStatuses     [3]bool
+	AutoCargoLower   [4]int
+	AutoCargoUpper   [4]int
+	TeleopCargoLower [4]int
+	TeleopCargoUpper [4]int
+	EndgameStatuses  [3]EndgameStatus
+	Fouls            []Foul
+	ElimDq           bool
 }
 
 type ScoreSummary struct {
-	InitiationLinePoints     int
-	AutoPowerCellPoints      int
-	AutoPoints               int
-	TeleopPowerCellPoints    int
-	PowerCellPoints          int
-	ControlPanelPoints       int
-	EndgamePoints            int
-	FoulPoints               int
-	Score                    int
-	StagePowerCellsRemaining [3]int
-	StagesActivated          [3]bool
-	ControlPanelRankingPoint bool
-	EndgameRankingPoint      bool
+	TaxiPoints              int
+	AutoCargoCount          int
+	AutoCargoPoints         int
+	CargoCount              int
+	CargoPoints             int
+	HangarPoints            int
+	MatchPoints             int
+	FoulPoints              int
+	Score                   int
+	AutoCargoRemaining      int
+	TeleopCargoRemaining    int
+	QuintetAchieved         bool
+	CargoBonusRankingPoint  bool
+	HangarBonusRankingPoint bool
 }
 
-var ControlPanelDisabled = false
-var CapacityWhenControlPanelDisabled = 50
-
-// Defines the number of power cells that must be scored within each Stage before it can be activated.
-var StageCapacities = map[Stage]int{
-	Stage1: 9,
-	Stage2: 15,
-	Stage3: 15,
-}
-
-// Represents a Stage towards whose capacity scored power cells are counted.
-type Stage int
-
-const (
-	Stage1 Stage = iota
-	Stage2
-	Stage3
-	StageExtra
-)
+var QuintetThreshold = 5
+var CargoBonusRankingPointThresholdWithoutQuintet = 20
+var CargoBonusRankingPointThresholdWithQuintet = 18
+var HangarBonusRankingPointThreshold = 16
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
 
 const (
 	EndgameNone EndgameStatus = iota
-	EndgamePark
-	EndgameHang
+	EndgameLow
+	EndgameMid
+	EndgameHigh
+	EndgameTraversal
 )
 
 // Calculates and returns the summary fields used for ranking and display.
-func (score *Score) Summarize(opponentFouls []Foul, teleopStarted bool) *ScoreSummary {
+func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	summary := new(ScoreSummary)
 
 	// Leave the score at zero if the team was disqualified.
@@ -78,60 +59,57 @@ func (score *Score) Summarize(opponentFouls []Foul, teleopStarted bool) *ScoreSu
 	}
 
 	// Calculate autonomous period points.
-	for _, exited := range score.ExitedInitiationLine {
-		if exited {
-			summary.InitiationLinePoints += 5
+	for _, taxied := range score.TaxiStatuses {
+		if taxied {
+			summary.TaxiPoints += 2
 		}
 	}
-	for i := 0; i < len(score.AutoCellsBottom); i++ {
-		summary.AutoPowerCellPoints += 2 * score.AutoCellsBottom[i]
-		summary.AutoPowerCellPoints += 4 * score.AutoCellsOuter[i]
-		summary.AutoPowerCellPoints += 6 * score.AutoCellsInner[i]
+	for i := 0; i < 4; i++ {
+		summary.AutoCargoCount += score.AutoCargoLower[i] + score.AutoCargoUpper[i]
+		summary.AutoCargoPoints += 2 * score.AutoCargoLower[i]
+		summary.AutoCargoPoints += 4 * score.AutoCargoUpper[i]
 	}
-	summary.AutoPoints = summary.InitiationLinePoints + summary.AutoPowerCellPoints
 
-	// Calculate teleoperated period power cell points.
-	for i := 0; i < len(score.TeleopCellsBottom); i++ {
-		summary.TeleopPowerCellPoints += score.TeleopCellsBottom[i]
-		summary.TeleopPowerCellPoints += 2 * score.TeleopCellsOuter[i]
-		summary.TeleopPowerCellPoints += 3 * score.TeleopCellsInner[i]
-	}
-	summary.PowerCellPoints = summary.AutoPowerCellPoints + summary.TeleopPowerCellPoints
-
-	// Calculate control panel points and stages.
-	if ControlPanelDisabled {
-		totalCells := score.stagePowerCells(Stage1)
-		summary.ControlPanelRankingPoint = totalCells >= CapacityWhenControlPanelDisabled
-		summary.StagePowerCellsRemaining[Stage1] =
-			int(math.Max(0, float64(CapacityWhenControlPanelDisabled-totalCells)))
-	} else {
-		for i := Stage1; i <= Stage3; i++ {
-			summary.StagesActivated[i] = score.stageActivated(i, teleopStarted)
-			summary.StagePowerCellsRemaining[i] = int(math.Max(0, float64(StageCapacities[i]-score.stagePowerCells(i))))
-		}
-		if summary.StagesActivated[Stage2] {
-			summary.ControlPanelPoints += 15
-		}
-		if summary.StagesActivated[Stage3] {
-			summary.ControlPanelPoints += 20
-			summary.ControlPanelRankingPoint = true
-		}
+	// Calculate teleoperated period cargo points.
+	summary.CargoCount = summary.AutoCargoCount
+	summary.CargoPoints = summary.AutoCargoPoints
+	for i := 0; i < 4; i++ {
+		summary.CargoCount += score.TeleopCargoLower[i] + score.TeleopCargoUpper[i]
+		summary.CargoPoints += 1 * score.TeleopCargoLower[i]
+		summary.CargoPoints += 2 * score.TeleopCargoUpper[i]
 	}
 
 	// Calculate endgame points.
-	anyHang := false
 	for _, status := range score.EndgameStatuses {
-		if status == EndgamePark {
-			summary.EndgamePoints += 5
-		} else if status == EndgameHang {
-			summary.EndgamePoints += 25
-			anyHang = true
+		switch status {
+		case EndgameLow:
+			summary.HangarPoints += 4
+		case EndgameMid:
+			summary.HangarPoints += 6
+		case EndgameHigh:
+			summary.HangarPoints += 10
+		case EndgameTraversal:
+			summary.HangarPoints += 15
 		}
 	}
-	if score.RungIsLevel && anyHang {
-		summary.EndgamePoints += 15
+
+	// Calculate bonus ranking points.
+	var cargoBonusRankingPointThreshold int
+	if summary.AutoCargoCount >= QuintetThreshold {
+		cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithQuintet
+		summary.AutoCargoRemaining = 0
+		summary.QuintetAchieved = true
+	} else {
+		cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithoutQuintet
+		summary.AutoCargoRemaining = QuintetThreshold - summary.AutoCargoCount
 	}
-	summary.EndgameRankingPoint = summary.EndgamePoints >= 65
+	if summary.CargoCount >= cargoBonusRankingPointThreshold {
+		summary.TeleopCargoRemaining = 0
+		summary.CargoBonusRankingPoint = true
+	} else {
+		summary.TeleopCargoRemaining = cargoBonusRankingPointThreshold - summary.CargoCount
+	}
+	summary.HangarBonusRankingPoint = summary.HangarPoints >= HangarBonusRankingPointThreshold
 
 	// Calculate penalty points.
 	for _, foul := range opponentFouls {
@@ -139,31 +117,22 @@ func (score *Score) Summarize(opponentFouls []Foul, teleopStarted bool) *ScoreSu
 	}
 
 	// Check for the opponent fouls that automatically trigger a ranking point.
-	for _, foul := range opponentFouls {
-		if foul.Rule() != nil && foul.Rule().IsRankingPoint {
-			summary.ControlPanelRankingPoint = true
-			break
-		}
-	}
+	// Note: There are no such fouls in the 2022 game; leaving this comment for future years.
 
-	summary.Score = summary.AutoPoints + summary.TeleopPowerCellPoints + summary.ControlPanelPoints +
-		summary.EndgamePoints + summary.FoulPoints
+	summary.MatchPoints = summary.TaxiPoints + summary.CargoPoints + summary.HangarPoints
+	summary.Score = summary.MatchPoints + summary.FoulPoints
 
 	return summary
 }
 
 // Returns true if and only if all fields of the two scores are equal.
 func (score *Score) Equals(other *Score) bool {
-	if score.ExitedInitiationLine != other.ExitedInitiationLine ||
-		score.AutoCellsBottom != other.AutoCellsBottom ||
-		score.AutoCellsOuter != other.AutoCellsOuter ||
-		score.AutoCellsInner != other.AutoCellsInner ||
-		score.TeleopCellsBottom != other.TeleopCellsBottom ||
-		score.TeleopCellsOuter != other.TeleopCellsOuter ||
-		score.TeleopCellsInner != other.TeleopCellsInner ||
-		score.ControlPanelStatus != other.ControlPanelStatus ||
+	if score.TaxiStatuses != other.TaxiStatuses ||
+		score.AutoCargoLower != other.AutoCargoLower ||
+		score.AutoCargoUpper != other.AutoCargoUpper ||
+		score.TeleopCargoLower != other.TeleopCargoLower ||
+		score.TeleopCargoUpper != other.TeleopCargoUpper ||
 		score.EndgameStatuses != other.EndgameStatuses ||
-		score.RungIsLevel != other.RungIsLevel ||
 		score.ElimDq != other.ElimDq ||
 		len(score.Fouls) != len(other.Fouls) {
 		return false
@@ -176,57 +145,4 @@ func (score *Score) Equals(other *Score) bool {
 	}
 
 	return true
-}
-
-// Returns the Stage (1-3) that the score represents, in terms of which Stage scored power cells should count towards.
-func (score *Score) CellCountingStage(teleopStarted bool) Stage {
-	if ControlPanelDisabled {
-		return Stage1
-	}
-
-	if score.stageActivated(Stage3, teleopStarted) {
-		return StageExtra
-	}
-	if score.stageActivated(Stage2, teleopStarted) {
-		return Stage3
-	}
-	if score.stageActivated(Stage1, teleopStarted) {
-		return Stage2
-	}
-	return Stage1
-}
-
-// Returns true if the preconditions are satisfied for the given Stage to be activated.
-func (score *Score) StageAtCapacity(stage Stage, teleopStarted bool) bool {
-	if stage > Stage1 && !score.stageActivated(stage-1, teleopStarted) {
-		return false
-	}
-	if capacity, ok := StageCapacities[stage]; ok && score.stagePowerCells(stage) >= capacity {
-		return true
-	}
-	return false
-}
-
-// Returns true if the given Stage has been activated.
-func (score *Score) stageActivated(stage Stage, teleopStarted bool) bool {
-	if score.StageAtCapacity(stage, teleopStarted) {
-		switch stage {
-		case Stage1:
-			return teleopStarted
-		case Stage2:
-			return score.ControlPanelStatus >= ControlPanelRotation
-		case Stage3:
-			return score.ControlPanelStatus == ControlPanelPosition
-		}
-	}
-	return false
-}
-
-// Returns the total count of scored power cells within the given Stage.
-func (score *Score) stagePowerCells(stage Stage) int {
-	cells := score.TeleopCellsBottom[stage] + score.TeleopCellsOuter[stage] + score.TeleopCellsInner[stage]
-	if stage < Stage3 {
-		cells += score.AutoCellsBottom[stage] + score.AutoCellsOuter[stage] + score.AutoCellsInner[stage]
-	}
-	return cells
 }

@@ -59,35 +59,38 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	redWs.Write("1", nil)
 	redWs.Write("3", nil)
 	redWs.Write("w", nil)
-	redWs.Write("X", nil)
-	redWs.Write("x", nil)
+	redWs.Write("a", nil)
+	redWs.Write("s", nil)
+	redWs.Write("s", nil)
 	redWs.Write("z", nil)
-	for i := 0; i < 6; i++ {
+	redWs.Write("z", nil)
+	for i := 0; i < 5; i++ {
 		readWebsocketType(t, redWs, "realtimeScore")
 		readWebsocketType(t, blueWs, "realtimeScore")
 	}
-	assert.Equal(t, [3]bool{true, false, true}, web.arena.RedRealtimeScore.CurrentScore.ExitedInitiationLine)
-	assert.Equal(t, [2]int{1, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsBottom)
-	assert.Equal(t, [2]int{0, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsOuter)
-	assert.Equal(t, [2]int{1, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCellsInner)
+	assert.Equal(t, [3]bool{true, false, true}, web.arena.RedRealtimeScore.CurrentScore.TaxiStatuses)
+	assert.Equal(t, [4]int{2, 0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCargoLower)
+	assert.Equal(t, [4]int{1, 0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCargoUpper)
 
 	// Send some teleoperated period scoring commands.
 	web.arena.MatchState = field.TeleopPeriod
 	blueWs.Write("f", nil)
 	blueWs.Write("F", nil)
-	blueWs.Write("o", nil)
+	blueWs.Write("D", nil)
+	blueWs.Write("r", nil)
 	blueWs.Write("5", nil)
 	blueWs.Write("5", nil)
-	blueWs.Write("L", nil)
-	blueWs.Write("k", nil)
 	for i := 0; i < 6; i++ {
 		readWebsocketType(t, redWs, "realtimeScore")
 		readWebsocketType(t, blueWs, "realtimeScore")
 	}
-	assert.Equal(t, [4]int{2, 0, 0, 0}, web.arena.BlueRealtimeScore.CurrentScore.TeleopCellsOuter)
-	assert.Equal(t, [3]game.EndgameStatus{game.EndgameNone, game.EndgameHang, game.EndgameNone},
-		web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses)
-	assert.Equal(t, true, web.arena.BlueRealtimeScore.CurrentScore.RungIsLevel)
+	assert.Equal(t, [4]int{1, 0, 0, 0}, web.arena.BlueRealtimeScore.CurrentScore.TeleopCargoLower)
+	assert.Equal(t, [4]int{1, 0, 0, 0}, web.arena.BlueRealtimeScore.CurrentScore.TeleopCargoUpper)
+	assert.Equal(
+		t,
+		[3]game.EndgameStatus{game.EndgameNone, game.EndgameMid, game.EndgameNone},
+		web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses,
+	)
 
 	// Test committing logic.
 	redWs.Write("commitMatch", nil)
