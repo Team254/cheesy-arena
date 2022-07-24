@@ -80,6 +80,11 @@ var confirmCommit = function(isReplay) {
   }
 };
 
+// Sends a websocket message to specify a custom name for the current test match.
+var setTestMatchName = function() {
+  websocket.send("setTestMatchName", $("#testMatchName").val());
+};
+
 // Handles a websocket message to update the team connection status.
 var handleArenaStatus = function(data) {
   // If getting data for the wrong match (e.g. after a server restart), reload the page.

@@ -68,7 +68,12 @@ var handleMatchLoad = function(data) {
   $("#" + blueSide + "Team1Avatar").attr("src", getAvatarUrl(currentMatch.Blue1));
   $("#" + blueSide + "Team2Avatar").attr("src", getAvatarUrl(currentMatch.Blue2));
   $("#" + blueSide + "Team3Avatar").attr("src", getAvatarUrl(currentMatch.Blue3));
-  $("#matchName").text(data.MatchType + " " + currentMatch.DisplayName);
+
+  if (data.Match.Type === "test") {
+    $("#matchName").text(currentMatch.DisplayName);
+  } else {
+    $("#matchName").text(data.MatchType + " " + currentMatch.DisplayName);
+  }
 };
 
 // Handles a websocket message to update the match time countdown.

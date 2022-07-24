@@ -232,6 +232,11 @@
           <button type="button" id="startTimeout" class="btn btn-info btn-xs" onclick="startTimeout();">
             Start
           </button>
+          {{if eq .Match.Type "test" }}
+            <br /><br />
+            <p>Match Name</p>
+            <input type="text" id="testMatchName" value="{{.Match.DisplayName}}" onblur="setTestMatchName();" />
+          {{end}}
         </div>
       </div>
       <div class="row">

@@ -228,7 +228,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 
 // Sets a new test match containing no teams as the current match.
 func (arena *Arena) LoadTestMatch() error {
-	return arena.LoadMatch(&model.Match{Type: "test"})
+	return arena.LoadMatch(&model.Match{Type: "test", DisplayName: "Test Match"})
 }
 
 // Loads the first unplayed match of the current match type.
