@@ -9,6 +9,7 @@ var transitionMap;
 var currentScreen = "blank";
 var redSide;
 var blueSide;
+var currentMatch;
 var overlayCenteringHideParams;
 var overlayCenteringShowParams;
 var allianceSelectionTemplate = Handlebars.compile($("#allianceSelectionTemplate").html());
@@ -16,19 +17,19 @@ var sponsorImageTemplate = Handlebars.compile($("#sponsorImageTemplate").html())
 var sponsorTextTemplate = Handlebars.compile($("#sponsorTextTemplate").html());
 
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
-var overlayCenteringTopUp = "-130px";
-var overlayCenteringBottomHideParams = {queue: false, bottom: $("#overlayCentering").css("bottom")};
-var overlayCenteringBottomShowParams = {queue: false, bottom: "0px"};
-var overlayCenteringTopHideParams = {queue: false, top: overlayCenteringTopUp};
-var overlayCenteringTopShowParams = {queue: false, top: "50px"};
-var eventMatchInfoDown = "30px";
-var eventMatchInfoUp = $("#eventMatchInfo").css("height");
-var logoUp = "10px";
-var logoDown = $("#logo").css("top");
-var scoreIn = $(".score").css("width");
-var scoreMid = "135px";
-var scoreOut = "255px";
-var scoreFieldsOut = "40px";
+const overlayCenteringTopUp = "-130px";
+const overlayCenteringBottomHideParams = {queue: false, bottom: $("#overlayCentering").css("bottom")};
+const overlayCenteringBottomShowParams = {queue: false, bottom: "0px"};
+const overlayCenteringTopHideParams = {queue: false, top: overlayCenteringTopUp};
+const overlayCenteringTopShowParams = {queue: false, top: "50px"};
+const eventMatchInfoDown = "30px";
+const eventMatchInfoUp = $("#eventMatchInfo").css("height");
+const logoUp = "10px";
+const logoDown = $("#logo").css("top");
+const scoreIn = $(".score").css("width");
+const scoreMid = "135px";
+const scoreOut = "255px";
+const scoreFieldsOut = "40px";
 
 // Handles a websocket message to change which screen is displayed.
 var handleAudienceDisplayMode = function(targetScreen) {
@@ -54,19 +55,20 @@ var handleAudienceDisplayMode = function(targetScreen) {
 
 // Handles a websocket message to update the teams for the current match.
 var handleMatchLoad = function(data) {
-  $("#" + redSide + "Team1").text(data.Match.Red1);
-  $("#" + redSide + "Team2").text(data.Match.Red2);
-  $("#" + redSide + "Team3").text(data.Match.Red3);
-  $("#" + redSide + "Team1Avatar").attr("src", getAvatarUrl(data.Match.Red1));
-  $("#" + redSide + "Team2Avatar").attr("src", getAvatarUrl(data.Match.Red2));
-  $("#" + redSide + "Team3Avatar").attr("src", getAvatarUrl(data.Match.Red3));
-  $("#" + blueSide + "Team1").text(data.Match.Blue1);
-  $("#" + blueSide + "Team2").text(data.Match.Blue2);
-  $("#" + blueSide + "Team3").text(data.Match.Blue3);
-  $("#" + blueSide + "Team1Avatar").attr("src", getAvatarUrl(data.Match.Blue1));
-  $("#" + blueSide + "Team2Avatar").attr("src", getAvatarUrl(data.Match.Blue2));
-  $("#" + blueSide + "Team3Avatar").attr("src", getAvatarUrl(data.Match.Blue3));
-  $("#matchName").text(data.MatchType + " " + data.Match.DisplayName);
+  currentMatch = data.Match;
+  $("#" + redSide + "Team1").text(currentMatch.Red1);
+  $("#" + redSide + "Team2").text(currentMatch.Red2);
+  $("#" + redSide + "Team3").text(currentMatch.Red3);
+  $("#" + redSide + "Team1Avatar").attr("src", getAvatarUrl(currentMatch.Red1));
+  $("#" + redSide + "Team2Avatar").attr("src", getAvatarUrl(currentMatch.Red2));
+  $("#" + redSide + "Team3Avatar").attr("src", getAvatarUrl(currentMatch.Red3));
+  $("#" + blueSide + "Team1").text(currentMatch.Blue1);
+  $("#" + blueSide + "Team2").text(currentMatch.Blue2);
+  $("#" + blueSide + "Team3").text(currentMatch.Blue3);
+  $("#" + blueSide + "Team1Avatar").attr("src", getAvatarUrl(currentMatch.Blue1));
+  $("#" + blueSide + "Team2Avatar").attr("src", getAvatarUrl(currentMatch.Blue2));
+  $("#" + blueSide + "Team3Avatar").attr("src", getAvatarUrl(currentMatch.Blue3));
+  $("#matchName").text(data.MatchType + " " + currentMatch.DisplayName);
 };
 
 // Handles a websocket message to update the match time countdown.
@@ -98,10 +100,17 @@ var handleRealtimeScore = function(data) {
   $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HangarPoints);
   $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HangarPoints);
 
-  $("#" + redSide + "AutoCargoRemaining").text(data.Red.ScoreSummary.AutoCargoRemaining);
-  $("#" + redSide + "TeleopCargoRemaining").text(data.Red.ScoreSummary.TeleopCargoRemaining);
-  $("#" + blueSide + "AutoCargoRemaining").text(data.Blue.ScoreSummary.AutoCargoRemaining);
-  $("#" + blueSide + "TeleopCargoRemaining").text(data.Blue.ScoreSummary.TeleopCargoRemaining);
+  if (currentMatch.Type === "elimination") {
+    $("#" + redSide + "AutoCargoRemaining").text("");
+    $("#" + redSide + "TeleopCargoRemaining").text("");
+    $("#" + blueSide + "AutoCargoRemaining").text("");
+    $("#" + blueSide + "TeleopCargoRemaining").text("");
+  } else {
+    $("#" + redSide + "AutoCargoRemaining").text(data.Red.ScoreSummary.AutoCargoRemaining);
+    $("#" + redSide + "TeleopCargoRemaining").text(data.Red.ScoreSummary.TeleopCargoRemaining);
+    $("#" + blueSide + "AutoCargoRemaining").text(data.Blue.ScoreSummary.AutoCargoRemaining);
+    $("#" + blueSide + "TeleopCargoRemaining").text(data.Blue.ScoreSummary.TeleopCargoRemaining);
+  }
 };
 
 // Handles a websocket message to populate the final score data.
