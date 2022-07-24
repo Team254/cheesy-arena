@@ -62,7 +62,7 @@
       <div id="blueScore" class="col-lg-2 well well-sm well-blue text-center">&nbsp;</div>
     </div>
     <div class="row text-center">
-      <div class="col-lg-6 well well-darkblue">
+      <div class="col-lg-6 well well-darkblue status-well">
         <div class="row form-group">
           <div class="col-lg-4">Blue Teams</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Driver Station">DS</div>
@@ -74,7 +74,7 @@
         {{template "matchPlayTeam" dict "team" .Match.Blue2 "color" "B" "position" 2 "data" .}}
         {{template "matchPlayTeam" dict "team" .Match.Blue3 "color" "B" "position" 3 "data" .}}
       </div>
-      <div class="col-lg-6 well well-darkred">
+      <div class="col-lg-6 well well-darkred status-well">
         <div class="row form-group">
           <div class="col-lg-4">Red Teams</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Driver Station">DS</div>
@@ -96,6 +96,16 @@
           onclick="abortMatch();" disabled>
         Abort Match
       </button>
+      <button type="button" id="signalVolunteers" class="btn btn-warning btn-lg btn-match-play"
+          onclick="signalVolunteers();" disabled>
+        Signal Volunteers
+      </button>
+      <button type="button" id="signalReset" class="btn btn-success btn-lg btn-match-play"
+          onclick="signalReset();" disabled>
+        Signal Reset
+      </button>
+    </div>
+    <div id="buttonBottomRow" class="row text-center">
       <button type="button" id="commitResults" class="btn btn-info btn-lg btn-match-play"
           onclick="confirmCommit({{.IsReplay}});" disabled>
         Commit Results
@@ -110,7 +120,6 @@
         </button>
       </a>
     </div>
-    <br />
     <div class="row">
       <div class="col-lg-12 well">
         <div class="col-lg-3">
