@@ -289,11 +289,46 @@ var transitionInMatchToBlank = function(callback) {
 };
 
 var transitionBlankToLogoLuma = function(callback) {
+  $(".blindsCenter.blank").css({rotateY: "180deg"});
   $(".blindsCenter.full").transition({ queue: false, rotateY: "0deg" }, 1000, "ease", callback);
 };
 
 var transitionLogoLumaToBlank = function(callback) {
   $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 1000, "ease", callback);
+};
+
+var transitionLogoLumaToLogo = function(callback) {
+  $(".blinds.right").transition({queue: false, right: 0}, 1000, "ease");
+  $(".blinds.left").transition({queue: false, left: 0}, 1000, "ease", function() {
+    $(".blinds.left").addClass("full");
+    $(".blinds.right").hide();
+    if (callback) {
+      callback();
+    }
+  });
+};
+
+var transitionLogoToLogoLuma = function(callback) {
+  $(".blinds.left").removeClass("full");
+  $(".blinds.right").show();
+  $(".blinds.right").transition({queue: false, right: "-50%"}, 1000, "ease");
+  $(".blinds.left").transition({queue: false, left: "-50%"}, 1000, "ease", function() {
+    if (callback) {
+      callback();
+    }
+  });
+};
+
+var transitionLogoLumaToScore = function(callback) {
+  transitionLogoLumaToLogo(function() {
+    transitionLogoToScore(callback);
+  });
+};
+
+var transitionScoreToLogoLuma = function(callback) {
+  transitionScoreToLogo(function() {
+    transitionLogoToLogoLuma(callback);
+  });
 };
 
 var transitionBlankToLogo = function(callback) {
@@ -559,41 +594,45 @@ $(function() {
       sponsor: transitionBlankToSponsor,
       allianceSelection: transitionBlankToAllianceSelection,
       timeout: transitionBlankToTimeout,
-      logoluma: transitionBlankToLogoLuma
+      logoLuma: transitionBlankToLogoLuma,
     },
     intro: {
       blank: transitionIntroToBlank,
       match: transitionIntroToInMatch,
-      timeout: transitionIntroToTimeout
+      timeout: transitionIntroToTimeout,
     },
     match: {
       blank: transitionInMatchToBlank,
-      intro: transitionInMatchToIntro
+      intro: transitionInMatchToIntro,
     },
     score: {
       blank: transitionScoreToBlank,
       logo: transitionScoreToLogo,
-      sponsor: transitionScoreToSponsor
+      logoLuma: transitionScoreToLogoLuma,
+      sponsor: transitionScoreToSponsor,
     },
     logo: {
       blank: transitionLogoToBlank,
+      logoLuma: transitionLogoToLogoLuma,
       score: transitionLogoToScore,
-      sponsor: transitionLogoToSponsor
+      sponsor: transitionLogoToSponsor,
+    },
+    logoLuma: {
+      blank: transitionLogoLumaToBlank,
+      logo: transitionLogoLumaToLogo,
+      score: transitionLogoLumaToScore,
     },
     sponsor: {
       blank: transitionSponsorToBlank,
       logo: transitionSponsorToLogo,
-      score: transitionSponsorToScore
+      score: transitionSponsorToScore,
     },
     allianceSelection: {
-      blank: transitionAllianceSelectionToBlank
+      blank: transitionAllianceSelectionToBlank,
     },
     timeout: {
       blank: transitionTimeoutToBlank,
-      intro: transitionTimeoutToIntro
+      intro: transitionTimeoutToIntro,
     },
-    logoluma: {
-      blank: transitionLogoLumaToBlank
-    }
   }
 });
