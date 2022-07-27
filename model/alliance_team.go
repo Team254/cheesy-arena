@@ -72,3 +72,42 @@ func (database *Database) GetAllAlliances() ([][]AllianceTeam, error) {
 	}
 	return alliances, nil
 }
+
+// Returns two arrays containing the IDs of any teams for the red and blue alliances, respectively, who are part of the
+// elimination alliance but are not playing in the given match.
+// If the given match isn't an elimination match, empty arrays are returned.
+func (database *Database) GetOffFieldTeamIds(match *Match) ([]int, []int, error) {
+	redOffFieldTeams, err := database.getOffFieldTeamIdsForAlliance(
+		match.ElimRedAlliance, match.Red1, match.Red2, match.Red3,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	blueOffFieldTeams, err := database.getOffFieldTeamIdsForAlliance(
+		match.ElimBlueAlliance, match.Blue1, match.Blue2, match.Blue3,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return redOffFieldTeams, blueOffFieldTeams, nil
+}
+
+func (database *Database) getOffFieldTeamIdsForAlliance(allianceId int, teamId1, teamId2, teamId3 int) ([]int, error) {
+	if allianceId == 0 {
+		return []int{}, nil
+	}
+
+	allianceTeams, err := database.GetTeamsByAlliance(allianceId)
+	if err != nil {
+		return nil, err
+	}
+	offFieldTeamIds := []int{}
+	for _, allianceTeam := range allianceTeams {
+		if allianceTeam.TeamId != teamId1 && allianceTeam.TeamId != teamId2 && allianceTeam.TeamId != teamId3 {
+			offFieldTeamIds = append(offFieldTeamIds, allianceTeam.TeamId)
+		}
+	}
+	return offFieldTeamIds, nil
+}

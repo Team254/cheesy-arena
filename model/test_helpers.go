@@ -38,5 +38,7 @@ func BuildTestAlliances(database *Database) {
 	database.CreateAllianceTeam(&AllianceTeam{0, 1, 1, 469})
 	database.CreateAllianceTeam(&AllianceTeam{0, 1, 0, 254})
 	database.CreateAllianceTeam(&AllianceTeam{0, 1, 2, 2848})
+	database.CreateAllianceTeam(&AllianceTeam{0, 2, 2, 1619})
 	database.CreateAllianceTeam(&AllianceTeam{0, 2, 1, 2451})
+	database.CreateAllianceTeam(&AllianceTeam{0, 1, 4, 3175})
 }

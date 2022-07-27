@@ -48,17 +48,19 @@ func TestGetTeamsByAlliance(t *testing.T) {
 	BuildTestAlliances(db)
 	allianceTeams, err := db.GetTeamsByAlliance(1)
 	assert.Nil(t, err)
-	if assert.Equal(t, 4, len(allianceTeams)) {
+	if assert.Equal(t, 5, len(allianceTeams)) {
 		assert.Equal(t, 254, allianceTeams[0].TeamId)
 		assert.Equal(t, 469, allianceTeams[1].TeamId)
 		assert.Equal(t, 2848, allianceTeams[2].TeamId)
 		assert.Equal(t, 74, allianceTeams[3].TeamId)
+		assert.Equal(t, 3175, allianceTeams[4].TeamId)
 	}
 	allianceTeams, err = db.GetTeamsByAlliance(2)
 	assert.Nil(t, err)
-	if assert.Equal(t, 2, len(allianceTeams)) {
+	if assert.Equal(t, 3, len(allianceTeams)) {
 		assert.Equal(t, 1718, allianceTeams[0].TeamId)
 		assert.Equal(t, 2451, allianceTeams[1].TeamId)
+		assert.Equal(t, 1619, allianceTeams[2].TeamId)
 	}
 }
 
@@ -86,15 +88,68 @@ func TestGetAllAlliances(t *testing.T) {
 	alliances, err = db.GetAllAlliances()
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(alliances)) {
-		if assert.Equal(t, 4, len(alliances[0])) {
+		if assert.Equal(t, 5, len(alliances[0])) {
 			assert.Equal(t, 254, alliances[0][0].TeamId)
 			assert.Equal(t, 469, alliances[0][1].TeamId)
 			assert.Equal(t, 2848, alliances[0][2].TeamId)
 			assert.Equal(t, 74, alliances[0][3].TeamId)
+			assert.Equal(t, 3175, alliances[0][4].TeamId)
 		}
-		if assert.Equal(t, 2, len(alliances[1])) {
+		if assert.Equal(t, 3, len(alliances[1])) {
 			assert.Equal(t, 1718, alliances[1][0].TeamId)
 			assert.Equal(t, 2451, alliances[1][1].TeamId)
+			assert.Equal(t, 1619, alliances[1][2].TeamId)
 		}
 	}
+}
+
+func TestGetOffFieldTeamIds(t *testing.T) {
+	db := setupTestDb(t)
+	defer db.Close()
+	BuildTestAlliances(db)
+
+	match := &Match{
+		ElimRedAlliance:  1,
+		ElimBlueAlliance: 2,
+		Red1:             469,
+		Red2:             254,
+		Red3:             2848,
+		Blue1:            1619,
+		Blue2:            1718,
+		Blue3:            2451,
+	}
+
+	redOffFieldTeams, blueOffFieldTeams, err := db.GetOffFieldTeamIds(match)
+	assert.Nil(t, err)
+	assert.Equal(t, []int{74, 3175}, redOffFieldTeams)
+	assert.Equal(t, []int{}, blueOffFieldTeams)
+
+	match.Red1 = 74
+	match.Red2 = 3175
+	redOffFieldTeams, blueOffFieldTeams, err = db.GetOffFieldTeamIds(match)
+	assert.Nil(t, err)
+	assert.Equal(t, []int{254, 469}, redOffFieldTeams)
+	assert.Equal(t, []int{}, blueOffFieldTeams)
+
+	match.ElimRedAlliance = 0
+	match.ElimBlueAlliance = 0
+	redOffFieldTeams, blueOffFieldTeams, err = db.GetOffFieldTeamIds(match)
+	assert.Nil(t, err)
+	assert.Equal(t, []int{}, redOffFieldTeams)
+	assert.Equal(t, []int{}, blueOffFieldTeams)
+
+	match = &Match{
+		ElimRedAlliance:  2,
+		ElimBlueAlliance: 1,
+		Red1:             1718,
+		Red2:             2451,
+		Red3:             1619,
+		Blue1:            3175,
+		Blue2:            74,
+		Blue3:            2848,
+	}
+	redOffFieldTeams, blueOffFieldTeams, err = db.GetOffFieldTeamIds(match)
+	assert.Nil(t, err)
+	assert.Equal(t, []int{}, redOffFieldTeams)
+	assert.Equal(t, []int{254, 469}, blueOffFieldTeams)
 }

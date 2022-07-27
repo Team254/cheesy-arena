@@ -73,6 +73,14 @@
         {{template "matchPlayTeam" dict "team" .Match.Blue1 "color" "B" "position" 1 "data" .}}
         {{template "matchPlayTeam" dict "team" .Match.Blue2 "color" "B" "position" 2 "data" .}}
         {{template "matchPlayTeam" dict "team" .Match.Blue3 "color" "B" "position" 3 "data" .}}
+        {{if eq .Match.Type "elimination" }}
+          <div>
+            <b>Alliance {{.Match.ElimBlueAlliance}}</b>
+            {{if .BlueOffFieldTeams}}
+              (not on field: {{range $i, $team := .BlueOffFieldTeams}}{{if $i}}, {{end}}{{$team}}{{end}})
+            {{end}}
+          </div>
+        {{end}}
       </div>
       <div class="col-lg-6 well well-darkred status-well">
         <div class="row form-group">
@@ -85,6 +93,14 @@
         {{template "matchPlayTeam" dict "team" .Match.Red3 "color" "R" "position" 3 "data" .}}
         {{template "matchPlayTeam" dict "team" .Match.Red2 "color" "R" "position" 2 "data" .}}
         {{template "matchPlayTeam" dict "team" .Match.Red1 "color" "R" "position" 1 "data" .}}
+        {{if eq .Match.Type "elimination" }}
+        <div>
+          <b>Alliance {{.Match.ElimRedAlliance}}</b>
+          {{if .RedOffFieldTeams}}
+            (not on field: {{range $i, $team := .RedOffFieldTeams}}{{if $i}}, {{end}}{{$team}}{{end}})
+          {{end}}
+        </div>
+        {{end}}
       </div>
     </div>
     <div class="row text-center">
