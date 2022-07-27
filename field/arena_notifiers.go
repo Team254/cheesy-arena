@@ -129,6 +129,18 @@ func (arena *Arena) generateMatchLoadMessage() interface{} {
 		teams[station] = allianceStation.Team
 	}
 
+	redOffFieldTeamIds, blueOffFieldTeamIds, _ := arena.Database.GetOffFieldTeamIds(arena.CurrentMatch)
+	redOffFieldTeams := []*model.Team{}
+	blueOffFieldTeams := []*model.Team{}
+	for _, teamId := range redOffFieldTeamIds {
+		team, _ := arena.Database.GetTeamById(teamId)
+		redOffFieldTeams = append(redOffFieldTeams, team)
+	}
+	for _, teamId := range blueOffFieldTeamIds {
+		team, _ := arena.Database.GetTeamById(teamId)
+		blueOffFieldTeams = append(blueOffFieldTeams, team)
+	}
+
 	rankings := make(map[string]*game.Ranking)
 	for _, allianceStation := range arena.AllianceStations {
 		if allianceStation.Team != nil {
@@ -138,11 +150,13 @@ func (arena *Arena) generateMatchLoadMessage() interface{} {
 	}
 
 	return &struct {
-		MatchType string
-		Match     *model.Match
-		Teams     map[string]*model.Team
-		Rankings  map[string]*game.Ranking
-	}{arena.CurrentMatch.CapitalizedType(), arena.CurrentMatch, teams, rankings}
+		MatchType         string
+		Match             *model.Match
+		Teams             map[string]*model.Team
+		RedOffFieldTeams  []*model.Team
+		BlueOffFieldTeams []*model.Team
+		Rankings          map[string]*game.Ranking
+	}{arena.CurrentMatch.CapitalizedType(), arena.CurrentMatch, teams, redOffFieldTeams, blueOffFieldTeams, rankings}
 }
 
 func (arena *Arena) generateMatchTimeMessage() interface{} {

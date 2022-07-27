@@ -6,14 +6,7 @@
   <div class="col-lg-5"><h4>Name</h4></div>
   <div class="col-lg-5"><h4>Recent Accomplishments</h4></div>
 </div>
-<div class="row">
-  <div class="row well-sm well-darkred" id="red1"></div>
-  <div class="row well-sm well-darkred" id="red2"></div>
-  <div class="row well-sm well-darkred" id="red3"></div>
-  <div class="row well-sm well-darkblue" id="blue1"></div>
-  <div class="row well-sm well-darkblue" id="blue2"></div>
-  <div class="row well-sm well-darkblue" id="blue3"></div>
-</div>
+<div id="teams" class="row"></div>
 <br />
 <div class="row">
   <div id="matchState" class="col-lg-2 col-lg-offset-2 well well-sm text-center">&nbsp;</div>
@@ -47,7 +40,7 @@
 <script id="teamTemplate" type="text/x-handlebars-template">
   {{"{{#if this}}"}}
     <div class="col-lg-2">
-      <div><h4><b>{{"{{Id}}"}}</b></h4></div>
+      <div><h4><b>{{"{{Id}}"}}</b>{{"{{#if isOffField}}"}} (not on field){{"{{/if}}"}}</h4></div>
       <div class="nowrap"><h4><b>{{"{{Nickname}}"}}</b></h4></div>
       <div class="nowrap">{{"{{City}}"}}, {{"{{StateProv}}"}}, {{"{{Country}}"}}</div>
       <div class="nowrap">Robot: {{"{{RobotName}}"}}</div>
