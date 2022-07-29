@@ -69,6 +69,17 @@ var handleMatchLoad = function(data) {
   $("#" + blueSide + "Team2Avatar").attr("src", getAvatarUrl(currentMatch.Blue2));
   $("#" + blueSide + "Team3Avatar").attr("src", getAvatarUrl(currentMatch.Blue3));
 
+  // Show alliance numbers if this is an elimination match.
+  if (currentMatch.Type === "elimination") {
+    $("#" + redSide + "ElimAlliance").text(currentMatch.ElimRedAlliance);
+    $("#" + blueSide + "ElimAlliance").text(currentMatch.ElimBlueAlliance);
+    $(".elim-alliance").show();
+  } else {
+    $("#" + redSide + "ElimAlliance").text("");
+    $("#" + blueSide + "ElimAlliance").text("");
+    $(".elim-alliance").hide();
+  }
+
   if (data.Match.Type === "test") {
     $("#matchName").text(currentMatch.DisplayName);
   } else {

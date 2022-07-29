@@ -18,6 +18,9 @@ html {
   flex-direction: column;
   align-items: center;
 }
+#matchOverlayContainer {
+  display: flex;
+}
 #matchOverlay {
   display: flex;
   flex-direction: column;
@@ -28,6 +31,35 @@ html {
 #matchOverlayTop {
   height: 100px;
   display: flex;
+}
+.elim-alliance {
+  position: relative;
+  top: 31px;
+  width: 40px;
+  height: 40px;
+  padding: 0 5px;
+  z-index: -1;
+  display: flex;
+  align-items: center;
+  background-color: #fc0;
+  color: #222;
+  border: 1px solid #222;
+  font-size: 15px;
+  font-weight: 200;
+}
+#leftElimAlliance {
+  left: 23px;
+  justify-content: start;
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
+  border-right: none;
+}
+#rightElimAlliance {
+  right: 23px;
+  justify-content: end;
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+  border-left: none;
 }
 .teams {
   width: 55px;
