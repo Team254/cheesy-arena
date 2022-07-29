@@ -54,6 +54,23 @@ var handleMatchLoad = function(data) {
       $("#teamNameText").attr("data-alliance-bg", station[0]).text("");
       $("#teamRank").attr("data-alliance-bg", station[0]).text("");
     }
+
+    // Populate extra alliance info if this is an elimination match.
+    let elimAlliance = data.Match.ElimRedAlliance;
+    let offFieldTeams = data.RedOffFieldTeams;
+    if (station[0] === "B") {
+      elimAlliance = data.Match.ElimBlueAlliance;
+      offFieldTeams = data.BlueOffFieldTeams;
+    }
+    if (elimAlliance > 0) {
+      let elimAllianceInfo = `Alliance ${elimAlliance}`;
+      if (offFieldTeams.length) {
+        elimAllianceInfo += `&emsp; Not on field: ${offFieldTeams.map(team => team.Id).join(", ")}`;
+      }
+      $("#elimAllianceInfo").html(elimAllianceInfo);
+    } else {
+      $("#elimAllianceInfo").text("");
+    }
   }
 };
 

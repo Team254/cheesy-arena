@@ -116,17 +116,17 @@ body[data-position=right] #inMatch #blueScore {
 /* Pre Match */
 #preMatch #teamNumber {
   position: absolute;
-  top: 40px;
+  top: 100px;
   left: 0;
   right: 0;
   margin: 0 auto;
-  font-size: 500px;
-  line-height: 500px;
+  font-size: 550px;
+  line-height: 550px;
   text-align: center;
 }
 #preMatch .databar {
   position: absolute;
-  bottom: 0;
+  bottom: 100px;
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -158,4 +158,14 @@ body[data-position=right] #inMatch #blueScore {
 }
 #teamRank {
   background-color: transparent;
+}
+#elimAllianceInfo {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  text-align: center;
+  font-family: "FuturaLT";
+  font-size: 50px;
 }
