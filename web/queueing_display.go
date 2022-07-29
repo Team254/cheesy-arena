@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	numMatchesToShow = 5
+	numNonElimMatchesToShow = 5
+	numElimMatchesToShow    = 4
 )
 
 // Renders the queueing display that shows upcoming matches and timing information.
@@ -28,12 +29,31 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+
+	numMatchesToShow := numNonElimMatchesToShow
+	if web.arena.CurrentMatch.Type == "elimination" {
+		numMatchesToShow = numElimMatchesToShow
+	}
+
 	var upcomingMatches []model.Match
+	var redOffFieldTeamsByMatch, blueOffFieldTeamsByMatch [][]int
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
 	for i, match := range matches {
 		if match.IsComplete() {
 			continue
 		}
 		upcomingMatches = append(upcomingMatches, match)
+		redOffFieldTeams, blueOffFieldTeams, err := web.arena.Database.GetOffFieldTeamIds(&match)
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+		redOffFieldTeamsByMatch = append(redOffFieldTeamsByMatch, redOffFieldTeams)
+		blueOffFieldTeamsByMatch = append(blueOffFieldTeamsByMatch, blueOffFieldTeams)
+
 		if len(upcomingMatches) == numMatchesToShow {
 			break
 		}
@@ -52,9 +72,17 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := struct {
 		*model.EventSettings
-		MatchTypePrefix string
-		Matches         []model.Match
-	}{web.arena.EventSettings, web.arena.CurrentMatch.TypePrefix(), upcomingMatches}
+		MatchTypePrefix   string
+		Matches           []model.Match
+		RedOffFieldTeams  [][]int
+		BlueOffFieldTeams [][]int
+	}{
+		web.arena.EventSettings,
+		web.arena.CurrentMatch.TypePrefix(),
+		upcomingMatches,
+		redOffFieldTeamsByMatch,
+		blueOffFieldTeamsByMatch,
+	}
 	err = template.ExecuteTemplate(w, "queueing_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
