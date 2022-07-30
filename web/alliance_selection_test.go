@@ -143,9 +143,6 @@ func TestAllianceSelectionErrors(t *testing.T) {
 	recorder = web.postHttpResponse("/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
-	recorder = web.postHttpResponse("/alliance_selection/reset", "")
-	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "already been finalized")
 	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=asdf")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
@@ -154,6 +151,62 @@ func TestAllianceSelectionErrors(t *testing.T) {
 	recorder = web.postHttpResponse("/alliance_selection/start", "")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
+}
+
+func TestAllianceSelectionReset(t *testing.T) {
+	web := setupTestWeb(t)
+
+	web.arena.AllianceSelectionAlliances = [][]model.AllianceTeam{}
+	cachedRankedTeams = []*RankedTeam{}
+	web.arena.EventSettings.NumElimAlliances = 2
+	for i := 1; i <= 6; i++ {
+		web.arena.Database.CreateRanking(&game.Ranking{TeamId: 100 + i, Rank: i})
+	}
+
+	// Start, populate, and finalize the alliance selection.
+	recorder := web.postHttpResponse("/alliance_selection/start", "")
+	assert.Equal(t, 303, recorder.Code)
+	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=101&selection0_1=102&selection0_2=103&"+
+		"selection1_0=104&selection1_1=105&selection1_2=106")
+	assert.Equal(t, 303, recorder.Code)
+	recorder = web.postHttpResponse("/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
+	assert.Equal(t, 303, recorder.Code)
+	alliances, _ := web.arena.Database.GetAllAlliances()
+	assert.NotEmpty(t, alliances)
+	matches, _ := web.arena.Database.GetMatchesByType("elimination")
+	assert.NotEmpty(t, matches)
+
+	// Reset the alliance selection before any matches have been played.
+	recorder = web.postHttpResponse("/alliance_selection/reset", "")
+	assert.Equal(t, 303, recorder.Code)
+	alliances, _ = web.arena.Database.GetAllAlliances()
+	assert.Empty(t, alliances)
+	matches, _ = web.arena.Database.GetMatchesByType("elimination")
+	assert.Empty(t, matches)
+
+	// Start, populate, and finalize the alliance selection again.
+	recorder = web.postHttpResponse("/alliance_selection/start", "")
+	assert.Equal(t, 303, recorder.Code)
+	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=101&selection0_1=102&selection0_2=103&"+
+		"selection1_0=104&selection1_1=105&selection1_2=106")
+	assert.Equal(t, 303, recorder.Code)
+	recorder = web.postHttpResponse("/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
+	assert.Equal(t, 303, recorder.Code)
+	alliances, _ = web.arena.Database.GetAllAlliances()
+	assert.NotEmpty(t, alliances)
+	matches, _ = web.arena.Database.GetMatchesByType("elimination")
+	assert.NotEmpty(t, matches)
+
+	// Mark a match as played and verify that the alliance selection can no longer be reset.
+	matches[0].Status = model.RedWonMatch
+	assert.Nil(t, web.arena.Database.UpdateMatch(&matches[0]))
+	recorder = web.postHttpResponse("/alliance_selection/reset", "")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "matches have already started")
+	alliances, _ = web.arena.Database.GetAllAlliances()
+	assert.NotEmpty(t, alliances)
+	matches, _ = web.arena.Database.GetMatchesByType("elimination")
+	assert.NotEmpty(t, matches)
 }
 
 func TestAllianceSelectionAutofocus(t *testing.T) {

@@ -137,8 +137,27 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if !web.canModifyAllianceSelection() {
-		web.renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
+	if !web.canResetAllianceSelection() {
+		web.renderAllianceSelection(w, r, "Cannot reset alliance selection; playoff matches have already started.")
+		return
+	}
+
+	// Delete any elimination matches that were already created (but not played since they would fail the above check).
+	matches, err := web.arena.Database.GetMatchesByType("elimination")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	for _, match := range matches {
+		if err = web.arena.Database.DeleteMatch(match.Id); err != nil {
+			handleWebErr(w, err)
+			return
+		}
+	}
+
+	// Delete the saved alliances.
+	if err = web.arena.Database.TruncateAllianceTeams(); err != nil {
+		handleWebErr(w, err)
 		return
 	}
 
@@ -240,8 +259,9 @@ func (web *Web) allianceSelectionPublishHandler(w http.ResponseWriter, r *http.R
 }
 
 func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
-	if len(web.arena.AllianceSelectionAlliances) == 0 && !web.canModifyAllianceSelection() {
-		// The application was restarted since the alliance selection was conducted; reload the alliances from the DB.
+	if len(web.arena.AllianceSelectionAlliances) == 0 {
+		// The application may have been restarted since the alliance selection was conducted; try reloading the
+		// alliances from the DB.
 		var err error
 		web.arena.AllianceSelectionAlliances, err = web.arena.Database.GetAllAlliances()
 		if err != nil {
@@ -276,6 +296,20 @@ func (web *Web) canModifyAllianceSelection() bool {
 	matches, err := web.arena.Database.GetMatchesByType("elimination")
 	if err != nil || len(matches) > 0 {
 		return false
+	}
+	return true
+}
+
+// Returns true if it is safe to reset the alliance selection (i.e. no elimination matches have been played yet).
+func (web *Web) canResetAllianceSelection() bool {
+	matches, err := web.arena.Database.GetMatchesByType("elimination")
+	if err != nil {
+		return false
+	}
+	for _, match := range matches {
+		if match.Status != model.MatchNotPlayed {
+			return false
+		}
 	}
 	return true
 }
