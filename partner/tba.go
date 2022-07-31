@@ -420,8 +420,8 @@ func (client *TbaClient) PublishAlliances(database *model.Database) error {
 	// Build a JSON object of TBA-format alliances.
 	tbaAlliances := make([][]string, len(alliances))
 	for i, alliance := range alliances {
-		for _, team := range alliance {
-			tbaAlliances[i] = append(tbaAlliances[i], getTbaTeam(team.TeamId))
+		for _, allianceTeamId := range alliance.TeamIds {
+			tbaAlliances[i] = append(tbaAlliances[i], getTbaTeam(allianceTeamId))
 		}
 	}
 	jsonBody, err := json.Marshal(tbaAlliances)

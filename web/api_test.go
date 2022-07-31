@@ -109,21 +109,21 @@ func TestAlliancesApi(t *testing.T) {
 	recorder := web.getHttpResponse("/api/alliances")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "application/json", recorder.HeaderMap["Content-Type"][0])
-	var alliances [][]model.AllianceTeam
+	var alliances []model.Alliance
 	err := json.Unmarshal([]byte(recorder.Body.String()), &alliances)
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(alliances)) {
-		if assert.Equal(t, 5, len(alliances[0])) {
-			assert.Equal(t, 254, alliances[0][0].TeamId)
-			assert.Equal(t, 469, alliances[0][1].TeamId)
-			assert.Equal(t, 2848, alliances[0][2].TeamId)
-			assert.Equal(t, 74, alliances[0][3].TeamId)
-			assert.Equal(t, 3175, alliances[0][4].TeamId)
+		if assert.Equal(t, 5, len(alliances[0].TeamIds)) {
+			assert.Equal(t, 254, alliances[0].TeamIds[0])
+			assert.Equal(t, 469, alliances[0].TeamIds[1])
+			assert.Equal(t, 2848, alliances[0].TeamIds[2])
+			assert.Equal(t, 74, alliances[0].TeamIds[3])
+			assert.Equal(t, 3175, alliances[0].TeamIds[4])
 		}
-		if assert.Equal(t, 3, len(alliances[1])) {
-			assert.Equal(t, 1718, alliances[1][0].TeamId)
-			assert.Equal(t, 2451, alliances[1][1].TeamId)
-			assert.Equal(t, 1619, alliances[1][2].TeamId)
+		if assert.Equal(t, 3, len(alliances[1].TeamIds)) {
+			assert.Equal(t, 1718, alliances[1].TeamIds[0])
+			assert.Equal(t, 2451, alliances[1].TeamIds[1])
+			assert.Equal(t, 1619, alliances[1].TeamIds[2])
 		}
 	}
 }

@@ -118,13 +118,13 @@ func (web *Web) findBackupTeams(rankings game.Rankings) (game.Rankings, map[int]
 	pickedBackups := make(map[int]bool)
 
 	for _, alliance := range picks {
-		for _, team := range alliance {
+		for i, allianceTeamId := range alliance.TeamIds {
 			// Teams in third in an alliance are backups at events that use 3 team alliances.
-			if team.PickPosition == 3 {
-				pickedBackups[team.TeamId] = true
+			if i == 3 {
+				pickedBackups[allianceTeamId] = true
 				continue
 			}
-			pickedTeams[team.TeamId] = true
+			pickedTeams[allianceTeamId] = true
 		}
 	}
 
@@ -274,7 +274,7 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 		for i := page * 4; i < page*4+4 && i < len(alliances); i++ {
 			pdf.SetFillColor(220, 220, 220)
 
-			allianceCaptain := alliances[i][0].TeamId
+			allianceCaptain := alliances[i].TeamIds[0]
 
 			pdf.RoundedRect(cSideMargin, float64(heightAcc), cWidth, cHeight, 4, "1234", "D")
 			timeoutX := cSideMargin + (cWidth * 0.5)

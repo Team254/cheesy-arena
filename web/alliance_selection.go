@@ -51,10 +51,10 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 
 	// Iterate through all selections and update the alliances.
 	for i, alliance := range web.arena.AllianceSelectionAlliances {
-		for j := range alliance {
+		for j := range alliance.TeamIds {
 			teamString := r.PostFormValue(fmt.Sprintf("selection%d_%d", i, j))
 			if teamString == "" {
-				web.arena.AllianceSelectionAlliances[i][j].TeamId = 0
+				web.arena.AllianceSelectionAlliances[i].TeamIds[j] = 0
 			} else {
 				teamId, err := strconv.Atoi(teamString)
 				if err != nil {
@@ -71,7 +71,7 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 						}
 						found = true
 						team.Picked = true
-						web.arena.AllianceSelectionAlliances[i][j].TeamId = teamId
+						web.arena.AllianceSelectionAlliances[i].TeamIds[j] = teamId
 						break
 					}
 				}
@@ -104,16 +104,14 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// Create a blank alliance set matching the event configuration.
-	web.arena.AllianceSelectionAlliances = make([][]model.AllianceTeam, web.arena.EventSettings.NumElimAlliances)
+	web.arena.AllianceSelectionAlliances = make([]model.Alliance, web.arena.EventSettings.NumElimAlliances)
 	teamsPerAlliance := 3
 	if web.arena.EventSettings.SelectionRound3Order != "" {
 		teamsPerAlliance = 4
 	}
 	for i := 0; i < web.arena.EventSettings.NumElimAlliances; i++ {
-		web.arena.AllianceSelectionAlliances[i] = make([]model.AllianceTeam, teamsPerAlliance)
-		for j := 0; j < teamsPerAlliance; j++ {
-			web.arena.AllianceSelectionAlliances[i][j] = model.AllianceTeam{AllianceId: i + 1, PickPosition: j}
-		}
+		web.arena.AllianceSelectionAlliances[i].Id = i + 1
+		web.arena.AllianceSelectionAlliances[i].TeamIds = make([]int, teamsPerAlliance)
 	}
 
 	// Populate the ranked list of teams.
@@ -156,12 +154,12 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// Delete the saved alliances.
-	if err = web.arena.Database.TruncateAllianceTeams(); err != nil {
+	if err = web.arena.Database.TruncateAlliances(); err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	web.arena.AllianceSelectionAlliances = [][]model.AllianceTeam{}
+	web.arena.AllianceSelectionAlliances = []model.Alliance{}
 	cachedRankedTeams = []*RankedTeam{}
 	web.arena.AllianceSelectionNotifier.Notify()
 	http.Redirect(w, r, "/alliance_selection", 303)
@@ -187,8 +185,8 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 
 	// Check that all spots are filled.
 	for _, alliance := range web.arena.AllianceSelectionAlliances {
-		for _, team := range alliance {
-			if team.TeamId <= 0 {
+		for _, allianceTeamId := range alliance.TeamIds {
+			if allianceTeamId <= 0 {
 				web.renderAllianceSelection(w, r, "Can't finalize alliance selection until all spots have been filled.")
 				return
 			}
@@ -197,12 +195,16 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 
 	// Save alliances to the database.
 	for _, alliance := range web.arena.AllianceSelectionAlliances {
-		for _, team := range alliance {
-			err := web.arena.Database.CreateAllianceTeam(&team)
-			if err != nil {
-				handleWebErr(w, err)
-				return
-			}
+		// Populate the initial lineup according to the tournament rules (alliance captain in the middle, first pick on
+		// the left, second pick on the right).
+		alliance.Lineup[0] = alliance.TeamIds[1]
+		alliance.Lineup[1] = alliance.TeamIds[0]
+		alliance.Lineup[2] = alliance.TeamIds[2]
+
+		err := web.arena.Database.CreateAlliance(&alliance)
+		if err != nil {
+			handleWebErr(w, err)
+			return
 		}
 	}
 
@@ -278,7 +280,7 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 	nextRow, nextCol := web.determineNextCell()
 	data := struct {
 		*model.EventSettings
-		Alliances    [][]model.AllianceTeam
+		Alliances    []model.Alliance
 		RankedTeams  []*RankedTeam
 		NextRow      int
 		NextCol      int
@@ -318,10 +320,10 @@ func (web *Web) canResetAllianceSelection() bool {
 func (web *Web) determineNextCell() (int, int) {
 	// Check the first two columns.
 	for i, alliance := range web.arena.AllianceSelectionAlliances {
-		if alliance[0].TeamId == 0 {
+		if alliance.TeamIds[0] == 0 {
 			return i, 0
 		}
-		if alliance[1].TeamId == 0 {
+		if alliance.TeamIds[1] == 0 {
 			return i, 1
 		}
 	}
@@ -329,13 +331,13 @@ func (web *Web) determineNextCell() (int, int) {
 	// Check the third column.
 	if web.arena.EventSettings.SelectionRound2Order == "F" {
 		for i, alliance := range web.arena.AllianceSelectionAlliances {
-			if alliance[2].TeamId == 0 {
+			if alliance.TeamIds[2] == 0 {
 				return i, 2
 			}
 		}
 	} else {
 		for i := len(web.arena.AllianceSelectionAlliances) - 1; i >= 0; i-- {
-			if web.arena.AllianceSelectionAlliances[i][2].TeamId == 0 {
+			if web.arena.AllianceSelectionAlliances[i].TeamIds[2] == 0 {
 				return i, 2
 			}
 		}
@@ -344,13 +346,13 @@ func (web *Web) determineNextCell() (int, int) {
 	// Check the fourth column.
 	if web.arena.EventSettings.SelectionRound3Order == "F" {
 		for i, alliance := range web.arena.AllianceSelectionAlliances {
-			if alliance[3].TeamId == 0 {
+			if alliance.TeamIds[3] == 0 {
 				return i, 3
 			}
 		}
 	} else if web.arena.EventSettings.SelectionRound3Order == "L" {
 		for i := len(web.arena.AllianceSelectionAlliances) - 1; i >= 0; i-- {
-			if web.arena.AllianceSelectionAlliances[i][3].TeamId == 0 {
+			if web.arena.AllianceSelectionAlliances[i].TeamIds[3] == 0 {
 				return i, 3
 			}
 		}

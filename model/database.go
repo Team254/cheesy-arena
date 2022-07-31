@@ -23,7 +23,7 @@ var BaseDir = "." // Mutable for testing
 type Database struct {
 	Path               string
 	bolt               *bbolt.DB
-	allianceTeamTable  *table[AllianceTeam]
+	allianceTable      *table[Alliance]
 	awardTable         *table[Award]
 	eventSettingsTable *table[EventSettings]
 	lowerThirdTable    *table[LowerThird]
@@ -46,7 +46,7 @@ func OpenDatabase(filename string) (*Database, error) {
 	}
 
 	// Register tables.
-	if database.allianceTeamTable, err = newTable[AllianceTeam](&database); err != nil {
+	if database.allianceTable, err = newTable[Alliance](&database); err != nil {
 		return nil, err
 	}
 	if database.awardTable, err = newTable[Award](&database); err != nil {

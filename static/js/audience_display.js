@@ -179,7 +179,7 @@ var handlePlaySound = function(sound) {
 // Handles a websocket message to update the alliance selection screen.
 var handleAllianceSelection = function(alliances) {
   if (alliances && alliances.length > 0) {
-    var numColumns = alliances[0].length + 1;
+    var numColumns = alliances[0].TeamIds.length + 1;
     $.each(alliances, function(k, v) {
       v.Index = k + 1;
     });

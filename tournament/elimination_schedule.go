@@ -43,54 +43,60 @@ func UpdateEliminationSchedule(database *model.Database, startTime time.Time) (b
 		matchIndex++
 	}
 
-	return len(winner) > 0, err
+	return winner != nil, err
 }
 
 // Updates the alliance, if necessary, to include whoever played in the match, in case there was a substitute.
 func UpdateAlliance(database *model.Database, matchTeamIds [3]int, allianceId int) error {
-	allianceTeams, err := database.GetTeamsByAlliance(allianceId)
+	alliance, err := database.GetAllianceById(allianceId)
 	if err != nil {
 		return err
 	}
 
+	changed := false
+	if matchTeamIds != alliance.Lineup {
+		alliance.Lineup = matchTeamIds
+		changed = true
+	}
+
 	for _, teamId := range matchTeamIds {
 		found := false
-		for _, allianceTeam := range allianceTeams {
-			if teamId == allianceTeam.TeamId {
+		for _, allianceTeamId := range alliance.TeamIds {
+			if teamId == allianceTeamId {
 				found = true
 				break
 			}
 		}
 		if !found {
-			newAllianceTeam := model.AllianceTeam{AllianceId: allianceId, PickPosition: len(allianceTeams),
-				TeamId: teamId}
-			allianceTeams = append(allianceTeams, newAllianceTeam)
-			if err := database.CreateAllianceTeam(&newAllianceTeam); err != nil {
-				return err
-			}
+			alliance.TeamIds = append(alliance.TeamIds, teamId)
+			changed = true
 		}
 	}
 
+	if changed {
+		return database.UpdateAlliance(alliance)
+	}
 	return nil
 }
 
 // Recursively traverses the elimination bracket downwards, creating matches as necessary. Returns the winner
 // of the given round if known.
-func buildEliminationMatchSet(database *model.Database, round int, group int,
-	numAlliances int) ([]model.AllianceTeam, error) {
+func buildEliminationMatchSet(
+	database *model.Database, round int, group int, numAlliances int,
+) (*model.Alliance, error) {
 	if numAlliances < 2 {
-		return []model.AllianceTeam{}, fmt.Errorf("Must have at least 2 alliances")
+		return nil, fmt.Errorf("Must have at least 2 alliances")
 	}
 	roundName, ok := model.ElimRoundNames[round]
 	if !ok {
-		return []model.AllianceTeam{}, fmt.Errorf("Round of depth %d is not supported", round*2)
+		return nil, fmt.Errorf("Round of depth %d is not supported", round*2)
 	}
 	if round != 1 {
 		roundName += strconv.Itoa(group)
 	}
 
 	// Recurse to figure out who the involved alliances are.
-	var redAlliance, blueAlliance []model.AllianceTeam
+	var redAlliance, blueAlliance *model.Alliance
 	var err error
 	if numAlliances < 4*round {
 		// This is the first round for some or all alliances and will be at least partially populated from the
@@ -102,47 +108,37 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 		numDirectAlliances := 4*round - numAlliances
 		if redAllianceNumber <= numDirectAlliances {
 			// The red alliance has a bye or the number of alliances is a power of 2; get from alliance selection.
-			redAlliance, err = database.GetTeamsByAlliance(redAllianceNumber)
+			redAlliance, err = database.GetAllianceById(redAllianceNumber)
 			if err != nil {
-				return []model.AllianceTeam{}, err
-			}
-
-			if len(redAlliance) >= 3 {
-				// Swap the teams around to match the positions dictated by the rules.
-				redAlliance[0], redAlliance[1], redAlliance[2] = redAlliance[1], redAlliance[0], redAlliance[2]
+				return nil, err
 			}
 		}
 		if blueAllianceNumber <= numDirectAlliances {
 			// The blue alliance has a bye or the number of alliances is a power of 2; get from alliance selection.
-			blueAlliance, err = database.GetTeamsByAlliance(blueAllianceNumber)
+			blueAlliance, err = database.GetAllianceById(blueAllianceNumber)
 			if err != nil {
-				return []model.AllianceTeam{}, err
-			}
-
-			if len(blueAlliance) >= 3 {
-				// Swap the teams around to match the positions dictated by the rules.
-				blueAlliance[0], blueAlliance[1], blueAlliance[2] = blueAlliance[1], blueAlliance[0], blueAlliance[2]
+				return nil, err
 			}
 		}
 	}
 
 	// If the alliances aren't known yet, get them from one round down in the bracket.
-	if len(redAlliance) == 0 {
+	if redAlliance == nil {
 		redAlliance, err = buildEliminationMatchSet(database, round*2, group*2-1, numAlliances)
 		if err != nil {
-			return []model.AllianceTeam{}, err
+			return nil, err
 		}
 	}
-	if len(blueAlliance) == 0 {
+	if blueAlliance == nil {
 		blueAlliance, err = buildEliminationMatchSet(database, round*2, group*2, numAlliances)
 		if err != nil {
-			return []model.AllianceTeam{}, err
+			return nil, err
 		}
 	}
 
 	// Bail if the rounds below are not yet complete and we don't know either alliance competing this round.
-	if len(redAlliance) == 0 && len(blueAlliance) == 0 {
-		return []model.AllianceTeam{}, nil
+	if redAlliance == nil && blueAlliance == nil {
+		return nil, nil
 	}
 
 	// Check if the match set exists already and if it has been won.
@@ -150,24 +146,24 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 	var ties []model.Match
 	matches, err := database.GetMatchesByElimRoundGroup(round, group)
 	if err != nil {
-		return []model.AllianceTeam{}, err
+		return nil, err
 	}
 	var unplayedMatches []model.Match
 	for _, match := range matches {
 		if !match.IsComplete() {
 			// Update the teams in the match if they are not yet set or are incorrect.
-			if len(redAlliance) != 0 && !(match.Red1 == redAlliance[0].TeamId && match.Red2 == redAlliance[1].TeamId &&
-				match.Red3 == redAlliance[2].TeamId) {
+			if redAlliance != nil && !(match.Red1 == redAlliance.Lineup[0] && match.Red2 == redAlliance.Lineup[1] &&
+				match.Red3 == redAlliance.Lineup[2]) {
 				positionRedTeams(&match, redAlliance)
-				match.ElimRedAlliance = redAlliance[0].AllianceId
+				match.ElimRedAlliance = redAlliance.Id
 				if err = database.UpdateMatch(&match); err != nil {
 					return nil, err
 				}
 			}
-			if len(blueAlliance) != 0 && !(match.Blue1 == blueAlliance[0].TeamId &&
-				match.Blue2 == blueAlliance[1].TeamId && match.Blue3 == blueAlliance[2].TeamId) {
+			if blueAlliance != nil && !(match.Blue1 == blueAlliance.Lineup[0] &&
+				match.Blue2 == blueAlliance.Lineup[1] && match.Blue3 == blueAlliance.Lineup[2]) {
 				positionBlueTeams(&match, blueAlliance)
-				match.ElimBlueAlliance = blueAlliance[0].AllianceId
+				match.ElimBlueAlliance = blueAlliance.Id
 				if err = database.UpdateMatch(&match); err != nil {
 					return nil, err
 				}
@@ -176,16 +172,6 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 			unplayedMatches = append(unplayedMatches, match)
 			numIncomplete += 1
 			continue
-		}
-
-		// Reorder the teams based on the last complete match, so that new and unplayed matches use the same positions.
-		err = reorderTeams(match.Red1, match.Red2, match.Red3, redAlliance)
-		if err != nil {
-			return []model.AllianceTeam{}, err
-		}
-		err = reorderTeams(match.Blue1, match.Blue2, match.Blue3, blueAlliance)
-		if err != nil {
-			return []model.AllianceTeam{}, err
 		}
 
 		// Check who won.
@@ -197,8 +183,7 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 		case model.TieMatch:
 			ties = append(ties, match)
 		default:
-			return []model.AllianceTeam{}, fmt.Errorf("Completed match %d has invalid winner '%s'", match.Id,
-				match.Status)
+			return nil, fmt.Errorf("Completed match %d has invalid winner '%s'", match.Id, match.Status)
 		}
 	}
 
@@ -207,7 +192,7 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 		for _, match := range unplayedMatches {
 			err = database.DeleteMatch(match.Id)
 			if err != nil {
-				return []model.AllianceTeam{}, err
+				return nil, err
 			}
 		}
 
@@ -222,32 +207,26 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 	// Create initial set of matches or recreate any superfluous matches that were deleted but now are needed
 	// due to a revision in who won.
 	if len(matches) == 0 || len(ties) == 0 && numIncomplete == 0 {
-		// Fill in zeroes if only one alliance is known.
-		if len(redAlliance) == 0 {
-			redAlliance = []model.AllianceTeam{{}, {}, {}}
-		} else if len(blueAlliance) == 0 {
-			blueAlliance = []model.AllianceTeam{{}, {}, {}}
-		}
-		if len(redAlliance) < 3 || len(blueAlliance) < 3 {
+		if redAlliance != nil && len(redAlliance.TeamIds) < 3 || blueAlliance != nil && len(blueAlliance.TeamIds) < 3 {
 			// Raise an error if the alliance selection process gave us less than 3 teams per alliance.
-			return []model.AllianceTeam{}, fmt.Errorf("Alliances must consist of at least 3 teams")
+			return nil, fmt.Errorf("Alliances must consist of at least 3 teams")
 		}
 		if len(matches) < 1 {
 			err = database.CreateMatch(createMatch(roundName, round, group, 1, redAlliance, blueAlliance))
 			if err != nil {
-				return []model.AllianceTeam{}, err
+				return nil, err
 			}
 		}
 		if len(matches) < 2 {
 			err = database.CreateMatch(createMatch(roundName, round, group, 2, redAlliance, blueAlliance))
 			if err != nil {
-				return []model.AllianceTeam{}, err
+				return nil, err
 			}
 		}
 		if len(matches) < 3 {
 			err = database.CreateMatch(createMatch(roundName, round, group, 3, redAlliance, blueAlliance))
 			if err != nil {
-				return []model.AllianceTeam{}, err
+				return nil, err
 			}
 		}
 	}
@@ -258,54 +237,51 @@ func buildEliminationMatchSet(database *model.Database, round int, group int,
 			err = database.CreateMatch(createMatch(roundName, round, group, len(matches)+index+1, redAlliance,
 				blueAlliance))
 			if err != nil {
-				return []model.AllianceTeam{}, err
+				return nil, err
 			}
 		}
 	}
 
-	return []model.AllianceTeam{}, nil
+	return nil, nil
 }
 
 // Creates a match at the given point in the elimination bracket and populates the teams.
-func createMatch(roundName string, round int, group int, instance int, redAlliance,
-	blueAlliance []model.AllianceTeam) *model.Match {
-	match := model.Match{Type: "elimination", DisplayName: fmt.Sprintf("%s-%d", roundName, instance),
-		ElimRound: round, ElimGroup: group, ElimInstance: instance, ElimRedAlliance: redAlliance[0].AllianceId,
-		ElimBlueAlliance: blueAlliance[0].AllianceId}
-	positionRedTeams(&match, redAlliance)
-	positionBlueTeams(&match, blueAlliance)
+func createMatch(
+	roundName string,
+	round int,
+	group int,
+	instance int,
+	redAlliance,
+	blueAlliance *model.Alliance,
+) *model.Match {
+	match := model.Match{
+		Type:         "elimination",
+		DisplayName:  fmt.Sprintf("%s-%d", roundName, instance),
+		ElimRound:    round,
+		ElimGroup:    group,
+		ElimInstance: instance,
+	}
+	if redAlliance != nil {
+		match.ElimRedAlliance = redAlliance.Id
+		positionRedTeams(&match, redAlliance)
+	}
+	if blueAlliance != nil {
+		match.ElimBlueAlliance = blueAlliance.Id
+		positionBlueTeams(&match, blueAlliance)
+	}
 	return &match
 }
 
-// Assigns the first three teams from the alliance into the red team slots for the match.
-func positionRedTeams(match *model.Match, alliance []model.AllianceTeam) {
-	match.Red1 = alliance[0].TeamId
-	match.Red2 = alliance[1].TeamId
-	match.Red3 = alliance[2].TeamId
+// Assigns the lineup from the alliance into the red team slots for the match.
+func positionRedTeams(match *model.Match, alliance *model.Alliance) {
+	match.Red1 = alliance.Lineup[0]
+	match.Red2 = alliance.Lineup[1]
+	match.Red3 = alliance.Lineup[2]
 }
 
-// Assigns the first three teams from the alliance into the blue team slots for the match.
-func positionBlueTeams(match *model.Match, alliance []model.AllianceTeam) {
-	match.Blue1 = alliance[0].TeamId
-	match.Blue2 = alliance[1].TeamId
-	match.Blue3 = alliance[2].TeamId
-}
-
-// Swaps the order of teams in the alliance to match the match positioning.
-func reorderTeams(team1, team2, team3 int, alliance []model.AllianceTeam) error {
-	for i, team := range []int{team1, team2, team3} {
-		found := false
-		for j, oldTeam := range alliance {
-			if team == oldTeam.TeamId {
-				alliance[i], alliance[j] = alliance[j], alliance[i]
-				found = true
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("Team %d not found in alliance %v", team, alliance)
-		}
-	}
-
-	return nil
+// Assigns the lineup from the alliance into the blue team slots for the match.
+func positionBlueTeams(match *model.Match, alliance *model.Alliance) {
+	match.Blue1 = alliance.Lineup[0]
+	match.Blue2 = alliance.Lineup[1]
+	match.Blue3 = alliance.Lineup[2]
 }

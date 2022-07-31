@@ -54,7 +54,7 @@ func TestSetupSettingsClearDb(t *testing.T) {
 	assert.Nil(t, web.arena.Database.CreateMatch(&model.Match{Type: "qualification"}))
 	assert.Nil(t, web.arena.Database.CreateMatchResult(new(model.MatchResult)))
 	assert.Nil(t, web.arena.Database.CreateRanking(&game.Ranking{TeamId: 254}))
-	assert.Nil(t, web.arena.Database.CreateAllianceTeam(new(model.AllianceTeam)))
+	assert.Nil(t, web.arena.Database.CreateAlliance(&model.Alliance{Id: 1}))
 	recorder := web.postHttpResponse("/setup/db/clear", "")
 	assert.Equal(t, 303, recorder.Code)
 
@@ -68,6 +68,7 @@ func TestSetupSettingsClearDb(t *testing.T) {
 	assert.Empty(t, rankings)
 	alliances, _ := web.arena.Database.GetAllAlliances()
 	assert.Empty(t, alliances)
+	assert.Empty(t, web.arena.AllianceSelectionAlliances)
 }
 
 func TestSetupSettingsBackupRestoreDb(t *testing.T) {

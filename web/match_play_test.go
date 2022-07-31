@@ -184,7 +184,11 @@ func TestCommitEliminationTie(t *testing.T) {
 	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, model.TieMatch, match.Status)
+
+	tournament.CreateTestAlliances(web.arena.Database, 2)
 	match.Type = "elimination"
+	match.ElimRedAlliance = 1
+	match.ElimBlueAlliance = 2
 	web.arena.Database.UpdateMatch(match)
 	web.commitMatchScore(match, matchResult, true)
 	match, _ = web.arena.Database.GetMatchById(1)

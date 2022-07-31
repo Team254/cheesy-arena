@@ -55,7 +55,7 @@
               <th>Captain</th>
               <th>Pick 1</th>
               <th>Pick 2</th>
-              {{if index .Alliances 0 | len | eq 4}}
+              {{if (index .Alliances 0).TeamIds | len | eq 4}}
                 <th>Pick 3</th>
               {{end}}
             </tr>
@@ -63,9 +63,9 @@
           <tbody>
             {{range $i, $alliance := .Alliances}}
               <tr>
-                <td class="col-lg-2">{{(index $alliance 0).AllianceId}}</td>
-                {{range $j, $team := $alliance}}
-                  {{if eq $team.TeamId 0}}
+                <td class="col-lg-2">{{add $i 1}}</td>
+                {{range $j, $allianceTeamId := $alliance.TeamIds}}
+                  {{if eq $allianceTeamId 0}}
                     <td class="col-lg-2">
                       <input type="text" class="form-control input-sm" name="selection{{$i}}_{{$j}}" value=""
                           {{if and (eq $i $.NextRow) (eq $j $.NextCol)}}autofocus{{end}}
@@ -74,7 +74,7 @@
                   {{else}}
                     <td class="col-lg-2">
                       <input type="text" class="form-control input-sm" name="selection{{$i}}_{{$j}}"
-                          value="{{$team.TeamId}}" oninput="$(this).parent().addClass('has-warning');" />
+                          value="{{$allianceTeamId}}" oninput="$(this).parent().addClass('has-warning');" />
                     </td>
                   {{end}}
                 {{end}}

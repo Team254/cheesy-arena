@@ -1,4 +1,4 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2022 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
 package model
@@ -12,68 +12,43 @@ func TestGetNonexistentAlliance(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	allianceTeams, err := db.GetTeamsByAlliance(1114)
+	alliance, err := db.GetAllianceById(1114)
 	assert.Nil(t, err)
-	assert.Empty(t, allianceTeams)
+	assert.Nil(t, alliance)
 }
 
-func TestAllianceTeamCrud(t *testing.T) {
+func TestAllianceCrud(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	allianceTeam := AllianceTeam{0, 1, 0, 254}
-	db.CreateAllianceTeam(&allianceTeam)
-	allianceTeams, err := db.GetTeamsByAlliance(1)
+	alliance := Alliance{Id: 3, TeamIds: []int{254, 1114, 296, 1503}, Lineup: [3]int{1114, 254, 296}}
+	assert.Nil(t, db.CreateAlliance(&alliance))
+	alliance2, err := db.GetAllianceById(3)
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(allianceTeams))
-	assert.Equal(t, allianceTeam, allianceTeams[0])
+	assert.Equal(t, alliance, *alliance2)
 
-	allianceTeam.TeamId = 1114
-	db.UpdateAllianceTeam(&allianceTeam)
-	allianceTeams, err = db.GetTeamsByAlliance(1)
+	alliance.TeamIds = append(alliance.TeamIds, 296)
+	assert.Nil(t, db.UpdateAlliance(&alliance))
+	alliance2, err = db.GetAllianceById(3)
 	assert.Nil(t, err)
-	assert.Equal(t, 1, len(allianceTeams))
-	assert.Equal(t, allianceTeam.TeamId, allianceTeams[0].TeamId)
+	assert.Equal(t, alliance, *alliance2)
 
-	db.DeleteAllianceTeam(allianceTeam.Id)
-	allianceTeams, err = db.GetTeamsByAlliance(1)
+	assert.Nil(t, db.DeleteAlliance(alliance.Id))
+	alliance2, err = db.GetAllianceById(3)
 	assert.Nil(t, err)
-	assert.Empty(t, allianceTeams)
-}
-
-func TestGetTeamsByAlliance(t *testing.T) {
-	db := setupTestDb(t)
-	defer db.Close()
-
-	BuildTestAlliances(db)
-	allianceTeams, err := db.GetTeamsByAlliance(1)
-	assert.Nil(t, err)
-	if assert.Equal(t, 5, len(allianceTeams)) {
-		assert.Equal(t, 254, allianceTeams[0].TeamId)
-		assert.Equal(t, 469, allianceTeams[1].TeamId)
-		assert.Equal(t, 2848, allianceTeams[2].TeamId)
-		assert.Equal(t, 74, allianceTeams[3].TeamId)
-		assert.Equal(t, 3175, allianceTeams[4].TeamId)
-	}
-	allianceTeams, err = db.GetTeamsByAlliance(2)
-	assert.Nil(t, err)
-	if assert.Equal(t, 3, len(allianceTeams)) {
-		assert.Equal(t, 1718, allianceTeams[0].TeamId)
-		assert.Equal(t, 2451, allianceTeams[1].TeamId)
-		assert.Equal(t, 1619, allianceTeams[2].TeamId)
-	}
+	assert.Nil(t, alliance2)
 }
 
 func TestTruncateAllianceTeams(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	allianceTeam := AllianceTeam{0, 1, 0, 254}
-	db.CreateAllianceTeam(&allianceTeam)
-	db.TruncateAllianceTeams()
-	allianceTeams, err := db.GetTeamsByAlliance(1)
+	alliance := Alliance{Id: 1, TeamIds: []int{148, 118, 125}, Lineup: [3]int{118, 148, 125}}
+	assert.Nil(t, db.CreateAlliance(&alliance))
+	assert.Nil(t, db.TruncateAlliances())
+	alliance2, err := db.GetAllianceById(1)
 	assert.Nil(t, err)
-	assert.Empty(t, allianceTeams)
+	assert.Nil(t, alliance2)
 }
 
 func TestGetAllAlliances(t *testing.T) {
@@ -88,18 +63,10 @@ func TestGetAllAlliances(t *testing.T) {
 	alliances, err = db.GetAllAlliances()
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(alliances)) {
-		if assert.Equal(t, 5, len(alliances[0])) {
-			assert.Equal(t, 254, alliances[0][0].TeamId)
-			assert.Equal(t, 469, alliances[0][1].TeamId)
-			assert.Equal(t, 2848, alliances[0][2].TeamId)
-			assert.Equal(t, 74, alliances[0][3].TeamId)
-			assert.Equal(t, 3175, alliances[0][4].TeamId)
-		}
-		if assert.Equal(t, 3, len(alliances[1])) {
-			assert.Equal(t, 1718, alliances[1][0].TeamId)
-			assert.Equal(t, 2451, alliances[1][1].TeamId)
-			assert.Equal(t, 1619, alliances[1][2].TeamId)
-		}
+		assert.Equal(t, 1, alliances[0].Id)
+		assert.Equal(t, []int{254, 469, 2848, 74, 3175}, alliances[0].TeamIds)
+		assert.Equal(t, 2, alliances[1].Id)
+		assert.Equal(t, []int{1718, 2451, 1619}, alliances[1].TeamIds)
 	}
 }
 

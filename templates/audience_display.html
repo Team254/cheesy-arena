@@ -149,8 +149,8 @@
         {{"{{#each alliances}}"}}
           <tr>
             <td class="alliance-cell">{{"{{Index}}"}}</td>
-            {{"{{#each this}}"}}
-              <td class="selection-cell">{{"{{#if TeamId}}"}}{{"{{TeamId}}"}}{{"{{/if}}"}}</td>
+            {{"{{#each this.TeamIds}}"}}
+              <td class="selection-cell">{{"{{#if this}}"}}{{"{{this}}"}}{{"{{/if}}"}}</td>
             {{"{{/each}}"}}
           </tr>
         {{"{{/each}}"}}

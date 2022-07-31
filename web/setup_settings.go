@@ -224,11 +224,14 @@ func (web *Web) clearDbHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	err = web.arena.Database.TruncateAllianceTeams()
+	err = web.arena.Database.TruncateAlliances()
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+	web.arena.AllianceSelectionAlliances = []model.Alliance{}
+	cachedRankedTeams = []*RankedTeam{}
+
 	http.Redirect(w, r, "/setup/settings", 303)
 }
 
