@@ -435,12 +435,14 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 
 		if match.ShouldUpdateEliminationMatches() {
-			if err = tournament.UpdateAlliance(web.arena.Database, [3]int{match.Red1, match.Red2, match.Red3},
-				match.ElimRedAlliance); err != nil {
+			if err = tournament.UpdateAlliance(
+				web.arena.Database, [3]int{match.Red1, match.Red2, match.Red3}, match.ElimRedAlliance,
+			); err != nil {
 				return err
 			}
-			if err = tournament.UpdateAlliance(web.arena.Database, [3]int{match.Blue1, match.Blue2, match.Blue3},
-				match.ElimBlueAlliance); err != nil {
+			if err = tournament.UpdateAlliance(
+				web.arena.Database, [3]int{match.Blue1, match.Blue2, match.Blue3}, match.ElimBlueAlliance,
+			); err != nil {
 				return err
 			}
 

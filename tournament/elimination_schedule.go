@@ -13,6 +13,7 @@ import (
 )
 
 const ElimMatchSpacingSec = 600
+const numWinsToAdvance = 2
 
 // Incrementally creates any elimination matches that can be created, based on the results of alliance
 // selection or prior elimination rounds. Returns true if the tournament is won.
@@ -136,112 +137,86 @@ func buildEliminationMatchSet(
 		}
 	}
 
-	// Bail if the rounds below are not yet complete and we don't know either alliance competing this round.
-	if redAlliance == nil && blueAlliance == nil {
+	// Bail if the rounds below are not yet complete and we don't know both alliances competing this round.
+	if redAlliance == nil || blueAlliance == nil {
 		return nil, nil
 	}
 
-	// Check if the match set exists already and if it has been won.
-	var redWins, blueWins, numIncomplete int
-	var ties []model.Match
+	// Create, update, and/or delete unplayed matches as necessary.
 	matches, err := database.GetMatchesByElimRoundGroup(round, group)
 	if err != nil {
 		return nil, err
 	}
+	var redAllianceWins, blueAllianceWins int
 	var unplayedMatches []model.Match
 	for _, match := range matches {
 		if !match.IsComplete() {
 			// Update the teams in the match if they are not yet set or are incorrect.
-			if redAlliance != nil && !(match.Red1 == redAlliance.Lineup[0] && match.Red2 == redAlliance.Lineup[1] &&
-				match.Red3 == redAlliance.Lineup[2]) {
+			changed := false
+			if match.Red1 != redAlliance.Lineup[0] || match.Red2 != redAlliance.Lineup[1] ||
+				match.Red3 != redAlliance.Lineup[2] {
 				positionRedTeams(&match, redAlliance)
 				match.ElimRedAlliance = redAlliance.Id
+				changed = true
 				if err = database.UpdateMatch(&match); err != nil {
 					return nil, err
 				}
 			}
-			if blueAlliance != nil && !(match.Blue1 == blueAlliance.Lineup[0] &&
-				match.Blue2 == blueAlliance.Lineup[1] && match.Blue3 == blueAlliance.Lineup[2]) {
+			if match.Blue1 != blueAlliance.Lineup[0] || match.Blue2 != blueAlliance.Lineup[1] ||
+				match.Blue3 != blueAlliance.Lineup[2] {
 				positionBlueTeams(&match, blueAlliance)
 				match.ElimBlueAlliance = blueAlliance.Id
+				changed = true
+			}
+			if changed {
 				if err = database.UpdateMatch(&match); err != nil {
 					return nil, err
 				}
 			}
 
 			unplayedMatches = append(unplayedMatches, match)
-			numIncomplete += 1
 			continue
 		}
 
 		// Check who won.
-		switch match.Status {
-		case model.RedWonMatch:
-			redWins += 1
-		case model.BlueWonMatch:
-			blueWins += 1
-		case model.TieMatch:
-			ties = append(ties, match)
-		default:
-			return nil, fmt.Errorf("Completed match %d has invalid winner '%s'", match.Id, match.Status)
+		if match.Status == model.RedWonMatch {
+			redAllianceWins++
+		} else if match.Status == model.BlueWonMatch {
+			blueAllianceWins++
 		}
 	}
 
-	// Delete any superfluous matches if the round is won.
-	if redWins == 2 || blueWins == 2 {
-		for _, match := range unplayedMatches {
-			err = database.DeleteMatch(match.Id)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		// Bail out and announce the winner of this round.
-		if redWins == 2 {
-			return redAlliance, nil
-		} else {
-			return blueAlliance, nil
-		}
+	maxWins := redAllianceWins
+	if blueAllianceWins > maxWins {
+		maxWins = blueAllianceWins
 	}
-
-	// Create initial set of matches or recreate any superfluous matches that were deleted but now are needed
-	// due to a revision in who won.
-	if len(matches) == 0 || len(ties) == 0 && numIncomplete == 0 {
-		if redAlliance != nil && len(redAlliance.TeamIds) < 3 || blueAlliance != nil && len(blueAlliance.TeamIds) < 3 {
-			// Raise an error if the alliance selection process gave us less than 3 teams per alliance.
-			return nil, fmt.Errorf("Alliances must consist of at least 3 teams")
-		}
-		if len(matches) < 1 {
-			err = database.CreateMatch(createMatch(roundName, round, group, 1, redAlliance, blueAlliance))
-			if err != nil {
+	numUnplayedMatchesNeeded := numWinsToAdvance - maxWins
+	if len(unplayedMatches) > numUnplayedMatchesNeeded {
+		// Delete any superfluous matches off the end of the list.
+		for i := 0; i < len(unplayedMatches)-numUnplayedMatchesNeeded; i++ {
+			if err = database.DeleteMatch(unplayedMatches[len(unplayedMatches)-i-1].Id); err != nil {
 				return nil, err
 			}
 		}
-		if len(matches) < 2 {
-			err = database.CreateMatch(createMatch(roundName, round, group, 2, redAlliance, blueAlliance))
-			if err != nil {
-				return nil, err
-			}
-		}
-		if len(matches) < 3 {
-			err = database.CreateMatch(createMatch(roundName, round, group, 3, redAlliance, blueAlliance))
+	} else if len(unplayedMatches) < numUnplayedMatchesNeeded {
+		// Create initial set of matches or any additional required matches due to tie matches or ties in the round.
+		for i := 0; i < numUnplayedMatchesNeeded-len(unplayedMatches); i++ {
+			err = database.CreateMatch(
+				createMatch(roundName, round, group, len(matches)+i+1, redAlliance, blueAlliance),
+			)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	// Duplicate any ties if we have run out of matches.
-	if numIncomplete == 0 {
-		for index := range ties {
-			err = database.CreateMatch(createMatch(roundName, round, group, len(matches)+index+1, redAlliance,
-				blueAlliance))
-			if err != nil {
-				return nil, err
-			}
-		}
+	// Determine the winner of the round or if it is still in progress.
+	if redAllianceWins >= numWinsToAdvance {
+		return redAlliance, nil
 	}
-
+	if blueAllianceWins >= numWinsToAdvance {
+		return blueAlliance, nil
+	}
 	return nil, nil
 }
 

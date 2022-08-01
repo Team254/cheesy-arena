@@ -92,7 +92,7 @@ func TestAllianceSelection(t *testing.T) {
 	}
 	matches, err := web.arena.Database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
-	assert.Equal(t, 6, len(matches))
+	assert.Equal(t, 2, len(matches))
 	team, _ := web.arena.Database.GetTeamById(254)
 	assert.False(t, team.YellowCard)
 }
