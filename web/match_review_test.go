@@ -45,6 +45,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	matchResult.MatchType = match.Type
 	assert.Nil(t, web.arena.Database.CreateMatchResult(matchResult))
 	tournament.CreateTestAlliances(web.arena.Database, 2)
+	web.arena.CreatePlayoffBracket()
 
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
@@ -86,6 +87,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, ElimRedAlliance: 1, ElimBlueAlliance: 2}
 	web.arena.Database.CreateMatch(&match)
 	tournament.CreateTestAlliances(web.arena.Database, 2)
+	web.arena.CreatePlayoffBracket()
 
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)

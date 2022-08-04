@@ -7,6 +7,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
@@ -435,36 +436,30 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 
 		if match.ShouldUpdateEliminationMatches() {
-			if err = tournament.UpdateAlliance(
-				web.arena.Database, [3]int{match.Red1, match.Red2, match.Red3}, match.ElimRedAlliance,
+			if err = web.arena.Database.UpdateAllianceFromMatch(
+				match.ElimRedAlliance, [3]int{match.Red1, match.Red2, match.Red3},
 			); err != nil {
 				return err
 			}
-			if err = tournament.UpdateAlliance(
-				web.arena.Database, [3]int{match.Blue1, match.Blue2, match.Blue3}, match.ElimBlueAlliance,
+			if err = web.arena.Database.UpdateAllianceFromMatch(
+				match.ElimBlueAlliance, [3]int{match.Blue1, match.Blue2, match.Blue3},
 			); err != nil {
 				return err
 			}
 
 			// Generate any subsequent elimination matches.
-			isTournamentWon, err := tournament.UpdateEliminationSchedule(web.arena.Database,
-				time.Now().Add(time.Second*tournament.ElimMatchSpacingSec))
-			if err != nil {
+			nextMatchTime := time.Now().Add(time.Second * bracket.ElimMatchSpacingSec)
+			if err = web.arena.UpdatePlayoffBracket(&nextMatchTime); err != nil {
 				return err
 			}
 
 			// Generate awards if the tournament is over.
-			if isTournamentWon {
-				var winnerAllianceId, finalistAllianceId int
-				if match.Status == model.RedWonMatch {
-					winnerAllianceId = match.ElimRedAlliance
-					finalistAllianceId = match.ElimBlueAlliance
-				} else if match.Status == model.BlueWonMatch {
-					winnerAllianceId = match.ElimBlueAlliance
-					finalistAllianceId = match.ElimRedAlliance
-				}
-				if err = tournament.CreateOrUpdateWinnerAndFinalistAwards(web.arena.Database, winnerAllianceId,
-					finalistAllianceId); err != nil {
+			if web.arena.PlayoffBracket.IsComplete() {
+				winnerAllianceId := web.arena.PlayoffBracket.Winner()
+				finalistAllianceId := web.arena.PlayoffBracket.Finalist()
+				if err = tournament.CreateOrUpdateWinnerAndFinalistAwards(
+					web.arena.Database, winnerAllianceId, finalistAllianceId,
+				); err != nil {
 					return err
 				}
 			}

@@ -186,6 +186,7 @@ func TestCommitEliminationTie(t *testing.T) {
 	assert.Equal(t, model.TieMatch, match.Status)
 
 	tournament.CreateTestAlliances(web.arena.Database, 2)
+	web.arena.CreatePlayoffBracket()
 	match.Type = "elimination"
 	match.ElimRedAlliance = 1
 	match.ElimBlueAlliance = 2
@@ -230,6 +231,7 @@ func TestCommitCards(t *testing.T) {
 
 	// Check that a red card in eliminations zeroes out the score.
 	tournament.CreateTestAlliances(web.arena.Database, 2)
+	web.arena.CreatePlayoffBracket()
 	match.Type = "elimination"
 	match.ElimRedAlliance = 1
 	match.ElimBlueAlliance = 2

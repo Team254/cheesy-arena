@@ -39,6 +39,19 @@ func TestAllianceCrud(t *testing.T) {
 	assert.Nil(t, alliance2)
 }
 
+func TestUpdateAllianceFromMatch(t *testing.T) {
+	db := setupTestDb(t)
+	defer db.Close()
+
+	alliance := Alliance{Id: 3, TeamIds: []int{254, 1114, 296, 1503}, Lineup: [3]int{1114, 254, 296}}
+	assert.Nil(t, db.CreateAlliance(&alliance))
+	assert.Nil(t, db.UpdateAllianceFromMatch(3, [3]int{1503, 188, 296}))
+	alliance2, err := db.GetAllianceById(3)
+	assert.Nil(t, err)
+	assert.Equal(t, []int{254, 1114, 296, 1503, 188}, alliance2.TeamIds)
+	assert.Equal(t, [3]int{1503, 188, 296}, alliance2.Lineup)
+}
+
 func TestTruncateAllianceTeams(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()

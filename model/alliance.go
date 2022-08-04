@@ -44,6 +44,39 @@ func (database *Database) GetAllAlliances() ([]Alliance, error) {
 	return alliances, nil
 }
 
+// Updates the alliance, if necessary, to include whoever played in the match, in case there was a substitute.
+func (database *Database) UpdateAllianceFromMatch(allianceId int, matchTeamIds [3]int) error {
+	alliance, err := database.GetAllianceById(allianceId)
+	if err != nil {
+		return err
+	}
+
+	changed := false
+	if matchTeamIds != alliance.Lineup {
+		alliance.Lineup = matchTeamIds
+		changed = true
+	}
+
+	for _, teamId := range matchTeamIds {
+		found := false
+		for _, allianceTeamId := range alliance.TeamIds {
+			if teamId == allianceTeamId {
+				found = true
+				break
+			}
+		}
+		if !found {
+			alliance.TeamIds = append(alliance.TeamIds, teamId)
+			changed = true
+		}
+	}
+
+	if changed {
+		return database.UpdateAlliance(alliance)
+	}
+	return nil
+}
+
 // Returns two arrays containing the IDs of any teams for the red and blue alliances, respectively, who are part of the
 // elimination alliance but are not playing in the given match.
 // If the given match isn't an elimination match, empty arrays are returned.

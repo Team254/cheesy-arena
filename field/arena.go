@@ -7,6 +7,7 @@ package field
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
@@ -72,6 +73,7 @@ type Arena struct {
 	SavedRankings              game.Rankings
 	AllianceStationDisplayMode string
 	AllianceSelectionAlliances []model.Alliance
+	PlayoffBracket             *bracket.Bracket
 	LowerThird                 *model.LowerThird
 	ShowLowerThird             bool
 	MuteMatchSounds            bool
@@ -114,6 +116,14 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.Displays = make(map[string]*Display)
 
 	arena.ScoringPanelRegistry.initialize()
+
+	// Reconstruct the playoff bracket in memory.
+	if err = arena.CreatePlayoffBracket(); err != nil {
+		return nil, err
+	}
+	if err = arena.UpdatePlayoffBracket(nil); err != nil {
+		return nil, err
+	}
 
 	// Load empty match as current.
 	arena.MatchState = PreMatch
@@ -170,6 +180,30 @@ func (arena *Arena) LoadSettings() error {
 	game.HangarBonusRankingPointThreshold = settings.HangarBonusRankingPointThreshold
 
 	return nil
+}
+
+// Constructs an empty playoff bracket in memory, based only on the number of alliances.
+func (arena *Arena) CreatePlayoffBracket() error {
+	alliances, err := arena.Database.GetAllAlliances()
+	if err != nil {
+		return err
+	}
+	if len(alliances) > 0 {
+		arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(len(alliances))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Traverses the in-memory playoff bracket to populate alliances, create matches, and assess winners. Does nothing if
+// the bracket has not been created.are
+func (arena *Arena) UpdatePlayoffBracket(startTime *time.Time) error {
+	if arena.PlayoffBracket == nil {
+		return nil
+	}
+	return arena.PlayoffBracket.Update(arena.Database, startTime)
 }
 
 // Sets up the arena for the given match.
