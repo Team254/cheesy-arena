@@ -18,7 +18,7 @@ type Bracket struct {
 const ElimMatchSpacingSec = 600
 
 // Creates an unpopulated bracket with a format that is defined by the given matchup templates and number of alliances.
-func newBracket(matchupTemplates []matchupTemplate, numAlliances int) (*Bracket, error) {
+func newBracket(matchupTemplates []matchupTemplate, finalsMatchupKey matchupKey, numAlliances int) (*Bracket, error) {
 	// Create a map of matchup templates by key for easy lookup while creating the bracket.
 	matchupTemplateMap := make(map[matchupKey]matchupTemplate, len(matchupTemplates))
 	for _, matchupTemplate := range matchupTemplates {
@@ -27,11 +27,7 @@ func newBracket(matchupTemplates []matchupTemplate, numAlliances int) (*Bracket,
 
 	// Recursively build the bracket, starting with the finals matchup.
 	finalsMatchup, _, err := createMatchupGraph(
-		newMatchupKey(1, 1),
-		true,
-		matchupTemplateMap,
-		numAlliances,
-		make(map[matchupKey]*Matchup),
+		finalsMatchupKey, true, matchupTemplateMap, numAlliances, make(map[matchupKey]*Matchup),
 	)
 	if err != nil {
 		return nil, err

@@ -122,7 +122,7 @@ func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
 			}
 			return matchingMatches[i].ElimInstance < matchingMatches[j].ElimInstance
 		}
-		return matchingMatches[i].ElimRound > matchingMatches[j].ElimRound
+		return matchingMatches[i].ElimRound < matchingMatches[j].ElimRound
 	})
 	return matchingMatches, nil
 }

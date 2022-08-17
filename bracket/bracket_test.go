@@ -12,9 +12,9 @@ import (
 )
 
 func TestNewBracketErrors(t *testing.T) {
-	_, err := newBracket([]matchupTemplate{}, 8)
+	_, err := newBracket([]matchupTemplate{}, newMatchupKey(33, 12), 8)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "could not find template for matchup {round:1 group:1} in the list of templates", err.Error())
+		assert.Equal(t, "could not find template for matchup {round:33 group:12} in the list of templates", err.Error())
 	}
 
 	matchTemplate := matchupTemplate{
@@ -22,7 +22,7 @@ func TestNewBracketErrors(t *testing.T) {
 		redAllianceSource:  allianceSource{allianceId: 1},
 		blueAllianceSource: newWinnerAllianceSource(2, 2),
 	}
-	_, err = newBracket([]matchupTemplate{matchTemplate}, 8)
+	_, err = newBracket([]matchupTemplate{matchTemplate}, newMatchupKey(1, 1), 8)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "both alliances must be populated either from selection or a lower round", err.Error())
 	}
@@ -33,17 +33,24 @@ func TestNewBracketInverseSeeding(t *testing.T) {
 	matchupTemplates := []matchupTemplate{
 		{
 			matchupKey:         newMatchupKey(1, 1),
-			displayNameFormat:  "F-${instance}",
+			displayNameFormat:  "QF${group}-${instance}",
 			numWinsToAdvance:   2,
-			redAllianceSource:  newWinnerAllianceSource(2, 1),
-			blueAllianceSource: newWinnerAllianceSource(2, 2),
+			redAllianceSource:  allianceSource{allianceId: 8},
+			blueAllianceSource: allianceSource{allianceId: 1},
+		},
+		{
+			matchupKey:         newMatchupKey(1, 2),
+			displayNameFormat:  "QF${group}-${instance}",
+			numWinsToAdvance:   2,
+			redAllianceSource:  allianceSource{allianceId: 5},
+			blueAllianceSource: allianceSource{allianceId: 4},
 		},
 		{
 			matchupKey:         newMatchupKey(2, 1),
 			displayNameFormat:  "SF${group}-${instance}",
 			numWinsToAdvance:   2,
-			redAllianceSource:  newWinnerAllianceSource(4, 2),
-			blueAllianceSource: newWinnerAllianceSource(4, 1),
+			redAllianceSource:  newWinnerAllianceSource(1, 2),
+			blueAllianceSource: newWinnerAllianceSource(1, 1),
 		},
 		{
 			matchupKey:         newMatchupKey(2, 2),
@@ -53,23 +60,16 @@ func TestNewBracketInverseSeeding(t *testing.T) {
 			blueAllianceSource: allianceSource{allianceId: 2},
 		},
 		{
-			matchupKey:         newMatchupKey(4, 1),
-			displayNameFormat:  "SF${group}-${instance}",
+			matchupKey:         newMatchupKey(3, 1),
+			displayNameFormat:  "F-${instance}",
 			numWinsToAdvance:   2,
-			redAllianceSource:  allianceSource{allianceId: 8},
-			blueAllianceSource: allianceSource{allianceId: 1},
-		},
-		{
-			matchupKey:         newMatchupKey(4, 2),
-			displayNameFormat:  "SF${group}-${instance}",
-			numWinsToAdvance:   2,
-			redAllianceSource:  allianceSource{allianceId: 5},
-			blueAllianceSource: allianceSource{allianceId: 4},
+			redAllianceSource:  newWinnerAllianceSource(2, 1),
+			blueAllianceSource: newWinnerAllianceSource(2, 2),
 		},
 	}
 
 	tournament.CreateTestAlliances(database, 2)
-	bracket, err := newBracket(matchupTemplates, 2)
+	bracket, err := newBracket(matchupTemplates, newMatchupKey(3, 1), 2)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err := database.GetMatchesByType("elimination")
