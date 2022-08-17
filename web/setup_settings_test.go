@@ -39,6 +39,15 @@ func TestSetupSettings(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "tbasec")
 }
 
+func TestSetupSettingsDoubleElimination(t *testing.T) {
+	web := setupTestWeb(t)
+
+	recorder := web.postHttpResponse("/setup/settings", "elimType=double&numElimAlliances=3")
+	assert.Equal(t, 303, recorder.Code)
+	assert.Equal(t, "double", web.arena.EventSettings.ElimType)
+	assert.Equal(t, 8, web.arena.EventSettings.NumElimAlliances)
+}
+
 func TestSetupSettingsInvalidValues(t *testing.T) {
 	web := setupTestWeb(t)
 

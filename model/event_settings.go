@@ -10,6 +10,7 @@ import "github.com/Team254/cheesy-arena/game"
 type EventSettings struct {
 	Id                                            int `db:"id"`
 	Name                                          string
+	ElimType                                      string
 	NumElimAlliances                              int
 	SelectionRound2Order                          string
 	SelectionRound3Order                          string
@@ -56,6 +57,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 	// Database record doesn't exist yet; create it now.
 	eventSettings := EventSettings{
 		Name:                        "Untitled Event",
+		ElimType:                    "single",
 		NumElimAlliances:            8,
 		SelectionRound2Order:        "L",
 		SelectionRound3Order:        "",

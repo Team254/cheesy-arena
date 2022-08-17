@@ -189,7 +189,14 @@ func (arena *Arena) CreatePlayoffBracket() error {
 		return err
 	}
 	if len(alliances) > 0 {
-		arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(len(alliances))
+		switch arena.EventSettings.ElimType {
+		case "single":
+			arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(len(alliances))
+		case "double":
+			arena.PlayoffBracket, err = bracket.NewDoubleEliminationBracket(len(alliances))
+		default:
+			err = fmt.Errorf("Invalid playoff type: %v", arena.EventSettings.ElimType)
+		}
 		if err != nil {
 			return err
 		}

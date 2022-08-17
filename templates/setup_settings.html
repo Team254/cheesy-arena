@@ -25,9 +25,29 @@
             </div>
           </div>
           <div class="form-group">
+            <label class="col-lg-5 control-label">Playoff Type</label>
+            <div class="col-lg-7">
+              <div class="radio">
+                <label>
+                  <input type="radio" name="elimType" value="single" onclick="updateNumElimAlliances(false);"
+                      {{if eq .ElimType "single"}}checked{{end}}>
+                  Single Elimination (2-16 alliances)
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" name="elimType" value="double" onclick="updateNumElimAlliances(true);"
+                      {{if eq .ElimType "double"}}checked{{end}}>
+                  Double Elimination (8 alliances)
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
             <label class="col-lg-5 control-label">Number of Alliances</label>
             <div class="col-lg-7">
-              <input type="text" class="form-control" name="numElimAlliances" value="{{.NumElimAlliances}}">
+              <input type="text" class="form-control" name="numElimAlliances" value="{{.NumElimAlliances}}"
+                  {{if eq .ElimType "double"}}disabled{{end}}>
             </div>
           </div>
           <div class="form-group">
@@ -367,4 +387,13 @@
 </div>
 {{end}}
 {{define "script"}}
+<script>
+  updateNumElimAlliances = function(isDoubleElimination) {
+    const numElimAlliances = $("input[name=numElimAlliances]");
+    numElimAlliances.prop("disabled", isDoubleElimination);
+    if (isDoubleElimination) {
+      numElimAlliances.val(8);
+    }
+  };
+</script>
 {{end}}

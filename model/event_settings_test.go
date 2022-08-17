@@ -19,6 +19,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 		EventSettings{
 			Id:                          1,
 			Name:                        "Untitled Event",
+			ElimType:                    "single",
 			NumElimAlliances:            8,
 			SelectionRound2Order:        "L",
 			SelectionRound3Order:        "",
