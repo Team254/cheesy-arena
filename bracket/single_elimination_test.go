@@ -563,4 +563,10 @@ func TestSingleEliminationChangePreviousRoundResult(t *testing.T) {
 		assertMatch(t, matches[6], "F-1", 4, 3)
 		assertMatch(t, matches[7], "F-2", 4, 3)
 	}
+
+	scoreMatch(database, "SF2-3", model.MatchNotPlayed)
+	assert.Nil(t, bracket.Update(database, &dummyStartTime))
+	matches, err = database.GetMatchesByType("elimination")
+	assert.Nil(t, err)
+	assert.Equal(t, 6, len(matches))
 }

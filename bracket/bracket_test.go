@@ -20,7 +20,7 @@ func TestNewBracketErrors(t *testing.T) {
 	matchTemplate := matchupTemplate{
 		matchupKey:         newMatchupKey(1, 1),
 		redAllianceSource:  allianceSource{allianceId: 1},
-		blueAllianceSource: newMatchupAllianceSource(2, 2),
+		blueAllianceSource: newWinnerAllianceSource(2, 2),
 	}
 	_, err = newBracket([]matchupTemplate{matchTemplate}, 8)
 	if assert.NotNil(t, err) {
@@ -35,15 +35,15 @@ func TestNewBracketInverseSeeding(t *testing.T) {
 			matchupKey:         newMatchupKey(1, 1),
 			displayNameFormat:  "F-${instance}",
 			numWinsToAdvance:   2,
-			redAllianceSource:  newMatchupAllianceSource(2, 1),
-			blueAllianceSource: newMatchupAllianceSource(2, 2),
+			redAllianceSource:  newWinnerAllianceSource(2, 1),
+			blueAllianceSource: newWinnerAllianceSource(2, 2),
 		},
 		{
 			matchupKey:         newMatchupKey(2, 1),
 			displayNameFormat:  "SF${group}-${instance}",
 			numWinsToAdvance:   2,
-			redAllianceSource:  newMatchupAllianceSource(4, 2),
-			blueAllianceSource: newMatchupAllianceSource(4, 1),
+			redAllianceSource:  newWinnerAllianceSource(4, 2),
+			blueAllianceSource: newWinnerAllianceSource(4, 1),
 		},
 		{
 			matchupKey:         newMatchupKey(2, 2),

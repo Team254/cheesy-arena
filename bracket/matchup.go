@@ -7,6 +7,7 @@
 package bracket
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"strconv"
 	"strings"
@@ -17,6 +18,7 @@ import (
 type allianceSource struct {
 	allianceId int
 	matchupKey matchupKey
+	useWinner  bool
 }
 
 // Key for uniquely identifying a matchup. Round IDs are arbitrary and in descending order with "1" always representing
@@ -49,9 +51,14 @@ type Matchup struct {
 	BlueAllianceWins          int
 }
 
-// Convenience method to quickly create an alliance source that points to a different matchup.
-func newMatchupAllianceSource(round, group int) allianceSource {
-	return allianceSource{matchupKey: newMatchupKey(round, group)}
+// Convenience method to quickly create an alliance source that points to the winner of a different matchup.
+func newWinnerAllianceSource(round, group int) allianceSource {
+	return allianceSource{matchupKey: newMatchupKey(round, group), useWinner: true}
+}
+
+// Convenience method to quickly create an alliance source that points to the loser of a different matchup.
+func newLoserAllianceSource(round, group int) allianceSource {
+	return allianceSource{matchupKey: newMatchupKey(round, group), useWinner: false}
 }
 
 // Convenience method to quickly create a matchup key.
@@ -63,7 +70,13 @@ func newMatchupKey(round, group int) matchupKey {
 func (matchupTemplate *matchupTemplate) displayName(instance int) string {
 	displayName := matchupTemplate.displayNameFormat
 	displayName = strings.Replace(displayName, "${group}", strconv.Itoa(matchupTemplate.group), -1)
-	displayName = strings.Replace(displayName, "${instance}", strconv.Itoa(instance), -1)
+	if strings.Contains(displayName, "${instance}") {
+		displayName = strings.Replace(displayName, "${instance}", strconv.Itoa(instance), -1)
+	} else if instance > 1 {
+		// Special case to handle matchups that only have more than one instance under exceptional circumstances (like
+		// ties in double-elimination unresolved by tiebreakers).
+		displayName += fmt.Sprintf("-%d", instance)
+	}
 	return displayName
 }
 
@@ -94,15 +107,16 @@ func (matchup *Matchup) isComplete() bool {
 	return matchup.winner() > 0
 }
 
-// Recursively traverses the matchup tree to update the state of this matchup and all of its children based on match
+// Recursively traverses the matchup graph to update the state of this matchup and all of its children based on match
 // results, counting wins and creating or deleting matches as required.
 func (matchup *Matchup) update(database *model.Database) error {
-	if matchup.RedAllianceSourceMatchup != nil {
+	// Update child matchups first. Only recurse down winner links to avoid visiting a node twice.
+	if matchup.RedAllianceSourceMatchup != nil && matchup.redAllianceSource.useWinner {
 		if err := matchup.RedAllianceSourceMatchup.update(database); err != nil {
 			return err
 		}
 	}
-	if matchup.BlueAllianceSourceMatchup != nil {
+	if matchup.BlueAllianceSourceMatchup != nil && matchup.blueAllianceSource.useWinner {
 		if err := matchup.BlueAllianceSourceMatchup.update(database); err != nil {
 			return err
 		}
@@ -110,10 +124,23 @@ func (matchup *Matchup) update(database *model.Database) error {
 
 	// Populate the alliance IDs from the lower matchups (or with a zero value if they are not yet complete).
 	if matchup.RedAllianceSourceMatchup != nil {
-		matchup.RedAllianceId = matchup.RedAllianceSourceMatchup.winner()
+		if matchup.redAllianceSource.useWinner {
+			matchup.RedAllianceId = matchup.RedAllianceSourceMatchup.winner()
+		} else {
+			matchup.RedAllianceId = matchup.RedAllianceSourceMatchup.loser()
+		}
 	}
 	if matchup.BlueAllianceSourceMatchup != nil {
-		matchup.BlueAllianceId = matchup.BlueAllianceSourceMatchup.winner()
+		if matchup.blueAllianceSource.useWinner {
+			matchup.BlueAllianceId = matchup.BlueAllianceSourceMatchup.winner()
+		} else {
+			matchup.BlueAllianceId = matchup.BlueAllianceSourceMatchup.loser()
+		}
+	}
+
+	matches, err := database.GetMatchesByElimRoundGroup(matchup.round, matchup.group)
+	if err != nil {
+		return err
 	}
 
 	// Bail if we do not yet know both alliances.
@@ -121,6 +148,14 @@ func (matchup *Matchup) update(database *model.Database) error {
 		// Ensure the current state is reset; it may have previously been populated if a match result was edited.
 		matchup.RedAllianceWins = 0
 		matchup.BlueAllianceWins = 0
+
+		// Delete any previously created matches.
+		for _, match := range matches {
+			if err = database.DeleteMatch(match.Id); err != nil {
+				return err
+			}
+		}
+
 		return nil
 	}
 
@@ -130,10 +165,6 @@ func (matchup *Matchup) update(database *model.Database) error {
 		return err
 	}
 	blueAlliance, err := database.GetAllianceById(matchup.BlueAllianceId)
-	if err != nil {
-		return err
-	}
-	matches, err := database.GetMatchesByElimRoundGroup(matchup.round, matchup.group)
 	if err != nil {
 		return err
 	}

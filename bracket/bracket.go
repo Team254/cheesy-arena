@@ -26,7 +26,13 @@ func newBracket(matchupTemplates []matchupTemplate, numAlliances int) (*Bracket,
 	}
 
 	// Recursively build the bracket, starting with the finals matchup.
-	finalsMatchup, _, err := createMatchupTree(newMatchupKey(1, 1), matchupTemplateMap, numAlliances)
+	finalsMatchup, _, err := createMatchupGraph(
+		newMatchupKey(1, 1),
+		true,
+		matchupTemplateMap,
+		numAlliances,
+		make(map[matchupKey]*Matchup),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +41,12 @@ func newBracket(matchupTemplates []matchupTemplate, numAlliances int) (*Bracket,
 }
 
 // Recursive helper method to create the current matchup node and all of its children.
-func createMatchupTree(
-	matchupKey matchupKey, matchupTemplateMap map[matchupKey]matchupTemplate, numAlliances int,
+func createMatchupGraph(
+	matchupKey matchupKey,
+	useWinner bool,
+	matchupTemplateMap map[matchupKey]matchupTemplate,
+	numAlliances int,
+	matchupMap map[matchupKey]*Matchup,
 ) (*Matchup, int, error) {
 	matchupTemplate, ok := matchupTemplateMap[matchupKey]
 	if !ok {
@@ -46,7 +56,7 @@ func createMatchupTree(
 	redAllianceIdFromSelection := matchupTemplate.redAllianceSource.allianceId
 	blueAllianceIdFromSelection := matchupTemplate.blueAllianceSource.allianceId
 	if redAllianceIdFromSelection > 0 || blueAllianceIdFromSelection > 0 {
-		// This is a leaf node in the matchup tree; the alliances will come from the alliance selection.
+		// This is a leaf node in the matchup graph; the alliances will come from the alliance selection.
 		if redAllianceIdFromSelection == 0 || blueAllianceIdFromSelection == 0 {
 			return nil, 0, fmt.Errorf("both alliances must be populated either from selection or a lower round")
 		}
@@ -62,36 +72,54 @@ func createMatchupTree(
 
 		if redAllianceIdFromSelection > 0 && blueAllianceIdFromSelection > 0 {
 			// This is a real matchup that will be played out.
-			return &Matchup{
-				matchupTemplate: matchupTemplate,
-				RedAllianceId:   redAllianceIdFromSelection,
-				BlueAllianceId:  blueAllianceIdFromSelection,
-			}, 0, nil
+			matchup, ok := matchupMap[matchupKey]
+			if !ok {
+				matchup = &Matchup{
+					matchupTemplate: matchupTemplate,
+					RedAllianceId:   redAllianceIdFromSelection,
+					BlueAllianceId:  blueAllianceIdFromSelection,
+				}
+				matchupMap[matchupKey] = matchup
+			}
+			return matchup, 0, nil
 		}
 		if redAllianceIdFromSelection == 0 && blueAllianceIdFromSelection == 0 {
 			// This matchup should be pruned from the bracket since neither alliance has a valid source; this tournament
 			// is too small for this matchup to be played.
 			return nil, 0, nil
 		}
-		if redAllianceIdFromSelection > 0 {
-			// The red alliance has a bye.
-			return nil, redAllianceIdFromSelection, nil
+		if useWinner {
+			if redAllianceIdFromSelection > 0 {
+				// The red alliance has a bye.
+				return nil, redAllianceIdFromSelection, nil
+			} else {
+				// The blue alliance has a bye.
+				return nil, blueAllianceIdFromSelection, nil
+			}
 		} else {
-			// The blue alliance has a bye.
-			return nil, blueAllianceIdFromSelection, nil
+			// There is no losing alliance to return; prune this matchup.
+			return nil, 0, nil
 		}
 	}
 
 	// Recurse to determine the lower-round red and blue matchups that will feed into this one, or the alliances that
 	// have a bye to this round.
-	redAllianceSourceMatchup, redByeAllianceId, err := createMatchupTree(
-		matchupTemplate.redAllianceSource.matchupKey, matchupTemplateMap, numAlliances,
+	redAllianceSourceMatchup, redByeAllianceId, err := createMatchupGraph(
+		matchupTemplate.redAllianceSource.matchupKey,
+		matchupTemplate.redAllianceSource.useWinner,
+		matchupTemplateMap,
+		numAlliances,
+		matchupMap,
 	)
 	if err != nil {
 		return nil, 0, err
 	}
-	blueAllianceSourceMatchup, blueByeAllianceId, err := createMatchupTree(
-		matchupTemplate.blueAllianceSource.matchupKey, matchupTemplateMap, numAlliances,
+	blueAllianceSourceMatchup, blueByeAllianceId, err := createMatchupGraph(
+		matchupTemplate.blueAllianceSource.matchupKey,
+		matchupTemplate.blueAllianceSource.useWinner,
+		matchupTemplateMap,
+		numAlliances,
+		matchupMap,
 	)
 	if err != nil {
 		return nil, 0, err
@@ -104,22 +132,37 @@ func createMatchupTree(
 		return nil, 0, nil
 	}
 	if redByeAllianceId > 0 && blueAllianceSourceMatchup == nil && blueByeAllianceId == 0 {
-		// The red alliance has a bye.
-		return nil, redByeAllianceId, nil
+		if useWinner {
+			// The red alliance has a bye.
+			return nil, redByeAllianceId, nil
+		} else {
+			// There is no losing alliance to return; prune this matchup.
+			return nil, 0, nil
+		}
 	}
 	if blueByeAllianceId > 0 && redAllianceSourceMatchup == nil && redByeAllianceId == 0 {
-		// The blue alliance has a bye.
-		return nil, blueByeAllianceId, nil
+		if useWinner {
+			// The blue alliance has a bye.
+			return nil, blueByeAllianceId, nil
+		} else {
+			// There is no losing alliance to return; prune this matchup.
+			return nil, 0, nil
+		}
 	}
 
 	// This is a real matchup that will be played out.
-	return &Matchup{
-		matchupTemplate:           matchupTemplate,
-		RedAllianceId:             redByeAllianceId,
-		BlueAllianceId:            blueByeAllianceId,
-		RedAllianceSourceMatchup:  redAllianceSourceMatchup,
-		BlueAllianceSourceMatchup: blueAllianceSourceMatchup,
-	}, 0, nil
+	matchup, ok := matchupMap[matchupKey]
+	if !ok {
+		matchup = &Matchup{
+			matchupTemplate:           matchupTemplate,
+			RedAllianceId:             redByeAllianceId,
+			BlueAllianceId:            blueByeAllianceId,
+			RedAllianceSourceMatchup:  redAllianceSourceMatchup,
+			BlueAllianceSourceMatchup: blueAllianceSourceMatchup,
+		}
+		matchupMap[matchupKey] = matchup
+	}
+	return matchup, 0, nil
 }
 
 // Returns the winning alliance ID of the entire bracket, or 0 if it is not yet known.
@@ -174,8 +217,12 @@ func (bracket *Bracket) print() {
 		fmt.Printf("%+v\n\n", matchup)
 		matchupQueue = matchupQueue[1:]
 		if matchup != nil {
-			matchupQueue = append(matchupQueue, matchup.RedAllianceSourceMatchup)
-			matchupQueue = append(matchupQueue, matchup.BlueAllianceSourceMatchup)
+			if matchup.RedAllianceSourceMatchup != nil && matchup.redAllianceSource.useWinner {
+				matchupQueue = append(matchupQueue, matchup.RedAllianceSourceMatchup)
+			}
+			if matchup.BlueAllianceSourceMatchup != nil && matchup.blueAllianceSource.useWinner {
+				matchupQueue = append(matchupQueue, matchup.BlueAllianceSourceMatchup)
+			}
 		}
 	}
 }
