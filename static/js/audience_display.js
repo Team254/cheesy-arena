@@ -74,10 +74,20 @@ var handleMatchLoad = function(data) {
     $("#" + redSide + "ElimAlliance").text(currentMatch.ElimRedAlliance);
     $("#" + blueSide + "ElimAlliance").text(currentMatch.ElimBlueAlliance);
     $(".elim-alliance").show();
+
+    // Show the series status if this playoff round isn't just a single match.
+    if (data.Matchup.NumWinsToAdvance > 1) {
+      $("#" + redSide + "ElimAllianceWins").text(data.Matchup.RedAllianceWins);
+      $("#" + blueSide + "ElimAllianceWins").text(data.Matchup.BlueAllianceWins);
+      $("#elimSeriesStatus").css("display", "flex");
+    } else {
+      $("#elimSeriesStatus").hide();
+    }
   } else {
     $("#" + redSide + "ElimAlliance").text("");
     $("#" + blueSide + "ElimAlliance").text("");
     $(".elim-alliance").hide();
+    $("#elimSeriesStatus").hide();
   }
 
   if (data.Match.Type === "test") {

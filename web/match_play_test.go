@@ -45,6 +45,8 @@ func TestMatchPlay(t *testing.T) {
 
 func TestMatchPlayLoad(t *testing.T) {
 	web := setupTestWeb(t)
+	tournament.CreateTestAlliances(web.arena.Database, 8)
+	web.arena.CreatePlayoffBracket()
 
 	web.arena.Database.CreateTeam(&model.Team{Id: 101})
 	web.arena.Database.CreateTeam(&model.Team{Id: 102})

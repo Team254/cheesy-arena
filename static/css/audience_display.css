@@ -165,6 +165,21 @@ html {
   line-height: 30px;
   color: #fff;
 }
+#elimSeriesStatus {
+  width: 40px;
+  height: 18px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background-color: #fc0;
+  color: #222;
+  border: 1px solid #222;
+  border-top: none;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  font-size: 15px;
+  font-weight: 200;
+}
 .valign-cell {
   display: table-cell;
   vertical-align: middle;
