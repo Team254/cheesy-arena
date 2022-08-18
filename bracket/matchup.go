@@ -34,7 +34,7 @@ type matchupKey struct {
 type matchupTemplate struct {
 	matchupKey
 	displayNameFormat  string
-	numWinsToAdvance   int
+	NumWinsToAdvance   int
 	redAllianceSource  allianceSource
 	blueAllianceSource allianceSource
 }
@@ -43,8 +43,8 @@ type matchupTemplate struct {
 // in a playoff tournament.
 type Matchup struct {
 	matchupTemplate
-	RedAllianceSourceMatchup  *Matchup
-	BlueAllianceSourceMatchup *Matchup
+	redAllianceSourceMatchup  *Matchup
+	blueAllianceSourceMatchup *Matchup
 	RedAllianceId             int
 	BlueAllianceId            int
 	RedAllianceWins           int
@@ -82,10 +82,10 @@ func (matchupTemplate *matchupTemplate) displayName(instance int) string {
 
 // Returns the winning alliance ID of the matchup, or 0 if it is not yet known.
 func (matchup *Matchup) winner() int {
-	if matchup.RedAllianceWins >= matchup.numWinsToAdvance {
+	if matchup.RedAllianceWins >= matchup.NumWinsToAdvance {
 		return matchup.RedAllianceId
 	}
-	if matchup.BlueAllianceWins >= matchup.numWinsToAdvance {
+	if matchup.BlueAllianceWins >= matchup.NumWinsToAdvance {
 		return matchup.BlueAllianceId
 	}
 	return 0
@@ -93,10 +93,10 @@ func (matchup *Matchup) winner() int {
 
 // Returns the losing alliance ID of the matchup, or 0 if it is not yet known.
 func (matchup *Matchup) loser() int {
-	if matchup.RedAllianceWins >= matchup.numWinsToAdvance {
+	if matchup.RedAllianceWins >= matchup.NumWinsToAdvance {
 		return matchup.BlueAllianceId
 	}
-	if matchup.BlueAllianceWins >= matchup.numWinsToAdvance {
+	if matchup.BlueAllianceWins >= matchup.NumWinsToAdvance {
 		return matchup.RedAllianceId
 	}
 	return 0
@@ -111,30 +111,30 @@ func (matchup *Matchup) isComplete() bool {
 // results, counting wins and creating or deleting matches as required.
 func (matchup *Matchup) update(database *model.Database) error {
 	// Update child matchups first. Only recurse down winner links to avoid visiting a node twice.
-	if matchup.RedAllianceSourceMatchup != nil && matchup.redAllianceSource.useWinner {
-		if err := matchup.RedAllianceSourceMatchup.update(database); err != nil {
+	if matchup.redAllianceSourceMatchup != nil && matchup.redAllianceSource.useWinner {
+		if err := matchup.redAllianceSourceMatchup.update(database); err != nil {
 			return err
 		}
 	}
-	if matchup.BlueAllianceSourceMatchup != nil && matchup.blueAllianceSource.useWinner {
-		if err := matchup.BlueAllianceSourceMatchup.update(database); err != nil {
+	if matchup.blueAllianceSourceMatchup != nil && matchup.blueAllianceSource.useWinner {
+		if err := matchup.blueAllianceSourceMatchup.update(database); err != nil {
 			return err
 		}
 	}
 
 	// Populate the alliance IDs from the lower matchups (or with a zero value if they are not yet complete).
-	if matchup.RedAllianceSourceMatchup != nil {
+	if matchup.redAllianceSourceMatchup != nil {
 		if matchup.redAllianceSource.useWinner {
-			matchup.RedAllianceId = matchup.RedAllianceSourceMatchup.winner()
+			matchup.RedAllianceId = matchup.redAllianceSourceMatchup.winner()
 		} else {
-			matchup.RedAllianceId = matchup.RedAllianceSourceMatchup.loser()
+			matchup.RedAllianceId = matchup.redAllianceSourceMatchup.loser()
 		}
 	}
-	if matchup.BlueAllianceSourceMatchup != nil {
+	if matchup.blueAllianceSourceMatchup != nil {
 		if matchup.blueAllianceSource.useWinner {
-			matchup.BlueAllianceId = matchup.BlueAllianceSourceMatchup.winner()
+			matchup.BlueAllianceId = matchup.blueAllianceSourceMatchup.winner()
 		} else {
-			matchup.BlueAllianceId = matchup.BlueAllianceSourceMatchup.loser()
+			matchup.BlueAllianceId = matchup.blueAllianceSourceMatchup.loser()
 		}
 	}
 
@@ -212,7 +212,7 @@ func (matchup *Matchup) update(database *model.Database) error {
 	if matchup.BlueAllianceWins > maxWins {
 		maxWins = matchup.BlueAllianceWins
 	}
-	numUnplayedMatchesNeeded := matchup.numWinsToAdvance - maxWins
+	numUnplayedMatchesNeeded := matchup.NumWinsToAdvance - maxWins
 	if len(unplayedMatches) > numUnplayedMatchesNeeded {
 		// Delete any superfluous matches off the end of the list.
 		for i := 0; i < len(unplayedMatches)-numUnplayedMatchesNeeded; i++ {

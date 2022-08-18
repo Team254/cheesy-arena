@@ -13,6 +13,7 @@ import (
 
 type Bracket struct {
 	FinalsMatchup *Matchup
+	matchupMap    map[matchupKey]*Matchup
 }
 
 const ElimMatchSpacingSec = 600
@@ -26,14 +27,13 @@ func newBracket(matchupTemplates []matchupTemplate, finalsMatchupKey matchupKey,
 	}
 
 	// Recursively build the bracket, starting with the finals matchup.
-	finalsMatchup, _, err := createMatchupGraph(
-		finalsMatchupKey, true, matchupTemplateMap, numAlliances, make(map[matchupKey]*Matchup),
-	)
+	matchupMap := make(map[matchupKey]*Matchup)
+	finalsMatchup, _, err := createMatchupGraph(finalsMatchupKey, true, matchupTemplateMap, numAlliances, matchupMap)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Bracket{FinalsMatchup: finalsMatchup}, nil
+	return &Bracket{FinalsMatchup: finalsMatchup, matchupMap: matchupMap}, nil
 }
 
 // Recursive helper method to create the current matchup node and all of its children.
@@ -153,8 +153,8 @@ func createMatchupGraph(
 			matchupTemplate:           matchupTemplate,
 			RedAllianceId:             redByeAllianceId,
 			BlueAllianceId:            blueByeAllianceId,
-			RedAllianceSourceMatchup:  redAllianceSourceMatchup,
-			BlueAllianceSourceMatchup: blueAllianceSourceMatchup,
+			redAllianceSourceMatchup:  redAllianceSourceMatchup,
+			blueAllianceSourceMatchup: blueAllianceSourceMatchup,
 		}
 		matchupMap[matchupKey] = matchup
 	}
@@ -174,6 +174,15 @@ func (bracket *Bracket) Finalist() int {
 // Returns true if the bracket has been won, and false if it is still to be determined.
 func (bracket *Bracket) IsComplete() bool {
 	return bracket.FinalsMatchup.isComplete()
+}
+
+// Returns the matchup for the given round and group, or an error if it doesn't exist within the bracket.
+func (bracket *Bracket) GetMatchup(round, group int) (*Matchup, error) {
+	matchupKey := newMatchupKey(round, group)
+	if matchup, ok := bracket.matchupMap[matchupKey]; ok {
+		return matchup, nil
+	}
+	return nil, fmt.Errorf("bracket does not contain matchup for key %+v", matchupKey)
 }
 
 // Traverses the bracket to update the state of each matchup based on match results, counting wins and creating or
@@ -213,11 +222,11 @@ func (bracket *Bracket) print() {
 		fmt.Printf("%+v\n\n", matchup)
 		matchupQueue = matchupQueue[1:]
 		if matchup != nil {
-			if matchup.RedAllianceSourceMatchup != nil && matchup.redAllianceSource.useWinner {
-				matchupQueue = append(matchupQueue, matchup.RedAllianceSourceMatchup)
+			if matchup.redAllianceSourceMatchup != nil && matchup.redAllianceSource.useWinner {
+				matchupQueue = append(matchupQueue, matchup.redAllianceSourceMatchup)
 			}
-			if matchup.BlueAllianceSourceMatchup != nil && matchup.blueAllianceSource.useWinner {
-				matchupQueue = append(matchupQueue, matchup.BlueAllianceSourceMatchup)
+			if matchup.blueAllianceSourceMatchup != nil && matchup.blueAllianceSource.useWinner {
+				matchupQueue = append(matchupQueue, matchup.blueAllianceSourceMatchup)
 			}
 		}
 	}

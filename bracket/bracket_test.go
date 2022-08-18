@@ -34,35 +34,35 @@ func TestNewBracketInverseSeeding(t *testing.T) {
 		{
 			matchupKey:         newMatchupKey(1, 1),
 			displayNameFormat:  "QF${group}-${instance}",
-			numWinsToAdvance:   2,
+			NumWinsToAdvance:   2,
 			redAllianceSource:  allianceSource{allianceId: 8},
 			blueAllianceSource: allianceSource{allianceId: 1},
 		},
 		{
 			matchupKey:         newMatchupKey(1, 2),
 			displayNameFormat:  "QF${group}-${instance}",
-			numWinsToAdvance:   2,
+			NumWinsToAdvance:   2,
 			redAllianceSource:  allianceSource{allianceId: 5},
 			blueAllianceSource: allianceSource{allianceId: 4},
 		},
 		{
 			matchupKey:         newMatchupKey(2, 1),
 			displayNameFormat:  "SF${group}-${instance}",
-			numWinsToAdvance:   2,
+			NumWinsToAdvance:   2,
 			redAllianceSource:  newWinnerAllianceSource(1, 2),
 			blueAllianceSource: newWinnerAllianceSource(1, 1),
 		},
 		{
 			matchupKey:         newMatchupKey(2, 2),
 			displayNameFormat:  "SF${group}-${instance}",
-			numWinsToAdvance:   2,
+			NumWinsToAdvance:   2,
 			redAllianceSource:  allianceSource{allianceId: 3},
 			blueAllianceSource: allianceSource{allianceId: 2},
 		},
 		{
 			matchupKey:         newMatchupKey(3, 1),
 			displayNameFormat:  "F-${instance}",
-			numWinsToAdvance:   2,
+			NumWinsToAdvance:   2,
 			redAllianceSource:  newWinnerAllianceSource(2, 1),
 			blueAllianceSource: newWinnerAllianceSource(2, 2),
 		},
@@ -168,4 +168,27 @@ func TestBracketUpdateTeamPositions(t *testing.T) {
 			assert.Equal(t, match2.Blue3, matches[i].Blue3)
 		}
 	}
+}
+
+func TestBracketGetMatchup(t *testing.T) {
+	database := setupTestDb(t)
+
+	tournament.CreateTestAlliances(database, 4)
+	bracket, err := NewSingleEliminationBracket(4)
+	assert.Nil(t, err)
+	assert.Nil(t, bracket.Update(database, &dummyStartTime))
+
+	matchup, err := bracket.GetMatchup(4, 1)
+	assert.Nil(t, err)
+	assert.Equal(t, newMatchupKey(4, 1), matchup.matchupKey)
+
+	matchup, err = bracket.GetMatchup(3, 2)
+	assert.Nil(t, err)
+	assert.Equal(t, newMatchupKey(3, 2), matchup.matchupKey)
+
+	matchup, err = bracket.GetMatchup(2, 1)
+	if assert.NotNil(t, err) {
+		assert.Equal(t, "bracket does not contain matchup for key {round:2 group:1}", err.Error())
+	}
+	assert.Nil(t, matchup)
 }

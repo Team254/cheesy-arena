@@ -7,6 +7,7 @@ package field
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
@@ -182,31 +183,23 @@ func (arena *Arena) generateRealtimeScoreMessage() interface{} {
 func (arena *Arena) generateScorePostedMessage() interface{} {
 	// For elimination matches, summarize the state of the series.
 	var seriesStatus, seriesLeader string
+	var matchup *bracket.Matchup
 	if arena.SavedMatch.Type == "elimination" {
-		matches, _ := arena.Database.GetMatchesByElimRoundGroup(arena.SavedMatch.ElimRound, arena.SavedMatch.ElimGroup)
-		var redWins, blueWins int
-		for _, match := range matches {
-			if match.Status == model.RedWonMatch {
-				redWins++
-			} else if match.Status == model.BlueWonMatch {
-				blueWins++
-			}
-		}
-
-		if redWins == 2 {
-			seriesStatus = fmt.Sprintf("Red Wins Series %d-%d", redWins, blueWins)
+		matchup, _ = arena.PlayoffBracket.GetMatchup(arena.SavedMatch.ElimRound, arena.SavedMatch.ElimGroup)
+		if matchup.RedAllianceWins >= matchup.NumWinsToAdvance {
+			seriesStatus = fmt.Sprintf("Red Wins Series %d-%d", matchup.RedAllianceWins, matchup.BlueAllianceWins)
 			seriesLeader = "red"
-		} else if blueWins == 2 {
-			seriesStatus = fmt.Sprintf("Blue Wins Series %d-%d", blueWins, redWins)
+		} else if matchup.BlueAllianceWins >= matchup.NumWinsToAdvance {
+			seriesStatus = fmt.Sprintf("Blue Wins Series %d-%d", matchup.BlueAllianceWins, matchup.RedAllianceWins)
 			seriesLeader = "blue"
-		} else if redWins > blueWins {
-			seriesStatus = fmt.Sprintf("Red Leads Series %d-%d", redWins, blueWins)
+		} else if matchup.RedAllianceWins > matchup.BlueAllianceWins {
+			seriesStatus = fmt.Sprintf("Red Leads Series %d-%d", matchup.RedAllianceWins, matchup.BlueAllianceWins)
 			seriesLeader = "red"
-		} else if blueWins > redWins {
-			seriesStatus = fmt.Sprintf("Blue Leads Series %d-%d", blueWins, redWins)
+		} else if matchup.BlueAllianceWins > matchup.RedAllianceWins {
+			seriesStatus = fmt.Sprintf("Blue Leads Series %d-%d", matchup.BlueAllianceWins, matchup.RedAllianceWins)
 			seriesLeader = "blue"
 		} else {
-			seriesStatus = fmt.Sprintf("Series Tied %d-%d", redWins, blueWins)
+			seriesStatus = fmt.Sprintf("Series Tied %d-%d", matchup.RedAllianceWins, matchup.BlueAllianceWins)
 		}
 	}
 
@@ -228,11 +221,20 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 		BlueCards        map[string]string
 		SeriesStatus     string
 		SeriesLeader     string
-	}{arena.SavedMatch.CapitalizedType(), arena.SavedMatch, arena.SavedMatchResult.RedScoreSummary(),
-		arena.SavedMatchResult.BlueScoreSummary(), rankings, arena.SavedMatchResult.RedScore.Fouls,
+	}{
+		arena.SavedMatch.CapitalizedType(),
+		arena.SavedMatch,
+		arena.SavedMatchResult.RedScoreSummary(),
+		arena.SavedMatchResult.BlueScoreSummary(),
+		rankings,
+		arena.SavedMatchResult.RedScore.Fouls,
 		arena.SavedMatchResult.BlueScore.Fouls,
 		getRulesViolated(arena.SavedMatchResult.RedScore.Fouls, arena.SavedMatchResult.BlueScore.Fouls),
-		arena.SavedMatchResult.RedCards, arena.SavedMatchResult.BlueCards, seriesStatus, seriesLeader}
+		arena.SavedMatchResult.RedCards,
+		arena.SavedMatchResult.BlueCards,
+		seriesStatus,
+		seriesLeader,
+	}
 }
 
 func (arena *Arena) generateScoringStatusMessage() interface{} {
