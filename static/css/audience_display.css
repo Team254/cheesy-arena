@@ -436,6 +436,21 @@ html {
 #finalMatchName {
   text-align: right;
 }
+#bracket {
+  position: fixed;
+  width: 1600px;
+  height: 700px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto auto;
+  border: 2px solid #333;
+  z-index: 1;
+  opacity: 0;
+  background-color: #fff;
+  text-align: center;
+}
 #sponsor {
   position: fixed;
   width: 1000px;

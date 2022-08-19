@@ -30,6 +30,8 @@ const scoreIn = $(".score").css("width");
 const scoreMid = "135px";
 const scoreOut = "255px";
 const scoreFieldsOut = "40px";
+const scoreLogoTop = "-350px";
+const bracketLogoTop = "-600px";
 
 // Handles a websocket message to change which screen is displayed.
 var handleAudienceDisplayMode = function(targetScreen) {
@@ -234,6 +236,12 @@ var transitionBlankToAllianceSelection = function(callback) {
   $('#allianceSelectionCentering').transition({queue: false, right: "3em"}, 500, "ease", callback);
 };
 
+var transitionBlankToBracket = function(callback) {
+  transitionBlankToLogo(function() {
+    setTimeout(function() { transitionLogoToBracket(callback); }, 50);
+  });
+};
+
 var transitionBlankToIntro = function(callback) {
   $("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function() {
     $(".teams").css("display", "flex");
@@ -308,6 +316,40 @@ var transitionBlankToTimeout = function(callback) {
   });
 };
 
+var transitionBracketToBlank = function(callback) {
+  transitionBracketToLogo(function() {
+    transitionLogoToBlank(callback);
+  });
+};
+
+var transitionBracketToLogo = function(callback) {
+  $("#bracket").transition({queue: false, opacity: 0}, 500, "ease", function(){
+    $("#bracket").hide();
+  });
+  $(".blindsCenter.full").transition({queue: false, top: 0}, 625, "ease", callback);
+};
+
+var transitionBracketToLogoLuma = function(callback) {
+  transitionBracketToLogo(function() {
+    transitionLogoToLogoLuma(callback);
+  });
+};
+
+var transitionBracketToScore = function(callback) {
+  $(".blindsCenter.full").transition({queue: false, top: scoreLogoTop}, 1000, "ease");
+  $("#bracket").transition({queue: false, opacity: 0}, 1000, "ease", function(){
+    $("#bracket").hide();
+    $("#finalScore").show();
+    $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+  });
+};
+
+var transitionBracketToSponsor = function(callback) {
+  transitionBracketToLogo(function() {
+    transitionLogoToSponsor(callback);
+  });
+};
+
 var transitionIntroToBlank = function(callback) {
   $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease", function() {
     $("#eventMatchInfo").hide();
@@ -360,6 +402,12 @@ var transitionLogoToBlank = function(callback) {
   });
 };
 
+var transitionLogoToBracket = function(callback) {
+  $(".blindsCenter.full").transition({queue: false, top: bracketLogoTop}, 625, "ease");
+  $("#bracket").show();
+  $("#bracket").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+};
+
 var transitionLogoToLogoLuma = function(callback) {
   $(".blinds.left").removeClass("full");
   $(".blinds.right").show();
@@ -372,7 +420,7 @@ var transitionLogoToLogoLuma = function(callback) {
 };
 
 var transitionLogoToScore = function(callback) {
-  $(".blindsCenter.full").transition({queue: false, top: "-350px"}, 625, "ease");
+  $(".blindsCenter.full").transition({queue: false, top: scoreLogoTop}, 625, "ease");
   $("#finalScore").show();
   $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
 };
@@ -386,6 +434,12 @@ var transitionLogoToSponsor = function(callback) {
 
 var transitionLogoLumaToBlank = function(callback) {
   $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 1000, "ease", callback);
+};
+
+var transitionLogoLumaToBracket = function(callback) {
+  transitionLogoLumaToLogo(function() {
+    transitionLogoToBracket(callback);
+  });
 };
 
 var transitionLogoLumaToLogo = function(callback) {
@@ -441,6 +495,15 @@ var transitionScoreToBlank = function(callback) {
   });
 };
 
+var transitionScoreToBracket = function(callback) {
+  $(".blindsCenter.full").transition({queue: false, top: bracketLogoTop}, 1000, "ease");
+  $("#finalScore").transition({queue: false, opacity: 0}, 1000, "ease", function(){
+    $("#finalScore").hide();
+    $("#bracket").show();
+    $("#bracket").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+  });
+};
+
 var transitionScoreToLogo = function(callback) {
   $("#finalScore").transition({queue: false, opacity: 0}, 500, "ease", function(){
     $("#finalScore").hide();
@@ -469,6 +532,12 @@ var transitionSponsorToBlank = function(callback) {
       $(".blinds.left").transition({queue: false, left: "-50%"}, 1000, "ease", callback);
       $("#sponsor").hide();
     }, 200);
+  });
+};
+
+var transitionSponsorToBracket = function(callback) {
+  transitionSponsorToLogo(function() {
+    transitionLogoToBracket(callback);
   });
 };
 
@@ -612,6 +681,7 @@ $(function() {
     },
     blank: {
       allianceSelection: transitionBlankToAllianceSelection,
+      bracket: transitionBlankToBracket,
       intro: transitionBlankToIntro,
       logo: transitionBlankToLogo,
       logoLuma: transitionBlankToLogoLuma,
@@ -620,6 +690,13 @@ $(function() {
       sponsor: transitionBlankToSponsor,
       timeout: transitionBlankToTimeout,
     },
+    bracket: {
+      blank: transitionBracketToBlank,
+      logo: transitionBracketToLogo,
+      logoLuma: transitionBracketToLogoLuma,
+      score: transitionBracketToScore,
+      sponsor: transitionBracketToSponsor,
+    },
     intro: {
       blank: transitionIntroToBlank,
       match: transitionIntroToMatch,
@@ -627,12 +704,14 @@ $(function() {
     },
     logo: {
       blank: transitionLogoToBlank,
+      bracket: transitionLogoToBracket,
       logoLuma: transitionLogoToLogoLuma,
       score: transitionLogoToScore,
       sponsor: transitionLogoToSponsor,
     },
     logoLuma: {
       blank: transitionLogoLumaToBlank,
+      bracket: transitionLogoLumaToBracket,
       logo: transitionLogoLumaToLogo,
       score: transitionLogoLumaToScore,
     },
@@ -642,12 +721,14 @@ $(function() {
     },
     score: {
       blank: transitionScoreToBlank,
+      bracket: transitionScoreToBracket,
       logo: transitionScoreToLogo,
       logoLuma: transitionScoreToLogoLuma,
       sponsor: transitionScoreToSponsor,
     },
     sponsor: {
       blank: transitionSponsorToBlank,
+      bracket: transitionSponsorToBracket,
       logo: transitionSponsorToLogo,
       score: transitionSponsorToScore,
     },
