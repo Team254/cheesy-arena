@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"strconv"
-	"strings"
 )
 
 // Conveys how a given alliance should be populated -- either directly from alliance selection or based on the results
@@ -24,8 +23,8 @@ type allianceSource struct {
 // Key for uniquely identifying a matchup. Round IDs are arbitrary and in descending order with "1" always representing
 // the playoff finals. Group IDs are 1-indexed within a round and increasing in order of play.
 type matchupKey struct {
-	round int
-	group int
+	Round int
+	Group int
 }
 
 // Conveys the complete generic information about a matchup required to construct it. In aggregate, the full list of
@@ -33,7 +32,7 @@ type matchupKey struct {
 // alliances.
 type matchupTemplate struct {
 	matchupKey
-	displayNameFormat  string
+	displayName        string
 	NumWinsToAdvance   int
 	redAllianceSource  allianceSource
 	blueAllianceSource allianceSource
@@ -63,21 +62,76 @@ func newLoserAllianceSource(round, group int) allianceSource {
 
 // Convenience method to quickly create a matchup key.
 func newMatchupKey(round, group int) matchupKey {
-	return matchupKey{round: round, group: group}
+	return matchupKey{Round: round, Group: group}
 }
 
 // Returns the display name for a specific match within a matchup.
-func (matchupTemplate *matchupTemplate) displayName(instance int) string {
-	displayName := matchupTemplate.displayNameFormat
-	displayName = strings.Replace(displayName, "${group}", strconv.Itoa(matchupTemplate.group), -1)
-	if strings.Contains(displayName, "${instance}") {
-		displayName = strings.Replace(displayName, "${instance}", strconv.Itoa(instance), -1)
-	} else if instance > 1 {
-		// Special case to handle matchups that only have more than one instance under exceptional circumstances (like
-		// ties in double-elimination unresolved by tiebreakers).
+func (matchupTemplate *matchupTemplate) matchDisplayName(instance int) string {
+	displayName := matchupTemplate.displayName
+	if matchupTemplate.NumWinsToAdvance > 1 || instance > 1 {
+		// Append the instance if there is always more than one match in the series, or in exceptional circumstances
+		// like a tie in double-elimination unresolved by tiebreakers.
 		displayName += fmt.Sprintf("-%d", instance)
 	}
 	return displayName
+}
+
+// Returns the display name for the overall matchup.
+func (matchup *Matchup) LongDisplayName() string {
+	if matchup.isFinal() {
+		return "Finals"
+	}
+	if _, err := strconv.Atoi(matchup.displayName); err == nil {
+		return "Match " + matchup.displayName
+	}
+	return matchup.displayName
+}
+
+// Returns the display name for the linked matchup from which the red alliance is populated.
+func (matchup *Matchup) RedAllianceSourceDisplayName() string {
+	if matchup.redAllianceSourceMatchup == nil {
+		return ""
+	}
+	if matchup.redAllianceSource.useWinner {
+		return "W " + matchup.redAllianceSourceMatchup.displayName
+	}
+	return "L " + matchup.redAllianceSourceMatchup.displayName
+}
+
+// Returns the display name for the linked matchup from which the blue alliance is populated.
+func (matchup *Matchup) BlueAllianceSourceDisplayName() string {
+	if matchup.blueAllianceSourceMatchup == nil {
+		return ""
+	}
+	if matchup.blueAllianceSource.useWinner {
+		return "W " + matchup.blueAllianceSourceMatchup.displayName
+	}
+	return "L " + matchup.blueAllianceSourceMatchup.displayName
+}
+
+// Returns a pair of strings indicating the leading alliance and a readable status of the matchup.
+func (matchup *Matchup) StatusText() (string, string) {
+	var leader, status string
+	winText := "Advances"
+	if matchup.isFinal() {
+		winText = "Wins"
+	}
+	if matchup.RedAllianceWins >= matchup.NumWinsToAdvance {
+		leader = "red"
+		status = fmt.Sprintf("Red %s %d-%d", winText, matchup.RedAllianceWins, matchup.BlueAllianceWins)
+	} else if matchup.BlueAllianceWins >= matchup.NumWinsToAdvance {
+		leader = "blue"
+		status = fmt.Sprintf("Blue %s %d-%d", winText, matchup.BlueAllianceWins, matchup.RedAllianceWins)
+	} else if matchup.RedAllianceWins > matchup.BlueAllianceWins {
+		leader = "red"
+		status = fmt.Sprintf("Red Leads %d-%d", matchup.RedAllianceWins, matchup.BlueAllianceWins)
+	} else if matchup.BlueAllianceWins > matchup.RedAllianceWins {
+		leader = "blue"
+		status = fmt.Sprintf("Blue Leads %d-%d", matchup.BlueAllianceWins, matchup.RedAllianceWins)
+	} else if matchup.RedAllianceWins > 0 {
+		status = fmt.Sprintf("Series Tied %d-%d", matchup.RedAllianceWins, matchup.BlueAllianceWins)
+	}
+	return leader, status
 }
 
 // Returns the winning alliance ID of the matchup, or 0 if it is not yet known.
@@ -105,6 +159,11 @@ func (matchup *Matchup) loser() int {
 // Returns true if the matchup has been won, and false if it is still to be determined.
 func (matchup *Matchup) isComplete() bool {
 	return matchup.winner() > 0
+}
+
+// Returns true if the matchup represents the final matchup in the bracket.
+func (matchup *Matchup) isFinal() bool {
+	return matchup.displayName == "F"
 }
 
 // Recursively traverses the matchup graph to update the state of this matchup and all of its children based on match
@@ -138,7 +197,7 @@ func (matchup *Matchup) update(database *model.Database) error {
 		}
 	}
 
-	matches, err := database.GetMatchesByElimRoundGroup(matchup.round, matchup.group)
+	matches, err := database.GetMatchesByElimRoundGroup(matchup.Round, matchup.Group)
 	if err != nil {
 		return err
 	}
@@ -164,9 +223,15 @@ func (matchup *Matchup) update(database *model.Database) error {
 	if err != nil {
 		return err
 	}
+	if redAlliance == nil {
+		return fmt.Errorf("alliance %d does not exist in the database", matchup.RedAllianceId)
+	}
 	blueAlliance, err := database.GetAllianceById(matchup.BlueAllianceId)
 	if err != nil {
 		return err
+	}
+	if blueAlliance == nil {
+		return fmt.Errorf("alliance %d does not exist in the database", matchup.BlueAllianceId)
 	}
 	matchup.RedAllianceWins = 0
 	matchup.BlueAllianceWins = 0
@@ -226,9 +291,9 @@ func (matchup *Matchup) update(database *model.Database) error {
 			instance := len(matches) + i + 1
 			match := model.Match{
 				Type:             "elimination",
-				DisplayName:      matchup.displayName(instance),
-				ElimRound:        matchup.round,
-				ElimGroup:        matchup.group,
+				DisplayName:      matchup.matchDisplayName(instance),
+				ElimRound:        matchup.Round,
+				ElimGroup:        matchup.Group,
 				ElimInstance:     instance,
 				ElimRedAlliance:  redAlliance.Id,
 				ElimBlueAlliance: blueAlliance.Id,

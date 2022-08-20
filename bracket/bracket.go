@@ -8,6 +8,7 @@ package bracket
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
+	"sort"
 	"time"
 )
 
@@ -174,6 +175,21 @@ func (bracket *Bracket) Finalist() int {
 // Returns true if the bracket has been won, and false if it is still to be determined.
 func (bracket *Bracket) IsComplete() bool {
 	return bracket.FinalsMatchup.isComplete()
+}
+
+// Returns a slice of all matchups contained within the bracket.
+func (bracket *Bracket) GetAllMatchups() []*Matchup {
+	var matchups []*Matchup
+	for _, matchup := range bracket.matchupMap {
+		matchups = append(matchups, matchup)
+	}
+	sort.Slice(matchups, func(i, j int) bool {
+		if matchups[i].Round == matchups[j].Round {
+			return matchups[i].Group < matchups[j].Group
+		}
+		return matchups[i].Round < matchups[j].Round
+	})
+	return matchups
 }
 
 // Returns the matchup for the given round and group, or an error if it doesn't exist within the bracket.

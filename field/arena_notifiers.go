@@ -6,7 +6,6 @@
 package field
 
 import (
-	"fmt"
 	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
@@ -199,21 +198,7 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 	var matchup *bracket.Matchup
 	if arena.SavedMatch.Type == "elimination" {
 		matchup, _ = arena.PlayoffBracket.GetMatchup(arena.SavedMatch.ElimRound, arena.SavedMatch.ElimGroup)
-		if matchup.RedAllianceWins >= matchup.NumWinsToAdvance {
-			seriesStatus = fmt.Sprintf("Red Wins Series %d-%d", matchup.RedAllianceWins, matchup.BlueAllianceWins)
-			seriesLeader = "red"
-		} else if matchup.BlueAllianceWins >= matchup.NumWinsToAdvance {
-			seriesStatus = fmt.Sprintf("Blue Wins Series %d-%d", matchup.BlueAllianceWins, matchup.RedAllianceWins)
-			seriesLeader = "blue"
-		} else if matchup.RedAllianceWins > matchup.BlueAllianceWins {
-			seriesStatus = fmt.Sprintf("Red Leads Series %d-%d", matchup.RedAllianceWins, matchup.BlueAllianceWins)
-			seriesLeader = "red"
-		} else if matchup.BlueAllianceWins > matchup.RedAllianceWins {
-			seriesStatus = fmt.Sprintf("Blue Leads Series %d-%d", matchup.BlueAllianceWins, matchup.RedAllianceWins)
-			seriesLeader = "blue"
-		} else {
-			seriesStatus = fmt.Sprintf("Series Tied %d-%d", matchup.RedAllianceWins, matchup.BlueAllianceWins)
-		}
+		seriesLeader, seriesStatus = matchup.StatusText()
 	}
 
 	rankings := make(map[int]game.Ranking, len(arena.SavedRankings))

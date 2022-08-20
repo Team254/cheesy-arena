@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +32,7 @@ func TestMatchesApi(t *testing.T) {
 
 	recorder := web.getHttpResponse("/api/matches/qualification")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Equal(t, "application/json", recorder.HeaderMap["Content-Type"][0])
+	assert.Equal(t, "application/json", recorder.Header()["Content-Type"][0])
 	var matchesData []MatchWithResult
 	err := json.Unmarshal([]byte(recorder.Body.String()), &matchesData)
 	assert.Nil(t, err)
@@ -49,7 +50,7 @@ func TestRankingsApi(t *testing.T) {
 	// Test that empty rankings produces an empty array.
 	recorder := web.getHttpResponse("/api/rankings")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Equal(t, "application/json", recorder.HeaderMap["Content-Type"][0])
+	assert.Equal(t, "application/json", recorder.Header()["Content-Type"][0])
 	rankingsData := struct {
 		Rankings           []RankingWithNickname
 		TeamNicknames      map[string]string
@@ -71,7 +72,7 @@ func TestRankingsApi(t *testing.T) {
 
 	recorder = web.getHttpResponse("/api/rankings")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Equal(t, "application/json", recorder.HeaderMap["Content-Type"][0])
+	assert.Equal(t, "application/json", recorder.Header()["Content-Type"][0])
 	err = json.Unmarshal([]byte(recorder.Body.String()), &rankingsData)
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(rankingsData.Rankings)) {
@@ -91,7 +92,7 @@ func TestSponsorSlidesApi(t *testing.T) {
 
 	recorder := web.getHttpResponse("/api/sponsor_slides")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Equal(t, "application/json", recorder.HeaderMap["Content-Type"][0])
+	assert.Equal(t, "application/json", recorder.Header()["Content-Type"][0])
 	var sponsorSlides []model.SponsorSlide
 	err := json.Unmarshal([]byte(recorder.Body.String()), &sponsorSlides)
 	assert.Nil(t, err)
@@ -108,7 +109,7 @@ func TestAlliancesApi(t *testing.T) {
 
 	recorder := web.getHttpResponse("/api/alliances")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Equal(t, "application/json", recorder.HeaderMap["Content-Type"][0])
+	assert.Equal(t, "application/json", recorder.Header()["Content-Type"][0])
 	var alliances []model.Alliance
 	err := json.Unmarshal([]byte(recorder.Body.String()), &alliances)
 	assert.Nil(t, err)
@@ -142,4 +143,16 @@ func TestArenaWebsocketApi(t *testing.T) {
 	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
+}
+
+func TestBracketSvgApiDoubleElimination(t *testing.T) {
+	web := setupTestWeb(t)
+	web.arena.EventSettings.ElimType = "double"
+	tournament.CreateTestAlliances(web.arena.Database, 8)
+	web.arena.CreatePlayoffBracket()
+
+	recorder := web.getHttpResponse("/api/bracket/svg")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "image/svg+xml", recorder.Header()["Content-Type"][0])
+	assert.Contains(t, recorder.Body.String(), "Best-of-3")
 }

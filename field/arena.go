@@ -184,33 +184,29 @@ func (arena *Arena) LoadSettings() error {
 
 // Constructs an empty playoff bracket in memory, based only on the number of alliances.
 func (arena *Arena) CreatePlayoffBracket() error {
-	alliances, err := arena.Database.GetAllAlliances()
-	if err != nil {
-		return err
+	var err error
+	switch arena.EventSettings.ElimType {
+	case "single":
+		arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(arena.EventSettings.NumElimAlliances)
+	case "double":
+		arena.PlayoffBracket, err = bracket.NewDoubleEliminationBracket(arena.EventSettings.NumElimAlliances)
+	default:
+		err = fmt.Errorf("Invalid playoff type: %v", arena.EventSettings.ElimType)
 	}
-	if len(alliances) > 0 {
-		switch arena.EventSettings.ElimType {
-		case "single":
-			arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(len(alliances))
-		case "double":
-			arena.PlayoffBracket, err = bracket.NewDoubleEliminationBracket(len(alliances))
-		default:
-			err = fmt.Errorf("Invalid playoff type: %v", arena.EventSettings.ElimType)
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return err
 }
 
 // Traverses the in-memory playoff bracket to populate alliances, create matches, and assess winners. Does nothing if
 // the bracket has not been created.are
 func (arena *Arena) UpdatePlayoffBracket(startTime *time.Time) error {
-	if arena.PlayoffBracket == nil {
-		return nil
+	alliances, err := arena.Database.GetAllAlliances()
+	if err != nil {
+		return err
 	}
-	return arena.PlayoffBracket.Update(arena.Database, startTime)
+	if len(alliances) > 0 {
+		return arena.PlayoffBracket.Update(arena.Database, startTime)
+	}
+	return nil
 }
 
 // Sets up the arena for the given match.

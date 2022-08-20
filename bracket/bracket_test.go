@@ -14,7 +14,7 @@ import (
 func TestNewBracketErrors(t *testing.T) {
 	_, err := newBracket([]matchupTemplate{}, newMatchupKey(33, 12), 8)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "could not find template for matchup {round:33 group:12} in the list of templates", err.Error())
+		assert.Equal(t, "could not find template for matchup {Round:33 Group:12} in the list of templates", err.Error())
 	}
 
 	matchTemplate := matchupTemplate{
@@ -33,35 +33,35 @@ func TestNewBracketInverseSeeding(t *testing.T) {
 	matchupTemplates := []matchupTemplate{
 		{
 			matchupKey:         newMatchupKey(1, 1),
-			displayNameFormat:  "QF${group}-${instance}",
+			displayName:        "QF1",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  allianceSource{allianceId: 8},
 			blueAllianceSource: allianceSource{allianceId: 1},
 		},
 		{
 			matchupKey:         newMatchupKey(1, 2),
-			displayNameFormat:  "QF${group}-${instance}",
+			displayName:        "QF2",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  allianceSource{allianceId: 5},
 			blueAllianceSource: allianceSource{allianceId: 4},
 		},
 		{
 			matchupKey:         newMatchupKey(2, 1),
-			displayNameFormat:  "SF${group}-${instance}",
+			displayName:        "SF1",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  newWinnerAllianceSource(1, 2),
 			blueAllianceSource: newWinnerAllianceSource(1, 1),
 		},
 		{
 			matchupKey:         newMatchupKey(2, 2),
-			displayNameFormat:  "SF${group}-${instance}",
+			displayName:        "SF2",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  allianceSource{allianceId: 3},
 			blueAllianceSource: allianceSource{allianceId: 2},
 		},
 		{
 			matchupKey:         newMatchupKey(3, 1),
-			displayNameFormat:  "F-${instance}",
+			displayName:        "F",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  newWinnerAllianceSource(2, 1),
 			blueAllianceSource: newWinnerAllianceSource(2, 2),
@@ -170,6 +170,23 @@ func TestBracketUpdateTeamPositions(t *testing.T) {
 	}
 }
 
+func TestBracketGetAllMatchups(t *testing.T) {
+	database := setupTestDb(t)
+
+	tournament.CreateTestAlliances(database, 5)
+	bracket, err := NewSingleEliminationBracket(5)
+	assert.Nil(t, err)
+	assert.Nil(t, bracket.Update(database, &dummyStartTime))
+
+	matchups := bracket.GetAllMatchups()
+	if assert.Equal(t, 4, len(matchups)) {
+		assert.Equal(t, newMatchupKey(2, 2), matchups[0].matchupKey)
+		assert.Equal(t, newMatchupKey(3, 1), matchups[1].matchupKey)
+		assert.Equal(t, newMatchupKey(3, 2), matchups[2].matchupKey)
+		assert.Equal(t, newMatchupKey(4, 1), matchups[3].matchupKey)
+	}
+}
+
 func TestBracketGetMatchup(t *testing.T) {
 	database := setupTestDb(t)
 
@@ -188,7 +205,7 @@ func TestBracketGetMatchup(t *testing.T) {
 
 	matchup, err = bracket.GetMatchup(2, 1)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "bracket does not contain matchup for key {round:2 group:1}", err.Error())
+		assert.Equal(t, "bracket does not contain matchup for key {Round:2 Group:1}", err.Error())
 	}
 	assert.Nil(t, matchup)
 }

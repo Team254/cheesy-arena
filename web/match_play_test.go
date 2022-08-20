@@ -233,6 +233,7 @@ func TestCommitCards(t *testing.T) {
 
 	// Check that a red card in eliminations zeroes out the score.
 	tournament.CreateTestAlliances(web.arena.Database, 2)
+	web.arena.EventSettings.NumElimAlliances = 2
 	web.arena.CreatePlayoffBracket()
 	match.Type = "elimination"
 	match.ElimRedAlliance = 1

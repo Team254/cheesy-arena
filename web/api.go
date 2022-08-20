@@ -34,6 +34,19 @@ type RankingWithNickname struct {
 	Nickname string
 }
 
+type allianceMatchup struct {
+	Round              int
+	Group              int
+	DisplayName        string
+	RedAllianceSource  string
+	BlueAllianceSource string
+	RedAlliance        *model.Alliance
+	BlueAlliance       *model.Alliance
+	IsActive           bool
+	SeriesLeader       string
+	SeriesStatus       string
+}
+
 // Generates a JSON dump of the matches and results.
 func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -210,4 +223,62 @@ func (web *Web) teamAvatarsApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.ServeFile(w, r, avatarPath)
+}
+
+func (web *Web) bracketSvgApiHandler(w http.ResponseWriter, r *http.Request) {
+	alliances, err := web.arena.Database.GetAllAlliances()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	activeMatch := web.arena.SavedMatch
+
+	matchups := make(map[string]*allianceMatchup)
+	if web.arena.PlayoffBracket != nil {
+		for _, matchup := range web.arena.PlayoffBracket.GetAllMatchups() {
+			allianceMatchup := allianceMatchup{
+				Round:              matchup.Round,
+				Group:              matchup.Group,
+				DisplayName:        matchup.LongDisplayName(),
+				RedAllianceSource:  matchup.RedAllianceSourceDisplayName(),
+				BlueAllianceSource: matchup.BlueAllianceSourceDisplayName(),
+			}
+			if matchup.RedAllianceId > 0 {
+				if len(alliances) > 0 {
+					allianceMatchup.RedAlliance = &alliances[matchup.RedAllianceId-1]
+				} else {
+					allianceMatchup.RedAlliance = &model.Alliance{Id: matchup.RedAllianceId}
+				}
+			}
+			if matchup.BlueAllianceId > 0 {
+				if len(alliances) > 0 {
+					allianceMatchup.BlueAlliance = &alliances[matchup.BlueAllianceId-1]
+				} else {
+					allianceMatchup.BlueAlliance = &model.Alliance{Id: matchup.BlueAllianceId}
+				}
+			}
+			if activeMatch != nil {
+				allianceMatchup.IsActive = activeMatch.ElimRound == matchup.Round &&
+					activeMatch.ElimGroup == matchup.Group
+			}
+			allianceMatchup.SeriesLeader, allianceMatchup.SeriesStatus = matchup.StatusText()
+			matchups[fmt.Sprintf("%d_%d", matchup.Round, matchup.Group)] = &allianceMatchup
+		}
+	}
+
+	template, err := web.parseFiles("templates/bracket.svg")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	data := struct {
+		*model.EventSettings
+		Matchups map[string]*allianceMatchup
+	}{web.arena.EventSettings, matchups}
+	w.Header().Set("Content-Type", "image/svg+xml")
+	err = template.ExecuteTemplate(w, "bracket", data)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }

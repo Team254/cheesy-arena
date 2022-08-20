@@ -31,7 +31,8 @@ const scoreMid = "135px";
 const scoreOut = "255px";
 const scoreFieldsOut = "40px";
 const scoreLogoTop = "-350px";
-const bracketLogoTop = "-600px";
+const bracketLogoTop = "-780px";
+const bracketLogoScale = 0.75;
 
 // Handles a websocket message to change which screen is displayed.
 var handleAudienceDisplayMode = function(targetScreen) {
@@ -176,6 +177,9 @@ var handleScorePosted = function(data) {
   $("#finalSeriesStatus").text(data.SeriesStatus);
   $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
   $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);
+
+  // Reload the bracket to reflect any changes.
+  $("#bracketSvg").attr("src", "/api/bracket/svg?v=" + new Date().getTime());
 };
 
 // Handles a websocket message to play a sound to signal match start/stop/etc.
@@ -326,7 +330,7 @@ var transitionBracketToLogo = function(callback) {
   $("#bracket").transition({queue: false, opacity: 0}, 500, "ease", function(){
     $("#bracket").hide();
   });
-  $(".blindsCenter.full").transition({queue: false, top: 0}, 625, "ease", callback);
+  $(".blindsCenter.full").transition({queue: false, top: 0, scale: 1}, 625, "ease", callback);
 };
 
 var transitionBracketToLogoLuma = function(callback) {
@@ -336,7 +340,7 @@ var transitionBracketToLogoLuma = function(callback) {
 };
 
 var transitionBracketToScore = function(callback) {
-  $(".blindsCenter.full").transition({queue: false, top: scoreLogoTop}, 1000, "ease");
+  $(".blindsCenter.full").transition({queue: false, top: scoreLogoTop, scale: 1}, 1000, "ease");
   $("#bracket").transition({queue: false, opacity: 0}, 1000, "ease", function(){
     $("#bracket").hide();
     $("#finalScore").show();
@@ -403,7 +407,7 @@ var transitionLogoToBlank = function(callback) {
 };
 
 var transitionLogoToBracket = function(callback) {
-  $(".blindsCenter.full").transition({queue: false, top: bracketLogoTop}, 625, "ease");
+  $(".blindsCenter.full").transition({queue: false, top: bracketLogoTop, scale: bracketLogoScale}, 625, "ease");
   $("#bracket").show();
   $("#bracket").transition({queue: false, opacity: 1}, 1000, "ease", callback);
 };
@@ -496,7 +500,7 @@ var transitionScoreToBlank = function(callback) {
 };
 
 var transitionScoreToBracket = function(callback) {
-  $(".blindsCenter.full").transition({queue: false, top: bracketLogoTop}, 1000, "ease");
+  $(".blindsCenter.full").transition({queue: false, top: bracketLogoTop, scale: bracketLogoScale}, 1000, "ease");
   $("#finalScore").transition({queue: false, opacity: 0}, 1000, "ease", function(){
     $("#finalScore").hide();
     $("#bracket").show();
