@@ -6,6 +6,7 @@ package web
 import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -127,6 +128,17 @@ func TestWpaKeysCsvReport(t *testing.T) {
 	assert.Equal(t, "text/csv", recorder.Header()["Content-Type"][0])
 	assert.Equal(t, "attachment; filename=wpa_keys.csv", recorder.Header()["Content-Disposition"][0])
 	assert.Equal(t, "254,12345678\r\n1114,9876543210\r\n", recorder.Body.String())
+}
+
+func TestAlliancesPdfReport(t *testing.T) {
+	web := setupTestWeb(t)
+	tournament.CreateTestAlliances(web.arena.Database, 8)
+	web.arena.CreatePlayoffBracket()
+
+	// Can't really parse the PDF content and check it, so just check that what's sent back is a PDF.
+	recorder := web.getHttpResponse("/reports/pdf/alliances")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "application/pdf", recorder.Header()["Content-Type"][0])
 }
 
 func TestBracketPdfReport(t *testing.T) {
