@@ -20,6 +20,7 @@ type ScoreSummary struct {
 	QuintetAchieved         bool
 	CargoBonusRankingPoint  bool
 	HangarBonusRankingPoint bool
+	DoubleBonusRankingPoint bool
 }
 
 type MatchStatus string

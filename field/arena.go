@@ -170,6 +170,7 @@ func (arena *Arena) LoadSettings() error {
 	game.CargoBonusRankingPointThresholdWithoutQuintet = settings.CargoBonusRankingPointThresholdWithoutQuintet
 	game.CargoBonusRankingPointThresholdWithQuintet = settings.CargoBonusRankingPointThresholdWithQuintet
 	game.HangarBonusRankingPointThreshold = settings.HangarBonusRankingPointThreshold
+	game.DoubleBonusRankingPointThreshold = settings.DoubleBonusRankingPointThreshold
 
 	// Reconstruct the playoff bracket in memory.
 	if err = arena.CreatePlayoffBracket(); err != nil {

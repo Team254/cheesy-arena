@@ -20,6 +20,7 @@ var QuintetThreshold = 5
 var CargoBonusRankingPointThresholdWithoutQuintet = 20
 var CargoBonusRankingPointThresholdWithQuintet = 18
 var HangarBonusRankingPointThreshold = 16
+var DoubleBonusRankingPointThreshold = 0
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
@@ -77,14 +78,17 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	}
 
 	// Calculate bonus ranking points.
-	var cargoBonusRankingPointThreshold int
-	if summary.AutoCargoCount >= QuintetThreshold {
-		cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithQuintet
-		summary.AutoCargoRemaining = 0
-		summary.QuintetAchieved = true
-	} else {
-		cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithoutQuintet
-		summary.AutoCargoRemaining = QuintetThreshold - summary.AutoCargoCount
+	cargoBonusRankingPointThreshold := CargoBonusRankingPointThresholdWithoutQuintet
+	// A QuintetThreshold of 0 disables the Quintet.
+	if QuintetThreshold > 0 {
+		if summary.AutoCargoCount >= QuintetThreshold {
+			cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithQuintet
+			summary.AutoCargoRemaining = 0
+			summary.QuintetAchieved = true
+		} else {
+			cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithoutQuintet
+			summary.AutoCargoRemaining = QuintetThreshold - summary.AutoCargoCount
+		}
 	}
 	if summary.CargoCount >= cargoBonusRankingPointThreshold {
 		summary.TeleopCargoRemaining = 0
@@ -93,6 +97,13 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 		summary.TeleopCargoRemaining = cargoBonusRankingPointThreshold - summary.CargoCount
 	}
 	summary.HangarBonusRankingPoint = summary.HangarPoints >= HangarBonusRankingPointThreshold
+
+	// The "double bonus" ranking point is an offseason-only addition which grants an additional RP if either the total
+	// cargo count or the hangar points is over the certain threshold. A threshold of 0 disables this RP.
+	if DoubleBonusRankingPointThreshold > 0 {
+		summary.DoubleBonusRankingPoint = summary.CargoCount >= DoubleBonusRankingPointThreshold ||
+			summary.HangarPoints >= DoubleBonusRankingPointThreshold
+	}
 
 	// Calculate penalty points.
 	for _, foul := range opponentFouls {

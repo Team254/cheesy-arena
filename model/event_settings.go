@@ -43,6 +43,7 @@ type EventSettings struct {
 	CargoBonusRankingPointThresholdWithoutQuintet int
 	CargoBonusRankingPointThresholdWithQuintet    int
 	HangarBonusRankingPointThreshold              int
+	DoubleBonusRankingPointThreshold              int
 }
 
 func (database *Database) GetEventSettings() (*EventSettings, error) {
@@ -75,6 +76,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		CargoBonusRankingPointThresholdWithoutQuintet: game.CargoBonusRankingPointThresholdWithoutQuintet,
 		CargoBonusRankingPointThresholdWithQuintet:    game.CargoBonusRankingPointThresholdWithQuintet,
 		HangarBonusRankingPointThreshold:              game.HangarBonusRankingPointThreshold,
+		DoubleBonusRankingPointThreshold:              game.DoubleBonusRankingPointThreshold,
 	}
 
 	if err := database.eventSettingsTable.create(&eventSettings); err != nil {

@@ -33,6 +33,27 @@ func TestAddScoreSummary(t *testing.T) {
 	// Add a disqualification.
 	rankingFields.AddScoreSummary(blueSummary, redSummary, true)
 	assert.Equal(t, RankingFields{6, 195, 52, 76, 0.05434383959970039, 1, 1, 1, 1, 4}, rankingFields)
+
+	// Test with a "double bonus" ranking point.
+	blueSummary.DoubleBonusRankingPoint = true
+	rankingFields = RankingFields{}
+	rankingFields.AddScoreSummary(blueSummary, redSummary, false)
+	assert.Equal(t, RankingFields{4, 61, 14, 16, 0.36758720663245853, 1, 0, 0, 0, 1}, rankingFields)
+}
+
+func TestAddScoreSummaryDoubleBonus(t *testing.T) {
+	rand.Seed(0)
+	redScore := TestScore1()
+	blueScore := TestScore2()
+	redSummary := redScore.Summarize(blueScore.Fouls)
+	blueSummary := blueScore.Summarize(redScore.Fouls)
+	rankingFields := RankingFields{}
+
+	// Test with a "double bonus" ranking point.
+	blueSummary.DoubleBonusRankingPoint = true
+	rankingFields = RankingFields{}
+	rankingFields.AddScoreSummary(blueSummary, redSummary, false)
+	assert.Equal(t, RankingFields{4, 61, 14, 16, 0.9451961492941164, 1, 0, 0, 0, 1}, rankingFields)
 }
 
 func TestSortRankings(t *testing.T) {

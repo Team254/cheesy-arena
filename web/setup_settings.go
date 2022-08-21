@@ -88,6 +88,8 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		strconv.Atoi(r.PostFormValue("cargoBonusRankingPointThresholdWithQuintet"))
 	eventSettings.HangarBonusRankingPointThreshold, _ =
 		strconv.Atoi(r.PostFormValue("hangarBonusRankingPointThreshold"))
+	eventSettings.DoubleBonusRankingPointThreshold, _ =
+		strconv.Atoi(r.PostFormValue("doubleBonusRankingPointThreshold"))
 
 	if eventSettings.Ap2TeamChannel != 0 && eventSettings.Ap2TeamChannel == eventSettings.ApTeamChannel {
 		web.renderSettings(w, r, "Cannot use same channel for both access points.")

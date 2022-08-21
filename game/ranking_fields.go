@@ -57,6 +57,9 @@ func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentSco
 	if ownScore.HangarBonusRankingPoint {
 		fields.RankingPoints += 1
 	}
+	if ownScore.DoubleBonusRankingPoint {
+		fields.RankingPoints += 1
+	}
 
 	// Assign tiebreaker points.
 	fields.MatchPoints += ownScore.MatchPoints

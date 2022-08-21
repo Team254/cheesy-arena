@@ -123,6 +123,33 @@ func TestScoreCargoBonusRankingPoint(t *testing.T) {
 	assert.Equal(t, 0, summary.TeleopCargoRemaining)
 	assert.Equal(t, false, summary.QuintetAchieved)
 	assert.Equal(t, true, summary.CargoBonusRankingPoint)
+
+	// Test with the Quintet disabled.
+	QuintetThreshold = 0
+	CargoBonusRankingPointThresholdWithoutQuintet = 25
+	score.AutoCargoLower[0] = 1
+	score.TeleopCargoLower[0] = 16
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 0, summary.AutoCargoRemaining)
+	assert.Equal(t, 8, summary.TeleopCargoRemaining)
+	assert.Equal(t, false, summary.QuintetAchieved)
+	assert.Equal(t, false, summary.CargoBonusRankingPoint)
+
+	score.AutoCargoLower[0] = 7
+	score.TeleopCargoLower[0] = 17
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 0, summary.AutoCargoRemaining)
+	assert.Equal(t, 1, summary.TeleopCargoRemaining)
+	assert.Equal(t, false, summary.QuintetAchieved)
+	assert.Equal(t, false, summary.CargoBonusRankingPoint)
+
+	score.AutoCargoLower[0] = 7
+	score.TeleopCargoLower[0] = 20
+	summary = score.Summarize([]Foul{})
+	assert.Equal(t, 0, summary.AutoCargoRemaining)
+	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, false, summary.QuintetAchieved)
+	assert.Equal(t, true, summary.CargoBonusRankingPoint)
 }
 
 func TestScoreHangarBonusRankingPoint(t *testing.T) {
@@ -160,6 +187,44 @@ func TestScoreHangarBonusRankingPoint(t *testing.T) {
 
 	score.EndgameStatuses = [3]EndgameStatus{EndgameNone, EndgameLow, EndgameTraversal}
 	assert.Equal(t, true, score.Summarize([]Foul{}).HangarBonusRankingPoint)
+
+	HangarBonusRankingPointThreshold = 20
+	score.EndgameStatuses = [3]EndgameStatus{EndgameNone, EndgameLow, EndgameTraversal}
+	assert.Equal(t, false, score.Summarize([]Foul{}).HangarBonusRankingPoint)
+}
+
+func TestScoreDoubleBonusRankingPoint(t *testing.T) {
+	var score Score
+	DoubleBonusRankingPointThreshold = 40
+
+	score.AutoCargoLower[0] = 39
+	score.EndgameStatuses = [3]EndgameStatus{EndgameTraversal, EndgameTraversal, EndgameNone}
+	assert.Equal(t, false, score.Summarize([]Foul{}).DoubleBonusRankingPoint)
+
+	score.AutoCargoUpper[0] = 1
+	assert.Equal(t, true, score.Summarize([]Foul{}).DoubleBonusRankingPoint)
+
+	score.AutoCargoUpper[0] = 0
+	score.EndgameStatuses = [3]EndgameStatus{EndgameTraversal, EndgameTraversal, EndgameHigh}
+	assert.Equal(t, true, score.Summarize([]Foul{}).DoubleBonusRankingPoint)
+
+	DoubleBonusRankingPointThreshold = 41
+	assert.Equal(t, false, score.Summarize([]Foul{}).DoubleBonusRankingPoint)
+
+	score.TeleopCargoUpper[0] = 2
+	assert.Equal(t, true, score.Summarize([]Foul{}).DoubleBonusRankingPoint)
+
+	DoubleBonusRankingPointThreshold = 45
+	assert.Equal(t, false, score.Summarize([]Foul{}).DoubleBonusRankingPoint)
+
+	score.EndgameStatuses = [3]EndgameStatus{EndgameTraversal, EndgameTraversal, EndgameTraversal}
+	assert.Equal(t, true, score.Summarize([]Foul{}).DoubleBonusRankingPoint)
+
+	DoubleBonusRankingPointThreshold = 1
+	assert.Equal(t, true, score.Summarize([]Foul{}).DoubleBonusRankingPoint)
+
+	DoubleBonusRankingPointThreshold = 0
+	assert.Equal(t, false, score.Summarize([]Foul{}).DoubleBonusRankingPoint)
 }
 
 func TestScoreEquals(t *testing.T) {
