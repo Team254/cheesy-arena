@@ -1,7 +1,7 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Web handlers for the pit rankings display.
+// Web handlers for the rankings display.
 
 package web
 
@@ -11,13 +11,13 @@ import (
 	"net/http"
 )
 
-// Renders the pit display which shows scrolling rankings.
-func (web *Web) pitDisplayHandler(w http.ResponseWriter, r *http.Request) {
+// Renders the display which shows scrolling rankings.
+func (web *Web) rankingsDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.enforceDisplayConfiguration(w, r, map[string]string{"scrollMsPerRow": "1000"}) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/pit_display.html")
+	template, err := web.parseFiles("templates/rankings_display.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -25,15 +25,15 @@ func (web *Web) pitDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 	}{web.arena.EventSettings}
-	err = template.ExecuteTemplate(w, "pit_display.html", data)
+	err = template.ExecuteTemplate(w, "rankings_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 }
 
-// The websocket endpoint for the pit display, used only to force reloads remotely.
-func (web *Web) pitDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+// The websocket endpoint for the rankings display, used only to force reloads remotely.
+func (web *Web) rankingsDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)

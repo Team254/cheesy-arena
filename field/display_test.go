@@ -34,8 +34,8 @@ func TestDisplayFromUrl(t *testing.T) {
 	assert.Equal(t, AudienceDisplay, display.Type)
 	display, _ = DisplayFromUrl("/displays/field_monitor/websocket", query)
 	assert.Equal(t, FieldMonitorDisplay, display.Type)
-	display, _ = DisplayFromUrl("/displays/pit/websocket", query)
-	assert.Equal(t, PitDisplay, display.Type)
+	display, _ = DisplayFromUrl("/displays/rankings/websocket", query)
+	assert.Equal(t, RankingsDisplay, display.Type)
 
 	// Test the nickname and arbitrary parameters.
 	query["nickname"] = []string{"Test Nickname"}
@@ -53,8 +53,8 @@ func TestDisplayFromUrl(t *testing.T) {
 
 func TestDisplayToUrl(t *testing.T) {
 	display := &Display{DisplayConfiguration: DisplayConfiguration{Id: "254", Nickname: "Test Nickname",
-		Type: PitDisplay, Configuration: map[string]string{"f": "1", "z": "#fff", "a": "3", "c": "4"}}}
-	assert.Equal(t, "/displays/pit?displayId=254&nickname=Test+Nickname&a=3&c=4&f=1&z=%23fff", display.ToUrl())
+		Type: RankingsDisplay, Configuration: map[string]string{"f": "1", "z": "#fff", "a": "3", "c": "4"}}}
+	assert.Equal(t, "/displays/rankings?displayId=254&nickname=Test+Nickname&a=3&c=4&f=1&z=%23fff", display.ToUrl())
 }
 
 func TestNextDisplayId(t *testing.T) {
@@ -82,12 +82,12 @@ func TestDisplayRegisterUnregister(t *testing.T) {
 	notifier := arena.Displays["254"].Notifier
 
 	// Register a second instance of the same display.
-	displayConfig2 := &DisplayConfiguration{Id: "254", Nickname: "Pit", Type: PitDisplay,
+	displayConfig2 := &DisplayConfiguration{Id: "254", Nickname: "Rankings", Type: RankingsDisplay,
 		Configuration: map[string]string{}}
 	arena.RegisterDisplay(displayConfig2, "2.3.4.5")
 	if assert.Contains(t, arena.Displays, "254") {
-		assert.Equal(t, "Pit", arena.Displays["254"].DisplayConfiguration.Nickname)
-		assert.Equal(t, PitDisplay, arena.Displays["254"].DisplayConfiguration.Type)
+		assert.Equal(t, "Rankings", arena.Displays["254"].DisplayConfiguration.Nickname)
+		assert.Equal(t, RankingsDisplay, arena.Displays["254"].DisplayConfiguration.Type)
 		assert.Equal(t, 2, arena.Displays["254"].ConnectionCount)
 		assert.Equal(t, "2.3.4.5", arena.Displays["254"].IpAddress)
 		assert.Same(t, notifier, arena.Displays["254"].Notifier)

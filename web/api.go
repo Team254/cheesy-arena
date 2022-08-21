@@ -113,7 +113,7 @@ func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// Generates a JSON dump of the qualification rankings, primarily for use by the pit display.
+// Generates a JSON dump of the qualification rankings, primarily for use by the rankings display.
 func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	rankings, err := web.arena.Database.GetAllRankings()
 	if err != nil {

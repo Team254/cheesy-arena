@@ -31,8 +31,8 @@ const (
 	AnnouncerDisplay
 	AudienceDisplay
 	FieldMonitorDisplay
-	PitDisplay
 	QueueingDisplay
+	RankingsDisplay
 	TwitchStreamDisplay
 )
 
@@ -42,8 +42,8 @@ var DisplayTypeNames = map[DisplayType]string{
 	AnnouncerDisplay:       "Announcer",
 	AudienceDisplay:        "Audience",
 	FieldMonitorDisplay:    "Field Monitor",
-	PitDisplay:             "Pit",
 	QueueingDisplay:        "Queueing",
+	RankingsDisplay:        "Rankings",
 	TwitchStreamDisplay:    "Twitch Stream",
 }
 
@@ -53,8 +53,8 @@ var displayTypePaths = map[DisplayType]string{
 	AnnouncerDisplay:       "/displays/announcer",
 	AudienceDisplay:        "/displays/audience",
 	FieldMonitorDisplay:    "/displays/field_monitor",
-	PitDisplay:             "/displays/pit",
 	QueueingDisplay:        "/displays/queueing",
+	RankingsDisplay:        "/displays/rankings",
 	TwitchStreamDisplay:    "/displays/twitch",
 }
 

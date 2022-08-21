@@ -2,7 +2,7 @@
 // Author: nick@team254.com (Nick Eyre)
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Client-side methods for the pit display.
+// Client-side methods for the rankings display.
 
 var websocket;
 var initialDwellMs = 3000;  // How long the display waits upon initial load before scrolling.
@@ -90,7 +90,7 @@ $(function() {
   scrollMsPerRow = urlParams.get("scrollMsPerRow");
 
   // Set up the websocket back to the server. Used only for remote forcing of reloads.
-  websocket = new CheesyWebsocket("/displays/pit/websocket", {
+  websocket = new CheesyWebsocket("/displays/rankings/websocket", {
     eventStatus: function(event) { handleEventStatus(event.data); },
   });
 
