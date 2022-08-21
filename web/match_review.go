@@ -197,11 +197,11 @@ func (web *Web) buildMatchReviewList(matchType string) ([]MatchReviewListItem, e
 			matchReviewList[i].BlueScore = matchResult.BlueScoreSummary().Score
 		}
 		switch match.Status {
-		case model.RedWonMatch:
+		case game.RedWonMatch:
 			matchReviewList[i].ColorClass = "danger"
-		case model.BlueWonMatch:
+		case game.BlueWonMatch:
 			matchReviewList[i].ColorClass = "info"
-		case model.TieMatch:
+		case game.TieMatch:
 			matchReviewList[i].ColorClass = "warning"
 		default:
 			matchReviewList[i].ColorClass = ""

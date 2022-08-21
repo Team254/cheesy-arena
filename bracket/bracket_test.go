@@ -4,7 +4,7 @@
 package bracket
 
 import (
-	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -96,8 +96,8 @@ func TestBracketUpdateTiming(t *testing.T) {
 		assert.Equal(t, int64(2200), matches[2].Time.Unix())
 		assert.Equal(t, int64(2800), matches[3].Time.Unix())
 	}
-	scoreMatch(database, "SF1-1", model.RedWonMatch)
-	scoreMatch(database, "SF1-2", model.BlueWonMatch)
+	scoreMatch(database, "SF1-1", game.RedWonMatch)
+	scoreMatch(database, "SF1-2", game.BlueWonMatch)
 	startTime = time.Unix(5000, 0)
 	assert.Nil(t, bracket.Update(database, &startTime))
 	matches, err = database.GetMatchesByType("elimination")
@@ -133,8 +133,8 @@ func TestBracketUpdateTeamPositions(t *testing.T) {
 	match2.Blue1, match2.Blue3 = 305, match2.Blue1
 	database.UpdateMatch(&match1)
 	database.UpdateMatch(&match2)
-	scoreMatch(database, "SF1-1", model.RedWonMatch)
-	scoreMatch(database, "SF2-1", model.BlueWonMatch)
+	scoreMatch(database, "SF1-1", game.RedWonMatch)
+	scoreMatch(database, "SF2-1", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, _ = database.GetMatchesByType("elimination")
 	if assert.Equal(t, 4, len(matches)) {
@@ -154,8 +154,8 @@ func TestBracketUpdateTeamPositions(t *testing.T) {
 	}
 
 	// Advance them to the finals and verify that the team position updates have been propagated.
-	scoreMatch(database, "SF1-2", model.RedWonMatch)
-	scoreMatch(database, "SF2-2", model.BlueWonMatch)
+	scoreMatch(database, "SF1-2", game.RedWonMatch)
+	scoreMatch(database, "SF2-2", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, _ = database.GetMatchesByType("elimination")
 	if assert.Equal(t, 6, len(matches)) {

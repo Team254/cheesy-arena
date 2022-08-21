@@ -7,6 +7,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"sort"
 	"strings"
 	"time"
@@ -36,17 +37,8 @@ type Match struct {
 	Blue3IsSurrogate bool
 	StartedAt        time.Time
 	ScoreCommittedAt time.Time
-	Status           MatchStatus
+	Status           game.MatchStatus
 }
-
-type MatchStatus string
-
-const (
-	RedWonMatch    MatchStatus = "R"
-	BlueWonMatch   MatchStatus = "B"
-	TieMatch       MatchStatus = "T"
-	MatchNotPlayed MatchStatus = ""
-)
 
 var elimRoundNames = map[int]string{1: "F", 2: "SF", 4: "QF", 8: "EF"}
 
@@ -128,7 +120,7 @@ func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
 }
 
 func (match *Match) IsComplete() bool {
-	return match.Status != MatchNotPlayed
+	return match.Status != game.MatchNotPlayed
 }
 
 func (match *Match) CapitalizedType() string {

@@ -8,6 +8,7 @@ package bracket
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"strconv"
 )
@@ -266,9 +267,9 @@ func (matchup *Matchup) update(database *model.Database) error {
 		}
 
 		// Check who won.
-		if match.Status == model.RedWonMatch {
+		if match.Status == game.RedWonMatch {
 			matchup.RedAllianceWins++
-		} else if match.Status == model.BlueWonMatch {
+		} else if match.Status == game.BlueWonMatch {
 			matchup.BlueAllianceWins++
 		}
 	}

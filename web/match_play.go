@@ -27,7 +27,7 @@ type MatchPlayListItem struct {
 	Id          int
 	DisplayName string
 	Time        string
-	Status      model.MatchStatus
+	Status      game.MatchStatus
 	ColorClass  string
 }
 
@@ -405,15 +405,17 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 		// Update and save the match record to the database.
 		match.ScoreCommittedAt = time.Now()
-		redScore := matchResult.RedScoreSummary()
-		blueScore := matchResult.BlueScoreSummary()
-		if redScore.Score > blueScore.Score {
-			match.Status = model.RedWonMatch
-		} else if redScore.Score < blueScore.Score {
-			match.Status = model.BlueWonMatch
-		} else {
-			match.Status = model.TieMatch
+		redScoreSummary := matchResult.RedScoreSummary()
+		blueScoreSummary := matchResult.BlueScoreSummary()
+		applyElimTiebreakers := false
+		if match.Type == "elimination" {
+			// Playoff matches other than the finals should have ties broken by examining the scoring breakdown rather
+			// than being replayed.
+			if match.ElimRound < web.arena.PlayoffBracket.FinalsMatchup.Round {
+				applyElimTiebreakers = true
+			}
 		}
+		match.Status = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, applyElimTiebreakers)
 		err := web.arena.Database.UpdateMatch(match)
 		if err != nil {
 			return err
@@ -516,7 +518,7 @@ func (list MatchPlayList) Len() int {
 
 // Helper function to implement the required interface for Sort.
 func (list MatchPlayList) Less(i, j int) bool {
-	return list[i].Status == model.MatchNotPlayed && list[j].Status != model.MatchNotPlayed
+	return list[i].Status == game.MatchNotPlayed && list[j].Status != game.MatchNotPlayed
 }
 
 // Helper function to implement the required interface for Sort.
@@ -538,11 +540,11 @@ func (web *Web) buildMatchPlayList(matchType string) (MatchPlayList, error) {
 		matchPlayList[i].Time = match.Time.Local().Format("3:04 PM")
 		matchPlayList[i].Status = match.Status
 		switch match.Status {
-		case model.RedWonMatch:
+		case game.RedWonMatch:
 			matchPlayList[i].ColorClass = "danger"
-		case model.BlueWonMatch:
+		case game.BlueWonMatch:
 			matchPlayList[i].ColorClass = "info"
-		case model.TieMatch:
+		case game.TieMatch:
 			matchPlayList[i].ColorClass = "warning"
 		default:
 			matchPlayList[i].ColorClass = ""

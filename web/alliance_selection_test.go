@@ -203,7 +203,7 @@ func TestAllianceSelectionReset(t *testing.T) {
 	assert.NotEmpty(t, matches)
 
 	// Mark a match as played and verify that the alliance selection can no longer be reset.
-	matches[0].Status = model.RedWonMatch
+	matches[0].Status = game.RedWonMatch
 	assert.Nil(t, web.arena.Database.UpdateMatch(&matches[0]))
 	recorder = web.postHttpResponse("/alliance_selection/reset", "")
 	assert.Equal(t, 200, recorder.Code)

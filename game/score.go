@@ -16,23 +16,6 @@ type Score struct {
 	ElimDq           bool
 }
 
-type ScoreSummary struct {
-	TaxiPoints              int
-	AutoCargoCount          int
-	AutoCargoPoints         int
-	CargoCount              int
-	CargoPoints             int
-	HangarPoints            int
-	MatchPoints             int
-	FoulPoints              int
-	Score                   int
-	AutoCargoRemaining      int
-	TeleopCargoRemaining    int
-	QuintetAchieved         bool
-	CargoBonusRankingPoint  bool
-	HangarBonusRankingPoint bool
-}
-
 var QuintetThreshold = 5
 var CargoBonusRankingPointThresholdWithoutQuintet = 20
 var CargoBonusRankingPointThresholdWithQuintet = 18

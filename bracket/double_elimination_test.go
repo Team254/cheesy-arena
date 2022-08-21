@@ -4,7 +4,7 @@
 package bracket
 
 import (
-	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -50,13 +50,13 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(matches))
 
-	scoreMatch(database, "1", model.BlueWonMatch)
+	scoreMatch(database, "1", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(matches))
 
-	scoreMatch(database, "2", model.RedWonMatch)
+	scoreMatch(database, "2", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -65,13 +65,13 @@ func TestDoubleEliminationProgression(t *testing.T) {
 		assertMatch(t, matches[5], "7", 8, 4)
 	}
 
-	scoreMatch(database, "3", model.RedWonMatch)
+	scoreMatch(database, "3", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	assert.Equal(t, 6, len(matches))
 
-	scoreMatch(database, "4", model.BlueWonMatch)
+	scoreMatch(database, "4", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -82,19 +82,19 @@ func TestDoubleEliminationProgression(t *testing.T) {
 		assertMatch(t, matches[7], "8", 3, 7)
 	}
 
-	scoreMatch(database, "5", model.BlueWonMatch)
+	scoreMatch(database, "5", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	assert.Equal(t, 8, len(matches))
 
-	scoreMatch(database, "6", model.BlueWonMatch)
+	scoreMatch(database, "6", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	assert.Equal(t, 8, len(matches))
 
-	scoreMatch(database, "7", model.BlueWonMatch)
+	scoreMatch(database, "7", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -102,7 +102,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 		assertMatch(t, matches[8], "9", 8, 2)
 	}
 
-	scoreMatch(database, "8", model.RedWonMatch)
+	scoreMatch(database, "8", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -111,13 +111,13 @@ func TestDoubleEliminationProgression(t *testing.T) {
 		assertMatch(t, matches[10], "12", 4, 3)
 	}
 
-	scoreMatch(database, "9", model.RedWonMatch)
+	scoreMatch(database, "9", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	assert.Equal(t, 11, len(matches))
 
-	scoreMatch(database, "10", model.RedWonMatch)
+	scoreMatch(database, "10", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -126,13 +126,13 @@ func TestDoubleEliminationProgression(t *testing.T) {
 		assertMatch(t, matches[11], "12", 4, 3)
 	}
 
-	scoreMatch(database, "11", model.BlueWonMatch)
+	scoreMatch(database, "11", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	assert.Equal(t, 12, len(matches))
 
-	scoreMatch(database, "12", model.RedWonMatch)
+	scoreMatch(database, "12", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -140,7 +140,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 		assertMatch(t, matches[12], "13", 3, 7)
 	}
 
-	scoreMatch(database, "13", model.BlueWonMatch)
+	scoreMatch(database, "13", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -152,7 +152,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	assert.Equal(t, 0, bracket.Winner())
 	assert.Equal(t, 0, bracket.Finalist())
 
-	scoreMatch(database, "F-1", model.BlueWonMatch)
+	scoreMatch(database, "F-1", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -161,7 +161,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	assert.Equal(t, 0, bracket.Winner())
 	assert.Equal(t, 0, bracket.Finalist())
 
-	scoreMatch(database, "F-2", model.RedWonMatch)
+	scoreMatch(database, "F-2", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -172,7 +172,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	assert.Equal(t, 0, bracket.Winner())
 	assert.Equal(t, 0, bracket.Finalist())
 
-	scoreMatch(database, "F-3", model.TieMatch)
+	scoreMatch(database, "F-3", game.TieMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -183,7 +183,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	assert.Equal(t, 0, bracket.Winner())
 	assert.Equal(t, 0, bracket.Finalist())
 
-	scoreMatch(database, "F-4", model.TieMatch)
+	scoreMatch(database, "F-4", game.TieMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -194,7 +194,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	assert.Equal(t, 0, bracket.Winner())
 	assert.Equal(t, 0, bracket.Finalist())
 
-	scoreMatch(database, "F-5", model.BlueWonMatch)
+	scoreMatch(database, "F-5", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -215,7 +215,7 @@ func TestDoubleEliminationTie(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(matches))
 
-	scoreMatch(database, "1", model.TieMatch)
+	scoreMatch(database, "1", game.TieMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -223,7 +223,7 @@ func TestDoubleEliminationTie(t *testing.T) {
 		assertMatch(t, matches[4], "1-2", 1, 8)
 	}
 
-	scoreMatch(database, "1-2", model.TieMatch)
+	scoreMatch(database, "1-2", game.TieMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -231,7 +231,7 @@ func TestDoubleEliminationTie(t *testing.T) {
 		assertMatch(t, matches[5], "1-3", 1, 8)
 	}
 
-	scoreMatch(database, "1-3", model.RedWonMatch)
+	scoreMatch(database, "1-3", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -249,13 +249,13 @@ func TestDoubleEliminationChangeResult(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(matches))
 
-	scoreMatch(database, "1", model.BlueWonMatch)
+	scoreMatch(database, "1", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(matches))
 
-	scoreMatch(database, "2", model.RedWonMatch)
+	scoreMatch(database, "2", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -264,12 +264,12 @@ func TestDoubleEliminationChangeResult(t *testing.T) {
 		assertMatch(t, matches[5], "7", 8, 4)
 	}
 
-	scoreMatch(database, "2", model.MatchNotPlayed)
+	scoreMatch(database, "2", game.MatchNotPlayed)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Equal(t, 4, len(matches))
 
-	scoreMatch(database, "2", model.BlueWonMatch)
+	scoreMatch(database, "2", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)

@@ -4,6 +4,7 @@
 package field
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -118,9 +119,9 @@ func setMatch(database *model.Database, match *model.Match, matchTime time.Time,
 	match.Time = matchTime
 	match.StartedAt = startedAt
 	if isComplete {
-		match.Status = model.TieMatch
+		match.Status = game.TieMatch
 	} else {
-		match.Status = model.MatchNotPlayed
+		match.Status = game.MatchNotPlayed
 	}
 	_ = database.UpdateMatch(match)
 }

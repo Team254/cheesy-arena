@@ -5,6 +5,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
@@ -14,10 +15,10 @@ import (
 func TestMatchReview(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match1 := model.Match{Type: "practice", DisplayName: "1", Status: model.RedWonMatch}
+	match1 := model.Match{Type: "practice", DisplayName: "1", Status: game.RedWonMatch}
 	match2 := model.Match{Type: "practice", DisplayName: "2"}
-	match3 := model.Match{Type: "qualification", DisplayName: "1", Status: model.BlueWonMatch}
-	match4 := model.Match{Type: "elimination", DisplayName: "SF1-1", Status: model.TieMatch}
+	match3 := model.Match{Type: "qualification", DisplayName: "1", Status: game.BlueWonMatch}
+	match4 := model.Match{Type: "elimination", DisplayName: "SF1-1", Status: game.TieMatch}
 	match5 := model.Match{Type: "elimination", DisplayName: "SF1-2"}
 	web.arena.Database.CreateMatch(&match1)
 	web.arena.Database.CreateMatch(&match2)
@@ -38,7 +39,7 @@ func TestMatchReview(t *testing.T) {
 func TestMatchReviewEditExistingResult(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: model.RedWonMatch, Red1: 1001,
+	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: game.RedWonMatch, Red1: 1001,
 		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, ElimRedAlliance: 1, ElimBlueAlliance: 2}
 	assert.Nil(t, web.arena.Database.CreateMatch(&match))
 	matchResult := model.BuildTestMatchResult(match.Id, 1)
@@ -84,7 +85,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 func TestMatchReviewCreateNewResult(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: model.RedWonMatch, Red1: 1001,
+	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: game.RedWonMatch, Red1: 1001,
 		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, ElimRedAlliance: 1, ElimBlueAlliance: 2}
 	web.arena.Database.CreateMatch(&match)
 	tournament.CreateTestAlliances(web.arena.Database, 2)
@@ -152,7 +153,7 @@ func TestMatchReviewEditCurrentMatch(t *testing.T) {
 
 	// Check that the persisted match is still unedited and that the realtime scores have been updated instead.
 	match2, _ := web.arena.Database.GetMatchById(match.Id)
-	assert.Equal(t, model.MatchNotPlayed, match2.Status)
+	assert.Equal(t, game.MatchNotPlayed, match2.Status)
 	assert.Equal(t, [4]int{5, 1, 7, 2}, web.arena.RedRealtimeScore.CurrentScore.TeleopCargoLower)
 	assert.Equal(t, [4]int{2, 2, 2, 2}, web.arena.BlueRealtimeScore.CurrentScore.TeleopCargoUpper)
 	assert.Equal(t, 0, len(web.arena.RedRealtimeScore.CurrentScore.Fouls))

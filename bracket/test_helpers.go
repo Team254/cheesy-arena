@@ -6,6 +6,7 @@
 package bracket
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -27,7 +28,7 @@ func assertMatch(t *testing.T, match model.Match, displayName string, redAllianc
 	assert.Equal(t, 100*blueAlliance+3, match.Blue3)
 }
 
-func scoreMatch(database *model.Database, displayName string, winner model.MatchStatus) {
+func scoreMatch(database *model.Database, displayName string, winner game.MatchStatus) {
 	match, _ := database.GetMatchByName("elimination", displayName)
 	match.Status = winner
 	database.UpdateMatch(match)
