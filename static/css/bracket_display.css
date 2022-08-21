@@ -1,0 +1,40 @@
+/*
+  Copyright 2022 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+*/
+
+html {
+  height: 100%;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+body {
+  height: 100%;
+  background: -moz-linear-gradient(top, #003375 1%, #3C679D 100%); /* FF3.6+ */
+  background: -webkit-linear-gradient(top, #003375 1%, #3C679D 100%); /* Chrome10+,Safari5.1+ */
+  background-repeat: no-repeat;
+  font-family: "FuturaLT";
+}
+#column {
+  width: 80%;
+  height: 100%;
+  margin: 0 auto;
+}
+#titlebar {
+  padding: 40px 0px;
+  line-height: 50px;
+  font-size: 40px;
+  font-family: "FuturaLTBold";
+  color: #fff;
+  text-transform: uppercase;
+}
+#bracket {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto auto;
+  text-align: center;
+}

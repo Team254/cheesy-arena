@@ -252,6 +252,9 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 		}
 	}
 
+	// Signal displays of the bracket to update themselves.
+	web.arena.ScorePostedNotifier.Notify()
+
 	http.Redirect(w, r, "/alliance_selection", 303)
 }
 

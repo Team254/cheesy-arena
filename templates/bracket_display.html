@@ -1,0 +1,33 @@
+{{/*
+  Copyright 2022 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  Display for showing the playoff bracket.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bracket Display - {{.EventSettings.Name}} - Cheesy Arena </title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/bracket_display.css" />
+  </head>
+  <body>
+    <div id="column">
+      <div id="titlebar">
+        <div class="pull-left">Playoff Bracket</div>
+        <div class="pull-right">{{.EventSettings.Name}}</div>
+        <div>&nbsp;</div>
+      </div>
+      <div id="bracket">
+        <img id="bracketSvg" src="" />
+      </div>
+    </div>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/bracket_display.js"></script>
+  </body>
+</html>

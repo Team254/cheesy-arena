@@ -30,6 +30,7 @@ const (
 	AllianceStationDisplay
 	AnnouncerDisplay
 	AudienceDisplay
+	BracketDisplay
 	FieldMonitorDisplay
 	QueueingDisplay
 	RankingsDisplay
@@ -41,6 +42,7 @@ var DisplayTypeNames = map[DisplayType]string{
 	AllianceStationDisplay: "Alliance Station",
 	AnnouncerDisplay:       "Announcer",
 	AudienceDisplay:        "Audience",
+	BracketDisplay:         "Bracket",
 	FieldMonitorDisplay:    "Field Monitor",
 	QueueingDisplay:        "Queueing",
 	RankingsDisplay:        "Rankings",
@@ -52,6 +54,7 @@ var displayTypePaths = map[DisplayType]string{
 	AllianceStationDisplay: "/displays/alliance_station",
 	AnnouncerDisplay:       "/displays/announcer",
 	AudienceDisplay:        "/displays/audience",
+	BracketDisplay:         "/displays/bracket",
 	FieldMonitorDisplay:    "/displays/field_monitor",
 	QueueingDisplay:        "/displays/queueing",
 	RankingsDisplay:        "/displays/rankings",
