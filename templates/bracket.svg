@@ -58,6 +58,7 @@
     .st44{fill:#BDCCD4;}
     .st45{fill:none;stroke:#BDCCD4;stroke-width:2;stroke-miterlimit:10;}
     .st46{fill:#FFFFFF;stroke:#444444;stroke-width:2;stroke-miterlimit:10;}
+    .st47{fill:none;stroke:#FFFFFF;stroke-width:10;stroke-miterlimit:10;}
     .red{fill:#FF2222;}
     .blue{fill:#2080FF;}
 
@@ -85,7 +86,7 @@
       #match_3_1 {transform: translate(709px, 694px);}
 
       #match_4_2 {transform: translate(1006px, 301px);}
-      #match_4_1 {transform: translate(1006px, 592px);}
+      #match_4_1 {transform: translate(1006px, 599px);}
 
       #match_5_1 {transform: translate(1302px, 567px);}
 
@@ -330,7 +331,7 @@
           <text  transform="matrix(1 0 0 1 643.2857 469.1667)" class="st44 st18 st43">L</text>
         </g>
         <g id="connectors_4_1"{{if (index .Matchups "4_1").IsActive}} class="active"{{end}}>
-          <rect  x="955.326" y="655.13" class="st42" width="68.612" height="69.149"/>
+          <rect  x="955.326" y="589.109" class="st42" width="68.612" height="200.486"/>
           <text  transform="matrix(1 0 0 1 1223.2803 681.0883)" class="st12 st18 st43">W</text>
           <text  transform="matrix(1 0 0 1 1223.3726 717.1893)" class="st44 st18 st43">L</text>
           <line  class="st8" x1="1238" y1="689" x2="1238" y2="738"/>
@@ -338,8 +339,9 @@
           <line  class="st8" x1="1246.485" y1="746.485" x2="1229.515" y2="729.515"/>
           <text  transform="matrix(1 0 0 1 926.2617 775.3125)" class="st12 st18 st43">W</text>
           <text  transform="matrix(1 0 0 1 926.2617 585.3125)" class="st12 st18 st43">W</text>
-          <line  class="st11" x1="1008" y1="655" x2="958" y2="655"/>
-          <line  class="st11" x1="1008" y1="725" x2="958" y2="725"/>
+          <polyline class="st11" points="1008,725 984,725 954.488,593.142     "/>
+          <polyline class="st47" points="1008,656 984,656 955.118,784.297    "/>
+          <polyline class="st11" points="1008,655 984,655 955.118,783 898,783     "/>
         </g>
         <g id="connectors_4_2"{{if (index .Matchups "4_2").IsActive}} class="active"{{end}}>
           <rect  x="699.216" y="241.054" class="st42" width="312.117" height="199.156"/>
