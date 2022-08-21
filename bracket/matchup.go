@@ -135,7 +135,7 @@ func (matchup *Matchup) StatusText() (string, string) {
 }
 
 // Returns the winning alliance ID of the matchup, or 0 if it is not yet known.
-func (matchup *Matchup) winner() int {
+func (matchup *Matchup) Winner() int {
 	if matchup.RedAllianceWins >= matchup.NumWinsToAdvance {
 		return matchup.RedAllianceId
 	}
@@ -146,7 +146,7 @@ func (matchup *Matchup) winner() int {
 }
 
 // Returns the losing alliance ID of the matchup, or 0 if it is not yet known.
-func (matchup *Matchup) loser() int {
+func (matchup *Matchup) Loser() int {
 	if matchup.RedAllianceWins >= matchup.NumWinsToAdvance {
 		return matchup.BlueAllianceId
 	}
@@ -157,8 +157,8 @@ func (matchup *Matchup) loser() int {
 }
 
 // Returns true if the matchup has been won, and false if it is still to be determined.
-func (matchup *Matchup) isComplete() bool {
-	return matchup.winner() > 0
+func (matchup *Matchup) IsComplete() bool {
+	return matchup.Winner() > 0
 }
 
 // Returns true if the matchup represents the final matchup in the bracket.
@@ -184,16 +184,16 @@ func (matchup *Matchup) update(database *model.Database) error {
 	// Populate the alliance IDs from the lower matchups (or with a zero value if they are not yet complete).
 	if matchup.redAllianceSourceMatchup != nil {
 		if matchup.redAllianceSource.useWinner {
-			matchup.RedAllianceId = matchup.redAllianceSourceMatchup.winner()
+			matchup.RedAllianceId = matchup.redAllianceSourceMatchup.Winner()
 		} else {
-			matchup.RedAllianceId = matchup.redAllianceSourceMatchup.loser()
+			matchup.RedAllianceId = matchup.redAllianceSourceMatchup.Loser()
 		}
 	}
 	if matchup.blueAllianceSourceMatchup != nil {
 		if matchup.blueAllianceSource.useWinner {
-			matchup.BlueAllianceId = matchup.blueAllianceSourceMatchup.winner()
+			matchup.BlueAllianceId = matchup.blueAllianceSourceMatchup.Winner()
 		} else {
-			matchup.BlueAllianceId = matchup.blueAllianceSourceMatchup.loser()
+			matchup.BlueAllianceId = matchup.blueAllianceSourceMatchup.Loser()
 		}
 	}
 

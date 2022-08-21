@@ -164,17 +164,17 @@ func createMatchupGraph(
 
 // Returns the winning alliance ID of the entire bracket, or 0 if it is not yet known.
 func (bracket *Bracket) Winner() int {
-	return bracket.FinalsMatchup.winner()
+	return bracket.FinalsMatchup.Winner()
 }
 
 // Returns the finalist alliance ID of the entire bracket, or 0 if it is not yet known.
 func (bracket *Bracket) Finalist() int {
-	return bracket.FinalsMatchup.loser()
+	return bracket.FinalsMatchup.Loser()
 }
 
 // Returns true if the bracket has been won, and false if it is still to be determined.
 func (bracket *Bracket) IsComplete() bool {
-	return bracket.FinalsMatchup.isComplete()
+	return bracket.FinalsMatchup.IsComplete()
 }
 
 // Returns a slice of all matchups contained within the bracket.
@@ -230,12 +230,20 @@ func (bracket *Bracket) Update(database *model.Database, startTime *time.Time) e
 	return nil
 }
 
-// Prints out each matchup within the bracket in level order, backwards from finals to earlier rounds, for debugging.
-func (bracket *Bracket) print() {
+// Performs a traversal of the bracket in reverse order of rounds and invokes the given function for each visited
+// matchup.
+func (bracket *Bracket) ReverseRoundOrderTraversal(visitFunction func(*Matchup)) {
 	matchupQueue := []*Matchup{bracket.FinalsMatchup}
 	for len(matchupQueue) > 0 {
+		// Reorder the queue since graph depth doesn't necessarily equate to round.
+		sort.Slice(matchupQueue, func(i, j int) bool {
+			if matchupQueue[i].Round == matchupQueue[j].Round {
+				return matchupQueue[i].Group < matchupQueue[j].Group
+			}
+			return matchupQueue[i].Round > matchupQueue[j].Round
+		})
 		matchup := matchupQueue[0]
-		fmt.Printf("%+v\n\n", matchup)
+		visitFunction(matchup)
 		matchupQueue = matchupQueue[1:]
 		if matchup != nil {
 			if matchup.redAllianceSourceMatchup != nil && matchup.redAllianceSource.useWinner {
@@ -246,4 +254,11 @@ func (bracket *Bracket) print() {
 			}
 		}
 	}
+}
+
+// Prints out each matchup within the bracket in level order, backwards from finals to earlier rounds, for debugging.
+func (bracket *Bracket) print() {
+	bracket.ReverseRoundOrderTraversal(func(matchup *Matchup) {
+		fmt.Printf("%+v\n\n", matchup)
+	})
 }

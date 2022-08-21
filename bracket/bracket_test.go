@@ -209,3 +209,25 @@ func TestBracketGetMatchup(t *testing.T) {
 	}
 	assert.Nil(t, matchup)
 }
+
+func TestBracketLevelOrderTraversal(t *testing.T) {
+	database := setupTestDb(t)
+	tournament.CreateTestAlliances(database, 8)
+	bracket, err := NewSingleEliminationBracket(8)
+	assert.Nil(t, err)
+
+	var displayNames []string
+	bracket.ReverseRoundOrderTraversal(func(matchup *Matchup) {
+		displayNames = append(displayNames, matchup.displayName)
+	})
+	assert.Equal(t, []string{"F", "SF1", "SF2", "QF1", "QF2", "QF3", "QF4"}, displayNames)
+
+	bracket, err = NewDoubleEliminationBracket(8)
+	assert.Nil(t, err)
+
+	displayNames = nil
+	bracket.ReverseRoundOrderTraversal(func(matchup *Matchup) {
+		displayNames = append(displayNames, matchup.displayName)
+	})
+	assert.Equal(t, []string{"F", "13", "11", "12", "9", "10", "5", "6", "7", "8", "1", "2", "3", "4"}, displayNames)
+}
