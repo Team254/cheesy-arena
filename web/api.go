@@ -266,15 +266,29 @@ func (web *Web) bracketSvgApiHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	bracketType := "double"
+	numAlliances := web.arena.EventSettings.NumElimAlliances
+	if web.arena.EventSettings.ElimType == "single" {
+		if numAlliances > 8 {
+			bracketType = "16"
+		} else if numAlliances > 4 {
+			bracketType = "8"
+		} else if numAlliances > 2 {
+			bracketType = "4"
+		} else {
+			bracketType = "2"
+		}
+	}
+
 	template, err := web.parseFiles("templates/bracket.svg")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 	data := struct {
-		*model.EventSettings
-		Matchups map[string]*allianceMatchup
-	}{web.arena.EventSettings, matchups}
+		BracketType string
+		Matchups    map[string]*allianceMatchup
+	}{bracketType, matchups}
 	w.Header().Set("Content-Type", "image/svg+xml")
 	err = template.ExecuteTemplate(w, "bracket", data)
 	if err != nil {

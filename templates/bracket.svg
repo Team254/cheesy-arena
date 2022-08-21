@@ -13,7 +13,6 @@
     .right{text-anchor:end;}
     .active #active_bg{fill:#444444;}
     .active .st21{fill:#ffffff;}
-    .hidden {display:none;}
     .st0{fill:#0070FE;}
     .st1{fill:#2F56D2;}
     .st2{fill:#203D99;}
@@ -37,7 +36,7 @@
     .st20{text-anchor:middle;}
     .st21{font-size:27px;}
     .st22{text-anchor:middle;}
-    .st23{font-size:42px;}
+    .st23{font-size:34px;}
     .st24{text-anchor:middle;}
     .st25{display:none;}
     .st26{display:inline;}
@@ -62,210 +61,371 @@
     .red{fill:#FF2222;}
     .blue{fill:#2080FF;}
 
-    <!-- Label Positioning -->
-    #label1 {transform: translate(219px, 975px);}
-    #label2 {transform: translate(516px, 975px);}
-    #label3 {transform: translate(813px, 975px);}
-    #label4 {transform: translate(1109px, 975px);}
-    #label5 {transform: translate(1405px, 975px);}
-    #label6 {transform: translate(1702px, 975px);}
+    {{if eq .BracketType "double"}}
+      <!-- Label Positioning -->
+      #label1 {transform: translate(219px, 975px);}
+      #label2 {transform: translate(516px, 975px);}
+      #label3 {transform: translate(813px, 975px);}
+      #label4 {transform: translate(1109px, 975px);}
+      #label5 {transform: translate(1405px, 975px);}
+      #label6 {transform: translate(1702px, 975px);}
 
-    #m6a #match_title{display:none;}    <!-- Show extra-large special title for Finals -->
+      <!-- Match Positioning -->
+      #match_1_1 {transform: translate(114px, 158px);}
+      #match_1_2 {transform: translate(114px, 348px);}
+      #match_1_3 {transform: translate(114px, 538px);}
+      #match_1_4 {transform: translate(114px, 728px);}
 
-    <!-- Match Positioning -->
-    #match_1_1 {transform: translate(114px, 158px);}
-    #match_1_2 {transform: translate(114px, 348px);}
-    #match_1_3 {transform: translate(114px, 538px);}
-    #match_1_4 {transform: translate(114px, 728px);}
+      #match_2_3 {transform: translate(412px, 158px);}
+      #match_2_4 {transform: translate(412px, 348px);}
+      #match_2_1 {transform: translate(412px, 538px);}
+      #match_2_2 {transform: translate(412px, 728px);}
 
-    #match_2_3 {transform: translate(412px, 158px);}
-    #match_2_4 {transform: translate(412px, 348px);}
-    #match_2_1 {transform: translate(412px, 538px);}
-    #match_2_2 {transform: translate(412px, 728px);}
+      #match_3_2 {transform: translate(709px, 504px);}
+      #match_3_1 {transform: translate(709px, 694px);}
 
-    #match_3_2 {transform: translate(709px, 504px);}
-    #match_3_1 {transform: translate(709px, 694px);}
+      #match_4_2 {transform: translate(1006px, 301px);}
+      #match_4_1 {transform: translate(1006px, 592px);}
 
-    #match_4_2 {transform: translate(1006px, 301px);}
-    #match_4_1 {transform: translate(1006px, 592px);}
+      #match_5_1 {transform: translate(1302px, 567px);}
 
-    #match_5_1 {transform: translate(1302px, 567px);}
+      #match_6_1 {transform: translate(1598px, 417px);}
 
-    #match_6_1 {transform: translate(1598px, 417px);}
+      <!-- Temporary Connectors -->
+      #connectors_temporary g{display:none;}
+      #connectors_temporary g.active{display:inline;}
+      #connectors_temporary g.active g{display:inline;}
+    {{else}}
+      <!-- Label Positioning & Show/Hide for Different Bracket Sizes -->
+      .bracket_2 .st38,
+      .bracket_4 .st39,
+      .bracket_4 .st40,
+      .bracket_8 .st39,
+      .bracket_8 .st41,
+      .bracket_8 .st27
+      {display:none;}
 
-    <!-- Temporary Connectors -->
-    #connectors_temporary g{display:none;}
-    #connectors_temporary g.active{display:inline;}
-    #connectors_temporary g.active g{display:inline;}
+      .bracket_8 #l2a {transform: translate(578px, 964px);}
+      .bracket_8 #l3a {transform: translate(960px, 964px);}
+      .bracket_8 #l4 {transform: translate(1346px, 964px);}
+      .bracket_4 #l3a {transform: translate(768px, 840px);}
+      .bracket_4 #l4 {transform: translate(1154px, 840px);}
+
+      <!-- Match Positioning -->
+      .bracket_16 #match_1_1 {transform: translate(94px, 158px);}
+      .bracket_16 #match_1_2 {transform: translate(94px, 348px);}
+      .bracket_16 #match_1_3 {transform: translate(94px, 538px);}
+      .bracket_16 #match_1_4 {transform: translate(94px, 728px);}
+      .bracket_16 #match_1_5 {transform: translate(1614px, 158px);}
+      .bracket_16 #match_1_6 {transform: translate(1614px, 348px);}
+      .bracket_16 #match_1_7 {transform: translate(1614px, 538px);}
+      .bracket_16 #match_1_8 {transform: translate(1614px, 728px);}
+
+      .bracket_16 #match_2_1 {transform: translate(349px, 253px);}
+      .bracket_16 #match_2_2 {transform: translate(349px, 633px);}
+      .bracket_16 #match_2_3 {transform: translate(1361px, 253px);}
+      .bracket_16 #match_2_4 {transform: translate(1361px, 633px);}
+
+      .bracket_16 #match_3_1 {transform: translate(602px, 488px);}
+      .bracket_16 #match_3_2 {transform: translate(1108px, 488px);}
+      .bracket_16 #match_4_1  {transform: translate(856px, 408px);}
+
+      .bracket_8 #match_1_1,
+      .bracket_8 #match_1_2,
+      .bracket_8 #match_1_3,
+      .bracket_8 #match_1_4,
+      .bracket_8 #match_1_5,
+      .bracket_8 #match_1_6,
+      .bracket_8 #match_1_7,
+      .bracket_8 #match_1_8
+      {display:none;}
+
+      .bracket_8 #match_2_1 {transform: translate(473px, 158px);}
+      .bracket_8 #match_2_2 {transform: translate(473px, 348px);}
+      .bracket_8 #match_2_3 {transform: translate(473px, 538px);}
+      .bracket_8 #match_2_4 {transform: translate(473px, 728px);}
+
+      .bracket_8 #match_3_1 {transform: translate(857px, 321px);}
+      .bracket_8 #match_3_2 {transform: translate(857px, 565px);}
+      .bracket_8 #match_4_1 {transform: translate(1241px, 443px);}
+
+      .bracket_4 #match_1_1,
+      .bracket_4 #match_1_2,
+      .bracket_4 #match_1_3,
+      .bracket_4 #match_1_4,
+      .bracket_4 #match_1_5,
+      .bracket_4 #match_1_6,
+      .bracket_4 #match_1_7,
+      .bracket_4 #match_1_8,
+      .bracket_4 #match_2_1,
+      .bracket_4 #match_2_2,
+      .bracket_4 #match_2_3,
+      .bracket_4 #match_2_4
+      {display:none;}
+
+      .bracket_4 #match_3_1 {transform: translate(665px, 397px);}
+      .bracket_4 #match_3_2 {transform: translate(665px, 601px);}
+      .bracket_4 #match_4_1  {transform: translate(1049px, 499px);}
+
+      .bracket_2 #match_1_1,
+      .bracket_2 #match_1_2,
+      .bracket_2 #match_1_3,
+      .bracket_2 #match_1_4,
+      .bracket_2 #match_1_5,
+      .bracket_2 #match_1_6,
+      .bracket_2 #match_1_7,
+      .bracket_2 #match_1_8,
+      .bracket_2 #match_2_1,
+      .bracket_2 #match_2_2,
+      .bracket_2 #match_2_3,
+      .bracket_2 #match_2_4,
+      .bracket_2 #match_3_1,
+      .bracket_2 #match_3_2
+      {display:none;}
+
+      .bracket_2 #match_4_1  {transform: translate(857px, 435px);}
+
+      <!-- Background Show/Hide for Different Bracket Sizes -->
+      .bracket_16 #bg8,
+      .bracket_16 #bg4,
+      .bracket_16 #bg2,
+      .bracket_8 #bg16,
+      .bracket_8 #bg4,
+      .bracket_8 #bg2,
+      .bracket_4 #bg16,
+      .bracket_4 #bg8,
+      .bracket_4 #bg2,
+      .bracket_2 #bg16,
+      .bracket_2 #bg8,
+      .bracket_2 #bg4
+      {display:none;}
+
+      <!-- Connector Show/Hide for Different Bracket Sizes -->
+      .bracket_2 #connectors,
+      .bracket_16 .cb8,
+      .bracket_16 .cb4,
+      .bracket_8 .cb16,
+      .bracket_8 .cb4,
+      .bracket_4 .cb16,
+      .bracket_4 .cb8
+      {display:none;}
+    {{end}}
   </style>
-  <g id="bracket">
+  <g id="bracket" class="bracket_{{.BracketType}}">
     <g id="background">
-      <rect x="70" y="115" class="st46" width="1780" height="900"/>
+      {{if eq .BracketType "double"}}
+        <rect id="double" x="70" y="115" class="st46" width="1780" height="900"/>
+      {{else}}
+        <rect id="bg16" x="70" y="115" class="st46" width="1780" height="900"/>
+        <rect id="bg8" x="417.12" y="115" class="st46" width="1085.759" height="900"/>
+        <rect id="bg4" x="622.383" y="115" class="st46" width="675.233" height="772.481"/>
+        <rect id="bg2" x="622.383" y="115" class="st46" width="675.233" height="584.849"/>
+      {{end}}
     </g>
-    <g id="connectors_evergreen">
-      <polyline class="st11" points="1211,390 1546,390 1546,656 1507,656 	"/>
-      <line class="st11" x1="1598" y1="506" x2="1545" y2="506"/>
-      <line class="st11" x1="1211" y1="688" x2="1302" y2="688"/>
-      <polyline class="st11" points="914,783 959,783 959,593 914,593 	"/>
-      <line class="st11" x1="1006" y1="688" x2="959" y2="688"/>
-      <line class="st11" x1="617" y1="627" x2="709" y2="627"/>
-      <line class="st11" x1="617" y1="817" x2="709" y2="817"/>
-      <polyline class="st11" points="617,247 703,247 703,437 617,437 	"/>
-      <polyline class="st11" points="1006,390 861,390 861,336 704,336 	"/>
-    </g>
-    <g id="connectors_temporary">
-      <g id="connector_1_1"{{if (index .Matchups "1_1").IsActive}} class="active"{{end}}>
-        <polyline  class="st45" points="411,593 367,593 367,247 		"/>
-        <polyline  class="st11" points="319,247 367,247 367,214 411,214 		"/>
-        <text  transform="matrix(1 0 0 1 342.9489 228.3672)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 349.4327 269.9525)" class="st44 st18 st43">L</text>
+    {{if eq .BracketType "double"}}
+      <g id="connectors_evergreen">
+        <polyline class="st11" points="1211,390 1546,390 1546,656 1507,656"/>
+        <line class="st11" x1="1598" y1="506" x2="1545" y2="506"/>
+        <line class="st11" x1="1211" y1="688" x2="1302" y2="688"/>
+        <polyline class="st11" points="914,783 959,783 959,593 914,593"/>
+        <line class="st11" x1="1006" y1="688" x2="959" y2="688"/>
+        <line class="st11" x1="617" y1="627" x2="709" y2="627"/>
+        <line class="st11" x1="617" y1="817" x2="709" y2="817"/>
+        <polyline class="st11" points="617,247 703,247 703,437 617,437"/>
+        <polyline class="st11" points="1006,390 861,390 861,336 704,336"/>
       </g>
-      <g id="connectors_1_2"{{if (index .Matchups "1_2").IsActive}} class="active"{{end}}>
-        <polyline  class="st45" points="411,662 367,662 367,437 		"/>
-        <polyline  class="st11" points="319,437 367,437 367,283 411,283 		"/>
-        <text  transform="matrix(1 0 0 1 342.9489 420.848)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 349.4327 462.4333)" class="st44 st18 st43">L</text>
+      <g id="connectors_temporary">
+        <g id="connector_1_1"{{if (index .Matchups "1_1").IsActive}} class="active"{{end}}>
+          <polyline  class="st45" points="411,593 367,593 367,247"/>
+          <polyline  class="st11" points="319,247 367,247 367,214 411,214"/>
+          <text  transform="matrix(1 0 0 1 342.9489 228.3672)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 349.4327 269.9525)" class="st44 st18 st43">L</text>
+        </g>
+        <g id="connectors_1_2"{{if (index .Matchups "1_2").IsActive}} class="active"{{end}}>
+          <polyline  class="st45" points="411,662 367,662 367,437"/>
+          <polyline  class="st11" points="319,437 367,437 367,283 411,283"/>
+          <text  transform="matrix(1 0 0 1 342.9489 420.848)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 349.4327 462.4333)" class="st44 st18 st43">L</text>
+        </g>
+        <g id="connectors_1_3"{{if (index .Matchups "1_3").IsActive}} class="active"{{end}}>
+          <polyline  class="st45" points="411,786 367,786 367,627"/>
+          <polyline  class="st11" points="319,627 367,627 367,404 411,404"/>
+          <text  transform="matrix(1 0 0 1 342.9489 610.848)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 349.4327 652.4332)" class="st44 st18 st43">L</text>
+        </g>
+        <g id="connectors_1_4"{{if (index .Matchups "1_4").IsActive}} class="active"{{end}}>
+          <polyline  class="st45" points="411,853 367,853 367,817"/>
+          <polyline  class="st11" points="319,817 367,817 367,473 411,473"/>
+          <text  transform="matrix(1 0 0 1 344.9489 800.848)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 349.4327 842.4332)" class="st44 st18 st43">L</text>
+        </g>
+        <g id="connectors_2_1"{{if (index .Matchups "2_1").IsActive}} class="active"{{end}}>
+          <polyline  class="st8" points="319,247 374,247 374,597 411,597"/>
+          <text  transform="matrix(1 0 0 1 665.9388 616.8822)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 645.3726 654.1893)" class="st44 st18 st43">L</text>
+          <polyline  class="st8" points="319,437 360,437 360,662 411,662"/>
+          <line  class="st8" x1="660" y1="628" x2="660" y2="675"/>
+          <line  class="st8" x1="668.485" y1="666.515" x2="651.515" y2="683.485"/>
+          <line  class="st8" x1="668.485" y1="683.485" x2="651.515" y2="666.515"/>
+          <text  transform="matrix(1 0 0 1 330.706 429.7347)" class="st44 st18 st43">L</text>
+          <text  transform="matrix(1 0 0 1 330.706 240.7347)" class="st44 st18 st43">L</text>
+        </g>
+        <g id="connectors_2_2"{{if (index .Matchups "2_2").IsActive}} class="active"{{end}}>
+          <polyline  class="st8" points="319,627 374,627 374,787 411,787"/>
+          <text  transform="matrix(1 0 0 1 667.1932 808.262)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 645.3726 844.1893)" class="st44 st18 st43">L</text>
+          <polyline  class="st8" points="319,817 360,817 360,852 411,852"/>
+          <line  class="st8" x1="660" y1="818" x2="660" y2="865"/>
+          <line  class="st8" x1="668.485" y1="856.515" x2="651.515" y2="873.485"/>
+          <line  class="st8" x1="668.485" y1="873.485" x2="651.515" y2="856.515"/>
+          <text  transform="matrix(1 0 0 1 330.706 619.7347)" class="st44 st18 st43">L</text>
+          <text  transform="matrix(1 0 0 1 330.706 808.462)" class="st44 st18 st43">L</text>
+        </g>
+        <g id="connectors_2_3"{{if (index .Matchups "2_3").IsActive}} class="active"{{end}}>
+          <rect  x="699.216" y="241.054" class="st42" width="312.117" height="199.156"/>
+          <polyline  class="st11" points="319,247 367,247 367,214 411,214"/>
+          <text  transform="matrix(1 0 0 1 668.4441 239.1465)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 644.3726 276.7044)" class="st44 st18 st43">L</text>
+          <polyline  class="st11" points="319,437 367,437 367,281 411,281"/>
+          <text  transform="matrix(1 0 0 1 326.4185 239.67)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 326.4185 429.67)" class="st12 st18 st43">W</text>
+          <polyline  class="st8" points="660,636 660,748 728,748"/>
+          <line  class="st8" x1="660" y1="447" x2="660" y2="618"/>
+          <line  class="st8" x1="660" y1="248" x2="660" y2="427"/>
+          <polyline  class="st11" points="698,247 790,247 790,358 1010,358"/>
+          <polyline  class="st11" points="698,437 790,437 790,421 1010,421"/>
+        </g>
+        <g id="connectors_2_4"{{if (index .Matchups "2_4").IsActive}} class="active"{{end}}>
+          <polyline  class="st11" points="319,627 360,627 360,405 411,405"/>
+          <text  transform="matrix(1 0 0 1 668.566 429.1972)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 643.3726 469.2499)" class="st44 st18 st43">L</text>
+          <polyline  class="st11" points="319,817 374,817 374,473 411,473"/>
+          <polyline  class="st8" points="660,438 660,561 728,561"/>
+          <text  transform="matrix(1 0 0 1 326.4185 618.67)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 326.4185 808.67)" class="st12 st18 st43">W</text>
+          <rect  x="699.216" y="241.054" class="st42" width="312.117" height="199.156"/>
+          <polyline  class="st11" points="698,247 790,247 790,358 1010,358"/>
+          <polyline  class="st11" points="698,437 790,437 790,421 1010,421"/>
+        </g>
+        <g id="connectors_3_1"{{if (index .Matchups "3_1").IsActive}} class="active"{{end}}>
+          <polyline  class="st8" points="660,637 660,748 709,748"/>
+          <text  transform="matrix(1 0 0 1 966.4487 773.8822)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 627.2617 808.2188)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 925.3726 811.1893)" class="st44 st18 st43">L</text>
+          <line  class="st8" x1="940" y1="784" x2="940" y2="832"/>
+          <line  class="st8" x1="948.485" y1="823.515" x2="931.515" y2="840.485"/>
+          <line  class="st8" x1="948.485" y1="840.485" x2="931.515" y2="823.515"/>
+          <text  transform="matrix(1 0 0 1 644.4236 276.67)" class="st44 st18 st43">L</text>
+          <line  class="st8" x1="660" y1="248" x2="660" y2="425"/>
+          <line  class="st8" x1="660" y1="447" x2="660" y2="615"/>
+        </g>
+        <g id="connectors_3_2"{{if (index .Matchups "3_2").IsActive}} class="active"{{end}}>
+          <polyline  class="st8" points="660,438 660,563 709,563"/>
+          <text  transform="matrix(1 0 0 1 941.2606 585.4622)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 625.8534 616.8523)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 925.3726 620.1893)" class="st44 st18 st43">L</text>
+          <line  class="st8" x1="940" y1="594" x2="940" y2="641"/>
+          <line  class="st8" x1="948.485" y1="632.515" x2="931.515" y2="649.485"/>
+          <line  class="st8" x1="948.485" y1="649.485" x2="931.515" y2="632.515"/>
+          <text  transform="matrix(1 0 0 1 643.2857 469.1667)" class="st44 st18 st43">L</text>
+        </g>
+        <g id="connectors_4_1"{{if (index .Matchups "4_1").IsActive}} class="active"{{end}}>
+          <rect  x="955.326" y="655.13" class="st42" width="68.612" height="69.149"/>
+          <text  transform="matrix(1 0 0 1 1223.2803 681.0883)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 1223.3726 717.1893)" class="st44 st18 st43">L</text>
+          <line  class="st8" x1="1238" y1="689" x2="1238" y2="738"/>
+          <line  class="st8" x1="1246.485" y1="729.515" x2="1229.515" y2="746.485"/>
+          <line  class="st8" x1="1246.485" y1="746.485" x2="1229.515" y2="729.515"/>
+          <text  transform="matrix(1 0 0 1 926.2617 775.3125)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 926.2617 585.3125)" class="st12 st18 st43">W</text>
+          <line  class="st11" x1="1008" y1="655" x2="958" y2="655"/>
+          <line  class="st11" x1="1008" y1="725" x2="958" y2="725"/>
+        </g>
+        <g id="connectors_4_2"{{if (index .Matchups "4_2").IsActive}} class="active"{{end}}>
+          <rect  x="699.216" y="241.054" class="st42" width="312.117" height="199.156"/>
+          <polyline  class="st11" points="698,247 790,247 790,358 1010,358"/>
+          <polyline  class="st11" points="698,437 790,437 790,421 1010,421"/>
+          <text  transform="matrix(1 0 0 1 628.5344 429.1004)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 628.5344 239.1004)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 1263.0288 382.2166)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 1239.3726 418.7044)" class="st44 st18 st43">L</text>
+          <polyline  class="st8" points="1256,391 1256,625 1323,625"/>
+        </g>
+        <g id="connectors_5_1"{{if (index .Matchups "5_1").IsActive}} class="active"{{end}}>
+          <rect  x="1523.794" y="381.275" class="st42" width="83.494" height="287.877"/>
+          <polyline  class="st11" points="1481,390 1553,390 1553,474 1633,474"/>
+          <polyline  class="st11" points="1481,656 1553,656 1553,542 1633,542"/>
+          <text  transform="matrix(1 0 0 1 628.5344 429.1004)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 628.5344 239.1004)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 1562.4487 647.8822)" class="st12 st18 st43">W</text>
+          <line  class="st8" x1="1538" y1="657" x2="1538" y2="706"/>
+          <line  class="st8" x1="1546.485" y1="697.515" x2="1529.515" y2="714.485"/>
+          <line  class="st8" x1="1546.485" y1="714.485" x2="1529.515" y2="697.515"/>
+          <text  transform="matrix(1 0 0 1 1223.4487 680.8822)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 1239.3726 418.7044)" class="st44 st18 st43">L</text>
+          <polyline  class="st8" points="1256,391 1256,625 1323,625"/>
+          <text  transform="matrix(1 0 0 1 1522.3726 684.1893)" class="st44 st18 st43">L</text>
+        </g>
+        <g id="connectors_6_1"{{if (index .Matchups "6_1").IsActive}} class="active"{{end}}>
+          <rect  x="1523.794" y="381.275" class="st42" width="83.494" height="287.877"/>
+          <polyline  class="st11" points="1481,390 1553,390 1553,474 1633,474"/>
+          <polyline  class="st11" points="1481,656 1553,656 1553,542 1633,542"/>
+          <text  transform="matrix(1 0 0 1 1516.4487 647.8822)" class="st12 st18 st43">W</text>
+          <text  transform="matrix(1 0 0 1 1223.4487 382.1549)" class="st12 st18 st43">W</text>
+        </g>
       </g>
-      <g id="connectors_1_3"{{if (index .Matchups "1_3").IsActive}} class="active"{{end}}>
-        <polyline  class="st45" points="411,786 367,786 367,627 		"/>
-        <polyline  class="st11" points="319,627 367,627 367,404 411,404 		"/>
-        <text  transform="matrix(1 0 0 1 342.9489 610.848)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 349.4327 652.4332)" class="st44 st18 st43">L</text>
+    {{else}}
+      <g id="connectors">
+        {{if index .Matchups "1_1"}}<polyline class="cb16 st8" points="139,247 325,247 325,342 456,342"/>{{end}}
+        {{if index .Matchups "1_2"}}<polyline class="cb16 st8" points="139,437 325,437 325,342 396,342"/>{{end}}
+        {{if index .Matchups "1_3"}}<polyline class="cb16 st8" points="139,627 325,627 325,722 456,722"/>{{end}}
+        {{if index .Matchups "1_4"}}<polyline class="cb16 st8" points="139,817 325,817 325,722 396,722"/>{{end}}
+        {{if index .Matchups "1_5"}}<polyline class="cb16 st8" points="1725,247 1590,247 1590,342 1495,342"/>{{end}}
+        {{if index .Matchups "1_6"}}<polyline class="cb16 st8" points="1725,437 1590,437 1590,342 1539,342"/>{{end}}
+        {{if index .Matchups "1_7"}}<polyline class="cb16 st8" points="1725,627 1590,627 1590,722 1495,722"/>{{end}}
+        {{if index .Matchups "1_8"}}<polyline class="cb16 st8" points="1725,817 1590,817 1590,722 1539,722"/>{{end}}
+        <polyline id="c2a" class="cb16 st8" points="415,342 581,342 581,577 698,577"/>
+        <polyline id="c2b" class="cb16 st8" points="415,722 581,722 581,577 644,577"/>
+        <polyline id="c2c" class="cb16 st8" points="1440,342 1336,342 1336,577 1263,577"/>
+        <polyline id="c2d" class="cb16 st8" points="1440,722 1336,722 1336,577 1297,577"/>
+        <polyline id="c3a" class="cb16 st8" points="756,577 832,577 832,497 909,497"/>
+        <polyline id="c3b" class="cb16 st8" points="1161,577 1085,577 1085,497 1008,497"/>
+
+        {{if index .Matchups "2_1"}}<polyline class="cb8 st8" points="577,247 742,247 742,410 994,410"/>{{end}}
+        {{if index .Matchups "2_2"}}<polyline class="cb8 st8" points="577,437 742,437 742,410 915,410"/>{{end}}
+        {{if index .Matchups "2_3"}}<polyline class="cb8 st8" points="577,627 742,627 742,654 915,654"/>{{end}}
+        {{if index .Matchups "2_4"}}<polyline class="cb8 st8" points="577,817 742,817 742,654 994,654"/>{{end}}
+        <polyline id="c3a" class="cb8 st8" points="886,410 1125,410 1125,532 1303,532"/>
+        <polyline id="c3b" class="cb8 st8" points="886,654 1125,654 1125,532 1224,532"/>
+
+        {{if index .Matchups "3_1"}}<polyline class="cb4 st8" points="753,486 967,486 967,588 1117,588"/>{{end}}
+        {{if index .Matchups "3_2"}}<polyline class="cb4 st8" points="753,690 967,690 967,588 1048,588"/>{{end}}
       </g>
-      <g id="connectors_1_4"{{if (index .Matchups "1_4").IsActive}} class="active"{{end}}>
-        <polyline  class="st45" points="411,853 367,853 367,817 		"/>
-        <polyline  class="st11" points="319,817 367,817 367,473 411,473 		"/>
-        <text  transform="matrix(1 0 0 1 344.9489 800.848)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 349.4327 842.4332)" class="st44 st18 st43">L</text>
-      </g>
-      <g id="connectors_2_1"{{if (index .Matchups "2_1").IsActive}} class="active"{{end}}>
-        <polyline  class="st8" points="319,247 374,247 374,597 411,597 		"/>
-        <text  transform="matrix(1 0 0 1 665.9388 616.8822)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 645.3726 654.1893)" class="st44 st18 st43">L</text>
-        <polyline  class="st8" points="319,437 360,437 360,662 411,662 		"/>
-        <line  class="st8" x1="660" y1="628" x2="660" y2="675"/>
-        <line  class="st8" x1="668.485" y1="666.515" x2="651.515" y2="683.485"/>
-        <line  class="st8" x1="668.485" y1="683.485" x2="651.515" y2="666.515"/>
-        <text  transform="matrix(1 0 0 1 330.706 429.7347)" class="st44 st18 st43">L</text>
-        <text  transform="matrix(1 0 0 1 330.706 240.7347)" class="st44 st18 st43">L</text>
-      </g>
-      <g id="connectors_2_2"{{if (index .Matchups "2_2").IsActive}} class="active"{{end}}>
-        <polyline  class="st8" points="319,627 374,627 374,787 411,787 		"/>
-        <text  transform="matrix(1 0 0 1 667.1932 808.262)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 645.3726 844.1893)" class="st44 st18 st43">L</text>
-        <polyline  class="st8" points="319,817 360,817 360,852 411,852 		"/>
-        <line  class="st8" x1="660" y1="818" x2="660" y2="865"/>
-        <line  class="st8" x1="668.485" y1="856.515" x2="651.515" y2="873.485"/>
-        <line  class="st8" x1="668.485" y1="873.485" x2="651.515" y2="856.515"/>
-        <text  transform="matrix(1 0 0 1 330.706 619.7347)" class="st44 st18 st43">L</text>
-        <text  transform="matrix(1 0 0 1 330.706 808.462)" class="st44 st18 st43">L</text>
-      </g>
-      <g id="connectors_2_3"{{if (index .Matchups "2_3").IsActive}} class="active"{{end}}>
-        <rect  x="699.216" y="241.054" class="st42" width="312.117" height="199.156"/>
-        <polyline  class="st11" points="319,247 367,247 367,214 411,214 		"/>
-        <text  transform="matrix(1 0 0 1 668.4441 239.1465)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 644.3726 276.7044)" class="st44 st18 st43">L</text>
-        <polyline  class="st11" points="319,437 367,437 367,281 411,281 		"/>
-        <text  transform="matrix(1 0 0 1 326.4185 239.67)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 326.4185 429.67)" class="st12 st18 st43">W</text>
-        <polyline  class="st8" points="660,636 660,748 728,748 		"/>
-        <line  class="st8" x1="660" y1="447" x2="660" y2="618"/>
-        <line  class="st8" x1="660" y1="248" x2="660" y2="427"/>
-        <polyline  class="st11" points="698,247 790,247 790,358 1010,358 		"/>
-        <polyline  class="st11" points="698,437 790,437 790,421 1010,421 		"/>
-      </g>
-      <g id="connectors_2_4"{{if (index .Matchups "2_4").IsActive}} class="active"{{end}}>
-        <polyline  class="st11" points="319,627 360,627 360,405 411,405 		"/>
-        <text  transform="matrix(1 0 0 1 668.566 429.1972)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 643.3726 469.2499)" class="st44 st18 st43">L</text>
-        <polyline  class="st11" points="319,817 374,817 374,473 411,473 		"/>
-        <polyline  class="st8" points="660,438 660,561 728,561 		"/>
-        <text  transform="matrix(1 0 0 1 326.4185 618.67)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 326.4185 808.67)" class="st12 st18 st43">W</text>
-        <rect  x="699.216" y="241.054" class="st42" width="312.117" height="199.156"/>
-        <polyline  class="st11" points="698,247 790,247 790,358 1010,358 		"/>
-        <polyline  class="st11" points="698,437 790,437 790,421 1010,421 		"/>
-      </g>
-      <g id="connectors_3_1"{{if (index .Matchups "3_1").IsActive}} class="active"{{end}}>
-        <polyline  class="st8" points="660,637 660,748 709,748 		"/>
-        <text  transform="matrix(1 0 0 1 966.4487 773.8822)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 627.2617 808.2188)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 925.3726 811.1893)" class="st44 st18 st43">L</text>
-        <line  class="st8" x1="940" y1="784" x2="940" y2="832"/>
-        <line  class="st8" x1="948.485" y1="823.515" x2="931.515" y2="840.485"/>
-        <line  class="st8" x1="948.485" y1="840.485" x2="931.515" y2="823.515"/>
-        <text  transform="matrix(1 0 0 1 644.4236 276.67)" class="st44 st18 st43">L</text>
-        <line  class="st8" x1="660" y1="248" x2="660" y2="425"/>
-        <line  class="st8" x1="660" y1="447" x2="660" y2="615"/>
-      </g>
-      <g id="connectors_3_2"{{if (index .Matchups "3_2").IsActive}} class="active"{{end}}>
-        <polyline  class="st8" points="660,438 660,563 709,563 		"/>
-        <text  transform="matrix(1 0 0 1 941.2606 585.4622)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 625.8534 616.8523)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 925.3726 620.1893)" class="st44 st18 st43">L</text>
-        <line  class="st8" x1="940" y1="594" x2="940" y2="641"/>
-        <line  class="st8" x1="948.485" y1="632.515" x2="931.515" y2="649.485"/>
-        <line  class="st8" x1="948.485" y1="649.485" x2="931.515" y2="632.515"/>
-        <text  transform="matrix(1 0 0 1 643.2857 469.1667)" class="st44 st18 st43">L</text>
-      </g>
-      <g id="connectors_4_1"{{if (index .Matchups "4_1").IsActive}} class="active"{{end}}>
-        <rect  x="955.326" y="655.13" class="st42" width="68.612" height="69.149"/>
-        <text  transform="matrix(1 0 0 1 1223.2803 681.0883)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 1223.3726 717.1893)" class="st44 st18 st43">L</text>
-        <line  class="st8" x1="1238" y1="689" x2="1238" y2="738"/>
-        <line  class="st8" x1="1246.485" y1="729.515" x2="1229.515" y2="746.485"/>
-        <line  class="st8" x1="1246.485" y1="746.485" x2="1229.515" y2="729.515"/>
-        <text  transform="matrix(1 0 0 1 926.2617 775.3125)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 926.2617 585.3125)" class="st12 st18 st43">W</text>
-        <line  class="st11" x1="1008" y1="655" x2="958" y2="655"/>
-        <line  class="st11" x1="1008" y1="725" x2="958" y2="725"/>
-      </g>
-      <g id="connectors_4_2"{{if (index .Matchups "4_2").IsActive}} class="active"{{end}}>
-        <rect  x="699.216" y="241.054" class="st42" width="312.117" height="199.156"/>
-        <polyline  class="st11" points="698,247 790,247 790,358 1010,358 		"/>
-        <polyline  class="st11" points="698,437 790,437 790,421 1010,421 		"/>
-        <text  transform="matrix(1 0 0 1 628.5344 429.1004)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 628.5344 239.1004)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 1263.0288 382.2166)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 1239.3726 418.7044)" class="st44 st18 st43">L</text>
-        <polyline  class="st8" points="1256,391 1256,625 1323,625 		"/>
-      </g>
-      <g id="connectors_5_1"{{if (index .Matchups "5_1").IsActive}} class="active"{{end}}>
-        <rect  x="1523.794" y="381.275" class="st42" width="83.494" height="287.877"/>
-        <polyline  class="st11" points="1481,390 1553,390 1553,474 1633,474 		"/>
-        <polyline  class="st11" points="1481,656 1553,656 1553,542 1633,542 		"/>
-        <text  transform="matrix(1 0 0 1 628.5344 429.1004)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 628.5344 239.1004)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 1562.4487 647.8822)" class="st12 st18 st43">W</text>
-        <line  class="st8" x1="1538" y1="657" x2="1538" y2="706"/>
-        <line  class="st8" x1="1546.485" y1="697.515" x2="1529.515" y2="714.485"/>
-        <line  class="st8" x1="1546.485" y1="714.485" x2="1529.515" y2="697.515"/>
-        <text  transform="matrix(1 0 0 1 1223.4487 680.8822)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 1239.3726 418.7044)" class="st44 st18 st43">L</text>
-        <polyline  class="st8" points="1256,391 1256,625 1323,625 		"/>
-        <text  transform="matrix(1 0 0 1 1522.3726 684.1893)" class="st44 st18 st43">L</text>
-      </g>
-      <g id="connectors_6_1"{{if (index .Matchups "6_1").IsActive}} class="active"{{end}}>
-        <rect  x="1523.794" y="381.275" class="st42" width="83.494" height="287.877"/>
-        <polyline  class="st11" points="1481,390 1553,390 1553,474 1633,474 		"/>
-        <polyline  class="st11" points="1481,656 1553,656 1553,542 1633,542 		"/>
-        <text  transform="matrix(1 0 0 1 1516.4487 647.8822)" class="st12 st18 st43">W</text>
-        <text  transform="matrix(1 0 0 1 1223.4487 382.1549)" class="st12 st18 st43">W</text>
-      </g>
-    </g>
+    {{end}}
     <g id="matches">
       {{range $matchup := .Matchups}}
         {{template "matchup" index $matchup}}
       {{end}}
     </g>
     <g id="labels">
-      <text id="label1" class="st12 st13 st28 st29">Round 1</text>
-      <text id="label2" class="st12 st13 st28 st29">Round 2</text>
-      <text id="label3" class="st12 st13 st28 st29">Round 3</text>
-      <text id="label4" class="st12 st13 st28 st29">Round 4</text>
-      <text id="label5" class="st12 st13 st28 st29">Round 5</text>
-      <text id="label6" class="st12 st13 st28 st29">Finals</text>
-      <text id="match_title" transform="matrix(1 0 0 1 1802 434)" class="st12 st13 st14 right">Best-of-3</text>
+      {{if eq .BracketType "double"}}
+        <text id="label1" class="st12 st13 st28 st29">Round 1</text>
+        <text id="label2" class="st12 st13 st28 st29">Round 2</text>
+        <text id="label3" class="st12 st13 st28 st29">Round 3</text>
+        <text id="label4" class="st12 st13 st28 st29">Round 4</text>
+        <text id="label5" class="st12 st13 st28 st29">Round 5</text>
+        <text id="label6" class="st12 st13 st28 st29">Finals</text>
+        <text id="match_title" transform="matrix(1 0 0 1 1802 434)" class="st12 st13 st14 right">Best-of-3</text>
+      {{else}}
+        <line id="label_underline" class="st27" x1="663" y1="371" x2="1257" y2="371"/>
+        <text id="l1a" transform="matrix(1 0 0 1 198.7197 964.415)" class="st12 st13 st28 st29 st38 st39">Round of 16</text>
+        <text id="l1b" transform="matrix(1 0 0 1 1714.8735 964.415)" class="st12 st13 st28 st29 st38 st39">Round of 16</text>
+        <text id="l2a" transform="matrix(1 0 0 1 452.5196 964.415)" class="st12 st13 st28 st29 st38 st40">Quarterfinals</text>
+        <text id="l2b" transform="matrix(1 0 0 1 1464.7197 964.415)" class="st12 st13 st28 st29 st38 st40 st39">Quarterfinals</text>
+        <text id="l3a" transform="matrix(1 0 0 1 705.8195 964.415)" class="st12 st13 st28 st29 st38">Semifinals</text>
+        <text id="l3b" transform="matrix(1 0 0 1 1211.4189 964.415)" class="st12 st13 st28 st29 st38 st39">Semifinals</text>
+        <text id="l4" transform="matrix(1 0 0 1 959.5 964.415)" class="st12 st13 st28 st29 st38">Finals</text>
+      {{end}}
     </g>
   </g>
 </svg>
@@ -280,7 +440,7 @@
   <text id="series_status" x="203.9999" y="170.5669" class="st12 st13 st14 st15 {{.SeriesLeader}}">{{.SeriesStatus}}</text>
   <text id="match_title" x="0" y="17.3691" class="st12 st13 st16">{{.DisplayName}}</text>
   {{if .RedAlliance}}
-    <text id="alliancenum_red" x="22.9041" y="73.7612" class="st7 st13 st23 st24">{{.RedAlliance.Id}}</text>
+    <text id="alliancenum_red" x="22" y="70" class="st7 st13 st23 st24">{{.RedAlliance.Id}}</text>
     {{if ge (len .RedAlliance.TeamIds) 3}}
       <text id="r1" x="86.7247" y="54.0281" class="st17 st13 st21 st22">{{index .RedAlliance.TeamIds 0}}</text>
       <text id="r2" x="162.8365" y="54.0281" class="st17 st13 st21 st22">{{index .RedAlliance.TeamIds 1}}</text>
@@ -293,7 +453,7 @@
     <text id="placeholder_red" x="101.1501" y="66.5769" class="st17 st18 st19 st20">{{.RedAllianceSource}}</text>
   {{end}}
   {{if .BlueAlliance}}
-    <text id="alliancenum_blue" x="22.9041" y="138.7612" class="st7 st13 st23 st24">{{.BlueAlliance.Id}}</text>
+    <text id="alliancenum_blue" x="22" y="135" class="st7 st13 st23 st24">{{.BlueAlliance.Id}}</text>
     {{if ge (len .BlueAlliance.TeamIds) 3}}
       <text id="b1" x="86.7247" y="119.1797" class="st17 st13 st21 st22">{{index .BlueAlliance.TeamIds 0}}</text>
       <text id="b2" x="162.8365" y="119.1797" class="st17 st13 st21 st22">{{index .BlueAlliance.TeamIds 1}}</text>

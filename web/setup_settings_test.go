@@ -27,7 +27,7 @@ func TestSetupSettings(t *testing.T) {
 	assert.NotContains(t, recorder.Body.String(), "tbaPublishingEnabled\" checked")
 
 	// Change the settings and check the response.
-	recorder = web.postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&numElimAlliances=16&"+
+	recorder = web.postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&elimType=single&numElimAlliances=16&"+
 		"tbaPublishingEnabled=on&tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec")
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/settings")

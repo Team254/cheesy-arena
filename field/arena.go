@@ -117,14 +117,6 @@ func NewArena(dbPath string) (*Arena, error) {
 
 	arena.ScoringPanelRegistry.initialize()
 
-	// Reconstruct the playoff bracket in memory.
-	if err = arena.CreatePlayoffBracket(); err != nil {
-		return nil, err
-	}
-	if err = arena.UpdatePlayoffBracket(nil); err != nil {
-		return nil, err
-	}
-
 	// Load empty match as current.
 	arena.MatchState = PreMatch
 	arena.LoadTestMatch()
@@ -178,6 +170,14 @@ func (arena *Arena) LoadSettings() error {
 	game.CargoBonusRankingPointThresholdWithoutQuintet = settings.CargoBonusRankingPointThresholdWithoutQuintet
 	game.CargoBonusRankingPointThresholdWithQuintet = settings.CargoBonusRankingPointThresholdWithQuintet
 	game.HangarBonusRankingPointThreshold = settings.HangarBonusRankingPointThreshold
+
+	// Reconstruct the playoff bracket in memory.
+	if err = arena.CreatePlayoffBracket(); err != nil {
+		return err
+	}
+	if err = arena.UpdatePlayoffBracket(nil); err != nil {
+		return err
+	}
 
 	return nil
 }
