@@ -46,6 +46,7 @@ type allianceMatchup struct {
 	IsActive           bool
 	SeriesLeader       string
 	SeriesStatus       string
+	IsComplete         bool
 }
 
 // Generates a JSON dump of the matches and results.
@@ -250,6 +251,7 @@ func (web *Web) generateBracketSvg(w io.Writer) error {
 				DisplayName:        matchup.LongDisplayName(),
 				RedAllianceSource:  matchup.RedAllianceSourceDisplayName(),
 				BlueAllianceSource: matchup.BlueAllianceSourceDisplayName(),
+				IsComplete:         matchup.IsComplete(),
 			}
 			if matchup.RedAllianceId > 0 {
 				if len(alliances) > 0 {

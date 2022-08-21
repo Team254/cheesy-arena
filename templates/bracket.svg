@@ -461,7 +461,7 @@
 {{end}}
 
 {{define "matchup"}}
-<g id="match_{{.Round}}_{{.Group}}" class="matchblock {{if .IsActive}}active{{end}}">
+<g id="match_{{.Round}}_{{.Group}}" class="matchblock {{if .IsActive}}active{{else if .IsComplete}}complete{{end}}">
   <rect class="structure" id="background" y="23" width="205" height="130.452"/>
   <rect class="red" y="23" width="45.567" height="66.319"/>
   <rect class="blue" y="89.133" width="45.567" height="64.319"/>
