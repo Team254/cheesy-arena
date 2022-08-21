@@ -13,6 +13,7 @@ import (
 	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -226,10 +227,17 @@ func (web *Web) teamAvatarsApiHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (web *Web) bracketSvgApiHandler(w http.ResponseWriter, r *http.Request) {
-	alliances, err := web.arena.Database.GetAllAlliances()
-	if err != nil {
+	w.Header().Set("Content-Type", "image/svg+xml")
+	if err := web.generateBracketSvg(w); err != nil {
 		handleWebErr(w, err)
 		return
+	}
+}
+
+func (web *Web) generateBracketSvg(w io.Writer) error {
+	alliances, err := web.arena.Database.GetAllAlliances()
+	if err != nil {
+		return err
 	}
 	activeMatch := web.arena.SavedMatch
 
@@ -282,17 +290,11 @@ func (web *Web) bracketSvgApiHandler(w http.ResponseWriter, r *http.Request) {
 
 	template, err := web.parseFiles("templates/bracket.svg")
 	if err != nil {
-		handleWebErr(w, err)
-		return
+		return err
 	}
 	data := struct {
 		BracketType string
 		Matchups    map[string]*allianceMatchup
 	}{bracketType, matchups}
-	w.Header().Set("Content-Type", "image/svg+xml")
-	err = template.ExecuteTemplate(w, "bracket", data)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
+	return template.ExecuteTemplate(w, "bracket", data)
 }

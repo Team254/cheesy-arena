@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>Bracket Report</title>
+    <style>
+      @page {
+        margin: 0;
+        size: landscape;
+      }
+      #bracket {
+        position: fixed;
+        top: -60px;
+        left: -250px;
+        scale: 0.75;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bracket"><div>{{.}}</div></div>
+    <script>
+      window.print();
+    </script>
+  </body>
+</html>
