@@ -141,6 +141,9 @@
     .matchblock.active #background {
       fill:#444444;
     }
+    .matchblock.complete #background {
+      fill:#dddddd;
+    }
 
     .red {fill:#FF2222;}
     .blue {fill:#2080FF;}
