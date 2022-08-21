@@ -159,6 +159,8 @@ var handleScorePosted = function(data) {
   $("#" + redSide + "FinalCargoBonusRankingPoint").attr("data-checked", data.RedScoreSummary.CargoBonusRankingPoint);
   $("#" + redSide + "FinalHangarBonusRankingPoint").html(data.RedScoreSummary.HangarBonusRankingPoint ? "&#x2714;" : "&#x2718;");
   $("#" + redSide + "FinalHangarBonusRankingPoint").attr("data-checked", data.RedScoreSummary.HangarBonusRankingPoint);
+  $("#" + redSide + "FinalDoubleBonusRankingPoint").html(data.RedScoreSummary.DoubleBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + redSide + "FinalDoubleBonusRankingPoint").attr("data-checked", data.RedScoreSummary.DoubleBonusRankingPoint);
   $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
   $("#" + blueSide + "FinalTeam1").html(getRankingText(data.Match.Blue1, data.Rankings) + "" + data.Match.Blue1);
   $("#" + blueSide + "FinalTeam2").html(getRankingText(data.Match.Blue2, data.Rankings) + "" + data.Match.Blue2);
@@ -174,6 +176,8 @@ var handleScorePosted = function(data) {
   $("#" + blueSide + "FinalCargoBonusRankingPoint").attr("data-checked", data.BlueScoreSummary.CargoBonusRankingPoint);
   $("#" + blueSide + "FinalHangarBonusRankingPoint").html(data.BlueScoreSummary.HangarBonusRankingPoint ? "&#x2714;" : "&#x2718;");
   $("#" + blueSide + "FinalHangarBonusRankingPoint").attr("data-checked", data.BlueScoreSummary.HangarBonusRankingPoint);
+  $("#" + blueSide + "FinalDoubleBonusRankingPoint").html(data.BlueScoreSummary.DoubleBonusRankingPoint ? "&#x2714;" : "&#x2718;");
+  $("#" + blueSide + "FinalDoubleBonusRankingPoint").attr("data-checked", data.BlueScoreSummary.DoubleBonusRankingPoint);
   $("#finalSeriesStatus").text(data.SeriesStatus);
   $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
   $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);

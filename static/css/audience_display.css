@@ -254,7 +254,7 @@ html {
 #finalScore {
   position: fixed;
   width: 1200px;
-  height: 550px;
+  height: 580px;
   top: 65px;
   bottom: 0;
   left: 0;
@@ -338,7 +338,7 @@ html {
   border-left: 14px solid transparent;
   border-right: 14px solid transparent;
   border-bottom: 8px solid #0a3;
-  top: 211px;
+  top: 223px;
 }
 .arrow-down {
   width: 0;
@@ -348,7 +348,7 @@ html {
   border-left: 14px solid transparent;
   border-right: 14px solid transparent;
   border-top: 8px solid #c11;
-  top: 244px;
+  top: 256px;
 }
 .final-teams>span {
   margin: 0 10px;
