@@ -15,9 +15,8 @@ type ScoreSummary struct {
 	MatchPoints             int
 	FoulPoints              int
 	Score                   int
-	AutoCargoRemaining      int
-	TeleopCargoRemaining    int
 	QuintetAchieved         bool
+	CargoGoal               int
 	CargoBonusRankingPoint  bool
 	HangarBonusRankingPoint bool
 	DoubleBonusRankingPoint bool

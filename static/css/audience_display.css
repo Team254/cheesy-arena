@@ -121,13 +121,19 @@ html {
   width: 0;
   display: none;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: center;
   align-items: center;
   font-family: "FuturaLTBold";
   font-size: 20px;
   line-height: 25px;
   color: #fff;
   opacity: 0;
+}
+.cargo-splitter {
+  width: 25px;
+  height: 1px;
+  background-color: #fff;
+  margin: 6px 0;
 }
 #matchCircle {
   position: absolute;

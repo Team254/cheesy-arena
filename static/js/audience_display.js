@@ -109,18 +109,6 @@ var handleMatchTime = function(data) {
     }
     countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
     $("#matchTime").text(countdownString);
-
-    // Set opacity of auxiliary score fields based on whether the match is in auto or teleop period.
-    var autoOpacity = 1;
-    var teleopOpacity = 0.5;
-    if (matchStates[data.MatchState] === "TELEOP_PERIOD" || matchStates[data.MatchState] === "POST_MATCH") {
-      autoOpacity = 0.5;
-      teleopOpacity = 1;
-    }
-    $("#" + redSide + "AutoCargoRemaining").css("opacity", autoOpacity);
-    $("#" + redSide + "TeleopCargoRemaining").css("opacity", teleopOpacity);
-    $("#" + blueSide + "AutoCargoRemaining").css("opacity", autoOpacity);
-    $("#" + blueSide + "TeleopCargoRemaining").css("opacity", teleopOpacity);
   });
 };
 
@@ -129,16 +117,18 @@ var handleRealtimeScore = function(data) {
   $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HangarPoints);
   $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HangarPoints);
 
+  $("#" + redSide + "CargoNumerator").text(data.Red.ScoreSummary.CargoCount);
+  $("#" + redSide + "CargoDenominator").text(data.Red.ScoreSummary.CargoGoal);
+  $("#" + blueSide + "CargoNumerator").text(data.Blue.ScoreSummary.CargoCount);
+  $("#" + blueSide + "CargoDenominator").text(data.Blue.ScoreSummary.CargoGoal);
   if (currentMatch.Type === "elimination") {
-    $("#" + redSide + "AutoCargoRemaining").text("");
-    $("#" + redSide + "TeleopCargoRemaining").text("");
-    $("#" + blueSide + "AutoCargoRemaining").text("");
-    $("#" + blueSide + "TeleopCargoRemaining").text("");
+    $("#" + redSide + "CargoDenominator").hide();
+    $("#" + blueSide + "CargoDenominator").hide();
+    $(".cargo-splitter").hide();
   } else {
-    $("#" + redSide + "AutoCargoRemaining").text(data.Red.ScoreSummary.AutoCargoRemaining);
-    $("#" + redSide + "TeleopCargoRemaining").text(data.Red.ScoreSummary.TeleopCargoRemaining);
-    $("#" + blueSide + "AutoCargoRemaining").text(data.Blue.ScoreSummary.AutoCargoRemaining);
-    $("#" + blueSide + "TeleopCargoRemaining").text(data.Blue.ScoreSummary.TeleopCargoRemaining);
+    $("#" + redSide + "CargoDenominator").show();
+    $("#" + blueSide + "CargoDenominator").show();
+    $(".cargo-splitter").show();
   }
 };
 

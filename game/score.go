@@ -78,23 +78,14 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	}
 
 	// Calculate bonus ranking points.
-	cargoBonusRankingPointThreshold := CargoBonusRankingPointThresholdWithoutQuintet
+	summary.CargoGoal = CargoBonusRankingPointThresholdWithoutQuintet
 	// A QuintetThreshold of 0 disables the Quintet.
-	if QuintetThreshold > 0 {
-		if summary.AutoCargoCount >= QuintetThreshold {
-			cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithQuintet
-			summary.AutoCargoRemaining = 0
-			summary.QuintetAchieved = true
-		} else {
-			cargoBonusRankingPointThreshold = CargoBonusRankingPointThresholdWithoutQuintet
-			summary.AutoCargoRemaining = QuintetThreshold - summary.AutoCargoCount
-		}
+	if QuintetThreshold > 0 && summary.AutoCargoCount >= QuintetThreshold {
+		summary.CargoGoal = CargoBonusRankingPointThresholdWithQuintet
+		summary.QuintetAchieved = true
 	}
-	if summary.CargoCount >= cargoBonusRankingPointThreshold {
-		summary.TeleopCargoRemaining = 0
+	if summary.CargoCount >= summary.CargoGoal {
 		summary.CargoBonusRankingPoint = true
-	} else {
-		summary.TeleopCargoRemaining = cargoBonusRankingPointThreshold - summary.CargoCount
 	}
 	summary.HangarBonusRankingPoint = summary.HangarPoints >= HangarBonusRankingPointThreshold
 

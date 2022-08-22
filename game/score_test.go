@@ -57,70 +57,65 @@ func TestScoreCargoBonusRankingPoint(t *testing.T) {
 
 	score.AutoCargoLower[0] = 2
 	summary := score.Summarize([]Foul{})
-	assert.Equal(t, 3, summary.AutoCargoRemaining)
-	assert.Equal(t, 18, summary.TeleopCargoRemaining)
+	assert.Equal(t, 20, summary.CargoGoal)
 	assert.Equal(t, false, summary.QuintetAchieved)
 	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
 	score.AutoCargoLower[0] = 17
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 0, summary.AutoCargoRemaining)
-	assert.Equal(t, 1, summary.TeleopCargoRemaining)
+	assert.Equal(t, 18, summary.CargoGoal)
 	assert.Equal(t, true, summary.QuintetAchieved)
 	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
 	score.AutoCargoLower[0] = 18
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 0, summary.AutoCargoRemaining)
-	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, 18, summary.CargoGoal)
 	assert.Equal(t, true, summary.QuintetAchieved)
 	assert.Equal(t, true, summary.CargoBonusRankingPoint)
 
 	score.AutoCargoLower[0] = 5
 	score.TeleopCargoLower[0] = 12
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 0, summary.AutoCargoRemaining)
-	assert.Equal(t, 1, summary.TeleopCargoRemaining)
+	assert.Equal(t, 18, summary.CargoGoal)
 	assert.Equal(t, true, summary.QuintetAchieved)
 	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
+	CargoBonusRankingPointThresholdWithQuintet = 14
+	CargoBonusRankingPointThresholdWithoutQuintet = 19
 	score.AutoCargoLower[0] = 5
 	score.TeleopCargoLower[0] = 13
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 0, summary.AutoCargoRemaining)
-	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, 14, summary.CargoGoal)
 	assert.Equal(t, true, summary.QuintetAchieved)
 	assert.Equal(t, true, summary.CargoBonusRankingPoint)
 
+	QuintetThreshold = 3
 	score.AutoCargoLower[0] = 3
 	score.TeleopCargoLower[0] = 6
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 2, summary.AutoCargoRemaining)
-	assert.Equal(t, 11, summary.TeleopCargoRemaining)
-	assert.Equal(t, false, summary.QuintetAchieved)
+	assert.Equal(t, 14, summary.CargoGoal)
+	assert.Equal(t, true, summary.QuintetAchieved)
 	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
+	QuintetThreshold = 5
 	score.AutoCargoLower[0] = 4
-	score.TeleopCargoLower[0] = 15
+	score.TeleopCargoLower[0] = 14
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 1, summary.AutoCargoRemaining)
-	assert.Equal(t, 1, summary.TeleopCargoRemaining)
+	assert.Equal(t, 19, summary.CargoGoal)
 	assert.Equal(t, false, summary.QuintetAchieved)
 	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
 	score.AutoCargoLower[0] = 4
 	score.TeleopCargoLower[0] = 16
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 1, summary.AutoCargoRemaining)
-	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, 19, summary.CargoGoal)
 	assert.Equal(t, false, summary.QuintetAchieved)
 	assert.Equal(t, true, summary.CargoBonusRankingPoint)
 
 	score.AutoCargoLower[0] = 0
 	score.TeleopCargoLower[0] = 20
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 5, summary.AutoCargoRemaining)
-	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, 19, summary.CargoGoal)
 	assert.Equal(t, false, summary.QuintetAchieved)
 	assert.Equal(t, true, summary.CargoBonusRankingPoint)
 
@@ -130,24 +125,21 @@ func TestScoreCargoBonusRankingPoint(t *testing.T) {
 	score.AutoCargoLower[0] = 1
 	score.TeleopCargoLower[0] = 16
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 0, summary.AutoCargoRemaining)
-	assert.Equal(t, 8, summary.TeleopCargoRemaining)
+	assert.Equal(t, 25, summary.CargoGoal)
 	assert.Equal(t, false, summary.QuintetAchieved)
 	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
 	score.AutoCargoLower[0] = 7
 	score.TeleopCargoLower[0] = 17
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 0, summary.AutoCargoRemaining)
-	assert.Equal(t, 1, summary.TeleopCargoRemaining)
+	assert.Equal(t, 25, summary.CargoGoal)
 	assert.Equal(t, false, summary.QuintetAchieved)
 	assert.Equal(t, false, summary.CargoBonusRankingPoint)
 
 	score.AutoCargoLower[0] = 7
 	score.TeleopCargoLower[0] = 20
 	summary = score.Summarize([]Foul{})
-	assert.Equal(t, 0, summary.AutoCargoRemaining)
-	assert.Equal(t, 0, summary.TeleopCargoRemaining)
+	assert.Equal(t, 25, summary.CargoGoal)
 	assert.Equal(t, false, summary.QuintetAchieved)
 	assert.Equal(t, true, summary.CargoBonusRankingPoint)
 }
