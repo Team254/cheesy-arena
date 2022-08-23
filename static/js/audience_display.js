@@ -6,6 +6,8 @@
 
 var websocket;
 var transitionMap;
+const transitionQueue = [];
+let transitionInProgress = false;
 var currentScreen = "blank";
 var redSide;
 var blueSide;
@@ -36,24 +38,47 @@ const bracketLogoScale = 0.75;
 
 // Handles a websocket message to change which screen is displayed.
 var handleAudienceDisplayMode = function(targetScreen) {
-  if (targetScreen === currentScreen) {
+  transitionQueue.push(targetScreen);
+  executeTransitionQueue();
+};
+
+// Sequentially executes all transitions in the queue. Returns without doing anything if another invocation is already
+// in progress.
+const executeTransitionQueue = function() {
+  if (transitionInProgress) {
+    // There is an existing invocation of this method which will execute all transitions in the queue.
     return;
   }
 
-  if (targetScreen === "sponsor") {
-    initializeSponsorDisplay();
-  }
-
-  transitions = transitionMap[currentScreen][targetScreen];
-  if (transitions == null) {
-    // There is no direct transition defined; need to go to the blank screen first.
-    transitions = function() {
-      transitionMap[currentScreen]["blank"](transitionMap["blank"][targetScreen]);
+  if (transitionQueue.length > 0) {
+    transitionInProgress = true;
+    const targetScreen = transitionQueue.shift();
+    const callback = function() {
+      // When the current transition is complete, call this method again to invoke the next one in the queue.
+      currentScreen = targetScreen;
+      transitionInProgress = false;
+      setTimeout(executeTransitionQueue, 100);  // A small delay is needed to avoid visual glitches.
     };
-  }
-  transitions();
 
-  currentScreen = targetScreen;
+    if (targetScreen === currentScreen) {
+      callback();
+      return;
+    }
+
+    if (targetScreen === "sponsor") {
+      initializeSponsorDisplay();
+    }
+
+    let transitions = transitionMap[currentScreen][targetScreen];
+    if (transitions !== undefined) {
+      transitions(callback);
+    } else {
+      // There is no direct transition defined; need to go to the blank screen first.
+      transitionMap[currentScreen]["blank"](function() {
+        transitionMap["blank"][targetScreen](callback);
+      });
+    }
+  }
 };
 
 // Handles a websocket message to update the teams for the current match.
