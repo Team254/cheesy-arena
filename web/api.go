@@ -296,7 +296,8 @@ func (web *Web) generateBracketSvg(w io.Writer) error {
 	}
 	data := struct {
 		BracketType string
+		ActiveMatch string
 		Matchups    map[string]*allianceMatchup
-	}{bracketType, matchups}
+	}{bracketType, activeMatch.DisplayName, matchups}
 	return template.ExecuteTemplate(w, "bracket", data)
 }

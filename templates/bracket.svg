@@ -86,6 +86,38 @@
       display:none;
     }
 
+  <!-- Status Label -->
+
+    #label_underline {
+      fill:none;
+      stroke:#999999;
+      stroke-width:2;
+      stroke-miterlimit:10;
+    }
+    .bracket_double text#statuslabel {
+      font-size: 36px;
+      text-anchor: end;
+      transform: translate(1805px, 190px);
+      font-family:'FuturaLT-Bold';
+    }
+    .bracket_8 text#statuslabel {
+      font-size: 32px;
+      text-anchor: end;
+      transform: translate(1460px, 190px);
+      font-family:'FuturaLT-Bold';
+    }
+    .bracket_2 text#statuslabel,
+    .bracket_4 text#statuslabel,
+    .bracket_16 text#statuslabel {
+      font-size: 32px;
+      transform: translate(960px, 360px);
+      font-family:'FuturaLT-Bold';
+    }
+    .bracket_double #label_underline,
+    .bracket_8 #label_underline {
+      display:none;
+    }
+
   <!-- Label Styling -->
 
     #labels text {
@@ -98,15 +130,6 @@
     #labels #finals_subtitle {
       font-size:13.189px;
       text-anchor:end;
-    }
-
-    <!-- Currently unused -->
-    #label_underline {
-      display:none;
-      fill:none;
-      stroke:#999999;
-      stroke-width:2;
-      stroke-miterlimit:10;
     }
 
     <!-- Show and hide relevant labels on the standard bracket -->
@@ -464,7 +487,6 @@
         <text x="1702" y="975">Finals</text>
         <text id="finals_subtitle" x="1802" y="434">Best-of-3</text>
       {{else}}
-        <line id="label_underline" x1="663" y1="371" x2="1257" y2="371"/>
         <text id="l_r16" transform="translate(198.7197 964.415)" class="label_16">Round of 16</text>
         <text id="l_r16" transform="translate(1714.8735 964.415)" class="label_16">Round of 16</text>
         <text id="l_qf" transform="translate(452.5196 964.415)" class="label_8">Quarterfinals</text>
@@ -472,6 +494,11 @@
         <text id="l_sf" transform="translate(705.8195 964.415)" class="label_4">Semifinals</text>
         <text id="l_sf" transform="translate(1211.4189 964.415)" class="label_16">Semifinals</text>
         <text id="l_f" transform="translate(959.5 964.415)" class="label_4">Finals</text>
+      {{end}}
+
+      {{if .ActiveMatch}}
+        <line id="label_underline" x1="663" y1="371" x2="1257" y2="371"/>
+        <text id="statuslabel">Match {{.ActiveMatch}} Results</text>
       {{end}}
     </g>
   </g>
