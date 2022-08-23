@@ -496,9 +496,9 @@
         <text id="l_f" transform="translate(959.5 964.415)" class="label_4">Finals</text>
       {{end}}
 
-      {{if .ActiveMatch}}
+      {{if eq .ActiveMatch.Type "elimination" }}
         <line id="label_underline" x1="663" y1="371" x2="1257" y2="371"/>
-        <text id="statuslabel">Match {{.ActiveMatch}} Results</text>
+        <text id="statuslabel">Match {{.ActiveMatch.DisplayName}} Results</text>
       {{end}}
     </g>
   </g>
