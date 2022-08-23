@@ -262,7 +262,13 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	// Signal displays of the bracket to update themselves.
 	web.arena.ScorePostedNotifier.Notify()
 
-	http.Redirect(w, r, "/alliance_selection", 303)
+	// Load the first playoff match.
+	matches, err := web.arena.Database.GetMatchesByType("elimination")
+	if err == nil && len(matches) > 0 {
+		_ = web.arena.LoadMatch(&matches[0])
+	}
+
+	http.Redirect(w, r, "/match_play", 303)
 }
 
 // Publishes the alliances to the web.
