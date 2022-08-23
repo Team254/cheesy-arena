@@ -44,8 +44,8 @@
                 <td class="text-center blue-text">
                   {{index $match.BlueTeams 0}}, {{index $match.BlueTeams 1}}, {{index $match.BlueTeams 2}}
                 </td>
-                <td class="text-center red-text">{{$match.RedScore}}</td>
-                <td class="text-center blue-text">{{$match.BlueScore}}</td>
+                <td class="text-center red-text">{{if $match.IsComplete}}{{$match.RedScore}}{{end}}</td>
+                <td class="text-center blue-text">{{if $match.IsComplete}}{{$match.BlueScore}}{{end}}</td>
                 <td class="text-center nowrap">
                   <a href="/match_review/{{$match.Id}}/edit"><b class="btn btn-info btn-xs">Edit</b></a>
                 </td>

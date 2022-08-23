@@ -24,6 +24,7 @@ type MatchReviewListItem struct {
 	RedScore    int
 	BlueScore   int
 	ColorClass  string
+	IsComplete  bool
 }
 
 // Shows the match review interface.
@@ -199,12 +200,16 @@ func (web *Web) buildMatchReviewList(matchType string) ([]MatchReviewListItem, e
 		switch match.Status {
 		case game.RedWonMatch:
 			matchReviewList[i].ColorClass = "danger"
+			matchReviewList[i].IsComplete = true
 		case game.BlueWonMatch:
 			matchReviewList[i].ColorClass = "info"
+			matchReviewList[i].IsComplete = true
 		case game.TieMatch:
 			matchReviewList[i].ColorClass = "warning"
+			matchReviewList[i].IsComplete = true
 		default:
 			matchReviewList[i].ColorClass = ""
+			matchReviewList[i].IsComplete = false
 		}
 	}
 
