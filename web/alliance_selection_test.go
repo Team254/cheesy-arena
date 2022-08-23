@@ -120,7 +120,7 @@ func TestAllianceSelectionErrors(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "Invalid team number")
 	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=100")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "not present at this event")
+	assert.Contains(t, recorder.Body.String(), "ineligible for selection")
 	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=101&selection1_1=101")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already part of an alliance")

@@ -77,7 +77,13 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 					}
 				}
 				if !found {
-					web.renderAllianceSelection(w, r, fmt.Sprintf("Team %d is not present at this event.", teamId))
+					web.renderAllianceSelection(
+						w,
+						r,
+						fmt.Sprintf(
+							"Team %d has not played any matches at this event and is ineligible for selection.", teamId,
+						),
+					)
 					return
 				}
 			}
