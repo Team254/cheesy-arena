@@ -498,7 +498,7 @@
 
       {{if eq .ActiveMatch.Type "elimination" }}
         <line id="label_underline" x1="663" y1="371" x2="1257" y2="371"/>
-        <text id="statuslabel">Match {{.ActiveMatch.DisplayName}} Results</text>
+        <text id="statuslabel">Bracket as of Match {{.ActiveMatch.DisplayName}}</text>
       {{end}}
     </g>
   </g>
