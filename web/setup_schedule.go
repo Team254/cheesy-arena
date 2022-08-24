@@ -27,6 +27,7 @@ func (web *Web) scheduleGetHandler(w http.ResponseWriter, r *http.Request) {
 	matchType := getMatchType(r)
 	if matchType == "" {
 		http.Redirect(w, r, "/setup/schedule?matchType=practice", 302)
+		return
 	}
 
 	if matchType != "practice" && matchType != "qualification" {
