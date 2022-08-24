@@ -91,7 +91,7 @@ func TestMatchPlayLoad(t *testing.T) {
 	assert.NotContains(t, recorder.Body.String(), "106")
 }
 
-func TestMatchPlayShowResult(t *testing.T) {
+func TestMatchPlayShowAndClearResult(t *testing.T) {
 	web := setupTestWeb(t)
 
 	recorder := web.getHttpResponse("/match_play/1/show_result")
@@ -107,6 +107,11 @@ func TestMatchPlayShowResult(t *testing.T) {
 	assert.Equal(t, 303, recorder.Code)
 	assert.Equal(t, match.Id, web.arena.SavedMatch.Id)
 	assert.Equal(t, match.Id, web.arena.SavedMatchResult.MatchId)
+
+	recorder = web.getHttpResponse("/match_play/clear_result")
+	assert.Equal(t, 303, recorder.Code)
+	assert.Equal(t, model.Match{}, *web.arena.SavedMatch)
+	assert.Equal(t, *model.NewMatchResult(), *web.arena.SavedMatchResult)
 }
 
 func TestMatchPlayErrors(t *testing.T) {

@@ -239,6 +239,14 @@
               </label>
             </div>
           </div>
+          <p>Saved Match Result</p>
+          <span class="label label-saved-match">
+            {{if .SavedMatch.DisplayName}}{{.SavedMatchType}} {{.SavedMatch.DisplayName}}{{else}}None{{end}}
+          </span>
+          &nbsp;
+          <a href="/match_play/clear_result">
+            <b class="btn btn-info btn-xs">Clear</b>
+          </a>
         </div>
         <div class="col-lg-3">
           <p>Match Sounds</p>

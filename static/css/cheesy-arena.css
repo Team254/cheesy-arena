@@ -80,6 +80,9 @@
 .label-scoring[data-ready=true] {
   background-color: #0c6;
 }
+.label-saved-match {
+  background-color: #999;
+}
 .nowrap {
   white-space: nowrap;
 }

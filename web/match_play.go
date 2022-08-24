@@ -87,6 +87,8 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		BlueOffFieldTeams     []int
 		AllowSubstitution     bool
 		IsReplay              bool
+		SavedMatchType        string
+		SavedMatch            *model.Match
 		PlcArmorBlockStatuses map[string]bool
 	}{
 		web.arena.EventSettings,
@@ -98,6 +100,8 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		blueOffFieldTeams,
 		web.arena.CurrentMatch.ShouldAllowSubstitution(),
 		isReplay,
+		web.arena.SavedMatch.CapitalizedType(),
+		web.arena.SavedMatch,
 		web.arena.Plc.GetArmorBlockStatuses(),
 	}
 	err = template.ExecuteTemplate(w, "base", data)
@@ -176,6 +180,20 @@ func (web *Web) matchPlayShowResultHandler(w http.ResponseWriter, r *http.Reques
 	}
 	web.arena.SavedMatch = match
 	web.arena.SavedMatchResult = matchResult
+	web.arena.ScorePostedNotifier.Notify()
+
+	http.Redirect(w, r, "/match_play", 303)
+}
+
+// Clears the match results display buffer.
+func (web *Web) matchPlayClearResultHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	// Load an empty match to effectively clear the buffer.
+	web.arena.SavedMatch = &model.Match{}
+	web.arena.SavedMatchResult = model.NewMatchResult()
 	web.arena.ScorePostedNotifier.Notify()
 
 	http.Redirect(w, r, "/match_play", 303)
