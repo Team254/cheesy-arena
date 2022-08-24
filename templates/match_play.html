@@ -179,7 +179,7 @@
             </div>
             <div class="radio">
               <label>
-                <input type="radio" name="audienceDisplay" value="bracket" onclick="setAudienceDisplay();">Bracket
+                <input type="radio" name="audienceDisplay" value="bracket" onclick="setAudienceDisplay();">Bracket {{if eq .SavedMatch.Type "elimination" }}w/ Result{{end}}
               </label>
             </div>
             <div class="radio">
@@ -239,7 +239,7 @@
               </label>
             </div>
           </div>
-          <p>Saved Match Result</p>
+          <p>Shown Match Result</p>
           <span class="label label-saved-match">
             {{if .SavedMatch.DisplayName}}{{.SavedMatchType}} {{.SavedMatch.DisplayName}}{{else}}None{{end}}
           </span>
