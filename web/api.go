@@ -228,19 +228,27 @@ func (web *Web) teamAvatarsApiHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (web *Web) bracketSvgApiHandler(w http.ResponseWriter, r *http.Request) {
+	hideActive := false
+	if hideActiveValue, ok := r.URL.Query()["hideActive"]; ok {
+		hideActive = hideActiveValue[0] == "true"
+	}
+
 	w.Header().Set("Content-Type", "image/svg+xml")
-	if err := web.generateBracketSvg(w); err != nil {
+	if err := web.generateBracketSvg(w, hideActive); err != nil {
 		handleWebErr(w, err)
 		return
 	}
 }
 
-func (web *Web) generateBracketSvg(w io.Writer) error {
+func (web *Web) generateBracketSvg(w io.Writer, hideActive bool) error {
 	alliances, err := web.arena.Database.GetAllAlliances()
 	if err != nil {
 		return err
 	}
-	activeMatch := web.arena.SavedMatch
+	var activeMatch *model.Match
+	if !hideActive {
+		activeMatch = web.arena.SavedMatch
+	}
 
 	matchups := make(map[string]*allianceMatchup)
 	if web.arena.PlayoffBracket != nil {
