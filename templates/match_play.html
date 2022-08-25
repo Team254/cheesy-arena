@@ -57,7 +57,8 @@
   <div class="col-lg-8">
     <div class="row text-center">
       <div class="col-lg-3 well well-sm text-center" style="text-transform: uppercase;">
-        {{if eq .Match.Type "elimination"}}playoff{{else}}{{.Match.Type}}{{end}} {{.Match.DisplayName}}
+        {{if eq .Match.Type "elimination"}}playoff{{else}}{{.Match.Type}}{{end}}
+        {{if ne .Match.Type "test" }}{{.Match.DisplayName}}{{end}}
       </div>
       <div id="matchState" class="col-lg-3 well well-sm text-center">&nbsp;</div>
       <div id="matchTime" class="col-lg-2 well well-sm text-center">&nbsp;</div>
