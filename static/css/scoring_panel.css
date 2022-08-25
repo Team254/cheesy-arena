@@ -12,7 +12,7 @@ body {
   background-color: #222;
 }
 .container {
-  padding-top: 2vw;
+  padding-top: 1vw;
   width: 100%;
   height: 100%;
   display: flex;
@@ -36,22 +36,24 @@ body {
   background-color: #223;
 }
 #matchName {
-  font-size: 2vw;
+  font-size: 3vw;
 }
 .scoring-section {
   margin-bottom: 0.5vw;
   display: flex;
-  font-size: 1.5vw;
+  font-size: 2.5vw;
   color: #ccc;
 }
 .scoring-header>div{
-  height: 2.5vw;
+  height: 7vw;
+  display: flex;
+  align-items: center;
   margin: 0.4vw 1vw 0.4vw 0.2vw;
   color: #666;
 }
 .robot-field {
   width: 17vw;
-  height: 2.5vw;
+  height: 7vw;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -60,6 +62,7 @@ body {
 .team {
   display: flex;
   justify-content: center;
+  font-size: 5vw;
   font-weight: bold;
 }
 .boolean[data-value="false"] {
@@ -107,16 +110,16 @@ body {
   color: #666;
 }
 .goal {
-  width: 13vw;
-  height: 5vw;
+  width: 17vw;
+  height: 7vw;
   margin: 0.4vw 3vw;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 .number-button {
-  width: 4vw;
-  height: 4vw;
+  width: 6vw;
+  height: 6vw;
   display: flex;
   justify-content: space-between;
   align-items: center;
