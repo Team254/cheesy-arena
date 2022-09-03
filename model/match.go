@@ -6,7 +6,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"sort"
 	"strings"
@@ -39,8 +38,6 @@ type Match struct {
 	ScoreCommittedAt time.Time
 	Status           game.MatchStatus
 }
-
-var elimRoundNames = map[int]string{1: "F", 2: "SF", 4: "QF", 8: "EF"}
 
 func (database *Database) CreateMatch(match *Match) error {
 	return database.matchTable.create(match)
@@ -137,16 +134,6 @@ func (match *Match) TypePrefix() string {
 		return "P"
 	} else if match.Type == "qualification" {
 		return "Q"
-	}
-	return ""
-}
-
-func (match *Match) TbaCode() string {
-	if match.Type == "qualification" {
-		return fmt.Sprintf("qm%s", match.DisplayName)
-	} else if match.Type == "elimination" {
-		return fmt.Sprintf("%s%dm%d", strings.ToLower(elimRoundNames[match.ElimRound]), match.ElimGroup,
-			match.ElimInstance)
 	}
 	return ""
 }

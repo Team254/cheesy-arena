@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/mitchellh/mapstructure"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -33,13 +34,13 @@ type TbaClient struct {
 }
 
 type TbaMatch struct {
-	CompLevel      string                        `json:"comp_level"`
-	SetNumber      int                           `json:"set_number"`
-	MatchNumber    int                           `json:"match_number"`
-	Alliances      map[string]*TbaAlliance       `json:"alliances"`
-	ScoreBreakdown map[string]*TbaScoreBreakdown `json:"score_breakdown"`
-	TimeString     string                        `json:"time_string"`
-	TimeUtc        string                        `json:"time_utc"`
+	CompLevel      string                            `json:"comp_level"`
+	SetNumber      int                               `json:"set_number"`
+	MatchNumber    int                               `json:"match_number"`
+	Alliances      map[string]*TbaAlliance           `json:"alliances"`
+	ScoreBreakdown map[string]map[string]interface{} `json:"score_breakdown"`
+	TimeString     string                            `json:"time_string"`
+	TimeUtc        string                            `json:"time_utc"`
 }
 
 type TbaAlliance struct {
@@ -50,45 +51,45 @@ type TbaAlliance struct {
 }
 
 type TbaScoreBreakdown struct {
-	TaxiRobot1              string `json:"taxiRobot1"`
-	TaxiRobot2              string `json:"taxiRobot2"`
-	TaxiRobot3              string `json:"taxiRobot3"`
-	AutoCargoLowerBlue      int    `json:"autoCargoLowerBlue"`
-	AutoCargoLowerFar       int    `json:"autoCargoLowerFar"`
-	AutoCargoLowerNear      int    `json:"autoCargoLowerNear"`
-	AutoCargoLowerRed       int    `json:"autoCargoLowerRed"`
-	AutoCargoUpperBlue      int    `json:"autoCargoUpperBlue"`
-	AutoCargoUpperFar       int    `json:"autoCargoUpperFar"`
-	AutoCargoUpperNear      int    `json:"autoCargoUpperNear"`
-	AutoCargoUpperRed       int    `json:"autoCargoUpperRed"`
-	AutoCargoTotal          int    `json:"autoCargoTotal"`
-	TeleopCargoLowerBlue    int    `json:"teleopCargoLowerBlue"`
-	TeleopCargoLowerFar     int    `json:"teleopCargoLowerFar"`
-	TeleopCargoLowerNear    int    `json:"teleopCargoLowerNear"`
-	TeleopCargoLowerRed     int    `json:"teleopCargoLowerRed"`
-	TeleopCargoUpperBlue    int    `json:"teleopCargoUpperBlue"`
-	TeleopCargoUpperFar     int    `json:"teleopCargoUpperFar"`
-	TeleopCargoUpperNear    int    `json:"teleopCargoUpperNear"`
-	TeleopCargoUpperRed     int    `json:"teleopCargoUpperRed"`
-	TeleopCargoTotal        int    `json:"teleopCargoTotal"`
-	MatchCargoTotal         int    `json:"matchCargoTotal"`
-	EndgameRobot1           string `json:"endgameRobot1"`
-	EndgameRobot2           string `json:"endgameRobot2"`
-	EndgameRobot3           string `json:"endgameRobot3"`
-	AutoTaxiPoints          int    `json:"autoTaxiPoints"`
-	AutoCargoPoints         int    `json:"autoCargoPoints"`
-	AutoPoints              int    `json:"autoPoints"`
-	TeleopCargoPoints       int    `json:"teleopCargoPoints"`
-	EndgamePoints           int    `json:"endgamePoints"`
-	TeleopPoints            int    `json:"teleopPoints"`
-	QuintetAchieved         bool   `json:"quintetAchieved"`
-	CargoBonusRankingPoint  bool   `json:"cargoBonusRankingPoint"`
-	HangarBonusRankingPoint bool   `json:"hangarBonusRankingPoint"`
-	FoulCount               int    `json:"foulCount"`
-	TechFoulCount           int    `json:"techFoulCount"`
-	FoulPoints              int    `json:"foulPoints"`
-	TotalPoints             int    `json:"totalPoints"`
-	RP                      int    `json:"rp"`
+	TaxiRobot1              string `mapstructure:"taxiRobot1"`
+	TaxiRobot2              string `mapstructure:"taxiRobot2"`
+	TaxiRobot3              string `mapstructure:"taxiRobot3"`
+	AutoCargoLowerBlue      int    `mapstructure:"autoCargoLowerBlue"`
+	AutoCargoLowerFar       int    `mapstructure:"autoCargoLowerFar"`
+	AutoCargoLowerNear      int    `mapstructure:"autoCargoLowerNear"`
+	AutoCargoLowerRed       int    `mapstructure:"autoCargoLowerRed"`
+	AutoCargoUpperBlue      int    `mapstructure:"autoCargoUpperBlue"`
+	AutoCargoUpperFar       int    `mapstructure:"autoCargoUpperFar"`
+	AutoCargoUpperNear      int    `mapstructure:"autoCargoUpperNear"`
+	AutoCargoUpperRed       int    `mapstructure:"autoCargoUpperRed"`
+	AutoCargoTotal          int    `mapstructure:"autoCargoTotal"`
+	TeleopCargoLowerBlue    int    `mapstructure:"teleopCargoLowerBlue"`
+	TeleopCargoLowerFar     int    `mapstructure:"teleopCargoLowerFar"`
+	TeleopCargoLowerNear    int    `mapstructure:"teleopCargoLowerNear"`
+	TeleopCargoLowerRed     int    `mapstructure:"teleopCargoLowerRed"`
+	TeleopCargoUpperBlue    int    `mapstructure:"teleopCargoUpperBlue"`
+	TeleopCargoUpperFar     int    `mapstructure:"teleopCargoUpperFar"`
+	TeleopCargoUpperNear    int    `mapstructure:"teleopCargoUpperNear"`
+	TeleopCargoUpperRed     int    `mapstructure:"teleopCargoUpperRed"`
+	TeleopCargoTotal        int    `mapstructure:"teleopCargoTotal"`
+	MatchCargoTotal         int    `mapstructure:"matchCargoTotal"`
+	EndgameRobot1           string `mapstructure:"endgameRobot1"`
+	EndgameRobot2           string `mapstructure:"endgameRobot2"`
+	EndgameRobot3           string `mapstructure:"endgameRobot3"`
+	AutoTaxiPoints          int    `mapstructure:"autoTaxiPoints"`
+	AutoCargoPoints         int    `mapstructure:"autoCargoPoints"`
+	AutoPoints              int    `mapstructure:"autoPoints"`
+	TeleopCargoPoints       int    `mapstructure:"teleopCargoPoints"`
+	EndgamePoints           int    `mapstructure:"endgamePoints"`
+	TeleopPoints            int    `mapstructure:"teleopPoints"`
+	QuintetAchieved         bool   `mapstructure:"quintetAchieved"`
+	CargoBonusRankingPoint  bool   `mapstructure:"cargoBonusRankingPoint"`
+	HangarBonusRankingPoint bool   `mapstructure:"hangarBonusRankingPoint"`
+	FoulCount               int    `mapstructure:"foulCount"`
+	TechFoulCount           int    `mapstructure:"techFoulCount"`
+	FoulPoints              int    `mapstructure:"foulPoints"`
+	TotalPoints             int    `mapstructure:"totalPoints"`
+	RP                      int    `mapstructure:"rp"`
 }
 
 type TbaRanking struct {
@@ -98,7 +99,9 @@ type TbaRanking struct {
 	Match            int
 	Hangar           int
 	TaxiAndAutoCargo int
-	WinLossTie       string
+	Wins             int `json:"wins"`
+	Losses           int `json:"losses"`
+	Ties             int `json:"ties"`
 	Dqs              int `json:"dqs"`
 	Played           int `json:"played"`
 }
@@ -145,8 +148,34 @@ type TbaPublishedAward struct {
 	Awardee string `json:"awardee"`
 }
 
+type elimMatchKey struct {
+	elimRound int
+	elimGroup int
+}
+
+type tbaElimMatchKey struct {
+	compLevel string
+	setNumber int
+}
+
 var taxiMapping = map[bool]string{false: "No", true: "Yes"}
 var endgameMapping = []string{"None", "Low", "Mid", "High", "Traversal"}
+var doubleEliminationMatchKeyMapping = map[elimMatchKey]tbaElimMatchKey{
+	{1, 1}: {"ef", 1},
+	{1, 2}: {"ef", 2},
+	{1, 3}: {"ef", 3},
+	{1, 4}: {"ef", 4},
+	{2, 1}: {"ef", 5},
+	{2, 2}: {"ef", 6},
+	{2, 3}: {"qf", 1},
+	{2, 4}: {"qf", 2},
+	{3, 1}: {"qf", 3},
+	{3, 2}: {"qf", 4},
+	{4, 1}: {"sf", 1},
+	{4, 2}: {"sf", 2},
+	{5, 1}: {"f", 1},
+	{6, 1}: {"f", 2},
+}
 
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
 	return &TbaClient{BaseUrl: tbaBaseUrl, eventCode: eventCode, secretId: secretId, secret: secret,
@@ -313,6 +342,10 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 	if err != nil {
 		return err
 	}
+	eventSettings, err := database.GetEventSettings()
+	if err != nil {
+		return err
+	}
 	matches := append(qualMatches, elimMatches...)
 	tbaMatches := make([]TbaMatch, len(matches))
 
@@ -321,7 +354,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 		matchNumber, _ := strconv.Atoi(match.DisplayName)
 
 		// Fill in scores if the match has been played.
-		var scoreBreakdown map[string]*TbaScoreBreakdown
+		var scoreBreakdown map[string]map[string]interface{}
 		var redScore, blueScore *int
 		var redCards, blueCards map[string]string
 		if match.IsComplete() {
@@ -330,11 +363,13 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 				return err
 			}
 			if matchResult != nil {
-				scoreBreakdown = make(map[string]*TbaScoreBreakdown)
-				scoreBreakdown["red"] = createTbaScoringBreakdown(&match, matchResult, "red")
-				scoreBreakdown["blue"] = createTbaScoringBreakdown(&match, matchResult, "blue")
-				redScore = &scoreBreakdown["red"].TotalPoints
-				blueScore = &scoreBreakdown["blue"].TotalPoints
+				scoreBreakdown = make(map[string]map[string]interface{})
+				scoreBreakdown["red"] = createTbaScoringBreakdown(eventSettings, &match, matchResult, "red")
+				scoreBreakdown["blue"] = createTbaScoringBreakdown(eventSettings, &match, matchResult, "blue")
+				redScoreValue := scoreBreakdown["red"]["totalPoints"].(int)
+				blueScoreValue, _ := scoreBreakdown["blue"]["totalPoints"].(int)
+				redScore = &redScoreValue
+				blueScore = &blueScoreValue
 				redCards = matchResult.RedCards
 				blueCards = matchResult.BlueCards
 			}
@@ -348,9 +383,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, alliances, scoreBreakdown, match.Time.Local().Format("3:04 PM"),
 			match.Time.UTC().Format("2006-01-02T15:04:05")}
 		if match.Type == "elimination" {
-			tbaMatches[i].CompLevel = map[int]string{1: "f", 2: "sf", 4: "qf", 8: "ef"}[match.ElimRound]
-			tbaMatches[i].SetNumber = match.ElimGroup
-			tbaMatches[i].MatchNumber = match.ElimInstance
+			setElimMatchKey(&tbaMatches[i], &match, eventSettings.ElimType)
 		}
 	}
 	jsonBody, err := json.Marshal(tbaMatches)
@@ -378,19 +411,21 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "Match", "Hangar", "Auto", "WinLossTie"}
+	breakdowns := []string{"RP", "Match", "Hangar", "TaxiAndAutoCargo"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{
-			getTbaTeam(ranking.TeamId),
-			ranking.Rank,
-			float32(ranking.RankingPoints) / float32(ranking.Played),
-			ranking.MatchPoints,
-			ranking.HangarPoints,
-			ranking.TaxiAndAutoCargoPoints,
-			fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties),
-			ranking.Disqualifications,
-			ranking.Played,
+			TeamKey:          getTbaTeam(ranking.TeamId),
+			Rank:             ranking.Rank,
+			RP:               float32(ranking.RankingPoints) / float32(ranking.Played),
+			Match:            ranking.MatchPoints,
+			Hangar:           ranking.HangarPoints,
+			TaxiAndAutoCargo: ranking.TaxiAndAutoCargoPoints,
+			Wins:             ranking.Wins,
+			Losses:           ranking.Losses,
+			Ties:             ranking.Ties,
+			Dqs:              ranking.Disqualifications,
+			Played:           ranking.Played,
 		}
 	}
 	jsonBody, err := json.Marshal(TbaRankings{breakdowns, tbaRankings})
@@ -530,7 +565,12 @@ func createTbaAlliance(teamIds [3]int, surrogates [3]bool, score *int, cards map
 	return &alliance
 }
 
-func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResult, alliance string) *TbaScoreBreakdown {
+func createTbaScoringBreakdown(
+	eventSettings *model.EventSettings,
+	match *model.Match,
+	matchResult *model.MatchResult,
+	alliance string,
+) map[string]interface{} {
 	var breakdown TbaScoreBreakdown
 	var score *game.Score
 	var scoreSummary, opponentScoreSummary *game.ScoreSummary
@@ -598,7 +638,15 @@ func createTbaScoringBreakdown(match *model.Match, matchResult *model.MatchResul
 		breakdown.RP = ranking.RankingPoints
 	}
 
-	return &breakdown
+	// Turn the breakdown struct into a map in order to be able to remove any fields that are disabled based on the
+	// event settings.
+	breakdownMap := make(map[string]interface{})
+	_ = mapstructure.Decode(breakdown, &breakdownMap)
+	if eventSettings.QuintetThreshold == 0 {
+		delete(breakdownMap, "quintetAchieved")
+	}
+
+	return breakdownMap
 }
 
 // Uploads the awards to The Blue Alliance.
@@ -630,4 +678,19 @@ func (client *TbaClient) PublishAwards(database *model.Database) error {
 		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
 	}
 	return nil
+}
+
+// Sets the match key attributes on TbaMatch based on the match and bracket type.
+func setElimMatchKey(tbaMatch *TbaMatch, match *model.Match, elimType string) {
+	if elimType == "single" {
+		tbaMatch.CompLevel = map[int]string{1: "ef", 2: "qf", 3: "sf", 4: "f"}[match.ElimRound]
+		tbaMatch.SetNumber = match.ElimGroup
+		tbaMatch.MatchNumber = match.ElimInstance
+	} else if elimType == "double" {
+		if tbaKey, ok := doubleEliminationMatchKeyMapping[elimMatchKey{match.ElimRound, match.ElimGroup}]; ok {
+			tbaMatch.CompLevel = tbaKey.compLevel
+			tbaMatch.SetNumber = tbaKey.setNumber
+		}
+		tbaMatch.MatchNumber = match.ElimInstance
+	}
 }
