@@ -112,18 +112,3 @@ func TestGetMatchesByType(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(matches))
 }
-
-func TestTbaCode(t *testing.T) {
-	match := Match{Type: "practice", DisplayName: "3"}
-	assert.Equal(t, "", match.TbaCode())
-	match = Match{Type: "qualification", DisplayName: "26"}
-	assert.Equal(t, "qm26", match.TbaCode())
-	match = Match{Type: "elimination", DisplayName: "EF2-1", ElimRound: 8, ElimGroup: 2, ElimInstance: 1}
-	assert.Equal(t, "ef2m1", match.TbaCode())
-	match = Match{Type: "elimination", DisplayName: "QF3-2", ElimRound: 4, ElimGroup: 3, ElimInstance: 2}
-	assert.Equal(t, "qf3m2", match.TbaCode())
-	match = Match{Type: "elimination", DisplayName: "SF1-3", ElimRound: 2, ElimGroup: 1, ElimInstance: 3}
-	assert.Equal(t, "sf1m3", match.TbaCode())
-	match = Match{Type: "elimination", DisplayName: "F2", ElimRound: 1, ElimGroup: 1, ElimInstance: 2}
-	assert.Equal(t, "f1m2", match.TbaCode())
-}
