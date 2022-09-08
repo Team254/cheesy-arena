@@ -382,9 +382,8 @@
             <line class="loser" x1="1246.485" y1="746.485" x2="1229.515" y2="729.515"/>
             <text transform="translate(926.2617 775.3125)">W</text>
             <text transform="translate(926.2617 585.3125)">W</text>
-            <polyline points="1008,725 984,725 954.488,593.142"/>
-            <polyline class="coverup" points="1008,656 984,656 955.118,784.297"/>
-            <polyline points="1008,655 984,655 955.118,783 898,783"/>
+            <polyline points="955,593 955,655 1008,655"/>
+            <polyline points="955,783 955,725 1008,725"/>
           </g>
           <g id="connectors_4_2"{{if (index .Matchups "4_2").IsActive}} class="active"{{end}}>
             <rect class="coverup" x="699.216" y="241.054" width="312.117" height="199.156"/>
