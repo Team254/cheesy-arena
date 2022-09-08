@@ -90,8 +90,8 @@ var doubleEliminationBracketMatchupTemplates = []matchupTemplate{
 		matchupKey:         newMatchupKey(4, 1),
 		displayName:        "11",
 		NumWinsToAdvance:   1,
-		redAllianceSource:  newWinnerAllianceSource(3, 1),
-		blueAllianceSource: newWinnerAllianceSource(3, 2),
+		redAllianceSource:  newWinnerAllianceSource(3, 2),
+		blueAllianceSource: newWinnerAllianceSource(3, 1),
 	},
 	{
 		matchupKey:         newMatchupKey(4, 2),
