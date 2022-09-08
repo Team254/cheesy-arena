@@ -122,11 +122,11 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 12, len(matches)) {
-		assertMatch(t, matches[10], "11", 8, 7)
+		assertMatch(t, matches[10], "11", 7, 8)
 		assertMatch(t, matches[11], "12", 4, 3)
 	}
 
-	scoreMatch(database, "11", game.BlueWonMatch)
+	scoreMatch(database, "11", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
