@@ -36,7 +36,7 @@ On recent versions of macOS, you may be prevented from running an app from an un
 
 **From source**
 
-1. Download [Go](https://golang.org/dl/) (version 1.16 or later recommended)
+1. Download [Go](https://golang.org/dl/) (version 1.19 or later recommended)
 1. Clone this GitHub repository to a location of your choice
 1. Navigate to the repository's directory in the terminal
 1. Compile the code with `go build`
