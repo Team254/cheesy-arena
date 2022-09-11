@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -41,6 +42,7 @@ type TbaMatch struct {
 	ScoreBreakdown map[string]map[string]interface{} `json:"score_breakdown"`
 	TimeString     string                            `json:"time_string"`
 	TimeUtc        string                            `json:"time_utc"`
+	DisplayName    string                            `json:"display_name"`
 }
 
 type TbaAlliance struct {
@@ -380,8 +382,15 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 		alliances["blue"] = createTbaAlliance([3]int{match.Blue1, match.Blue2, match.Blue3},
 			[3]bool{match.Blue1IsSurrogate, match.Blue2IsSurrogate, match.Blue3IsSurrogate}, blueScore, blueCards)
 
-		tbaMatches[i] = TbaMatch{"qm", 0, matchNumber, alliances, scoreBreakdown, match.Time.Local().Format("3:04 PM"),
-			match.Time.UTC().Format("2006-01-02T15:04:05")}
+		tbaMatches[i] = TbaMatch{
+			CompLevel:      "qm",
+			SetNumber:      0,
+			MatchNumber:    matchNumber,
+			Alliances:      alliances,
+			ScoreBreakdown: scoreBreakdown,
+			TimeString:     match.Time.Local().Format("3:04 PM"),
+			TimeUtc:        match.Time.UTC().Format("2006-01-02T15:04:05"),
+		}
 		if match.Type == "elimination" {
 			setElimMatchKey(&tbaMatches[i], &match, eventSettings.ElimType)
 		}
@@ -692,5 +701,8 @@ func setElimMatchKey(tbaMatch *TbaMatch, match *model.Match, elimType string) {
 			tbaMatch.SetNumber = tbaKey.setNumber
 		}
 		tbaMatch.MatchNumber = match.ElimInstance
+		if !strings.HasPrefix(match.DisplayName, "F") {
+			tbaMatch.DisplayName = "Match " + match.DisplayName
+		}
 	}
 }
