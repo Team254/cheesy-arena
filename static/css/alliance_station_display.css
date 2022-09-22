@@ -120,8 +120,8 @@ body[data-position=right] #inMatch #blueScore {
   left: 0;
   right: 0;
   margin: 0 auto;
-  font-size: 550px;
-  line-height: 550px;
+  font-size: 450px;
+  line-height: 450px;
   text-align: center;
 }
 #preMatch .databar {
