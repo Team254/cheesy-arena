@@ -35,6 +35,7 @@ const (
 	QueueingDisplay
 	RankingsDisplay
 	TwitchStreamDisplay
+	WallDisplay
 )
 
 var DisplayTypeNames = map[DisplayType]string{
@@ -47,6 +48,7 @@ var DisplayTypeNames = map[DisplayType]string{
 	QueueingDisplay:        "Queueing",
 	RankingsDisplay:        "Rankings",
 	TwitchStreamDisplay:    "Twitch Stream",
+	WallDisplay:            "Wall",
 }
 
 var displayTypePaths = map[DisplayType]string{
@@ -59,6 +61,7 @@ var displayTypePaths = map[DisplayType]string{
 	QueueingDisplay:        "/displays/queueing",
 	RankingsDisplay:        "/displays/rankings",
 	TwitchStreamDisplay:    "/displays/twitch",
+	WallDisplay:            "/displays/wall",
 }
 
 var displayRegistryMutex sync.Mutex
