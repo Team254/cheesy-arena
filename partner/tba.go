@@ -98,9 +98,9 @@ type TbaRanking struct {
 	TeamKey          string `json:"team_key"`
 	Rank             int    `json:"rank"`
 	RP               float32
-	Match            int
-	Hangar           int
-	TaxiAndAutoCargo int
+	Match            float32
+	Hangar           float32
+	TaxiAndAutoCargo float32
 	Wins             int `json:"wins"`
 	Losses           int `json:"losses"`
 	Ties             int `json:"ties"`
@@ -427,9 +427,9 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 			TeamKey:          getTbaTeam(ranking.TeamId),
 			Rank:             ranking.Rank,
 			RP:               float32(ranking.RankingPoints) / float32(ranking.Played),
-			Match:            ranking.MatchPoints,
-			Hangar:           ranking.HangarPoints,
-			TaxiAndAutoCargo: ranking.TaxiAndAutoCargoPoints,
+			Match:            float32(ranking.MatchPoints) / float32(ranking.Played),
+			Hangar:           float32(ranking.HangarPoints) / float32(ranking.Played),
+			TaxiAndAutoCargo: float32(ranking.TaxiAndAutoCargoPoints) / float32(ranking.Played),
 			Wins:             ranking.Wins,
 			Losses:           ranking.Losses,
 			Ties:             ranking.Ties,
