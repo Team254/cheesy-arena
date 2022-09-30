@@ -278,146 +278,148 @@
           <polyline points="617,247 703,247 703,437 617,437"/>
           <polyline points="1006,390 861,390 861,336 704,336"/>
         </g>
-        <g id="connectors_temporary">
-          <g id="connector_1_1"{{if (index .Matchups "1_1").IsActive}} class="active"{{end}}>
-            <polyline class="loser" points="411,593 367,593 367,247"/>
-            <polyline points="319,247 367,247 367,214 411,214"/>
-            <text transform="translate(342.9489 228.3672)">W</text>
-            <text transform="translate(347.4327 269.9525)" class="loser">L</text>
+        {{if .ShowTemporaryConnectors}}
+          <g id="connectors_temporary">
+            <g id="connector_1_1"{{if (index .Matchups "1_1").IsActive}} class="active"{{end}}>
+              <polyline class="loser" points="411,593 367,593 367,247"/>
+              <polyline points="319,247 367,247 367,214 411,214"/>
+              <text transform="translate(342.9489 228.3672)">W</text>
+              <text transform="translate(347.4327 269.9525)" class="loser">L</text>
+            </g>
+            <g id="connectors_1_2"{{if (index .Matchups "1_2").IsActive}} class="active"{{end}}>
+              <polyline class="loser" points="411,662 367,662 367,437"/>
+              <polyline points="319,437 367,437 367,283 411,283"/>
+              <text transform="translate(342.9489 420.848)">W</text>
+              <text transform="translate(347.4327 462.4333)" class="loser">L</text>
+            </g>
+            <g id="connectors_1_3"{{if (index .Matchups "1_3").IsActive}} class="active"{{end}}>
+              <polyline class="loser" points="411,786 367,786 367,627"/>
+              <polyline points="319,627 367,627 367,404 411,404"/>
+              <text transform="translate(342.9489 610.848)">W</text>
+              <text transform="translate(347.4327 652.4332)" class="loser">L</text>
+            </g>
+            <g id="connectors_1_4"{{if (index .Matchups "1_4").IsActive}} class="active"{{end}}>
+              <polyline class="loser" points="411,853 367,853 367,817"/>
+              <polyline points="319,817 367,817 367,473 411,473"/>
+              <text transform="translate(342.9489 800.848)">W</text>
+              <text transform="translate(347.4327 842.4332)" class="loser">L</text>
+            </g>
+            <g id="connectors_2_1"{{if (index .Matchups "2_1").IsActive}} class="active"{{end}}>
+              <polyline class="loser" points="319,247 374,247 374,597 411,597"/>
+              <text transform="translate(665.9388 616.8822)">W</text>
+              <text transform="translate(645.3726 654.1893)" class="loser">L</text>
+              <polyline class="loser" points="319,437 360,437 360,662 411,662"/>
+              <line class="loser" x1="660" y1="628" x2="660" y2="675"/>
+              <line class="loser" x1="668.485" y1="666.515" x2="651.515" y2="683.485"/>
+              <line class="loser" x1="668.485" y1="683.485" x2="651.515" y2="666.515"/>
+              <text transform="translate(330.706 429.7347)" class="loser">L</text>
+              <text transform="translate(330.706 240.7347)" class="loser">L</text>
+            </g>
+            <g id="connectors_2_2"{{if (index .Matchups "2_2").IsActive}} class="active"{{end}}>
+              <polyline  class="loser" points="319,627 374,627 374,787 411,787"/>
+              <text transform="translate(667.1932 808.262)">W</text>
+              <text transform="translate(645.3726 844.1893)" class="loser">L</text>
+              <polyline  class="loser" points="319,817 360,817 360,852 411,852"/>
+              <line class="loser" x1="660" y1="818" x2="660" y2="865"/>
+              <line class="loser" x1="668.485" y1="856.515" x2="651.515" y2="873.485"/>
+              <line class="loser" x1="668.485" y1="873.485" x2="651.515" y2="856.515"/>
+              <text transform="translate(330.706 619.7347)" class="loser">L</text>
+              <text transform="translate(330.706 808.462)" class="loser">L</text>
+            </g>
+            <g id="connectors_2_3"{{if (index .Matchups "2_3").IsActive}} class="active"{{end}}>
+              <rect class="coverup" x="699.216" y="241.054" width="312.117" height="199.156"/>
+              <polyline points="319,247 367,247 367,214 411,214"/>
+              <text transform="translate(668.4441 239.1465)">W</text>
+              <text transform="translate(644.3726 276.7044)" class="loser">L</text>
+              <polyline points="319,437 367,437 367,281 411,281"/>
+              <text transform="translate(332.4185 239.67)">W</text>
+              <text transform="translate(332.4185 429.67)">W</text>
+              <polyline class="loser" points="660,636 660,748 728,748"/>
+              <line class="loser" x1="660" y1="447" x2="660" y2="618"/>
+              <line class="loser" x1="660" y1="248" x2="660" y2="427"/>
+              <polyline points="698,247 790,247 790,358 1010,358"/>
+              <polyline points="698,437 790,437 790,421 1010,421"/>
+            </g>
+            <g id="connectors_2_4"{{if (index .Matchups "2_4").IsActive}} class="active"{{end}}>
+              <polyline points="319,627 360,627 360,405 411,405"/>
+              <text transform="translate(668.566 429.1972)">W</text>
+              <text transform="translate(643.3726 469.2499)" class="loser">L</text>
+              <polyline points="319,817 374,817 374,473 411,473"/>
+              <polyline  class="loser" points="660,438 660,561 728,561"/>
+              <text transform="translate(332.4185 618.67)">W</text>
+              <text transform="translate(332.4185 808.67)">W</text>
+              <rect class="coverup" x="699.216" y="241.054" width="312.117" height="199.156"/>
+              <polyline points="698,247 790,247 790,358 1010,358"/>
+              <polyline points="698,437 790,437 790,421 1010,421"/>
+            </g>
+            <g id="connectors_3_1"{{if (index .Matchups "3_1").IsActive}} class="active"{{end}}>
+              <polyline class="loser" points="660,637 660,748 709,748"/>
+              <text transform="translate(966.4487 773.8822)">W</text>
+              <text transform="translate(630.2617 808.2188)">W</text>
+              <text transform="translate(925.3726 811.1893)" class="loser">L</text>
+              <line class="loser" x1="940" y1="784" x2="940" y2="832"/>
+              <line class="loser" x1="948.485" y1="823.515" x2="931.515" y2="840.485"/>
+              <line class="loser" x1="948.485" y1="840.485" x2="931.515" y2="823.515"/>
+              <text transform="translate(640.4236 276.67)" class="loser">L</text>
+              <line class="loser" x1="660" y1="248" x2="660" y2="425"/>
+              <line class="loser" x1="660" y1="447" x2="660" y2="615"/>
+            </g>
+            <g id="connectors_3_2"{{if (index .Matchups "3_2").IsActive}} class="active"{{end}}>
+              <polyline class="loser" points="660,438 660,563 709,563"/>
+              <text transform="translate(941.2606 585.4622)">W</text>
+              <text transform="translate(630.8534 616.8523)">W</text>
+              <text transform="translate(925.3726 620.1893)" class="loser">L</text>
+              <line class="loser" x1="940" y1="594" x2="940" y2="641"/>
+              <line class="loser" x1="948.485" y1="632.515" x2="931.515" y2="649.485"/>
+              <line class="loser" x1="948.485" y1="649.485" x2="931.515" y2="632.515"/>
+              <text transform="translate(640.2857 472.1667)" class="loser">L</text>
+            </g>
+            <g id="connectors_4_1"{{if (index .Matchups "4_1").IsActive}} class="active"{{end}}>
+              <rect class="coverup" x="955.326" y="589.109" width="68.612" height="200.486"/>
+              <text transform="translate(1223.2803 681.0883)">W</text>
+              <text transform="translate(1223.3726 717.1893)" class="loser">L</text>
+              <line class="loser" x1="1238" y1="689" x2="1238" y2="738"/>
+              <line class="loser" x1="1246.485" y1="729.515" x2="1229.515" y2="746.485"/>
+              <line class="loser" x1="1246.485" y1="746.485" x2="1229.515" y2="729.515"/>
+              <text transform="translate(926.2617 775.3125)">W</text>
+              <text transform="translate(926.2617 585.3125)">W</text>
+              <polyline points="955,593 955,655 1008,655"/>
+              <polyline points="955,783 955,725 1008,725"/>
+            </g>
+            <g id="connectors_4_2"{{if (index .Matchups "4_2").IsActive}} class="active"{{end}}>
+              <rect class="coverup" x="699.216" y="241.054" width="312.117" height="199.156"/>
+              <polyline points="698,247 790,247 790,358 1010,358"/>
+              <polyline points="698,437 790,437 790,421 1010,421"/>
+              <text transform="translate(628.5344 429.1004)">W</text>
+              <text transform="translate(628.5344 239.1004)">W</text>
+              <text transform="translate(1263.0288 382.2166)">W</text>
+              <text transform="translate(1239.3726 418.7044)" class="loser">L</text>
+              <polyline  class="loser" points="1256,391 1256,625 1323,625"/>
+            </g>
+            <g id="connectors_5_1"{{if (index .Matchups "5_1").IsActive}} class="active"{{end}}>
+              <rect class="coverup" x="1523.794" y="381.275" width="83.494" height="287.877"/>
+              <polyline points="1481,390 1553,390 1553,474 1633,474"/>
+              <polyline points="1481,656 1553,656 1553,542 1633,542"/>
+              <text transform="translate(628.5344 429.1004)">W</text>
+              <text transform="translate(628.5344 239.1004)">W</text>
+              <text transform="translate(1562.4487 647.8822)">W</text>
+              <line class="loser" x1="1538" y1="657" x2="1538" y2="706"/>
+              <line class="loser" x1="1546.485" y1="697.515" x2="1529.515" y2="714.485"/>
+              <line class="loser" x1="1546.485" y1="714.485" x2="1529.515" y2="697.515"/>
+              <text transform="translate(1223.4487 680.8822)">W</text>
+              <text transform="translate(1239.3726 418.7044)" class="loser">L</text>
+              <polyline class="loser" points="1256,391 1256,625 1323,625"/>
+              <text transform="translate(1522.3726 684.1893)" class="loser">L</text>
+            </g>
+            <g id="connectors_6_1"{{if (index .Matchups "6_1").IsActive}} class="active"{{end}}>
+              <rect class="coverup" x="1523.794" y="381.275" width="83.494" height="287.877"/>
+              <polyline points="1481,390 1553,390 1553,474 1633,474"/>
+              <polyline points="1481,656 1553,656 1553,542 1633,542"/>
+              <text transform="translate(1518.4487 647.8822)">W</text>
+              <text transform="translate(1225.4487 382.1549)">W</text>
+            </g>
           </g>
-          <g id="connectors_1_2"{{if (index .Matchups "1_2").IsActive}} class="active"{{end}}>
-            <polyline class="loser" points="411,662 367,662 367,437"/>
-            <polyline points="319,437 367,437 367,283 411,283"/>
-            <text transform="translate(342.9489 420.848)">W</text>
-            <text transform="translate(347.4327 462.4333)" class="loser">L</text>
-          </g>
-          <g id="connectors_1_3"{{if (index .Matchups "1_3").IsActive}} class="active"{{end}}>
-            <polyline class="loser" points="411,786 367,786 367,627"/>
-            <polyline points="319,627 367,627 367,404 411,404"/>
-            <text transform="translate(342.9489 610.848)">W</text>
-            <text transform="translate(347.4327 652.4332)" class="loser">L</text>
-          </g>
-          <g id="connectors_1_4"{{if (index .Matchups "1_4").IsActive}} class="active"{{end}}>
-            <polyline class="loser" points="411,853 367,853 367,817"/>
-            <polyline points="319,817 367,817 367,473 411,473"/>
-            <text transform="translate(342.9489 800.848)">W</text>
-            <text transform="translate(347.4327 842.4332)" class="loser">L</text>
-          </g>
-          <g id="connectors_2_1"{{if (index .Matchups "2_1").IsActive}} class="active"{{end}}>
-            <polyline class="loser" points="319,247 374,247 374,597 411,597"/>
-            <text transform="translate(665.9388 616.8822)">W</text>
-            <text transform="translate(645.3726 654.1893)" class="loser">L</text>
-            <polyline class="loser" points="319,437 360,437 360,662 411,662"/>
-            <line class="loser" x1="660" y1="628" x2="660" y2="675"/>
-            <line class="loser" x1="668.485" y1="666.515" x2="651.515" y2="683.485"/>
-            <line class="loser" x1="668.485" y1="683.485" x2="651.515" y2="666.515"/>
-            <text transform="translate(330.706 429.7347)" class="loser">L</text>
-            <text transform="translate(330.706 240.7347)" class="loser">L</text>
-          </g>
-          <g id="connectors_2_2"{{if (index .Matchups "2_2").IsActive}} class="active"{{end}}>
-            <polyline  class="loser" points="319,627 374,627 374,787 411,787"/>
-            <text transform="translate(667.1932 808.262)">W</text>
-            <text transform="translate(645.3726 844.1893)" class="loser">L</text>
-            <polyline  class="loser" points="319,817 360,817 360,852 411,852"/>
-            <line class="loser" x1="660" y1="818" x2="660" y2="865"/>
-            <line class="loser" x1="668.485" y1="856.515" x2="651.515" y2="873.485"/>
-            <line class="loser" x1="668.485" y1="873.485" x2="651.515" y2="856.515"/>
-            <text transform="translate(330.706 619.7347)" class="loser">L</text>
-            <text transform="translate(330.706 808.462)" class="loser">L</text>
-          </g>
-          <g id="connectors_2_3"{{if (index .Matchups "2_3").IsActive}} class="active"{{end}}>
-            <rect class="coverup" x="699.216" y="241.054" width="312.117" height="199.156"/>
-            <polyline points="319,247 367,247 367,214 411,214"/>
-            <text transform="translate(668.4441 239.1465)">W</text>
-            <text transform="translate(644.3726 276.7044)" class="loser">L</text>
-            <polyline points="319,437 367,437 367,281 411,281"/>
-            <text transform="translate(332.4185 239.67)">W</text>
-            <text transform="translate(332.4185 429.67)">W</text>
-            <polyline class="loser" points="660,636 660,748 728,748"/>
-            <line class="loser" x1="660" y1="447" x2="660" y2="618"/>
-            <line class="loser" x1="660" y1="248" x2="660" y2="427"/>
-            <polyline points="698,247 790,247 790,358 1010,358"/>
-            <polyline points="698,437 790,437 790,421 1010,421"/>
-          </g>
-          <g id="connectors_2_4"{{if (index .Matchups "2_4").IsActive}} class="active"{{end}}>
-            <polyline points="319,627 360,627 360,405 411,405"/>
-            <text transform="translate(668.566 429.1972)">W</text>
-            <text transform="translate(643.3726 469.2499)" class="loser">L</text>
-            <polyline points="319,817 374,817 374,473 411,473"/>
-            <polyline  class="loser" points="660,438 660,561 728,561"/>
-            <text transform="translate(332.4185 618.67)">W</text>
-            <text transform="translate(332.4185 808.67)">W</text>
-            <rect class="coverup" x="699.216" y="241.054" width="312.117" height="199.156"/>
-            <polyline points="698,247 790,247 790,358 1010,358"/>
-            <polyline points="698,437 790,437 790,421 1010,421"/>
-          </g>
-          <g id="connectors_3_1"{{if (index .Matchups "3_1").IsActive}} class="active"{{end}}>
-            <polyline class="loser" points="660,637 660,748 709,748"/>
-            <text transform="translate(966.4487 773.8822)">W</text>
-            <text transform="translate(630.2617 808.2188)">W</text>
-            <text transform="translate(925.3726 811.1893)" class="loser">L</text>
-            <line class="loser" x1="940" y1="784" x2="940" y2="832"/>
-            <line class="loser" x1="948.485" y1="823.515" x2="931.515" y2="840.485"/>
-            <line class="loser" x1="948.485" y1="840.485" x2="931.515" y2="823.515"/>
-            <text transform="translate(640.4236 276.67)" class="loser">L</text>
-            <line class="loser" x1="660" y1="248" x2="660" y2="425"/>
-            <line class="loser" x1="660" y1="447" x2="660" y2="615"/>
-          </g>
-          <g id="connectors_3_2"{{if (index .Matchups "3_2").IsActive}} class="active"{{end}}>
-            <polyline class="loser" points="660,438 660,563 709,563"/>
-            <text transform="translate(941.2606 585.4622)">W</text>
-            <text transform="translate(630.8534 616.8523)">W</text>
-            <text transform="translate(925.3726 620.1893)" class="loser">L</text>
-            <line class="loser" x1="940" y1="594" x2="940" y2="641"/>
-            <line class="loser" x1="948.485" y1="632.515" x2="931.515" y2="649.485"/>
-            <line class="loser" x1="948.485" y1="649.485" x2="931.515" y2="632.515"/>
-            <text transform="translate(640.2857 472.1667)" class="loser">L</text>
-          </g>
-          <g id="connectors_4_1"{{if (index .Matchups "4_1").IsActive}} class="active"{{end}}>
-            <rect class="coverup" x="955.326" y="589.109" width="68.612" height="200.486"/>
-            <text transform="translate(1223.2803 681.0883)">W</text>
-            <text transform="translate(1223.3726 717.1893)" class="loser">L</text>
-            <line class="loser" x1="1238" y1="689" x2="1238" y2="738"/>
-            <line class="loser" x1="1246.485" y1="729.515" x2="1229.515" y2="746.485"/>
-            <line class="loser" x1="1246.485" y1="746.485" x2="1229.515" y2="729.515"/>
-            <text transform="translate(926.2617 775.3125)">W</text>
-            <text transform="translate(926.2617 585.3125)">W</text>
-            <polyline points="955,593 955,655 1008,655"/>
-            <polyline points="955,783 955,725 1008,725"/>
-          </g>
-          <g id="connectors_4_2"{{if (index .Matchups "4_2").IsActive}} class="active"{{end}}>
-            <rect class="coverup" x="699.216" y="241.054" width="312.117" height="199.156"/>
-            <polyline points="698,247 790,247 790,358 1010,358"/>
-            <polyline points="698,437 790,437 790,421 1010,421"/>
-            <text transform="translate(628.5344 429.1004)">W</text>
-            <text transform="translate(628.5344 239.1004)">W</text>
-            <text transform="translate(1263.0288 382.2166)">W</text>
-            <text transform="translate(1239.3726 418.7044)" class="loser">L</text>
-            <polyline  class="loser" points="1256,391 1256,625 1323,625"/>
-          </g>
-          <g id="connectors_5_1"{{if (index .Matchups "5_1").IsActive}} class="active"{{end}}>
-            <rect class="coverup" x="1523.794" y="381.275" width="83.494" height="287.877"/>
-            <polyline points="1481,390 1553,390 1553,474 1633,474"/>
-            <polyline points="1481,656 1553,656 1553,542 1633,542"/>
-            <text transform="translate(628.5344 429.1004)">W</text>
-            <text transform="translate(628.5344 239.1004)">W</text>
-            <text transform="translate(1562.4487 647.8822)">W</text>
-            <line class="loser" x1="1538" y1="657" x2="1538" y2="706"/>
-            <line class="loser" x1="1546.485" y1="697.515" x2="1529.515" y2="714.485"/>
-            <line class="loser" x1="1546.485" y1="714.485" x2="1529.515" y2="697.515"/>
-            <text transform="translate(1223.4487 680.8822)">W</text>
-            <text transform="translate(1239.3726 418.7044)" class="loser">L</text>
-            <polyline class="loser" points="1256,391 1256,625 1323,625"/>
-            <text transform="translate(1522.3726 684.1893)" class="loser">L</text>
-          </g>
-          <g id="connectors_6_1"{{if (index .Matchups "6_1").IsActive}} class="active"{{end}}>
-            <rect class="coverup" x="1523.794" y="381.275" width="83.494" height="287.877"/>
-            <polyline points="1481,390 1553,390 1553,474 1633,474"/>
-            <polyline points="1481,656 1553,656 1553,542 1633,542"/>
-            <text transform="translate(1518.4487 647.8822)">W</text>
-            <text transform="translate(1225.4487 382.1549)">W</text>
-          </g>
-        </g>
+        {{end}}
       </g>
     {{else}}
       <g id="connectors_standardbracket">

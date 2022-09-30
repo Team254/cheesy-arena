@@ -49,5 +49,5 @@ func (web *Web) bracketDisplayWebsocketHandler(w http.ResponseWriter, r *http.Re
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(display.Notifier, web.arena.ScorePostedNotifier, web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(display.Notifier, web.arena.MatchLoadNotifier, web.arena.ReloadDisplaysNotifier)
 }
