@@ -100,11 +100,13 @@
             <span id="leftFinalCargoPoints"></span><br />
             <span id="leftFinalHangarPoints"></span><br />
             <span id="leftFinalFoulPoints"></span><br />
-            <span id="leftFinalCargoBonusRankingPoint"></span><br />
-            <span id="leftFinalHangarBonusRankingPoint"></span><br />
-            {{if gt .EventSettings.DoubleBonusRankingPointThreshold 0}}
-              <span id="leftFinalDoubleBonusRankingPoint"></span><br />
-            {{end}}
+            <div class="playoffHiddenFields">
+              <span id="leftFinalCargoBonusRankingPoint"></span><br />
+              <span id="leftFinalHangarBonusRankingPoint"></span><br />
+              {{if gt .EventSettings.DoubleBonusRankingPointThreshold 0}}
+                <span id="leftFinalDoubleBonusRankingPoint"></span><br />
+              {{end}}
+            </div>
           </span>
         </div>
         <div class="final-breakdown" id="centerFinalBreakdown">
@@ -113,12 +115,14 @@
             Cargo<br />
             Hangar<br />
             Foul<br />
-            Cargo Bonus<br />
-            Hangar Bonus
-            {{if gt .EventSettings.DoubleBonusRankingPointThreshold 0}}
-              <br />
-              Double Bonus
-            {{end}}
+            <div class="playoffHiddenFields">
+              Cargo Bonus<br />
+              Hangar Bonus
+              {{if gt .EventSettings.DoubleBonusRankingPointThreshold 0}}
+                <br />
+                Double Bonus
+              {{end}}
+            </div>
           </span>
         </div>
         <div class="final-breakdown" id="rightFinalBreakdown">
@@ -127,11 +131,13 @@
             <span id="rightFinalCargoPoints"></span><br />
             <span id="rightFinalHangarPoints"></span><br />
             <span id="rightFinalFoulPoints"></span><br />
-            <span id="rightFinalCargoBonusRankingPoint"></span><br />
-            <span id="rightFinalHangarBonusRankingPoint"></span><br />
-            {{if gt .EventSettings.DoubleBonusRankingPointThreshold 0}}
-              <span id="rightFinalDoubleBonusRankingPoint"></span><br />
-            {{end}}
+            <div class="playoffHiddenFields">
+              <span id="rightFinalCargoBonusRankingPoint"></span><br />
+              <span id="rightFinalHangarBonusRankingPoint"></span><br />
+              {{if gt .EventSettings.DoubleBonusRankingPointThreshold 0}}
+                <span id="rightFinalDoubleBonusRankingPoint"></span><br />
+              {{end}}
+            </div>
           </span>
         </div>
         <div id="finalEventMatchInfo">
