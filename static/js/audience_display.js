@@ -199,6 +199,13 @@ var handleScorePosted = function(data) {
 
   // Reload the bracket to reflect any changes.
   $("#bracketSvg").attr("src", "/api/bracket/svg?v=" + new Date().getTime());
+
+  if (data.Match.Type === "elimination") {
+    // Hide bonus ranking points.
+    $(".playoffHiddenFields").hide();
+  } else {
+    $(".playoffHiddenFields").show();
+  }
 };
 
 // Handles a websocket message to play a sound to signal match start/stop/etc.
