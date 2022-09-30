@@ -121,7 +121,7 @@ func (match *Match) IsComplete() bool {
 }
 
 func (match *Match) CapitalizedType() string {
-	if match.Type == "" {
+	if match.Type == "" || match.Type == "test" {
 		return ""
 	} else if match.Type == "elimination" {
 		return "Playoff"
