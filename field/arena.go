@@ -816,7 +816,7 @@ func (arena *Arena) handlePlcInput() {
 		redScore.AutoCargoUpper = redHub.AutoCargoUpper
 		redScore.TeleopCargoLower = redHub.TeleopCargoLower
 		redScore.TeleopCargoUpper = redHub.TeleopCargoUpper
-		blueHub := &arena.RedRealtimeScore.hub
+		blueHub := &arena.BlueRealtimeScore.hub
 		blueHub.UpdateState(blueLowerHubCounts, blueUpperHubCounts, matchStartTime, currentTime)
 		blueScore.AutoCargoLower = blueHub.AutoCargoLower
 		blueScore.AutoCargoUpper = blueHub.AutoCargoUpper

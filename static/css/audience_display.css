@@ -453,6 +453,9 @@ html {
   opacity: 0;
   text-align: center;
 }
+#bracketSvg {
+  width: 100%;
+}
 #sponsor {
   position: fixed;
   width: 1000px;
