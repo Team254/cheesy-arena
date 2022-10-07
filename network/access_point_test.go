@@ -5,11 +5,12 @@ package network
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"regexp"
 	"testing"
+
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestConfigureAccessPoint(t *testing.T) {
@@ -80,7 +81,7 @@ func TestConfigureAccessPoint(t *testing.T) {
 	// Should reject a missing WPA key.
 	_, err := generateAccessPointConfig([6]*model.Team{{Id: 254}, nil, nil, nil, nil, nil})
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "Invalid WPA key")
+		assert.Contains(t, err.Error(), "invalid WPA key")
 	}
 }
 
