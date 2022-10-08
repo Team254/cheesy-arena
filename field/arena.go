@@ -868,10 +868,12 @@ func (arena *Arena) handlePlcOutput() {
 			}()
 		}
 	case AutoPeriod:
+		arena.Plc.SetStackBuzzer(false)
 		fallthrough
 	case PausePeriod:
 		fallthrough
 	case TeleopPeriod:
+		arena.Plc.SetStackBuzzer(false)
 		arena.Plc.SetStackLights(false, false, false, true)
 	}
 }
