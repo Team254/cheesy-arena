@@ -868,7 +868,6 @@ func (arena *Arena) handlePlcOutput() {
 			}()
 		}
 	case AutoPeriod:
-		arena.Plc.SetStackBuzzer(false)
 		fallthrough
 	case PausePeriod:
 		fallthrough
