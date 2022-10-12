@@ -153,6 +153,7 @@ var handleArenaStatus = function(data) {
       $("#abortMatch").prop("disabled", true);
       $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
+      $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
@@ -167,6 +168,7 @@ var handleArenaStatus = function(data) {
       $("#abortMatch").prop("disabled", false);
       $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
+      $("#fieldResetRadio").prop("disabled", true);
       $("#commitResults").prop("disabled", true);
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
@@ -177,6 +179,7 @@ var handleArenaStatus = function(data) {
       $("#abortMatch").prop("disabled", true);
       $("#signalVolunteers").prop("disabled", false);
       $("#signalReset").prop("disabled", false);
+      $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", false);
       $("#discardResults").prop("disabled", false);
       $("#editResults").prop("disabled", false);
@@ -187,6 +190,7 @@ var handleArenaStatus = function(data) {
       $("#abortMatch").prop("disabled", false);
       $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
+      $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
@@ -197,6 +201,7 @@ var handleArenaStatus = function(data) {
       $("#abortMatch").prop("disabled", true);
       $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
+      $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
       $("#discardResults").prop("disabled", true);
       $("#editResults").prop("disabled", true);
