@@ -18,7 +18,16 @@ body {
   justify-content: center;
 }
 .position-row {
-  height: 31%;
+  height: 29%;
+}
+#matchStatusRow {
+  height: 6%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #333;
+  font-size: 1.5vw;
+  text-transform: uppercase;
 }
 #eventStatusRow {
   height: 7%;
@@ -78,9 +87,9 @@ body {
   width: 100%;
 }
 .team-box {
-  width: 20%;
+  width: calc(100%/6);
   height: 100%;
-  font-size: 2.5vw;
+  font-size: 1.5vw;
   background-color: #333;
 }
 .team-box[data-status-ok="true"] {
@@ -112,4 +121,13 @@ textarea {
   height: 96%;
   background-color: #ccc;
   color: #000;
+}
+.left-score[data-fta="false"], .right-score[data-fta="false"] {
+  display: none;
+}
+.left-score[data-reversed=false], .right-score[data-reversed=true] {
+  color: #f44;
+}
+.left-score[data-reversed=true], .right-score[data-reversed=false] {
+  color: #2080ff;
 }
