@@ -4,11 +4,12 @@
 package web
 
 import (
+	"testing"
+
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestFieldMonitorDisplay(t *testing.T) {
@@ -32,9 +33,13 @@ func TestFieldMonitorDisplayWebsocket(t *testing.T) {
 	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "displayConfiguration")
 	readWebsocketType(t, ws, "arenaStatus")
 	readWebsocketType(t, ws, "eventStatus")
+	readWebsocketType(t, ws, "realtimeScore")
+	readWebsocketType(t, ws, "matchTime")
+	readWebsocketType(t, ws, "matchLoad")
 
 	// Should not be able to update team notes.
 	ws.Write("updateTeamNotes", map[string]interface{}{"station": "B1", "notes": "Bypassed in M1"})
@@ -56,9 +61,13 @@ func TestFieldMonitorFtaDisplayWebsocket(t *testing.T) {
 	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
+	readWebsocketType(t, ws, "matchTiming")
 	readWebsocketType(t, ws, "displayConfiguration")
 	readWebsocketType(t, ws, "arenaStatus")
 	readWebsocketType(t, ws, "eventStatus")
+	readWebsocketType(t, ws, "realtimeScore")
+	readWebsocketType(t, ws, "matchTime")
+	readWebsocketType(t, ws, "matchLoad")
 
 	// Should not be able to update team notes.
 	ws.Write("updateTeamNotes", map[string]interface{}{"station": "B1", "notes": "Bypassed in M1"})
