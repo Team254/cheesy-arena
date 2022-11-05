@@ -43,6 +43,7 @@ type AccessPoint struct {
 type TeamWifiStatus struct {
 	TeamId      int
 	RadioLinked bool
+	MBits       float64
 }
 
 type sshOutput struct {
@@ -86,6 +87,7 @@ func (ap *AccessPoint) Run() {
 			}
 		case <-time.After(time.Second * accessPointPollPeriodSec):
 			ap.updateTeamWifiStatuses()
+			ap.updateTeamWifiBTU()
 		}
 	}
 }
@@ -353,4 +355,39 @@ func decodeWifiInfo(wifiInfo string, statuses []TeamWifiStatus) error {
 	}
 
 	return nil
+}
+// Polls the 6 wlans on the ap for bandwith use and updates data structure.
+func (ap *AccessPoint) updateTeamWifiBTU() error {
+	if !ap.networkSecurityEnabled {
+		return nil
+	}
+
+	infWifi := []string{"0", "0-1", "0-2", "0-3", "0-4", "0-5"}
+	for i := range ap.TeamWifiStatuses {
+
+		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i wlan%s", infWifi[i]))
+		if err == nil {
+			btu := parseBtu(output)
+			ap.TeamWifiStatuses[i].MBits = btu
+		}
+		if err != nil {
+			return fmt.Errorf("Error getting BTU info from AP: %v", err)
+		}
+	}
+	return nil
+}
+// Parses Bytes from ap's onboard bandwith monitor returns 5 sec average bandwidth in Megabits per second for the given data.
+func parseBtu(response string) float64 {
+	mBits := 0.0
+	lines := strings.Split(response, "],")
+	if len(lines) > 6 {
+		fiveCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-6]),"["),"]"), ",")
+		lastCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-1]),"["),"]"), ",")
+		rXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[1]))
+		tXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[3]))
+		rXBytesOld, _ := strconv.Atoi(strings.TrimSpace(fiveCnt[1]))
+		tXBytesOld, _ := strconv.Atoi(strings.TrimSpace(fiveCnt[3]))
+		mBits = float64(rXBytes-rXBytesOld+tXBytes-tXBytesOld) * 0.000008 / 5.0
+	}
+	return mBits
 }

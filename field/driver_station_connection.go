@@ -41,7 +41,6 @@ type DriverStationConnection struct {
 	BatteryVoltage            float64
 	DsRobotTripTimeMs         int
 	MissedPacketCount         int
-	Bandwidth                 float32
 	SecondsSinceLastRobotLink float64
 	lastPacketTime            time.Time
 	lastRobotLinkedTime       time.Time
@@ -108,17 +107,6 @@ func (arena *Arena) listenForDsUdpPackets() {
 
 				// Robot battery voltage, stored as volts * 256.
 				dsConn.BatteryVoltage = float64(data[6]) + float64(data[7])/256
-
-			        rawBw := data[9:11]
-
-			        bw := uint16(rawBw[0]) << 8
-			        bw |= uint16(rawBw[1])
-
-			        dsConn.Bandwidth = float32(bw) / 256.0
-
-
-
-
 			}
 		}
 	}

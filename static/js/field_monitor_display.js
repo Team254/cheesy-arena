@@ -8,6 +8,7 @@ var currentMatchId;
 var redSide;
 var blueSide;
 var lowBatteryThreshold = 8;
+var highBtuThreshold = 4.0;
 
 
 var handleArenaStatus = function(data) {
@@ -95,12 +96,13 @@ var handleArenaStatus = function(data) {
       } else {
         teamRobotElement.text(dsConn.BatteryVoltage.toFixed(1) + "V");
       }
-      console.log(dsConn.Bandwidth);
-      if (dsConn.Bandwidth > 0.01) {
-        teamBandwidthElement.text(dsConn.Bandwidth.toFixed(1));
-        teamBandwidthElement.attr("data-status-ok", true);
+      var btuOkay = wifiStatus.MBits < highBtuThreshold && dsConn.RobotLinked;
+      if (wifiStatus.MBits >= 0.01) {
+        teamBandwidthElement.text(wifiStatus.MBits.toFixed(2)+ "Mb");
+        teamBandwidthElement.attr("data-status-ok", btuOkay);
       } else {
         teamBandwidthElement.text("-");
+        teamBandwidthElement.attr("data-status-ok", btuOkay);
       }
     } else {
       teamDsElement.attr("data-status-ok", "");
