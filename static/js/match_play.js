@@ -103,7 +103,11 @@ var handleArenaStatus = function(data) {
       // Format the driver station status box.
       var dsConn = stationStatus.DsConn;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
-
+      if (dsConn.DsLinked) {
+        $("#status" + station + " .ds-status").text(wifiStatus.MBits.toFixed(2)  + "Mb");
+      } else {
+        $("#status" + station + " .ds-status").text("");
+      }
       // Format the radio status box according to the connection status of the robot radio.
       var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
       $("#status" + station + " .radio-status").attr("data-status-ok", radioOkay);
