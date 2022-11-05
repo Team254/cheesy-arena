@@ -795,7 +795,12 @@ func (arena *Arena) handlePlcInput() {
 	arena.AllianceStations["B2"].Ethernet = blueEthernets[1]
 	arena.AllianceStations["B3"].Ethernet = blueEthernets[2]
 
-	if arena.MatchState == PreMatch || arena.MatchState == PostMatch || arena.MatchState == TimeoutActive ||
+	matchStartTime := arena.MatchStartTime
+	currentTime := time.Now()
+	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.HubTeleopGracePeriodSec*time.Second)
+	inGracePeriod := currentTime.Before(teleopGracePeriod)
+
+	if arena.MatchState == PreMatch || (arena.MatchState == PostMatch && !inGracePeriod) || arena.MatchState == TimeoutActive ||
 		arena.MatchState == PostTimeout {
 		// Don't do anything if we're outside the match, otherwise we may overwrite manual edits.
 		return
@@ -805,8 +810,6 @@ func (arena *Arena) handlePlcInput() {
 	oldRedScore := *redScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
 	oldBlueScore := *blueScore
-	matchStartTime := arena.MatchStartTime
-	currentTime := time.Now()
 
 	if arena.Plc.IsEnabled() {
 		// Handle hub.
