@@ -356,6 +356,7 @@ func decodeWifiInfo(wifiInfo string, statuses []TeamWifiStatus) error {
 
 	return nil
 }
+
 // Polls the 6 wlans on the ap for bandwith use and updates data structure.
 func (ap *AccessPoint) updateTeamWifiBTU() error {
 	if !ap.networkSecurityEnabled {
@@ -376,13 +377,14 @@ func (ap *AccessPoint) updateTeamWifiBTU() error {
 	}
 	return nil
 }
+
 // Parses Bytes from ap's onboard bandwith monitor returns 5 sec average bandwidth in Megabits per second for the given data.
 func parseBtu(response string) float64 {
 	mBits := 0.0
 	lines := strings.Split(response, "],")
 	if len(lines) > 6 {
-		fiveCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-6]),"["),"]"), ",")
-		lastCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-1]),"["),"]"), ",")
+		fiveCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-6]), "["), "]"), ",")
+		lastCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-1]), "["), "]"), ",")
 		rXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[1]))
 		tXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[3]))
 		rXBytesOld, _ := strconv.Atoi(strings.TrimSpace(fiveCnt[1]))
