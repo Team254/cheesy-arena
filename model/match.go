@@ -36,7 +36,7 @@ type Match struct {
 	Blue3IsSurrogate bool
 	StartedAt        time.Time
 	ScoreCommittedAt time.Time
-	FieldReadyAt	 time.Time
+	FieldReadyAt     time.Time
 	Status           game.MatchStatus
 }
 

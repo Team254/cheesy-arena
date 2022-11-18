@@ -758,27 +758,33 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		mcTime := ""
 		deltaTime := ""
 		cycleTime := ""
-		
-		if !match.FieldReadyAt.IsZero(){fieldReady = match.FieldReadyAt.Local().Format("03:04 PM")}
-		if !match.StartedAt.IsZero(){startedAt = match.StartedAt.Local().Format("03:04 PM")}
-		if !match.ScoreCommittedAt.IsZero(){scoreCommitted = match.ScoreCommittedAt.Local().Format("03:04 PM")}
 
-		if !match.StartedAt.IsZero() && !match.ScoreCommittedAt.IsZero(){
-		  matchEndTime := match.StartedAt.Add(game.GetDurationToTeleopEnd())
-		  tempRefTime := match.ScoreCommittedAt.Sub(matchEndTime)
-		  refTime = tempRefTime.Truncate(time.Second).String()
+		if !match.FieldReadyAt.IsZero() {
+			fieldReady = match.FieldReadyAt.Local().Format("03:04 PM")
 		}
-		if !match.StartedAt.IsZero() && !match.FieldReadyAt.IsZero(){
-		  tempMcTime := match.StartedAt.Sub(match.FieldReadyAt)
-		  mcTime = tempMcTime.Truncate(time.Second).String()
+		if !match.StartedAt.IsZero() {
+			startedAt = match.StartedAt.Local().Format("03:04 PM")
 		}
-		if !match.StartedAt.IsZero(){
-		tempDeltaTime := match.StartedAt.Sub(match.Time)
-		deltaTime = tempDeltaTime.Truncate(time.Second).String()
+		if !match.ScoreCommittedAt.IsZero() {
+			scoreCommitted = match.ScoreCommittedAt.Local().Format("03:04 PM")
 		}
-		if !lastMatchStart.IsZero() && !match.StartedAt.IsZero(){
-		tempCycleTime := match.StartedAt.Sub(lastMatchStart)
-		cycleTime = tempCycleTime.Truncate(time.Second).String()
+
+		if !match.StartedAt.IsZero() && !match.ScoreCommittedAt.IsZero() {
+			matchEndTime := match.StartedAt.Add(game.GetDurationToTeleopEnd())
+			tempRefTime := match.ScoreCommittedAt.Sub(matchEndTime)
+			refTime = tempRefTime.Truncate(time.Second).String()
+		}
+		if !match.StartedAt.IsZero() && !match.FieldReadyAt.IsZero() {
+			tempMcTime := match.StartedAt.Sub(match.FieldReadyAt)
+			mcTime = tempMcTime.Truncate(time.Second).String()
+		}
+		if !match.StartedAt.IsZero() {
+			tempDeltaTime := match.StartedAt.Sub(match.Time)
+			deltaTime = tempDeltaTime.Truncate(time.Second).String()
+		}
+		if !lastMatchStart.IsZero() && !match.StartedAt.IsZero() {
+			tempCycleTime := match.StartedAt.Sub(lastMatchStart)
+			cycleTime = tempCycleTime.Truncate(time.Second).String()
 		}
 		lastMatchStart = match.StartedAt
 
@@ -786,7 +792,7 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		pdf.CellFormat(colWidths["Match"], height, match.DisplayName, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Time"], height, match.Time.Local().Format("1/02 03:04 PM"), borderStr, 0,
 			alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Time2"], height, fieldReady , borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Time2"], height, fieldReady, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Time2"], height, startedAt, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Time2"], height, scoreCommitted, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Diff"], height, cycleTime, borderStr, 0, alignStr, false, 0, "")
