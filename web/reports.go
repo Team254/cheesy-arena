@@ -9,14 +9,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/gorilla/mux"
 	"github.com/jung-kurt/gofpdf"
-	"net/http"
-	"strconv"
 )
 
 // Generates a CSV-formatted report of the qualification rankings.
@@ -709,5 +711,123 @@ func surrogateText(isSurrogate bool) string {
 		return "(surrogate)"
 	} else {
 		return ""
+	}
+}
+
+// Generates a PDF-formatted report of the match cycle times.
+func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
+	colWidths := map[string]float64{"Time": 30, "Time2": 22, "Type": 25, "Match": 15, "Diff": 20}
+	rowHeight := 6.5
+
+	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf.AddPage()
+	// Capitalize match types.
+	matchType := matches[1].CapitalizedType()
+
+	// Render table header row.
+	pdf.SetFont("Arial", "B", 10)
+	pdf.SetFillColor(220, 220, 220)
+	pdf.CellFormat(195, rowHeight, matchType+" Cycle Time Report- "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
+	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Time"], rowHeight, "Scheduled Time", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Time2"], rowHeight, "Ready", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Time2"], rowHeight, "Started", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Time2"], rowHeight, "Committed", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Diff"], rowHeight, "Cycle Time", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Diff"], rowHeight, "Delta Time", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Diff"], rowHeight, "MC Time", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Diff"], rowHeight, "Ref Time", "1", 1, "C", true, 0, "")
+	pdf.SetFont("Arial", "", 10)
+	var lastMatchStart time.Time
+	for _, match := range matches {
+		height := rowHeight
+		borderStr := "1"
+		alignStr := "CM"
+		fieldReady := ""
+		startedAt := ""
+		scoreCommitted := ""
+		refTime := ""
+		mcTime := ""
+		deltaTime := ""
+		cycleTime := ""
+
+		if !match.FieldReadyAt.IsZero() {
+			fieldReady = match.FieldReadyAt.Local().Format("03:04 PM")
+		}
+		if !match.StartedAt.IsZero() {
+			startedAt = match.StartedAt.Local().Format("03:04 PM")
+		}
+		if !match.ScoreCommittedAt.IsZero() {
+			scoreCommitted = match.ScoreCommittedAt.Local().Format("03:04 PM")
+		}
+
+		if !match.StartedAt.IsZero() && !match.ScoreCommittedAt.IsZero() {
+			matchEndTime := match.StartedAt.Add(game.GetDurationToTeleopEnd())
+			tempRefTime := match.ScoreCommittedAt.Sub(matchEndTime)
+			refTime = tempRefTime.Truncate(time.Second).String()
+		}
+		if !match.StartedAt.IsZero() && !match.FieldReadyAt.IsZero() {
+			tempMcTime := match.StartedAt.Sub(match.FieldReadyAt)
+			mcTime = tempMcTime.Truncate(time.Second).String()
+		}
+		if !match.StartedAt.IsZero() {
+			tempDeltaTime := match.StartedAt.Sub(match.Time)
+			deltaTime = tempDeltaTime.Truncate(time.Second).String()
+		}
+		if !lastMatchStart.IsZero() && !match.StartedAt.IsZero() {
+			tempCycleTime := match.StartedAt.Sub(lastMatchStart)
+			cycleTime = tempCycleTime.Truncate(time.Second).String()
+		}
+		lastMatchStart = match.StartedAt
+
+		// Render match info row.
+		pdf.CellFormat(colWidths["Match"], height, match.DisplayName, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Time"], height, match.Time.Local().Format("1/02 03:04 PM"), borderStr, 0,
+			alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Time2"], height, fieldReady, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Time2"], height, startedAt, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Time2"], height, scoreCommitted, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Diff"], height, cycleTime, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Diff"], height, deltaTime, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Diff"], height, mcTime, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Diff"], height, refTime, borderStr, 1, alignStr, false, 0, "")
+	}
+
+	// Write out the PDF file as the HTTP response.
+	w.Header().Set("Content-Type", "application/pdf")
+	err = pdf.Output(w)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
+
+// Generates a CSV-formatted report of the FTA notes.
+func (web *Web) ftaCsvReportHandler(w http.ResponseWriter, r *http.Request) {
+	teams, err := web.arena.Database.GetAllTeams()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	// Don't set the content type as "text/csv", as that will trigger an automatic download in the browser.
+	w.Header().Set("Content-Type", "text/plain")
+	template, err := web.parseFiles("templates/fta.csv")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	err = template.ExecuteTemplate(w, "fta.csv", teams)
+	if err != nil {
+		handleWebErr(w, err)
+		return
 	}
 }
