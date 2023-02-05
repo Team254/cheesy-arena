@@ -36,9 +36,9 @@ func TestHub(t *testing.T) {
 	assertHub(t, &hub, [4]int{7, 8, 9, 9}, [4]int{3, 4, 5, 6}, [4]int{2, 1, 0, 0}, [4]int{6, 4, 2, 1})
 
 	// Check boundary conditions around the teleop end grace period.
-	hub.UpdateState([4]int{10, 11, 12, 13}, [4]int{14, 15, 16, 17}, matchStartTime, timeAfterStart(161.9))
+	hub.UpdateState([4]int{10, 11, 12, 13}, [4]int{14, 15, 16, 17}, matchStartTime, timeAfterStart(162.9))
 	assertHub(t, &hub, [4]int{7, 8, 9, 9}, [4]int{3, 4, 5, 6}, [4]int{3, 3, 3, 4}, [4]int{11, 11, 11, 11})
-	hub.UpdateState([4]int{11, 12, 13, 14}, [4]int{15, 16, 17, 18}, matchStartTime, timeAfterStart(162.1))
+	hub.UpdateState([4]int{11, 12, 13, 14}, [4]int{15, 16, 17, 18}, matchStartTime, timeAfterStart(163.1))
 	assertHub(t, &hub, [4]int{7, 8, 9, 9}, [4]int{3, 4, 5, 6}, [4]int{3, 3, 3, 4}, [4]int{11, 11, 11, 11})
 }
 

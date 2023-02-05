@@ -29,7 +29,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			ApAdminWpaKey:               "1234Five",
 			WarmupDurationSec:           0,
 			AutoDurationSec:             15,
-			PauseDurationSec:            2,
+			PauseDurationSec:            3,
 			TeleopDurationSec:           135,
 			WarningRemainingDurationSec: 30,
 			QuintetThreshold:            5,
