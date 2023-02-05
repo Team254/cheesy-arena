@@ -17,7 +17,7 @@ func TestMatchupDisplayNames(t *testing.T) {
 
 	assert.Equal(t, "Finals", bracket.FinalsMatchup.LongDisplayName())
 	assert.Equal(t, "F-1", bracket.FinalsMatchup.matchDisplayName(1))
-	assert.Equal(t, "W 12", bracket.FinalsMatchup.RedAllianceSourceDisplayName())
+	assert.Equal(t, "W 11", bracket.FinalsMatchup.RedAllianceSourceDisplayName())
 	assert.Equal(t, "W 13", bracket.FinalsMatchup.BlueAllianceSourceDisplayName())
 
 	match13, err := bracket.GetMatchup(5, 1)
@@ -25,8 +25,8 @@ func TestMatchupDisplayNames(t *testing.T) {
 	assert.Equal(t, "Match 13", match13.LongDisplayName())
 	assert.Equal(t, "13", match13.matchDisplayName(1))
 	assert.Equal(t, "13-2", match13.matchDisplayName(2))
-	assert.Equal(t, "L 12", match13.RedAllianceSourceDisplayName())
-	assert.Equal(t, "W 11", match13.BlueAllianceSourceDisplayName())
+	assert.Equal(t, "L 11", match13.RedAllianceSourceDisplayName())
+	assert.Equal(t, "W 12", match13.BlueAllianceSourceDisplayName())
 
 	bracket, err = NewSingleEliminationBracket(8)
 	assert.Nil(t, err)

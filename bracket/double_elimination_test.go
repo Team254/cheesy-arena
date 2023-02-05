@@ -22,8 +22,8 @@ func TestDoubleEliminationInitial(t *testing.T) {
 	if assert.Equal(t, 4, len(matches)) {
 		assertMatch(t, matches[0], "1", 1, 8)
 		assertMatch(t, matches[1], "2", 4, 5)
-		assertMatch(t, matches[2], "3", 3, 6)
-		assertMatch(t, matches[3], "4", 2, 7)
+		assertMatch(t, matches[2], "3", 2, 7)
+		assertMatch(t, matches[3], "4", 3, 6)
 	}
 }
 
@@ -65,21 +65,21 @@ func TestDoubleEliminationProgression(t *testing.T) {
 		assertMatch(t, matches[5], "7", 8, 4)
 	}
 
-	scoreMatch(database, "3", game.RedWonMatch)
+	scoreMatch(database, "3", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	assert.Equal(t, 6, len(matches))
 
-	scoreMatch(database, "4", game.BlueWonMatch)
+	scoreMatch(database, "4", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 8, len(matches)) {
 		assertMatch(t, matches[4], "5", 1, 5)
-		assertMatch(t, matches[5], "6", 6, 2)
+		assertMatch(t, matches[5], "6", 2, 6)
 		assertMatch(t, matches[6], "7", 8, 4)
-		assertMatch(t, matches[7], "8", 3, 7)
+		assertMatch(t, matches[7], "8", 7, 3)
 	}
 
 	scoreMatch(database, "5", game.BlueWonMatch)
@@ -88,7 +88,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 8, len(matches))
 
-	scoreMatch(database, "6", game.BlueWonMatch)
+	scoreMatch(database, "6", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
@@ -102,13 +102,13 @@ func TestDoubleEliminationProgression(t *testing.T) {
 		assertMatch(t, matches[8], "9", 8, 2)
 	}
 
-	scoreMatch(database, "8", game.RedWonMatch)
+	scoreMatch(database, "8", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 11, len(matches)) {
 		assertMatch(t, matches[9], "10", 7, 5)
-		assertMatch(t, matches[10], "12", 4, 3)
+		assertMatch(t, matches[10], "11", 4, 3)
 	}
 
 	scoreMatch(database, "9", game.RedWonMatch)
@@ -122,8 +122,8 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType("elimination")
 	assert.Nil(t, err)
 	if assert.Equal(t, 12, len(matches)) {
-		assertMatch(t, matches[10], "11", 7, 8)
-		assertMatch(t, matches[11], "12", 4, 3)
+		assertMatch(t, matches[10], "11", 4, 3)
+		assertMatch(t, matches[11], "12", 7, 8)
 	}
 
 	scoreMatch(database, "11", game.RedWonMatch)
