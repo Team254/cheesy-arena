@@ -491,6 +491,7 @@ func (arena *Arena) Update() {
 				enabled = true
 			}
 		}
+		arena.FieldReset = false
 	case PausePeriod:
 		auto = false
 		enabled = false
@@ -522,6 +523,7 @@ func (arena *Arena) Update() {
 				arena.preLoadNextMatch()
 			}()
 		}
+		arena.FieldReset = false
 	case TimeoutActive:
 		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
 			arena.MatchState = PostTimeout

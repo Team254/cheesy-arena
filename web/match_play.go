@@ -7,6 +7,13 @@ package web
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"sort"
+	"strconv"
+	"time"
+
 	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
@@ -15,12 +22,6 @@ import (
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
-	"io"
-	"log"
-	"net/http"
-	"sort"
-	"strconv"
-	"time"
 )
 
 type MatchPlayListItem struct {
@@ -278,14 +279,14 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				continue
 			}
 		case "signalVolunteers":
-			if web.arena.MatchState != field.PostMatch {
+			if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
 				// Don't allow clearing the field until the match is over.
 				continue
 			}
 			web.arena.FieldVolunteers = true
 			continue // Don't reload.
 		case "signalReset":
-			if web.arena.MatchState != field.PostMatch {
+			if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
 				// Don't allow clearing the field until the match is over.
 				continue
 			}
