@@ -155,8 +155,8 @@ var handleArenaStatus = function(data) {
     case "PRE_MATCH":
       $("#startMatch").prop("disabled", !data.CanStartMatch);
       $("#abortMatch").prop("disabled", true);
-      $("#signalVolunteers").prop("disabled", true);
-      $("#signalReset").prop("disabled", true);
+      $("#signalVolunteers").prop("disabled", false);
+      $("#signalReset").prop("disabled", false);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
       $("#discardResults").prop("disabled", true);
