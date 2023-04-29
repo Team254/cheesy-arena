@@ -627,7 +627,7 @@ func createTbaScoringBreakdown(
 		scoreSummary.HangarPoints
 	breakdown.QuintetAchieved = scoreSummary.QuintetAchieved
 	breakdown.CargoBonusRankingPoint = scoreSummary.CargoBonusRankingPoint
-	breakdown.HangarBonusRankingPoint = scoreSummary.HangarBonusRankingPoint
+	breakdown.HangarBonusRankingPoint = scoreSummary.ActivationBonusRankingPoint
 	for _, foul := range score.Fouls {
 		if foul.Rule() != nil && !foul.Rule().IsRankingPoint {
 			if foul.Rule().IsTechnical {

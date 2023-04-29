@@ -23,46 +23,36 @@ func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
 	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
 	redScoreSummary.Score = 12
-	redScoreSummary.FoulPoints = 11
-	redScoreSummary.HangarPoints = 11
-	redScoreSummary.TaxiPoints = 11
-	redScoreSummary.AutoCargoPoints = 11
-	blueScoreSummary.FoulPoints = 10
-	blueScoreSummary.HangarPoints = 10
-	blueScoreSummary.TaxiPoints = 10
-	blueScoreSummary.AutoCargoPoints = 10
+	redScoreSummary.NumOpponentTechFouls = 11
+	redScoreSummary.ChargeStationPoints = 11
+	redScoreSummary.AutoPoints = 11
+	blueScoreSummary.NumOpponentTechFouls = 10
+	blueScoreSummary.ChargeStationPoints = 10
+	blueScoreSummary.AutoPoints = 10
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	blueScoreSummary.FoulPoints = 12
+	blueScoreSummary.NumOpponentTechFouls = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	redScoreSummary.FoulPoints = 12
+	redScoreSummary.NumOpponentTechFouls = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	blueScoreSummary.HangarPoints = 12
+	blueScoreSummary.ChargeStationPoints = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	redScoreSummary.HangarPoints = 12
+	redScoreSummary.ChargeStationPoints = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	blueScoreSummary.TaxiPoints = 12
+	blueScoreSummary.AutoPoints = 12
+	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
+	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
+
+	redScoreSummary.AutoPoints = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	blueScoreSummary.TaxiPoints = 13
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	redScoreSummary.AutoCargoPoints = 12
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	redScoreSummary.AutoCargoPoints = 13
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 }

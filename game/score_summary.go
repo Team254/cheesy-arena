@@ -6,20 +6,20 @@
 package game
 
 type ScoreSummary struct {
-	TaxiPoints              int
-	AutoCargoCount          int
-	AutoCargoPoints         int
-	CargoCount              int
-	CargoPoints             int
-	HangarPoints            int
-	MatchPoints             int
-	FoulPoints              int
-	Score                   int
-	QuintetAchieved         bool
-	CargoGoal               int
-	CargoBonusRankingPoint  bool
-	HangarBonusRankingPoint bool
-	DoubleBonusRankingPoint bool
+	MobilityPoints                  int
+	AutoPoints                      int
+	GridPoints                      int
+	ChargeStationPoints             int
+	ParkPoints                      int
+	MatchPoints                     int
+	FoulPoints                      int
+	Score                           int
+	CoopertitionBonus               bool
+	NumLinks                        int
+	NumLinksGoal                    int
+	SustainabilityBonusRankingPoint bool
+	ActivationBonusRankingPoint     bool
+	NumOpponentTechFouls            int
 }
 
 type MatchStatus string
@@ -39,16 +39,17 @@ func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, apply
 
 	if applyElimTiebreakers {
 		// Check scoring breakdowns to resolve playoff ties.
-		if status := comparePoints(redScoreSummary.FoulPoints, blueScoreSummary.FoulPoints); status != TieMatch {
-			return status
-		}
-		if status := comparePoints(redScoreSummary.HangarPoints, blueScoreSummary.HangarPoints); status != TieMatch {
+		if status := comparePoints(
+			redScoreSummary.NumOpponentTechFouls, blueScoreSummary.NumOpponentTechFouls,
+		); status != TieMatch {
 			return status
 		}
 		if status := comparePoints(
-			redScoreSummary.TaxiPoints+redScoreSummary.AutoCargoPoints,
-			blueScoreSummary.TaxiPoints+blueScoreSummary.AutoCargoPoints,
+			redScoreSummary.ChargeStationPoints, blueScoreSummary.ChargeStationPoints,
 		); status != TieMatch {
+			return status
+		}
+		if status := comparePoints(redScoreSummary.AutoPoints, blueScoreSummary.AutoPoints); status != TieMatch {
 			return status
 		}
 	}

@@ -13,36 +13,22 @@ import (
 func TestAddScoreSummary(t *testing.T) {
 	rand.Seed(0)
 	redSummary := &ScoreSummary{
-		TaxiPoints:              4,
-		AutoCargoCount:          7,
-		AutoCargoPoints:         26,
-		CargoCount:              17,
-		CargoPoints:             44,
-		HangarPoints:            19,
-		MatchPoints:             67,
-		FoulPoints:              0,
-		Score:                   67,
-		QuintetAchieved:         true,
-		CargoGoal:               18,
-		CargoBonusRankingPoint:  false,
-		HangarBonusRankingPoint: true,
-		DoubleBonusRankingPoint: false,
+		MobilityPoints:                  4,
+		AutoPoints:                      30,
+		ChargeStationPoints:             19,
+		MatchPoints:                     67,
+		Score:                           67,
+		SustainabilityBonusRankingPoint: false,
+		ActivationBonusRankingPoint:     true,
 	}
 	blueSummary := &ScoreSummary{
-		TaxiPoints:              2,
-		AutoCargoCount:          4,
-		AutoCargoPoints:         14,
-		CargoCount:              25,
-		CargoPoints:             45,
-		HangarPoints:            14,
-		MatchPoints:             61,
-		FoulPoints:              20,
-		Score:                   81,
-		QuintetAchieved:         false,
-		CargoGoal:               20,
-		CargoBonusRankingPoint:  true,
-		HangarBonusRankingPoint: false,
-		DoubleBonusRankingPoint: false,
+		MobilityPoints:                  2,
+		AutoPoints:                      16,
+		ChargeStationPoints:             14,
+		MatchPoints:                     61,
+		Score:                           81,
+		SustainabilityBonusRankingPoint: true,
+		ActivationBonusRankingPoint:     false,
 	}
 	rankingFields := RankingFields{}
 
@@ -61,27 +47,6 @@ func TestAddScoreSummary(t *testing.T) {
 	// Add a disqualification.
 	rankingFields.AddScoreSummary(blueSummary, redSummary, true)
 	assert.Equal(t, RankingFields{6, 195, 52, 76, 0.05434383959970039, 1, 1, 1, 1, 4}, rankingFields)
-
-	// Test with a "double bonus" ranking point.
-	blueSummary.DoubleBonusRankingPoint = true
-	rankingFields = RankingFields{}
-	rankingFields.AddScoreSummary(blueSummary, redSummary, false)
-	assert.Equal(t, RankingFields{4, 61, 14, 16, 0.36758720663245853, 1, 0, 0, 0, 1}, rankingFields)
-}
-
-func TestAddScoreSummaryDoubleBonus(t *testing.T) {
-	rand.Seed(0)
-	redScore := TestScore1()
-	blueScore := TestScore2()
-	redSummary := redScore.Summarize(blueScore.Fouls)
-	blueSummary := blueScore.Summarize(redScore.Fouls)
-	rankingFields := RankingFields{}
-
-	// Test with a "double bonus" ranking point.
-	blueSummary.DoubleBonusRankingPoint = true
-	rankingFields = RankingFields{}
-	rankingFields.AddScoreSummary(blueSummary, redSummary, false)
-	assert.Equal(t, RankingFields{4, 61, 14, 16, 0.9451961492941164, 1, 0, 0, 0, 1}, rankingFields)
 }
 
 func TestSortRankings(t *testing.T) {

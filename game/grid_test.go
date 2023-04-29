@@ -19,13 +19,6 @@ type gridTestCase struct {
 	expectedIsFull                          bool
 }
 
-type gridScoringAction struct {
-	Row    Row
-	Column int
-	isCone bool
-	isAuto bool
-}
-
 var gridTestCases = []gridTestCase{
 	{
 		name: "No scoring actions",
@@ -240,24 +233,7 @@ var gridTestCases = []gridTestCase{
 
 func TestGrid(t *testing.T) {
 	for _, testCase := range gridTestCases {
-		var grid Grid
-
-		// Apply the scoring actions to the grid to get it into the expected state.
-		for _, action := range testCase.gridScoringActions {
-			if action.isCone {
-				if action.isAuto {
-					grid.Nodes[action.Row][action.Column].AutoCones++
-				} else {
-					grid.Nodes[action.Row][action.Column].TeleopCones++
-				}
-			} else {
-				if action.isAuto {
-					grid.Nodes[action.Row][action.Column].AutoCubes++
-				} else {
-					grid.Nodes[action.Row][action.Column].TeleopCubes++
-				}
-			}
-		}
+		grid := buildTestGrid(testCase.gridScoringActions)
 
 		assert.Equal(t, testCase.expectedAutoGamePiecePoints, grid.AutoGamePiecePoints(), testCase.name)
 		assert.Equal(t, testCase.expectedTeleopGamePiecePoints, grid.TeleopGamePiecePoints(), testCase.name)
