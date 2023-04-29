@@ -12,10 +12,38 @@ import (
 
 func TestAddScoreSummary(t *testing.T) {
 	rand.Seed(0)
-	redScore := TestScore1()
-	blueScore := TestScore2()
-	redSummary := redScore.Summarize(blueScore.Fouls)
-	blueSummary := blueScore.Summarize(redScore.Fouls)
+	redSummary := &ScoreSummary{
+		TaxiPoints:              4,
+		AutoCargoCount:          7,
+		AutoCargoPoints:         26,
+		CargoCount:              17,
+		CargoPoints:             44,
+		HangarPoints:            19,
+		MatchPoints:             67,
+		FoulPoints:              0,
+		Score:                   67,
+		QuintetAchieved:         true,
+		CargoGoal:               18,
+		CargoBonusRankingPoint:  false,
+		HangarBonusRankingPoint: true,
+		DoubleBonusRankingPoint: false,
+	}
+	blueSummary := &ScoreSummary{
+		TaxiPoints:              2,
+		AutoCargoCount:          4,
+		AutoCargoPoints:         14,
+		CargoCount:              25,
+		CargoPoints:             45,
+		HangarPoints:            14,
+		MatchPoints:             61,
+		FoulPoints:              20,
+		Score:                   81,
+		QuintetAchieved:         false,
+		CargoGoal:               20,
+		CargoBonusRankingPoint:  true,
+		HangarBonusRankingPoint: false,
+		DoubleBonusRankingPoint: false,
+	}
 	rankingFields := RankingFields{}
 
 	// Add a loss.
