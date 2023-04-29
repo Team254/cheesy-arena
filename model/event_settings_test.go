@@ -23,7 +23,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			NumElimAlliances:            8,
 			SelectionRound2Order:        "L",
 			SelectionRound3Order:        "",
-			TBADownloadEnabled:          true,
+			TbaDownloadEnabled:          true,
 			ApTeamChannel:               157,
 			ApAdminChannel:              0,
 			ApAdminWpaKey:               "1234Five",

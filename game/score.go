@@ -16,11 +16,9 @@ type Score struct {
 	ElimDq           bool
 }
 
-var QuintetThreshold = 5
-var CargoBonusRankingPointThresholdWithoutQuintet = 20
-var CargoBonusRankingPointThresholdWithQuintet = 18
-var HangarBonusRankingPointThreshold = 16
-var DoubleBonusRankingPointThreshold = 0
+var SustainabilityBonusLinkThresholdWithoutCoop = 7
+var SustainabilityBonusLinkThresholdWithCoop = 6
+var ActivationBonusPointThreshold = 26
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
@@ -78,23 +76,17 @@ func (score *Score) Summarize(opponentFouls []Foul) *ScoreSummary {
 	}
 
 	// Calculate bonus ranking points.
-	summary.CargoGoal = CargoBonusRankingPointThresholdWithoutQuintet
+	summary.CargoGoal = SustainabilityBonusLinkThresholdWithoutCoop
 	// A QuintetThreshold of 0 disables the Quintet.
-	if QuintetThreshold > 0 && summary.AutoCargoCount >= QuintetThreshold {
-		summary.CargoGoal = CargoBonusRankingPointThresholdWithQuintet
+	if SustainabilityBonusLinkThresholdWithCoop > 0 &&
+		summary.AutoCargoCount >= SustainabilityBonusLinkThresholdWithCoop {
+		summary.CargoGoal = SustainabilityBonusLinkThresholdWithCoop
 		summary.QuintetAchieved = true
 	}
 	if summary.CargoCount >= summary.CargoGoal {
 		summary.CargoBonusRankingPoint = true
 	}
-	summary.HangarBonusRankingPoint = summary.HangarPoints >= HangarBonusRankingPointThreshold
-
-	// The "double bonus" ranking point is an offseason-only addition which grants an additional RP if either the total
-	// cargo count or the hangar points is over the certain threshold. A threshold of 0 disables this RP.
-	if DoubleBonusRankingPointThreshold > 0 {
-		summary.DoubleBonusRankingPoint = summary.CargoCount >= DoubleBonusRankingPointThreshold ||
-			summary.HangarPoints >= DoubleBonusRankingPointThreshold
-	}
+	summary.HangarBonusRankingPoint = summary.HangarPoints >= ActivationBonusPointThreshold
 
 	// Calculate penalty points.
 	for _, foul := range opponentFouls {

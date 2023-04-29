@@ -57,7 +57,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.NumElimAlliances = numAlliances
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
-	eventSettings.TBADownloadEnabled = r.PostFormValue("TBADownloadEnabled") == "on"
+	eventSettings.TbaDownloadEnabled = r.PostFormValue("TbaDownloadEnabled") == "on"
 	eventSettings.TbaPublishingEnabled = r.PostFormValue("tbaPublishingEnabled") == "on"
 	eventSettings.TbaEventCode = r.PostFormValue("tbaEventCode")
 	eventSettings.TbaSecretId = r.PostFormValue("tbaSecretId")
@@ -83,15 +83,12 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))
 	eventSettings.TeleopDurationSec, _ = strconv.Atoi(r.PostFormValue("teleopDurationSec"))
 	eventSettings.WarningRemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warningRemainingDurationSec"))
-	eventSettings.QuintetThreshold, _ = strconv.Atoi(r.PostFormValue("quintetThreshold"))
-	eventSettings.CargoBonusRankingPointThresholdWithoutQuintet, _ =
-		strconv.Atoi(r.PostFormValue("cargoBonusRankingPointThresholdWithoutQuintet"))
-	eventSettings.CargoBonusRankingPointThresholdWithQuintet, _ =
-		strconv.Atoi(r.PostFormValue("cargoBonusRankingPointThresholdWithQuintet"))
-	eventSettings.HangarBonusRankingPointThreshold, _ =
-		strconv.Atoi(r.PostFormValue("hangarBonusRankingPointThreshold"))
-	eventSettings.DoubleBonusRankingPointThreshold, _ =
-		strconv.Atoi(r.PostFormValue("doubleBonusRankingPointThreshold"))
+	eventSettings.ChargeStationElectronicsEnabled = r.PostFormValue("chargeStationElectronicsEnabled") == "on"
+	eventSettings.SustainabilityBonusLinkThresholdWithoutCoop, _ =
+		strconv.Atoi(r.PostFormValue("sustainabilityBonusLinkThresholdWithoutCoop"))
+	eventSettings.SustainabilityBonusLinkThresholdWithCoop, _ =
+		strconv.Atoi(r.PostFormValue("sustainabilityBonusLinkThresholdWithCoop"))
+	eventSettings.ActivationBonusPointThreshold, _ = strconv.Atoi(r.PostFormValue("activationBonusPointThreshold"))
 
 	if eventSettings.Ap2TeamChannel != 0 && eventSettings.Ap2TeamChannel == eventSettings.ApTeamChannel {
 		web.renderSettings(w, r, "Cannot use same channel for both access points.")

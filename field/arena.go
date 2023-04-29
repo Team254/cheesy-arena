@@ -167,11 +167,9 @@ func (arena *Arena) LoadSettings() error {
 	game.UpdateMatchSounds()
 	arena.MatchTimingNotifier.Notify()
 
-	game.QuintetThreshold = settings.QuintetThreshold
-	game.CargoBonusRankingPointThresholdWithoutQuintet = settings.CargoBonusRankingPointThresholdWithoutQuintet
-	game.CargoBonusRankingPointThresholdWithQuintet = settings.CargoBonusRankingPointThresholdWithQuintet
-	game.HangarBonusRankingPointThreshold = settings.HangarBonusRankingPointThreshold
-	game.DoubleBonusRankingPointThreshold = settings.DoubleBonusRankingPointThreshold
+	game.SustainabilityBonusLinkThresholdWithoutCoop = settings.SustainabilityBonusLinkThresholdWithoutCoop
+	game.SustainabilityBonusLinkThresholdWithCoop = settings.SustainabilityBonusLinkThresholdWithCoop
+	game.ActivationBonusPointThreshold = settings.ActivationBonusPointThreshold
 
 	// Reconstruct the playoff bracket in memory.
 	if err = arena.CreatePlayoffBracket(); err != nil {

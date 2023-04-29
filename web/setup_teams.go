@@ -49,7 +49,7 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	for _, teamNumber := range teamNumbers {
 		team := model.Team{Id: teamNumber}
-		if web.arena.EventSettings.TBADownloadEnabled {
+		if web.arena.EventSettings.TbaDownloadEnabled {
 			if err := web.populateOfficialTeamInfo(&team); err != nil {
 				handleWebErr(w, err)
 				return

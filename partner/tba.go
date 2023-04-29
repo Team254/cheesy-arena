@@ -651,7 +651,7 @@ func createTbaScoringBreakdown(
 	// event settings.
 	breakdownMap := make(map[string]interface{})
 	_ = mapstructure.Decode(breakdown, &breakdownMap)
-	if eventSettings.QuintetThreshold == 0 {
+	if eventSettings.SustainabilityBonusLinkThresholdWithCoop == 0 {
 		delete(breakdownMap, "quintetAchieved")
 	}
 

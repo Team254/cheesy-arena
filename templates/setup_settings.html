@@ -101,7 +101,7 @@
           <div class="form-group">
             <label class="col-lg-9 control-label">Enable Automatic Team Info Download (From TBA)</label>
             <div class="col-lg-1 checkbox">
-              <input type="checkbox" name="TBADownloadEnabled"{{if .TBADownloadEnabled}} checked{{end}}>
+              <input type="checkbox" name="TbaDownloadEnabled"{{if .TbaDownloadEnabled}} checked{{end}}>
             </div>
           </div>
         </fieldset>
@@ -297,41 +297,40 @@
                 value="{{.WarningRemainingDurationSec}}">
             </div>
           </div>
+          <p>Disable this setting if the cable protectors (and wires) leading to the Charge Station have been removed.
+            (This setting has no effect if there is not a PLC present and configured.)</p>
           <div class="form-group">
-            <label class="col-lg-5 control-label">Quintet Threshold<br />(0 = disabled)</label>
-            <div class="col-lg-7">
-              <input type="text" class="form-control" id="quintetThreshold" name="quintetThreshold"
-                value="{{.QuintetThreshold}}">
+            <label class="col-lg-7 control-label">Enable Charge Station Electronics</label>
+            <div class="col-lg-1 checkbox">
+              <input type="checkbox" name="chargeStationElectronicsEnabled"{{if .ChargeStationElectronicsEnabled}}
+                checked{{end}}>
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-5 control-label">Cargo Bonus RP Threshold<br />(Without Quintet)</label>
+            <label class="col-lg-5 control-label">
+              Sustainability Bonus RP Link Threshold<br />(Without Coopertition)
+            </label>
             <div class="col-lg-7">
-              <input type="text" class="form-control" id="cargoBonusRankingPointThresholdWithoutQuintet"
-                name="cargoBonusRankingPointThresholdWithoutQuintet"
-                value="{{.CargoBonusRankingPointThresholdWithoutQuintet}}">
+              <input type="text" class="form-control" id="sustainabilityBonusLinkThresholdWithoutCoop"
+                name="sustainabilityBonusLinkThresholdWithoutCoop"
+                value="{{.SustainabilityBonusLinkThresholdWithoutCoop}}">
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-5 control-label">Cargo Bonus RP Threshold<br />(With Quintet)</label>
+            <label class="col-lg-5 control-label">
+              Sustainability Bonus RP Link Threshold<br />(With Coopertition; 0 = Coopertition Disabled)
+            </label>
             <div class="col-lg-7">
-              <input type="text" class="form-control" id="cargoBonusRankingPointThresholdWithQuintet"
-                name="cargoBonusRankingPointThresholdWithQuintet"
-                value="{{.CargoBonusRankingPointThresholdWithQuintet}}">
+              <input type="text" class="form-control" id="sustainabilityBonusLinkThresholdWithCoop"
+                name="sustainabilityBonusLinkThresholdWithCoop"
+                value="{{.SustainabilityBonusLinkThresholdWithCoop}}">
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-5 control-label">Hangar Bonus RP Threshold</label>
+            <label class="col-lg-5 control-label">Activation Bonus RP Point Threshold</label>
             <div class="col-lg-7">
-              <input type="text" class="form-control" id="hangarBonusRankingPointThreshold"
-                name="hangarBonusRankingPointThreshold" value="{{.HangarBonusRankingPointThreshold}}">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Double Bonus RP Threshold<br />(0 = disabled)</label>
-            <div class="col-lg-7">
-              <input type="text" class="form-control" id="doubleBonusRankingPointThreshold"
-                  name="doubleBonusRankingPointThreshold" value="{{.DoubleBonusRankingPointThreshold}}">
+              <input type="text" class="form-control" id="activationBonusPointThreshold"
+                name="activationBonusPointThreshold" value="{{.ActivationBonusPointThreshold}}">
             </div>
           </div>
         </fieldset>

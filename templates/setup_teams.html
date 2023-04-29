@@ -18,7 +18,7 @@
     <form class="form-horizontal" action="/setup/teams" method="POST">
       <fieldset>
         <legend>Import Teams</legend>
-        {{if not .EventSettings.TBADownloadEnabled}}<p>To automatically download data about teams, enable TBA Team Info Download on the settings page</p>{{end}}
+        {{if not .EventSettings.TbaDownloadEnabled}}<p>To automatically download data about teams, enable TBA Team Info Download on the settings page</p>{{end}}
         <div class="form-group">
           <textarea class="form-control" rows="10" name="teamNumbers"
               placeholder="One team number per line"></textarea>
@@ -26,7 +26,7 @@
         <div class="form-group">
           <button type="submit" class="btn btn-info">Add Teams</button>
         </div>
-        {{if .EventSettings.TBADownloadEnabled}}
+        {{if .EventSettings.TbaDownloadEnabled}}
           <div class="form-group">
             <a href="/setup/teams/refresh" class="btn btn-info">Refresh Team Data from TBA</a>
           </div>
