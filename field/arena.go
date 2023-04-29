@@ -799,7 +799,7 @@ func (arena *Arena) handlePlcInput() {
 
 	matchStartTime := arena.MatchStartTime
 	currentTime := time.Now()
-	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.HubTeleopGracePeriodSec*time.Second)
+	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.ChargeStationTeleopGracePeriodSec*time.Second)
 	inGracePeriod := currentTime.Before(teleopGracePeriod)
 
 	if arena.MatchState == PreMatch || (arena.MatchState == PostMatch && !inGracePeriod) || arena.MatchState == TimeoutActive ||
@@ -871,7 +871,7 @@ func (arena *Arena) handlePlcOutput() {
 
 		if arena.lastMatchState != PostMatch {
 			go func() {
-				time.Sleep(time.Second * game.HubTeleopGracePeriodSec)
+				time.Sleep(time.Second * game.ChargeStationTeleopGracePeriodSec)
 				arena.Plc.SetHubMotors(false)
 			}()
 		}

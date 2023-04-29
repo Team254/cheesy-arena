@@ -8,8 +8,8 @@ package game
 import "time"
 
 const (
-	hubAutoGracePeriodSec   = 5
-	HubTeleopGracePeriodSec = 10
+	chargeStationAutoGracePeriodSec   = 3
+	ChargeStationTeleopGracePeriodSec = 3
 )
 
 var MatchTiming = struct {
