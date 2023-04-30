@@ -139,7 +139,7 @@ func TestCommitMatch(t *testing.T) {
 	assert.Nil(t, web.arena.Database.CreateMatch(match))
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	matchResult.BlueScore = &game.Score{TaxiStatuses: [3]bool{true, false, false}}
+	matchResult.BlueScore = &game.Score{MobilityStatuses: [3]bool{true, false, false}}
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, matchResult.PlayNumber)
@@ -148,7 +148,7 @@ func TestCommitMatch(t *testing.T) {
 
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	matchResult.RedScore = &game.Score{TaxiStatuses: [3]bool{true, false, true}}
+	matchResult.RedScore = &game.Score{MobilityStatuses: [3]bool{true, false, true}}
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, matchResult.PlayNumber)
@@ -182,21 +182,21 @@ func TestCommitEliminationTie(t *testing.T) {
 	web.arena.Database.CreateMatch(match)
 	matchResult := &model.MatchResult{
 		MatchId: match.Id,
+		// These should all be fields that aren't part of the tiebreaker.
 		RedScore: &game.Score{
-			TeleopCargoUpper: [4]int{1, 2, 0, 3},
-			Fouls:            []game.Foul{{RuleId: 1}, {RuleId: 2}, {RuleId: 4}},
+			Grid:  game.Grid{[3][9]game.Node{{{0, 0, 1, 0}}, {{0, 0, 1, 0}}}},
+			Fouls: []game.Foul{{RuleId: 1}, {RuleId: 2}},
 		},
 		BlueScore: &game.Score{
-			TeleopCargoUpper: [4]int{6, 0, 0, 0},
-			Fouls:            []game.Foul{{RuleId: 1}, {RuleId: 3}},
+			Fouls: []game.Foul{{RuleId: 1}},
 		},
 	}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
 	assert.Equal(
 		t,
-		matchResult.RedScore.Summarize(matchResult.BlueScore.Fouls).Score,
-		matchResult.BlueScore.Summarize(matchResult.RedScore.Fouls).Score,
+		matchResult.RedScore.Summarize(matchResult.BlueScore).Score,
+		matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
 	)
 
 	err := web.commitMatchScore(match, matchResult, true)
@@ -215,14 +215,15 @@ func TestCommitEliminationTie(t *testing.T) {
 	assert.Equal(t, game.TieMatch, match.Status)
 
 	// Test that playoff tiebreakers are evaluated.
-	matchResult.RedScore.TeleopCargoUpper = [4]int{}
-	matchResult.RedScore.Fouls = []game.Foul{}
+	matchResult.BlueScore.AutoRobotDockStatuses = [3]bool{true, false, false}
+	matchResult.BlueScore.AutoChargeStationLevel = true
+	matchResult.BlueScore.Fouls = []game.Foul{{RuleId: 1}, {RuleId: 4}}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
 	assert.Equal(
 		t,
-		matchResult.RedScore.Summarize(matchResult.BlueScore.Fouls).Score,
-		matchResult.BlueScore.Summarize(matchResult.RedScore.Fouls).Score,
+		matchResult.RedScore.Summarize(matchResult.BlueScore).Score,
+		matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
 	)
 
 	web.commitMatchScore(match, matchResult, true)
@@ -355,12 +356,12 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
-	web.arena.RedRealtimeScore.CurrentScore.TeleopCargoUpper = [4]int{1, 1, 1, 4}
-	web.arena.BlueRealtimeScore.CurrentScore.TaxiStatuses = [3]bool{true, false, true}
+	web.arena.RedRealtimeScore.CurrentScore.AutoRobotDockStatuses = [3]bool{false, true, true}
+	web.arena.BlueRealtimeScore.CurrentScore.MobilityStatuses = [3]bool{true, false, true}
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
-	assert.Equal(t, [4]int{1, 1, 1, 4}, web.arena.SavedMatchResult.RedScore.TeleopCargoUpper)
-	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.TaxiStatuses)
+	assert.Equal(t, [3]bool{false, true, true}, web.arena.SavedMatchResult.RedScore.AutoRobotDockStatuses)
+	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.MobilityStatuses)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)
 	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay

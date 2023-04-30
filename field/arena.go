@@ -465,7 +465,6 @@ func (arena *Arena) Update() {
 			sendDsPacket = true
 		}
 		arena.Plc.ResetMatch()
-		arena.Plc.SetHubMotors(true)
 	case WarmupPeriod:
 		auto = true
 		enabled = false
@@ -582,12 +581,12 @@ func (arena *Arena) Run() {
 
 // Calculates the red alliance score summary for the given realtime snapshot.
 func (arena *Arena) RedScoreSummary() *game.ScoreSummary {
-	return arena.RedRealtimeScore.CurrentScore.Summarize(arena.BlueRealtimeScore.CurrentScore.Fouls)
+	return arena.RedRealtimeScore.CurrentScore.Summarize(&arena.BlueRealtimeScore.CurrentScore)
 }
 
 // Calculates the blue alliance score summary for the given realtime snapshot.
 func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
-	return arena.BlueRealtimeScore.CurrentScore.Summarize(arena.RedRealtimeScore.CurrentScore.Fouls)
+	return arena.BlueRealtimeScore.CurrentScore.Summarize(&arena.RedRealtimeScore.CurrentScore)
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
@@ -812,20 +811,9 @@ func (arena *Arena) handlePlcInput() {
 	oldBlueScore := *blueScore
 
 	if arena.Plc.IsEnabled() {
-		// Handle hub.
-		redLowerHubCounts, redUpperHubCounts, blueLowerHubCounts, blueUpperHubCounts := arena.Plc.GetHubCounts()
-		redHub := &arena.RedRealtimeScore.hub
-		redHub.UpdateState(redLowerHubCounts, redUpperHubCounts, matchStartTime, currentTime)
-		redScore.AutoCargoLower = redHub.AutoCargoLower
-		redScore.AutoCargoUpper = redHub.AutoCargoUpper
-		redScore.TeleopCargoLower = redHub.TeleopCargoLower
-		redScore.TeleopCargoUpper = redHub.TeleopCargoUpper
-		blueHub := &arena.BlueRealtimeScore.hub
-		blueHub.UpdateState(blueLowerHubCounts, blueUpperHubCounts, matchStartTime, currentTime)
-		blueScore.AutoCargoLower = blueHub.AutoCargoLower
-		blueScore.AutoCargoUpper = blueHub.AutoCargoUpper
-		blueScore.TeleopCargoLower = blueHub.TeleopCargoLower
-		blueScore.TeleopCargoUpper = blueHub.TeleopCargoUpper
+		// TODO(pat): Update for 2023.
+		redChargeStationLevel, blueChargeStationLevel := arena.Plc.GetChargeStationsLevel()
+		arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
 	}
 
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
@@ -870,7 +858,8 @@ func (arena *Arena) handlePlcOutput() {
 		if arena.lastMatchState != PostMatch {
 			go func() {
 				time.Sleep(time.Second * game.ChargeStationTeleopGracePeriodSec)
-				arena.Plc.SetHubMotors(false)
+				// TODO(pat): Update for 2023.
+				//arena.Plc.SetHubMotors(false)
 			}()
 		}
 	case AutoPeriod:

@@ -25,20 +25,22 @@ func TestCalculateRankings(t *testing.T) {
 	if assert.Equal(t, 6, len(rankings)) {
 		assert.Equal(t, 4, rankings[0].TeamId)
 		assert.Equal(t, 0, rankings[0].PreviousRank)
-		assert.Equal(t, 5, rankings[1].TeamId)
+		assert.Equal(t, 6, rankings[1].TeamId)
 		assert.Equal(t, 0, rankings[1].PreviousRank)
-		assert.Equal(t, 6, rankings[2].TeamId)
+		assert.Equal(t, 5, rankings[2].TeamId)
 		assert.Equal(t, 0, rankings[2].PreviousRank)
 		assert.Equal(t, 1, rankings[3].TeamId)
 		assert.Equal(t, 0, rankings[3].PreviousRank)
-		assert.Equal(t, 3, rankings[4].TeamId)
+		assert.Equal(t, 2, rankings[4].TeamId)
 		assert.Equal(t, 0, rankings[4].PreviousRank)
-		assert.Equal(t, 2, rankings[5].TeamId)
+		assert.Equal(t, 3, rankings[5].TeamId)
 		assert.Equal(t, 0, rankings[5].PreviousRank)
 	}
 
+	previousRankings := make(map[int]int)
 	for _, ranking := range rankings {
 		fmt.Printf("%+v\n", ranking)
+		previousRankings[ranking.TeamId] = ranking.Rank
 	}
 	fmt.Println()
 
@@ -54,17 +56,17 @@ func TestCalculateRankings(t *testing.T) {
 	assert.Equal(t, updatedRankings, rankings)
 	if assert.Equal(t, 6, len(rankings)) {
 		assert.Equal(t, 6, rankings[0].TeamId)
-		assert.Equal(t, 3, rankings[0].PreviousRank)
+		assert.Equal(t, previousRankings[rankings[0].TeamId], rankings[0].PreviousRank)
 		assert.Equal(t, 5, rankings[1].TeamId)
-		assert.Equal(t, 2, rankings[1].PreviousRank)
+		assert.Equal(t, previousRankings[rankings[1].TeamId], rankings[1].PreviousRank)
 		assert.Equal(t, 4, rankings[2].TeamId)
-		assert.Equal(t, 1, rankings[2].PreviousRank)
+		assert.Equal(t, previousRankings[rankings[2].TeamId], rankings[2].PreviousRank)
 		assert.Equal(t, 1, rankings[3].TeamId)
-		assert.Equal(t, 4, rankings[3].PreviousRank)
-		assert.Equal(t, 3, rankings[4].TeamId)
-		assert.Equal(t, 5, rankings[4].PreviousRank)
-		assert.Equal(t, 2, rankings[5].TeamId)
-		assert.Equal(t, 6, rankings[5].PreviousRank)
+		assert.Equal(t, previousRankings[rankings[3].TeamId], rankings[3].PreviousRank)
+		assert.Equal(t, 2, rankings[4].TeamId)
+		assert.Equal(t, previousRankings[rankings[4].TeamId], rankings[4].PreviousRank)
+		assert.Equal(t, 3, rankings[5].TeamId)
+		assert.Equal(t, previousRankings[rankings[5].TeamId], rankings[5].PreviousRank)
 	}
 
 	for _, ranking := range rankings {
@@ -82,17 +84,17 @@ func TestCalculateRankings(t *testing.T) {
 	assert.Equal(t, updatedRankings, rankings)
 	if assert.Equal(t, 6, len(rankings)) {
 		assert.Equal(t, 4, rankings[0].TeamId)
-		assert.Equal(t, 1, rankings[0].PreviousRank)
-		assert.Equal(t, 5, rankings[1].TeamId)
-		assert.Equal(t, 2, rankings[1].PreviousRank)
-		assert.Equal(t, 1, rankings[2].TeamId)
-		assert.Equal(t, 4, rankings[2].PreviousRank)
-		assert.Equal(t, 3, rankings[3].TeamId)
-		assert.Equal(t, 5, rankings[3].PreviousRank)
-		assert.Equal(t, 6, rankings[4].TeamId)
-		assert.Equal(t, 3, rankings[4].PreviousRank)
+		assert.Equal(t, previousRankings[rankings[0].TeamId], rankings[0].PreviousRank)
+		assert.Equal(t, 3, rankings[1].TeamId)
+		assert.Equal(t, previousRankings[rankings[1].TeamId], rankings[1].PreviousRank)
+		assert.Equal(t, 6, rankings[2].TeamId)
+		assert.Equal(t, previousRankings[rankings[2].TeamId], rankings[2].PreviousRank)
+		assert.Equal(t, 5, rankings[3].TeamId)
+		assert.Equal(t, previousRankings[rankings[3].TeamId], rankings[3].PreviousRank)
+		assert.Equal(t, 1, rankings[4].TeamId)
+		assert.Equal(t, previousRankings[rankings[4].TeamId], rankings[4].PreviousRank)
 		assert.Equal(t, 2, rankings[5].TeamId)
-		assert.Equal(t, 6, rankings[5].PreviousRank)
+		assert.Equal(t, previousRankings[rankings[5].TeamId], rankings[5].PreviousRank)
 	}
 
 	for _, ranking := range rankings {

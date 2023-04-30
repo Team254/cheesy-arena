@@ -110,7 +110,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			// Handle per-robot scoring fields.
 			if number <= 3 {
 				index := number - 1
-				score.TaxiStatuses[index] = !score.TaxiStatuses[index]
+				score.MobilityStatuses[index] = !score.MobilityStatuses[index]
 				scoreChanged = true
 			} else {
 				index := number - 4
@@ -122,22 +122,23 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 		} else if !web.arena.Plc.IsEnabled() {
 			switch strings.ToUpper(command) {
-			case "Q":
-				scoreChanged = decrementGoal(score.AutoCargoUpper[:])
-			case "A":
-				scoreChanged = decrementGoal(score.AutoCargoLower[:])
-			case "W":
-				scoreChanged = incrementGoal(score.AutoCargoUpper[:])
-			case "S":
-				scoreChanged = incrementGoal(score.AutoCargoLower[:])
-			case "E":
-				scoreChanged = decrementGoal(score.TeleopCargoUpper[:])
-			case "D":
-				scoreChanged = decrementGoal(score.TeleopCargoLower[:])
-			case "R":
-				scoreChanged = incrementGoal(score.TeleopCargoUpper[:])
-			case "F":
-				scoreChanged = incrementGoal(score.TeleopCargoLower[:])
+			// TODO(pat): Update for 2023.
+			//case "Q":
+			//	scoreChanged = decrementGoal(score.AutoCargoUpper[:])
+			//case "A":
+			//	scoreChanged = decrementGoal(score.AutoCargoLower[:])
+			//case "W":
+			//	scoreChanged = incrementGoal(score.AutoCargoUpper[:])
+			//case "S":
+			//	scoreChanged = incrementGoal(score.AutoCargoLower[:])
+			//case "E":
+			//	scoreChanged = decrementGoal(score.TeleopCargoUpper[:])
+			//case "D":
+			//	scoreChanged = decrementGoal(score.TeleopCargoLower[:])
+			//case "R":
+			//	scoreChanged = incrementGoal(score.TeleopCargoUpper[:])
+			//case "F":
+			//	scoreChanged = incrementGoal(score.TeleopCargoLower[:])
 			}
 
 		}

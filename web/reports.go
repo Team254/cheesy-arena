@@ -52,7 +52,7 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Rank": 13, "Team": 22, "RP": 23, "Match": 22, "Hangar": 22, "Auto": 25,
+	colWidths := map[string]float64{"Rank": 13, "Team": 22, "RP": 23, "Match": 22, "Charge Station": 22, "Auto": 25,
 		"W-L-T": 23, "DQ": 23, "Played": 23}
 	rowHeight := 6.5
 
@@ -80,10 +80,10 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 		pdf.CellFormat(colWidths["Team"], rowHeight, strconv.Itoa(ranking.TeamId), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["RP"], rowHeight, strconv.Itoa(ranking.RankingPoints), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["Match"], rowHeight, strconv.Itoa(ranking.MatchPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Hangar"], rowHeight, strconv.Itoa(ranking.HangarPoints), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(
-			colWidths["Auto"], rowHeight, strconv.Itoa(ranking.TaxiAndAutoCargoPoints), "1", 0, "C", false, 0, "",
+			colWidths["Hangar"], rowHeight, strconv.Itoa(ranking.ChargeStationPoints), "1", 0, "C", false, 0, "",
 		)
+		pdf.CellFormat(colWidths["Auto"], rowHeight, strconv.Itoa(ranking.AutoPoints), "1", 0, "C", false, 0, "")
 		record := fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties)
 		pdf.CellFormat(colWidths["W-L-T"], rowHeight, record, "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["DQ"], rowHeight, strconv.Itoa(ranking.Disqualifications), "1", 0, "C", false, 0, "")
