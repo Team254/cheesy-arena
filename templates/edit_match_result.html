@@ -11,8 +11,8 @@
     <form class="form-horizontal" method="POST">
       <fieldset>
         <legend>Edit Match {{.Match.DisplayName}} Results</legend>
-        <div class="col-lg-6" id="redScore"></div>
-        <div class="col-lg-6" id="blueScore"></div>
+        <div id="redScore"></div>
+        <div id="blueScore"></div>
         <div class="row form-group">
           <div class="text-center col-lg-12">
             <a href="/match_review"><button type="button" class="btn btn-default">Cancel</button></a>
@@ -27,49 +27,69 @@
   <div class="well well-{{"{{alliance}}"}}">
     <fieldset>
       <legend>Autonomous</legend>
-      <b>Taxi</b>
+      <b>Mobility</b>
       <div class="form-group">
         <div class="row">
           {{range $i := seq 3}}
-            <div class="col-lg-4">
+            <div class="col-lg-2">
               <label class="col-lg-8 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-              <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}TaxiStatuses{{$i}}">
+              <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}MobilityStatuses{{$i}}">
             </div>
           {{end}}
         </div>
       </div>
-      <b>Cargo</b>
-      {{template "hub" dict "period" "Auto"}}
+      <b>Charge Station Docking</b>
+      <div class="form-group">
+        <div class="row">
+          {{range $i := seq 3}}
+          <div class="col-lg-2">
+            <label class="col-lg-8 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+            <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}AutoRobotDockStatuses{{$i}}">
+          </div>
+          {{end}}
+        </div>
+        <div class="row">
+          <div class="col-lg-4 col-lg-offset-1">
+            <label class="col-lg-8 control-label">Charge Station Is Level?</label>
+            <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}AutoChargeStationLevel">
+          </div>
+        </div>
+      </div>
     </fieldset>
     <fieldset>
-      <legend>Teleoperated</legend>
-      <b>Cargo</b>
-      {{template "hub" dict "period" "Teleop"}}
+      <legend>Grid</legend>
+      <div class="row">
+        <div class="col-lg-1"></div>
+        {{range $i := seq 9}}
+        <label class="col-lg-1 control-label">{{$i}}</label>
+        {{end}}
+      </div>
+      <br />
+      {{template "gridRow" dict "row" 2 "rowName" "Top" "validNodeStates" .ValidNodeStates}}
+      {{template "gridRow" dict "row" 1 "rowName" "Middle" "validNodeStates" .ValidNodeStates}}
+      {{template "gridRow" dict "row" 0 "rowName" "Bottom" "validNodeStates" .ValidNodeStates}}
     </fieldset>
     <fieldset>
       <legend>Endgame</legend>
-      <b>Robot Status</b>
       <div class="form-group">
         {{range $i := seq 3}}
           <div class="row">
-            <label class="col-lg-1 col-lg-offset-1 control-label">{{"{{team"}}{{$i}}{{"}}"}}</label>
-            <div class="radio col-lg-2">
+            <label class="col-lg-1 col-lg-offset-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+            <div class="radio col-lg-1">
               <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="0">None
             </div>
-            <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1">Low
+            <div class="radio col-lg-1">
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1">Parked
             </div>
-            <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2">Mid
-            </div>
-            <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="3">High
-            </div>
-            <div class="radio col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="4">Traversal
+            <div class="radio col-lg-1">
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2">Docked
             </div>
           </div>
         {{end}}
+        <div class="col-lg-4 col-lg-offset-1">
+          <label class="col-lg-8 control-label">Charge Station Is Level?</label>
+          <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}EndgameChargeStationLevel">
+        </div>
       </div>
     </fieldset>
     <fieldset>
@@ -81,21 +101,21 @@
           </button>
           <br />
           <div class="form-group">
-            <label class="col-lg-4 control-label">Team</label>
+            <label class="col-lg-2 control-label">Team</label>
             <div class="col-lg-8">
-              <div class="radio col-lg-3">
+              <div class="radio col-lg-2">
                 <label>
                   <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team1}}"}}">
                   {{"{{../team1}}"}}
                  </label>
               </div>
-              <div class="radio col-lg-3">
+              <div class="radio col-lg-2">
                 <label>
                   <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team2}}"}}">
                   {{"{{../team2}}"}}
                 </label>
               </div>
-              <div class="radio col-lg-3">
+              <div class="radio col-lg-2">
                 <label>
                   <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team3}}"}}">
                   {{"{{../team3}}"}}
@@ -104,8 +124,8 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-4 control-label">Rule</label>
-            <div class="col-lg-7">
+            <label class="col-lg-2 control-label">Rule</label>
+            <div class="col-lg-9">
               <select class="form-control" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleId">
                 {{range $rule := .Rules}}
                   <option value="{{$rule.Id}}">{{$rule.RuleNumber}}
@@ -117,7 +137,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-4 control-label">Seconds Into Match</label>
+            <label class="col-lg-2 control-label">Seconds Into Match</label>
             <div class="col-lg-3">
               <input type="text" class="form-control input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Time">
             </div>
@@ -133,21 +153,21 @@
       <legend>Cards</legend>
       {{range $i := seq 3}}
         <div class="form-group">
-          <label class="col-lg-4 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+          <label class="col-lg-2 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
           <div class="col-lg-8">
-            <div class="radio col-lg-3">
+            <div class="radio col-lg-2">
               <label>
                 <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="" checked>
                 None
               </label>
             </div>
-            <div class="radio col-lg-3">
+            <div class="radio col-lg-2">
               <label>
                 <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="yellow">
                 Yellow
               </label>
             </div>
-            <div class="radio col-lg-6">
+            <div class="radio col-lg-2">
               <label>
                 <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="red">
                 Red
@@ -173,32 +193,22 @@
   renderResults("blue");
 </script>
 {{end}}
-{{define "hub"}}
-  <div class="form-group">
-    <div class="row">
-      <label class="col-lg-2 col-lg-offset-3 text-center">Blue</label>
-      <label class="col-lg-2 text-center">Far</label>
-      <label class="col-lg-2 text-center">Near</label>
-      <label class="col-lg-2 text-center">Red</label>
-    </div>
-    {{template "hubLevel" dict "period" .period "goal" "Upper"}}
-    {{template "hubLevel" dict "period" .period "goal" "Lower"}}
-  </div>
-{{end}}
-{{define "hubLevel"}}
+{{define "gridRow"}}
   <div class="row">
-    <label class="col-lg-2 col-lg-offset-1">{{.goal}}</label>
-    <div class="col-lg-2">
-      <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cargo{{$.goal}}0">
-    </div>
-    <div class="col-lg-2">
-      <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cargo{{$.goal}}1">
-    </div>
-    <div class="col-lg-2">
-      <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cargo{{$.goal}}2">
-    </div>
-    <div class="col-lg-2">
-      <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}{{$.period}}Cargo{{$.goal}}3">
-    </div>
+    <label class="col-lg-1">{{.rowName}}</label>
+    {{range $i := seq 9}}
+      {{template "gridNode" dict "row" $.row "column" (add $i -1) "validNodeStates" $.validNodeStates}}
+    {{end}}
+  </div>
+  <br />
+{{end}}
+{{define "gridNode"}}
+  <div class="col-lg-1">
+    <input type="checkbox" class="" name="{{"{{alliance}}"}}GridAutoScoringRow{{.row}}Node{{.column}}"> Auto?
+    <select name="{{"{{alliance}}"}}GridNodeStatesRow{{.row}}Node{{.column}}" style="width: 90px; font-size: 11px;">
+      {{range $i, $nodeState := index .validNodeStates .row .column}}
+        <option value="{{$i}}">{{$nodeState}}</option>
+      {{end}}
+    </select>
   </div>
 {{end}}

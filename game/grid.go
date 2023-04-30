@@ -50,6 +50,13 @@ var teleopPoints = map[Row]int{
 	rowTop:    5,
 }
 
+var validGridNodeStates = createValidGridStates()
+
+// Returns a map of valid node states for each row and column in the grid.
+func ValidGridNodeStates() map[Row]map[int]map[int]string {
+	return validGridNodeStates
+}
+
 func (grid *Grid) AutoGamePiecePoints() int {
 	points := 0
 	for row := rowBottom; row < rowCount; row++ {
@@ -158,34 +165,23 @@ func (grid *Grid) numScoredAutoTeleopGamePieces(row Row, column int) (int, int) 
 
 	autoScoring := grid.AutoScoring[row][column]
 	nodeState := grid.Nodes[row][column]
-	if nodeState <= Empty || nodeState >= NodeStateCount {
+	if _, ok := ValidGridNodeStates()[row][column][int(nodeState)]; nodeState <= Empty || !ok {
 		// This is an empty or invalid node state.
 		return 0, 0
 	}
 
-	autoPieces := 0
-	teleopPieces := 0
-	if row == rowBottom {
-		if autoScoring {
-			autoPieces = 1
-		}
-		teleopPieces = countCones(nodeState) + countCubes(nodeState) - autoPieces
+	var totalPieces int
+	if nodeState == Cone || nodeState == Cube {
+		totalPieces = 1
 	} else {
-		// Don't count game pieces of the wrong type for this node.
-		if column == 1 || column == 4 || column == 7 {
-			if autoScoring && countCubes(nodeState) > 0 {
-				autoPieces = 1
-			}
-			teleopPieces = countCubes(nodeState) - autoPieces
-		} else {
-			if autoScoring && countCones(nodeState) > 0 {
-				autoPieces = 1
-			}
-			teleopPieces = countCones(nodeState) - autoPieces
-		}
+		totalPieces = 2
+	}
+	autoPieces := 0
+	if autoScoring {
+		autoPieces = 1
 	}
 
-	return autoPieces, teleopPieces
+	return autoPieces, totalPieces - autoPieces
 }
 
 // Returns the total number of game pieces in the given node, limiting it to valid values.
@@ -194,29 +190,28 @@ func (grid *Grid) numScoredGamePieces(row Row, column int) int {
 	return autoPieces + teleopPieces
 }
 
-func countCones(nodeState NodeState) int {
-	switch nodeState {
-	case Cone:
-		return 1
-	case TwoCones:
-		return 2
-	case ConeThenCube:
-		return 1
-	case CubeThenCone:
-		return 1
+// Builds a map of valid node states for each row and column in the grid.
+func createValidGridStates() map[Row]map[int]map[int]string {
+	validGridNodeStates := make(map[Row]map[int]map[int]string)
+	for row := rowBottom; row < rowCount; row++ {
+		validGridNodeStates[row] = make(map[int]map[int]string)
+		for column := 0; column < 9; column++ {
+			validGridNodeStates[row][column] = make(map[int]string)
+			for nodeState := Empty; nodeState < NodeStateCount; nodeState++ {
+				if nodeState != Empty && row != rowBottom {
+					if column == 1 || column == 4 || column == 7 {
+						if nodeState != Cube && nodeState != TwoCubes {
+							continue
+						}
+					} else {
+						if nodeState != Cone && nodeState != TwoCones {
+							continue
+						}
+					}
+				}
+				validGridNodeStates[row][column][int(nodeState)] = nodeState.String()
+			}
+		}
 	}
-	return 0
-}
-func countCubes(nodeState NodeState) int {
-	switch nodeState {
-	case Cube:
-		return 1
-	case TwoCubes:
-		return 2
-	case ConeThenCube:
-		return 1
-	case CubeThenCone:
-		return 1
-	}
-	return 0
+	return validGridNodeStates
 }

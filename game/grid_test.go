@@ -217,8 +217,6 @@ var gridTestCases = []gridTestCase{
 			{rowTop, 7, ConeThenCube, true},
 			{rowTop, 8, Cube, true},
 		},
-		expectedAutoGamePiecePoints:   6,
-		expectedTeleopGamePiecePoints: 3,
 	},
 }
 
