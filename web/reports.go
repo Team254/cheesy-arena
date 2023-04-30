@@ -52,7 +52,7 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Rank": 13, "Team": 22, "RP": 23, "Match": 22, "Charge Station": 22, "Auto": 25,
+	colWidths := map[string]float64{"Rank": 13, "Team": 22, "RP": 23, "Match": 22, "Charge Stn.": 22, "Auto": 25,
 		"W-L-T": 23, "DQ": 23, "Played": 23}
 	rowHeight := 6.5
 
@@ -67,8 +67,8 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["RP"], rowHeight, "RP", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Hangar"], rowHeight, "Hangar", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Auto"], rowHeight, "Taxi+A.Cargo", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Charge Stn."], rowHeight, "Charge Stn.", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Auto"], rowHeight, "Auto", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["W-L-T"], rowHeight, "W-L-T", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["DQ"], rowHeight, "DQ", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Played"], rowHeight, "Played", "1", 1, "C", true, 0, "")
@@ -81,7 +81,7 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 		pdf.CellFormat(colWidths["RP"], rowHeight, strconv.Itoa(ranking.RankingPoints), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["Match"], rowHeight, strconv.Itoa(ranking.MatchPoints), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(
-			colWidths["Hangar"], rowHeight, strconv.Itoa(ranking.ChargeStationPoints), "1", 0, "C", false, 0, "",
+			colWidths["Charge Stn."], rowHeight, strconv.Itoa(ranking.ChargeStationPoints), "1", 0, "C", false, 0, "",
 		)
 		pdf.CellFormat(colWidths["Auto"], rowHeight, strconv.Itoa(ranking.AutoPoints), "1", 0, "C", false, 0, "")
 		record := fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties)
@@ -730,12 +730,15 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
 	pdf.AddPage()
 	// Capitalize match types.
-	matchType := matches[1].CapitalizedType()
+	var matchType string
+	if len(matches) > 0 {
+		matchType = matches[0].CapitalizedType()
+	}
 
 	// Render table header row.
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
-	pdf.CellFormat(195, rowHeight, matchType+" Cycle Time Report- "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
+	pdf.CellFormat(195, rowHeight, matchType+" Cycle Time - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
 	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Time"], rowHeight, "Scheduled Time", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Time2"], rowHeight, "Ready", "1", 0, "C", true, 0, "")
