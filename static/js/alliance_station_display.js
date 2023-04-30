@@ -121,8 +121,12 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HangarPoints);
-  $("#blueScore").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HangarPoints);
+  $("#redScore").text(
+    data.Red.ScoreSummary.Score - data.Red.ScoreSummary.ChargeStationPoints - data.Red.ScoreSummary.ParkPoints
+  );
+  $("#blueScore").text(
+    data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.ChargeStationPoints - data.Blue.ScoreSummary.ParkPoints
+  );
 };
 
 $(function() {
