@@ -9,28 +9,12 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[fieldIoConnection-0]
-	_ = x[redLowerHubBlue-1]
-	_ = x[redLowerHubFar-2]
-	_ = x[redLowerHubNear-3]
-	_ = x[redLowerHubRed-4]
-	_ = x[redUpperHubBlue-5]
-	_ = x[redUpperHubFar-6]
-	_ = x[redUpperHubNear-7]
-	_ = x[redUpperHubRed-8]
-	_ = x[blueLowerHubBlue-9]
-	_ = x[blueLowerHubFar-10]
-	_ = x[blueLowerHubNear-11]
-	_ = x[blueLowerHubRed-12]
-	_ = x[blueUpperHubBlue-13]
-	_ = x[blueUpperHubFar-14]
-	_ = x[blueUpperHubNear-15]
-	_ = x[blueUpperHubRed-16]
-	_ = x[registerCount-17]
+	_ = x[registerCount-1]
 }
 
-const _register_name = "fieldIoConnectionredLowerHubBlueredLowerHubFarredLowerHubNearredLowerHubRedredUpperHubBlueredUpperHubFarredUpperHubNearredUpperHubRedblueLowerHubBlueblueLowerHubFarblueLowerHubNearblueLowerHubRedblueUpperHubBlueblueUpperHubFarblueUpperHubNearblueUpperHubRedregisterCount"
+const _register_name = "fieldIoConnectionregisterCount"
 
-var _register_index = [...]uint16{0, 17, 32, 46, 61, 75, 90, 104, 119, 133, 149, 164, 180, 195, 211, 226, 242, 257, 270}
+var _register_index = [...]uint8{0, 17, 30}
 
 func (i register) String() string {
 	if i < 0 || i >= register(len(_register_index)-1) {

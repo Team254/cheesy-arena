@@ -56,6 +56,8 @@ const (
 	blueConnected1
 	blueConnected2
 	blueConnected3
+	redChargeStationLevel
+	blueChargeStationLevel
 	inputCount
 )
 
@@ -66,22 +68,6 @@ type register int
 
 const (
 	fieldIoConnection register = iota
-	redLowerHubBlue
-	redLowerHubFar
-	redLowerHubNear
-	redLowerHubRed
-	redUpperHubBlue
-	redUpperHubFar
-	redUpperHubNear
-	redUpperHubRed
-	blueLowerHubBlue
-	blueLowerHubFar
-	blueLowerHubNear
-	blueLowerHubRed
-	blueUpperHubBlue
-	blueUpperHubFar
-	blueUpperHubNear
-	blueUpperHubRed
 	registerCount
 )
 
@@ -99,7 +85,8 @@ const (
 	stackLightBlue
 	stackLightBuzzer
 	fieldResetLight
-	hubMotors
+	redChargeStationLight
+	blueChargeStationLight
 	coilCount
 )
 
@@ -226,32 +213,9 @@ func (plc *Plc) ResetMatch() {
 	plc.matchResetCycles = 0
 }
 
-// Returns the total number of cargo scored since match start in each level of the hub.
-func (plc *Plc) GetHubCounts() ([4]int, [4]int, [4]int, [4]int) {
-	return [4]int{
-			int(plc.registers[redLowerHubBlue]),
-			int(plc.registers[redLowerHubFar]),
-			int(plc.registers[redLowerHubNear]),
-			int(plc.registers[redLowerHubRed]),
-		},
-		[4]int{
-			int(plc.registers[redUpperHubBlue]),
-			int(plc.registers[redUpperHubFar]),
-			int(plc.registers[redUpperHubNear]),
-			int(plc.registers[redUpperHubRed]),
-		},
-		[4]int{
-			int(plc.registers[blueLowerHubBlue]),
-			int(plc.registers[blueLowerHubFar]),
-			int(plc.registers[blueLowerHubNear]),
-			int(plc.registers[blueLowerHubRed]),
-		},
-		[4]int{
-			int(plc.registers[blueUpperHubBlue]),
-			int(plc.registers[blueUpperHubFar]),
-			int(plc.registers[blueUpperHubNear]),
-			int(plc.registers[blueUpperHubRed]),
-		}
+// Returns the levelness states of the red and blue charge stations, respectively.
+func (plc *Plc) GetChargeStationsLevel() (bool, bool) {
+	return plc.inputs[redChargeStationLevel], plc.inputs[blueChargeStationLevel]
 }
 
 // Sets the on/off state of the stack lights on the scoring table.
@@ -273,8 +237,9 @@ func (plc *Plc) SetFieldResetLight(state bool) {
 }
 
 // Sets the on/off state of the agitator motors within the hub.
-func (plc *Plc) SetHubMotors(state bool) {
-	plc.coils[hubMotors] = state
+func (plc *Plc) SetChargeStationLights(redState, blueState bool) {
+	plc.coils[redChargeStationLight] = redState
+	plc.coils[blueChargeStationLight] = blueState
 }
 
 func (plc *Plc) GetCycleState(max, index, duration int) bool {
