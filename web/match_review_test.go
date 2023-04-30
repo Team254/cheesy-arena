@@ -52,8 +52,8 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
-	assert.Contains(t, recorder.Body.String(), ">67<") // The red score
-	assert.Contains(t, recorder.Body.String(), ">81<") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">78<")  // The red score
+	assert.Contains(t, recorder.Body.String(), ">216<") // The blue score
 
 	// Check response for non-existent match.
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", 12345))
@@ -67,7 +67,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	// Update the score to something else.
 	postBody := fmt.Sprintf(
 		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"EndgameStatuses\":[0,2,1]},\"BlueScore\":{"+
-			"\"AutoCargoUpper\":[1, 2, 3, 4],\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},"+
+			"\"Grid\":{\"Nodes\":[[2, 1],[1, 2]]},\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},"+
 			"\"RedCards\":{\"105\":\"yellow\"},\"BlueCards\":{}}",
 		match.Id,
 	)
@@ -78,8 +78,8 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
-	assert.Contains(t, recorder.Body.String(), ">14<") // The red score
-	assert.Contains(t, recorder.Body.String(), ">40<") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">13<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">10<") // The blue score
 }
 
 func TestMatchReviewCreateNewResult(t *testing.T) {
@@ -95,8 +95,8 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
-	assert.NotContains(t, recorder.Body.String(), ">71<") // The red score
-	assert.NotContains(t, recorder.Body.String(), ">72<") // The blue score
+	assert.NotContains(t, recorder.Body.String(), ">13<") // The red score
+	assert.NotContains(t, recorder.Body.String(), ">10<") // The blue score
 
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
 	assert.Equal(t, 200, recorder.Code)
@@ -104,9 +104,9 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 
 	// Update the score to something else.
 	postBody := fmt.Sprintf(
-		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"TeleopCargoLower\":[5,1,7,2]},\"BlueScore\":"+
-			"{\"TeleopCargoUpper\":[2,2,2,2],\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},\"RedCards\":"+
-			"{\"105\":\"yellow\"},\"BlueCards\":{}}",
+		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"EndgameStatuses\":[0,2,1]},\"BlueScore\":{"+
+			"\"Grid\":{\"Nodes\":[[2, 1],[1, 2]]},\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},"+
+			"\"RedCards\":{\"105\":\"yellow\"},\"BlueCards\":{}}",
 		match.Id,
 	)
 	recorder = web.postHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id), postBody)
@@ -116,8 +116,8 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	recorder = web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
-	assert.Contains(t, recorder.Body.String(), ">19<") // The red score
-	assert.Contains(t, recorder.Body.String(), ">16<") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">13<") // The red score
+	assert.Contains(t, recorder.Body.String(), ">10<") // The blue score
 }
 
 func TestMatchReviewEditCurrentMatch(t *testing.T) {
@@ -142,9 +142,9 @@ func TestMatchReviewEditCurrentMatch(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), " 352 ")
 
 	postBody := fmt.Sprintf(
-		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"TeleopCargoLower\":[5,1,7,2]},\"BlueScore\":"+
-			"{\"TeleopCargoUpper\":[2,2,2,2],\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},\"RedCards\":"+
-			"{\"105\":\"yellow\"},\"BlueCards\":{}}",
+		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"EndgameStatuses\":[0,2,1]},\"BlueScore\":{"+
+			"\"Grid\":{\"Nodes\":[[2, 1],[1, 2]]},\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},"+
+			"\"RedCards\":{\"105\":\"yellow\"},\"BlueCards\":{}}",
 		match.Id,
 	)
 	recorder = web.postHttpResponse("/match_review/current/edit", postBody)
@@ -154,8 +154,12 @@ func TestMatchReviewEditCurrentMatch(t *testing.T) {
 	// Check that the persisted match is still unedited and that the realtime scores have been updated instead.
 	match2, _ := web.arena.Database.GetMatchById(match.Id)
 	assert.Equal(t, game.MatchNotPlayed, match2.Status)
-	assert.Equal(t, [3]bool{true, false, true}, web.arena.RedRealtimeScore.CurrentScore.MobilityStatuses)
-	assert.Equal(t, [3]bool{false, true, false}, web.arena.BlueRealtimeScore.CurrentScore.AutoRobotDockStatuses)
+	assert.Equal(
+		t,
+		[3]game.EndgameStatus{game.EndgameNone, game.EndgameDocked, game.EndgameParked},
+		web.arena.RedRealtimeScore.CurrentScore.EndgameStatuses,
+	)
+	assert.Equal(t, [3][9]game.NodeState{{2, 1}, {1, 2}}, web.arena.BlueRealtimeScore.CurrentScore.Grid.Nodes)
 	assert.Equal(t, 0, len(web.arena.RedRealtimeScore.CurrentScore.Fouls))
 	assert.Equal(t, 1, len(web.arena.BlueRealtimeScore.CurrentScore.Fouls))
 	assert.Equal(t, 1, len(web.arena.RedRealtimeScore.Cards))
