@@ -6,10 +6,10 @@
 package game
 
 type gridScoringAction struct {
-	Row    Row
-	Column int
-	isCone bool
-	isAuto bool
+	Row       Row
+	Column    int
+	nodeState NodeState
+	isAuto    bool
 }
 
 func TestScore1() *Score {
@@ -54,61 +54,53 @@ func TestRanking2() *Ranking {
 func testGrid1() Grid {
 	// Grid with many pieces but no links and no co-op bonus.
 	return buildTestGrid([]gridScoringAction{
-		{rowBottom, 0, true, true},
-		{rowBottom, 1, true, false},
-		{rowBottom, 3, false, true},
-		{rowBottom, 6, false, false},
-		{rowBottom, 8, true, false},
-		{rowMiddle, 1, false, false},
-		{rowMiddle, 2, true, true},
-		{rowMiddle, 6, true, false},
-		{rowMiddle, 7, false, false},
-		{rowTop, 0, true, false},
-		{rowTop, 2, true, false},
-		{rowTop, 4, false, false},
-		{rowTop, 7, false, true},
-		{rowTop, 8, true, true},
+		{rowBottom, 0, Cone, true},
+		{rowBottom, 1, Cone, false},
+		{rowBottom, 3, Cube, true},
+		{rowBottom, 6, Cube, false},
+		{rowBottom, 8, Cone, false},
+		{rowMiddle, 1, Cube, false},
+		{rowMiddle, 2, Cone, true},
+		{rowMiddle, 6, Cone, false},
+		{rowMiddle, 7, Cube, false},
+		{rowTop, 0, Cone, false},
+		{rowTop, 2, Cone, false},
+		{rowTop, 4, Cube, false},
+		{rowTop, 7, Cube, true},
+		{rowTop, 8, Cone, true},
 	})
 }
 
 func testGrid2() Grid {
 	// Full grid with supercharging.
 	return buildTestGrid([]gridScoringAction{
-		{rowBottom, 0, true, true},
-		{rowBottom, 1, true, false},
-		{rowBottom, 2, false, false},
-		{rowBottom, 3, false, true},
-		{rowBottom, 4, false, false},
-		{rowBottom, 5, false, true},
-		{rowBottom, 6, false, false},
-		{rowBottom, 7, true, true},
-		{rowBottom, 8, true, false},
-		{rowMiddle, 0, true, false},
-		{rowMiddle, 1, false, false},
-		{rowMiddle, 2, true, true},
-		{rowMiddle, 3, true, false},
-		{rowMiddle, 4, false, false},
-		{rowMiddle, 5, true, false},
-		{rowMiddle, 6, true, false},
-		{rowMiddle, 7, false, false},
-		{rowMiddle, 8, true, false},
-		{rowTop, 0, true, false},
-		{rowTop, 1, false, false},
-		{rowTop, 2, true, false},
-		{rowTop, 3, true, false},
-		{rowTop, 4, false, false},
-		{rowTop, 5, true, false},
-		{rowTop, 6, true, false},
-		{rowTop, 7, false, true},
-		{rowTop, 8, true, true},
-		// Supercharging
-		{rowBottom, 0, true, false},
-		{rowBottom, 0, false, false},
-		{rowBottom, 0, false, false},
-		{rowBottom, 4, false, false},
-		{rowMiddle, 2, true, false},
-		{rowMiddle, 2, true, false},
-		{rowTop, 7, false, true},
+		{rowBottom, 0, ConeThenCube, true},
+		{rowBottom, 1, Cone, false},
+		{rowBottom, 2, Cube, false},
+		{rowBottom, 3, Cube, true},
+		{rowBottom, 4, CubeThenCone, false},
+		{rowBottom, 5, Cube, true},
+		{rowBottom, 6, Cube, false},
+		{rowBottom, 7, Cone, true},
+		{rowBottom, 8, Cone, false},
+		{rowMiddle, 0, Cone, false},
+		{rowMiddle, 1, Cube, false},
+		{rowMiddle, 2, TwoCones, true},
+		{rowMiddle, 3, Cone, false},
+		{rowMiddle, 4, Cube, false},
+		{rowMiddle, 5, Cone, false},
+		{rowMiddle, 6, Cone, false},
+		{rowMiddle, 7, Cube, false},
+		{rowMiddle, 8, Cone, false},
+		{rowTop, 0, Cone, false},
+		{rowTop, 1, Cube, false},
+		{rowTop, 2, Cone, false},
+		{rowTop, 3, Cone, false},
+		{rowTop, 4, Cube, false},
+		{rowTop, 5, Cone, false},
+		{rowTop, 6, Cone, false},
+		{rowTop, 7, TwoCubes, true},
+		{rowTop, 8, Cone, true},
 	})
 }
 
@@ -117,19 +109,8 @@ func buildTestGrid(gridScoringActions []gridScoringAction) Grid {
 
 	// Apply the scoring actions to the grid to get it into the expected state.
 	for _, action := range gridScoringActions {
-		if action.isCone {
-			if action.isAuto {
-				grid.Nodes[action.Row][action.Column].AutoCones++
-			} else {
-				grid.Nodes[action.Row][action.Column].TeleopCones++
-			}
-		} else {
-			if action.isAuto {
-				grid.Nodes[action.Row][action.Column].AutoCubes++
-			} else {
-				grid.Nodes[action.Row][action.Column].TeleopCubes++
-			}
-		}
+		grid.AutoScoring[action.Row][action.Column] = action.isAuto
+		grid.Nodes[action.Row][action.Column] = action.nodeState
 	}
 
 	return grid

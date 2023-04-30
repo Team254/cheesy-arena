@@ -184,7 +184,7 @@ func TestCommitEliminationTie(t *testing.T) {
 		MatchId: match.Id,
 		// These should all be fields that aren't part of the tiebreaker.
 		RedScore: &game.Score{
-			Grid:  game.Grid{[3][9]game.Node{{{0, 0, 1, 0}}, {{0, 0, 1, 0}}}},
+			Grid:  game.Grid{Nodes: [3][9]game.NodeState{{game.Cube}, {game.Cone}}},
 			Fouls: []game.Foul{{RuleId: 1}, {RuleId: 2}},
 		},
 		BlueScore: &game.Score{

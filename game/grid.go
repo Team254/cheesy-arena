@@ -6,15 +6,23 @@
 package game
 
 type Grid struct {
-	Nodes [3][9]Node
+	AutoScoring [3][9]bool
+	Nodes       [3][9]NodeState
 }
 
-type Node struct {
-	AutoCones   int
-	AutoCubes   int
-	TeleopCones int
-	TeleopCubes int
-}
+//go:generate stringer -type=NodeState
+type NodeState int
+
+const (
+	Empty NodeState = iota
+	Cone
+	Cube
+	TwoCones
+	TwoCubes
+	ConeThenCube
+	CubeThenCone
+	NodeStateCount
+)
 
 type Link struct {
 	Row         Row
@@ -148,29 +156,33 @@ func (grid *Grid) numScoredAutoTeleopGamePieces(row Row, column int) (int, int) 
 		return 0, 0
 	}
 
-	node := grid.Nodes[row][column]
+	autoScoring := grid.AutoScoring[row][column]
+	nodeState := grid.Nodes[row][column]
+	if nodeState <= Empty || nodeState >= NodeStateCount {
+		// This is an empty or invalid node state.
+		return 0, 0
+	}
+
 	autoPieces := 0
 	teleopPieces := 0
 	if row == rowBottom {
-		autoPieces = node.AutoCones + node.AutoCubes
-		teleopPieces = node.TeleopCones + node.TeleopCubes
+		if autoScoring {
+			autoPieces = 1
+		}
+		teleopPieces = countCones(nodeState) + countCubes(nodeState) - autoPieces
 	} else {
 		// Don't count game pieces of the wrong type for this node.
 		if column == 1 || column == 4 || column == 7 {
-			autoPieces = node.AutoCubes
-			teleopPieces = node.TeleopCubes
+			if autoScoring && countCubes(nodeState) > 0 {
+				autoPieces = 1
+			}
+			teleopPieces = countCubes(nodeState) - autoPieces
 		} else {
-			autoPieces = node.AutoCones
-			teleopPieces = node.TeleopCones
+			if autoScoring && countCones(nodeState) > 0 {
+				autoPieces = 1
+			}
+			teleopPieces = countCones(nodeState) - autoPieces
 		}
-	}
-
-	// Don't report more than two pieces scored in a node.
-	if autoPieces > 2 {
-		autoPieces = 2
-	}
-	if autoPieces+teleopPieces > 2 {
-		teleopPieces = 2 - autoPieces
 	}
 
 	return autoPieces, teleopPieces
@@ -180,4 +192,31 @@ func (grid *Grid) numScoredAutoTeleopGamePieces(row Row, column int) (int, int) 
 func (grid *Grid) numScoredGamePieces(row Row, column int) int {
 	autoPieces, teleopPieces := grid.numScoredAutoTeleopGamePieces(row, column)
 	return autoPieces + teleopPieces
+}
+
+func countCones(nodeState NodeState) int {
+	switch nodeState {
+	case Cone:
+		return 1
+	case TwoCones:
+		return 2
+	case ConeThenCube:
+		return 1
+	case CubeThenCone:
+		return 1
+	}
+	return 0
+}
+func countCubes(nodeState NodeState) int {
+	switch nodeState {
+	case Cube:
+		return 1
+	case TwoCubes:
+		return 2
+	case ConeThenCube:
+		return 1
+	case CubeThenCone:
+		return 1
+	}
+	return 0
 }

@@ -72,7 +72,7 @@ func TestScoreSustainabilityBonusRankingPoint(t *testing.T) {
 	assert.Equal(t, true, blueScoreSummary.SustainabilityBonusRankingPoint)
 
 	// Reduce blue links to 8 and verify that the bonus is still awarded.
-	blueScore.Grid.Nodes[rowBottom][0] = Node{}
+	blueScore.Grid.Nodes[rowBottom][0] = Empty
 	redScoreSummary = redScore.Summarize(blueScore)
 	blueScoreSummary = blueScore.Summarize(redScore)
 	assert.Equal(t, false, redScoreSummary.CoopertitionBonus)
@@ -98,8 +98,8 @@ func TestScoreSustainabilityBonusRankingPoint(t *testing.T) {
 	assert.Equal(t, false, blueScoreSummary.SustainabilityBonusRankingPoint)
 
 	// Reduce blue links to 6 and verify that the sustainability bonus is not awarded.
-	blueScore.Grid.Nodes[rowMiddle][0] = Node{}
-	blueScore.Grid.Nodes[rowTop][0] = Node{}
+	blueScore.Grid.Nodes[rowMiddle][0] = Empty
+	blueScore.Grid.Nodes[rowTop][0] = Empty
 	redScoreSummary = redScore.Summarize(blueScore)
 	blueScoreSummary = blueScore.Summarize(redScore)
 	assert.Equal(t, false, redScoreSummary.CoopertitionBonus)
@@ -112,7 +112,7 @@ func TestScoreSustainabilityBonusRankingPoint(t *testing.T) {
 	assert.Equal(t, false, blueScoreSummary.SustainabilityBonusRankingPoint)
 
 	// Make red fulfill the coopertition bonus requirement.
-	redScore.Grid.Nodes[rowBottom][4] = Node{TeleopCones: 1}
+	redScore.Grid.Nodes[rowBottom][4] = Cone
 	redScoreSummary = redScore.Summarize(blueScore)
 	blueScoreSummary = blueScore.Summarize(redScore)
 	assert.Equal(t, true, redScoreSummary.CoopertitionBonus)
@@ -126,7 +126,7 @@ func TestScoreSustainabilityBonusRankingPoint(t *testing.T) {
 
 	// Reduce coopertition threshold to 1 and make red fulfill the sustainability bonus requirement.
 	SustainabilityBonusLinkThresholdWithCoop = 1
-	redScore.Grid.Nodes[rowBottom][5] = Node{TeleopCubes: 1}
+	redScore.Grid.Nodes[rowBottom][5] = Cube
 	redScoreSummary = redScore.Summarize(blueScore)
 	blueScoreSummary = blueScore.Summarize(redScore)
 	assert.Equal(t, true, redScoreSummary.CoopertitionBonus)
@@ -194,7 +194,7 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.Grid.Nodes[rowTop][8] = Node{1, 2, 3, 4}
+	score2.Grid.Nodes[rowTop][8] = ConeThenCube
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
