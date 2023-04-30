@@ -252,7 +252,7 @@ const (
 	cHeight     = 60
 	cSideMargin = 10
 	cTopMargin  = 10
-	cImgWidth   = 25
+	cImgWidth   = 50
 	cWOffset    = 5
 )
 
