@@ -36,7 +36,7 @@ func TestBoolToByte(t *testing.T) {
 }
 
 func TestGetArmorBlockStatuses(t *testing.T) {
-	var plc Plc
+	var plc ModbusPlc
 
 	plc.registers[fieldIoConnection] = 0
 	assert.Equal(t, map[string]bool{"RedDs": false, "BlueDs": false, "Hub": false},

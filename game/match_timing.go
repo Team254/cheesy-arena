@@ -7,10 +7,7 @@ package game
 
 import "time"
 
-const (
-	chargeStationAutoGracePeriodSec   = 3
-	ChargeStationTeleopGracePeriodSec = 3
-)
+var ChargeStationTeleopGracePeriod = 3 * time.Second
 
 var MatchTiming = struct {
 	WarmupDurationSec                  int

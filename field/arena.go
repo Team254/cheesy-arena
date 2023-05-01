@@ -95,6 +95,7 @@ type AllianceStation struct {
 func NewArena(dbPath string) (*Arena, error) {
 	arena := new(Arena)
 	arena.configureNotifiers()
+	arena.Plc = new(plc.ModbusPlc)
 
 	var err error
 	arena.Database, err = model.OpenDatabase(dbPath)
@@ -318,7 +319,7 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 func (arena *Arena) StartMatch() error {
 	err := arena.checkCanStartMatch()
 	if err == nil {
-		// Save the match start time and game-specifc data to the database for posterity.
+		// Save the match start time to the database for posterity.
 		arena.CurrentMatch.StartedAt = time.Now()
 		if arena.CurrentMatch.Type != "test" {
 			arena.Database.UpdateMatch(arena.CurrentMatch)
@@ -553,8 +554,7 @@ func (arena *Arena) Update() {
 	arena.handleSounds(matchTimeSec)
 
 	// Handle field sensors/lights/actuators.
-	arena.handlePlcInput()
-	arena.handlePlcOutput()
+	arena.handlePlcInputOutput()
 
 	arena.LastMatchTimeSec = matchTimeSec
 	arena.lastMatchState = arena.MatchState
@@ -713,7 +713,7 @@ func (arena *Arena) checkCanStartMatch() error {
 	}
 
 	if arena.Plc.IsEnabled() {
-		if !arena.Plc.IsHealthy {
+		if !arena.Plc.IsHealthy() {
 			return fmt.Errorf("Cannot start match while PLC is not healthy.")
 		}
 		if arena.Plc.GetFieldEstop() {
@@ -773,10 +773,14 @@ func (arena *Arena) getAssignedAllianceStation(teamId int) string {
 	return ""
 }
 
-// Updates the score given new input information from the field PLC.
-func (arena *Arena) handlePlcInput() {
-	// Handle emergency stops.
-	if arena.Plc.GetFieldEstop() && arena.MatchTimeSec() > 0 && !arena.matchAborted {
+// Updates the score given new input information from the field PLC, and actuates PLC outputs accordingly.
+func (arena *Arena) handlePlcInputOutput() {
+	if !arena.Plc.IsEnabled() {
+		return
+	}
+
+	// Handle PLC functions that are always active.
+	if arena.Plc.GetFieldEstop() && !arena.matchAborted {
 		arena.AbortMatch()
 	}
 	redEstops, blueEstops := arena.Plc.GetTeamEstops()
@@ -794,35 +798,16 @@ func (arena *Arena) handlePlcInput() {
 	arena.AllianceStations["B2"].Ethernet = blueEthernets[1]
 	arena.AllianceStations["B3"].Ethernet = blueEthernets[2]
 
+	// Handle in-match PLC functions.
 	matchStartTime := arena.MatchStartTime
 	currentTime := time.Now()
-	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.ChargeStationTeleopGracePeriodSec*time.Second)
+	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.ChargeStationTeleopGracePeriod)
 	inGracePeriod := currentTime.Before(teleopGracePeriod)
 
-	if arena.MatchState == PreMatch || (arena.MatchState == PostMatch && !inGracePeriod) || arena.MatchState == TimeoutActive ||
-		arena.MatchState == PostTimeout {
-		// Don't do anything if we're outside the match, otherwise we may overwrite manual edits.
-		return
-	}
-
 	redScore := &arena.RedRealtimeScore.CurrentScore
-	oldRedScore := *redScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
-	oldBlueScore := *blueScore
+	redChargeStationLevel, blueChargeStationLevel := arena.Plc.GetChargeStationsLevel()
 
-	if arena.Plc.IsEnabled() {
-		// TODO(pat): Update for 2023.
-		redChargeStationLevel, blueChargeStationLevel := arena.Plc.GetChargeStationsLevel()
-		arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
-	}
-
-	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
-		arena.RealtimeScoreNotifier.Notify()
-	}
-}
-
-// Updates the PLC's coils based on its inputs and the current scoring state.
-func (arena *Arena) handlePlcOutput() {
 	switch arena.MatchState {
 	case PreMatch:
 		if arena.lastMatchState != PreMatch {
@@ -847,6 +832,8 @@ func (arena *Arena) handlePlcOutput() {
 				arena.CurrentMatch.FieldReadyAt = time.Now()
 			}
 		}
+
+		arena.Plc.SetChargeStationLights(false, false)
 	case PostMatch:
 		if arena.FieldReset {
 			arena.Plc.SetFieldResetLight(true)
@@ -855,20 +842,36 @@ func (arena *Arena) handlePlcOutput() {
 			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
 
-		if arena.lastMatchState != PostMatch {
+		// Game-specific PLC functions.
+		if inGracePeriod {
+			arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
+		} else {
+			arena.Plc.SetChargeStationLights(false, false)
+		}
+		if arena.lastMatchState != PostMatch && arena.EventSettings.ChargeStationElectronicsEnabled {
 			go func() {
-				time.Sleep(time.Second * game.ChargeStationTeleopGracePeriodSec)
-				// TODO(pat): Update for 2023.
-				//arena.Plc.SetHubMotors(false)
+				// Capture a single reading of the charge station levels after the grace period following the match.
+				time.Sleep(game.ChargeStationTeleopGracePeriod)
+				redScore.EndgameChargeStationLevel, blueScore.EndgameChargeStationLevel =
+					arena.Plc.GetChargeStationsLevel()
+				arena.RealtimeScoreNotifier.Notify()
 			}()
 		}
 	case AutoPeriod:
-		fallthrough
-	case PausePeriod:
-		fallthrough
-	case TeleopPeriod:
 		arena.Plc.SetStackBuzzer(false)
 		arena.Plc.SetStackLights(false, false, false, true)
+		fallthrough
+	case PausePeriod:
+		// Game-specific PLC functions.
+		arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
+	case TeleopPeriod:
+		// Game-specific PLC functions.
+		arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
+		if arena.lastMatchState != TeleopPeriod && arena.EventSettings.ChargeStationElectronicsEnabled {
+			// Capture a single reading of the charge station levels after the autonomous pause.
+			redScore.AutoChargeStationLevel, blueScore.AutoChargeStationLevel = arena.Plc.GetChargeStationsLevel()
+			arena.RealtimeScoreNotifier.Notify()
+		}
 	}
 }
 
