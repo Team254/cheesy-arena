@@ -83,7 +83,6 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))
 	eventSettings.TeleopDurationSec, _ = strconv.Atoi(r.PostFormValue("teleopDurationSec"))
 	eventSettings.WarningRemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warningRemainingDurationSec"))
-	eventSettings.ChargeStationElectronicsEnabled = r.PostFormValue("chargeStationElectronicsEnabled") == "on"
 	eventSettings.SustainabilityBonusLinkThresholdWithoutCoop, _ =
 		strconv.Atoi(r.PostFormValue("sustainabilityBonusLinkThresholdWithoutCoop"))
 	eventSettings.SustainabilityBonusLinkThresholdWithCoop, _ =

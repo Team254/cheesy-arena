@@ -40,7 +40,6 @@ type EventSettings struct {
 	PauseDurationSec                            int
 	TeleopDurationSec                           int
 	WarningRemainingDurationSec                 int
-	ChargeStationElectronicsEnabled             bool
 	SustainabilityBonusLinkThresholdWithoutCoop int
 	SustainabilityBonusLinkThresholdWithCoop    int
 	ActivationBonusPointThreshold               int
@@ -57,22 +56,21 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 
 	// Database record doesn't exist yet; create it now.
 	eventSettings := EventSettings{
-		Name:                            "Untitled Event",
-		ElimType:                        "single",
-		NumElimAlliances:                8,
-		SelectionRound2Order:            "L",
-		SelectionRound3Order:            "",
-		TbaDownloadEnabled:              true,
-		ApTeamChannel:                   157,
-		ApAdminChannel:                  0,
-		ApAdminWpaKey:                   "1234Five",
-		Ap2TeamChannel:                  0,
-		WarmupDurationSec:               game.MatchTiming.WarmupDurationSec,
-		AutoDurationSec:                 game.MatchTiming.AutoDurationSec,
-		PauseDurationSec:                game.MatchTiming.PauseDurationSec,
-		TeleopDurationSec:               game.MatchTiming.TeleopDurationSec,
-		WarningRemainingDurationSec:     game.MatchTiming.WarningRemainingDurationSec,
-		ChargeStationElectronicsEnabled: true,
+		Name:                        "Untitled Event",
+		ElimType:                    "single",
+		NumElimAlliances:            8,
+		SelectionRound2Order:        "L",
+		SelectionRound3Order:        "",
+		TbaDownloadEnabled:          true,
+		ApTeamChannel:               157,
+		ApAdminChannel:              0,
+		ApAdminWpaKey:               "1234Five",
+		Ap2TeamChannel:              0,
+		WarmupDurationSec:           game.MatchTiming.WarmupDurationSec,
+		AutoDurationSec:             game.MatchTiming.AutoDurationSec,
+		PauseDurationSec:            game.MatchTiming.PauseDurationSec,
+		TeleopDurationSec:           game.MatchTiming.TeleopDurationSec,
+		WarningRemainingDurationSec: game.MatchTiming.WarningRemainingDurationSec,
 		SustainabilityBonusLinkThresholdWithoutCoop: game.SustainabilityBonusLinkThresholdWithoutCoop,
 		SustainabilityBonusLinkThresholdWithCoop:    game.SustainabilityBonusLinkThresholdWithCoop,
 		ActivationBonusPointThreshold:               game.ActivationBonusPointThreshold,
