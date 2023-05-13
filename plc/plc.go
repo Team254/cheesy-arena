@@ -120,7 +120,6 @@ type armorBlock int
 const (
 	redDs armorBlock = iota
 	blueDs
-	hub
 	armorBlockCount
 )
 
@@ -168,31 +167,7 @@ func (plc *ModbusPlc) Run() {
 		}
 
 		startTime := time.Now()
-
-		if plc.handler != nil {
-			isHealthy := true
-			isHealthy = isHealthy && plc.writeCoils()
-			isHealthy = isHealthy && plc.readInputs()
-			isHealthy = isHealthy && plc.readRegisters()
-			if !isHealthy {
-				plc.resetConnection()
-			}
-			plc.isHealthy = isHealthy
-		}
-
-		plc.cycleCounter++
-		if plc.cycleCounter == cycleCounterMax {
-			plc.cycleCounter = 0
-		}
-
-		// Detect any changes in input or output and notify listeners if so.
-		if plc.inputs != plc.oldInputs || plc.registers != plc.oldRegisters || plc.coils != plc.oldCoils {
-			plc.ioChangeNotifier.Notify()
-			plc.oldInputs = plc.inputs
-			plc.oldRegisters = plc.registers
-			plc.oldCoils = plc.coils
-		}
-
+		plc.update()
 		time.Sleep(time.Until(startTime.Add(time.Millisecond * plcLoopPeriodMs)))
 	}
 }
@@ -321,6 +296,33 @@ func (plc *ModbusPlc) resetConnection() {
 	if plc.handler != nil {
 		plc.handler.Close()
 		plc.handler = nil
+	}
+}
+
+// Performs a single iteration of reading inputs from and writing outputs to the PLC.
+func (plc *ModbusPlc) update() {
+	if plc.handler != nil {
+		isHealthy := true
+		isHealthy = isHealthy && plc.writeCoils()
+		isHealthy = isHealthy && plc.readInputs()
+		isHealthy = isHealthy && plc.readRegisters()
+		if !isHealthy {
+			plc.resetConnection()
+		}
+		plc.isHealthy = isHealthy
+	}
+
+	plc.cycleCounter++
+	if plc.cycleCounter == cycleCounterMax {
+		plc.cycleCounter = 0
+	}
+
+	// Detect any changes in input or output and notify listeners if so.
+	if plc.inputs != plc.oldInputs || plc.registers != plc.oldRegisters || plc.coils != plc.oldCoils {
+		plc.ioChangeNotifier.Notify()
+		plc.oldInputs = plc.inputs
+		plc.oldRegisters = plc.registers
+		plc.oldCoils = plc.coils
 	}
 }
 
