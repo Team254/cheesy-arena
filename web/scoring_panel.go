@@ -8,13 +8,14 @@ package web
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
+	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 // Renders the scoring interface which enables input of scores in real-time.
@@ -37,9 +38,10 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := struct {
 		*model.EventSettings
-		PlcIsEnabled bool
-		Alliance     string
-	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), alliance}
+		PlcIsEnabled        bool
+		Alliance            string
+		ValidGridNodeStates map[game.Row]map[int]map[int]string
+	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), alliance, game.ValidGridNodeStates()}
 	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -93,9 +95,6 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			log.Println(err)
 			return
 		}
-		teamIndexStr, _ := data.(string)
-		teamIndex, _ := strconv.Atoi(teamIndexStr)
-
 		score := &(*realtimeScore).CurrentScore
 		scoreChanged := false
 
@@ -108,22 +107,34 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(alliance, ws)
 			web.arena.ScoringStatusNotifier.Notify()
 		} else {
+			args := struct {
+				TeamIndex int
+				GridRow   int
+				GridNode  int
+				NodeState game.NodeState
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
+
 			switch command {
 			case "mobilityStatus":
-				if teamIndex >= 1 && teamIndex <= 3 {
-					score.MobilityStatuses[teamIndex-1] = !score.MobilityStatuses[teamIndex-1]
+				if args.TeamIndex >= 1 && args.TeamIndex <= 3 {
+					score.MobilityStatuses[args.TeamIndex-1] = !score.MobilityStatuses[args.TeamIndex-1]
 					scoreChanged = true
 				}
 			case "autoDockStatus":
-				if teamIndex >= 1 && teamIndex <= 3 {
-					score.AutoDockStatuses[teamIndex-1] = !score.AutoDockStatuses[teamIndex-1]
+				if args.TeamIndex >= 1 && args.TeamIndex <= 3 {
+					score.AutoDockStatuses[args.TeamIndex-1] = !score.AutoDockStatuses[args.TeamIndex-1]
 					scoreChanged = true
 				}
 			case "endgameStatus":
-				if teamIndex >= 1 && teamIndex <= 3 {
-					score.EndgameStatuses[teamIndex-1]++
-					if score.EndgameStatuses[teamIndex-1] > 2 {
-						score.EndgameStatuses[teamIndex-1] = 0
+				if args.TeamIndex >= 1 && args.TeamIndex <= 3 {
+					score.EndgameStatuses[args.TeamIndex-1]++
+					if score.EndgameStatuses[args.TeamIndex-1] > 2 {
+						score.EndgameStatuses[args.TeamIndex-1] = 0
 					}
 					scoreChanged = true
 				}
@@ -133,6 +144,28 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			case "endgameChargeStationLevel":
 				score.EndgameChargeStationLevel = !score.EndgameChargeStationLevel
 				scoreChanged = true
+			case "gridAutoScoring":
+				if args.GridRow >= 0 && args.GridRow <= 2 && args.GridNode >= 0 && args.GridNode <= 8 {
+					score.Grid.AutoScoring[args.GridRow][args.GridNode] =
+						!score.Grid.AutoScoring[args.GridRow][args.GridNode]
+					scoreChanged = true
+				}
+			case "gridNode":
+				if args.GridRow >= 0 && args.GridRow <= 2 && args.GridNode >= 0 && args.GridNode <= 8 {
+					currentState := score.Grid.Nodes[args.GridRow][args.GridNode]
+					if currentState == args.NodeState {
+						score.Grid.Nodes[args.GridRow][args.GridNode] = game.Empty
+						if web.arena.MatchState == field.AutoPeriod || web.arena.MatchState == field.PausePeriod {
+							score.Grid.AutoScoring[args.GridRow][args.GridNode] = false
+						}
+					} else {
+						score.Grid.Nodes[args.GridRow][args.GridNode] = args.NodeState
+						if web.arena.MatchState == field.AutoPeriod || web.arena.MatchState == field.PausePeriod {
+							score.Grid.AutoScoring[args.GridRow][args.GridNode] = true
+						}
+					}
+					scoreChanged = true
+				}
 			}
 
 			if scoreChanged {

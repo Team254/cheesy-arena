@@ -3,11 +3,11 @@
 //
 // Client-side logic for the scoring interface.
 
-var websocket;
-var alliance;
+let websocket;
+let alliance;
 
 // Handles a websocket message to update the teams for the current match.
-var handleMatchLoad = function(data) {
+const handleMatchLoad = function(data) {
   $("#matchName").text(data.MatchType + " " + data.Match.DisplayName);
   if (alliance === "red") {
     $("#team1").text(data.Match.Red1);
@@ -21,7 +21,7 @@ var handleMatchLoad = function(data) {
 };
 
 // Handles a websocket message to update the match status.
-var handleMatchTime = function(data) {
+const handleMatchTime = function(data) {
   switch (matchStates[data.MatchState]) {
     case "PRE_MATCH":
       // Pre-match message state is set in handleRealtimeScore().
@@ -39,18 +39,18 @@ var handleMatchTime = function(data) {
 };
 
 // Handles a websocket message to update the realtime scoring fields.
-var handleRealtimeScore = function(data) {
-  var realtimeScore;
+const handleRealtimeScore = function(data) {
+  let realtimeScore;
   if (alliance === "red") {
     realtimeScore = data.Red;
   } else {
     realtimeScore = data.Blue;
   }
-  var score = realtimeScore.Score;
+  const score = realtimeScore.Score;
 
-  for (var i = 0; i < 3; i++) {
-    var i1 = i + 1;
-    $("#mobilityStatus" + i1 + ">.value").text(score.MobilityStatuses[i] ? "Yes" : "No");
+  for (let i = 0; i < 3; i++) {
+    const i1 = i + 1;
+    $(`#mobilityStatus${i1}>.value`).text(score.MobilityStatuses[i] ? "Yes" : "No");
     $("#mobilityStatus" + i1).attr("data-value", score.MobilityStatuses[i]);
     $("#autoDockStatus" + i1 + ">.value").text(score.AutoDockStatuses[i] ? "Yes" : "No");
     $("#autoDockStatus" + i1).attr("data-value", score.AutoDockStatuses[i]);
@@ -62,22 +62,32 @@ var handleRealtimeScore = function(data) {
   $("#autoChargeStationLevel").attr("data-value", score.AutoChargeStationLevel);
   $("#endgameChargeStationLevel>.value").text(score.EndgameChargeStationLevel ? "Level" : "Not Level");
   $("#endgameChargeStationLevel").attr("data-value", score.EndgameChargeStationLevel);
+
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 9; j++) {
+      $(`#gridAutoScoringRow${i}Node${j}`).attr("data-value", score.Grid.AutoScoring[i][j]);
+      $(`#gridNodeStatesRow${i}Node${j}`).children().each(function() {
+        const element = $(this);
+        element.attr("data-value", element.attr("data-node-state") === score.Grid.Nodes[i][j].toString());
+      });
+    }
+  }
 };
 
 // Handles an element click and sends the appropriate websocket message.
-var handleClick = function(command, team = 0) {
-  websocket.send(command, team);
+const handleClick = function(command, teamIndex = 0, gridRow = 0, gridNode = 0, nodeState = 0) {
+  websocket.send(command, {TeamIndex: teamIndex, GridRow: gridRow, GridNode: gridNode, NodeState: nodeState});
 };
 
 // Sends a websocket message to indicate that the score for this alliance is ready.
-var commitMatchScore = function() {
+const commitMatchScore = function() {
   websocket.send("commitMatch");
   $("#postMatchMessage").css("display", "flex");
   $("#commitMatchScore").hide();
 };
 
 // Returns the display text corresponding to the given integer endgame status value.
-var getEndgameStatusText = function(level) {
+const getEndgameStatusText = function(level) {
   switch (level) {
     case 1:
       return "Park";

@@ -21,7 +21,7 @@ body {
   align-items: center;
 }
 #alliance {
-  width: 90%;
+  width: 98%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -36,7 +36,7 @@ body {
   background-color: #223;
 }
 #matchName {
-  font-size: 3vw;
+  font-size: 2vw;
 }
 .scoring-section {
   margin-bottom: 0.5vw;
@@ -45,7 +45,7 @@ body {
   color: #ccc;
 }
 .scoring-header>div{
-  height: 3vw;
+  height: 3.3vw;
   display: flex;
   align-items: center;
   margin: 0.4vw 1vw 0.4vw 0.2vw;
@@ -53,7 +53,7 @@ body {
 }
 .robot-field {
   width: 17vw;
-  height: 3vw;
+  height: 3.3vw;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -86,47 +86,65 @@ body {
 .charge-station-level[data-value="true"] {
   background-color: #263;
 }
-#elements {
+#grid {
   width: 100%;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-}
-.goal-header {
-  height: 5vw;
-  margin: 0.4vw 0vw;
-  color: #666;
+  margin-top: 1.5vw;
+  margin-bottom: 1.5vw;
   display: flex;
   flex-direction: column;
+}
+.grid-row {
+  width: 100%;
+  display: flex;
   justify-content: center;
 }
-.goal-period {
-  text-align: center;
-  color: #666;
-}
-.goal {
-  width: 17vw;
-  height: 7vw;
-  margin: 0.4vw 3vw;
+.grid-node {
+  width: 10vw;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.number-button {
-  width: 6vw;
-  height: 6vw;
-  display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
   border: 1px solid #666;
+  padding: 0.5vw;
+  margin-top: -1px;
+  margin-left: -1px;
+}
+.grid-node[data-node="2"], .grid-node[data-node="5"] {
+  margin-right: 1vw;
+}
+.grid-node-auto {
+  width: 4vw;
+  height: 2vw;
+  margin-bottom: 0.5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   border-radius: 0.5vw;
-  font-size: 3vw;
+  background-color: #333;
+  color: #ccc;
 }
-.plus {
-  background: #263;
+.grid-node-auto[data-value="true"] {
+  background-color: #263;
 }
-.minus {
-  background: #633;
+.grid-node-states {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+.grid-node-button {
+  width: 4vw;
+  height: 4vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0.2;
+}
+.grid-node-button[data-value="true"] {
+  border: 2px solid #aaa;
+  border-radius: 0.5vw;
+  opacity: 1;
+}
+.grid-node-button img {
+  width: 90%;
 }
 #chargeStation {
   width: 70vw;
