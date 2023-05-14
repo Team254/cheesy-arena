@@ -11,6 +11,7 @@ type ScoreSummary struct {
 	GridPoints                      int
 	ChargeStationPoints             int
 	ParkPoints                      int
+	EndgamePoints                   int
 	MatchPoints                     int
 	FoulPoints                      int
 	Score                           int

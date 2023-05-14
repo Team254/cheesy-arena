@@ -74,6 +74,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 
 	summary.GridPoints = autoGridPoints + teleopGridPoints
 	summary.ChargeStationPoints = autoChargeStationPoints + teleopChargeStationPoints
+	summary.EndgamePoints = teleopChargeStationPoints + summary.ParkPoints
 	summary.MatchPoints = summary.MobilityPoints + summary.GridPoints + summary.ChargeStationPoints + summary.ParkPoints
 
 	// Calculate penalty points.

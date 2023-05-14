@@ -139,21 +139,21 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.HangarPoints);
-  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.HangarPoints);
+  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints);
+  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints);
 
-  $("#" + redSide + "CargoNumerator").text(data.Red.ScoreSummary.CargoCount);
-  $("#" + redSide + "CargoDenominator").text(data.Red.ScoreSummary.CargoGoal);
-  $("#" + blueSide + "CargoNumerator").text(data.Blue.ScoreSummary.CargoCount);
-  $("#" + blueSide + "CargoDenominator").text(data.Blue.ScoreSummary.CargoGoal);
+  $("#" + redSide + "LinkNumerator").text(data.Red.ScoreSummary.NumLinks);
+  $("#" + redSide + "LinkDenominator").text(data.Red.ScoreSummary.NumLinksGoal);
+  $("#" + blueSide + "LinkNumerator").text(data.Blue.ScoreSummary.NumLinks);
+  $("#" + blueSide + "LinkDenominator").text(data.Blue.ScoreSummary.NumLinksGoal);
   if (currentMatch.Type === "elimination") {
-    $("#" + redSide + "CargoDenominator").hide();
-    $("#" + blueSide + "CargoDenominator").hide();
-    $(".cargo-splitter").hide();
+    $("#" + redSide + "LinkDenominator").hide();
+    $("#" + blueSide + "LinkDenominator").hide();
+    $(".link-splitter").hide();
   } else {
-    $("#" + redSide + "CargoDenominator").show();
-    $("#" + blueSide + "CargoDenominator").show();
-    $(".cargo-splitter").show();
+    $("#" + redSide + "LinkDenominator").show();
+    $("#" + blueSide + "LinkDenominator").show();
+    $(".link-splitter").show();
   }
 };
 
