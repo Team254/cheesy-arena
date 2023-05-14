@@ -142,11 +142,11 @@ func TestScoreSustainabilityBonusRankingPoint(t *testing.T) {
 func TestScoreActivationBonusRankingPoint(t *testing.T) {
 	var score Score
 
-	score.AutoRobotDockStatuses = [3]bool{true, false, false}
+	score.AutoDockStatuses = [3]bool{true, false, false}
 	score.EndgameStatuses = [3]EndgameStatus{EndgameNone, EndgameNone, EndgameNone}
 	assert.Equal(t, false, score.Summarize(&Score{}).ActivationBonusRankingPoint)
 
-	score.AutoRobotDockStatuses = [3]bool{true, false, false}
+	score.AutoDockStatuses = [3]bool{true, false, false}
 	score.EndgameStatuses = [3]EndgameStatus{EndgameDocked, EndgameNone, EndgameDocked}
 	assert.Equal(t, false, score.Summarize(&Score{}).ActivationBonusRankingPoint)
 
@@ -168,7 +168,7 @@ func TestScoreActivationBonusRankingPoint(t *testing.T) {
 	assert.Equal(t, false, score.Summarize(&Score{}).ActivationBonusRankingPoint)
 
 	ActivationBonusPointThreshold = 42
-	score.AutoRobotDockStatuses = [3]bool{true, true, true}
+	score.AutoDockStatuses = [3]bool{true, true, true}
 	score.EndgameStatuses = [3]EndgameStatus{EndgameDocked, EndgameDocked, EndgameDocked}
 	score.AutoChargeStationLevel = true
 	score.EndgameChargeStationLevel = true
@@ -199,7 +199,7 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.AutoRobotDockStatuses[2] = true
+	score2.AutoDockStatuses[2] = true
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 

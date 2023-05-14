@@ -35,7 +35,7 @@ const renderResults = function(alliance) {
     const i1 = i + 1;
 
     getInputElement(alliance, "MobilityStatuses" + i1).prop("checked", result.score.MobilityStatuses[i]);
-    getInputElement(alliance, "AutoRobotDockStatuses" + i1).prop("checked", result.score.AutoRobotDockStatuses[i]);
+    getInputElement(alliance, "AutoDockStatuses" + i1).prop("checked", result.score.AutoDockStatuses[i]);
     getInputElement(alliance, "EndgameStatuses" + i1, result.score.EndgameStatuses[i]).prop("checked", true);
 
     for (let j = 0; j < 9; j++) {
@@ -72,13 +72,13 @@ const updateResults = function(alliance) {
 
   result.score.MobilityStatuses = [];
   result.score.Grid = {AutoScoring: [], Nodes: []};
-  result.score.AutoRobotDockStatuses = [];
+  result.score.AutoDockStatuses = [];
   result.score.EndgameStatuses = [];
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
 
     result.score.MobilityStatuses[i] = formData[alliance + "MobilityStatuses" + i1] === "on";
-    result.score.AutoRobotDockStatuses[i] = formData[alliance + "AutoRobotDockStatuses" + i1] === "on";
+    result.score.AutoDockStatuses[i] = formData[alliance + "AutoDockStatuses" + i1] === "on";
     result.score.EndgameStatuses[i] = parseInt(formData[alliance + "EndgameStatuses" + i1]);
 
     result.score.Grid.AutoScoring[i] = [];

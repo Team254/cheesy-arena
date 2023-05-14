@@ -215,7 +215,7 @@ func TestCommitEliminationTie(t *testing.T) {
 	assert.Equal(t, game.TieMatch, match.Status)
 
 	// Test that playoff tiebreakers are evaluated.
-	matchResult.BlueScore.AutoRobotDockStatuses = [3]bool{true, false, false}
+	matchResult.BlueScore.AutoDockStatuses = [3]bool{true, false, false}
 	matchResult.BlueScore.AutoChargeStationLevel = true
 	matchResult.BlueScore.Fouls = []game.Foul{{RuleId: 1}, {RuleId: 4}}
 
@@ -356,11 +356,11 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
-	web.arena.RedRealtimeScore.CurrentScore.AutoRobotDockStatuses = [3]bool{false, true, true}
+	web.arena.RedRealtimeScore.CurrentScore.AutoDockStatuses = [3]bool{false, true, true}
 	web.arena.BlueRealtimeScore.CurrentScore.MobilityStatuses = [3]bool{true, false, true}
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
-	assert.Equal(t, [3]bool{false, true, true}, web.arena.SavedMatchResult.RedScore.AutoRobotDockStatuses)
+	assert.Equal(t, [3]bool{false, true, true}, web.arena.SavedMatchResult.RedScore.AutoDockStatuses)
 	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.MobilityStatuses)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)

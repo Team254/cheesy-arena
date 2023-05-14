@@ -41,11 +41,11 @@ body {
 .scoring-section {
   margin-bottom: 0.5vw;
   display: flex;
-  font-size: 2.5vw;
+  font-size: 1.5vw;
   color: #ccc;
 }
 .scoring-header>div{
-  height: 7vw;
+  height: 3vw;
   display: flex;
   align-items: center;
   margin: 0.4vw 1vw 0.4vw 0.2vw;
@@ -53,16 +53,16 @@ body {
 }
 .robot-field {
   width: 17vw;
-  height: 7vw;
+  height: 3vw;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin: 0.4vw 0.2vw;
 }
 .team {
   display: flex;
   justify-content: center;
-  font-size: 5vw;
+  font-size: 3vw;
   font-weight: bold;
 }
 .boolean[data-value="false"] {
@@ -75,21 +75,16 @@ body {
   background-color: #333;
 }
 .endgame-status[data-value="1"] {
-  background-color: #236;
-}
-.endgame-status[data-value="2"] {
-  background-color: #633;
-}
-.endgame-status[data-value="3"] {
   background-color: #652;
 }
-.endgame-status[data-value="4"] {
+.endgame-status[data-value="2"] {
   background-color: #263;
 }
-.shortcut {
-  margin: 0 0.2vw;
-  font-size: 1vw;
-  align-self: flex-start;
+.charge-station-level[data-value="false"] {
+  background-color: #622;
+}
+.charge-station-level[data-value="true"] {
+  background-color: #263;
 }
 #elements {
   width: 100%;
@@ -133,8 +128,10 @@ body {
 .minus {
   background: #633;
 }
-#instructions {
-  margin-top: 0.3vw;
+#chargeStation {
+  width: 70vw;
+  justify-content: space-between;
+  align-items: center;
 }
 #postMatchMessage {
   height: 5vw;

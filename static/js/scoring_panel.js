@@ -50,25 +50,23 @@ var handleRealtimeScore = function(data) {
 
   for (var i = 0; i < 3; i++) {
     var i1 = i + 1;
-    $("#taxiStatus" + i1 + ">.value").text(score.TaxiStatuses[i] ? "Yes" : "No");
-    $("#taxiStatus" + i1).attr("data-value", score.TaxiStatuses[i]);
+    $("#mobilityStatus" + i1 + ">.value").text(score.MobilityStatuses[i] ? "Yes" : "No");
+    $("#mobilityStatus" + i1).attr("data-value", score.MobilityStatuses[i]);
+    $("#autoDockStatus" + i1 + ">.value").text(score.AutoDockStatuses[i] ? "Yes" : "No");
+    $("#autoDockStatus" + i1).attr("data-value", score.AutoDockStatuses[i]);
     $("#endgameStatus" + i1 + ">.value").text(getEndgameStatusText(score.EndgameStatuses[i]));
     $("#endgameStatus" + i1).attr("data-value", score.EndgameStatuses[i]);
-    $("#autoCargoLower").text(score.AutoCargoLower[0]);
-    $("#autoCargoUpper").text(score.AutoCargoUpper[0]);
-    $("#teleopCargoLower").text(score.TeleopCargoLower[0]);
-    $("#teleopCargoUpper").text(score.TeleopCargoUpper[0]);
   }
-};
 
-// Handles a keyboard event and sends the appropriate websocket message.
-var handleKeyPress = function(event) {
-  websocket.send(String.fromCharCode(event.keyCode));
+  $("#autoChargeStationLevel>.value").text(score.AutoChargeStationLevel ? "Level" : "Not Level");
+  $("#autoChargeStationLevel").attr("data-value", score.AutoChargeStationLevel);
+  $("#endgameChargeStationLevel>.value").text(score.EndgameChargeStationLevel ? "Level" : "Not Level");
+  $("#endgameChargeStationLevel").attr("data-value", score.EndgameChargeStationLevel);
 };
 
 // Handles an element click and sends the appropriate websocket message.
-var handleClick = function(shortcut) {
-  websocket.send(shortcut);
+var handleClick = function(command, team = 0) {
+  websocket.send(command, team);
 };
 
 // Sends a websocket message to indicate that the score for this alliance is ready.
@@ -82,13 +80,9 @@ var commitMatchScore = function() {
 var getEndgameStatusText = function(level) {
   switch (level) {
     case 1:
-      return "Low";
+      return "Park";
     case 2:
-      return "Mid";
-    case 3:
-      return "High";
-    case 4:
-      return "Traversal";
+      return "Dock";
     default:
       return "None";
   }
@@ -104,6 +98,4 @@ $(function() {
     matchTime: function(event) { handleMatchTime(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
   });
-
-  $(document).keypress(handleKeyPress);
 });

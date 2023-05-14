@@ -11,48 +11,59 @@
   <div class="scoring-section">
     <div class="scoring-header">
       <div>&nbsp;</div>
-      <div>Taxi</div>
-      <div>Endgame Status</div>
+      <div>Mobility</div>
+      <div>Auto Dock</div>
+      <div>Endgame</div>
     </div>
     {{range $i := seq 3}}
       <div>
         <div id="team{{$i}}" class="team robot-field"></div>
-        <div id="taxiStatus{{$i}}" class="boolean robot-field" onclick="handleClick('{{$i}}');">
-          <div class="shortcut">{{$i}}</div>
+        <div id="mobilityStatus{{$i}}" class="boolean robot-field" onclick="handleClick('mobilityStatus', '{{$i}}');">
           <div class="value"></div>
-          <div class="shortcut"></div>
         </div>
-        <div id="endgameStatus{{$i}}" class="endgame-status robot-field" onclick="handleClick('{{add $i 3}}');">
-          <div class="shortcut">{{add $i 3}}</div>
+        <div id="autoDockStatus{{$i}}" class="boolean robot-field" onclick="handleClick('autoDockStatus', '{{$i}}');">
           <div class="value"></div>
-          <div class="shortcut"></div>
+        </div>
+        <div id="endgameStatus{{$i}}" class="endgame-status robot-field"
+          onclick="handleClick('endgameStatus', '{{$i}}');">
+          <div class="value"></div>
         </div>
       </div>
     {{end}}
   </div>
-  {{if not .PlcIsEnabled}}
-    <div id="elements">
-      <div class="scoring-section">
-        <div>
-          <div>&nbsp;</div>
-          <div class="goal-header">Upper</div>
-          <div class="goal-header">Lower</div>
-        </div>
-        <div>
-          <div class="goal-period">Auto</div>
-          {{template "goal" dict "period" "auto" "level" "Upper" "plus" "W" "minus" "Q"}}
-          {{template "goal" dict "period" "auto" "level" "Lower" "plus" "S" "minus" "A"}}
-        </div>
-        <div>
-          <div class="goal-period">Teleop</div>
-          {{template "goal" dict "period" "teleop" "level" "Upper" "plus" "R" "minus" "E"}}
-          {{template "goal" dict "period" "teleop" "level" "Lower" "plus" "F" "minus" "D"}}
-        </div>
+  <div id="chargeStation" class="scoring-section">
+    <div id="autoChargeStationLevel" class="charge-station-level robot-field"
+      onclick="handleClick('autoChargeStationLevel');">
+      <div class="value"></div>
+    </div>
+    <div>Auto</div>
+    <div>Charge Station</div>
+    <div>Endgame</div>
+    <div id="endgameChargeStationLevel" class="charge-station-level robot-field"
+      onclick="handleClick('endgameChargeStationLevel');">
+      <div class="value"></div>
+    </div>
+  </div>
+  <div id="elements">
+    <div class="scoring-section">
+      <div>
+        <div>&nbsp;</div>
+        <div class="goal-header">Upper</div>
+        <div class="goal-header">Lower</div>
+      </div>
+      <div>
+        <div class="goal-period">Auto</div>
+        {{template "goal" dict "period" "auto" "level" "Upper" "plus" "W" "minus" "Q"}}
+        {{template "goal" dict "period" "auto" "level" "Lower" "plus" "S" "minus" "A"}}
+      </div>
+      <div>
+        <div class="goal-period">Teleop</div>
+        {{template "goal" dict "period" "teleop" "level" "Upper" "plus" "R" "minus" "E"}}
+        {{template "goal" dict "period" "teleop" "level" "Lower" "plus" "F" "minus" "D"}}
       </div>
     </div>
-  {{end}}
+  </div>
 </div>
-<div id="instructions">Click or use the labeled keyboard shortcuts to toggle each element</div>
 <div id="commitMatchScore">
   <button type="button" class="btn btn-info" onclick="commitMatchScore();">
     Commit Final Match Score

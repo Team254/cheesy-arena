@@ -15,7 +15,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 // Renders the scoring interface which enables input of scores in real-time.
@@ -85,7 +84,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		command, _, err := ws.Read()
+		command, data, err := ws.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
@@ -94,6 +93,8 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			log.Println(err)
 			return
 		}
+		teamIndexStr, _ := data.(string)
+		teamIndex, _ := strconv.Atoi(teamIndexStr)
 
 		score := &(*realtimeScore).CurrentScore
 		scoreChanged := false
@@ -106,62 +107,37 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(alliance, ws)
 			web.arena.ScoringStatusNotifier.Notify()
-		} else if number, err := strconv.Atoi(command); err == nil && number >= 1 && number <= 6 {
-			// Handle per-robot scoring fields.
-			if number <= 3 {
-				index := number - 1
-				score.MobilityStatuses[index] = !score.MobilityStatuses[index]
-				scoreChanged = true
-			} else {
-				index := number - 4
-				score.EndgameStatuses[index]++
-				if score.EndgameStatuses[index] == 5 {
-					score.EndgameStatuses[index] = 0
+		} else {
+			switch command {
+			case "mobilityStatus":
+				if teamIndex >= 1 && teamIndex <= 3 {
+					score.MobilityStatuses[teamIndex-1] = !score.MobilityStatuses[teamIndex-1]
+					scoreChanged = true
 				}
+			case "autoDockStatus":
+				if teamIndex >= 1 && teamIndex <= 3 {
+					score.AutoDockStatuses[teamIndex-1] = !score.AutoDockStatuses[teamIndex-1]
+					scoreChanged = true
+				}
+			case "endgameStatus":
+				if teamIndex >= 1 && teamIndex <= 3 {
+					score.EndgameStatuses[teamIndex-1]++
+					if score.EndgameStatuses[teamIndex-1] > 2 {
+						score.EndgameStatuses[teamIndex-1] = 0
+					}
+					scoreChanged = true
+				}
+			case "autoChargeStationLevel":
+				score.AutoChargeStationLevel = !score.AutoChargeStationLevel
+				scoreChanged = true
+			case "endgameChargeStationLevel":
+				score.EndgameChargeStationLevel = !score.EndgameChargeStationLevel
 				scoreChanged = true
 			}
-		} else if !web.arena.Plc.IsEnabled() {
-			switch strings.ToUpper(command) {
-			// TODO(pat): Update for 2023.
-			//case "Q":
-			//	scoreChanged = decrementGoal(score.AutoCargoUpper[:])
-			//case "A":
-			//	scoreChanged = decrementGoal(score.AutoCargoLower[:])
-			//case "W":
-			//	scoreChanged = incrementGoal(score.AutoCargoUpper[:])
-			//case "S":
-			//	scoreChanged = incrementGoal(score.AutoCargoLower[:])
-			//case "E":
-			//	scoreChanged = decrementGoal(score.TeleopCargoUpper[:])
-			//case "D":
-			//	scoreChanged = decrementGoal(score.TeleopCargoLower[:])
-			//case "R":
-			//	scoreChanged = incrementGoal(score.TeleopCargoUpper[:])
-			//case "F":
-			//	scoreChanged = incrementGoal(score.TeleopCargoLower[:])
+
+			if scoreChanged {
+				web.arena.RealtimeScoreNotifier.Notify()
 			}
-
-		}
-
-		if scoreChanged {
-			web.arena.RealtimeScoreNotifier.Notify()
 		}
 	}
-}
-
-// Increments the cargo count for the given goal.
-func incrementGoal(goal []int) bool {
-	// Use just the first hub quadrant for manual scoring.
-	goal[0]++
-	return true
-}
-
-// Decrements the cargo for the given goal.
-func decrementGoal(goal []int) bool {
-	// Use just the first hub quadrant for manual scoring.
-	if goal[0] > 0 {
-		goal[0]--
-		return true
-	}
-	return false
 }

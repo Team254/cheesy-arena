@@ -8,7 +8,7 @@ package game
 type Score struct {
 	MobilityStatuses          [3]bool
 	Grid                      Grid
-	AutoRobotDockStatuses     [3]bool
+	AutoDockStatuses          [3]bool
 	AutoChargeStationLevel    bool
 	EndgameStatuses           [3]EndgameStatus
 	EndgameChargeStationLevel bool
@@ -47,7 +47,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	autoGridPoints := score.Grid.AutoGamePiecePoints()
 	autoChargeStationPoints := 0
 	for i := 0; i < 3; i++ {
-		if score.AutoRobotDockStatuses[i] {
+		if score.AutoDockStatuses[i] {
 			autoChargeStationPoints += 8
 			if score.AutoChargeStationLevel {
 				autoChargeStationPoints += 4
@@ -117,7 +117,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 func (score *Score) Equals(other *Score) bool {
 	if score.MobilityStatuses != other.MobilityStatuses ||
 		score.Grid != other.Grid ||
-		score.AutoRobotDockStatuses != other.AutoRobotDockStatuses ||
+		score.AutoDockStatuses != other.AutoDockStatuses ||
 		score.AutoChargeStationLevel != other.AutoChargeStationLevel ||
 		score.EndgameStatuses != other.EndgameStatuses ||
 		score.EndgameChargeStationLevel != other.EndgameChargeStationLevel ||

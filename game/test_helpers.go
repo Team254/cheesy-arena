@@ -21,7 +21,7 @@ func TestScore1() *Score {
 	return &Score{
 		MobilityStatuses:          [3]bool{true, true, false},
 		Grid:                      testGrid1(),
-		AutoRobotDockStatuses:     [3]bool{false, true, false},
+		AutoDockStatuses:          [3]bool{false, true, false},
 		AutoChargeStationLevel:    false,
 		EndgameStatuses:           [3]EndgameStatus{EndgameParked, EndgameNone, EndgameDocked},
 		EndgameChargeStationLevel: true,
@@ -34,7 +34,7 @@ func TestScore2() *Score {
 	return &Score{
 		MobilityStatuses:          [3]bool{false, true, false},
 		Grid:                      testGrid2(),
-		AutoRobotDockStatuses:     [3]bool{true, true, true},
+		AutoDockStatuses:          [3]bool{true, true, true},
 		AutoChargeStationLevel:    true,
 		EndgameStatuses:           [3]EndgameStatus{EndgameDocked, EndgameDocked, EndgameDocked},
 		EndgameChargeStationLevel: false,
