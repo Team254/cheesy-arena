@@ -108,10 +108,10 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.ScoringStatusNotifier.Notify()
 		} else {
 			args := struct {
-				TeamIndex int
-				GridRow   int
-				GridNode  int
-				NodeState game.NodeState
+				TeamPosition int
+				GridRow      int
+				GridNode     int
+				NodeState    game.NodeState
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -121,20 +121,20 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 
 			switch command {
 			case "mobilityStatus":
-				if args.TeamIndex >= 1 && args.TeamIndex <= 3 {
-					score.MobilityStatuses[args.TeamIndex-1] = !score.MobilityStatuses[args.TeamIndex-1]
+				if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
+					score.MobilityStatuses[args.TeamPosition-1] = !score.MobilityStatuses[args.TeamPosition-1]
 					scoreChanged = true
 				}
 			case "autoDockStatus":
-				if args.TeamIndex >= 1 && args.TeamIndex <= 3 {
-					score.AutoDockStatuses[args.TeamIndex-1] = !score.AutoDockStatuses[args.TeamIndex-1]
+				if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
+					score.AutoDockStatuses[args.TeamPosition-1] = !score.AutoDockStatuses[args.TeamPosition-1]
 					scoreChanged = true
 				}
 			case "endgameStatus":
-				if args.TeamIndex >= 1 && args.TeamIndex <= 3 {
-					score.EndgameStatuses[args.TeamIndex-1]++
-					if score.EndgameStatuses[args.TeamIndex-1] > 2 {
-						score.EndgameStatuses[args.TeamIndex-1] = 0
+				if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
+					score.EndgameStatuses[args.TeamPosition-1]++
+					if score.EndgameStatuses[args.TeamPosition-1] > 2 {
+						score.EndgameStatuses[args.TeamPosition-1] = 0
 					}
 					scoreChanged = true
 				}

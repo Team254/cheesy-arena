@@ -75,8 +75,8 @@ const handleRealtimeScore = function(data) {
 };
 
 // Handles an element click and sends the appropriate websocket message.
-const handleClick = function(command, teamIndex = 0, gridRow = 0, gridNode = 0, nodeState = 0) {
-  websocket.send(command, {TeamIndex: teamIndex, GridRow: gridRow, GridNode: gridNode, NodeState: nodeState});
+const handleClick = function(command, teamPosition = 0, gridRow = 0, gridNode = 0, nodeState = 0) {
+  websocket.send(command, {TeamPosition: teamPosition, GridRow: gridRow, GridNode: gridNode, NodeState: nodeState});
 };
 
 // Sends a websocket message to indicate that the score for this alliance is ready.

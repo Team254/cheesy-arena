@@ -5,6 +5,7 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
@@ -54,44 +55,62 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "realtimeScore")
 
 	// Send some autonomous period scoring commands.
+	assert.Equal(t, [3]bool{false, false, false}, web.arena.RedRealtimeScore.CurrentScore.MobilityStatuses)
+	scoringData := struct {
+		TeamPosition int
+		GridRow      int
+		GridNode     int
+		NodeState    game.NodeState
+	}{}
 	web.arena.MatchState = field.AutoPeriod
-	// TODO(pat): Update for 2023.
-	//redWs.Write("1", nil)
-	//redWs.Write("3", nil)
-	//redWs.Write("w", nil)
-	//redWs.Write("a", nil)
-	//redWs.Write("s", nil)
-	//redWs.Write("s", nil)
-	//redWs.Write("z", nil)
-	//redWs.Write("z", nil)
-	//for i := 0; i < 5; i++ {
-	//	readWebsocketType(t, redWs, "realtimeScore")
-	//	readWebsocketType(t, blueWs, "realtimeScore")
-	//}
-	//assert.Equal(t, [3]bool{true, false, true}, web.arena.RedRealtimeScore.CurrentScore.TaxiStatuses)
-	//assert.Equal(t, [4]int{2, 0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCargoLower)
-	//assert.Equal(t, [4]int{1, 0, 0, 0}, web.arena.RedRealtimeScore.CurrentScore.AutoCargoUpper)
+	scoringData.TeamPosition = 1
+	redWs.Write("mobilityStatus", scoringData)
+	scoringData.TeamPosition = 3
+	redWs.Write("mobilityStatus", scoringData)
+	scoringData.TeamPosition = 2
+	redWs.Write("autoDockStatus", scoringData)
+	redWs.Write("autoChargeStationLevel", scoringData)
+	scoringData.GridRow = 2
+	scoringData.GridNode = 7
+	scoringData.NodeState = game.ConeThenCube
+	redWs.Write("gridNode", scoringData)
+	for i := 0; i < 5; i++ {
+		readWebsocketType(t, redWs, "realtimeScore")
+		readWebsocketType(t, blueWs, "realtimeScore")
+	}
+	assert.Equal(t, [3]bool{true, false, true}, web.arena.RedRealtimeScore.CurrentScore.MobilityStatuses)
+	assert.Equal(t, [3]bool{false, true, false}, web.arena.RedRealtimeScore.CurrentScore.AutoDockStatuses)
+	assert.Equal(t, true, web.arena.RedRealtimeScore.CurrentScore.AutoChargeStationLevel)
+	assert.Equal(t, true, web.arena.RedRealtimeScore.CurrentScore.Grid.AutoScoring[2][7])
+	assert.Equal(t, game.ConeThenCube, web.arena.RedRealtimeScore.CurrentScore.Grid.Nodes[2][7])
 
 	// Send some teleoperated period scoring commands.
 	web.arena.MatchState = field.TeleopPeriod
-	// TODO(pat): Update for 2023.
-	//blueWs.Write("f", nil)
-	//blueWs.Write("F", nil)
-	//blueWs.Write("D", nil)
-	//blueWs.Write("r", nil)
-	//blueWs.Write("5", nil)
-	//blueWs.Write("5", nil)
-	//for i := 0; i < 6; i++ {
-	//	readWebsocketType(t, redWs, "realtimeScore")
-	//	readWebsocketType(t, blueWs, "realtimeScore")
-	//}
-	//assert.Equal(t, [4]int{1, 0, 0, 0}, web.arena.BlueRealtimeScore.CurrentScore.TeleopCargoLower)
-	//assert.Equal(t, [4]int{1, 0, 0, 0}, web.arena.BlueRealtimeScore.CurrentScore.TeleopCargoUpper)
-	//assert.Equal(
-	//	t,
-	//	[3]game.EndgameStatus{game.EndgameNone, game.EndgameMid, game.EndgameNone},
-	//	web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses,
-	//)
+	scoringData.GridRow = 0
+	scoringData.GridNode = 1
+	scoringData.NodeState = game.TwoCubes
+	blueWs.Write("gridNode", scoringData)
+	scoringData.GridRow = 2
+	blueWs.Write("gridAutoScoring", scoringData)
+	scoringData.TeamPosition = 2
+	blueWs.Write("endgameStatus", scoringData)
+	scoringData.TeamPosition = 3
+	blueWs.Write("endgameStatus", scoringData)
+	blueWs.Write("endgameStatus", scoringData)
+	blueWs.Write("endgameChargeStationLevel", scoringData)
+	for i := 0; i < 6; i++ {
+		readWebsocketType(t, redWs, "realtimeScore")
+		readWebsocketType(t, blueWs, "realtimeScore")
+	}
+	assert.Equal(t, false, web.arena.BlueRealtimeScore.CurrentScore.Grid.AutoScoring[0][1])
+	assert.Equal(t, game.TwoCubes, web.arena.BlueRealtimeScore.CurrentScore.Grid.Nodes[0][1])
+	assert.Equal(t, true, web.arena.BlueRealtimeScore.CurrentScore.Grid.AutoScoring[2][1])
+	assert.Equal(
+		t,
+		[3]game.EndgameStatus{game.EndgameNone, game.EndgameParked, game.EndgameDocked},
+		web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses,
+	)
+	assert.Equal(t, true, web.arena.BlueRealtimeScore.CurrentScore.EndgameChargeStationLevel)
 
 	// Test committing logic.
 	redWs.Write("commitMatch", nil)
