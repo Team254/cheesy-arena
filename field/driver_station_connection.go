@@ -224,15 +224,9 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	// Remaining number of seconds in match.
 	var matchSecondsRemaining int
 	switch arena.MatchState {
-	case PreMatch:
-		fallthrough
-	case TimeoutActive:
-		fallthrough
-	case PostTimeout:
+	case PreMatch, TimeoutActive, PostTimeout:
 		matchSecondsRemaining = game.MatchTiming.AutoDurationSec
-	case StartMatch:
-		fallthrough
-	case AutoPeriod:
+	case StartMatch, AutoPeriod:
 		matchSecondsRemaining = game.MatchTiming.AutoDurationSec - int(arena.MatchTimeSec())
 	case PausePeriod:
 		matchSecondsRemaining = game.MatchTiming.TeleopDurationSec

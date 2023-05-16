@@ -8,8 +8,7 @@ import (
 	"testing"
 )
 
-type gridTestCase struct {
-	name                                    string
+var gridTestCases = map[string]struct {
 	gridScoringActions                      []gridScoringAction
 	expectedAutoGamePiecePoints             int
 	expectedTeleopGamePiecePoints           int
@@ -17,30 +16,23 @@ type gridTestCase struct {
 	expectedLinks                           []Link
 	expectedIsCoopertitionThresholdAchieved bool
 	expectedIsFull                          bool
-}
-
-var gridTestCases = []gridTestCase{
-	{
-		name: "No scoring actions",
-	},
-	{
-		name: "Same node scored multiple times in auto",
+}{
+	"No scoring actions": {},
+	"Same node scored multiple times in auto": {
 		gridScoringActions: []gridScoringAction{
 			{rowTop, 7, TwoCubes, true},
 		},
 		expectedAutoGamePiecePoints:   6,
 		expectedTeleopGamePiecePoints: 0,
 	},
-	{
-		name: "Same node scored multiple times in teleop",
+	"Same node scored multiple times in teleop": {
 		gridScoringActions: []gridScoringAction{
 			{rowTop, 7, TwoCubes, false},
 		},
 		expectedAutoGamePiecePoints:   0,
 		expectedTeleopGamePiecePoints: 5,
 	},
-	{
-		name: "Grid with many pieces but no links and no co-op bonus",
+	"Grid with many pieces but no links and no co-op bonus": {
 		gridScoringActions: []gridScoringAction{
 			{rowBottom, 0, Cone, true},
 			{rowBottom, 1, Cone, false},
@@ -60,8 +52,7 @@ var gridTestCases = []gridTestCase{
 		expectedAutoGamePiecePoints:   22,
 		expectedTeleopGamePiecePoints: 30,
 	},
-	{
-		name: "Non-aligned links",
+	"Non-aligned links": {
 		gridScoringActions: []gridScoringAction{
 			{rowMiddle, 1, Cube, false},
 			{rowMiddle, 2, Cone, false},
@@ -78,8 +69,7 @@ var gridTestCases = []gridTestCase{
 		},
 		expectedIsCoopertitionThresholdAchieved: true,
 	},
-	{
-		name: "Coopertition threshold achieved across multiple rows",
+	"Coopertition threshold achieved across multiple rows": {
 		gridScoringActions: []gridScoringAction{
 			{rowBottom, 3, Cone, true},
 			{rowMiddle, 4, Cube, false},
@@ -89,8 +79,7 @@ var gridTestCases = []gridTestCase{
 		expectedTeleopGamePiecePoints:           3,
 		expectedIsCoopertitionThresholdAchieved: true,
 	},
-	{
-		name: "Coopertition threshold not achieved due to wrong game piece",
+	"Coopertition threshold not achieved due to wrong game piece": {
 		gridScoringActions: []gridScoringAction{
 			{rowBottom, 3, Cone, true},
 			{rowMiddle, 4, Cube, false},
@@ -100,8 +89,7 @@ var gridTestCases = []gridTestCase{
 		expectedTeleopGamePiecePoints:           3,
 		expectedIsCoopertitionThresholdAchieved: false,
 	},
-	{
-		name: "Full grid without supercharging",
+	"Full grid without supercharging": {
 		gridScoringActions: []gridScoringAction{
 			{rowBottom, 0, Cone, true},
 			{rowBottom, 1, Cone, false},
@@ -147,8 +135,7 @@ var gridTestCases = []gridTestCase{
 		expectedIsCoopertitionThresholdAchieved: true,
 		expectedIsFull:                          true,
 	},
-	{
-		name: "Full grid with supercharging",
+	"Full grid with supercharging": {
 		gridScoringActions: []gridScoringAction{
 			{rowBottom, 0, ConeThenCube, true},
 			{rowBottom, 1, Cone, false},
@@ -195,8 +182,7 @@ var gridTestCases = []gridTestCase{
 		expectedIsCoopertitionThresholdAchieved: true,
 		expectedIsFull:                          true,
 	},
-	{
-		name: "Invalid scoring actions are ignored",
+	"Invalid scoring actions are ignored": {
 		gridScoringActions: []gridScoringAction{
 			{rowMiddle, 0, Cube, false},
 			{rowMiddle, 1, Cone, true},
@@ -221,17 +207,15 @@ var gridTestCases = []gridTestCase{
 }
 
 func TestGrid(t *testing.T) {
-	for _, testCase := range gridTestCases {
+	for name, testCase := range gridTestCases {
 		grid := buildTestGrid(testCase.gridScoringActions)
 
-		assert.Equal(t, testCase.expectedAutoGamePiecePoints, grid.AutoGamePiecePoints(), testCase.name)
-		assert.Equal(t, testCase.expectedTeleopGamePiecePoints, grid.TeleopGamePiecePoints(), testCase.name)
-		assert.Equal(t, testCase.expectedSuperchargedPoints, grid.SuperchargedPoints(), testCase.name)
-		assert.Equal(t, 5*len(testCase.expectedLinks), grid.LinkPoints(), testCase.name)
-		assert.Equal(t, testCase.expectedLinks, grid.Links(), testCase.name)
-		assert.Equal(
-			t, testCase.expectedIsCoopertitionThresholdAchieved, grid.IsCoopertitionThresholdAchieved(), testCase.name,
-		)
-		assert.Equal(t, testCase.expectedIsFull, grid.IsFull(), testCase.name)
+		assert.Equal(t, testCase.expectedAutoGamePiecePoints, grid.AutoGamePiecePoints(), name)
+		assert.Equal(t, testCase.expectedTeleopGamePiecePoints, grid.TeleopGamePiecePoints(), name)
+		assert.Equal(t, testCase.expectedSuperchargedPoints, grid.SuperchargedPoints(), name)
+		assert.Equal(t, 5*len(testCase.expectedLinks), grid.LinkPoints(), name)
+		assert.Equal(t, testCase.expectedLinks, grid.Links(), name)
+		assert.Equal(t, testCase.expectedIsCoopertitionThresholdAchieved, grid.IsCoopertitionThresholdAchieved(), name)
+		assert.Equal(t, testCase.expectedIsFull, grid.IsFull(), name)
 	}
 }

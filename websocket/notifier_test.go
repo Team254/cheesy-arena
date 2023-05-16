@@ -40,7 +40,7 @@ func TestNotifier(t *testing.T) {
 		notifier.NotifyWithMessage(i)
 	}
 	var value messageEnvelope
-	var lastValue interface{}
+	var lastValue any
 	for lastValue == nil {
 		select {
 		case value = <-listener:
@@ -85,6 +85,6 @@ func TestNotifyMultipleListeners(t *testing.T) {
 	}
 }
 
-func generateTestMessage() interface{} {
+func generateTestMessage() any {
 	return "test message"
 }

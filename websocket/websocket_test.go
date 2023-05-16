@@ -15,10 +15,10 @@ import (
 
 func TestWebsocket(t *testing.T) {
 	// Set up some fake notifiers.
-	notifier1 := NewNotifier("messageType1", func() interface{} { return "test message" })
+	notifier1 := NewNotifier("messageType1", func() any { return "test message" })
 	notifier2 := NewNotifier("messageType2", nil)
 	changingValue := 123.45
-	notifier3 := NewNotifier("messageType3", func() interface{} { return changingValue })
+	notifier3 := NewNotifier("messageType3", func() any { return changingValue })
 
 	// Start up a fake server with a trivial websocket handler.
 	testWebsocketHandler := func(w http.ResponseWriter, r *http.Request) {
@@ -107,7 +107,7 @@ func TestWebsocket(t *testing.T) {
 	assert.Equal(t, 0, len(notifier1.listeners))
 }
 
-func assertMessage(t *testing.T, ws *Websocket, expectedMessageType string, expectedMessageBody interface{}) {
+func assertMessage(t *testing.T, ws *Websocket, expectedMessageType string, expectedMessageBody any) {
 	messageType, messageBody, err := ws.ReadWithTimeout(time.Second)
 	if assert.Nil(t, err) {
 		assert.Equal(t, expectedMessageType, messageType)

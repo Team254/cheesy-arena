@@ -34,11 +34,11 @@ func NewWeb(arena *field.Arena) *Web {
 	// Helper functions that can be used inside templates.
 	web.templateHelpers = template.FuncMap{
 		// Allows sub-templates to be invoked with multiple arguments.
-		"dict": func(values ...interface{}) (map[string]interface{}, error) {
+		"dict": func(values ...any) (map[string]any, error) {
 			if len(values)%2 != 0 {
 				return nil, fmt.Errorf("Invalid dict call.")
 			}
-			dict := make(map[string]interface{}, len(values)/2)
+			dict := make(map[string]any, len(values)/2)
 			for i := 0; i < len(values); i += 2 {
 				key, ok := values[i].(string)
 				if !ok {

@@ -35,14 +35,14 @@ type TbaClient struct {
 }
 
 type TbaMatch struct {
-	CompLevel      string                            `json:"comp_level"`
-	SetNumber      int                               `json:"set_number"`
-	MatchNumber    int                               `json:"match_number"`
-	Alliances      map[string]*TbaAlliance           `json:"alliances"`
-	ScoreBreakdown map[string]map[string]interface{} `json:"score_breakdown"`
-	TimeString     string                            `json:"time_string"`
-	TimeUtc        string                            `json:"time_utc"`
-	DisplayName    string                            `json:"display_name"`
+	CompLevel      string                    `json:"comp_level"`
+	SetNumber      int                       `json:"set_number"`
+	MatchNumber    int                       `json:"match_number"`
+	Alliances      map[string]*TbaAlliance   `json:"alliances"`
+	ScoreBreakdown map[string]map[string]any `json:"score_breakdown"`
+	TimeString     string                    `json:"time_string"`
+	TimeUtc        string                    `json:"time_utc"`
+	DisplayName    string                    `json:"display_name"`
 }
 
 type TbaAlliance struct {
@@ -140,8 +140,8 @@ type TbaEvent struct {
 }
 
 type TbaMediaItem struct {
-	Details map[string]interface{} `json:"details"`
-	Type    string                 `json:"type"`
+	Details map[string]any `json:"details"`
+	Type    string         `json:"type"`
 }
 
 type TbaPublishedAward struct {
@@ -356,7 +356,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 		matchNumber, _ := strconv.Atoi(match.DisplayName)
 
 		// Fill in scores if the match has been played.
-		var scoreBreakdown map[string]map[string]interface{}
+		var scoreBreakdown map[string]map[string]any
 		var redScore, blueScore *int
 		var redCards, blueCards map[string]string
 		if match.IsComplete() {
@@ -365,7 +365,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 				return err
 			}
 			if matchResult != nil {
-				scoreBreakdown = make(map[string]map[string]interface{})
+				scoreBreakdown = make(map[string]map[string]any)
 				scoreBreakdown["red"] = createTbaScoringBreakdown(eventSettings, &match, matchResult, "red")
 				scoreBreakdown["blue"] = createTbaScoringBreakdown(eventSettings, &match, matchResult, "blue")
 				redScoreValue := scoreBreakdown["red"]["totalPoints"].(int)
@@ -579,7 +579,7 @@ func createTbaScoringBreakdown(
 	match *model.Match,
 	matchResult *model.MatchResult,
 	alliance string,
-) map[string]interface{} {
+) map[string]any {
 	var breakdown TbaScoreBreakdown
 	var score *game.Score
 	var scoreSummary, opponentScoreSummary *game.ScoreSummary
@@ -650,7 +650,7 @@ func createTbaScoringBreakdown(
 
 	// Turn the breakdown struct into a map in order to be able to remove any fields that are disabled based on the
 	// event settings.
-	breakdownMap := make(map[string]interface{})
+	breakdownMap := make(map[string]any)
 	_ = mapstructure.Decode(breakdown, &breakdownMap)
 	if eventSettings.SustainabilityBonusLinkThresholdWithCoop == 0 {
 		delete(breakdownMap, "quintetAchieved")

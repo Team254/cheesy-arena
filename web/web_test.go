@@ -64,7 +64,7 @@ func readWebsocketError(t *testing.T, ws *websocket.Websocket) string {
 }
 
 // Receives the next websocket message and asserts that it is of the given type.
-func readWebsocketType(t *testing.T, ws *websocket.Websocket, expectedMessageType string) interface{} {
+func readWebsocketType(t *testing.T, ws *websocket.Websocket, expectedMessageType string) any {
 	messageType, message, err := ws.ReadWithTimeout(time.Second)
 	if assert.Nil(t, err) {
 		assert.Equal(t, expectedMessageType, messageType)
@@ -72,8 +72,8 @@ func readWebsocketType(t *testing.T, ws *websocket.Websocket, expectedMessageTyp
 	return message
 }
 
-func readWebsocketMultiple(t *testing.T, ws *websocket.Websocket, count int) map[string]interface{} {
-	messages := make(map[string]interface{})
+func readWebsocketMultiple(t *testing.T, ws *websocket.Websocket, count int) map[string]any {
+	messages := make(map[string]any)
 	for i := 0; i < count; i++ {
 		messageType, message, err := ws.ReadWithTimeout(time.Second)
 		if assert.Nil(t, err) {

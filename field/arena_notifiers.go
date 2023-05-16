@@ -64,15 +64,15 @@ func (arena *Arena) configureNotifiers() {
 	arena.ScoringStatusNotifier = websocket.NewNotifier("scoringStatus", arena.generateScoringStatusMessage)
 }
 
-func (arena *Arena) generateAllianceSelectionMessage() interface{} {
+func (arena *Arena) generateAllianceSelectionMessage() any {
 	return &arena.AllianceSelectionAlliances
 }
 
-func (arena *Arena) generateAllianceStationDisplayModeMessage() interface{} {
+func (arena *Arena) generateAllianceStationDisplayModeMessage() any {
 	return arena.AllianceStationDisplayMode
 }
 
-func (arena *Arena) generateArenaStatusMessage() interface{} {
+func (arena *Arena) generateArenaStatusMessage() any {
 	// Convert AP team wifi network status array to a map by station for ease of client use.
 	teamWifiStatuses := make(map[string]network.TeamWifiStatus)
 	for i, station := range []string{"R1", "R2", "R3", "B1", "B2", "B3"} {
@@ -97,11 +97,11 @@ func (arena *Arena) generateArenaStatusMessage() interface{} {
 		arena.Plc.GetArmorBlockStatuses()}
 }
 
-func (arena *Arena) generateAudienceDisplayModeMessage() interface{} {
+func (arena *Arena) generateAudienceDisplayModeMessage() any {
 	return arena.AudienceDisplayMode
 }
 
-func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
+func (arena *Arena) generateDisplayConfigurationMessage() any {
 	// Notify() for this notifier must always called from a method that has a lock on the display mutex.
 	// Make a copy of the map to avoid potential data races; otherwise the same map would get iterated through as it is
 	// serialized to JSON, outside the mutex lock.
@@ -112,18 +112,18 @@ func (arena *Arena) generateDisplayConfigurationMessage() interface{} {
 	return displaysCopy
 }
 
-func (arena *Arena) generateEventStatusMessage() interface{} {
+func (arena *Arena) generateEventStatusMessage() any {
 	return arena.EventStatus
 }
 
-func (arena *Arena) generateLowerThirdMessage() interface{} {
+func (arena *Arena) generateLowerThirdMessage() any {
 	return &struct {
 		LowerThird     *model.LowerThird
 		ShowLowerThird bool
 	}{arena.LowerThird, arena.ShowLowerThird}
 }
 
-func (arena *Arena) generateMatchLoadMessage() interface{} {
+func (arena *Arena) generateMatchLoadMessage() any {
 	teams := make(map[string]*model.Team)
 	for station, allianceStation := range arena.AllianceStations {
 		teams[station] = allianceStation.Team
@@ -172,15 +172,15 @@ func (arena *Arena) generateMatchLoadMessage() interface{} {
 	}
 }
 
-func (arena *Arena) generateMatchTimeMessage() interface{} {
+func (arena *Arena) generateMatchTimeMessage() any {
 	return MatchTimeMessage{arena.MatchState, int(arena.MatchTimeSec())}
 }
 
-func (arena *Arena) generateMatchTimingMessage() interface{} {
+func (arena *Arena) generateMatchTimingMessage() any {
 	return &game.MatchTiming
 }
 
-func (arena *Arena) generateRealtimeScoreMessage() interface{} {
+func (arena *Arena) generateRealtimeScoreMessage() any {
 	fields := struct {
 		Red  *audienceAllianceScoreFields
 		Blue *audienceAllianceScoreFields
@@ -192,7 +192,7 @@ func (arena *Arena) generateRealtimeScoreMessage() interface{} {
 	return &fields
 }
 
-func (arena *Arena) generateScorePostedMessage() interface{} {
+func (arena *Arena) generateScorePostedMessage() any {
 	// For elimination matches, summarize the state of the series.
 	var seriesStatus, seriesLeader string
 	var matchup *bracket.Matchup
@@ -235,7 +235,7 @@ func (arena *Arena) generateScorePostedMessage() interface{} {
 	}
 }
 
-func (arena *Arena) generateScoringStatusMessage() interface{} {
+func (arena *Arena) generateScoringStatusMessage() any {
 	return &struct {
 		RefereeScoreReady         bool
 		RedScoreReady             bool

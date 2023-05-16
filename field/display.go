@@ -139,7 +139,7 @@ func (display *Display) ToUrl() string {
 	return builder.String()
 }
 
-func (display *Display) generateDisplayConfigurationMessage() interface{} {
+func (display *Display) generateDisplayConfigurationMessage() any {
 	return display.ToUrl()
 }
 

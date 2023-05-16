@@ -384,7 +384,7 @@ func (plc *ModbusPlc) writeCoils() bool {
 	return true
 }
 
-func (plc *ModbusPlc) generateIoChangeMessage() interface{} {
+func (plc *ModbusPlc) generateIoChangeMessage() any {
 	return &struct {
 		Inputs    []bool
 		Registers []uint16

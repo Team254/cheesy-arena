@@ -27,8 +27,8 @@ type Websocket struct {
 }
 
 type Message struct {
-	Type string      `json:"type"`
-	Data interface{} `json:"data"`
+	Type string `json:"type"`
+	Data any    `json:"data"`
 }
 
 var websocketUpgrader = websocket.Upgrader{ReadBufferSize: 1024, WriteBufferSize: 2014}
@@ -50,7 +50,7 @@ func (ws *Websocket) Close() error {
 	return ws.conn.Close()
 }
 
-func (ws *Websocket) Read() (string, interface{}, error) {
+func (ws *Websocket) Read() (string, any, error) {
 	var message Message
 	err := ws.conn.ReadJSON(&message)
 	if websocket.IsCloseError(err, websocket.CloseAbnormalClosure, websocket.CloseGoingAway,
@@ -68,10 +68,10 @@ func (ws *Websocket) Read() (string, interface{}, error) {
 	return message.Type, message.Data, nil
 }
 
-func (ws *Websocket) ReadWithTimeout(timeout time.Duration) (string, interface{}, error) {
+func (ws *Websocket) ReadWithTimeout(timeout time.Duration) (string, any, error) {
 	type wsReadResult struct {
 		messageType string
-		message     interface{}
+		message     any
 		err         error
 	}
 	readChan := make(chan wsReadResult, 1)
@@ -88,7 +88,7 @@ func (ws *Websocket) ReadWithTimeout(timeout time.Duration) (string, interface{}
 	}
 }
 
-func (ws *Websocket) Write(messageType string, data interface{}) error {
+func (ws *Websocket) Write(messageType string, data any) error {
 	ws.writeMutex.Lock()
 	defer ws.writeMutex.Unlock()
 	err := ws.conn.WriteJSON(Message{messageType, data})

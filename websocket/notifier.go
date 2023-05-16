@@ -15,17 +15,17 @@ const notifyBufferSize = 5
 
 type Notifier struct {
 	messageType     string
-	messageProducer func() interface{}
+	messageProducer func() any
 	listeners       map[chan messageEnvelope]struct{} // The map is essentially a set; the value is ignored.
 	mutex           sync.Mutex
 }
 
 type messageEnvelope struct {
 	messageType string
-	messageBody interface{}
+	messageBody any
 }
 
-func NewNotifier(messageType string, messageProducer func() interface{}) *Notifier {
+func NewNotifier(messageType string, messageProducer func() any) *Notifier {
 	notifier := &Notifier{messageType: messageType, messageProducer: messageProducer}
 	notifier.listeners = make(map[chan messageEnvelope]struct{})
 	return notifier
@@ -39,7 +39,7 @@ func (notifier *Notifier) Notify() {
 
 // Sends the given message to all registered listeners, and cleans up any listeners that have closed. If there is a
 // messageProducer function defined it is ignored.
-func (notifier *Notifier) NotifyWithMessage(messageBody interface{}) {
+func (notifier *Notifier) NotifyWithMessage(messageBody any) {
 	notifier.mutex.Lock()
 	defer notifier.mutex.Unlock()
 
@@ -79,7 +79,7 @@ func (notifier *Notifier) listen() chan messageEnvelope {
 }
 
 // Invokes the message producer to get the message, or returns nil if no producer is defined.
-func (notifier *Notifier) getMessageBody() interface{} {
+func (notifier *Notifier) getMessageBody() any {
 	if notifier.messageProducer == nil {
 		return nil
 	} else {

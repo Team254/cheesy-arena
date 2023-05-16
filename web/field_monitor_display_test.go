@@ -42,7 +42,7 @@ func TestFieldMonitorDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "matchLoad")
 
 	// Should not be able to update team notes.
-	ws.Write("updateTeamNotes", map[string]interface{}{"station": "B1", "notes": "Bypassed in M1"})
+	ws.Write("updateTeamNotes", map[string]any{"station": "B1", "notes": "Bypassed in M1"})
 	assert.Contains(t, readWebsocketError(t, ws), "Must be in FTA mode to update team notes")
 	assert.Equal(t, "", web.arena.AllianceStations["B1"].Team.FtaNotes)
 }
@@ -70,13 +70,13 @@ func TestFieldMonitorFtaDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "matchLoad")
 
 	// Should not be able to update team notes.
-	ws.Write("updateTeamNotes", map[string]interface{}{"station": "B1", "notes": "Bypassed in M1"})
+	ws.Write("updateTeamNotes", map[string]any{"station": "B1", "notes": "Bypassed in M1"})
 	readWebsocketType(t, ws, "arenaStatus")
 	assert.Equal(t, "Bypassed in M1", web.arena.AllianceStations["B1"].Team.FtaNotes)
 
 	// Check error scenarios.
-	ws.Write("updateTeamNotes", map[string]interface{}{"station": "N", "notes": "Bypassed in M2"})
+	ws.Write("updateTeamNotes", map[string]any{"station": "N", "notes": "Bypassed in M2"})
 	assert.Contains(t, readWebsocketError(t, ws), "Invalid alliance station")
-	ws.Write("updateTeamNotes", map[string]interface{}{"station": "R3", "notes": "Bypassed in M3"})
+	ws.Write("updateTeamNotes", map[string]any{"station": "R3", "notes": "Bypassed in M3"})
 	assert.Contains(t, readWebsocketError(t, ws), "No team present")
 }
