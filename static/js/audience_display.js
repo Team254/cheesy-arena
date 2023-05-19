@@ -4,7 +4,7 @@
 //
 // Client-side methods for the audience display.
 
-let websocket;
+var websocket;
 let transitionMap;
 const transitionQueue = [];
 let transitionInProgress = false;

@@ -3,7 +3,7 @@
 //
 // Client-side methods for the wall display.
 
-let websocket;
+var websocket;
 let transitionMap;
 const transitionQueue = [];
 let transitionInProgress = false;

@@ -3,7 +3,7 @@
 //
 // Client-side logic for the scoring interface.
 
-let websocket;
+var websocket;
 let alliance;
 
 // Handles a websocket message to update the teams for the current match.
