@@ -19,9 +19,9 @@ const logoUp = "30px";
 const logoDown = $("#logo").css("top");
 const scoreIn = $(".score").css("width");
 const scoreMid = "135px";
-const scoreOut = "425px";
-const scoreFieldsOut = "210px";
-const overlayTopOffset = 25;
+const scoreOut = "250px";
+const scoreFieldsOut = "25px";
+const overlayTopOffset = 110;
 
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function(targetScreen) {
@@ -179,6 +179,7 @@ const transitionBlankToMatch = function(callback) {
       $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
       $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease");
       $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
+      $(".score-aux").transition({queue: false, opacity: 1}, 750, "ease");
     });
   //});
 };
@@ -215,6 +216,7 @@ const transitionIntroToMatch = function(callback) {
     $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
     $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
     $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
+    $(".score-aux").transition({queue: false, opacity: 1}, 750, "ease");
   });
 };
 
@@ -236,6 +238,7 @@ const transitionMatchToBlank = function(callback) {
   $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear");
   $(".score-fields").transition({queue: false, opacity: 0}, 300, "ease");
+  $(".score-aux").transition({queue: false, opacity: 0}, 750, "ease");
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $("#eventMatchInfo").hide();
     $(".score-fields").transition({queue: false, width: 0}, 500, "ease");
@@ -252,6 +255,7 @@ const transitionMatchToBlank = function(callback) {
 const transitionMatchToIntro = function(callback) {
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear");
   $(".score-fields").transition({queue: false, opacity: 0}, 300, "ease");
+  $(".score-aux").transition({queue: false, opacity: 0}, 750, "ease");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
     $(".score-fields").transition({queue: false, width: 0}, 500, "ease");
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease");

@@ -133,6 +133,29 @@ html {
   font-size: 17px;
   color: #fff;
 }
+#matchOverlayAux {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  bottom: 175px;
+}
+.score-aux {
+  width: 230px;
+  height: 100px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  border-radius: 10px;
+  opacity: 0;
+}
+#leftScoreAux {
+  margin-right: 5px;
+  padding-right: 35px;
+}
+#rightScoreAux {
+  padding-left: 35px;
+}
 .link-splitter {
   margin: 0 -4px;
 }
@@ -141,12 +164,10 @@ html {
   width: 25px;
 }
 .score-grid {
+  width: 70%;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-.score-grid svg {
-  height: 80%;
 }
 #matchCircle {
   position: absolute;

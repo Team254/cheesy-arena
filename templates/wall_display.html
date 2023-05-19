@@ -15,6 +15,30 @@
   </head>
   <body>
     <div id="overlayCentering">
+      <div id="matchOverlayAux">
+        <div class="score-aux reversible-left" id="leftScoreAux">
+          <div class="score-links">
+            <div>
+              <span id="leftLinkNumerator"></span>
+              <span class="link-splitter">/</span>
+              <span id="leftLinkDenominator"></span>
+            </div>
+            <img class="link-icon" src="/static/img/link.svg" />
+          </div>
+          <div class="score-grid" id="leftGrid"></div>
+        </div>
+        <div class="score-aux reversible-right" id="rightScoreAux">
+          <div class="score-grid" id="rightGrid"></div>
+          <div class="score-links">
+            <div>
+              <span id="rightLinkNumerator"></span>
+              <span class="link-splitter">/</span>
+              <span id="rightLinkDenominator"></span>
+            </div>
+            <img class="link-icon" src="/static/img/link.svg" />
+          </div>
+        </div>
+      </div>
       <div id="matchOverlayContainer">
         <div class="elim-alliance" id="leftElimAlliance"></div>
         <div id="matchOverlay">
@@ -30,32 +54,12 @@
                 <img class="avatar" id="leftTeam2Avatar" src="" />
                 <img class="avatar" id="leftTeam3Avatar" src="" />
               </div>
-              <div class="score-fields">
-                <div class="score-links">
-                  <div>
-                    <span id="leftLinkNumerator"></span>
-                    <span class="link-splitter">/</span>
-                    <span id="leftLinkDenominator"></span>
-                  </div>
-                  <img class="link-icon" src="/static/img/link.svg" />
-                </div>
-                <div class="score-grid" id="leftGrid"></div>
-              </div>
+              <div class="score-fields"></div>
               <div class="score-number" id="leftScoreNumber"></div>
             </div>
             <div class="score score-right reversible-right">
               <div class="score-number" id="rightScoreNumber"></div>
-              <div class="score-fields">
-                <div class="score-grid" id="rightGrid"></div>
-                <div class="score-links">
-                  <div>
-                    <span id="rightLinkNumerator"></span>
-                    <span class="link-splitter">/</span>
-                    <span id="rightLinkDenominator"></span>
-                  </div>
-                  <img class="link-icon" src="/static/img/link.svg" />
-                </div>
-              </div>
+              <div class="score-fields"></div>
               <div class="avatars">
                 <img class="avatar" id="rightTeam1Avatar" src="" />
                 <img class="avatar" id="rightTeam2Avatar" src="" />
