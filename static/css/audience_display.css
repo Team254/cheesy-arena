@@ -130,15 +130,15 @@ html {
   justify-content: center;
   align-items: center;
   font-family: "FuturaLTBold";
-  font-size: 20px;
-  line-height: 25px;
+  font-size: 17px;
   color: #fff;
 }
 .link-splitter {
+  margin: 0 -4px;
+}
+.link-icon {
+  margin-top: 5px;
   width: 25px;
-  height: 1px;
-  background-color: #fff;
-  margin: 6px 0;
 }
 .score-grid {
   display: flex;
