@@ -7,6 +7,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -64,6 +65,9 @@ func NewWeb(arena *field.Arena) *Web {
 		"toUpper": func(str string) string {
 			return strings.ToUpper(str)
 		},
+		"rowToInt": func(row game.Row) int {
+			return int(row)
+		},
 	}
 
 	return web
@@ -117,6 +121,7 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/api/alliances", web.alliancesApiHandler).Methods("GET")
 	router.HandleFunc("/api/arena/websocket", web.arenaWebsocketApiHandler).Methods("GET")
 	router.HandleFunc("/api/bracket/svg", web.bracketSvgApiHandler).Methods("GET")
+	router.HandleFunc("/api/grid/{alliance}/svg", web.gridSvgApiHandler).Methods("GET")
 	router.HandleFunc("/api/matches/{type}", web.matchesApiHandler).Methods("GET")
 	router.HandleFunc("/api/rankings", web.rankingsApiHandler).Methods("GET")
 	router.HandleFunc("/api/sponsor_slides", web.sponsorSlidesApiHandler).Methods("GET")

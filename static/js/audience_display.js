@@ -30,8 +30,8 @@ const logoUp = "30px";
 const logoDown = $("#logo").css("top");
 const scoreIn = $(".score").css("width");
 const scoreMid = "135px";
-const scoreOut = "255px";
-const scoreFieldsOut = "40px";
+const scoreOut = "425px";
+const scoreFieldsOut = "210px";
 const scoreLogoTop = "-350px";
 const bracketLogoTop = "-780px";
 const bracketLogoScale = 0.75;
@@ -155,6 +155,13 @@ const handleRealtimeScore = function(data) {
     $("#" + blueSide + "LinkDenominator").show();
     $(".link-splitter").show();
   }
+
+  fetch("/api/grid/red/svg")
+    .then(response => response.text())
+    .then(svg => $(`#${redSide}Grid`).html(svg));
+  fetch("/api/grid/blue/svg")
+    .then(response => response.text())
+    .then(svg => $(`#${blueSide}Grid`).html(svg));
 };
 
 // Handles a websocket message to populate the final score data.

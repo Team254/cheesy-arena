@@ -1,0 +1,27 @@
+{{define "grid"}}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 30">
+  {{range $link := .Links}}
+    <line x1="{{add (multiply $link.StartColumn 6) 4}}" y1="{{add (multiply (rowToInt $link.Row) -10) 25}}"
+      x2="{{add (multiply $link.StartColumn 6) 16}}" y2="{{add (multiply (rowToInt $link.Row) -10) 25}}"
+      style="stroke:rgb(255,255,255);stroke-width:1;" />
+  {{end}}
+  {{template "gridRow" dict "y" 5 "row" 2 "nodes" (index .Nodes 2)}}
+  {{template "gridRow" dict "y" 15 "row" 1 "nodes" (index .Nodes 1)}}
+  {{template "gridRow" dict "y" 25 "row" 0 "nodes" (index .Nodes 0)}}
+</svg>
+{{end}}
+{{define "gridRow"}}
+  {{range $i, $node := .nodes}}
+    {{template "gridNode" dict "x" (add (multiply $i 6) 4) "y" $.y "node" $node}}
+  {{end}}
+{{end}}
+{{define "gridNode"}}
+  {{if gt .node 2}}
+    <circle cx="{{.x}}" cy="{{.y}}" r="2.5" style="stroke:rgb(255,255,255);stroke-width:0.7;fill:none;" />
+    <circle cx="{{.x}}" cy="{{.y}}" r="1.5" style="fill:rgb(255,255,255);" />
+  {{else if gt .node 0}}
+    <circle cx="{{.x}}" cy="{{.y}}" r="2" style="fill:rgb(255,255,255);" />
+  {{else}}
+    <circle cx="{{.x}}" cy="{{.y}}" r="1" style="fill:rgb(255,255,255);fill-opacity:0.3;" />
+  {{end}}
+{{end}}

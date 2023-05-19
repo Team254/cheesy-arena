@@ -120,6 +120,12 @@ html {
   height: 100%;
   width: 0;
   display: none;
+  flex-direction: row;
+  justify-content: space-evenly;
+  opacity: 0;
+}
+.score-links {
+  display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -127,13 +133,20 @@ html {
   font-size: 20px;
   line-height: 25px;
   color: #fff;
-  opacity: 0;
 }
 .link-splitter {
   width: 25px;
   height: 1px;
   background-color: #fff;
   margin: 6px 0;
+}
+.score-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.score-grid svg {
+  height: 80%;
 }
 #matchCircle {
   position: absolute;
