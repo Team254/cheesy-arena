@@ -1,4 +1,4 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2023 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
 package web
@@ -10,28 +10,30 @@ import (
 	"testing"
 )
 
-func TestAudienceDisplay(t *testing.T) {
+func TestWallDisplay(t *testing.T) {
 	web := setupTestWeb(t)
 
-	recorder := web.getHttpResponse("/displays/audience")
+	recorder := web.getHttpResponse("/displays/wall")
 	assert.Equal(t, 302, recorder.Code)
 	assert.Contains(t, recorder.Header().Get("Location"), "displayId=100")
-	assert.Contains(t, recorder.Header().Get("Location"), "background=%230f0")
+	assert.Contains(t, recorder.Header().Get("Location"), "background=%23000")
 	assert.Contains(t, recorder.Header().Get("Location"), "reversed=false")
-	assert.Contains(t, recorder.Header().Get("Location"), "overlayLocation=bottom")
+	assert.Contains(t, recorder.Header().Get("Location"), "topSpacingPx=0")
+	assert.Contains(t, recorder.Header().Get("Location"), "zoomFactor=1")
 
-	recorder = web.getHttpResponse("/displays/audience?displayId=1&background=%23000&reversed=false&overlayLocation=" +
-		"top")
+	recorder = web.getHttpResponse(
+		"/displays/wall?displayId=1&background=%23fff&reversed=true&topSpacingPx=10&zoomFactor=2",
+	)
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Audience Display - Untitled Event - Cheesy Arena")
+	assert.Contains(t, recorder.Body.String(), "Wall Display - Untitled Event - Cheesy Arena")
 }
 
-func TestAudienceDisplayWebsocket(t *testing.T) {
+func TestWallDisplayWebsocket(t *testing.T) {
 	web := setupTestWeb(t)
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/audience/websocket?displayId=1", nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/wall/websocket?displayId=1", nil)
 	assert.Nil(t, err)
 	defer conn.Close()
 	ws := websocket.NewTestWebsocket(conn)
@@ -43,9 +45,6 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
-	readWebsocketType(t, ws, "scorePosted")
-	readWebsocketType(t, ws, "allianceSelection")
-	readWebsocketType(t, ws, "lowerThird")
 
 	// Run through a match cycle.
 	web.arena.MatchLoadNotifier.Notify()
@@ -59,25 +58,13 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	web.arena.StartMatch()
 	web.arena.Update()
 	web.arena.Update()
-	messages := readWebsocketMultiple(t, ws, 3)
+	messages := readWebsocketMultiple(t, ws, 2)
 	screen, ok := messages["audienceDisplayMode"]
 	if assert.True(t, ok) {
 		assert.Equal(t, "match", screen)
-	}
-	sound, ok := messages["playSound"]
-	if assert.True(t, ok) {
-		assert.Equal(t, "start", sound)
 	}
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)
 	web.arena.RealtimeScoreNotifier.Notify()
 	readWebsocketType(t, ws, "realtimeScore")
-	web.arena.ScorePostedNotifier.Notify()
-	readWebsocketType(t, ws, "scorePosted")
-
-	// Test other overlays.
-	web.arena.AllianceSelectionNotifier.Notify()
-	readWebsocketType(t, ws, "allianceSelection")
-	web.arena.LowerThirdNotifier.Notify()
-	readWebsocketType(t, ws, "lowerThird")
 }
