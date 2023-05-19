@@ -1,0 +1,96 @@
+{{/*
+  Copyright 2023 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  Display that can be shown on a screen supplemental to one with the audience display overlay.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Wall Display - {{.EventSettings.Name}} - Cheesy Arena </title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/wall_display.css" />
+  </head>
+  <body>
+    <div id="overlayCentering">
+      <div id="matchOverlayContainer">
+        <div class="elim-alliance" id="leftElimAlliance"></div>
+        <div id="matchOverlay">
+          <div id="matchOverlayTop">
+            <div class="teams" id="leftTeams">
+              <div id="leftTeam1"></div>
+              <div id="leftTeam2"></div>
+              <div id="leftTeam3"></div>
+            </div>
+            <div class="score reversible-left">
+              <div class="avatars">
+                <img class="avatar" id="leftTeam1Avatar" src="" />
+                <img class="avatar" id="leftTeam2Avatar" src="" />
+                <img class="avatar" id="leftTeam3Avatar" src="" />
+              </div>
+              <div class="score-fields">
+                <div class="score-links">
+                  <div>
+                    <span id="leftLinkNumerator"></span>
+                    <span class="link-splitter">/</span>
+                    <span id="leftLinkDenominator"></span>
+                  </div>
+                  <img class="link-icon" src="/static/img/link.svg" />
+                </div>
+                <div class="score-grid" id="leftGrid"></div>
+              </div>
+              <div class="score-number" id="leftScoreNumber"></div>
+            </div>
+            <div class="score score-right reversible-right">
+              <div class="score-number" id="rightScoreNumber"></div>
+              <div class="score-fields">
+                <div class="score-grid" id="rightGrid"></div>
+                <div class="score-links">
+                  <div>
+                    <span id="rightLinkNumerator"></span>
+                    <span class="link-splitter">/</span>
+                    <span id="rightLinkDenominator"></span>
+                  </div>
+                  <img class="link-icon" src="/static/img/link.svg" />
+                </div>
+              </div>
+              <div class="avatars">
+                <img class="avatar" id="rightTeam1Avatar" src="" />
+                <img class="avatar" id="rightTeam2Avatar" src="" />
+                <img class="avatar" id="rightTeam3Avatar" src="" />
+              </div>
+            </div>
+            <div class="teams" id="rightTeams">
+              <div id="rightTeam1"></div>
+              <div id="rightTeam2"></div>
+              <div id="rightTeam3"></div>
+            </div>
+          </div>
+          <div id="eventMatchInfo">
+            <span>{{.EventSettings.Name}}</span>
+            <span id="matchName"></span>
+          </div>
+        </div>
+        <div class="elim-alliance" id="rightElimAlliance"></div>
+      </div>
+      <div id="elimSeriesStatus">
+        <span id="leftElimAllianceWins"></span>&nbsp;-&nbsp;<span id="rightElimAllianceWins"></span>
+      </div>
+      <div class="text-center" id="matchCircle">
+        <img id="logo" src="/static/img/game-logo.png" alt="logo" />
+        <div id="matchTime"></div>
+      </div>
+    </div>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/lib/jquery.transit.min.js"></script>
+    <script src="/static/js/lib/handlebars-1.3.0.js"></script>
+    <script src="/static/js/lib/bootstrap.min.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/match_timing.js"></script>
+    <script src="/static/js/wall_display.js"></script>
+  </body>
+</html>

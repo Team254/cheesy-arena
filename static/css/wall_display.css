@@ -1,0 +1,201 @@
+/*
+  Copyright 2023 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+*/
+
+html {
+  cursor: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  overflow: hidden;
+}
+#overlayCentering {
+  position: absolute;
+  top: -200px;
+  width: 100%;
+  height: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+#matchOverlayContainer {
+  display: flex;
+}
+#matchOverlay {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #222;
+  color: #222;
+  font-size: 22px;
+}
+#matchOverlayTop {
+  height: 100px;
+  display: flex;
+}
+.elim-alliance {
+  position: relative;
+  top: 31px;
+  width: 40px;
+  height: 40px;
+  padding: 0 5px;
+  z-index: -1;
+  display: flex;
+  align-items: center;
+  background-color: #fc0;
+  color: #222;
+  border: 1px solid #222;
+  font-size: 15px;
+  font-weight: 200;
+}
+#leftElimAlliance {
+  left: 23px;
+  justify-content: start;
+  border-top-left-radius: 50%;
+  border-bottom-left-radius: 50%;
+  border-right: none;
+}
+#rightElimAlliance {
+  right: 23px;
+  justify-content: end;
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+  border-left: none;
+}
+.teams {
+  width: 55px;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  background-color: #fff;
+  font-family: "FuturaLT";
+  font-size: 20px;
+  line-height: 25px;
+}
+#leftTeams {
+  border-right: 1px solid #222;
+}
+#rightTeams {
+  border-left: 1px solid #222;
+}
+.reversible-left[data-reversed=false], .reversible-right[data-reversed=true] {
+  background-color: #ff4444;
+}
+.reversible-left[data-reversed=true], .reversible-right[data-reversed=false] {
+  background-color: #2080ff;
+}
+.score {
+  width: 0;
+  height: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+.score-right {
+  justify-content: flex-end;
+}
+.avatars {
+  min-width: 50px;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.avatar {
+  height: 25px;
+}
+.score-number {
+  width: 130px;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "FuturaLTBold";
+  font-size: 55px;
+  color: #fff;
+  opacity: 0;
+}
+.score-fields {
+  height: 100%;
+  width: 0;
+  display: none;
+  flex-direction: row;
+  justify-content: space-evenly;
+  opacity: 0;
+}
+.score-links {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: "FuturaLTBold";
+  font-size: 17px;
+  color: #fff;
+}
+.link-splitter {
+  margin: 0 -4px;
+}
+.link-icon {
+  margin-top: 5px;
+  width: 25px;
+}
+.score-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.score-grid svg {
+  height: 80%;
+}
+#matchCircle {
+  position: absolute;
+  top: -25px;
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+  background-color: #fff;
+  border: 1px solid #222;
+}
+#logo {
+  position: relative;
+  top: 45px;
+  height: 50px;
+}
+#matchTime {
+  position: relative;
+  top: 30px;
+  height: 60px;
+  color: #222;
+  font-family: "FuturaLTBold";
+  font-size: 32px;
+  opacity: 0;
+}
+#eventMatchInfo {
+  height: 0;
+  display: none;
+  justify-content: space-between;
+  z-index: -1;
+  align-items: flex-end;
+  padding: 0 5px;
+  background-color: #444;
+  font-family: "FuturaLT";
+  font-size: 15px;
+  line-height: 30px;
+  color: #fff;
+}
+#elimSeriesStatus {
+  width: 40px;
+  height: 18px;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background-color: #fc0;
+  color: #222;
+  border: 1px solid #222;
+  border-top: none;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  font-size: 15px;
+  font-weight: 200;
+}
