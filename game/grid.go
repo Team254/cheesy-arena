@@ -53,7 +53,7 @@ var teleopPoints = map[Row]int{
 var validGridNodeStates = createValidGridStates()
 
 // Returns a map of valid node states for each row and column in the grid.
-func ValidGridNodeStates() map[Row]map[int]map[int]string {
+func ValidGridNodeStates() map[Row]map[int]map[NodeState]string {
 	return validGridNodeStates
 }
 
@@ -165,7 +165,7 @@ func (grid *Grid) numScoredAutoTeleopGamePieces(row Row, column int) (int, int) 
 
 	autoScoring := grid.AutoScoring[row][column]
 	nodeState := grid.Nodes[row][column]
-	if _, ok := ValidGridNodeStates()[row][column][int(nodeState)]; nodeState <= Empty || !ok {
+	if _, ok := ValidGridNodeStates()[row][column][nodeState]; nodeState <= Empty || !ok {
 		// This is an empty or invalid node state.
 		return 0, 0
 	}
@@ -191,12 +191,12 @@ func (grid *Grid) numScoredGamePieces(row Row, column int) int {
 }
 
 // Builds a map of valid node states for each row and column in the grid.
-func createValidGridStates() map[Row]map[int]map[int]string {
-	validGridNodeStates := make(map[Row]map[int]map[int]string)
+func createValidGridStates() map[Row]map[int]map[NodeState]string {
+	validGridNodeStates := make(map[Row]map[int]map[NodeState]string)
 	for row := rowBottom; row < rowCount; row++ {
-		validGridNodeStates[row] = make(map[int]map[int]string)
+		validGridNodeStates[row] = make(map[int]map[NodeState]string)
 		for column := 0; column < 9; column++ {
-			validGridNodeStates[row][column] = make(map[int]string)
+			validGridNodeStates[row][column] = make(map[NodeState]string)
 			for nodeState := Empty; nodeState < NodeStateCount; nodeState++ {
 				if nodeState != Empty && row != rowBottom {
 					if column == 1 || column == 4 || column == 7 {
@@ -209,7 +209,7 @@ func createValidGridStates() map[Row]map[int]map[int]string {
 						}
 					}
 				}
-				validGridNodeStates[row][column][int(nodeState)] = nodeState.String()
+				validGridNodeStates[row][column][nodeState] = nodeState.String()
 			}
 		}
 	}

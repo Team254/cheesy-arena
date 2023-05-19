@@ -87,8 +87,8 @@
 </div>
 {{end}}
 {{define "gridNodeButton"}}
-<div class="grid-node-button" data-node-state="{{.i}}"
-  onclick="handleClick('gridNode', 0, {{.rowIndex}}, {{.nodeIndex}}, {{.i}})">
+<div class="grid-node-button" data-node-state="{{nodeStateToInt .i}}"
+  onclick="handleClick('gridNode', 0, {{.rowIndex}}, {{.nodeIndex}}, {{nodeStateToInt .i}})">
   <img src="/static/img/node_states/{{.state}}.svg" />
 </div>
 {{end}}

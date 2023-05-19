@@ -95,7 +95,7 @@ func (web *Web) matchReviewEditGetHandler(w http.ResponseWriter, r *http.Request
 		Match           *model.Match
 		MatchResultJson string
 		Rules           map[int]*game.Rule
-		ValidNodeStates map[game.Row]map[int]map[int]string
+		ValidNodeStates map[game.Row]map[int]map[game.NodeState]string
 	}{web.arena.EventSettings, match, string(matchResultJson), game.GetAllRules(), game.ValidGridNodeStates()}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {

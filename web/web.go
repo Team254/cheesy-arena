@@ -68,6 +68,9 @@ func NewWeb(arena *field.Arena) *Web {
 		"rowToInt": func(row game.Row) int {
 			return int(row)
 		},
+		"nodeStateToInt": func(nodeState game.NodeState) int {
+			return int(nodeState)
+		},
 	}
 
 	return web

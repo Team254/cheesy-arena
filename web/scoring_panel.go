@@ -40,7 +40,7 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 		*model.EventSettings
 		PlcIsEnabled        bool
 		Alliance            string
-		ValidGridNodeStates map[game.Row]map[int]map[int]string
+		ValidGridNodeStates map[game.Row]map[int]map[game.NodeState]string
 	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), alliance, game.ValidGridNodeStates()}
 	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {

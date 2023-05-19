@@ -207,7 +207,7 @@
     <input type="checkbox" class="" name="{{"{{alliance}}"}}GridAutoScoringRow{{.row}}Node{{.column}}"> Auto?
     <select name="{{"{{alliance}}"}}GridNodeStatesRow{{.row}}Node{{.column}}" style="width: 90px; font-size: 11px;">
       {{range $i, $nodeState := index .validNodeStates .row .column}}
-        <option value="{{$i}}">{{$nodeState}}</option>
+        <option value="{{nodeStateToInt $i}}">{{$nodeState}}</option>
       {{end}}
     </select>
   </div>
