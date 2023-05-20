@@ -93,62 +93,80 @@
       <div class="blindsCenter full">
         <img id="blindsLogo" src="/static/img/game-logo.png" alt="logo" />
       </div>
-      <div id="finalScore">
-        <div class="final-score reversible-left" id="leftFinalScore"></div>
-        <div class="final-score reversible-right" id="rightFinalScore"></div>
-        <div class="final-teams" id="leftFinalTeams">
-          <div class="final-team" id="leftFinalTeam1"></div><img class="final-avatar" id="leftFinalTeam1Avatar" src="" />
-          <div class="final-team" id="leftFinalTeam2"></div><img class="final-avatar" id="leftFinalTeam2Avatar" src="" />
-          <div class="final-team" id="leftFinalTeam3"></div><img class="final-avatar" id="leftFinalTeam3Avatar" src="" />
-        </div>
-        <div class="final-teams" id="rightFinalTeams">
-          <div class="final-team" id="rightFinalTeam1"></div><img class="final-avatar" id="rightFinalTeam1Avatar" src="" />
-          <div class="final-team" id="rightFinalTeam2"></div><img class="final-avatar" id="rightFinalTeam2Avatar" src="" />
-          <div class="final-team" id="rightFinalTeam3"></div><img class="final-avatar" id="rightFinalTeam3Avatar" src="" />
-        </div>
-        <div class="final-breakdown" id="leftFinalBreakdown">
-          <span class="valign-cell">
-            <span id="leftFinalMobilityPoints"></span><br />
-            <span id="leftFinalGridPoints"></span><br />
-            <span id="leftFinalChargeStationPoints"></span><br />
-            <span id="leftFinalParkPoints"></span><br />
-            <span id="leftFinalFoulPoints"></span><br />
-            <div class="playoffHiddenFields">
-              <span id="leftFinalSustainabilityBonusRankingPoint"></span><br />
-              <span id="leftFinalActivationBonusRankingPoint"></span><br />
+      <div id="finalScoreCentering">
+        <div id="finalScore">
+          <div class="final-score-row">
+            <div class="final-score reversible-left" id="leftFinalScore"></div>
+            <div class="final-score reversible-right" id="rightFinalScore"></div>
+          </div>
+          <div class="final-score-row">
+            <div class="final-breakdown final-breakdown-teams">
+              <div class="final-teams reversible-left">
+                {{range $i := seq 3}}
+                  <div class="final-team-row">
+                    <img class="final-team-avatar" id="leftFinalTeam{{$i}}Avatar" src="" />
+                    <div class="final-team-number" id="leftFinalTeam{{$i}}"></div>
+                    <div class="final-team-rank">
+                      <img id="leftFinalTeam{{$i}}RankIndicator" src="" />
+                      <div id="leftFinalTeam{{$i}}RankNumber"></div>
+                    </div>
+                  </div>
+                {{end}}
+              </div>
             </div>
-          </span>
-        </div>
-        <div class="final-breakdown" id="centerFinalBreakdown">
-          <span class="valign-cell">
-            Mobility<br />
-            Grid<br />
-            Charge Station<br />
-            Park<br />
-            Foul<br />
-            <div class="playoffHiddenFields">
-              Sustainability Bonus<br />
-              Activation Bonus
+            <div class="final-breakdown" id="leftFinalBreakdown">
+              <div id="leftFinalMobilityPoints"></div>
+              <div id="leftFinalGridPoints"></div>
+              <div id="leftFinalChargeStationPoints"></div>
+              <div id="leftFinalParkPoints"></div>
+              <div id="leftFinalFoulPoints"></div>
+              <div class="playoffHiddenFields">
+                <div id="leftFinalSustainabilityBonusRankingPoint"></div>
+                <div id="leftFinalActivationBonusRankingPoint"></div>
+              </div>
             </div>
-          </span>
-        </div>
-        <div class="final-breakdown" id="rightFinalBreakdown">
-          <span class="valign-cell">
-            <span id="rightFinalMobilityPoints"></span><br />
-            <span id="rightFinalGridPoints"></span><br />
-            <span id="rightFinalChargeStationPoints"></span><br />
-            <span id="rightFinalParkPoints"></span><br />
-            <span id="rightFinalFoulPoints"></span><br />
-            <div class="playoffHiddenFields">
-              <span id="rightFinalSustainabilityBonusRankingPoint"></span><br />
-              <span id="rightFinalActivationBonusRankingPoint"></span><br />
+            <div class="final-breakdown" id="centerFinalBreakdown">
+              <div>Mobility</div>
+              <div>Grid</div>
+              <div>Charge Station</div>
+              <div>Park</div>
+              <div>Foul</div>
+              <div class="playoffHiddenFields">
+                <div>Sustainability Bonus</div>
+                <div>Activation Bonus</div>
+              </div>
             </div>
-          </span>
-        </div>
-        <div id="finalEventMatchInfo">
-          <div class="final-footer">{{.EventSettings.Name}}</div>
-          <div class="final-footer" id="finalSeriesStatus">&nbsp;</div>
-          <div class="final-footer" id="finalMatchName">&nbsp;</div>
+            <div class="final-breakdown" id="rightFinalBreakdown">
+              <div id="rightFinalMobilityPoints"></div>
+              <div id="rightFinalGridPoints"></div>
+              <div id="rightFinalChargeStationPoints"></div>
+              <div id="rightFinalParkPoints"></div>
+              <div id="rightFinalFoulPoints"></div>
+              <div class="playoffHiddenFields">
+                <div id="rightFinalSustainabilityBonusRankingPoint"></div>
+                <div id="rightFinalActivationBonusRankingPoint"></div>
+              </div>
+            </div>
+            <div class="final-breakdown final-breakdown-teams">
+              <div class="final-teams reversible-right">
+                {{range $i := seq 3}}
+                  <div class="final-team-row">
+                    <img class="final-team-avatar" id="rightFinalTeam{{$i}}Avatar" src="" />
+                    <div class="final-team-number" id="rightFinalTeam{{$i}}"></div>
+                    <div class="final-team-rank">
+                      <img id="rightFinalTeam{{$i}}RankIndicator" src="" />
+                      <div id="rightFinalTeam{{$i}}RankNumber"></div>
+                    </div>
+                  </div>
+                {{end}}
+              </div>
+            </div>
+          </div>
+          <div class="final-score-row" id="finalEventMatchInfo">
+            <div class="final-footer">{{.EventSettings.Name}}</div>
+            <div class="final-footer" id="finalSeriesStatus">&nbsp;</div>
+            <div class="final-footer" id="finalMatchName">&nbsp;</div>
+          </div>
         </div>
       </div>
       <div id="bracket">
