@@ -1,0 +1,107 @@
+{{define "announcer_display_score_posted"}}
+<div class="modal-dialog modal-large">
+  <div class="modal-content">
+    <div class="modal-header" id="savedMatchResult">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+      <h4 class="modal-title">Final Results &ndash; {{.MatchType}} Match {{.Match.DisplayName}}</span></h4>
+    </div>
+    <div class="modal-body row">
+      <div class="col-sm-6">
+        <div class="well well-darkred">
+          {{template "alliance_match_result" dict "summary" .RedScoreSummary "fouls" .RedFouls "cards" .RedCards
+            "rankings" .RedRankings "rulesViolated" .RulesViolated}}
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="well well-darkblue">
+          {{template "alliance_match_result" dict "summary" .BlueScoreSummary "fouls" .BlueFouls "cards" .BlueCards
+          "rankings" .BlueRankings "rulesViolated" .RulesViolated}}
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "alliance_match_result"}}
+<h4>Score</h4>
+<div class="row">
+  <div class="col-sm-7 col-sm-offset-1 control-label">Auto Mobility Points</div>
+  <div class="col-sm-2">{{.summary.MobilityPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-sm-7 col-sm-offset-1 control-label">Grid Points</div>
+  <div class="col-sm-2">{{.summary.GridPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-sm-7 col-sm-offset-1 control-label">Charge Station Points</div>
+  <div class="col-sm-2">{{.summary.ChargeStationPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-sm-7 col-sm-offset-1 control-label">Endgame Park Points</div>
+  <div class="col-sm-2">{{.summary.ParkPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-sm-7 col-sm-offset-1 control-label">Foul Points</div>
+  <div class="col-sm-2">{{.summary.FoulPoints}}</div>
+</div>
+<div class="row">
+  <div class="col-sm-7 col-sm-offset-1 control-label">Sustainability Bonus RP</div>
+  <div class="col-sm-2">{{if .summary.SustainabilityBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+</div>
+<div class="row">
+  <div class="col-sm-7 col-sm-offset-1 control-label">Activation Bonus RP</div>
+  <div class="col-sm-2">{{if .summary.ActivationBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+</div>
+<div class="row">
+  <div class="col-sm-7 col-sm-offset-1 control-label"><b>Final Score</b></div>
+  <div class="col-sm-2"><b>{{.summary.Score}}</b></div>
+</div>
+<h4>Fouls</h4>
+{{range $foul := .fouls}}
+  <div class="row">
+    <div class="col-sm-4 col-sm-offset-1">
+      {{if (index $.rulesViolated $foul.RuleId).IsRankingPoint}}
+        Free RP
+      {{else}}
+        {{if (index $.rulesViolated $foul.RuleId).IsTechnical}}Tech {{end}}
+        Foul
+      {{end}}
+    </div>
+    <div class="col-sm-4">Team {{$foul.TeamId}}</div>
+    <div class="col-sm-3" data-toggle="tooltip" title="{{(index $.rulesViolated $foul.RuleId).Description}}">
+      {{(index $.rulesViolated $foul.RuleId).RuleNumber}}
+    </div>
+  </div>
+{{end}}
+<h4>Cards</h4>
+{{range $team, $card := .cards}}
+  {{if $card}}
+    <div class="row">
+      <div class="col-sm-4 col-sm-offset-1">Team {{$team}}</div>
+      <div class="col-sm-3" style="text-transform: capitalize;">{{$card}}</div>
+    </div>
+  {{end}}
+{{end}}
+<h4>Rankings</h4>
+{{range $team, $ranking := .rankings}}
+  {{if and $team $ranking}}
+    <div class="row">
+      <div class="col-sm-4 col-sm-offset-1">Team {{$team}}</div>
+      <div class="col-sm-7">
+        {{$ranking.Rank}}
+        {{if and (gt $ranking.Rank $ranking.PreviousRank) (gt $ranking.PreviousRank 0)}}
+          &#11015;
+        {{else if lt $ranking.Rank $ranking.PreviousRank}}
+          &#11014;
+        {{end}}
+        {{if gt $ranking.PreviousRank 0}}
+          (was {{$ranking.PreviousRank}})
+        {{end}}
+      </div>
+    </div>
+  {{end}}
+{{end}}
+{{end}}

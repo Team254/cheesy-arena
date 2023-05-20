@@ -54,13 +54,13 @@ func (arena *Arena) configureNotifiers() {
 		arena.generateDisplayConfigurationMessage)
 	arena.EventStatusNotifier = websocket.NewNotifier("eventStatus", arena.generateEventStatusMessage)
 	arena.LowerThirdNotifier = websocket.NewNotifier("lowerThird", arena.generateLowerThirdMessage)
-	arena.MatchLoadNotifier = websocket.NewNotifier("matchLoad", arena.generateMatchLoadMessage)
+	arena.MatchLoadNotifier = websocket.NewNotifier("matchLoad", arena.GenerateMatchLoadMessage)
 	arena.MatchTimeNotifier = websocket.NewNotifier("matchTime", arena.generateMatchTimeMessage)
 	arena.MatchTimingNotifier = websocket.NewNotifier("matchTiming", arena.generateMatchTimingMessage)
 	arena.PlaySoundNotifier = websocket.NewNotifier("playSound", nil)
 	arena.RealtimeScoreNotifier = websocket.NewNotifier("realtimeScore", arena.generateRealtimeScoreMessage)
 	arena.ReloadDisplaysNotifier = websocket.NewNotifier("reload", nil)
-	arena.ScorePostedNotifier = websocket.NewNotifier("scorePosted", arena.generateScorePostedMessage)
+	arena.ScorePostedNotifier = websocket.NewNotifier("scorePosted", arena.GenerateScorePostedMessage)
 	arena.ScoringStatusNotifier = websocket.NewNotifier("scoringStatus", arena.generateScoringStatusMessage)
 }
 
@@ -123,7 +123,7 @@ func (arena *Arena) generateLowerThirdMessage() any {
 	}{arena.LowerThird, arena.ShowLowerThird}
 }
 
-func (arena *Arena) generateMatchLoadMessage() any {
+func (arena *Arena) GenerateMatchLoadMessage() any {
 	teams := make(map[string]*model.Team)
 	for station, allianceStation := range arena.AllianceStations {
 		teams[station] = allianceStation.Team
@@ -192,7 +192,7 @@ func (arena *Arena) generateRealtimeScoreMessage() any {
 	return &fields
 }
 
-func (arena *Arena) generateScorePostedMessage() any {
+func (arena *Arena) GenerateScorePostedMessage() any {
 	// For elimination matches, summarize the state of the series.
 	var seriesStatus, seriesLeader string
 	var matchup *bracket.Matchup
@@ -201,9 +201,19 @@ func (arena *Arena) generateScorePostedMessage() any {
 		seriesLeader, seriesStatus = matchup.StatusText()
 	}
 
-	rankings := make(map[int]game.Ranking, len(arena.SavedRankings))
-	for _, ranking := range arena.SavedRankings {
-		rankings[ranking.TeamId] = ranking
+	redRankings := map[int]*game.Ranking{
+		arena.SavedMatch.Red1: nil, arena.SavedMatch.Red2: nil, arena.SavedMatch.Red3: nil,
+	}
+	blueRankings := map[int]*game.Ranking{
+		arena.SavedMatch.Blue1: nil, arena.SavedMatch.Blue2: nil, arena.SavedMatch.Blue3: nil,
+	}
+	for index, ranking := range arena.SavedRankings {
+		if _, ok := redRankings[ranking.TeamId]; ok {
+			redRankings[ranking.TeamId] = &arena.SavedRankings[index]
+		}
+		if _, ok := blueRankings[ranking.TeamId]; ok {
+			blueRankings[ranking.TeamId] = &arena.SavedRankings[index]
+		}
 	}
 
 	return &struct {
@@ -211,12 +221,13 @@ func (arena *Arena) generateScorePostedMessage() any {
 		Match            *model.Match
 		RedScoreSummary  *game.ScoreSummary
 		BlueScoreSummary *game.ScoreSummary
-		Rankings         map[int]game.Ranking
 		RedFouls         []game.Foul
 		BlueFouls        []game.Foul
 		RulesViolated    map[int]*game.Rule
 		RedCards         map[string]string
 		BlueCards        map[string]string
+		RedRankings      map[int]*game.Ranking
+		BlueRankings     map[int]*game.Ranking
 		SeriesStatus     string
 		SeriesLeader     string
 	}{
@@ -224,12 +235,13 @@ func (arena *Arena) generateScorePostedMessage() any {
 		arena.SavedMatch,
 		arena.SavedMatchResult.RedScoreSummary(),
 		arena.SavedMatchResult.BlueScoreSummary(),
-		rankings,
 		arena.SavedMatchResult.RedScore.Fouls,
 		arena.SavedMatchResult.BlueScore.Fouls,
 		getRulesViolated(arena.SavedMatchResult.RedScore.Fouls, arena.SavedMatchResult.BlueScore.Fouls),
 		arena.SavedMatchResult.RedCards,
 		arena.SavedMatchResult.BlueCards,
+		redRankings,
+		blueRankings,
 		seriesStatus,
 		seriesLeader,
 	}

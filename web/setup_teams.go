@@ -318,7 +318,7 @@ func (web *Web) populateOfficialTeamInfo(team *model.Team) error {
 	var accomplishmentsBuffer bytes.Buffer
 	for i := len(recentAwards) - 1; i >= 0; i-- {
 		award := recentAwards[i]
-		if time.Now().Year()-award.Year <= 2 {
+		if time.Now().Year()-award.Year <= 1 {
 			accomplishmentsBuffer.WriteString(fmt.Sprintf("<p>%d %s - %s</p>", award.Year, award.EventName,
 				award.Name))
 		}

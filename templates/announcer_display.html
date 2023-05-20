@@ -2,119 +2,19 @@
 {{define "body"}}
 <h3 id="matchName"></h3>
 <div class="row">
-  <div class="col-lg-2"><h4>Team</h4></div>
-  <div class="col-lg-5"><h4>Name</h4></div>
-  <div class="col-lg-5"><h4>Recent Accomplishments</h4></div>
+  <div class="col-sm-3"><h4>Team #</h4></div>
+  <div class="col-sm-5"><h4>Nickname</h4></div>
+  <div class="col-sm-4"><h4>Location</h4></div>
 </div>
 <div id="teams" class="row"></div>
 <br />
 <div class="row">
-  <div id="matchState" class="col-lg-2 col-lg-offset-2 well well-sm text-center">&nbsp;</div>
-  <div id="matchTime" class="col-lg-2 well well-sm text-center">&nbsp;</div>
-  <div id="redScore" class="col-lg-2 well well-sm well-red text-center">&nbsp;</div>
-  <div id="blueScore" class="col-lg-2 well well-sm well-blue text-center">&nbsp;</div>
+  <div id="matchState" class="col-sm-2 col-sm-offset-2 well well-sm text-center">&nbsp;</div>
+  <div id="matchTime" class="col-sm-2 well well-sm text-center">&nbsp;</div>
+  <div id="redScore" class="col-sm-2 well well-sm well-red text-center">&nbsp;</div>
+  <div id="blueScore" class="col-sm-2 well well-sm well-blue text-center">&nbsp;</div>
 </div>
-<div id="matchResult" class="modal" style="top: 10%;">
-  <div class="modal-dialog modal-large">
-    <div class="modal-content">
-      <div class="modal-header" id="savedMatchResult">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h4 class="modal-title">Final Results &ndash; <span id="scoreMatchName"></span></h4>
-      </div>
-      <div class="modal-body row">
-        <div class="col-lg-6">
-          <div class="well well-darkred" id="redScoreDetails"></div>
-        </div>
-        <div class="col-lg-6">
-          <div class="well well-darkblue" id="blueScoreDetails"></div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <form class="form-horizontal" action="/setup/teams/clear" method="POST">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-<script id="teamTemplate" type="text/x-handlebars-template">
-  {{"{{#if this}}"}}
-    <div class="col-lg-2">
-      <div><h4><b>{{"{{Id}}"}}</b>{{"{{#if isOffField}}"}} (not on field){{"{{/if}}"}}</h4></div>
-      <div class="nowrap"><h4><b>{{"{{Nickname}}"}}</b></h4></div>
-      <div class="nowrap">{{"{{City}}"}}, {{"{{StateProv}}"}}, {{"{{Country}}"}}</div>
-      <div class="nowrap">Robot: {{"{{RobotName}}"}}</div>
-      <div>Rookie Year: {{"{{RookieYear}}"}}</div>
-    </div>
-    <div class="col-lg-5">{{"{{Name}}"}}</div>
-    <div class="col-lg-5 indentwrap">{{"{{{Accomplishments}}}"}}</div>
-  {{"{{else}}"}}
-    <div class="col-lg-12">No team present</div>
-  {{"{{/if}}"}}
-</script>
-<script id="matchResultTemplate" type="text/x-handlebars-template">
-  <h4>Score</h4>
-  <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Auto Mobility Points</div>
-    <div class="col-lg-2">{{"{{score.MobilityPoints}}"}}</div>
-  </div>
-  <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Grid Points</div>
-    <div class="col-lg-2">{{"{{score.GridPoints}}"}}</div>
-  </div>
-  <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Charge Station Points</div>
-    <div class="col-lg-2">{{"{{score.ChargeStationPoints}}"}}</div>
-  </div>
-  <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Endgame Park Points</div>
-    <div class="col-lg-2">{{"{{score.ParkPoints}}"}}</div>
-  </div>
-  <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Foul Points</div>
-    <div class="col-lg-2">{{"{{score.FoulPoints}}"}}</div>
-  </div>
-  <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Sustainability Bonus RP</div>
-    <div class="col-lg-2">{{"{{score.SustainabilityBonusRankingPoint}}"}}</div>
-  </div>
-  <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label">Activation Bonus RP</div>
-    <div class="col-lg-2">{{"{{score.ActivationBonusRankingPoint}}"}}</div>
-  </div>
-  <div class="row">
-    <div class="col-lg-7 col-lg-offset-1 control-label"><b>Final Score</b></div>
-    <div class="col-lg-2"><b>{{"{{score.Score}}"}}</b></div>
-  </div>
-  <h4>Fouls</h4>
-  {{"{{#each fouls}}"}}
-    <div class="row">
-      <div class="col-lg-3 col-lg-offset-1">
-        {{"{{#if IsRankingPoint}}"}}Free RP{{"{{else}}"}}{{"{{#if IsTechnical}}"}}Tech {{"{{/if}}"}}Foul{{"{{/if}}"}}
-      </div>
-      <div class="col-lg-3">Team {{"{{TeamId}}"}}</div>
-      <div class="col-lg-3" data-toggle="tooltip" title="{{"{{Description}}"}}">{{"{{RuleNumber}}"}}</div>
-    </div>
-  {{"{{/each}}"}}
-  <h4>Cards</h4>
-  {{"{{#eachMapEntry cards}}"}}
-    {{"{{#if this.value}}"}}
-      <div class="row">
-        <div class="col-lg-3 col-lg-offset-1">Team {{"{{this.key}}"}}</div>
-        <div class="col-lg-3 col-lg-offset-1" style="text-transform: capitalize;">{{"{{this.value}}"}}</div>
-      </div>
-    {{"{{/if}}"}}
-  {{"{{/eachMapEntry}}"}}
-  <h4>Rankings</h4>
-  {{"{{#eachMapEntry rankings}}"}}
-  {{"{{#if this.value}}"}}
-  <div class="row">
-    <div class="col-lg-4 col-lg-offset-1">Team {{"{{this.key}}"}}</div>
-    <div class="col-lg-7">{{"{{{this.value}}}"}}</div>
-  </div>
-  {{"{{/if}}"}}
-  {{"{{/eachMapEntry}}"}}
-</script>
+<div id="matchResult" class="modal" style="top: 5%;"></div>
 {{end}}
 {{define "head"}}
 {{end}}
