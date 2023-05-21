@@ -27,6 +27,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 7, redSummary.NumLinksGoal)
 	assert.Equal(t, false, redSummary.SustainabilityBonusRankingPoint)
 	assert.Equal(t, false, redSummary.ActivationBonusRankingPoint)
+	assert.Equal(t, 0, redSummary.BonusRankingPoints)
 	assert.Equal(t, 0, redSummary.NumOpponentTechFouls)
 
 	blueSummary := blueScore.Summarize(redScore)
@@ -44,6 +45,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 7, blueSummary.NumLinksGoal)
 	assert.Equal(t, true, blueSummary.SustainabilityBonusRankingPoint)
 	assert.Equal(t, true, blueSummary.ActivationBonusRankingPoint)
+	assert.Equal(t, 2, blueSummary.BonusRankingPoints)
 	assert.Equal(t, 2, blueSummary.NumOpponentTechFouls)
 
 	// Test invalid foul.

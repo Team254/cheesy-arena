@@ -396,6 +396,20 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		matchResult.CorrectEliminationScore()
 	}
 
+	// Update the match record.
+	match.ScoreCommittedAt = time.Now()
+	redScoreSummary := matchResult.RedScoreSummary()
+	blueScoreSummary := matchResult.BlueScoreSummary()
+	applyElimTiebreakers := false
+	if match.Type == "elimination" {
+		// Playoff matches other than the finals should have ties broken by examining the scoring breakdown rather
+		// than being replayed.
+		if match.ElimRound < web.arena.PlayoffBracket.FinalsMatchup.Round {
+			applyElimTiebreakers = true
+		}
+	}
+	match.Status = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, applyElimTiebreakers)
+
 	if match.Type != "test" {
 		if matchResult.PlayNumber == 0 {
 			// Determine the play number for this new match result.
@@ -422,19 +436,6 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			}
 		}
 
-		// Update and save the match record to the database.
-		match.ScoreCommittedAt = time.Now()
-		redScoreSummary := matchResult.RedScoreSummary()
-		blueScoreSummary := matchResult.BlueScoreSummary()
-		applyElimTiebreakers := false
-		if match.Type == "elimination" {
-			// Playoff matches other than the finals should have ties broken by examining the scoring breakdown rather
-			// than being replayed.
-			if match.ElimRound < web.arena.PlayoffBracket.FinalsMatchup.Round {
-				applyElimTiebreakers = true
-			}
-		}
-		match.Status = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, applyElimTiebreakers)
 		err := web.arena.Database.UpdateMatch(match)
 		if err != nil {
 			return err

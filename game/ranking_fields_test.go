@@ -20,6 +20,7 @@ func TestAddScoreSummary(t *testing.T) {
 		Score:                           67,
 		SustainabilityBonusRankingPoint: false,
 		ActivationBonusRankingPoint:     true,
+		BonusRankingPoints:              1,
 	}
 	blueSummary := &ScoreSummary{
 		MobilityPoints:                  2,
@@ -29,6 +30,7 @@ func TestAddScoreSummary(t *testing.T) {
 		Score:                           81,
 		SustainabilityBonusRankingPoint: true,
 		ActivationBonusRankingPoint:     false,
+		BonusRankingPoints:              1,
 	}
 	rankingFields := RankingFields{}
 

@@ -126,13 +126,17 @@ func TestMatchPlayErrors(t *testing.T) {
 func TestCommitMatch(t *testing.T) {
 	web := setupTestWeb(t)
 
-	// Committing test match should do nothing.
+	// Committing test match should update the stored saved match but not persist anything.
 	match := &model.Match{Id: 0, Type: "test", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
-	err := web.commitMatchScore(match, &model.MatchResult{MatchId: match.Id}, true)
+	matchResult := &model.MatchResult{MatchId: match.Id, RedScore: &game.Score{}, BlueScore: &game.Score{}}
+	matchResult.BlueScore.MobilityStatuses[2] = true
+	err := web.commitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
-	matchResult, err := web.arena.Database.GetMatchResultForMatch(match.Id)
+	matchResult, err = web.arena.Database.GetMatchResultForMatch(match.Id)
 	assert.Nil(t, err)
 	assert.Nil(t, matchResult)
+	assert.Equal(t, match, web.arena.SavedMatch)
+	assert.Equal(t, game.BlueWonMatch, web.arena.SavedMatch.Status)
 
 	// Committing the same match more than once should create a second match result record.
 	match.Type = "qualification"

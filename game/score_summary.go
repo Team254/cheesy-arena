@@ -20,6 +20,7 @@ type ScoreSummary struct {
 	NumLinksGoal                    int
 	SustainabilityBonusRankingPoint bool
 	ActivationBonusRankingPoint     bool
+	BonusRankingPoints              int
 	NumOpponentTechFouls            int
 }
 

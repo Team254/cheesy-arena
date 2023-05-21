@@ -51,12 +51,7 @@ func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentSco
 	} else {
 		fields.Losses += 1
 	}
-	if ownScore.SustainabilityBonusRankingPoint {
-		fields.RankingPoints += 1
-	}
-	if ownScore.ActivationBonusRankingPoint {
-		fields.RankingPoints += 1
-	}
+	fields.RankingPoints += ownScore.BonusRankingPoints
 
 	// Assign tiebreaker points.
 	fields.MatchPoints += ownScore.MatchPoints

@@ -111,6 +111,13 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	}
 	summary.ActivationBonusRankingPoint = summary.ChargeStationPoints >= ActivationBonusPointThreshold
 
+	if summary.SustainabilityBonusRankingPoint {
+		summary.BonusRankingPoints++
+	}
+	if summary.ActivationBonusRankingPoint {
+		summary.BonusRankingPoints++
+	}
+
 	return summary
 }
 
