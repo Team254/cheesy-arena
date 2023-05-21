@@ -363,6 +363,7 @@ html {
   font-size: 32px;
 }
 .final-team-rank {
+  width: 20px;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;

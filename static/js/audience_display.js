@@ -171,6 +171,11 @@ const handleScorePosted = function(data) {
   setTeamInfo(redSide, 1, data.Match.Red1, data.RedRankings);
   setTeamInfo(redSide, 2, data.Match.Red2, data.RedRankings);
   setTeamInfo(redSide, 3, data.Match.Red3, data.RedRankings);
+  if (data.RedOffFieldTeamIds.length > 0) {
+    setTeamInfo(redSide, 4, data.RedOffFieldTeamIds[0], data.RedRankings);
+  } else {
+    setTeamInfo(redSide, 4, 0, data.RedRankings);
+  }
   $("#" + redSide + "FinalMobilityPoints").text(data.RedScoreSummary.MobilityPoints);
   $("#" + redSide + "FinalGridPoints").text(data.RedScoreSummary.GridPoints);
   $("#" + redSide + "FinalChargeStationPoints").text(data.RedScoreSummary.ChargeStationPoints);
@@ -195,6 +200,11 @@ const handleScorePosted = function(data) {
   setTeamInfo(blueSide, 1, data.Match.Blue1, data.BlueRankings);
   setTeamInfo(blueSide, 2, data.Match.Blue2, data.BlueRankings);
   setTeamInfo(blueSide, 3, data.Match.Blue3, data.BlueRankings);
+  if (data.BlueOffFieldTeamIds.length > 0) {
+    setTeamInfo(blueSide, 4, data.BlueOffFieldTeamIds[0], data.BlueRankings);
+  } else {
+    setTeamInfo(blueSide, 4, 0, data.BlueRankings);
+  }
   $("#" + blueSide + "FinalMobilityPoints").text(data.BlueScoreSummary.MobilityPoints);
   $("#" + blueSide + "FinalGridPoints").text(data.BlueScoreSummary.GridPoints);
   $("#" + blueSide + "FinalChargeStationPoints").text(data.BlueScoreSummary.ChargeStationPoints);
@@ -686,7 +696,7 @@ const setTeamInfo = function(side, position, teamId, rankings) {
   const ranking = rankings[teamId];
   let rankIndicator = "";
   let rankNumber = "";
-  if (ranking !== null && ranking.Rank !== 0) {
+  if (ranking !== undefined && ranking !== null && ranking.Rank !== 0) {
     rankNumber = ranking.Rank;
     if (rankNumber > ranking.PreviousRank && ranking.PreviousRank > 0) {
       rankIndicator = "rank-up";

@@ -210,9 +210,12 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 	// For elimination matches, summarize the state of the series.
 	var seriesStatus, seriesLeader string
 	var matchup *bracket.Matchup
+	redOffFieldTeamIds := []int{}
+	blueOffFieldTeamIds := []int{}
 	if arena.SavedMatch.Type == "elimination" {
 		matchup, _ = arena.PlayoffBracket.GetMatchup(arena.SavedMatch.ElimRound, arena.SavedMatch.ElimGroup)
 		seriesLeader, seriesStatus = matchup.StatusText()
+		redOffFieldTeamIds, blueOffFieldTeamIds, _ = arena.Database.GetOffFieldTeamIds(arena.SavedMatch)
 	}
 
 	redRankings := map[int]*game.Ranking{
@@ -231,21 +234,23 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 	}
 
 	return &struct {
-		MatchType         string
-		Match             *model.Match
-		RedScoreSummary   *game.ScoreSummary
-		BlueScoreSummary  *game.ScoreSummary
-		RedRankingPoints  int
-		BlueRankingPoints int
-		RedFouls          []game.Foul
-		BlueFouls         []game.Foul
-		RulesViolated     map[int]*game.Rule
-		RedCards          map[string]string
-		BlueCards         map[string]string
-		RedRankings       map[int]*game.Ranking
-		BlueRankings      map[int]*game.Ranking
-		SeriesStatus      string
-		SeriesLeader      string
+		MatchType           string
+		Match               *model.Match
+		RedScoreSummary     *game.ScoreSummary
+		BlueScoreSummary    *game.ScoreSummary
+		RedRankingPoints    int
+		BlueRankingPoints   int
+		RedFouls            []game.Foul
+		BlueFouls           []game.Foul
+		RulesViolated       map[int]*game.Rule
+		RedCards            map[string]string
+		BlueCards           map[string]string
+		RedRankings         map[int]*game.Ranking
+		BlueRankings        map[int]*game.Ranking
+		RedOffFieldTeamIds  []int
+		BlueOffFieldTeamIds []int
+		SeriesStatus        string
+		SeriesLeader        string
 	}{
 		arena.SavedMatch.CapitalizedType(),
 		arena.SavedMatch,
@@ -260,6 +265,8 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		arena.SavedMatchResult.BlueCards,
 		redRankings,
 		blueRankings,
+		redOffFieldTeamIds,
+		blueOffFieldTeamIds,
 		seriesStatus,
 		seriesLeader,
 	}
