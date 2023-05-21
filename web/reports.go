@@ -90,6 +90,8 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 		pdf.CellFormat(colWidths["Played"], rowHeight, strconv.Itoa(ranking.Played), "1", 1, "C", false, 0, "")
 	}
 
+	addTimeGeneratedFooter(pdf)
+
 	// Write out the PDF file as the HTTP response.
 	w.Header().Set("Content-Type", "application/pdf")
 	err = pdf.Output(w)
@@ -233,6 +235,8 @@ func (web *Web) backupsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 		pdf.CellFormat(colWidths["Team"], rowHeight, strconv.Itoa(ranking.TeamId), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["RP"], rowHeight, strconv.Itoa(ranking.RankingPoints), "1", 1, "C", false, 0, "")
 	}
+
+	addTimeGeneratedFooter(pdf)
 
 	// Write out the PDF file as the HTTP response.
 	w.Header().Set("Content-Type", "application/pdf")
@@ -480,6 +484,8 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 		pdf.CellFormat(195, 10, fmt.Sprintf("Matches Per Team: %d", matchesPerTeam), "", 1, "L", false, 0, "")
 	}
 
+	addTimeGeneratedFooter(pdf)
+
 	// Write out the PDF file as the HTTP response.
 	w.Header().Set("Content-Type", "application/pdf")
 	err = pdf.Output(w)
@@ -564,6 +570,8 @@ func (web *Web) teamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 			pdf.CellFormat(colWidths["RookieYear"], rowHeight, strconv.Itoa(team.RookieYear), "1", 1, "L", false, 0, "")
 		}
 	}
+
+	addTimeGeneratedFooter(pdf)
 
 	// Write out the PDF file as the HTTP response.
 	w.Header().Set("Content-Type", "application/pdf")
@@ -673,6 +681,8 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 			pdf.CellFormat(colWidths["Location"], rowHeight, location, "1", 1, "L", false, 0, "")
 		}
 	}
+
+	addTimeGeneratedFooter(pdf)
 
 	// Write out the PDF file as the HTTP response.
 	w.Header().Set("Content-Type", "application/pdf")
@@ -804,6 +814,8 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		pdf.CellFormat(colWidths["Diff"], height, refTime, borderStr, 1, alignStr, false, 0, "")
 	}
 
+	addTimeGeneratedFooter(pdf)
+
 	// Write out the PDF file as the HTTP response.
 	w.Header().Set("Content-Type", "application/pdf")
 	err = pdf.Output(w)
@@ -833,4 +845,12 @@ func (web *Web) ftaCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+}
+
+func addTimeGeneratedFooter(pdf *gofpdf.Fpdf) {
+	footerText := fmt.Sprintf(
+		"Report generated at %s on %s", time.Now().Format("3:04:05 PM"), time.Now().Format("Mon Jan 2 2006"),
+	)
+	pdf.SetFont("Arial", "", 10)
+	pdf.CellFormat(0, 10, footerText, "", 1, "L", false, 0, "")
 }
