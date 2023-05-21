@@ -102,6 +102,7 @@
           <div class="final-score-row">
             <div class="final-breakdown final-breakdown-teams">
               <div class="final-teams reversible-left">
+                <div class="final-alliance playoff-only-field" id="leftFinalAlliance"></div>
                 {{range $i := seq 3}}
                   <div class="final-team-row">
                     <img class="final-team-avatar" id="leftFinalTeam{{$i}}Avatar" src="" />
@@ -120,7 +121,7 @@
               <div id="leftFinalChargeStationPoints"></div>
               <div id="leftFinalParkPoints"></div>
               <div id="leftFinalFoulPoints"></div>
-              <div class="playoffHiddenFields">
+              <div class="playoff-hidden-field">
                 <div id="leftFinalSustainabilityBonusRankingPoint"></div>
                 <div id="leftFinalActivationBonusRankingPoint"></div>
                 <div id="leftFinalRankingPoints"></div>
@@ -132,7 +133,7 @@
               <div>Charge Station</div>
               <div>Park</div>
               <div>Foul</div>
-              <div class="playoffHiddenFields">
+              <div class="playoff-hidden-field">
                 <div>Sustainability Bonus</div>
                 <div>Activation Bonus</div>
                 <div>Ranking Points</div>
@@ -144,7 +145,7 @@
               <div id="rightFinalChargeStationPoints"></div>
               <div id="rightFinalParkPoints"></div>
               <div id="rightFinalFoulPoints"></div>
-              <div class="playoffHiddenFields">
+              <div class="playoff-hidden-field">
                 <div id="rightFinalSustainabilityBonusRankingPoint"></div>
                 <div id="rightFinalActivationBonusRankingPoint"></div>
                 <div id="rightFinalRankingPoints"></div>
@@ -152,6 +153,7 @@
             </div>
             <div class="final-breakdown final-breakdown-teams">
               <div class="final-teams reversible-right">
+                <div class="final-alliance playoff-only-field" id="rightFinalAlliance"></div>
                 {{range $i := seq 3}}
                   <div class="final-team-row">
                     <img class="final-team-avatar" id="rightFinalTeam{{$i}}Avatar" src="" />

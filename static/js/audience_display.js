@@ -167,6 +167,7 @@ const handleRealtimeScore = function(data) {
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function(data) {
   $("#" + redSide + "FinalScore").text(data.RedScoreSummary.Score);
+  $("#" + redSide + "FinalAlliance").text("Alliance " + data.Match.ElimRedAlliance);
   setTeamInfo(redSide, 1, data.Match.Red1, data.RedRankings);
   setTeamInfo(redSide, 2, data.Match.Red2, data.RedRankings);
   setTeamInfo(redSide, 3, data.Match.Red3, data.RedRankings);
@@ -188,7 +189,9 @@ const handleScorePosted = function(data) {
     "data-checked", data.RedScoreSummary.ActivationBonusRankingPoint
   );
   $("#" + redSide + "FinalRankingPoints").html(data.RedRankingPoints);
+
   $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
+  $("#" + blueSide + "FinalAlliance").text("Alliance " + data.Match.ElimBlueAlliance);
   setTeamInfo(blueSide, 1, data.Match.Blue1, data.BlueRankings);
   setTeamInfo(blueSide, 2, data.Match.Blue2, data.BlueRankings);
   setTeamInfo(blueSide, 3, data.Match.Blue3, data.BlueRankings);
@@ -218,10 +221,12 @@ const handleScorePosted = function(data) {
   $("#bracketSvg").attr("src", "/api/bracket/svg?activeMatch=saved&v=" + new Date().getTime());
 
   if (data.Match.Type === "elimination") {
-    // Hide bonus ranking points.
-    $(".playoffHiddenFields").hide();
+    // Hide bonus ranking points and show playoff-only fields.
+    $(".playoff-hidden-field").hide();
+    $(".playoff-only-field").show();
   } else {
-    $(".playoffHiddenFields").show();
+    $(".playoff-hidden-field").show();
+    $(".playoff-only-field").hide();
   }
 };
 

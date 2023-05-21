@@ -313,12 +313,10 @@ html {
   font-size: 24px;
 }
 #leftFinalBreakdown {
-  width: 40px;
   padding-right: 10px;
   align-items: flex-end;
 }
 #rightFinalBreakdown {
-  width: 40px;
   padding-left: 10px;
   align-items: flex-start;
 }
@@ -339,6 +337,15 @@ html {
   width: 240px;
   padding: 20px;
   border-radius: 20px;
+}
+.final-alliance {
+  margin-top: -10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
 }
 .final-team-row {
   display: flex;
