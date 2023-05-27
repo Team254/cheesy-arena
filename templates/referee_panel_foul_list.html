@@ -1,0 +1,45 @@
+{{define "referee_panel_foul_list"}}
+  {{range $i, $foul := .RedFouls}}
+    {{template "foul" dict "alliance" "red" "index" $i "foul" $foul "match" $.Match "rules" $.Rules}}
+  {{end}}
+  {{range $i, $foul := .BlueFouls}}
+    {{template "foul" dict "alliance" "blue" "index" $i "foul" $foul "match" $.Match "rules" $.Rules}}
+  {{end}}
+{{end}}
+{{define "foul"}}
+  <div class="foul {{.alliance}}-foul">
+    <div>{{add .index 1}}</div>
+    <div class="type-button" onclick="toggleFoulType('{{.alliance}}', {{.index}});">
+      {{if .foul.IsTechnical}}Tech {{end}}Foul
+    </div>
+    <div class="team-buttons">
+      {{if eq .alliance "red"}}
+        {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Red1}}
+        {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Red2}}
+        {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Red3}}
+      {{else}}
+        {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Blue1}}
+        {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Blue2}}
+        {{template "teamButton" dict "alliance" .alliance "index" .index "foul" .foul "teamId" .match.Blue3}}
+      {{end}}
+    </div>
+    <select class="rule-select" onchange="updateFoulRule('{{.alliance}}', {{.index}}, parseInt(this.value));">
+      <option value="0"{{if eq $.foul.RuleId 0}} selected{{end}}>No Rule Selected</option>
+      {{range $rule := .rules}}
+        {{if eq $.foul.IsTechnical $rule.IsTechnical}}
+          <option value="{{$rule.Id}}"{{if eq $.foul.RuleId $rule.Id}} selected{{end}}>{{$rule.RuleNumber}}
+            [{{if $rule.IsRankingPoint}}Foul + Free RP{{else}}{{if $rule.IsTechnical}}Tech {{end}}Foul{{end}}]:
+            {{$rule.Description}}
+          </option>
+        {{end}}
+      {{end}}
+    </select>
+    <div class="delete-button" onclick="deleteFoul('{{.alliance}}', {{.index}});">Delete</div>
+  </div>
+{{end}}
+{{define "teamButton"}}
+<div class="team-button"{{if eq .foul.TeamId .teamId}} data-selected="true"{{end}}
+  onclick="updateFoulTeam('{{.alliance}}', {{.index}}, {{.teamId}})">
+  {{.teamId}}
+</div>
+{{end}}

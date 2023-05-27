@@ -164,6 +164,7 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/panels/scoring/{alliance}", web.scoringPanelHandler).Methods("GET")
 	router.HandleFunc("/panels/scoring/{alliance}/websocket", web.scoringPanelWebsocketHandler).Methods("GET")
 	router.HandleFunc("/panels/referee", web.refereePanelHandler).Methods("GET")
+	router.HandleFunc("/panels/referee/foul_list", web.refereePanelFoulListHandler).Methods("GET")
 	router.HandleFunc("/panels/referee/websocket", web.refereePanelWebsocketHandler).Methods("GET")
 	router.HandleFunc("/reports/csv/backups", web.backupTeamsCsvReportHandler).Methods("GET")
 	router.HandleFunc("/reports/csv/fta", web.ftaCsvReportHandler).Methods("GET")

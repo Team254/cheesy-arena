@@ -1,66 +1,188 @@
 /*
-  Copyright 2014 Team 254. All Rights Reserved.
+  Copyright 2023 Team 254. All Rights Reserved.
   Author: pat@patfairbank.com (Patrick Fairbank)
 */
-
 html {
-  cursor: default;
   -webkit-user-select: none;
   -moz-user-select: none;
+  overscroll-behavior: none;
 }
 body {
   background-color: #222;
-  padding: 50px;
+  overscroll-behavior: none;
+}
+h3 {
+  color: #ccc;
+  font-size: 1.5vw;
+}
+.container {
+  padding-top: 1vw;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   color: #fff;
 }
-h3, h4 {
-  color: #fff;
+#matchName {
+  font-size: 2vw;
 }
-.btn-referee {
-  width: 100px;
-  margin: 5px 5px;
-  font-size: 25px;
-  cursor: default;
+#refereePanel {
+  width: 98%;
+  display: flex;
+  flex-direction: row;
 }
-.btn-rule {
-  font-size: 21px;
+#cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.btn-referee-wide {
-  width: 254px;
-  margin: 5px 5px;
-  font-size: 25px;
+.alliance-cards {
+  padding: 0.5vw 1vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #666;
+  border-radius: 1vw;
 }
-.btn {
-  cursor: default;
+#redCards {
+  margin-bottom: 1vw;
+  background-color: #322;
 }
-.btn-referee[data-selected="true"] {
-  border: 5px solid #fc0;
-  margin: 0px 5px;
+#blueCards {
+  background-color: #223;
 }
-tr {
-  font-size: 15px;
-}
-.row-red {
-  background-color: #cb210e;
-}
-.row-blue {
-  background-color: #028fc0;
-}
-.btn-card {
-  width: 120px;
-  margin: 5px 5px;
-  font-size: 30px;
-  cursor: default;
+.team-card {
+  margin: 0.5vw 0;
+  width: 12vw;
+  height: 5.5vw;
+  font-size: 3.5vw;
   background-color: #444;
-  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.2vw;
 }
-.btn-card[data-card="yellow"] {
-  background-color: #dd0;
+.team-card[data-card="yellow"] {
+  background-color: #c90;
 }
-.btn-card[data-card="red"] {
-  background-color: #cb210e;
+.team-card[data-card="red"] {
+  background-color: #900;
 }
-.btn-card[data-old-yellow-card="true"] {
-  border: 5px solid #ff0;
-  margin: 0px 5px;
+.team-card[data-old-yellow-card="true"] {
+  border: 0.3vw solid #ff0;
+}
+#fouls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+}
+#foulButtons {
+  display: flex;
+  flex-direction: row;
+}
+.foul-button {
+  width: 16vw;
+  height: 8vw;
+  font-size: 3vw;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 1vw;
+  border-radius: 1vw;
+}
+.red-foul {
+  background-color: #933;
+}
+.blue-foul {
+  background-color: #26c;
+}
+#foulList {
+  margin: 1vw 0;
+}
+.foul {
+  margin-top: 1vw;
+  height: 4vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.8vw;
+  border-radius: 0.5vw;
+}
+.foul>* {
+  margin: 0 1vw;
+}
+.type-button {
+  width: 9vw;
+  height: 3vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.2vw;
+}
+.team-buttons {
+  display: flex;
+  flex-direction: row;
+}
+.team-button {
+  width: 6vw;
+  height: 3vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.2vw;
+}
+.team-button[data-selected="true"] {
+  border: solid 0.2vw #fff;
+}
+.rule-select {
+  width: 25vw;
+  height: 3vw;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 0;
+  border-radius: 0.2vw;
+}
+.delete-button {
+  width: 6vw;
+  height: 3vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #444;
+  border-radius: 0.2vw;
+}
+#controlButtons {
+  width: 100%;
+  margin: 1vw 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.control-button {
+  width: 20vw;
+  height: 4vw;
+  font-size: 2.2vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 1vw;
+  border-radius: 0.2vw;
+  opacity: 0.3;
+}
+.control-button[data-enabled=true] {
+  opacity: 1;
+}
+#volunteerButton {
+  background-color: #90c;
+}
+#resetButton {
+  background-color: #093;
+}
+#commitButton {
+  background-color: #26c;
 }

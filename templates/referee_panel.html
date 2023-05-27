@@ -1,125 +1,54 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
+  Copyright 2023 Team 254. All Rights Reserved.
   Author: pat@patfairbank.com (Patrick Fairbank)
 
   UI for entering and tracking fouls and red/yellow cards.
 */}}
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Referee Panel - {{.EventSettings.Name}} - Cheesy Arena</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-    <link rel="shortcut icon" href="/static/img/favicon.ico">
-    <link rel="apple-touch-icon" href="/static/img/apple-icon.png">
-    <link href="/static/css/lib/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/css/lib/bootstrap-datetimepicker.min.css" rel="stylesheet">
-    <link href="/static/css/cheesy-arena.css" rel="stylesheet">
-    <link href="/static/css/referee_panel.css" rel="stylesheet">
-  </head>
-  <body>
-    {{if .EntryEnabled}}
-      <div class="row">
-        <div class="col-xs-3">
-          <h3 style="margin-top: 0">{{.MatchType}} Match {{.MatchDisplayName}}</h3>
-          <h4>Fouls</h4>
-          <table class="table">
-            {{range $foul := .RedFouls}}
-              {{template "foul" dict "foul" $foul "color" "red" "rules" $.Rules}}
-            {{end}}
-            {{range $foul := .BlueFouls}}
-              {{template "foul" dict "foul" $foul "color" "blue" "rules" $.Rules}}
-            {{end}}
-          </table>
-          <h4>Yellow/Red Cards</h4>
-          {{template "card" dict "team" .Red1 "alliance" "red" "cards" .RedCards}}
-          {{template "card" dict "team" .Red2 "alliance" "red" "cards" .RedCards}}
-          {{template "card" dict "team" .Red3 "alliance" "red" "cards" .RedCards}}
-          {{template "card" dict "team" .Blue1 "alliance" "blue" "cards" .BlueCards}}
-          {{template "card" dict "team" .Blue2 "alliance" "blue" "cards" .BlueCards}}
-          {{template "card" dict "team" .Blue3 "alliance" "blue" "cards" .BlueCards}}
-        </div>
-        <div class="col-xs-9">
-          <h4>Add Foul</h4>
-          <div class="row">
-            <a class="btn btn-sm btn-primary btn-referee" data-alliance="red" data-team="{{.Red1.Id}}"
-                onclick="setFoulTeam(this);">{{.Red1.Id}}</a>
-            <a class="btn btn-sm btn-primary btn-referee" data-alliance="red" data-team="{{.Red2.Id}}"
-                onclick="setFoulTeam(this);">{{.Red2.Id}}</a>
-            <a class="btn btn-sm btn-primary btn-referee" data-alliance="red" data-team="{{.Red3.Id}}"
-                onclick="setFoulTeam(this);">{{.Red3.Id}}</a>
-            <a class="btn btn-sm btn-info btn-referee" data-alliance="blue" data-team="{{.Blue1.Id}}"
-                onclick="setFoulTeam(this);">{{.Blue1.Id}}</a>
-            <a class="btn btn-sm btn-info btn-referee" data-alliance="blue" data-team="{{.Blue2.Id}}"
-                onclick="setFoulTeam(this);">{{.Blue2.Id}}</a>
-            <a class="btn btn-sm btn-info btn-referee" data-alliance="blue" data-team="{{.Blue3.Id}}"
-                onclick="setFoulTeam(this);">{{.Blue3.Id}}</a>
-          </div>
-          <div class="row">
-            {{range $rule := .Rules}}
-              <a class="btn btn-sm {{if $rule.IsTechnical}}btn-danger{{else if $rule.IsRankingPoint}}btn-primary
-                  {{else}}btn-warning{{end}} btn-referee btn-rule"
-                  data-rule-id="{{$rule.Id}}" onclick="setFoulRule(this);" data-toggle="tooltip"
-                  title="{{$rule.Description}}">
-                {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>
-                {{else if $rule.IsRankingPoint}}<sup>RP</sup>{{end}}
-              </a>
-            {{end}}
-          </div>
-          <p>Note: Tooltips do not contain the entire text of the rule, and depending on the circumstances the
-            prescribed penalty may not be a foul or tech foul.
-            <br />
-            If a rule does not appear here, it is because the penalty is either a yellow/red card or a free score for
-            the opponent, and should be applied via the scorekeeper.</p>
-          <div class="row text-center">
-            <a class="btn btn-sm btn-default btn-referee btn-referee-wide" onclick="clearFoul();">Clear Foul</a>
-            <button type="button" class="btn btn-sm btn-success btn-referee btn-referee-wide" id="commit"
-                onclick="commitFoul();">Add Foul</button>
-          </div>
-          <div class="row text-center">
-            <a class="btn btn-sm btn-warning btn-referee btn-referee-wide"
-                onclick="signalVolunteers();">Signal Volunteers</a>
-            <a class="btn btn-sm btn-success btn-referee btn-referee-wide"
-                onclick="signalReset();">Signal Reset</a>
-            <a class="btn btn-sm btn-info btn-referee btn-referee-wide"
-                onclick="commitMatch();">Commit Match</a>
-          </div>
-          <br />
-          <div class="row text-center">
-            <a class="btn btn-sm btn-danger btn-referee btn-referee-wide"
-                onclick="location.reload();">Refresh</a>
-          </div>
-        </div>
+{{define "title"}}Referee Panel{{end}}
+{{define "body"}}
+<div id="matchName"></div>
+<div id="refereePanel">
+  <div id="cards">
+    <h3>Red/Yellow Cards</h3>
+    <div class="alliance-cards" id="redCards">
+      {{range $i := seq 3}}
+        {{template "teamCard" dict "alliance" "red" "position" $i}}
+      {{end}}
     </div>
-    {{else}}
-      <div class="text-center">
-        <h3>Waiting for the next match...</h3>
-      </div>
-    {{end}}
-    <script src="/static/js/lib/jquery.min.js"></script>
-    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
-    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
-    <script src="/static/js/lib/bootstrap.min.js"></script>
-    <script src="/static/js/cheesy-websocket.js"></script>
-    <script src="/static/js/referee_panel.js"></script>
-  </body>
-</html>
-{{define "foul"}}
-  <tr class="row-{{.color}}">
-    <td>{{.foul.TeamId}}</td>
-    <td>
-      {{$rule := index .rules .foul.RuleId}}
-      {{$rule.RuleNumber}}{{if $rule.IsTechnical}}<sup>T</sup>{{else if $rule.IsRankingPoint}}<sup>RP</sup>{{end}}
-    </td>
-    <td>
-      <a class="btn btn-sm btn-danger" onclick="deleteFoul('{{.color}}', {{.foul.TeamId}}, '{{.foul.RuleId}}',
-          {{.foul.TimeInMatchSec}});">Delete</a>
-    </td>
-  </tr>
+    <div class="alliance-cards" id="blueCards">
+      {{range $i := seq 3}}
+        {{template "teamCard" dict "alliance" "blue" "position" $i}}
+      {{end}}
+    </div>
+  </div>
+  <div id="fouls">
+    <h3>Fouls</h3>
+    <div id="foulButtons">
+      <div class="foul-button red-foul" onclick="addFoul('red', false);">Red</div>
+      <div class="foul-button red-foul" onclick="addFoul('red', true);">Red Tech</div>
+      <div class="foul-button blue-foul" onclick="addFoul('blue', false);">Blue</div>
+      <div class="foul-button blue-foul" onclick="addFoul('blue', true);">Blue Tech</div>
+    </div>
+    <div id="foulList"></div>
+  </div>
+</div>
+<p>Note: Team and rule assignment are optional.</p>
+<div id="controlButtons">
+  <div class="control-button" id="volunteerButton" onclick="signalVolunteers();">Signal Volunteers</div>
+  <div class="control-button" id="resetButton" onclick="signalReset();">Signal Reset</div>
+  <div class="control-button" id="commitButton" onclick="commitMatch();">Commit Match</div>
+</div>
 {{end}}
-{{define "card"}}
-  <a class="btn btn-md btn-card" data-old-yellow-card="{{.team.YellowCard}}" data-alliance="{{.alliance}}"
-      data-card-team="{{.team.Id}}" data-card="{{index .cards (print .team.Id)}}"
-      onclick="cycleCard(this);">{{.team.Id}}</a><br />
+{{define "head"}}
+<link rel="manifest" href="/static/manifest/referee.manifest">
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<link href="/static/css/referee_panel.css" rel="stylesheet">
+{{end}}
+{{define "script"}}
+<script src="/static/js/match_timing.js"></script>
+<script src="/static/js/referee_panel.js"></script>
+{{end}}
+{{define "teamCard"}}
+<div class="team-card" id="{{.alliance}}Team{{.position}}Card" data-alliance="{{.alliance}}" onclick="cycleCard(this);">
+</div>
 {{end}}

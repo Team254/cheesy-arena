@@ -24,59 +24,42 @@ func (web *Web) refereePanelHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/referee_panel.html")
+	template, err := web.parseFiles("templates/referee_panel.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	match := web.arena.CurrentMatch
-	matchType := match.CapitalizedType()
-	red1 := web.arena.AllianceStations["R1"].Team
-	if red1 == nil {
-		red1 = &model.Team{}
-	}
-	red2 := web.arena.AllianceStations["R2"].Team
-	if red2 == nil {
-		red2 = &model.Team{}
-	}
-	red3 := web.arena.AllianceStations["R3"].Team
-	if red3 == nil {
-		red3 = &model.Team{}
-	}
-	blue1 := web.arena.AllianceStations["B1"].Team
-	if blue1 == nil {
-		blue1 = &model.Team{}
-	}
-	blue2 := web.arena.AllianceStations["B2"].Team
-	if blue2 == nil {
-		blue2 = &model.Team{}
-	}
-	blue3 := web.arena.AllianceStations["B3"].Team
-	if blue3 == nil {
-		blue3 = &model.Team{}
-	}
 	data := struct {
 		*model.EventSettings
-		MatchType        string
-		MatchDisplayName string
-		Red1             *model.Team
-		Red2             *model.Team
-		Red3             *model.Team
-		Blue1            *model.Team
-		Blue2            *model.Team
-		Blue3            *model.Team
-		RedFouls         []game.Foul
-		BlueFouls        []game.Foul
-		RedCards         map[string]string
-		BlueCards        map[string]string
-		Rules            map[int]*game.Rule
-		EntryEnabled     bool
-	}{web.arena.EventSettings, matchType, match.DisplayName, red1, red2, red3, blue1, blue2, blue3,
-		web.arena.RedRealtimeScore.CurrentScore.Fouls, web.arena.BlueRealtimeScore.CurrentScore.Fouls,
-		web.arena.RedRealtimeScore.Cards, web.arena.BlueRealtimeScore.Cards, game.GetAllRules(),
-		!(web.arena.RedRealtimeScore.FoulsCommitted && web.arena.BlueRealtimeScore.FoulsCommitted)}
-	err = template.ExecuteTemplate(w, "referee_panel.html", data)
+	}{web.arena.EventSettings}
+	err = template.ExecuteTemplate(w, "base_no_navbar", data)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
+
+// Renders a partial template for when the foul list is updated.
+func (web *Web) refereePanelFoulListHandler(w http.ResponseWriter, r *http.Request) {
+	template, err := web.parseFiles("templates/referee_panel_foul_list.html")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	data := struct {
+		Match     *model.Match
+		RedFouls  []game.Foul
+		BlueFouls []game.Foul
+		Rules     map[int]*game.Rule
+	}{
+		web.arena.CurrentMatch,
+		web.arena.RedRealtimeScore.CurrentScore.Fouls,
+		web.arena.BlueRealtimeScore.CurrentScore.Fouls,
+		game.GetAllRules(),
+	}
+	err = template.ExecuteTemplate(w, "referee_panel_foul_list", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -97,7 +80,13 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
-	go ws.HandleNotifiers(web.arena.MatchLoadNotifier, web.arena.ReloadDisplaysNotifier)
+	go ws.HandleNotifiers(
+		web.arena.MatchLoadNotifier,
+		web.arena.MatchTimeNotifier,
+		web.arena.RealtimeScoreNotifier,
+		web.arena.ScoringStatusNotifier,
+		web.arena.ReloadDisplaysNotifier,
+	)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
@@ -114,9 +103,8 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		switch messageType {
 		case "addFoul":
 			args := struct {
-				Alliance string
-				TeamId   int
-				RuleId   int
+				Alliance    string
+				IsTechnical bool
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -125,7 +113,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 
 			// Add the foul to the correct alliance's list.
-			foul := game.Foul{TeamId: args.TeamId, RuleId: args.RuleId}
+			foul := game.Foul{IsTechnical: args.IsTechnical}
 			if args.Alliance == "red" {
 				web.arena.RedRealtimeScore.CurrentScore.Fouls =
 					append(web.arena.RedRealtimeScore.CurrentScore.Fouls, foul)
@@ -134,9 +122,10 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
-		case "deleteFoul":
+		case "toggleFoulType", "updateFoulTeam", "updateFoulRule", "deleteFoul":
 			args := struct {
 				Alliance string
+				Index    int
 				TeamId   int
 				RuleId   int
 			}{}
@@ -146,21 +135,31 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				continue
 			}
 
-			// Remove the foul from the correct alliance's list.
-			deleteFoul := game.Foul{TeamId: args.TeamId, RuleId: args.RuleId}
+			// Find the foul in the correct alliance's list.
 			var fouls *[]game.Foul
 			if args.Alliance == "red" {
 				fouls = &web.arena.RedRealtimeScore.CurrentScore.Fouls
 			} else {
 				fouls = &web.arena.BlueRealtimeScore.CurrentScore.Fouls
 			}
-			for i, foul := range *fouls {
-				if foul == deleteFoul {
-					*fouls = append((*fouls)[:i], (*fouls)[i+1:]...)
-					break
+			if args.Index >= 0 && args.Index < len(*fouls) {
+				switch messageType {
+				case "toggleFoulType":
+					(*fouls)[args.Index].IsTechnical = !(*fouls)[args.Index].IsTechnical
+					(*fouls)[args.Index].RuleId = 0
+				case "deleteFoul":
+					*fouls = append((*fouls)[:args.Index], (*fouls)[args.Index+1:]...)
+				case "updateFoulTeam":
+					if (*fouls)[args.Index].TeamId == args.TeamId {
+						(*fouls)[args.Index].TeamId = 0
+					} else {
+						(*fouls)[args.Index].TeamId = args.TeamId
+					}
+				case "updateFoulRule":
+					(*fouls)[args.Index].RuleId = args.RuleId
 				}
+				web.arena.RealtimeScoreNotifier.Notify()
 			}
-			web.arena.RealtimeScoreNotifier.Notify()
 		case "card":
 			args := struct {
 				Alliance string
@@ -181,14 +180,13 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				cards = web.arena.BlueRealtimeScore.Cards
 			}
 			cards[strconv.Itoa(args.TeamId)] = args.Card
-			continue
+			web.arena.RealtimeScoreNotifier.Notify()
 		case "signalVolunteers":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow clearing the field until the match is over.
 				continue
 			}
 			web.arena.FieldVolunteers = true
-			continue // Don't reload.
 		case "signalReset":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow clearing the field until the match is over.
@@ -197,7 +195,6 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.FieldReset = true
 			web.arena.AllianceStationDisplayMode = "fieldReset"
 			web.arena.AllianceStationDisplayModeNotifier.Notify()
-			continue // Don't reload.
 		case "commitMatch":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow committing the fouls until the match is over.
@@ -211,14 +208,6 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.ScoringStatusNotifier.Notify()
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
-			continue
-		}
-
-		// Force a reload of the client to render the updated foul list.
-		err = ws.WriteNotifier(web.arena.ReloadDisplaysNotifier)
-		if err != nil {
-			log.Println(err)
-			return
 		}
 	}
 }

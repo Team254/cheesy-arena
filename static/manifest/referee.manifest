@@ -1,0 +1,14 @@
+{
+  "name": "Referee",
+  "icons": [
+    {
+      "src": "/static/img/panel-icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "scope": "/panels/referee",
+  "start_url": "/panels/referee",
+  "display": "standalone",
+  "orientation": "landscape"
+}

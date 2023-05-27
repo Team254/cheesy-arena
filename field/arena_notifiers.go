@@ -182,13 +182,18 @@ func (arena *Arena) generateMatchTimingMessage() any {
 
 func (arena *Arena) generateRealtimeScoreMessage() any {
 	fields := struct {
-		Red  *audienceAllianceScoreFields
-		Blue *audienceAllianceScoreFields
+		Red       *audienceAllianceScoreFields
+		Blue      *audienceAllianceScoreFields
+		RedCards  map[string]string
+		BlueCards map[string]string
 		MatchState
-	}{}
-	fields.Red = getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary())
-	fields.Blue = getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary())
-	fields.MatchState = arena.MatchState
+	}{
+		getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary()),
+		getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary()),
+		arena.RedRealtimeScore.Cards,
+		arena.BlueRealtimeScore.Cards,
+		arena.MatchState,
+	}
 	return &fields
 }
 

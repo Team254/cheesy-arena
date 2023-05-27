@@ -260,6 +260,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.RealtimeScoreNotifier.Notify()
 	arena.AllianceStationDisplayMode = "match"
 	arena.AllianceStationDisplayModeNotifier.Notify()
+	arena.ScoringStatusNotifier.Notify()
 
 	return nil
 }

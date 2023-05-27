@@ -1,58 +1,35 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2023 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
 // Client-side logic for the referee interface.
 
 var websocket;
-var foulTeamButton;
-var foulRuleButton;
-var firstMatchLoad = true;
-
-// Handles a click on a team button.
-var setFoulTeam = function(teamButton) {
-  if (foulTeamButton) {
-    foulTeamButton.attr("data-selected", false);
-  }
-  foulTeamButton = $(teamButton);
-  foulTeamButton.attr("data-selected", true);
-
-  $("#commit").prop("disabled", !(foulTeamButton && foulRuleButton));
-};
-
-// Handles a click on a rule button.
-var setFoulRule = function(ruleButton) {
-  if (foulRuleButton) {
-    foulRuleButton.attr("data-selected", false);
-  }
-  foulRuleButton = $(ruleButton);
-  foulRuleButton.attr("data-selected", true);
-
-  $("#commit").prop("disabled", !(foulTeamButton && foulRuleButton));
-};
-
-// Resets the buttons to their default selections.
-var clearFoul = function() {
-  if (foulTeamButton) {
-    foulTeamButton.attr("data-selected", false);
-    foulTeamButton = null;
-  }
-  if (foulRuleButton) {
-    foulRuleButton.attr("data-selected", false);
-    foulRuleButton = null;
-  }
-  $("#commit").prop("disabled", true);
-};
+let redFoulsHashCode = 0;
+let blueFoulsHashCode = 0;
 
 // Sends the foul to the server to add it to the list.
-var commitFoul = function() {
-  websocket.send("addFoul", {Alliance: foulTeamButton.attr("data-alliance"),
-      TeamId: parseInt(foulTeamButton.attr("data-team")), RuleId: parseInt(foulRuleButton.attr("data-rule-id"))});
-};
+const addFoul = function(alliance, isTechnical) {
+  websocket.send("addFoul", {Alliance: alliance, IsTechnical: isTechnical});
+}
+
+// Toggles the foul type between technical and non-technical.
+const toggleFoulType = function(alliance, index) {
+  websocket.send("toggleFoulType", {Alliance: alliance, Index: index});
+}
+
+// Updates the team that the foul is attributed to.
+const updateFoulTeam = function(alliance, index, teamId) {
+  websocket.send("updateFoulTeam", {Alliance: alliance, Index: index, TeamId: teamId});
+}
+
+// Updates the rule that the foul is for.
+const updateFoulRule = function(alliance, index, ruleId) {
+  websocket.send("updateFoulRule", {Alliance: alliance, Index: index, RuleId: ruleId});
+}
 
 // Removes the foul with the given parameters from the list.
-var deleteFoul = function(alliance, team, ruleId, timeSec) {
-  websocket.send("deleteFoul", {Alliance: alliance, TeamId: parseInt(team), RuleId: parseInt(ruleId),
-      TimeInMatchSec: timeSec});
+var deleteFoul = function(alliance, index) {
+  websocket.send("deleteFoul", {Alliance: alliance, Index: index});
 };
 
 // Cycles through no card, yellow card, and red card.
@@ -63,8 +40,10 @@ var cycleCard = function(cardButton) {
   } else if ($(cardButton).attr("data-card") === "yellow") {
     newCard = "red";
   }
-  websocket.send("card", {Alliance: $(cardButton).attr("data-alliance"),
-      TeamId: parseInt($(cardButton).attr("data-card-team")), Card: newCard});
+  websocket.send(
+    "card",
+    {Alliance: $(cardButton).attr("data-alliance"), TeamId: parseInt($(cardButton).attr("data-team")), Card: newCard}
+  );
   $(cardButton).attr("data-card", newCard);
 };
 
@@ -85,21 +64,76 @@ var commitMatch = function() {
 
 // Handles a websocket message to update the teams for the current match.
 var handleMatchLoad = function(data) {
-  // Since the server always sends a matchLoad message upon establishing the websocket connection, ignore the first one.
-  if (!firstMatchLoad) {
-    location.reload();
-  }
-  firstMatchLoad = false;
+  $("#matchName").text(data.MatchType + " " + data.Match.DisplayName);
+
+  setTeamCard("red", 1, data.Teams["R1"]);
+  setTeamCard("red", 2, data.Teams["R2"]);
+  setTeamCard("red", 3, data.Teams["R3"]);
+  setTeamCard("blue", 1, data.Teams["B1"]);
+  setTeamCard("blue", 2, data.Teams["B2"]);
+  setTeamCard("blue", 3, data.Teams["B3"]);
 };
 
-$(function() {
-  // Activate tooltips above the rule buttons.
-  $("[data-toggle=tooltip]").tooltip({"placement": "top"});
+// Handles a websocket message to update the match status.
+const handleMatchTime = function(data) {
+  $(".control-button").attr("data-enabled", matchStates[data.MatchState] === "POST_MATCH");
+};
 
+// Handles a websocket message to update the realtime scoring fields.
+const handleRealtimeScore = function(data) {
+  for (const [teamId, card] of Object.entries(Object.assign(data.RedCards, data.BlueCards))) {
+    $(`[data-team="${teamId}"]`).attr("data-card", card);
+  }
+
+  const newRedFoulsHashCode = hashObject(data.Red.Score.Fouls);
+  const newBlueFoulsHashCode = hashObject(data.Blue.Score.Fouls);
+  if (newRedFoulsHashCode !== redFoulsHashCode || newBlueFoulsHashCode !== blueFoulsHashCode) {
+    redFoulsHashCode = newRedFoulsHashCode;
+    blueFoulsHashCode = newBlueFoulsHashCode;
+    fetch("/panels/referee/foul_list")
+      .then(response => response.text())
+      .then(svg => $("#foulList").html(svg));
+  }
+}
+
+// Handles a websocket message to update the scoring commit status.
+const handleScoringStatus = function(data) {
+  if (data.RefereeScoreReady) {
+    $("#commitButton").attr("data-enabled", false);
+  }
+}
+
+// Populates the red/yellow card button for a given team.
+const setTeamCard = function(alliance, position, team) {
+  const cardButton = $(`#${alliance}Team${position}Card`);
+  if (team === null) {
+    cardButton.text(0);
+    cardButton.attr("data-team", 0)
+    cardButton.attr("data-old-yellow-card", "");
+  } else {
+    cardButton.text(team.Id);
+    cardButton.attr("data-team", team.Id)
+    cardButton.attr("data-old-yellow-card", team.YellowCard);
+  }
+  cardButton.attr("data-card", "");
+}
+
+// Produces a hash code of the given object for use in equality comparisons.
+const hashObject = function(object) {
+  const s = JSON.stringify(object);
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(31, h) + s.charCodeAt(i) | 0;
+  }
+  return h;
+}
+
+$(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/panels/referee/websocket", {
-    matchLoad: function(event) { handleMatchLoad(event.data) }
+    matchLoad: function(event) { handleMatchLoad(event.data); },
+    matchTime: function(event) { handleMatchTime(event.data); },
+    realtimeScore: function(event) { handleRealtimeScore(event.data); },
+    scoringStatus: function(event) { handleScoringStatus(event.data); },
   });
-
-  clearFoul();
 });

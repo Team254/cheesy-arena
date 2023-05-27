@@ -363,12 +363,12 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web.arena.RedRealtimeScore.CurrentScore.AutoDockStatuses = [3]bool{false, true, true}
 	web.arena.BlueRealtimeScore.CurrentScore.MobilityStatuses = [3]bool{true, false, true}
 	ws.Write("commitResults", nil)
-	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
+	readWebsocketMultiple(t, ws, 4) // reload, realtimeScore, setAllianceStationDisplay, scoringStatus
 	assert.Equal(t, [3]bool{false, true, true}, web.arena.SavedMatchResult.RedScore.AutoDockStatuses)
 	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.MobilityStatuses)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)
-	readWebsocketMultiple(t, ws, 3) // reload, realtimeScore, setAllianceStationDisplay
+	readWebsocketMultiple(t, ws, 4) // reload, realtimeScore, setAllianceStationDisplay, scoringStatus
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 
 	// Test changing the displays.
