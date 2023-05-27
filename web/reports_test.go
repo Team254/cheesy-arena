@@ -126,7 +126,7 @@ func TestWpaKeysCsvReport(t *testing.T) {
 	recorder := web.getHttpResponse("/reports/csv/wpa_keys")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/csv", recorder.Header()["Content-Type"][0])
-	assert.Equal(t, "attachment; filename=wpa_keys.csv", recorder.Header()["Content-Disposition"][0])
+	assert.Equal(t, "attachment; filename=keys.csv", recorder.Header()["Content-Disposition"][0])
 	assert.Equal(t, "254,12345678\r\n1114,9876543210\r\n", recorder.Body.String())
 }
 

@@ -595,7 +595,7 @@ func (web *Web) wpaKeysCsvReportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", "attachment; filename=wpa_keys.csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=keys.csv")
 	for _, team := range teams {
 		_, err := w.Write([]byte(fmt.Sprintf("%d,%s\r\n", team.Id, team.WpaKey)))
 		if err != nil {
