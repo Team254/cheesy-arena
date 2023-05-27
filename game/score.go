@@ -80,17 +80,16 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	// Calculate penalty points.
 	for _, foul := range opponentScore.Fouls {
 		summary.FoulPoints += foul.PointValue()
+		// Store the number of tech fouls since it is used to break ties in playoffs.
+		if foul.IsTechnical {
+			summary.NumOpponentTechFouls++
+		}
 
 		rule := foul.Rule()
 		if rule != nil {
 			// Check for the opponent fouls that automatically trigger a ranking point.
 			if rule.IsRankingPoint {
 				summary.SustainabilityBonusRankingPoint = true
-			}
-
-			// Store the number of tech fouls since it is used to break ties in playoffs.
-			if rule.IsTechnical {
-				summary.NumOpponentTechFouls++
 			}
 		}
 	}

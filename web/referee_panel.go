@@ -125,7 +125,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 
 			// Add the foul to the correct alliance's list.
-			foul := game.Foul{RuleId: args.RuleId, TeamId: args.TeamId, TimeInMatchSec: web.arena.MatchTimeSec()}
+			foul := game.Foul{TeamId: args.TeamId, RuleId: args.RuleId}
 			if args.Alliance == "red" {
 				web.arena.RedRealtimeScore.CurrentScore.Fouls =
 					append(web.arena.RedRealtimeScore.CurrentScore.Fouls, foul)
@@ -136,10 +136,9 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.RealtimeScoreNotifier.Notify()
 		case "deleteFoul":
 			args := struct {
-				Alliance       string
-				TeamId         int
-				RuleId         int
-				TimeInMatchSec float64
+				Alliance string
+				TeamId   int
+				RuleId   int
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -148,7 +147,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 
 			// Remove the foul from the correct alliance's list.
-			deleteFoul := game.Foul{RuleId: args.RuleId, TeamId: args.TeamId, TimeInMatchSec: args.TimeInMatchSec}
+			deleteFoul := game.Foul{TeamId: args.TeamId, RuleId: args.RuleId}
 			var fouls *[]game.Foul
 			if args.Alliance == "red" {
 				fouls = &web.arena.RedRealtimeScore.CurrentScore.Fouls

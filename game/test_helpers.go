@@ -14,9 +14,9 @@ type gridScoringAction struct {
 
 func TestScore1() *Score {
 	fouls := []Foul{
-		{13, 25, 150},
-		{14, 1868, 0},
-		{15, 25, 25.2},
+		{true, 25, 13},
+		{false, 1868, 14},
+		{true, 25, 15},
 	}
 	return &Score{
 		MobilityStatuses:          [3]bool{true, true, false},

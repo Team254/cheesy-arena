@@ -48,9 +48,10 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 2, blueSummary.BonusRankingPoints)
 	assert.Equal(t, 2, blueSummary.NumOpponentTechFouls)
 
-	// Test invalid foul.
+	// Test that unsetting the team and rule ID don't invalidate the foul.
+	redScore.Fouls[0].TeamId = 0
 	redScore.Fouls[0].RuleId = 0
-	assert.Equal(t, 17, blueScore.Summarize(redScore).FoulPoints)
+	assert.Equal(t, 29, blueScore.Summarize(redScore).FoulPoints)
 
 	// Test elimination disqualification.
 	redScore.ElimDq = true
@@ -228,7 +229,7 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.Fouls[0].RuleId = 1
+	score2.Fouls[0].IsTechnical = false
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 
@@ -238,7 +239,7 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.Fouls[0].TimeInMatchSec += 1
+	score2.Fouls[0].RuleId = 1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 

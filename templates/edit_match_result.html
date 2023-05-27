@@ -95,11 +95,19 @@
     <fieldset>
       <legend>Fouls</legend>
       {{"{{#each score.Fouls}}"}}
+        <input type="hidden" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Index"
+          value="{{"{{@index}}"}}">
         <div class="well well-sm well-dark{{"{{../alliance}}"}}">
           <button type="button" class="close" onclick="deleteFoul('{{"{{../alliance}}"}}', {{"{{@index}}"}});">
             ×
           </button>
           <br />
+          <div class="form-group">
+            <label class="col-lg-2 control-label">Is Technical?</label>
+            <div class="col-lg-3">
+              <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsTechnical">
+            </div>
+          </div>
           <div class="form-group">
             <label class="col-lg-2 control-label">Team</label>
             <div class="col-lg-8">
@@ -134,12 +142,6 @@
                   </option>
                 {{end}}
               </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-2 control-label">Seconds Into Match</label>
-            <div class="col-lg-3">
-              <input type="text" class="form-control input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Time">
             </div>
           </div>
         </div>

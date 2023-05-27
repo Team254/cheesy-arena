@@ -49,9 +49,9 @@ const renderResults = function(alliance) {
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
+      getInputElement(alliance, "Foul" + k + "IsTechnical").prop("checked", v.IsTechnical);
       getInputElement(alliance, "Foul" + k + "Team", v.TeamId).prop("checked", true);
       getSelectElement(alliance, "Foul" + k + "RuleId").val(v.RuleId);
-      getInputElement(alliance, "Foul" + k + "Time").val(v.TimeInMatchSec);
     });
   }
 
@@ -93,10 +93,14 @@ const updateResults = function(alliance) {
   result.score.EndgameChargeStationLevel = formData[alliance + "EndgameChargeStationLevel"] === "on";
 
   result.score.Fouls = [];
-  for (let i = 0; formData[alliance + "Foul" + i + "Time"]; i++) {
+
+  for (let i = 0; formData[alliance + "Foul" + i + "Index"]; i++) {
     const prefix = alliance + "Foul" + i;
-    const foul = {TeamId: parseInt(formData[prefix + "Team"]), RuleId: parseInt(formData[prefix + "RuleId"]),
-                TimeInMatchSec: parseFloat(formData[prefix + "Time"])};
+    const foul = {
+      IsTechnical: formData[prefix + "IsTechnical"] === "on",
+      TeamId: parseInt(formData[prefix + "Team"]),
+      RuleId: parseInt(formData[prefix + "RuleId"]),
+    };
     result.score.Fouls.push(foul);
   }
 
@@ -110,7 +114,7 @@ const updateResults = function(alliance) {
 const addFoul = function(alliance) {
   updateResults(alliance);
   const result = allianceResults[alliance];
-  result.score.Fouls.push({TeamId: 0, Rule: "", TimeInMatchSec: 0});
+  result.score.Fouls.push({IsTechnical: false, TeamId: 0, Rule: 0});
   renderResults(alliance);
 };
 

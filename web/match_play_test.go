@@ -221,7 +221,7 @@ func TestCommitEliminationTie(t *testing.T) {
 	// Test that playoff tiebreakers are evaluated.
 	matchResult.BlueScore.AutoDockStatuses = [3]bool{true, false, false}
 	matchResult.BlueScore.AutoChargeStationLevel = true
-	matchResult.BlueScore.Fouls = []game.Foul{{RuleId: 1}, {RuleId: 4}}
+	matchResult.BlueScore.Fouls = []game.Foul{{IsTechnical: false}, {IsTechnical: true}}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
 	assert.Equal(
