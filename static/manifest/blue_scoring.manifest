@@ -1,0 +1,14 @@
+{
+  "name": "Blue Scoring",
+  "icons": [
+    {
+      "src": "/static/img/panel-icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "scope": "/panels/scoring/blue",
+  "start_url": "/panels/scoring/blue",
+  "display": "standalone",
+  "orientation": "landscape"
+}

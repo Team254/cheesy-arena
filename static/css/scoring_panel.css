@@ -6,10 +6,12 @@ html {
   height: 100%;
   -webkit-user-select: none;
   -moz-user-select: none;
+  overscroll-behavior: none;
 }
 body {
   height: 100%;
   background-color: #222;
+  overscroll-behavior: none;
 }
 .container {
   padding-top: 1vw;

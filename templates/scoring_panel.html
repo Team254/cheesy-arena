@@ -58,6 +58,8 @@
 <div id="postMatchMessage">Waiting for the next match...</div>
 {{end}}
 {{define "head"}}
+<link rel="manifest" href="/static/manifest/{{.Alliance}}_scoring.manifest">
+<meta name="viewport" content="width=device-width, user-scalable=no">
 <link href="/static/css/scoring_panel.css" rel="stylesheet">
 {{end}}
 {{define "script"}}

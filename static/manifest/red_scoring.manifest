@@ -1,0 +1,14 @@
+{
+  "name": "Red Scoring",
+  "icons": [
+    {
+      "src": "/static/img/panel-icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "scope": "/panels/scoring/red",
+  "start_url": "/panels/scoring/red",
+  "display": "standalone",
+  "orientation": "landscape"
+}
