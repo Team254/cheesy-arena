@@ -271,20 +271,6 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	http.Redirect(w, r, "/match_play", 303)
 }
 
-// Publishes the alliances to the web.
-func (web *Web) allianceSelectionPublishHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
-		return
-	}
-
-	err := web.arena.TbaClient.PublishAlliances(web.arena.Database)
-	if err != nil {
-		http.Error(w, "Failed to publish alliances: "+err.Error(), 500)
-		return
-	}
-	http.Redirect(w, r, "/alliance_selection", 303)
-}
-
 func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
 	if len(web.arena.AllianceSelectionAlliances) == 0 {
 		// The application may have been restarted since the alliance selection was conducted; try reloading the

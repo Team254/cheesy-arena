@@ -109,28 +109,6 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 	http.Redirect(w, r, "/setup/schedule?matchType="+matchType, 303)
 }
 
-// Publishes the schedule in the database to TBA
-func (web *Web) scheduleRepublishPostHandler(w http.ResponseWriter, r *http.Request) {
-	if web.arena.EventSettings.TbaPublishingEnabled {
-		// Publish schedule to The Blue Alliance.
-		err := web.arena.TbaClient.DeletePublishedMatches()
-		if err != nil {
-			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
-			return
-		}
-		err = web.arena.TbaClient.PublishMatches(web.arena.Database)
-		if err != nil {
-			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
-			return
-		}
-	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
-		return
-	}
-
-	http.Redirect(w, r, "/setup/schedule?matchType="+getMatchType(r), 303)
-}
-
 // Saves the generated schedule to the database.
 func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
@@ -162,20 +140,6 @@ func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		handleWebErr(w, err)
 		return
-	}
-
-	if web.arena.EventSettings.TbaPublishingEnabled && matchType != "practice" {
-		// Publish schedule to The Blue Alliance.
-		err = web.arena.TbaClient.DeletePublishedMatches()
-		if err != nil {
-			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
-			return
-		}
-		err = web.arena.TbaClient.PublishMatches(web.arena.Database)
-		if err != nil {
-			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
-			return
-		}
 	}
 
 	http.Redirect(w, r, "/setup/schedule?matchType="+matchType, 303)

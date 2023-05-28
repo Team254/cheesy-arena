@@ -113,6 +113,33 @@ func TestSetupSettingsBackupRestoreDb(t *testing.T) {
 	assert.Equal(t, "Chezy Champs", web.arena.EventSettings.Name)
 }
 
+func TestSetupSettingsPublishToTba(t *testing.T) {
+	web := setupTestWeb(t)
+
+	web.arena.TbaClient.BaseUrl = "fakeurl"
+	web.arena.EventSettings.TbaPublishingEnabled = true
+
+	recorder := web.getHttpResponse("/setup/settings/publish_alliances")
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Failed to publish alliances")
+
+	recorder = web.getHttpResponse("/setup/settings/publish_awards")
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Failed to publish awards")
+
+	recorder = web.getHttpResponse("/setup/settings/publish_matches")
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Failed to delete published matches")
+
+	recorder = web.getHttpResponse("/setup/settings/publish_rankings")
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Failed to publish rankings")
+
+	recorder = web.getHttpResponse("/setup/settings/publish_teams")
+	assert.Equal(t, 500, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Failed to publish teams")
+}
+
 func (web *Web) postFileHttpResponse(path string, paramName string, file *bytes.Buffer) *httptest.ResponseRecorder {
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)

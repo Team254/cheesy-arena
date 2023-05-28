@@ -214,20 +214,6 @@ func (web *Web) teamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/setup/teams", 303)
 }
 
-// Publishes the team list to the web.
-func (web *Web) teamsPublishHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
-		return
-	}
-
-	err := web.arena.TbaClient.PublishTeams(web.arena.Database)
-	if err != nil {
-		http.Error(w, "Failed to publish teams: "+err.Error(), 500)
-		return
-	}
-	http.Redirect(w, r, "/setup/teams", 303)
-}
-
 // Generates random WPA keys and saves them to the team models.
 func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {

@@ -350,6 +350,26 @@
         </button>
       </p>
     </div>
+    {{if .TbaPublishingEnabled}}
+      <div class="well">
+        <legend>Publishing</legend>
+        <p>
+          <a href="/setup/settings/publish_teams"><button class="btn btn-info">Publish Teams</button></a>
+        </p>
+        <p>
+          <a href="/setup/settings/publish_matches"><button class="btn btn-info">Publish Schedule/Results</button></a>
+        </p>
+        <p>
+          <a href="/setup/settings/publish_rankings"><button class="btn btn-info">Publish Standings</button></a>
+        </p>
+        <p>
+          <a href="/setup/settings/publish_alliances"><button class="btn btn-info">Publish Alliances</button></a>
+        </p>
+        <p>
+          <a href="/setup/settings/publish_awards"><button class="btn btn-info">Publish Awards</button></a>
+        </p>
+      </div>
+    {{end}}
   </div>
 </div>
 <div id="uploadDatabase" class="modal" style="top: 20%;">

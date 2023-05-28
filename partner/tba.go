@@ -485,6 +485,37 @@ func (client *TbaClient) PublishAlliances(database *model.Database) error {
 	return nil
 }
 
+// Uploads the awards to The Blue Alliance.
+func (client *TbaClient) PublishAwards(database *model.Database) error {
+	awards, err := database.GetAllAwards()
+	if err != nil {
+		return err
+	}
+
+	// Build a JSON array of TBA-format award models.
+	tbaAwards := make([]TbaPublishedAward, len(awards))
+	for i, award := range awards {
+		tbaAwards[i].Name = award.AwardName
+		tbaAwards[i].TeamKey = getTbaTeam(award.TeamId)
+		tbaAwards[i].Awardee = award.PersonName
+	}
+	jsonBody, err := json.Marshal(tbaAwards)
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.postRequest("awards", "update", jsonBody)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		defer resp.Body.Close()
+		body, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
+	}
+	return nil
+}
+
 // Clears out the existing match data on The Blue Alliance for the event.
 func (client *TbaClient) DeletePublishedMatches() error {
 	resp, err := client.postRequest("matches", "delete_all", []byte(client.eventCode))
@@ -657,37 +688,6 @@ func createTbaScoringBreakdown(
 	}
 
 	return breakdownMap
-}
-
-// Uploads the awards to The Blue Alliance.
-func (client *TbaClient) PublishAwards(database *model.Database) error {
-	awards, err := database.GetAllAwards()
-	if err != nil {
-		return err
-	}
-
-	// Build a JSON array of TBA-format award models.
-	tbaAwards := make([]TbaPublishedAward, len(awards))
-	for i, award := range awards {
-		tbaAwards[i].Name = award.AwardName
-		tbaAwards[i].TeamKey = getTbaTeam(award.TeamId)
-		tbaAwards[i].Awardee = award.PersonName
-	}
-	jsonBody, err := json.Marshal(tbaAwards)
-	if err != nil {
-		return err
-	}
-
-	resp, err := client.postRequest("awards", "update", jsonBody)
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
-	}
-	return nil
 }
 
 // Sets the match key attributes on TbaMatch based on the match and bracket type.

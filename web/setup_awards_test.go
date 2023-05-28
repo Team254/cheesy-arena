@@ -33,14 +33,3 @@ func TestSetupAwards(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Englebert")
 }
-
-func TestSetupAwardsPublish(t *testing.T) {
-	web := setupTestWeb(t)
-
-	web.arena.TbaClient.BaseUrl = "fakeurl"
-	web.arena.EventSettings.TbaPublishingEnabled = true
-
-	recorder := web.postHttpResponse("/setup/awards/publish", "")
-	assert.Equal(t, 500, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Failed to publish awards")
-}

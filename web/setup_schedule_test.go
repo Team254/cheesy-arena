@@ -34,13 +34,10 @@ func TestSetupSchedule(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "2014-01-02 11:48:00") // Last match of second block.
 	assert.Contains(t, recorder.Body.String(), "2014-01-03 16:54:00") // Last match of third block.
 
-	// Save schedule and check that it is published to TBA.
-	web.arena.TbaClient.BaseUrl = "fakeUrl"
-	web.arena.EventSettings.TbaPublishingEnabled = true
+	// Save schedule and check that it was persisted.
 	recorder = web.postHttpResponse("/setup/schedule/save?matchType=qualification", "")
+	assert.Equal(t, 303, recorder.Code)
 	matches, err := web.arena.Database.GetMatchesByType("qualification")
-	assert.Equal(t, 500, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Failed to delete published matches")
 	assert.Nil(t, err)
 	assert.Equal(t, 64, len(matches))
 	location, _ := time.LoadLocation("Local")

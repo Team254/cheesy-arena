@@ -241,6 +241,111 @@ func (web *Web) clearDbHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/setup/settings", 303)
 }
 
+// Publishes the playoff alliances to the web.
+func (web *Web) settingsPublishAlliancesHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	if web.arena.EventSettings.TbaPublishingEnabled {
+		err := web.arena.TbaClient.PublishAlliances(web.arena.Database)
+		if err != nil {
+			http.Error(w, "Failed to publish alliances: "+err.Error(), 500)
+			return
+		}
+	} else {
+		http.Error(w, "TBA publishing is not enabled", 500)
+		return
+	}
+
+	http.Redirect(w, r, "/setup/settings", 303)
+}
+
+// Publishes the awards to the web.
+func (web *Web) settingsPublishAwardsHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	if web.arena.EventSettings.TbaPublishingEnabled {
+		err := web.arena.TbaClient.PublishAwards(web.arena.Database)
+		if err != nil {
+			http.Error(w, "Failed to publish awards: "+err.Error(), 500)
+			return
+		}
+	} else {
+		http.Error(w, "TBA publishing is not enabled", 500)
+		return
+	}
+
+	http.Redirect(w, r, "/setup/settings", 303)
+}
+
+// Publishes the match schedule and results to the web.
+func (web *Web) settingsPublishMatchesHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	if web.arena.EventSettings.TbaPublishingEnabled {
+		err := web.arena.TbaClient.DeletePublishedMatches()
+		if err != nil {
+			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
+			return
+		}
+		err = web.arena.TbaClient.PublishMatches(web.arena.Database)
+		if err != nil {
+			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
+			return
+		}
+	} else {
+		http.Error(w, "TBA publishing is not enabled", 500)
+		return
+	}
+
+	http.Redirect(w, r, "/setup/settings", 303)
+}
+
+// Publishes the standings to the web.
+func (web *Web) settingsPublishRankingsHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	if web.arena.EventSettings.TbaPublishingEnabled {
+		err := web.arena.TbaClient.PublishRankings(web.arena.Database)
+		if err != nil {
+			http.Error(w, "Failed to publish rankings: "+err.Error(), 500)
+			return
+		}
+	} else {
+		http.Error(w, "TBA publishing is not enabled", 500)
+		return
+	}
+
+	http.Redirect(w, r, "/setup/settings", 303)
+}
+
+// Publishes the team list to the web.
+func (web *Web) settingsPublishTeamsHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	if web.arena.EventSettings.TbaPublishingEnabled {
+		err := web.arena.TbaClient.PublishTeams(web.arena.Database)
+		if err != nil {
+			http.Error(w, "Failed to publish teams: "+err.Error(), 500)
+			return
+		}
+	} else {
+		http.Error(w, "TBA publishing is not enabled", 500)
+		return
+	}
+
+	http.Redirect(w, r, "/setup/settings", 303)
+}
+
 func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string) {
 	template, err := web.parseFiles("templates/setup_settings.html", "templates/base.html")
 	if err != nil {

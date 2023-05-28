@@ -305,14 +305,3 @@ func TestAllianceSelectionAutofocus(t *testing.T) {
 	assert.Equal(t, -1, i)
 	assert.Equal(t, -1, j)
 }
-
-func TestAllianceSelectionPublish(t *testing.T) {
-	web := setupTestWeb(t)
-
-	web.arena.TbaClient.BaseUrl = "fakeurl"
-	web.arena.EventSettings.TbaPublishingEnabled = true
-
-	recorder := web.postHttpResponse("/alliance_selection/publish", "")
-	assert.Equal(t, 500, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Failed to publish alliances")
-}

@@ -36,13 +36,6 @@
             Clear Team List
           </button>
         </div>
-        {{if .EventSettings.TbaPublishingEnabled}}
-          <div class="form-group">
-            <button type="button" class="btn btn-info" onclick="$('#confirmPublishTeams').modal('show');">
-              Publish Team List to TBA
-            </button>
-          </div>
-        {{end}}
         {{if .EventSettings.NetworkSecurityEnabled}}
           <div class="form-group">
             <a href="/setup/teams/generate_wpa_keys?all=true" class="btn btn-primary">Generate All WPA Keys</a>
@@ -50,6 +43,10 @@
           <div class="form-group">
             <a href="/setup/teams/generate_wpa_keys?all=false" class="btn btn-primary">Generate Missing WPA Keys</a>
           </div>
+        {{end}}
+        {{if .EventSettings.TbaPublishingEnabled}}
+          <p>Team list is not automatically published to The Blue Alliance. Manually publish it from the Settings
+            tab.</p>
         {{end}}
       </fieldset>
     </form>
