@@ -35,9 +35,9 @@ func TestEarlyLateMessage(t *testing.T) {
 	arena.LoadTestMatch()
 	assert.Equal(t, "", arena.getEarlyLateMessage())
 
-	arena.Database.CreateMatch(&model.Match{Type: "qualification", DisplayName: "1"})
-	arena.Database.CreateMatch(&model.Match{Type: "qualification", DisplayName: "2"})
-	matches, _ := arena.Database.GetMatchesByType("qualification")
+	arena.Database.CreateMatch(&model.Match{Type: model.Qualification, DisplayName: "1"})
+	arena.Database.CreateMatch(&model.Match{Type: model.Qualification, DisplayName: "2"})
+	matches, _ := arena.Database.GetMatchesByType(model.Qualification)
 	assert.Equal(t, 2, len(matches))
 
 	setMatch(arena.Database, &matches[0], time.Now().Add(300*time.Second), time.Time{}, false)
@@ -108,10 +108,10 @@ func TestEarlyLateMessage(t *testing.T) {
 
 	// Check other match types.
 	arena.MatchState = PreMatch
-	arena.CurrentMatch = &model.Match{Type: "practice", Time: time.Now().Add(-181 * time.Second)}
+	arena.CurrentMatch = &model.Match{Type: model.Practice, Time: time.Now().Add(-181 * time.Second)}
 	assert.Equal(t, "Event is running 3 minutes late", arena.getEarlyLateMessage())
 
-	arena.CurrentMatch = &model.Match{Type: "elimination", Time: time.Now().Add(-181 * time.Second)}
+	arena.CurrentMatch = &model.Match{Type: model.Playoff, Time: time.Now().Add(-181 * time.Second)}
 	assert.Equal(t, "", arena.getEarlyLateMessage())
 }
 

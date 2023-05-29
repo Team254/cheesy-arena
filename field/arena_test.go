@@ -378,14 +378,14 @@ func TestLoadNextMatch(t *testing.T) {
 	arena := setupTestArena(t)
 
 	arena.Database.CreateTeam(&model.Team{Id: 1114})
-	practiceMatch1 := model.Match{Type: "practice", DisplayName: "1"}
-	practiceMatch2 := model.Match{Type: "practice", DisplayName: "2", Status: game.RedWonMatch}
-	practiceMatch3 := model.Match{Type: "practice", DisplayName: "3"}
+	practiceMatch1 := model.Match{Type: model.Practice, DisplayName: "1"}
+	practiceMatch2 := model.Match{Type: model.Practice, DisplayName: "2", Status: game.RedWonMatch}
+	practiceMatch3 := model.Match{Type: model.Practice, DisplayName: "3"}
 	arena.Database.CreateMatch(&practiceMatch1)
 	arena.Database.CreateMatch(&practiceMatch2)
 	arena.Database.CreateMatch(&practiceMatch3)
-	qualificationMatch1 := model.Match{Type: "qualification", DisplayName: "1", Status: game.BlueWonMatch}
-	qualificationMatch2 := model.Match{Type: "qualification", DisplayName: "2"}
+	qualificationMatch1 := model.Match{Type: model.Qualification, DisplayName: "1", Status: game.BlueWonMatch}
+	qualificationMatch2 := model.Match{Type: model.Qualification, DisplayName: "2"}
 	arena.Database.CreateMatch(&qualificationMatch1)
 	arena.Database.CreateMatch(&qualificationMatch2)
 
@@ -416,7 +416,7 @@ func TestLoadNextMatch(t *testing.T) {
 	err = arena.LoadNextMatch()
 	assert.Nil(t, err)
 	assert.Equal(t, 0, arena.CurrentMatch.Id)
-	assert.Equal(t, "test", arena.CurrentMatch.Type)
+	assert.Equal(t, model.Test, arena.CurrentMatch.Type)
 
 	err = arena.LoadMatch(&qualificationMatch1)
 	assert.Nil(t, err)
@@ -449,7 +449,7 @@ func TestSubstituteTeam(t *testing.T) {
 	}
 
 	// Substitute teams into practice match.
-	match := model.Match{Type: "practice", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	match := model.Match{Type: model.Practice, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
 	err = arena.SubstituteTeam(107, "R1")
@@ -460,14 +460,14 @@ func TestSubstituteTeam(t *testing.T) {
 	matchResult.MatchId = arena.CurrentMatch.Id
 
 	// Check that substitution is disallowed in qualification matches.
-	match = model.Match{Type: "qualification", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	match = model.Match{Type: model.Qualification, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
 	err = arena.SubstituteTeam(107, "R1")
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Can't substitute teams for qualification matches.")
 	}
-	match = model.Match{Type: "elimination", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	match = model.Match{Type: model.Playoff, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
 	assert.Nil(t, arena.SubstituteTeam(107, "R1"))

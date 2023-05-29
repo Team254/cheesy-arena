@@ -291,7 +291,7 @@ func (matchup *Matchup) update(database *model.Database) error {
 		for i := 0; i < numUnplayedMatchesNeeded-len(unplayedMatches); i++ {
 			instance := len(matches) + i + 1
 			match := model.Match{
-				Type:             "elimination",
+				Type:             model.Playoff,
 				DisplayName:      matchup.matchDisplayName(instance),
 				ElimRound:        matchup.Round,
 				ElimGroup:        matchup.Group,

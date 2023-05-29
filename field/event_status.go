@@ -7,6 +7,7 @@ package field
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
 	"math"
 	"time"
 )
@@ -49,7 +50,7 @@ func (arena *Arena) updateEarlyLateMessage() {
 // Updates the string that indicates how early or late the event is running.
 func (arena *Arena) getEarlyLateMessage() string {
 	currentMatch := arena.CurrentMatch
-	if currentMatch.Type != "practice" && currentMatch.Type != "qualification" {
+	if currentMatch.Type != model.Practice && currentMatch.Type != model.Qualification {
 		// Only practice and qualification matches have a strict schedule.
 		return ""
 	}

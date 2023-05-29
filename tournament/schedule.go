@@ -23,8 +23,9 @@ const (
 )
 
 // Creates a random schedule for the given parameters and returns it as a list of matches.
-func BuildRandomSchedule(teams []model.Team, scheduleBlocks []model.ScheduleBlock,
-	matchType string) ([]model.Match, error) {
+func BuildRandomSchedule(
+	teams []model.Team, scheduleBlocks []model.ScheduleBlock, matchType model.MatchType,
+) ([]model.Match, error) {
 	// Load the anonymized, pre-randomized match schedule for the given number of teams and matches per team.
 	numTeams := len(teams)
 	numMatches := countMatches(scheduleBlocks)

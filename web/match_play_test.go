@@ -22,11 +22,11 @@ import (
 func TestMatchPlay(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match1 := model.Match{Type: "practice", DisplayName: "1", Status: game.RedWonMatch}
-	match2 := model.Match{Type: "practice", DisplayName: "2"}
-	match3 := model.Match{Type: "qualification", DisplayName: "1", Status: game.BlueWonMatch}
-	match4 := model.Match{Type: "elimination", DisplayName: "SF1-1", Status: game.TieMatch}
-	match5 := model.Match{Type: "elimination", DisplayName: "SF1-2"}
+	match1 := model.Match{Type: model.Practice, DisplayName: "1", Status: game.RedWonMatch}
+	match2 := model.Match{Type: model.Practice, DisplayName: "2"}
+	match3 := model.Match{Type: model.Qualification, DisplayName: "1", Status: game.BlueWonMatch}
+	match4 := model.Match{Type: model.Playoff, DisplayName: "SF1-1", Status: game.TieMatch}
+	match5 := model.Match{Type: model.Playoff, DisplayName: "SF1-2"}
 	web.arena.Database.CreateMatch(&match1)
 	web.arena.Database.CreateMatch(&match2)
 	web.arena.Database.CreateMatch(&match3)
@@ -54,7 +54,7 @@ func TestMatchPlayLoad(t *testing.T) {
 	web.arena.Database.CreateTeam(&model.Team{Id: 104})
 	web.arena.Database.CreateTeam(&model.Team{Id: 105})
 	web.arena.Database.CreateTeam(&model.Team{Id: 106})
-	match := model.Match{Type: "elimination", DisplayName: "QF4-3", Status: game.RedWonMatch, Red1: 101,
+	match := model.Match{Type: model.Playoff, DisplayName: "QF4-3", Status: game.RedWonMatch, Red1: 101,
 		Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	web.arena.Database.CreateMatch(&match)
 	recorder := web.getHttpResponse("/match_play")
@@ -97,7 +97,7 @@ func TestMatchPlayShowAndClearResult(t *testing.T) {
 	recorder := web.getHttpResponse("/match_play/1/show_result")
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Invalid match")
-	match := model.Match{Type: "qualification", DisplayName: "1", Status: game.TieMatch}
+	match := model.Match{Type: model.Qualification, DisplayName: "1", Status: game.TieMatch}
 	web.arena.Database.CreateMatch(&match)
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
 	assert.Equal(t, 500, recorder.Code)
@@ -127,7 +127,7 @@ func TestCommitMatch(t *testing.T) {
 	web := setupTestWeb(t)
 
 	// Committing test match should update the stored saved match but not persist anything.
-	match := &model.Match{Id: 0, Type: "test", Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	match := &model.Match{Id: 0, Type: model.Test, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	matchResult := &model.MatchResult{MatchId: match.Id, RedScore: &game.Score{}, BlueScore: &game.Score{}}
 	matchResult.BlueScore.MobilityStatuses[2] = true
 	err := web.commitMatchScore(match, matchResult, false)
@@ -139,7 +139,7 @@ func TestCommitMatch(t *testing.T) {
 	assert.Equal(t, game.BlueWonMatch, web.arena.SavedMatch.Status)
 
 	// Committing the same match more than once should create a second match result record.
-	match.Type = "qualification"
+	match.Type = model.Qualification
 	assert.Nil(t, web.arena.Database.CreateMatch(match))
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
@@ -182,7 +182,7 @@ func TestCommitMatch(t *testing.T) {
 func TestCommitEliminationTie(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match := &model.Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
+	match := &model.Match{Id: 0, Type: model.Qualification, Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	web.arena.Database.CreateMatch(match)
 	matchResult := &model.MatchResult{
 		MatchId: match.Id,
@@ -210,7 +210,7 @@ func TestCommitEliminationTie(t *testing.T) {
 
 	tournament.CreateTestAlliances(web.arena.Database, 2)
 	web.arena.CreatePlayoffBracket()
-	match.Type = "elimination"
+	match.Type = model.Playoff
 	match.ElimRedAlliance = 1
 	match.ElimBlueAlliance = 2
 	web.arena.Database.UpdateMatch(match)
@@ -247,7 +247,7 @@ func TestCommitCards(t *testing.T) {
 	// Check that a yellow card sticks with a team.
 	team := &model.Team{Id: 5}
 	web.arena.Database.CreateTeam(team)
-	match := &model.Match{Id: 0, Type: "qualification", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
+	match := &model.Match{Id: 0, Type: model.Qualification, Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
 	assert.Nil(t, web.arena.Database.CreateMatch(match))
 	matchResult := model.NewMatchResult()
 	matchResult.MatchId = match.Id
@@ -278,7 +278,7 @@ func TestCommitCards(t *testing.T) {
 	tournament.CreateTestAlliances(web.arena.Database, 2)
 	web.arena.EventSettings.NumElimAlliances = 2
 	web.arena.CreatePlayoffBracket()
-	match.Type = "elimination"
+	match.Type = model.Playoff
 	match.ElimRedAlliance = 1
 	match.ElimBlueAlliance = 2
 	web.arena.Database.UpdateMatch(match)

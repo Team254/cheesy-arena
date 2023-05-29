@@ -88,8 +88,8 @@ const handleMatchLoad = function(data) {
   $("#" + blueSide + "Team2Avatar").attr("src", getAvatarUrl(currentMatch.Blue2));
   $("#" + blueSide + "Team3Avatar").attr("src", getAvatarUrl(currentMatch.Blue3));
 
-  // Show alliance numbers if this is an elimination match.
-  if (currentMatch.Type === "elimination") {
+  // Show alliance numbers if this is a playoff match.
+  if (currentMatch.Type === matchTypePlayoff) {
     $("#" + redSide + "ElimAlliance").text(currentMatch.ElimRedAlliance);
     $("#" + blueSide + "ElimAlliance").text(currentMatch.ElimBlueAlliance);
     $(".elim-alliance").show();
@@ -109,7 +109,7 @@ const handleMatchLoad = function(data) {
     $("#elimSeriesStatus").hide();
   }
 
-  if (data.Match.Type === "test") {
+  if (data.Match.Type === matchTypeTest) {
     $("#matchName").text(currentMatch.DisplayName);
   } else {
     $("#matchName").text(data.MatchType + " " + currentMatch.DisplayName);
@@ -137,7 +137,7 @@ const handleRealtimeScore = function(data) {
   $("#" + redSide + "LinkDenominator").text(data.Red.ScoreSummary.NumLinksGoal);
   $("#" + blueSide + "LinkNumerator").text(data.Blue.ScoreSummary.NumLinks);
   $("#" + blueSide + "LinkDenominator").text(data.Blue.ScoreSummary.NumLinksGoal);
-  if (currentMatch.Type === "elimination") {
+  if (currentMatch.Type === matchTypePlayoff) {
     $("#" + redSide + "LinkDenominator").hide();
     $("#" + blueSide + "LinkDenominator").hide();
     $(".link-splitter").hide();

@@ -71,6 +71,10 @@ func NewWeb(arena *field.Arena) *Web {
 		"nodeStateToInt": func(nodeState game.NodeState) int {
 			return int(nodeState)
 		},
+		"testMatch":          model.Test.Get,
+		"practiceMatch":      model.Practice.Get,
+		"qualificationMatch": model.Qualification.Get,
+		"playoffMatch":       model.Playoff.Get,
 	}
 
 	return web

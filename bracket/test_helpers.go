@@ -29,7 +29,7 @@ func assertMatch(t *testing.T, match model.Match, displayName string, redAllianc
 }
 
 func scoreMatch(database *model.Database, displayName string, winner game.MatchStatus) {
-	match, _ := database.GetMatchByName("elimination", displayName)
+	match, _ := database.GetMatchByName(model.Playoff, displayName)
 	match.Status = winner
 	database.UpdateMatch(match)
 	database.UpdateAllianceFromMatch(match.ElimRedAlliance, [3]int{match.Red1, match.Red2, match.Red3})

@@ -29,17 +29,17 @@ type MatchReviewListItem struct {
 
 // Shows the match review interface.
 func (web *Web) matchReviewHandler(w http.ResponseWriter, r *http.Request) {
-	practiceMatches, err := web.buildMatchReviewList("practice")
+	practiceMatches, err := web.buildMatchReviewList(model.Practice)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	qualificationMatches, err := web.buildMatchReviewList("qualification")
+	qualificationMatches, err := web.buildMatchReviewList(model.Qualification)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	eliminationMatches, err := web.buildMatchReviewList("elimination")
+	eliminationMatches, err := web.buildMatchReviewList(model.Playoff)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -50,16 +50,19 @@ func (web *Web) matchReviewHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	matchesByType := map[string][]MatchReviewListItem{"practice": practiceMatches,
-		"qualification": qualificationMatches, "elimination": eliminationMatches}
+	matchesByType := map[model.MatchType][]MatchReviewListItem{
+		model.Practice:      practiceMatches,
+		model.Qualification: qualificationMatches,
+		model.Playoff:       eliminationMatches,
+	}
 	currentMatchType := web.arena.CurrentMatch.Type
-	if currentMatchType == "test" {
-		currentMatchType = "practice"
+	if currentMatchType == model.Test {
+		currentMatchType = model.Practice
 	}
 	data := struct {
 		*model.EventSettings
-		MatchesByType    map[string][]MatchReviewListItem
-		CurrentMatchType string
+		MatchesByType    map[model.MatchType][]MatchReviewListItem
+		CurrentMatchType model.MatchType
 	}{web.arena.EventSettings, matchesByType, currentMatchType}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
@@ -177,7 +180,7 @@ func (web *Web) getMatchResultFromRequest(r *http.Request) (*model.Match, *model
 }
 
 // Constructs the list of matches to display in the match review interface.
-func (web *Web) buildMatchReviewList(matchType string) ([]MatchReviewListItem, error) {
+func (web *Web) buildMatchReviewList(matchType model.MatchType) ([]MatchReviewListItem, error) {
 	matches, err := web.arena.Database.GetMatchesByType(matchType)
 	if err != nil {
 		return []MatchReviewListItem{}, err

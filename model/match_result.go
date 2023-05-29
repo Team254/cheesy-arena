@@ -13,7 +13,7 @@ type MatchResult struct {
 	Id         int `db:"id"`
 	MatchId    int
 	PlayNumber int
-	MatchType  string
+	MatchType  MatchType
 	RedScore   *game.Score
 	BlueScore  *game.Score
 	RedCards   map[string]string

@@ -131,7 +131,7 @@ func TestSetupTeamsDisallowModification(t *testing.T) {
 	web := setupTestWeb(t)
 
 	web.arena.Database.CreateTeam(&model.Team{Id: 254, Nickname: "The Cheesy Poofs"})
-	web.arena.Database.CreateMatch(&model.Match{Type: "qualification"})
+	web.arena.Database.CreateMatch(&model.Match{Type: model.Qualification})
 
 	// Disallow adding teams.
 	recorder := web.postHttpResponse("/setup/teams", "teamNumbers=33")

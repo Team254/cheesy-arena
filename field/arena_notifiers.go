@@ -140,7 +140,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 	var matchup *bracket.Matchup
 	redOffFieldTeams := []*model.Team{}
 	blueOffFieldTeams := []*model.Team{}
-	if arena.CurrentMatch.Type == "elimination" {
+	if arena.CurrentMatch.Type == model.Playoff {
 		matchup, _ = arena.PlayoffBracket.GetMatchup(arena.CurrentMatch.ElimRound, arena.CurrentMatch.ElimGroup)
 		redOffFieldTeamIds, blueOffFieldTeamIds, _ := arena.Database.GetOffFieldTeamIds(arena.CurrentMatch)
 		for _, teamId := range redOffFieldTeamIds {
@@ -162,7 +162,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		RedOffFieldTeams  []*model.Team
 		BlueOffFieldTeams []*model.Team
 	}{
-		arena.CurrentMatch.CapitalizedType(),
+		arena.CurrentMatch.Type.String(),
 		arena.CurrentMatch,
 		teams,
 		rankings,
@@ -217,7 +217,7 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 	var matchup *bracket.Matchup
 	redOffFieldTeamIds := []int{}
 	blueOffFieldTeamIds := []int{}
-	if arena.SavedMatch.Type == "elimination" {
+	if arena.SavedMatch.Type == model.Playoff {
 		matchup, _ = arena.PlayoffBracket.GetMatchup(arena.SavedMatch.ElimRound, arena.SavedMatch.ElimGroup)
 		seriesLeader, seriesStatus = matchup.StatusText()
 		redOffFieldTeamIds, blueOffFieldTeamIds, _ = arena.Database.GetOffFieldTeamIds(arena.SavedMatch)
@@ -257,7 +257,7 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		SeriesStatus        string
 		SeriesLeader        string
 	}{
-		arena.SavedMatch.CapitalizedType(),
+		arena.SavedMatch.Type.String(),
 		arena.SavedMatch,
 		redScoreSummary,
 		blueScoreSummary,

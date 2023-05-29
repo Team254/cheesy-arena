@@ -31,7 +31,7 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	numMatchesToShow := numNonElimMatchesToShow
-	if web.arena.CurrentMatch.Type == "elimination" {
+	if web.arena.CurrentMatch.Type == model.Playoff {
 		numMatchesToShow = numElimMatchesToShow
 	}
 

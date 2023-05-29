@@ -10,19 +10,19 @@
   <div class="col-lg-4">
     <a href="/match_play/0/load"><b class="btn btn-info">Load Test Match</b></a><br /><br />
     <ul class="nav nav-tabs" style="margin-bottom: 15px;">
-      <li{{if eq .CurrentMatchType "practice" }} class="active"{{end}}>
-        <a href="#practice" data-toggle="tab">Practice</a>
+      <li{{if eq .CurrentMatchType practiceMatch }} class="active"{{end}}>
+        <a href="#Practice" data-toggle="tab">Practice</a>
       </li>
-      <li{{if eq .CurrentMatchType "qualification" }} class="active"{{end}}>
-        <a href="#qualification" data-toggle="tab">Qualification</a>
+      <li{{if eq .CurrentMatchType qualificationMatch }} class="active"{{end}}>
+        <a href="#Qualification" data-toggle="tab">Qualification</a>
       </li>
-      <li{{if eq .CurrentMatchType "elimination" }} class="active"{{end}}>
-        <a href="#elimination" data-toggle="tab">Playoff</a>
+      <li{{if eq .CurrentMatchType playoffMatch }} class="active"{{end}}>
+        <a href="#Playoff" data-toggle="tab">Playoff</a>
       </li>
     </ul>
     <div class="tab-content">
       {{range $type, $matches := .MatchesByType}}
-        <div class="tab-pane {{if eq $.CurrentMatchType $type }} active{{end}}" id="{{$type}}">
+        <div class="tab-pane {{if eq $.CurrentMatchType $type}} active{{end}}" id="{{$type}}">
           <table class="table table-striped table-hover ">
             <thead>
               <tr>
@@ -57,8 +57,8 @@
   <div class="col-lg-8">
     <div class="row text-center">
       <div class="col-lg-3 well well-sm text-center" style="text-transform: uppercase;">
-        {{if eq .Match.Type "elimination"}}playoff{{else}}{{.Match.Type}}{{end}}
-        {{if ne .Match.Type "test" }}{{.Match.DisplayName}}{{end}}
+        {{if eq .Match.Type playoffMatch}}playoff{{else}}{{.Match.Type}}{{end}}
+        {{if ne .Match.Type testMatch}}{{.Match.DisplayName}}{{end}}
       </div>
       <div id="matchState" class="col-lg-3 well well-sm text-center">&nbsp;</div>
       <div id="matchTime" class="col-lg-2 well well-sm text-center">&nbsp;</div>
@@ -77,7 +77,7 @@
         {{template "matchPlayTeam" dict "team" .Match.Blue1 "color" "B" "position" 1 "data" .}}
         {{template "matchPlayTeam" dict "team" .Match.Blue2 "color" "B" "position" 2 "data" .}}
         {{template "matchPlayTeam" dict "team" .Match.Blue3 "color" "B" "position" 3 "data" .}}
-        {{if eq .Match.Type "elimination" }}
+        {{if eq .Match.Type playoffMatch}}
           <div>
             <b>Alliance {{.Match.ElimBlueAlliance}}</b>
             {{if .BlueOffFieldTeams}}
@@ -97,7 +97,7 @@
         {{template "matchPlayTeam" dict "team" .Match.Red3 "color" "R" "position" 3 "data" .}}
         {{template "matchPlayTeam" dict "team" .Match.Red2 "color" "R" "position" 2 "data" .}}
         {{template "matchPlayTeam" dict "team" .Match.Red1 "color" "R" "position" 1 "data" .}}
-        {{if eq .Match.Type "elimination" }}
+        {{if eq .Match.Type playoffMatch}}
         <div>
           <b>Alliance {{.Match.ElimRedAlliance}}</b>
           {{if .RedOffFieldTeams}}
@@ -271,7 +271,7 @@
           <button type="button" id="startTimeout" class="btn btn-info btn-xs" onclick="startTimeout();">
             Start
           </button>
-          {{if eq .Match.Type "test" }}
+          {{if eq .Match.Type testMatch}}
             <br /><br />
             <p>Match Name</p>
             <input type="text" id="testMatchName" value="{{.Match.DisplayName}}" onblur="setTestMatchName();" />

@@ -5,6 +5,7 @@ package bracket
 
 import (
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -20,7 +21,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err := NewSingleEliminationBracket(2)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err := database.GetMatchesByType("elimination")
+	matches, err := database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(matches)) {
 		assertMatch(t, matches[0], "F-1", 1, 2)
@@ -33,7 +34,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(3)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(matches)) {
 		assertMatch(t, matches[0], "SF2-1", 2, 3)
@@ -46,7 +47,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(4)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 4, len(matches)) {
 		assertMatch(t, matches[0], "SF1-1", 1, 4)
@@ -61,7 +62,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(5)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 4, len(matches)) {
 		assertMatch(t, matches[0], "QF2-1", 4, 5)
@@ -76,7 +77,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(6)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 4, len(matches)) {
 		assertMatch(t, matches[0], "QF2-1", 4, 5)
@@ -91,7 +92,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(7)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
 		assertMatch(t, matches[0], "QF2-1", 4, 5)
@@ -108,7 +109,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(8)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 8, len(matches)) {
 		assertMatch(t, matches[0], "QF1-1", 1, 8)
@@ -127,7 +128,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(9)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 8, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -146,7 +147,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(10)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 8, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -165,7 +166,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(11)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 8, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -184,7 +185,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(12)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 8, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -203,7 +204,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(13)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 10, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -224,7 +225,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(14)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 12, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -247,7 +248,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(15)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 14, len(matches)) {
 		assertMatch(t, matches[0], "EF2-1", 8, 9)
@@ -272,7 +273,7 @@ func TestSingleEliminationInitial(t *testing.T) {
 	bracket, err = NewSingleEliminationBracket(16)
 	assert.Nil(t, err)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 16, len(matches)) {
 		assertMatch(t, matches[0], "EF1-1", 1, 16)
@@ -319,7 +320,7 @@ func TestSingleEliminationPopulatePartialMatch(t *testing.T) {
 	scoreMatch(database, "SF2-1", game.BlueWonMatch)
 	scoreMatch(database, "SF2-2", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err := database.GetMatchesByType("elimination")
+	matches, err := database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 4, len(matches)) {
 		assertMatch(t, matches[2], "F-1", 1, 3)
@@ -337,13 +338,13 @@ func TestSingleEliminationPopulatePartialMatch(t *testing.T) {
 	scoreMatch(database, "SF2-1", game.RedWonMatch)
 	scoreMatch(database, "SF2-2", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	assert.Equal(t, 4, len(matches))
 	scoreMatch(database, "SF1-1", game.RedWonMatch)
 	scoreMatch(database, "SF1-2", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
 		assertMatch(t, matches[4], "F-1", 1, 2)
@@ -363,19 +364,19 @@ func TestSingleEliminationCreateNextRound(t *testing.T) {
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	scoreMatch(database, "SF1-1", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, _ := database.GetMatchesByType("elimination")
+	matches, _ := database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 4, len(matches))
 	scoreMatch(database, "SF2-1", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 4, len(matches))
 	scoreMatch(database, "SF1-2", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 4, len(matches))
 	scoreMatch(database, "SF2-2", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	if assert.Equal(t, 6, len(matches)) {
 		assertMatch(t, matches[4], "F-1", 4, 3)
 		assertMatch(t, matches[5], "F-2", 4, 3)
@@ -395,19 +396,19 @@ func TestSingleEliminationDetermineWinner(t *testing.T) {
 	assert.False(t, bracket.IsComplete())
 	assert.Equal(t, 0, bracket.Winner())
 	assert.Equal(t, 0, bracket.Finalist())
-	matches, _ := database.GetMatchesByType("elimination")
+	matches, _ := database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 3, len(matches))
 	scoreMatch(database, "F-2", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 3, len(matches))
 	scoreMatch(database, "F-3", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	assert.True(t, bracket.IsComplete())
 	assert.Equal(t, 2, bracket.Winner())
 	assert.Equal(t, 1, bracket.Finalist())
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 3, len(matches))
 	database.TruncateAlliances()
 	database.TruncateMatches()
@@ -421,17 +422,17 @@ func TestSingleEliminationDetermineWinner(t *testing.T) {
 	scoreMatch(database, "F-1", game.RedWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 2, len(matches))
 	scoreMatch(database, "F-2", game.TieMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 3, len(matches))
 	scoreMatch(database, "F-3", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 4, len(matches))
 	assert.Equal(t, "F-4", matches[3].DisplayName)
 	scoreMatch(database, "F-4", game.TieMatch)
@@ -454,17 +455,17 @@ func TestSingleEliminationDetermineWinner(t *testing.T) {
 	scoreMatch(database, "F-1", game.TieMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 3, len(matches))
 	scoreMatch(database, "F-2", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 3, len(matches))
 	scoreMatch(database, "F-3", game.TieMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	if assert.Equal(t, 4, len(matches)) {
 		assert.Equal(t, "F-4", matches[3].DisplayName)
 	}
@@ -480,7 +481,7 @@ func TestSingleEliminationDetermineWinner(t *testing.T) {
 	updateAndAssertSchedule := func(expectedNumMatches int, expectedWon bool) {
 		assert.Nil(t, bracket.Update(database, &dummyStartTime))
 		assert.Equal(t, expectedWon, bracket.IsComplete())
-		matches, _ = database.GetMatchesByType("elimination")
+		matches, _ = database.GetMatchesByType(model.Playoff)
 		assert.Equal(t, expectedNumMatches, len(matches))
 	}
 	updateAndAssertSchedule(2, false)
@@ -514,7 +515,7 @@ func TestSingleEliminationRemoveUnneededMatches(t *testing.T) {
 	scoreMatch(database, "F-1", game.RedWonMatch)
 	scoreMatch(database, "F-2", game.TieMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, _ := database.GetMatchesByType("elimination")
+	matches, _ := database.GetMatchesByType(model.Playoff)
 	assert.Equal(t, 3, len(matches))
 
 	// Check that the third match is deleted if the score is changed.
@@ -526,7 +527,7 @@ func TestSingleEliminationRemoveUnneededMatches(t *testing.T) {
 	scoreMatch(database, "F-2", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType("elimination")
+	matches, _ = database.GetMatchesByType(model.Playoff)
 	if assert.Equal(t, 3, len(matches)) {
 		assert.Equal(t, "F-3", matches[2].DisplayName)
 	}
@@ -546,7 +547,7 @@ func TestSingleEliminationChangePreviousRoundResult(t *testing.T) {
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	scoreMatch(database, "SF2-3", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err := database.GetMatchesByType("elimination")
+	matches, err := database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	assert.Equal(t, 5, len(matches))
 
@@ -557,7 +558,7 @@ func TestSingleEliminationChangePreviousRoundResult(t *testing.T) {
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
 	scoreMatch(database, "SF1-3", game.BlueWonMatch)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 8, len(matches)) {
 		assertMatch(t, matches[6], "F-1", 4, 3)
@@ -566,7 +567,7 @@ func TestSingleEliminationChangePreviousRoundResult(t *testing.T) {
 
 	scoreMatch(database, "SF2-3", game.MatchNotPlayed)
 	assert.Nil(t, bracket.Update(database, &dummyStartTime))
-	matches, err = database.GetMatchesByType("elimination")
+	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	assert.Equal(t, 6, len(matches))
 }

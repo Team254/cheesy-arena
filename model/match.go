@@ -6,15 +6,30 @@
 package model
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"sort"
 	"strings"
 	"time"
 )
 
+//go:generate stringer -type=MatchType
+type MatchType int
+
+const (
+	Test MatchType = iota
+	Practice
+	Qualification
+	Playoff
+)
+
+func (t MatchType) Get() MatchType {
+	return t
+}
+
 type Match struct {
 	Id               int `db:"id"`
-	Type             string
+	Type             MatchType
 	DisplayName      string
 	Time             time.Time
 	ElimRound        int
@@ -60,7 +75,7 @@ func (database *Database) TruncateMatches() error {
 	return database.matchTable.truncate()
 }
 
-func (database *Database) GetMatchByName(matchType string, displayName string) (*Match, error) {
+func (database *Database) GetMatchByName(matchType MatchType, displayName string) (*Match, error) {
 	matches, err := database.matchTable.getAll()
 	if err != nil {
 		return nil, err
@@ -75,7 +90,7 @@ func (database *Database) GetMatchByName(matchType string, displayName string) (
 }
 
 func (database *Database) GetMatchesByElimRoundGroup(round int, group int) ([]Match, error) {
-	matches, err := database.GetMatchesByType("elimination")
+	matches, err := database.GetMatchesByType(Playoff)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +104,7 @@ func (database *Database) GetMatchesByElimRoundGroup(round int, group int) ([]Ma
 	return matchingMatches, nil
 }
 
-func (database *Database) GetMatchesByType(matchType string) ([]Match, error) {
+func (database *Database) GetMatchesByType(matchType MatchType) ([]Match, error) {
 	matches, err := database.matchTable.getAll()
 	if err != nil {
 		return nil, err
@@ -121,19 +136,11 @@ func (match *Match) IsComplete() bool {
 	return match.Status != game.MatchNotPlayed
 }
 
-func (match *Match) CapitalizedType() string {
-	if match.Type == "" || match.Type == "test" {
-		return ""
-	} else if match.Type == "elimination" {
-		return "Playoff"
-	}
-	return strings.ToUpper(match.Type[0:1]) + match.Type[1:]
-}
-
+// TODO(pat): Deprecate this method.
 func (match *Match) TypePrefix() string {
-	if match.Type == "practice" {
+	if match.Type == Practice {
 		return "P"
-	} else if match.Type == "qualification" {
+	} else if match.Type == Qualification {
 		return "Q"
 	}
 	return ""
@@ -141,20 +148,35 @@ func (match *Match) TypePrefix() string {
 
 // Returns true if the match is of a type that allows substitution of teams.
 func (match *Match) ShouldAllowSubstitution() bool {
-	return match.Type != "qualification"
+	return match.Type != Qualification
 }
 
 // Returns true if the red and yellow cards should be updated as a result of the match.
 func (match *Match) ShouldUpdateCards() bool {
-	return match.Type == "qualification" || match.Type == "elimination"
+	return match.Type == Qualification || match.Type == Playoff
 }
 
 // Returns true if the rankings should be updated as a result of the match.
 func (match *Match) ShouldUpdateRankings() bool {
-	return match.Type == "qualification"
+	return match.Type == Qualification
 }
 
 // Returns true if the elimination match set should be updated as a result of the match.
 func (match *Match) ShouldUpdateEliminationMatches() bool {
-	return match.Type == "elimination"
+	return match.Type == Playoff
+}
+
+// Returns the enum equivalent of the given match type string.
+func MatchTypeFromString(matchTypeString string) (MatchType, error) {
+	switch strings.ToLower(matchTypeString) {
+	case "test":
+		return Test, nil
+	case "practice":
+		return Practice, nil
+	case "qualification":
+		return Qualification, nil
+	case "playoff":
+		return Playoff, nil
+	}
+	return 0, fmt.Errorf("invalid match type %q", matchTypeString)
 }

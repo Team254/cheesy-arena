@@ -26,7 +26,7 @@
                 <label>
                   <input type="radio" name="matchType" value="practice"
                       onchange="window.location = '/setup/schedule?matchType=practice';"
-                      {{if eq .MatchType "practice"}}checked{{end}}>
+                      {{if eq .MatchType practiceMatch}}checked{{end}}>
                   Practice
                 </label>
               </div>
@@ -34,7 +34,7 @@
                 <label>
                   <input type="radio" name="matchType" value="qualification"
                       onchange="window.location = '/setup/schedule?matchType=qualification';"
-                      {{if eq .MatchType "qualification"}}checked{{end}}>
+                      {{if eq .MatchType qualificationMatch}}checked{{end}}>
                   Qualification
                 </label>
               </div>

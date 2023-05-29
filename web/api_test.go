@@ -18,11 +18,11 @@ import (
 func TestMatchesApi(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match1 := model.Match{Type: "qualification", DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
+	match1 := model.Match{Type: model.Qualification, DisplayName: "1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
 		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
-	match2 := model.Match{Type: "qualification", DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
+	match2 := model.Match{Type: model.Qualification, DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8, Red3: 9,
 		Blue1: 10, Blue2: 11, Blue3: 12, Red1IsSurrogate: true, Red2IsSurrogate: true, Red3IsSurrogate: true}
-	match3 := model.Match{Type: "practice", DisplayName: "1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
+	match3 := model.Match{Type: model.Practice, DisplayName: "1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
 		Blue1: 3, Blue2: 2, Blue3: 1}
 	web.arena.Database.CreateMatch(&match1)
 	web.arena.Database.CreateMatch(&match2)
@@ -65,8 +65,8 @@ func TestRankingsApi(t *testing.T) {
 	ranking2 := RankingWithNickname{*game.TestRanking1(), "ChezyPof"}
 	web.arena.Database.CreateRanking(&ranking1.Ranking)
 	web.arena.Database.CreateRanking(&ranking2.Ranking)
-	web.arena.Database.CreateMatch(&model.Match{Type: "qualification", DisplayName: "29", Status: game.RedWonMatch})
-	web.arena.Database.CreateMatch(&model.Match{Type: "qualification", DisplayName: "30"})
+	web.arena.Database.CreateMatch(&model.Match{Type: model.Qualification, DisplayName: "29", Status: game.RedWonMatch})
+	web.arena.Database.CreateMatch(&model.Match{Type: model.Qualification, DisplayName: "30"})
 	web.arena.Database.CreateTeam(&model.Team{Id: 254, Nickname: "ChezyPof"})
 	web.arena.Database.CreateTeam(&model.Team{Id: 1114, Nickname: "Simbots"})
 

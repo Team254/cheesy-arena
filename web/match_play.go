@@ -40,17 +40,17 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	practiceMatches, err := web.buildMatchPlayList("practice")
+	practiceMatches, err := web.buildMatchPlayList(model.Practice)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	qualificationMatches, err := web.buildMatchPlayList("qualification")
+	qualificationMatches, err := web.buildMatchPlayList(model.Qualification)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	eliminationMatches, err := web.buildMatchPlayList("elimination")
+	eliminationMatches, err := web.buildMatchPlayList(model.Playoff)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -61,11 +61,14 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	matchesByType := map[string]MatchPlayList{"practice": practiceMatches,
-		"qualification": qualificationMatches, "elimination": eliminationMatches}
+	matchesByType := map[model.MatchType]MatchPlayList{
+		model.Practice:      practiceMatches,
+		model.Qualification: qualificationMatches,
+		model.Playoff:       eliminationMatches,
+	}
 	currentMatchType := web.arena.CurrentMatch.Type
-	if currentMatchType == "test" {
-		currentMatchType = "practice"
+	if currentMatchType == model.Test {
+		currentMatchType = model.Practice
 	}
 	redOffFieldTeams, blueOffFieldTeams, err := web.arena.Database.GetOffFieldTeamIds(web.arena.CurrentMatch)
 	if err != nil {
@@ -81,8 +84,8 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 		PlcIsEnabled          bool
-		MatchesByType         map[string]MatchPlayList
-		CurrentMatchType      string
+		MatchesByType         map[model.MatchType]MatchPlayList
+		CurrentMatchType      model.MatchType
 		Match                 *model.Match
 		RedOffFieldTeams      []int
 		BlueOffFieldTeams     []int
@@ -101,7 +104,7 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		blueOffFieldTeams,
 		web.arena.CurrentMatch.ShouldAllowSubstitution(),
 		isReplay,
-		web.arena.SavedMatch.CapitalizedType(),
+		web.arena.SavedMatch.Type.String(),
 		web.arena.SavedMatch,
 		web.arena.Plc.GetArmorBlockStatuses(),
 	}
@@ -361,7 +364,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				continue
 			}
 		case "setTestMatchName":
-			if web.arena.CurrentMatch.Type != "test" {
+			if web.arena.CurrentMatch.Type != model.Test {
 				// Don't allow changing the name of a non-test match.
 				continue
 			}
@@ -391,7 +394,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchResult, isMatchReviewEdit bool) error {
 	var updatedRankings game.Rankings
 
-	if match.Type == "elimination" {
+	if match.Type == model.Playoff {
 		// Adjust the score if necessary for an elimination DQ.
 		matchResult.CorrectEliminationScore()
 	}
@@ -401,7 +404,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 	redScoreSummary := matchResult.RedScoreSummary()
 	blueScoreSummary := matchResult.BlueScoreSummary()
 	applyElimTiebreakers := false
-	if match.Type == "elimination" {
+	if match.Type == model.Playoff {
 		// Playoff matches other than the finals should have ties broken by examining the scoring breakdown rather
 		// than being replayed.
 		if match.ElimRound < web.arena.PlayoffBracket.FinalsMatchup.Round {
@@ -410,7 +413,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 	}
 	match.Status = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, applyElimTiebreakers)
 
-	if match.Type != "test" {
+	if match.Type != model.Test {
 		if matchResult.PlayNumber == 0 {
 			// Determine the play number for this new match result.
 			prevMatchResult, err := web.arena.Database.GetMatchResultForMatch(match.Id)
@@ -487,7 +490,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			}
 		}
 
-		if web.arena.EventSettings.TbaPublishingEnabled && match.Type != "practice" {
+		if web.arena.EventSettings.TbaPublishingEnabled && match.Type != model.Practice {
 			// Publish asynchronously to The Blue Alliance.
 			go func() {
 				if err = web.arena.TbaClient.PublishMatches(web.arena.Database); err != nil {
@@ -547,7 +550,7 @@ func (list MatchPlayList) Swap(i, j int) {
 }
 
 // Constructs the list of matches to display on the side of the match play interface.
-func (web *Web) buildMatchPlayList(matchType string) (MatchPlayList, error) {
+func (web *Web) buildMatchPlayList(matchType model.MatchType) (MatchPlayList, error) {
 	matches, err := web.arena.Database.GetMatchesByType(matchType)
 	if err != nil {
 		return MatchPlayList{}, err

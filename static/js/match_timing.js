@@ -3,6 +3,12 @@
 //
 // Shared client-side logic for interpreting match state and timing notifications.
 
+// MatchType enum values.
+const matchTypeTest = 0;
+const matchTypePractice = 1;
+const matchTypeQualification = 2;
+const matchTypePlayoff = 3;
+
 var matchStates = {
   0: "PRE_MATCH",
   1: "START_MATCH",

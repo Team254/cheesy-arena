@@ -1,6 +1,6 @@
 {{define "announcer_display_match_load"}}
 <div class="row well-sm well-darkred">
-  {{if eq .Match.Type "elimination"}}
+  {{if eq .Match.Type playoffMatch}}
     <h4><b>Alliance {{.Match.ElimRedAlliance}}</b></h4>
   {{end}}
   {{template "team" dict "alliance" "red" "team" (index .Teams "R1")}}
@@ -11,7 +11,7 @@
   {{end}}
 </div>
 <div class="row well-sm well-darkblue">
-  {{if eq .Match.Type "elimination"}}
+  {{if eq .Match.Type playoffMatch}}
     <h4><b>Alliance {{.Match.ElimBlueAlliance}}</b></h4>
   {{end}}
   {{template "team" dict "alliance" "blue" "team" (index .Teams "B1")}}

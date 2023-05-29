@@ -336,11 +336,11 @@ func (client *TbaClient) PublishTeams(database *model.Database) error {
 
 // Uploads the qualification and elimination match schedule and results to The Blue Alliance.
 func (client *TbaClient) PublishMatches(database *model.Database) error {
-	qualMatches, err := database.GetMatchesByType("qualification")
+	qualMatches, err := database.GetMatchesByType(model.Qualification)
 	if err != nil {
 		return err
 	}
-	elimMatches, err := database.GetMatchesByType("elimination")
+	elimMatches, err := database.GetMatchesByType(model.Playoff)
 	if err != nil {
 		return err
 	}
@@ -391,7 +391,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 			TimeString:     match.Time.Local().Format("3:04 PM"),
 			TimeUtc:        match.Time.UTC().Format("2006-01-02T15:04:05"),
 		}
-		if match.Type == "elimination" {
+		if match.Type == model.Playoff {
 			setElimMatchKey(&tbaMatches[i], &match, eventSettings.ElimType)
 		}
 	}

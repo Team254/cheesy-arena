@@ -8,14 +8,14 @@
 {{define "body"}}
 <div class="row">
   <ul class="nav nav-tabs" style="margin-bottom: 15px;">
-    <li{{if eq .CurrentMatchType "practice" }} class="active"{{end}}>
-      <a href="#practice" data-toggle="tab">Practice</a>
+    <li{{if eq .CurrentMatchType practiceMatch }} class="active"{{end}}>
+      <a href="#Practice" data-toggle="tab">Practice</a>
     </li>
-    <li{{if eq .CurrentMatchType "qualification" }} class="active"{{end}}>
-      <a href="#qualification" data-toggle="tab">Qualification</a>
+    <li{{if eq .CurrentMatchType qualificationMatch }} class="active"{{end}}>
+      <a href="#Qualification" data-toggle="tab">Qualification</a>
     </li>
-    <li{{if eq .CurrentMatchType "elimination" }} class="active"{{end}}>
-      <a href="#elimination" data-toggle="tab">Playoff</a>
+    <li{{if eq .CurrentMatchType playoffMatch }} class="active"{{end}}>
+      <a href="#Playoff" data-toggle="tab">Playoff</a>
     </li>
   </ul>
   <div class="tab-content">

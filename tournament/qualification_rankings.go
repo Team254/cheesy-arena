@@ -15,7 +15,7 @@ import (
 
 // Determines the rankings from the stored match results, and saves them to the database.
 func CalculateRankings(database *model.Database, preservePreviousRank bool) (game.Rankings, error) {
-	matches, err := database.GetMatchesByType("qualification")
+	matches, err := database.GetMatchesByType(model.Qualification)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func CalculateRankings(database *model.Database, preservePreviousRank bool) (gam
 }
 
 // Checks all the match results for yellow and red cards, and updates the team model accordingly.
-func CalculateTeamCards(database *model.Database, matchType string) error {
+func CalculateTeamCards(database *model.Database, matchType model.MatchType) error {
 	teams, err := database.GetAllTeams()
 	if err != nil {
 		return err

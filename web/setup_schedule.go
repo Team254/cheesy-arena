@@ -15,8 +15,8 @@ import (
 )
 
 // Global vars to hold schedules that are in the process of being generated.
-var cachedMatches = make(map[string][]model.Match)
-var cachedTeamFirstMatches = make(map[string]map[int]string)
+var cachedMatches = make(map[model.MatchType][]model.Match)
+var cachedTeamFirstMatches = make(map[model.MatchType]map[int]string)
 
 // Shows the schedule editing page.
 func (web *Web) scheduleGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,14 +24,10 @@ func (web *Web) scheduleGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matchType := getMatchType(r)
-	if matchType == "" {
+	matchTypeString := getMatchType(r)
+	matchType, _ := model.MatchTypeFromString(matchTypeString)
+	if matchType != model.Practice && matchType != model.Qualification {
 		http.Redirect(w, r, "/setup/schedule?matchType=practice", 302)
-		return
-	}
-
-	if matchType != "practice" && matchType != "qualification" {
-		handleWebErr(w, fmt.Errorf("Invalid match type '%s'.", matchType))
 		return
 	}
 
@@ -44,7 +40,13 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	matchType := getMatchType(r)
+	matchTypeString := getMatchType(r)
+	matchType, err := model.MatchTypeFromString(matchTypeString)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
 	scheduleBlocks, err := getScheduleBlocks(r)
 	// Save blocks even if there is an error, so that any good ones are not discarded.
 	deleteBlocksErr := web.arena.Database.DeleteScheduleBlocksByMatchType(matchType)
@@ -81,7 +83,8 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 			"a schedule.", len(teams)))
 		return
 	}
-	matches, err := tournament.BuildRandomSchedule(teams, scheduleBlocks, r.PostFormValue("matchType"))
+
+	matches, err := tournament.BuildRandomSchedule(teams, scheduleBlocks, matchType)
 	if err != nil {
 		web.renderSchedule(w, r, fmt.Sprintf("Error generating schedule: %s.", err.Error()))
 		return
@@ -106,7 +109,7 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 	}
 	cachedTeamFirstMatches[matchType] = teamFirstMatches
 
-	http.Redirect(w, r, "/setup/schedule?matchType="+matchType, 303)
+	http.Redirect(w, r, "/setup/schedule?matchType="+matchTypeString, 303)
 }
 
 // Saves the generated schedule to the database.
@@ -115,7 +118,13 @@ func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	matchType := getMatchType(r)
+	matchTypeString := getMatchType(r)
+	matchType, err := model.MatchTypeFromString(matchTypeString)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
 	existingMatches, err := web.arena.Database.GetMatchesByType(matchType)
 	if err != nil {
 		handleWebErr(w, err)
@@ -142,11 +151,17 @@ func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	http.Redirect(w, r, "/setup/schedule?matchType="+matchType, 303)
+	http.Redirect(w, r, "/setup/schedule?matchType="+matchTypeString, 303)
 }
 
 func (web *Web) renderSchedule(w http.ResponseWriter, r *http.Request, errorMessage string) {
-	matchType := getMatchType(r)
+	matchTypeString := getMatchType(r)
+	matchType, err := model.MatchTypeFromString(matchTypeString)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
 	scheduleBlocks, err := web.arena.Database.GetScheduleBlocksByMatchType(matchType)
 	if err != nil {
 		handleWebErr(w, err)
@@ -165,7 +180,7 @@ func (web *Web) renderSchedule(w http.ResponseWriter, r *http.Request, errorMess
 	}
 	data := struct {
 		*model.EventSettings
-		MatchType        string
+		MatchType        model.MatchType
 		ScheduleBlocks   []model.ScheduleBlock
 		NumTeams         int
 		Matches          []model.Match

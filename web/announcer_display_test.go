@@ -21,7 +21,7 @@ func TestAnnouncerDisplay(t *testing.T) {
 
 func TestAnnouncerDisplayMatchLoad(t *testing.T) {
 	web := setupTestWeb(t)
-	match := model.Match{Type: "elimination", Red1: 254, Red2: 1114, Blue3: 2056}
+	match := model.Match{Type: model.Playoff, Red1: 254, Red2: 1114, Blue3: 2056}
 	web.arena.LoadMatch(&match)
 
 	recorder := web.getHttpResponse("/displays/announcer/match_load")
@@ -33,7 +33,7 @@ func TestAnnouncerDisplayMatchLoad(t *testing.T) {
 
 func TestAnnouncerDisplayScorePosted(t *testing.T) {
 	web := setupTestWeb(t)
-	match := model.Match{Type: "qualification", DisplayName: "Qual 17"}
+	match := model.Match{Type: model.Qualification, DisplayName: "Qual 17"}
 	web.arena.SavedMatch = &match
 
 	recorder := web.getHttpResponse("/displays/announcer/score_posted")

@@ -267,7 +267,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 
 // Sets a new test match containing no teams as the current match.
 func (arena *Arena) LoadTestMatch() error {
-	return arena.LoadMatch(&model.Match{Type: "test", DisplayName: "Test Match"})
+	return arena.LoadMatch(&model.Match{Type: model.Test, DisplayName: "Test Match"})
 }
 
 // Loads the first unplayed match of the current match type.
@@ -310,7 +310,7 @@ func (arena *Arena) SubstituteTeam(teamId int, station string) error {
 		arena.AllianceStations["B3"].Team})
 	arena.MatchLoadNotifier.Notify()
 
-	if arena.CurrentMatch.Type != "test" {
+	if arena.CurrentMatch.Type != model.Test {
 		arena.Database.UpdateMatch(arena.CurrentMatch)
 	}
 	return nil
@@ -322,7 +322,7 @@ func (arena *Arena) StartMatch() error {
 	if err == nil {
 		// Save the match start time to the database for posterity.
 		arena.CurrentMatch.StartedAt = time.Now()
-		if arena.CurrentMatch.Type != "test" {
+		if arena.CurrentMatch.Type != model.Test {
 			arena.Database.UpdateMatch(arena.CurrentMatch)
 		}
 		arena.updateCycleTime(arena.CurrentMatch.StartedAt)
@@ -629,7 +629,7 @@ func (arena *Arena) assignTeam(teamId int, station string) error {
 
 // Returns the next match of the same type that is currently loaded, or nil if there are no more matches.
 func (arena *Arena) getNextMatch(excludeCurrent bool) (*model.Match, error) {
-	if arena.CurrentMatch.Type == "test" {
+	if arena.CurrentMatch.Type == model.Test {
 		return nil, nil
 	}
 

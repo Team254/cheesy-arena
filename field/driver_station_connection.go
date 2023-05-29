@@ -182,22 +182,23 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 
 	// Match type.
 	match := arena.CurrentMatch
-	if match.Type == "practice" {
+	switch match.Type {
+	case model.Practice:
 		packet[6] = 1
-	} else if match.Type == "qualification" {
+	case model.Qualification:
 		packet[6] = 2
-	} else if match.Type == "elimination" {
+	case model.Playoff:
 		packet[6] = 3
-	} else {
+	default:
 		packet[6] = 0
 	}
 
 	// Match number.
-	if match.Type == "practice" || match.Type == "qualification" {
+	if match.Type == model.Practice || match.Type == model.Qualification {
 		matchNumber, _ := strconv.Atoi(match.DisplayName)
 		packet[7] = byte(matchNumber >> 8)
 		packet[8] = byte(matchNumber & 0xff)
-	} else if match.Type == "elimination" {
+	} else if match.Type == model.Playoff {
 		// E.g. Quarter-final 3, match 1 will be numbered 431.
 		matchNumber := match.ElimRound*100 + match.ElimGroup*10 + match.ElimInstance
 		packet[7] = byte(matchNumber >> 8)

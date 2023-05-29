@@ -361,7 +361,13 @@ func drawPdfLogo(pdf gofpdf.Pdf, x float64, y float64, width float64) {
 // Generates a CSV-formatted report of the match schedule.
 func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
+	matchType, err := model.MatchTypeFromString(vars["type"])
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	matches, err := web.arena.Database.GetMatchesByType(matchType)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -384,7 +390,13 @@ func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request)
 // Generates a PDF-formatted report of the match schedule.
 func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
+	matchType, err := model.MatchTypeFromString(vars["type"])
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	matches, err := web.arena.Database.GetMatchesByType(matchType)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -435,7 +447,7 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 		}
 
 		// Capitalize match types.
-		matchType := match.CapitalizedType()
+		matchType := match.Type.String()
 
 		formatTeam := func(teamId int) string {
 			if teamId == 0 {
@@ -727,7 +739,13 @@ func surrogateText(isSurrogate bool) string {
 // Generates a PDF-formatted report of the match cycle times.
 func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
+	matchType, err := model.MatchTypeFromString(vars["type"])
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	matches, err := web.arena.Database.GetMatchesByType(matchType)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -739,16 +757,13 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
 	pdf.AddPage()
-	// Capitalize match types.
-	var matchType string
-	if len(matches) > 0 {
-		matchType = matches[0].CapitalizedType()
-	}
 
 	// Render table header row.
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
-	pdf.CellFormat(195, rowHeight, matchType+" Cycle Time - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
+	pdf.CellFormat(
+		195, rowHeight, matchType.String()+" Cycle Time - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "",
+	)
 	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Time"], rowHeight, "Scheduled Time", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Time2"], rowHeight, "Ready", "1", 0, "C", true, 0, "")

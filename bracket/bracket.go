@@ -210,7 +210,7 @@ func (bracket *Bracket) Update(database *model.Database, startTime *time.Time) e
 
 	if startTime != nil {
 		// Update the scheduled time for all matches that have yet to be run.
-		matches, err := database.GetMatchesByType("elimination")
+		matches, err := database.GetMatchesByType(model.Playoff)
 		if err != nil {
 			return err
 		}

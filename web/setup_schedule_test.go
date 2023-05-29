@@ -16,7 +16,7 @@ func TestSetupSchedule(t *testing.T) {
 	for i := 0; i < 38; i++ {
 		web.arena.Database.CreateTeam(&model.Team{Id: i + 101})
 	}
-	web.arena.Database.CreateMatch(&model.Match{Type: "practice", DisplayName: "1"})
+	web.arena.Database.CreateMatch(&model.Match{Type: model.Practice, DisplayName: "1"})
 
 	// Check the default setting values.
 	recorder := web.getHttpResponse("/setup/schedule?matchType=practice")
@@ -37,7 +37,7 @@ func TestSetupSchedule(t *testing.T) {
 	// Save schedule and check that it was persisted.
 	recorder = web.postHttpResponse("/setup/schedule/save?matchType=qualification", "")
 	assert.Equal(t, 303, recorder.Code)
-	matches, err := web.arena.Database.GetMatchesByType("qualification")
+	matches, err := web.arena.Database.GetMatchesByType(model.Qualification)
 	assert.Nil(t, err)
 	assert.Equal(t, 64, len(matches))
 	location, _ := time.LoadLocation("Local")
@@ -85,13 +85,13 @@ func TestSetupScheduleErrors(t *testing.T) {
 	for i := 18; i < 38; i++ {
 		web.arena.Database.CreateTeam(&model.Team{Id: i + 101})
 	}
-	web.arena.Database.CreateMatch(&model.Match{Type: "practice", DisplayName: "1"})
-	web.arena.Database.CreateMatch(&model.Match{Type: "practice", DisplayName: "2"})
+	web.arena.Database.CreateMatch(&model.Match{Type: model.Practice, DisplayName: "1"})
+	web.arena.Database.CreateMatch(&model.Match{Type: model.Practice, DisplayName: "2"})
 	postData = "numScheduleBlocks=1&startTime0=2014-01-01 09:00:00 AM&numMatches0=64&matchSpacingSec0=480&" +
 		"matchType=practice"
 	recorder = web.postHttpResponse("/setup/schedule/generate", postData)
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.postHttpResponse("/setup/schedule/save", postData)
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "schedule of 2 practice matches already exists")
+	assert.Contains(t, recorder.Body.String(), "schedule of 2 Practice matches already exists")
 }

@@ -52,7 +52,13 @@ type allianceMatchup struct {
 // Generates a JSON dump of the matches and results.
 func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	matches, err := web.arena.Database.GetMatchesByType(vars["type"])
+	matchType, err := model.MatchTypeFromString(vars["type"])
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	matches, err := web.arena.Database.GetMatchesByType(matchType)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -145,7 +151,7 @@ func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the last match scored so we can report that on the display.
-	matches, err := web.arena.Database.GetMatchesByType("qualification")
+	matches, err := web.arena.Database.GetMatchesByType(model.Qualification)
 	if err != nil {
 		handleWebErr(w, err)
 		return
