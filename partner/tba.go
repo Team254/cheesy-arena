@@ -150,19 +150,19 @@ type TbaPublishedAward struct {
 	Awardee string `json:"awardee"`
 }
 
-type elimMatchKey struct {
-	elimRound int
-	elimGroup int
+type playoffMatchKey struct {
+	playoffRound int
+	playoffGroup int
 }
 
-type tbaElimMatchKey struct {
+type tbaPlayoffMatchKey struct {
 	compLevel string
 	setNumber int
 }
 
 var taxiMapping = map[bool]string{false: "No", true: "Yes"}
 var endgameMapping = []string{"None", "Low", "Mid", "High", "Traversal"}
-var doubleEliminationMatchKeyMapping = map[elimMatchKey]tbaElimMatchKey{
+var doubleEliminationMatchKeyMapping = map[playoffMatchKey]tbaPlayoffMatchKey{
 	{1, 1}: {"ef", 1},
 	{1, 2}: {"ef", 2},
 	{1, 3}: {"ef", 3},
@@ -334,13 +334,13 @@ func (client *TbaClient) PublishTeams(database *model.Database) error {
 	return nil
 }
 
-// Uploads the qualification and elimination match schedule and results to The Blue Alliance.
+// Uploads the qualification and playoff match schedule and results to The Blue Alliance.
 func (client *TbaClient) PublishMatches(database *model.Database) error {
 	qualMatches, err := database.GetMatchesByType(model.Qualification)
 	if err != nil {
 		return err
 	}
-	elimMatches, err := database.GetMatchesByType(model.Playoff)
+	playoffMatches, err := database.GetMatchesByType(model.Playoff)
 	if err != nil {
 		return err
 	}
@@ -348,7 +348,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 	if err != nil {
 		return err
 	}
-	matches := append(qualMatches, elimMatches...)
+	matches := append(qualMatches, playoffMatches...)
 	tbaMatches := make([]TbaMatch, len(matches))
 
 	// Build a JSON array of TBA-format matches.
@@ -392,7 +392,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 			TimeUtc:        match.Time.UTC().Format("2006-01-02T15:04:05"),
 		}
 		if match.Type == model.Playoff {
-			setElimMatchKey(&tbaMatches[i], &match, eventSettings.ElimType)
+			setPlayoffMatchKey(&tbaMatches[i], &match, eventSettings.PlayoffType)
 		}
 	}
 	jsonBody, err := json.Marshal(tbaMatches)
@@ -691,17 +691,17 @@ func createTbaScoringBreakdown(
 }
 
 // Sets the match key attributes on TbaMatch based on the match and bracket type.
-func setElimMatchKey(tbaMatch *TbaMatch, match *model.Match, elimType string) {
-	if elimType == "single" {
-		tbaMatch.CompLevel = map[int]string{1: "ef", 2: "qf", 3: "sf", 4: "f"}[match.ElimRound]
-		tbaMatch.SetNumber = match.ElimGroup
-		tbaMatch.MatchNumber = match.ElimInstance
-	} else if elimType == "double" {
-		if tbaKey, ok := doubleEliminationMatchKeyMapping[elimMatchKey{match.ElimRound, match.ElimGroup}]; ok {
+func setPlayoffMatchKey(tbaMatch *TbaMatch, match *model.Match, playoffType string) {
+	if playoffType == "single" {
+		tbaMatch.CompLevel = map[int]string{1: "ef", 2: "qf", 3: "sf", 4: "f"}[match.PlayoffRound]
+		tbaMatch.SetNumber = match.PlayoffGroup
+		tbaMatch.MatchNumber = match.PlayoffInstance
+	} else if playoffType == "double" {
+		if tbaKey, ok := doubleEliminationMatchKeyMapping[playoffMatchKey{match.PlayoffRound, match.PlayoffGroup}]; ok {
 			tbaMatch.CompLevel = tbaKey.compLevel
 			tbaMatch.SetNumber = tbaKey.setNumber
 		}
-		tbaMatch.MatchNumber = match.ElimInstance
+		tbaMatch.MatchNumber = match.PlayoffInstance
 		if !strings.HasPrefix(match.DisplayName, "F") {
 			tbaMatch.DisplayName = "Match " + match.DisplayName
 		}

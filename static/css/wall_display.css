@@ -32,7 +32,7 @@ html {
   height: 100px;
   display: flex;
 }
-.elim-alliance {
+.playoff-alliance {
   position: relative;
   top: 31px;
   width: 40px;
@@ -47,14 +47,14 @@ html {
   font-size: 15px;
   font-weight: 200;
 }
-#leftElimAlliance {
+#leftPlayoffAlliance {
   left: 23px;
   justify-content: start;
   border-top-left-radius: 50%;
   border-bottom-left-radius: 50%;
   border-right: none;
 }
-#rightElimAlliance {
+#rightPlayoffAlliance {
   right: 23px;
   justify-content: end;
   border-top-right-radius: 50%;
@@ -205,7 +205,7 @@ html {
   line-height: 30px;
   color: #fff;
 }
-#elimSeriesStatus {
+#playoffSeriesStatus {
   width: 40px;
   height: 18px;
   display: none;

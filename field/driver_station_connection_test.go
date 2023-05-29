@@ -103,9 +103,9 @@ func TestEncodeControlPacket(t *testing.T) {
 	assert.Equal(t, byte(1), data[7])
 	assert.Equal(t, byte(2), data[8])
 	arena.CurrentMatch.Type = model.Playoff
-	arena.CurrentMatch.ElimRound = 8
-	arena.CurrentMatch.ElimGroup = 5
-	arena.CurrentMatch.ElimInstance = 2
+	arena.CurrentMatch.PlayoffRound = 8
+	arena.CurrentMatch.PlayoffGroup = 5
+	arena.CurrentMatch.PlayoffInstance = 2
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(3), data[7])
 	assert.Equal(t, byte(84), data[8])

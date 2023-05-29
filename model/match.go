@@ -28,31 +28,31 @@ func (t MatchType) Get() MatchType {
 }
 
 type Match struct {
-	Id               int `db:"id"`
-	Type             MatchType
-	DisplayName      string
-	Time             time.Time
-	ElimRound        int
-	ElimGroup        int
-	ElimInstance     int
-	ElimRedAlliance  int
-	ElimBlueAlliance int
-	Red1             int
-	Red1IsSurrogate  bool
-	Red2             int
-	Red2IsSurrogate  bool
-	Red3             int
-	Red3IsSurrogate  bool
-	Blue1            int
-	Blue1IsSurrogate bool
-	Blue2            int
-	Blue2IsSurrogate bool
-	Blue3            int
-	Blue3IsSurrogate bool
-	StartedAt        time.Time
-	ScoreCommittedAt time.Time
-	FieldReadyAt     time.Time
-	Status           game.MatchStatus
+	Id                  int `db:"id"`
+	Type                MatchType
+	DisplayName         string
+	Time                time.Time
+	PlayoffRound        int
+	PlayoffGroup        int
+	PlayoffInstance     int
+	PlayoffRedAlliance  int
+	PlayoffBlueAlliance int
+	Red1                int
+	Red1IsSurrogate     bool
+	Red2                int
+	Red2IsSurrogate     bool
+	Red3                int
+	Red3IsSurrogate     bool
+	Blue1               int
+	Blue1IsSurrogate    bool
+	Blue2               int
+	Blue2IsSurrogate    bool
+	Blue3               int
+	Blue3IsSurrogate    bool
+	StartedAt           time.Time
+	ScoreCommittedAt    time.Time
+	FieldReadyAt        time.Time
+	Status              game.MatchStatus
 }
 
 func (database *Database) CreateMatch(match *Match) error {
@@ -89,7 +89,7 @@ func (database *Database) GetMatchByName(matchType MatchType, displayName string
 	return nil, nil
 }
 
-func (database *Database) GetMatchesByElimRoundGroup(round int, group int) ([]Match, error) {
+func (database *Database) GetMatchesByPlayoffRoundGroup(round int, group int) ([]Match, error) {
 	matches, err := database.GetMatchesByType(Playoff)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (database *Database) GetMatchesByElimRoundGroup(round int, group int) ([]Ma
 
 	var matchingMatches []Match
 	for _, match := range matches {
-		if match.ElimRound == round && match.ElimGroup == group {
+		if match.PlayoffRound == round && match.PlayoffGroup == group {
 			matchingMatches = append(matchingMatches, match)
 		}
 	}
@@ -118,16 +118,16 @@ func (database *Database) GetMatchesByType(matchType MatchType) ([]Match, error)
 	}
 
 	sort.Slice(matchingMatches, func(i, j int) bool {
-		if matchingMatches[i].ElimRound == matchingMatches[j].ElimRound {
-			if matchingMatches[i].ElimInstance == matchingMatches[j].ElimInstance {
-				if matchingMatches[i].ElimGroup == matchingMatches[j].ElimGroup {
+		if matchingMatches[i].PlayoffRound == matchingMatches[j].PlayoffRound {
+			if matchingMatches[i].PlayoffInstance == matchingMatches[j].PlayoffInstance {
+				if matchingMatches[i].PlayoffGroup == matchingMatches[j].PlayoffGroup {
 					return matchingMatches[i].Id < matchingMatches[j].Id
 				}
-				return matchingMatches[i].ElimGroup < matchingMatches[j].ElimGroup
+				return matchingMatches[i].PlayoffGroup < matchingMatches[j].PlayoffGroup
 			}
-			return matchingMatches[i].ElimInstance < matchingMatches[j].ElimInstance
+			return matchingMatches[i].PlayoffInstance < matchingMatches[j].PlayoffInstance
 		}
-		return matchingMatches[i].ElimRound < matchingMatches[j].ElimRound
+		return matchingMatches[i].PlayoffRound < matchingMatches[j].PlayoffRound
 	})
 	return matchingMatches, nil
 }
@@ -161,8 +161,8 @@ func (match *Match) ShouldUpdateRankings() bool {
 	return match.Type == Qualification
 }
 
-// Returns true if the elimination match set should be updated as a result of the match.
-func (match *Match) ShouldUpdateEliminationMatches() bool {
+// Returns true if the playoff match set should be updated as a result of the match.
+func (match *Match) ShouldUpdatePlayoffMatches() bool {
 	return match.Type == Playoff
 }
 

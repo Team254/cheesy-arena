@@ -26,7 +26,7 @@ func TestScore1() *Score {
 		EndgameStatuses:           [3]EndgameStatus{EndgameParked, EndgameNone, EndgameDocked},
 		EndgameChargeStationLevel: true,
 		Fouls:                     fouls,
-		ElimDq:                    false,
+		PlayoffDq:                 false,
 	}
 }
 
@@ -39,7 +39,7 @@ func TestScore2() *Score {
 		EndgameStatuses:           [3]EndgameStatus{EndgameDocked, EndgameDocked, EndgameDocked},
 		EndgameChargeStationLevel: false,
 		Fouls:                     []Foul{},
-		ElimDq:                    false,
+		PlayoffDq:                 false,
 	}
 }
 

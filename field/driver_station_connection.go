@@ -200,7 +200,7 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 		packet[8] = byte(matchNumber & 0xff)
 	} else if match.Type == model.Playoff {
 		// E.g. Quarter-final 3, match 1 will be numbered 431.
-		matchNumber := match.ElimRound*100 + match.ElimGroup*10 + match.ElimInstance
+		matchNumber := match.PlayoffRound*100 + match.PlayoffGroup*10 + match.PlayoffInstance
 		packet[7] = byte(matchNumber >> 8)
 		packet[8] = byte(matchNumber & 0xff)
 	} else {

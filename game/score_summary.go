@@ -34,12 +34,12 @@ const (
 )
 
 // Determines the winner of the match given the score summaries for both alliances.
-func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, applyElimTiebreakers bool) MatchStatus {
+func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, applyPlayoffTiebreakers bool) MatchStatus {
 	if status := comparePoints(redScoreSummary.Score, blueScoreSummary.Score); status != TieMatch {
 		return status
 	}
 
-	if applyElimTiebreakers {
+	if applyPlayoffTiebreakers {
 		// Check scoring breakdowns to resolve playoff ties.
 		if status := comparePoints(
 			redScoreSummary.NumOpponentTechFouls, blueScoreSummary.NumOpponentTechFouls,

@@ -78,18 +78,18 @@ func (database *Database) UpdateAllianceFromMatch(allianceId int, matchTeamIds [
 }
 
 // Returns two arrays containing the IDs of any teams for the red and blue alliances, respectively, who are part of the
-// elimination alliance but are not playing in the given match.
-// If the given match isn't an elimination match, empty arrays are returned.
+// playoff alliance but are not playing in the given match.
+// If the given match isn't a playoff match, empty arrays are returned.
 func (database *Database) GetOffFieldTeamIds(match *Match) ([]int, []int, error) {
 	redOffFieldTeams, err := database.getOffFieldTeamIdsForAlliance(
-		match.ElimRedAlliance, match.Red1, match.Red2, match.Red3,
+		match.PlayoffRedAlliance, match.Red1, match.Red2, match.Red3,
 	)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	blueOffFieldTeams, err := database.getOffFieldTeamIdsForAlliance(
-		match.ElimBlueAlliance, match.Blue1, match.Blue2, match.Blue3,
+		match.PlayoffBlueAlliance, match.Blue1, match.Blue2, match.Blue3,
 	)
 	if err != nil {
 		return nil, nil, err

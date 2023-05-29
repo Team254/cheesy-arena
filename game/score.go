@@ -13,7 +13,7 @@ type Score struct {
 	EndgameStatuses           [3]EndgameStatus
 	EndgameChargeStationLevel bool
 	Fouls                     []Foul
-	ElimDq                    bool
+	PlayoffDq                 bool
 }
 
 var SustainabilityBonusLinkThresholdWithoutCoop = 7
@@ -34,7 +34,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	summary := new(ScoreSummary)
 
 	// Leave the score at zero if the alliance was disqualified.
-	if score.ElimDq {
+	if score.PlayoffDq {
 		return summary
 	}
 
@@ -128,7 +128,7 @@ func (score *Score) Equals(other *Score) bool {
 		score.AutoChargeStationLevel != other.AutoChargeStationLevel ||
 		score.EndgameStatuses != other.EndgameStatuses ||
 		score.EndgameChargeStationLevel != other.EndgameChargeStationLevel ||
-		score.ElimDq != other.ElimDq ||
+		score.PlayoffDq != other.PlayoffDq ||
 		len(score.Fouls) != len(other.Fouls) {
 		return false
 	}

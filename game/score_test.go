@@ -53,11 +53,11 @@ func TestScoreSummary(t *testing.T) {
 	redScore.Fouls[0].RuleId = 0
 	assert.Equal(t, 29, blueScore.Summarize(redScore).FoulPoints)
 
-	// Test elimination disqualification.
-	redScore.ElimDq = true
+	// Test playoff disqualification.
+	redScore.PlayoffDq = true
 	assert.Equal(t, 0, redScore.Summarize(blueScore).Score)
 	assert.NotEqual(t, 0, blueScore.Summarize(blueScore).Score)
-	blueScore.ElimDq = true
+	blueScore.PlayoffDq = true
 	assert.Equal(t, 0, blueScore.Summarize(redScore).Score)
 }
 
@@ -244,7 +244,7 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.ElimDq = !score2.ElimDq
+	score2.PlayoffDq = !score2.PlayoffDq
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 }

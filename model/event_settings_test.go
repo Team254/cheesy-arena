@@ -19,8 +19,8 @@ func TestEventSettingsReadWrite(t *testing.T) {
 		EventSettings{
 			Id:                          1,
 			Name:                        "Untitled Event",
-			ElimType:                    "single",
-			NumElimAlliances:            8,
+			PlayoffType:                 "single",
+			NumPlayoffAlliances:         8,
 			SelectionRound2Order:        "L",
 			SelectionRound3Order:        "",
 			TbaDownloadEnabled:          true,
@@ -40,7 +40,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 	)
 
 	eventSettings.Name = "Chezy Champs"
-	eventSettings.NumElimAlliances = 6
+	eventSettings.NumPlayoffAlliances = 6
 	eventSettings.SelectionRound2Order = "F"
 	eventSettings.SelectionRound3Order = "L"
 	err = db.UpdateEventSettings(eventSettings)

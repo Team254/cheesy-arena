@@ -40,13 +40,13 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	web := setupTestWeb(t)
 
 	match := model.Match{Type: model.Playoff, DisplayName: "QF4-3", Status: game.RedWonMatch, Red1: 1001,
-		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, ElimRedAlliance: 1, ElimBlueAlliance: 2}
+		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, PlayoffRedAlliance: 1, PlayoffBlueAlliance: 2}
 	assert.Nil(t, web.arena.Database.CreateMatch(&match))
 	matchResult := model.BuildTestMatchResult(match.Id, 1)
 	matchResult.MatchType = match.Type
 	assert.Nil(t, web.arena.Database.CreateMatchResult(matchResult))
 	tournament.CreateTestAlliances(web.arena.Database, 2)
-	web.arena.EventSettings.NumElimAlliances = 2
+	web.arena.EventSettings.NumPlayoffAlliances = 2
 	web.arena.CreatePlayoffBracket()
 
 	recorder := web.getHttpResponse("/match_review")
@@ -86,10 +86,10 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	web := setupTestWeb(t)
 
 	match := model.Match{Type: model.Playoff, DisplayName: "QF4-3", Status: game.RedWonMatch, Red1: 1001,
-		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, ElimRedAlliance: 1, ElimBlueAlliance: 2}
+		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, PlayoffRedAlliance: 1, PlayoffBlueAlliance: 2}
 	web.arena.Database.CreateMatch(&match)
 	tournament.CreateTestAlliances(web.arena.Database, 2)
-	web.arena.EventSettings.NumElimAlliances = 2
+	web.arena.EventSettings.NumPlayoffAlliances = 2
 	web.arena.CreatePlayoffBracket()
 
 	recorder := web.getHttpResponse("/match_review")

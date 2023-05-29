@@ -17,7 +17,7 @@ type Bracket struct {
 	matchupMap    map[matchupKey]*Matchup
 }
 
-const ElimMatchSpacingSec = 600
+const PlayoffMatchSpacingSec = 600
 
 // Creates an unpopulated bracket with a format that is defined by the given matchup templates and number of alliances.
 func newBracket(matchupTemplates []matchupTemplate, finalsMatchupKey matchupKey, numAlliances int) (*Bracket, error) {
@@ -219,7 +219,7 @@ func (bracket *Bracket) Update(database *model.Database, startTime *time.Time) e
 			if match.IsComplete() {
 				continue
 			}
-			match.Time = startTime.Add(time.Duration(matchIndex*ElimMatchSpacingSec) * time.Second)
+			match.Time = startTime.Add(time.Duration(matchIndex*PlayoffMatchSpacingSec) * time.Second)
 			if err = database.UpdateMatch(&match); err != nil {
 				return err
 			}

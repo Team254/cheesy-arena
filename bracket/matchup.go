@@ -198,7 +198,7 @@ func (matchup *Matchup) update(database *model.Database) error {
 		}
 	}
 
-	matches, err := database.GetMatchesByElimRoundGroup(matchup.Round, matchup.Group)
+	matches, err := database.GetMatchesByPlayoffRoundGroup(matchup.Round, matchup.Group)
 	if err != nil {
 		return err
 	}
@@ -244,7 +244,7 @@ func (matchup *Matchup) update(database *model.Database) error {
 			if match.Red1 != redAlliance.Lineup[0] || match.Red2 != redAlliance.Lineup[1] ||
 				match.Red3 != redAlliance.Lineup[2] {
 				positionRedTeams(&match, redAlliance)
-				match.ElimRedAlliance = redAlliance.Id
+				match.PlayoffRedAlliance = redAlliance.Id
 				changed = true
 				if err = database.UpdateMatch(&match); err != nil {
 					return err
@@ -253,7 +253,7 @@ func (matchup *Matchup) update(database *model.Database) error {
 			if match.Blue1 != blueAlliance.Lineup[0] || match.Blue2 != blueAlliance.Lineup[1] ||
 				match.Blue3 != blueAlliance.Lineup[2] {
 				positionBlueTeams(&match, blueAlliance)
-				match.ElimBlueAlliance = blueAlliance.Id
+				match.PlayoffBlueAlliance = blueAlliance.Id
 				changed = true
 			}
 			if changed {
@@ -291,13 +291,13 @@ func (matchup *Matchup) update(database *model.Database) error {
 		for i := 0; i < numUnplayedMatchesNeeded-len(unplayedMatches); i++ {
 			instance := len(matches) + i + 1
 			match := model.Match{
-				Type:             model.Playoff,
-				DisplayName:      matchup.matchDisplayName(instance),
-				ElimRound:        matchup.Round,
-				ElimGroup:        matchup.Group,
-				ElimInstance:     instance,
-				ElimRedAlliance:  redAlliance.Id,
-				ElimBlueAlliance: blueAlliance.Id,
+				Type:                model.Playoff,
+				DisplayName:         matchup.matchDisplayName(instance),
+				PlayoffRound:        matchup.Round,
+				PlayoffGroup:        matchup.Group,
+				PlayoffInstance:     instance,
+				PlayoffRedAlliance:  redAlliance.Id,
+				PlayoffBlueAlliance: blueAlliance.Id,
 			}
 			positionRedTeams(&match, redAlliance)
 			positionBlueTeams(&match, blueAlliance)

@@ -50,7 +50,7 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	eliminationMatches, err := web.buildMatchPlayList(model.Playoff)
+	playoffMatches, err := web.buildMatchPlayList(model.Playoff)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -64,7 +64,7 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 	matchesByType := map[model.MatchType]MatchPlayList{
 		model.Practice:      practiceMatches,
 		model.Qualification: qualificationMatches,
-		model.Playoff:       eliminationMatches,
+		model.Playoff:       playoffMatches,
 	}
 	currentMatchType := web.arena.CurrentMatch.Type
 	if currentMatchType == model.Test {
@@ -395,23 +395,23 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 	var updatedRankings game.Rankings
 
 	if match.Type == model.Playoff {
-		// Adjust the score if necessary for an elimination DQ.
-		matchResult.CorrectEliminationScore()
+		// Adjust the score if necessary for a playoff DQ.
+		matchResult.CorrectPlayoffScore()
 	}
 
 	// Update the match record.
 	match.ScoreCommittedAt = time.Now()
 	redScoreSummary := matchResult.RedScoreSummary()
 	blueScoreSummary := matchResult.BlueScoreSummary()
-	applyElimTiebreakers := false
+	applyPlayoffTiebreakers := false
 	if match.Type == model.Playoff {
 		// Playoff matches other than the finals should have ties broken by examining the scoring breakdown rather
 		// than being replayed.
-		if match.ElimRound < web.arena.PlayoffBracket.FinalsMatchup.Round {
-			applyElimTiebreakers = true
+		if match.PlayoffRound < web.arena.PlayoffBracket.FinalsMatchup.Round {
+			applyPlayoffTiebreakers = true
 		}
 	}
-	match.Status = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, applyElimTiebreakers)
+	match.Status = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, applyPlayoffTiebreakers)
 
 	if match.Type != model.Test {
 		if matchResult.PlayNumber == 0 {
@@ -460,20 +460,20 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			updatedRankings = rankings
 		}
 
-		if match.ShouldUpdateEliminationMatches() {
+		if match.ShouldUpdatePlayoffMatches() {
 			if err = web.arena.Database.UpdateAllianceFromMatch(
-				match.ElimRedAlliance, [3]int{match.Red1, match.Red2, match.Red3},
+				match.PlayoffRedAlliance, [3]int{match.Red1, match.Red2, match.Red3},
 			); err != nil {
 				return err
 			}
 			if err = web.arena.Database.UpdateAllianceFromMatch(
-				match.ElimBlueAlliance, [3]int{match.Blue1, match.Blue2, match.Blue3},
+				match.PlayoffBlueAlliance, [3]int{match.Blue1, match.Blue2, match.Blue3},
 			); err != nil {
 				return err
 			}
 
-			// Generate any subsequent elimination matches.
-			nextMatchTime := time.Now().Add(time.Second * bracket.ElimMatchSpacingSec)
+			// Generate any subsequent playoff matches.
+			nextMatchTime := time.Now().Add(time.Second * bracket.PlayoffMatchSpacingSec)
 			if err = web.arena.UpdatePlayoffBracket(&nextMatchTime); err != nil {
 				return err
 			}

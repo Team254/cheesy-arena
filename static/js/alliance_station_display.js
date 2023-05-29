@@ -55,21 +55,21 @@ var handleMatchLoad = function(data) {
       $("#teamRank").attr("data-alliance-bg", station[0]).text("");
     }
 
-    // Populate extra alliance info if this is an elimination match.
-    let elimAlliance = data.Match.ElimRedAlliance;
+    // Populate extra alliance info if this is a playoff match.
+    let playoffAlliance = data.Match.PlayoffRedAlliance;
     let offFieldTeams = data.RedOffFieldTeams;
     if (station[0] === "B") {
-      elimAlliance = data.Match.ElimBlueAlliance;
+      playoffAlliance = data.Match.PlayoffBlueAlliance;
       offFieldTeams = data.BlueOffFieldTeams;
     }
-    if (elimAlliance > 0) {
-      let elimAllianceInfo = `Alliance ${elimAlliance}`;
+    if (playoffAlliance > 0) {
+      let playoffAllianceInfo = `Alliance ${playoffAlliance}`;
       if (offFieldTeams.length) {
-        elimAllianceInfo += `&emsp; Not on field: ${offFieldTeams.map(team => team.Id).join(", ")}`;
+        playoffAllianceInfo += `&emsp; Not on field: ${offFieldTeams.map(team => team.Id).join(", ")}`;
       }
-      $("#elimAllianceInfo").html(elimAllianceInfo);
+      $("#playoffAllianceInfo").html(playoffAllianceInfo);
     } else {
-      $("#elimAllianceInfo").text("");
+      $("#playoffAllianceInfo").text("");
     }
   }
 };

@@ -179,7 +179,7 @@ func TestCommitMatch(t *testing.T) {
 	assert.Contains(t, writer.String(), "Failed to publish rankings")
 }
 
-func TestCommitEliminationTie(t *testing.T) {
+func TestCommitPlayoffTie(t *testing.T) {
 	web := setupTestWeb(t)
 
 	match := &model.Match{Id: 0, Type: model.Qualification, Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
@@ -211,8 +211,8 @@ func TestCommitEliminationTie(t *testing.T) {
 	tournament.CreateTestAlliances(web.arena.Database, 2)
 	web.arena.CreatePlayoffBracket()
 	match.Type = model.Playoff
-	match.ElimRedAlliance = 1
-	match.ElimBlueAlliance = 2
+	match.PlayoffRedAlliance = 1
+	match.PlayoffBlueAlliance = 2
 	web.arena.Database.UpdateMatch(match)
 	web.commitMatchScore(match, matchResult, true)
 	match, _ = web.arena.Database.GetMatchById(1)
@@ -235,7 +235,7 @@ func TestCommitEliminationTie(t *testing.T) {
 	assert.Equal(t, game.RedWonMatch, match.Status)
 
 	// Check that playoff tiebreakers are not evaluated for finals matches.
-	match.ElimRound = web.arena.PlayoffBracket.FinalsMatchup.Round
+	match.PlayoffRound = web.arena.PlayoffBracket.FinalsMatchup.Round
 	web.commitMatchScore(match, matchResult, true)
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, game.TieMatch, match.Status)
@@ -274,13 +274,13 @@ func TestCommitCards(t *testing.T) {
 	team, _ = web.arena.Database.GetTeamById(5)
 	assert.True(t, team.YellowCard)
 
-	// Check that a red card in eliminations zeroes out the score.
+	// Check that a red card in playoffs zeroes out the score.
 	tournament.CreateTestAlliances(web.arena.Database, 2)
-	web.arena.EventSettings.NumElimAlliances = 2
+	web.arena.EventSettings.NumPlayoffAlliances = 2
 	web.arena.CreatePlayoffBracket()
 	match.Type = model.Playoff
-	match.ElimRedAlliance = 1
-	match.ElimBlueAlliance = 2
+	match.PlayoffRedAlliance = 1
+	match.PlayoffBlueAlliance = 2
 	web.arena.Database.UpdateMatch(match)
 	matchResult = model.BuildTestMatchResult(match.Id, 0)
 	matchResult.MatchType = match.Type

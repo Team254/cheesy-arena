@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	numNonElimMatchesToShow = 5
-	numElimMatchesToShow    = 4
+	numNonPlayoffMatchesToShow = 5
+	numPlayoffMatchesToShow    = 4
 )
 
 // Renders the queueing display that shows upcoming matches and timing information.
@@ -30,9 +30,9 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	numMatchesToShow := numNonElimMatchesToShow
+	numMatchesToShow := numNonPlayoffMatchesToShow
 	if web.arena.CurrentMatch.Type == model.Playoff {
-		numMatchesToShow = numElimMatchesToShow
+		numMatchesToShow = numPlayoffMatchesToShow
 	}
 
 	var upcomingMatches []model.Match

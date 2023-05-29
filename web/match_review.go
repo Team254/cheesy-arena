@@ -39,7 +39,7 @@ func (web *Web) matchReviewHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	eliminationMatches, err := web.buildMatchReviewList(model.Playoff)
+	playoffMatches, err := web.buildMatchReviewList(model.Playoff)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -53,7 +53,7 @@ func (web *Web) matchReviewHandler(w http.ResponseWriter, r *http.Request) {
 	matchesByType := map[model.MatchType][]MatchReviewListItem{
 		model.Practice:      practiceMatches,
 		model.Qualification: qualificationMatches,
-		model.Playoff:       eliminationMatches,
+		model.Playoff:       playoffMatches,
 	}
 	currentMatchType := web.arena.CurrentMatch.Type
 	if currentMatchType == model.Test {

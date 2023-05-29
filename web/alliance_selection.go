@@ -111,12 +111,12 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// Create a blank alliance set matching the event configuration.
-	web.arena.AllianceSelectionAlliances = make([]model.Alliance, web.arena.EventSettings.NumElimAlliances)
+	web.arena.AllianceSelectionAlliances = make([]model.Alliance, web.arena.EventSettings.NumPlayoffAlliances)
 	teamsPerAlliance := 3
 	if web.arena.EventSettings.SelectionRound3Order != "" {
 		teamsPerAlliance = 4
 	}
-	for i := 0; i < web.arena.EventSettings.NumElimAlliances; i++ {
+	for i := 0; i < web.arena.EventSettings.NumPlayoffAlliances; i++ {
 		web.arena.AllianceSelectionAlliances[i].Id = i + 1
 		web.arena.AllianceSelectionAlliances[i].TeamIds = make([]int, teamsPerAlliance)
 	}
@@ -147,7 +147,7 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Delete any elimination matches that were already created (but not played since they would fail the above check).
+	// Delete any playoff matches that were already created (but not played since they would fail the above check).
 	matches, err := web.arena.Database.GetMatchesByType(model.Playoff)
 	if err != nil {
 		handleWebErr(w, err)
@@ -178,7 +178,7 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 	http.Redirect(w, r, "/alliance_selection", 303)
 }
 
-// Saves the selected alliances to the database and generates the first round of elimination matches.
+// Saves the selected alliances to the database and generates the first round of playoff matches.
 func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
@@ -221,7 +221,7 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 		}
 	}
 
-	// Generate the first round of elimination matches.
+	// Generate the first round of playoff matches.
 	if err = web.arena.CreatePlayoffBracket(); err != nil {
 		handleWebErr(w, err)
 		return
@@ -304,7 +304,7 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 	}
 }
 
-// Returns true if it is safe to change the alliance selection (i.e. no elimination matches exist yet).
+// Returns true if it is safe to change the alliance selection (i.e. no playoff matches exist yet).
 func (web *Web) canModifyAllianceSelection() bool {
 	matches, err := web.arena.Database.GetMatchesByType(model.Playoff)
 	if err != nil || len(matches) > 0 {
@@ -313,7 +313,7 @@ func (web *Web) canModifyAllianceSelection() bool {
 	return true
 }
 
-// Returns true if it is safe to reset the alliance selection (i.e. no elimination matches have been played yet).
+// Returns true if it is safe to reset the alliance selection (i.e. no playoff matches have been played yet).
 func (web *Web) canResetAllianceSelection() bool {
 	matches, err := web.arena.Database.GetMatchesByType(model.Playoff)
 	if err != nil {

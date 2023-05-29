@@ -186,13 +186,13 @@ func (arena *Arena) LoadSettings() error {
 // Constructs an empty playoff bracket in memory, based only on the number of alliances.
 func (arena *Arena) CreatePlayoffBracket() error {
 	var err error
-	switch arena.EventSettings.ElimType {
+	switch arena.EventSettings.PlayoffType {
 	case "single":
-		arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(arena.EventSettings.NumElimAlliances)
+		arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
 	case "double":
-		arena.PlayoffBracket, err = bracket.NewDoubleEliminationBracket(arena.EventSettings.NumElimAlliances)
+		arena.PlayoffBracket, err = bracket.NewDoubleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
 	default:
-		err = fmt.Errorf("Invalid playoff type: %v", arena.EventSettings.ElimType)
+		err = fmt.Errorf("Invalid playoff type: %v", arena.EventSettings.PlayoffType)
 	}
 	return err
 }

@@ -159,7 +159,7 @@ body[data-position=right] #inMatch #blueScore {
 #teamRank {
   background-color: transparent;
 }
-#elimAllianceInfo {
+#playoffAllianceInfo {
   position: absolute;
   bottom: 20px;
   left: 0;

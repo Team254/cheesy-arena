@@ -10,8 +10,8 @@ import "github.com/Team254/cheesy-arena/game"
 type EventSettings struct {
 	Id                                          int `db:"id"`
 	Name                                        string
-	ElimType                                    string
-	NumElimAlliances                            int
+	PlayoffType                                 string
+	NumPlayoffAlliances                         int
 	SelectionRound2Order                        string
 	SelectionRound3Order                        string
 	TbaDownloadEnabled                          bool
@@ -57,8 +57,8 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 	// Database record doesn't exist yet; create it now.
 	eventSettings := EventSettings{
 		Name:                        "Untitled Event",
-		ElimType:                    "single",
-		NumElimAlliances:            8,
+		PlayoffType:                 "single",
+		NumPlayoffAlliances:         8,
 		SelectionRound2Order:        "L",
 		SelectionRound3Order:        "",
 		TbaDownloadEnabled:          true,

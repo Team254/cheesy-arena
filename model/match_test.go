@@ -58,29 +58,29 @@ func TestTruncateMatches(t *testing.T) {
 	assert.Nil(t, match2)
 }
 
-func TestGetMatchesByElimRoundGroup(t *testing.T) {
+func TestGetMatchesByPlayoffRoundGroup(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	match := Match{Type: Playoff, DisplayName: "SF1-1", ElimRound: 2, ElimGroup: 1, ElimInstance: 1,
-		ElimRedAlliance: 8, ElimBlueAlliance: 4}
+	match := Match{Type: Playoff, DisplayName: "SF1-1", PlayoffRound: 2, PlayoffGroup: 1, PlayoffInstance: 1,
+		PlayoffRedAlliance: 8, PlayoffBlueAlliance: 4}
 	db.CreateMatch(&match)
-	match2 := Match{Type: Playoff, DisplayName: "SF2-2", ElimRound: 2, ElimGroup: 2, ElimInstance: 2,
-		ElimRedAlliance: 2, ElimBlueAlliance: 3}
+	match2 := Match{Type: Playoff, DisplayName: "SF2-2", PlayoffRound: 2, PlayoffGroup: 2, PlayoffInstance: 2,
+		PlayoffRedAlliance: 2, PlayoffBlueAlliance: 3}
 	db.CreateMatch(&match2)
-	match3 := Match{Type: Playoff, DisplayName: "SF2-1", ElimRound: 2, ElimGroup: 2, ElimInstance: 1,
-		ElimRedAlliance: 8, ElimBlueAlliance: 4}
+	match3 := Match{Type: Playoff, DisplayName: "SF2-1", PlayoffRound: 2, PlayoffGroup: 2, PlayoffInstance: 1,
+		PlayoffRedAlliance: 8, PlayoffBlueAlliance: 4}
 	db.CreateMatch(&match3)
-	match4 := Match{Type: Playoff, DisplayName: "QF2-1", ElimRound: 4, ElimGroup: 2, ElimInstance: 1,
-		ElimRedAlliance: 4, ElimBlueAlliance: 5}
+	match4 := Match{Type: Playoff, DisplayName: "QF2-1", PlayoffRound: 4, PlayoffGroup: 2, PlayoffInstance: 1,
+		PlayoffRedAlliance: 4, PlayoffBlueAlliance: 5}
 	db.CreateMatch(&match4)
 	match5 := Match{Type: Practice, DisplayName: "1"}
 	db.CreateMatch(&match5)
 
-	matches, err := db.GetMatchesByElimRoundGroup(4, 1)
+	matches, err := db.GetMatchesByPlayoffRoundGroup(4, 1)
 	assert.Nil(t, err)
 	assert.Empty(t, matches)
-	matches, err = db.GetMatchesByElimRoundGroup(2, 2)
+	matches, err = db.GetMatchesByPlayoffRoundGroup(2, 2)
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(matches)) {
 		assert.Equal(t, "SF2-1", matches[0].DisplayName)

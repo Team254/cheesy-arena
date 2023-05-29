@@ -491,7 +491,7 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	if vars["type"] != "elimination" {
+	if matchType != model.Playoff {
 		// Render some summary info at the bottom.
 		pdf.CellFormat(195, 10, fmt.Sprintf("Matches Per Team: %d", matchesPerTeam), "", 1, "L", false, 0, "")
 	}

@@ -99,23 +99,23 @@ const handleMatchLoad = function(data) {
 
   // Show alliance numbers if this is a playoff match.
   if (currentMatch.Type === matchTypePlayoff) {
-    $("#" + redSide + "ElimAlliance").text(currentMatch.ElimRedAlliance);
-    $("#" + blueSide + "ElimAlliance").text(currentMatch.ElimBlueAlliance);
-    $(".elim-alliance").show();
+    $("#" + redSide + "PlayoffAlliance").text(currentMatch.PlayoffRedAlliance);
+    $("#" + blueSide + "PlayoffAlliance").text(currentMatch.PlayoffBlueAlliance);
+    $(".playoff-alliance").show();
 
     // Show the series status if this playoff round isn't just a single match.
     if (data.Matchup.NumWinsToAdvance > 1) {
-      $("#" + redSide + "ElimAllianceWins").text(data.Matchup.RedAllianceWins);
-      $("#" + blueSide + "ElimAllianceWins").text(data.Matchup.BlueAllianceWins);
-      $("#elimSeriesStatus").css("display", "flex");
+      $("#" + redSide + "PlayoffAllianceWins").text(data.Matchup.RedAllianceWins);
+      $("#" + blueSide + "PlayoffAllianceWins").text(data.Matchup.BlueAllianceWins);
+      $("#playoffSeriesStatus").css("display", "flex");
     } else {
-      $("#elimSeriesStatus").hide();
+      $("#playoffSeriesStatus").hide();
     }
   } else {
-    $("#" + redSide + "ElimAlliance").text("");
-    $("#" + blueSide + "ElimAlliance").text("");
-    $(".elim-alliance").hide();
-    $("#elimSeriesStatus").hide();
+    $("#" + redSide + "PlayoffAlliance").text("");
+    $("#" + blueSide + "PlayoffAlliance").text("");
+    $(".playoff-alliance").hide();
+    $("#playoffSeriesStatus").hide();
   }
 
   if (data.Match.Type === matchTypeTest) {
@@ -167,7 +167,7 @@ const handleRealtimeScore = function(data) {
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function(data) {
   $("#" + redSide + "FinalScore").text(data.RedScoreSummary.Score);
-  $("#" + redSide + "FinalAlliance").text("Alliance " + data.Match.ElimRedAlliance);
+  $("#" + redSide + "FinalAlliance").text("Alliance " + data.Match.PlayoffRedAlliance);
   setTeamInfo(redSide, 1, data.Match.Red1, data.RedRankings);
   setTeamInfo(redSide, 2, data.Match.Red2, data.RedRankings);
   setTeamInfo(redSide, 3, data.Match.Red3, data.RedRankings);
@@ -196,7 +196,7 @@ const handleScorePosted = function(data) {
   $("#" + redSide + "FinalRankingPoints").html(data.RedRankingPoints);
 
   $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
-  $("#" + blueSide + "FinalAlliance").text("Alliance " + data.Match.ElimBlueAlliance);
+  $("#" + blueSide + "FinalAlliance").text("Alliance " + data.Match.PlayoffBlueAlliance);
   setTeamInfo(blueSide, 1, data.Match.Blue1, data.BlueRankings);
   setTeamInfo(blueSide, 2, data.Match.Blue2, data.BlueRankings);
   setTeamInfo(blueSide, 3, data.Match.Blue3, data.BlueRankings);

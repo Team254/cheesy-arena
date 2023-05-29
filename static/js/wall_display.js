@@ -90,23 +90,23 @@ const handleMatchLoad = function(data) {
 
   // Show alliance numbers if this is a playoff match.
   if (currentMatch.Type === matchTypePlayoff) {
-    $("#" + redSide + "ElimAlliance").text(currentMatch.ElimRedAlliance);
-    $("#" + blueSide + "ElimAlliance").text(currentMatch.ElimBlueAlliance);
-    $(".elim-alliance").show();
+    $("#" + redSide + "PlayoffAlliance").text(currentMatch.PlayoffRedAlliance);
+    $("#" + blueSide + "PlayoffAlliance").text(currentMatch.PlayoffBlueAlliance);
+    $(".playoff-alliance").show();
 
     // Show the series status if this playoff round isn't just a single match.
     if (data.Matchup.NumWinsToAdvance > 1) {
-      $("#" + redSide + "ElimAllianceWins").text(data.Matchup.RedAllianceWins);
-      $("#" + blueSide + "ElimAllianceWins").text(data.Matchup.BlueAllianceWins);
-      $("#elimSeriesStatus").css("display", "flex");
+      $("#" + redSide + "PlayoffAllianceWins").text(data.Matchup.RedAllianceWins);
+      $("#" + blueSide + "PlayoffAllianceWins").text(data.Matchup.BlueAllianceWins);
+      $("#playoffSeriesStatus").css("display", "flex");
     } else {
-      $("#elimSeriesStatus").hide();
+      $("#playoffSeriesStatus").hide();
     }
   } else {
-    $("#" + redSide + "ElimAlliance").text("");
-    $("#" + blueSide + "ElimAlliance").text("");
-    $(".elim-alliance").hide();
-    $("#elimSeriesStatus").hide();
+    $("#" + redSide + "PlayoffAlliance").text("");
+    $("#" + blueSide + "PlayoffAlliance").text("");
+    $(".playoff-alliance").hide();
+    $("#playoffSeriesStatus").hide();
   }
 
   if (data.Match.Type === matchTypeTest) {

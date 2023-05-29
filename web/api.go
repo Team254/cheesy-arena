@@ -314,8 +314,8 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match, showTe
 				}
 			}
 			if activeMatch != nil {
-				allianceMatchup.IsActive = activeMatch.ElimRound == matchup.Round &&
-					activeMatch.ElimGroup == matchup.Group
+				allianceMatchup.IsActive = activeMatch.PlayoffRound == matchup.Round &&
+					activeMatch.PlayoffGroup == matchup.Group
 			}
 			allianceMatchup.SeriesLeader, allianceMatchup.SeriesStatus = matchup.StatusText()
 			matchups[fmt.Sprintf("%d_%d", matchup.Round, matchup.Group)] = &allianceMatchup
@@ -323,8 +323,8 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match, showTe
 	}
 
 	bracketType := "double"
-	numAlliances := web.arena.EventSettings.NumElimAlliances
-	if web.arena.EventSettings.ElimType == "single" {
+	numAlliances := web.arena.EventSettings.NumPlayoffAlliances
+	if web.arena.EventSettings.PlayoffType == "single" {
 		if numAlliances > 8 {
 			bracketType = "16"
 		} else if numAlliances > 4 {
