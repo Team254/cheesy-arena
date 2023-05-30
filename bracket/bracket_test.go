@@ -34,35 +34,40 @@ func TestNewBracketInverseSeeding(t *testing.T) {
 	matchupTemplates := []matchupTemplate{
 		{
 			matchupKey:         newMatchupKey(1, 1),
-			displayName:        "QF1",
+			LongName:           "Playoff QF1",
+			ShortName:          "QF1",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  allianceSource{allianceId: 8},
 			blueAllianceSource: allianceSource{allianceId: 1},
 		},
 		{
 			matchupKey:         newMatchupKey(1, 2),
-			displayName:        "QF2",
+			LongName:           "Playoff QF2",
+			ShortName:          "QF2",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  allianceSource{allianceId: 5},
 			blueAllianceSource: allianceSource{allianceId: 4},
 		},
 		{
 			matchupKey:         newMatchupKey(2, 1),
-			displayName:        "SF1",
+			LongName:           "Playoff SF1",
+			ShortName:          "SF1",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  newWinnerAllianceSource(1, 2),
 			blueAllianceSource: newWinnerAllianceSource(1, 1),
 		},
 		{
 			matchupKey:         newMatchupKey(2, 2),
-			displayName:        "SF2",
+			LongName:           "Playoff SF2",
+			ShortName:          "SF2",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  allianceSource{allianceId: 3},
 			blueAllianceSource: allianceSource{allianceId: 2},
 		},
 		{
 			matchupKey:         newMatchupKey(3, 1),
-			displayName:        "F",
+			LongName:           "Playoff F",
+			ShortName:          "F",
 			NumWinsToAdvance:   2,
 			redAllianceSource:  newWinnerAllianceSource(2, 1),
 			blueAllianceSource: newWinnerAllianceSource(2, 2),
@@ -76,8 +81,8 @@ func TestNewBracketInverseSeeding(t *testing.T) {
 	matches, err := database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(matches)) {
-		assertMatch(t, matches[0], "F-1", 1, 2)
-		assertMatch(t, matches[1], "F-2", 1, 2)
+		assertMatch(t, matches[0], "Playoff F-1", "F-1", "", 1, 2)
+		assertMatch(t, matches[1], "Playoff F-2", "F-2", "", 1, 2)
 	}
 }
 
@@ -217,18 +222,18 @@ func TestBracketLevelOrderTraversal(t *testing.T) {
 	bracket, err := NewSingleEliminationBracket(8)
 	assert.Nil(t, err)
 
-	var displayNames []string
+	var shortNames []string
 	bracket.ReverseRoundOrderTraversal(func(matchup *Matchup) {
-		displayNames = append(displayNames, matchup.displayName)
+		shortNames = append(shortNames, matchup.ShortName)
 	})
-	assert.Equal(t, []string{"F", "SF1", "SF2", "QF1", "QF2", "QF3", "QF4"}, displayNames)
+	assert.Equal(t, []string{"F", "SF1", "SF2", "QF1", "QF2", "QF3", "QF4"}, shortNames)
 
 	bracket, err = NewDoubleEliminationBracket(8)
 	assert.Nil(t, err)
 
-	displayNames = nil
+	shortNames = nil
 	bracket.ReverseRoundOrderTraversal(func(matchup *Matchup) {
-		displayNames = append(displayNames, matchup.displayName)
+		shortNames = append(shortNames, matchup.ShortName)
 	})
-	assert.Equal(t, []string{"F", "13", "11", "12", "9", "10", "5", "6", "7", "8", "1", "2", "3", "4"}, displayNames)
+	assert.Equal(t, []string{"F", "13", "11", "12", "9", "10", "5", "6", "7", "8", "1", "2", "3", "4"}, shortNames)
 }

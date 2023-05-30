@@ -64,7 +64,7 @@ var commitMatch = function() {
 
 // Handles a websocket message to update the teams for the current match.
 var handleMatchLoad = function(data) {
-  $("#matchName").text(data.MatchType + " " + data.Match.DisplayName);
+  $("#matchName").text(data.Match.LongName);
 
   setTeamCard("red", 1, data.Teams["R1"]);
   setTeamCard("red", 2, data.Teams["R2"]);

@@ -97,7 +97,7 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 		checkTeam := func(team int) {
 			_, ok := teamFirstMatches[team]
 			if !ok {
-				teamFirstMatches[team] = match.DisplayName
+				teamFirstMatches[team] = match.ShortName
 			}
 		}
 		checkTeam(match.Red1)

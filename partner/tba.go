@@ -353,8 +353,6 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 
 	// Build a JSON array of TBA-format matches.
 	for i, match := range matches {
-		matchNumber, _ := strconv.Atoi(match.DisplayName)
-
 		// Fill in scores if the match has been played.
 		var scoreBreakdown map[string]map[string]any
 		var redScore, blueScore *int
@@ -385,7 +383,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 		tbaMatches[i] = TbaMatch{
 			CompLevel:      "qm",
 			SetNumber:      0,
-			MatchNumber:    matchNumber,
+			MatchNumber:    match.TypeOrder,
 			Alliances:      alliances,
 			ScoreBreakdown: scoreBreakdown,
 			TimeString:     match.Time.Local().Format("3:04 PM"),
@@ -702,8 +700,8 @@ func setPlayoffMatchKey(tbaMatch *TbaMatch, match *model.Match, playoffType stri
 			tbaMatch.SetNumber = tbaKey.setNumber
 		}
 		tbaMatch.MatchNumber = match.PlayoffInstance
-		if !strings.HasPrefix(match.DisplayName, "F") {
-			tbaMatch.DisplayName = "Match " + match.DisplayName
+		if !strings.HasPrefix(match.ShortName, "F") {
+			tbaMatch.DisplayName = "Match " + match.ShortName
 		}
 	}
 }

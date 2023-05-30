@@ -161,7 +161,7 @@ var handleRealtimeScore = function(data,reversed) {
 
 // Handles a websocket message to update current match
 var handleMatchLoad = function(data) {
-  $("#matchName").text(data.MatchType + " Match " + data.Match.DisplayName);
+  $("#matchName").text(data.Match.LongName);
 };
 
 // Handles a websocket message to update the event status message.

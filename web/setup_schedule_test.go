@@ -16,7 +16,7 @@ func TestSetupSchedule(t *testing.T) {
 	for i := 0; i < 38; i++ {
 		web.arena.Database.CreateTeam(&model.Team{Id: i + 101})
 	}
-	web.arena.Database.CreateMatch(&model.Match{Type: model.Practice, DisplayName: "1"})
+	web.arena.Database.CreateMatch(&model.Match{Type: model.Practice, ShortName: "P1"})
 
 	// Check the default setting values.
 	recorder := web.getHttpResponse("/setup/schedule?matchType=practice")
@@ -85,8 +85,8 @@ func TestSetupScheduleErrors(t *testing.T) {
 	for i := 18; i < 38; i++ {
 		web.arena.Database.CreateTeam(&model.Team{Id: i + 101})
 	}
-	web.arena.Database.CreateMatch(&model.Match{Type: model.Practice, DisplayName: "1"})
-	web.arena.Database.CreateMatch(&model.Match{Type: model.Practice, DisplayName: "2"})
+	web.arena.Database.CreateMatch(&model.Match{Type: model.Practice, ShortName: "P1"})
+	web.arena.Database.CreateMatch(&model.Match{Type: model.Practice, ShortName: "P2"})
 	postData = "numScheduleBlocks=1&startTime0=2014-01-01 09:00:00 AM&numMatches0=64&matchSpacingSec0=480&" +
 		"matchType=practice"
 	recorder = web.postHttpResponse("/setup/schedule/generate", postData)

@@ -487,7 +487,7 @@
   <line class="structure" x1="0" y1="89" x2="205" y2="89"/>
   <rect class="structure" y="23" width="205" height="130.452"/>
   <text id="series_status" x="203.9999" y="170.5669" class="{{.SeriesLeader}}">{{.SeriesStatus}}</text>
-  <text id="match_title" x="0" y="17.3691">{{.DisplayName}}</text>
+  <text id="match_title" x="0" y="17.3691">{{.ShortName}}</text>
   {{if .RedAlliance}}
     <text x="22" y="70" class="alliancenum r">{{.RedAlliance.Id}}</text>
     {{if ge (len .RedAlliance.TeamIds) 3}}

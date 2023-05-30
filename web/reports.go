@@ -412,7 +412,7 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Time": 35, "Type": 25, "Match": 15, "Team": 20}
+	colWidths := map[string]float64{"Time": 35, "Match": 40, "Team": 20}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -423,7 +423,6 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 	pdf.SetFillColor(220, 220, 220)
 	pdf.CellFormat(195, rowHeight, "Match Schedule - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
 	pdf.CellFormat(colWidths["Time"], rowHeight, "Time", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Type"], rowHeight, "Type", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Red 1", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Red 2", "1", 0, "C", true, 0, "")
@@ -446,9 +445,6 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 			surrogate = true
 		}
 
-		// Capitalize match types.
-		matchType := match.Type.String()
-
 		formatTeam := func(teamId int) string {
 			if teamId == 0 {
 				return ""
@@ -460,8 +456,7 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 		// Render match info row.
 		pdf.CellFormat(colWidths["Time"], height, match.Time.Local().Format("Mon 1/02 03:04 PM"), borderStr, 0,
 			alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Type"], height, matchType, borderStr, 0, alignStr, false, 0, "")
-		pdf.CellFormat(colWidths["Match"], height, match.DisplayName, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Match"], height, match.LongName, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red1), borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red2), borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Team"], height, formatTeam(match.Red3), borderStr, 0, alignStr, false, 0, "")
@@ -473,7 +468,6 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 			height := 4.0
 			pdf.SetFont("Arial", "", 8)
 			pdf.CellFormat(colWidths["Time"], height, "", "LBR", 0, "C", false, 0, "")
-			pdf.CellFormat(colWidths["Type"], height, "", "LBR", 0, "C", false, 0, "")
 			pdf.CellFormat(colWidths["Match"], height, "", "LBR", 0, "C", false, 0, "")
 			pdf.CellFormat(colWidths["Team"], height, surrogateText(match.Red1IsSurrogate), "LBR", 0, "CT", false, 0,
 				"")
@@ -634,14 +628,14 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 	web.arena.PlayoffBracket.ReverseRoundOrderTraversal(func(matchup *bracket.Matchup) {
 		if matchup.IsComplete() {
 			if _, ok := allianceStatuses[matchup.Loser()]; !ok {
-				allianceStatuses[matchup.Loser()] = fmt.Sprintf("Eliminated in\n%s", matchup.LongDisplayName())
+				allianceStatuses[matchup.Loser()] = fmt.Sprintf("Eliminated in\n%s", matchup.LongName)
 			}
 		} else {
 			if matchup.RedAllianceId > 0 {
-				allianceStatuses[matchup.RedAllianceId] = fmt.Sprintf("Playing in\n%s", matchup.LongDisplayName())
+				allianceStatuses[matchup.RedAllianceId] = fmt.Sprintf("Playing in\n%s", matchup.LongName)
 			}
 			if matchup.BlueAllianceId > 0 {
-				allianceStatuses[matchup.BlueAllianceId] = fmt.Sprintf("Playing in\n%s", matchup.LongDisplayName())
+				allianceStatuses[matchup.BlueAllianceId] = fmt.Sprintf("Playing in\n%s", matchup.LongName)
 			}
 		}
 	})
@@ -752,7 +746,7 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Time": 30, "Time2": 22, "Type": 25, "Match": 15, "Diff": 20}
+	colWidths := map[string]float64{"Time": 30, "Time2": 22, "Match": 15, "Diff": 20}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -817,7 +811,7 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		lastMatchStart = match.StartedAt
 
 		// Render match info row.
-		pdf.CellFormat(colWidths["Match"], height, match.DisplayName, borderStr, 0, alignStr, false, 0, "")
+		pdf.CellFormat(colWidths["Match"], height, match.ShortName, borderStr, 0, alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Time"], height, match.Time.Local().Format("1/02 03:04 PM"), borderStr, 0,
 			alignStr, false, 0, "")
 		pdf.CellFormat(colWidths["Time2"], height, fieldReady, borderStr, 0, alignStr, false, 0, "")

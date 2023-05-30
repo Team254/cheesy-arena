@@ -21,10 +21,10 @@ func TestDoubleEliminationInitial(t *testing.T) {
 	matches, err := database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 4, len(matches)) {
-		assertMatch(t, matches[0], "1", 1, 8)
-		assertMatch(t, matches[1], "2", 4, 5)
-		assertMatch(t, matches[2], "3", 2, 7)
-		assertMatch(t, matches[3], "4", 3, 6)
+		assertMatch(t, matches[0], "Playoff 1", "1", "Round 1 Upper", 1, 8)
+		assertMatch(t, matches[1], "Playoff 2", "2", "Round 1 Upper", 4, 5)
+		assertMatch(t, matches[2], "Playoff 3", "3", "Round 1 Upper", 2, 7)
+		assertMatch(t, matches[3], "Playoff 4", "4", "Round 1 Upper", 3, 6)
 	}
 }
 
@@ -62,8 +62,8 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[4], "5", 1, 5)
-		assertMatch(t, matches[5], "7", 8, 4)
+		assertMatch(t, matches[4], "Playoff 5", "5", "Round 2 Lower", 1, 5)
+		assertMatch(t, matches[5], "Playoff 7", "7", "Round 2 Upper", 8, 4)
 	}
 
 	scoreMatch(database, "3", game.BlueWonMatch)
@@ -77,10 +77,10 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 8, len(matches)) {
-		assertMatch(t, matches[4], "5", 1, 5)
-		assertMatch(t, matches[5], "6", 2, 6)
-		assertMatch(t, matches[6], "7", 8, 4)
-		assertMatch(t, matches[7], "8", 7, 3)
+		assertMatch(t, matches[4], "Playoff 5", "5", "Round 2 Lower", 1, 5)
+		assertMatch(t, matches[5], "Playoff 6", "6", "Round 2 Lower", 2, 6)
+		assertMatch(t, matches[6], "Playoff 7", "7", "Round 2 Upper", 8, 4)
+		assertMatch(t, matches[7], "Playoff 8", "8", "Round 2 Upper", 7, 3)
 	}
 
 	scoreMatch(database, "5", game.BlueWonMatch)
@@ -100,7 +100,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 9, len(matches)) {
-		assertMatch(t, matches[8], "9", 8, 2)
+		assertMatch(t, matches[8], "Playoff 9", "9", "Round 3 Lower", 8, 2)
 	}
 
 	scoreMatch(database, "8", game.BlueWonMatch)
@@ -108,8 +108,8 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 11, len(matches)) {
-		assertMatch(t, matches[9], "10", 7, 5)
-		assertMatch(t, matches[10], "11", 4, 3)
+		assertMatch(t, matches[9], "Playoff 10", "10", "Round 3 Lower", 7, 5)
+		assertMatch(t, matches[10], "Playoff 11", "11", "Round 4 Upper", 4, 3)
 	}
 
 	scoreMatch(database, "9", game.RedWonMatch)
@@ -123,8 +123,8 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 12, len(matches)) {
-		assertMatch(t, matches[10], "11", 4, 3)
-		assertMatch(t, matches[11], "12", 7, 8)
+		assertMatch(t, matches[10], "Playoff 11", "11", "Round 4 Upper", 4, 3)
+		assertMatch(t, matches[11], "Playoff 12", "12", "Round 4 Lower", 7, 8)
 	}
 
 	scoreMatch(database, "11", game.RedWonMatch)
@@ -138,7 +138,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 13, len(matches)) {
-		assertMatch(t, matches[12], "13", 3, 7)
+		assertMatch(t, matches[12], "Playoff 13", "13", "Round 5 Lower", 3, 7)
 	}
 
 	scoreMatch(database, "13", game.BlueWonMatch)
@@ -146,8 +146,8 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 15, len(matches)) {
-		assertMatch(t, matches[13], "F-1", 4, 7)
-		assertMatch(t, matches[14], "F-2", 4, 7)
+		assertMatch(t, matches[13], "Playoff F-1", "F-1", "", 4, 7)
+		assertMatch(t, matches[14], "Playoff F-2", "F-2", "", 4, 7)
 	}
 	assert.False(t, bracket.IsComplete())
 	assert.Equal(t, 0, bracket.Winner())
@@ -167,7 +167,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 16, len(matches)) {
-		assertMatch(t, matches[15], "F-3", 4, 7)
+		assertMatch(t, matches[15], "Playoff F-3", "F-3", "", 4, 7)
 	}
 	assert.False(t, bracket.IsComplete())
 	assert.Equal(t, 0, bracket.Winner())
@@ -178,7 +178,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 17, len(matches)) {
-		assertMatch(t, matches[16], "F-4", 4, 7)
+		assertMatch(t, matches[16], "Playoff F-4", "F-4", "", 4, 7)
 	}
 	assert.False(t, bracket.IsComplete())
 	assert.Equal(t, 0, bracket.Winner())
@@ -189,7 +189,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 18, len(matches)) {
-		assertMatch(t, matches[17], "F-5", 4, 7)
+		assertMatch(t, matches[17], "Playoff F-5", "F-5", "", 4, 7)
 	}
 	assert.False(t, bracket.IsComplete())
 	assert.Equal(t, 0, bracket.Winner())
@@ -221,7 +221,7 @@ func TestDoubleEliminationTie(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 5, len(matches)) {
-		assertMatch(t, matches[4], "1-2", 1, 8)
+		assertMatch(t, matches[4], "Playoff 1-2", "1-2", "Round 1 Upper", 1, 8)
 	}
 
 	scoreMatch(database, "1-2", game.TieMatch)
@@ -229,7 +229,7 @@ func TestDoubleEliminationTie(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[5], "1-3", 1, 8)
+		assertMatch(t, matches[5], "Playoff 1-3", "1-3", "Round 1 Upper", 1, 8)
 	}
 
 	scoreMatch(database, "1-3", game.RedWonMatch)
@@ -261,8 +261,8 @@ func TestDoubleEliminationChangeResult(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[4], "5", 1, 5)
-		assertMatch(t, matches[5], "7", 8, 4)
+		assertMatch(t, matches[4], "Playoff 5", "5", "Round 2 Lower", 1, 5)
+		assertMatch(t, matches[5], "Playoff 7", "7", "Round 2 Upper", 8, 4)
 	}
 
 	scoreMatch(database, "2", game.MatchNotPlayed)
@@ -275,7 +275,7 @@ func TestDoubleEliminationChangeResult(t *testing.T) {
 	matches, err = database.GetMatchesByType(model.Playoff)
 	assert.Nil(t, err)
 	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[4], "5", 1, 4)
-		assertMatch(t, matches[5], "7", 8, 5)
+		assertMatch(t, matches[4], "Playoff 5", "5", "Round 2 Lower", 1, 4)
+		assertMatch(t, matches[5], "Playoff 7", "7", "Round 2 Upper", 8, 5)
 	}
 }

@@ -8,7 +8,7 @@ let alliance;
 
 // Handles a websocket message to update the teams for the current match.
 const handleMatchLoad = function(data) {
-  $("#matchName").text(data.MatchType + " " + data.Match.DisplayName);
+  $("#matchName").text(data.Match.LongName);
   if (alliance === "red") {
     $("#team1").text(data.Match.Red1);
     $("#team2").text(data.Match.Red2);

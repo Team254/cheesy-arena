@@ -43,7 +43,7 @@ var handleMatchLoad = function(data) {
       $("#teamNameText").attr("data-alliance-bg", station[0]).text(team.Nickname);
 
       var ranking = data.Rankings[team.Id];
-      if (ranking && data.MatchType === "Qualification") {
+      if (ranking && data.Match.Type === matchTypeQualification) {
         var rankingText = ranking.Rank;
         $("#teamRank").attr("data-alliance-bg", station[0]).text(rankingText);
       } else {

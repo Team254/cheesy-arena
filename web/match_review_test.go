@@ -15,11 +15,11 @@ import (
 func TestMatchReview(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match1 := model.Match{Type: model.Practice, DisplayName: "1", Status: game.RedWonMatch}
-	match2 := model.Match{Type: model.Practice, DisplayName: "2"}
-	match3 := model.Match{Type: model.Qualification, DisplayName: "1", Status: game.BlueWonMatch}
-	match4 := model.Match{Type: model.Playoff, DisplayName: "SF1-1", Status: game.TieMatch}
-	match5 := model.Match{Type: model.Playoff, DisplayName: "SF1-2"}
+	match1 := model.Match{Type: model.Practice, ShortName: "P1", Status: game.RedWonMatch}
+	match2 := model.Match{Type: model.Practice, ShortName: "P2"}
+	match3 := model.Match{Type: model.Qualification, ShortName: "Q1", Status: game.BlueWonMatch}
+	match4 := model.Match{Type: model.Playoff, ShortName: "SF1-1", Status: game.TieMatch}
+	match5 := model.Match{Type: model.Playoff, ShortName: "SF1-2"}
 	web.arena.Database.CreateMatch(&match1)
 	web.arena.Database.CreateMatch(&match2)
 	web.arena.Database.CreateMatch(&match3)
@@ -39,8 +39,9 @@ func TestMatchReview(t *testing.T) {
 func TestMatchReviewEditExistingResult(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match := model.Match{Type: model.Playoff, DisplayName: "QF4-3", Status: game.RedWonMatch, Red1: 1001,
-		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, PlayoffRedAlliance: 1, PlayoffBlueAlliance: 2}
+	match := model.Match{Type: model.Playoff, LongName: "Playoff QF4-3", ShortName: "QF4-3", Status: game.RedWonMatch,
+		Red1: 1001, Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, PlayoffRedAlliance: 1,
+		PlayoffBlueAlliance: 2}
 	assert.Nil(t, web.arena.Database.CreateMatch(&match))
 	matchResult := model.BuildTestMatchResult(match.Id, 1)
 	matchResult.MatchType = match.Type
@@ -62,7 +63,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), " QF4-3 ")
+	assert.Contains(t, recorder.Body.String(), " Playoff QF4-3 ")
 
 	// Update the score to something else.
 	postBody := fmt.Sprintf(
@@ -85,8 +86,9 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 func TestMatchReviewCreateNewResult(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match := model.Match{Type: model.Playoff, DisplayName: "QF4-3", Status: game.RedWonMatch, Red1: 1001,
-		Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, PlayoffRedAlliance: 1, PlayoffBlueAlliance: 2}
+	match := model.Match{Type: model.Playoff, LongName: "Playoff QF4-3", ShortName: "QF4-3", Status: game.RedWonMatch,
+		Red1: 1001, Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, PlayoffRedAlliance: 1,
+		PlayoffBlueAlliance: 2}
 	web.arena.Database.CreateMatch(&match)
 	tournament.CreateTestAlliances(web.arena.Database, 2)
 	web.arena.EventSettings.NumPlayoffAlliances = 2
@@ -100,7 +102,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), " QF4-3 ")
+	assert.Contains(t, recorder.Body.String(), " Playoff QF4-3 ")
 
 	// Update the score to something else.
 	postBody := fmt.Sprintf(
@@ -124,14 +126,15 @@ func TestMatchReviewEditCurrentMatch(t *testing.T) {
 	web := setupTestWeb(t)
 
 	match := model.Match{
-		Type:        model.Qualification,
-		DisplayName: "352",
-		Red1:        1001,
-		Red2:        1002,
-		Red3:        1003,
-		Blue1:       1004,
-		Blue2:       1005,
-		Blue3:       1006,
+		Type:      model.Qualification,
+		LongName:  "Qualification 352",
+		ShortName: "Q352",
+		Red1:      1001,
+		Red2:      1002,
+		Red3:      1003,
+		Blue1:     1004,
+		Blue2:     1005,
+		Blue3:     1006,
 	}
 	web.arena.Database.CreateMatch(&match)
 	web.arena.LoadMatch(&match)
@@ -139,7 +142,7 @@ func TestMatchReviewEditCurrentMatch(t *testing.T) {
 
 	recorder := web.getHttpResponse("/match_review/current/edit")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), " 352 ")
+	assert.Contains(t, recorder.Body.String(), " Qualification 352 ")
 
 	postBody := fmt.Sprintf(
 		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"EndgameStatuses\":[0,2,1]},\"BlueScore\":{"+

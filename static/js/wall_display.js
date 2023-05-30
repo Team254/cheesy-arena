@@ -18,7 +18,7 @@ const eventMatchInfoUp = $("#eventMatchInfo").css("height");
 const logoUp = "30px";
 const logoDown = $("#logo").css("top");
 const scoreIn = $(".score").css("width");
-const scoreMid = "135px";
+const scoreMid = "185px";
 const scoreOut = "250px";
 const scoreFieldsOut = "25px";
 const overlayTopOffset = 110;
@@ -109,11 +109,11 @@ const handleMatchLoad = function(data) {
     $("#playoffSeriesStatus").hide();
   }
 
-  if (data.Match.Type === matchTypeTest) {
-    $("#matchName").text(currentMatch.DisplayName);
-  } else {
-    $("#matchName").text(data.MatchType + " " + currentMatch.DisplayName);
+  let matchName = data.Match.LongName;
+  if (data.Match.NameDetail !== "") {
+    matchName += " &ndash; " + data.Match.NameDetail;
   }
+  $("#matchName").html(matchName);
 };
 
 // Handles a websocket message to update the match time countdown.

@@ -33,7 +33,7 @@ func TestAnnouncerDisplayMatchLoad(t *testing.T) {
 
 func TestAnnouncerDisplayScorePosted(t *testing.T) {
 	web := setupTestWeb(t)
-	match := model.Match{Type: model.Qualification, DisplayName: "Qual 17"}
+	match := model.Match{Type: model.Qualification, LongName: "Qual 17"}
 	web.arena.SavedMatch = &match
 
 	recorder := web.getHttpResponse("/displays/announcer/score_posted")

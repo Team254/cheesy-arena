@@ -72,13 +72,11 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 
 	data := struct {
 		*model.EventSettings
-		MatchTypePrefix   string
 		Matches           []model.Match
 		RedOffFieldTeams  [][]int
 		BlueOffFieldTeams [][]int
 	}{
 		web.arena.EventSettings,
-		web.arena.CurrentMatch.TypePrefix(),
 		upcomingMatches,
 		redOffFieldTeamsByMatch,
 		blueOffFieldTeamsByMatch,

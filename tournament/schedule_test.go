@@ -60,34 +60,30 @@ func TestScheduleTeams(t *testing.T) {
 	for i := 0; i < numTeams; i++ {
 		teams[i].Id = i + 101
 	}
-	scheduleBlocks := []model.ScheduleBlock{{0, model.Test, time.Unix(0, 0).UTC(), 6, 60}}
-	matches, err := BuildRandomSchedule(teams, scheduleBlocks, model.Test)
+	scheduleBlocks := []model.ScheduleBlock{{0, model.Practice, time.Unix(0, 0).UTC(), 6, 60}}
+	matches, err := BuildRandomSchedule(teams, scheduleBlocks, model.Practice)
 	assert.Nil(t, err)
-	assert.Equal(t, model.Match{Type: model.Test, DisplayName: "1", Time: time.Unix(0, 0).UTC(), Red1: 115, Red2: 111,
-		Red3: 108, Blue1: 109, Blue2: 116, Blue3: 117}, matches[0])
-	assert.Equal(t, model.Match{Type: model.Test, DisplayName: "2", Time: time.Unix(60, 0).UTC(), Red1: 114, Red2: 112,
-		Red3: 103, Blue1: 101, Blue2: 104, Blue3: 118}, matches[1])
-	assert.Equal(t, model.Match{Type: model.Test, DisplayName: "3", Time: time.Unix(120, 0).UTC(), Red1: 110, Red2: 107,
-		Red3: 105, Blue1: 106, Blue2: 113, Blue3: 102}, matches[2])
-	assert.Equal(t, model.Match{Type: model.Test, DisplayName: "4", Time: time.Unix(180, 0).UTC(), Red1: 112, Red2: 108,
-		Red3: 109, Blue1: 101, Blue2: 111, Blue3: 103}, matches[3])
-	assert.Equal(t, model.Match{Type: model.Test, DisplayName: "5", Time: time.Unix(240, 0).UTC(), Red1: 113, Red2: 117,
-		Red3: 115, Blue1: 110, Blue2: 114, Blue3: 102}, matches[4])
-	assert.Equal(t, model.Match{Type: model.Test, DisplayName: "6", Time: time.Unix(300, 0).UTC(), Red1: 118, Red2: 105,
-		Red3: 106, Blue1: 107, Blue2: 104, Blue3: 116}, matches[5])
+	assertMatch(t, matches[0], model.Practice, 1, 0, "P1", "Practice 1", 115, 111, 108, 109, 116, 117)
+	assertMatch(t, matches[1], model.Practice, 2, 60, "P2", "Practice 2", 114, 112, 103, 101, 104, 118)
+	assertMatch(t, matches[2], model.Practice, 3, 120, "P3", "Practice 3", 110, 107, 105, 106, 113, 102)
+	assertMatch(t, matches[3], model.Practice, 4, 180, "P4", "Practice 4", 112, 108, 109, 101, 111, 103)
+	assertMatch(t, matches[4], model.Practice, 5, 240, "P5", "Practice 5", 113, 117, 115, 110, 114, 102)
+	assertMatch(t, matches[5], model.Practice, 6, 300, "P6", "Practice 6", 118, 105, 106, 107, 104, 116)
 
 	// Check with excess room for matches in the schedule.
-	scheduleBlocks = []model.ScheduleBlock{{0, model.Test, time.Unix(0, 0).UTC(), 7, 60}}
-	matches, err = BuildRandomSchedule(teams, scheduleBlocks, model.Test)
+	scheduleBlocks = []model.ScheduleBlock{{0, model.Practice, time.Unix(0, 0).UTC(), 7, 60}}
+	matches, err = BuildRandomSchedule(teams, scheduleBlocks, model.Practice)
 	assert.Nil(t, err)
 }
 
 func TestScheduleTiming(t *testing.T) {
 	teams := make([]model.Team, 18)
-	scheduleBlocks := []model.ScheduleBlock{{0, model.Test, time.Unix(100, 0).UTC(), 10, 75},
-		{0, model.Test, time.Unix(20000, 0).UTC(), 5, 1000},
-		{0, model.Test, time.Unix(100000, 0).UTC(), 15, 29}}
-	matches, err := BuildRandomSchedule(teams, scheduleBlocks, model.Test)
+	scheduleBlocks := []model.ScheduleBlock{
+		{0, model.Qualification, time.Unix(100, 0).UTC(), 10, 75},
+		{0, model.Qualification, time.Unix(20000, 0).UTC(), 5, 1000},
+		{0, model.Qualification, time.Unix(100000, 0).UTC(), 15, 29},
+	}
+	matches, err := BuildRandomSchedule(teams, scheduleBlocks, model.Qualification)
 	assert.Nil(t, err)
 	assert.Equal(t, time.Unix(100, 0).UTC(), matches[0].Time)
 	assert.Equal(t, time.Unix(775, 0).UTC(), matches[9].Time)
@@ -105,8 +101,8 @@ func TestScheduleSurrogates(t *testing.T) {
 	for i := 0; i < numTeams; i++ {
 		teams[i].Id = i + 101
 	}
-	scheduleBlocks := []model.ScheduleBlock{{0, model.Test, time.Unix(0, 0).UTC(), 64, 60}}
-	matches, _ := BuildRandomSchedule(teams, scheduleBlocks, model.Test)
+	scheduleBlocks := []model.ScheduleBlock{{0, model.Qualification, time.Unix(0, 0).UTC(), 64, 60}}
+	matches, _ := BuildRandomSchedule(teams, scheduleBlocks, model.Qualification)
 	for i, match := range matches {
 		if i == 13 || i == 14 {
 			if !match.Red1IsSurrogate || match.Red2IsSurrogate || match.Red3IsSurrogate ||
@@ -120,4 +116,29 @@ func TestScheduleSurrogates(t *testing.T) {
 			}
 		}
 	}
+}
+
+func assertMatch(
+	t *testing.T,
+	match model.Match,
+	matchType model.MatchType,
+	typeOrder int,
+	timeInSec int64,
+	shortName, longName string,
+	red1, red2, red3, blue1, blue2, blue3 int,
+) {
+	assert.Equal(t, matchType, match.Type)
+	assert.Equal(t, typeOrder, match.TypeOrder)
+	assert.Equal(t, time.Unix(timeInSec, 0).UTC(), match.Time)
+	assert.Equal(t, shortName, match.ShortName)
+	assert.Equal(t, longName, match.LongName)
+	assert.Equal(t, "", match.NameDetail)
+	assert.Equal(t, 0, match.PlayoffRedAlliance)
+	assert.Equal(t, 0, match.PlayoffBlueAlliance)
+	assert.Equal(t, red1, match.Red1)
+	assert.Equal(t, red2, match.Red2)
+	assert.Equal(t, red3, match.Red3)
+	assert.Equal(t, blue1, match.Blue1)
+	assert.Equal(t, blue2, match.Blue2)
+	assert.Equal(t, blue3, match.Blue3)
 }

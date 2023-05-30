@@ -29,7 +29,7 @@ const eventMatchInfoUp = $("#eventMatchInfo").css("height");
 const logoUp = "30px";
 const logoDown = $("#logo").css("top");
 const scoreIn = $(".score").css("width");
-const scoreMid = "135px";
+const scoreMid = "185px";
 const scoreOut = "425px";
 const scoreFieldsOut = "210px";
 const scoreLogoTop = "-450px";
@@ -118,11 +118,11 @@ const handleMatchLoad = function(data) {
     $("#playoffSeriesStatus").hide();
   }
 
-  if (data.Match.Type === matchTypeTest) {
-    $("#matchName").text(currentMatch.DisplayName);
-  } else {
-    $("#matchName").text(data.MatchType + " " + currentMatch.DisplayName);
+  let matchName = data.Match.LongName;
+  if (data.Match.NameDetail !== "") {
+    matchName += " &ndash; " + data.Match.NameDetail;
   }
+  $("#matchName").html(matchName);
 };
 
 // Handles a websocket message to update the match time countdown.
@@ -225,7 +225,11 @@ const handleScorePosted = function(data) {
   $("#" + blueSide + "FinalRankingPoints").html(data.BlueRankingPoints);
   $("#finalSeriesStatus").text(data.SeriesStatus);
   $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
-  $("#finalMatchName").text(data.MatchType + " " + data.Match.DisplayName);
+  let matchName = data.Match.LongName;
+  if (data.Match.NameDetail !== "") {
+    matchName += " &ndash; " + data.Match.NameDetail;
+  }
+  $("#finalMatchName").html(matchName);
 
   // Reload the bracket to reflect any changes.
   $("#bracketSvg").attr("src", "/api/bracket/svg?activeMatch=saved&v=" + new Date().getTime());

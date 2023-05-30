@@ -16,15 +16,15 @@ import (
 )
 
 type MatchReviewListItem struct {
-	Id          int
-	DisplayName string
-	Time        string
-	RedTeams    []int
-	BlueTeams   []int
-	RedScore    int
-	BlueScore   int
-	ColorClass  string
-	IsComplete  bool
+	Id         int
+	ShortName  string
+	Time       string
+	RedTeams   []int
+	BlueTeams  []int
+	RedScore   int
+	BlueScore  int
+	ColorClass string
+	IsComplete bool
 }
 
 // Shows the match review interface.
@@ -189,7 +189,7 @@ func (web *Web) buildMatchReviewList(matchType model.MatchType) ([]MatchReviewLi
 	matchReviewList := make([]MatchReviewListItem, len(matches))
 	for i, match := range matches {
 		matchReviewList[i].Id = match.Id
-		matchReviewList[i].DisplayName = match.TypePrefix() + match.DisplayName
+		matchReviewList[i].ShortName = match.ShortName
 		matchReviewList[i].Time = match.Time.Local().Format("Mon 1/02 03:04 PM")
 		matchReviewList[i].RedTeams = []int{match.Red1, match.Red2, match.Red3}
 		matchReviewList[i].BlueTeams = []int{match.Blue1, match.Blue2, match.Blue3}

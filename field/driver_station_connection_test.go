@@ -93,22 +93,20 @@ func TestEncodeControlPacket(t *testing.T) {
 
 	// Check match numbers.
 	arena.CurrentMatch.Type = model.Practice
-	arena.CurrentMatch.DisplayName = "42"
+	arena.CurrentMatch.TypeOrder = 42
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(0), data[7])
 	assert.Equal(t, byte(42), data[8])
 	arena.CurrentMatch.Type = model.Qualification
-	arena.CurrentMatch.DisplayName = "258"
+	arena.CurrentMatch.TypeOrder = 258
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(1), data[7])
 	assert.Equal(t, byte(2), data[8])
 	arena.CurrentMatch.Type = model.Playoff
-	arena.CurrentMatch.PlayoffRound = 8
-	arena.CurrentMatch.PlayoffGroup = 5
-	arena.CurrentMatch.PlayoffInstance = 2
+	arena.CurrentMatch.TypeOrder = 13
 	data = dsConn.encodeControlPacket(arena)
-	assert.Equal(t, byte(3), data[7])
-	assert.Equal(t, byte(84), data[8])
+	assert.Equal(t, byte(0), data[7])
+	assert.Equal(t, byte(13), data[8])
 
 	// Check the countdown at different points during the match.
 	arena.MatchState = AutoPeriod

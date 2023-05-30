@@ -194,19 +194,8 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	}
 
 	// Match number.
-	if match.Type == model.Practice || match.Type == model.Qualification {
-		matchNumber, _ := strconv.Atoi(match.DisplayName)
-		packet[7] = byte(matchNumber >> 8)
-		packet[8] = byte(matchNumber & 0xff)
-	} else if match.Type == model.Playoff {
-		// E.g. Quarter-final 3, match 1 will be numbered 431.
-		matchNumber := match.PlayoffRound*100 + match.PlayoffGroup*10 + match.PlayoffInstance
-		packet[7] = byte(matchNumber >> 8)
-		packet[8] = byte(matchNumber & 0xff)
-	} else {
-		packet[7] = 0
-		packet[8] = 1
-	}
+	packet[7] = byte(match.TypeOrder >> 8)
+	packet[8] = byte(match.TypeOrder & 0xff)
 	packet[9] = 1 // Match repeat number
 
 	// Current time.

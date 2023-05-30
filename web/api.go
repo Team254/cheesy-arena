@@ -38,7 +38,7 @@ type RankingWithNickname struct {
 type allianceMatchup struct {
 	Round              int
 	Group              int
-	DisplayName        string
+	ShortName          string
 	RedAllianceSource  string
 	BlueAllianceSource string
 	RedAlliance        *model.Alliance
@@ -156,17 +156,17 @@ func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	highestPlayedMatch := ""
+	var highestPlayedMatch model.Match
 	for _, match := range matches {
 		if match.IsComplete() {
-			highestPlayedMatch = match.DisplayName
+			highestPlayedMatch = match
 		}
 	}
 
 	data := struct {
 		Rankings           []RankingWithNickname
 		HighestPlayedMatch string
-	}{rankingsWithNicknames, highestPlayedMatch}
+	}{rankingsWithNicknames, highestPlayedMatch.ShortName}
 	jsonData, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		handleWebErr(w, err)
@@ -294,7 +294,7 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match, showTe
 			allianceMatchup := allianceMatchup{
 				Round:              matchup.Round,
 				Group:              matchup.Group,
-				DisplayName:        matchup.LongDisplayName(),
+				ShortName:          matchup.ShortName,
 				RedAllianceSource:  matchup.RedAllianceSourceDisplayName(),
 				BlueAllianceSource: matchup.BlueAllianceSourceDisplayName(),
 				IsComplete:         matchup.IsComplete(),

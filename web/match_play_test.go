@@ -22,11 +22,11 @@ import (
 func TestMatchPlay(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match1 := model.Match{Type: model.Practice, DisplayName: "1", Status: game.RedWonMatch}
-	match2 := model.Match{Type: model.Practice, DisplayName: "2"}
-	match3 := model.Match{Type: model.Qualification, DisplayName: "1", Status: game.BlueWonMatch}
-	match4 := model.Match{Type: model.Playoff, DisplayName: "SF1-1", Status: game.TieMatch}
-	match5 := model.Match{Type: model.Playoff, DisplayName: "SF1-2"}
+	match1 := model.Match{Type: model.Practice, ShortName: "P1", Status: game.RedWonMatch}
+	match2 := model.Match{Type: model.Practice, ShortName: "P2"}
+	match3 := model.Match{Type: model.Qualification, ShortName: "Q1", Status: game.BlueWonMatch}
+	match4 := model.Match{Type: model.Playoff, ShortName: "SF1-1", Status: game.TieMatch}
+	match5 := model.Match{Type: model.Playoff, ShortName: "SF1-2"}
 	web.arena.Database.CreateMatch(&match1)
 	web.arena.Database.CreateMatch(&match2)
 	web.arena.Database.CreateMatch(&match3)
@@ -54,7 +54,7 @@ func TestMatchPlayLoad(t *testing.T) {
 	web.arena.Database.CreateTeam(&model.Team{Id: 104})
 	web.arena.Database.CreateTeam(&model.Team{Id: 105})
 	web.arena.Database.CreateTeam(&model.Team{Id: 106})
-	match := model.Match{Type: model.Playoff, DisplayName: "QF4-3", Status: game.RedWonMatch, Red1: 101,
+	match := model.Match{Type: model.Playoff, ShortName: "QF4-3", Status: game.RedWonMatch, Red1: 101,
 		Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	web.arena.Database.CreateMatch(&match)
 	recorder := web.getHttpResponse("/match_play")
@@ -97,7 +97,7 @@ func TestMatchPlayShowAndClearResult(t *testing.T) {
 	recorder := web.getHttpResponse("/match_play/1/show_result")
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Invalid match")
-	match := model.Match{Type: model.Qualification, DisplayName: "1", Status: game.TieMatch}
+	match := model.Match{Type: model.Qualification, ShortName: "Q1", Status: game.TieMatch}
 	web.arena.Database.CreateMatch(&match)
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
 	assert.Equal(t, 500, recorder.Code)

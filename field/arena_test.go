@@ -378,14 +378,14 @@ func TestLoadNextMatch(t *testing.T) {
 	arena := setupTestArena(t)
 
 	arena.Database.CreateTeam(&model.Team{Id: 1114})
-	practiceMatch1 := model.Match{Type: model.Practice, DisplayName: "1"}
-	practiceMatch2 := model.Match{Type: model.Practice, DisplayName: "2", Status: game.RedWonMatch}
-	practiceMatch3 := model.Match{Type: model.Practice, DisplayName: "3"}
+	practiceMatch1 := model.Match{Type: model.Practice, TypeOrder: 1}
+	practiceMatch2 := model.Match{Type: model.Practice, TypeOrder: 2, Status: game.RedWonMatch}
+	practiceMatch3 := model.Match{Type: model.Practice, TypeOrder: 3}
 	arena.Database.CreateMatch(&practiceMatch1)
 	arena.Database.CreateMatch(&practiceMatch2)
 	arena.Database.CreateMatch(&practiceMatch3)
-	qualificationMatch1 := model.Match{Type: model.Qualification, DisplayName: "1", Status: game.BlueWonMatch}
-	qualificationMatch2 := model.Match{Type: model.Qualification, DisplayName: "2"}
+	qualificationMatch1 := model.Match{Type: model.Qualification, TypeOrder: 1, Status: game.BlueWonMatch}
+	qualificationMatch2 := model.Match{Type: model.Qualification, TypeOrder: 2}
 	arena.Database.CreateMatch(&qualificationMatch1)
 	arena.Database.CreateMatch(&qualificationMatch2)
 

@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
-	"strconv"
 )
 
 // Conveys how a given alliance should be populated -- either directly from alliance selection or based on the results
@@ -33,7 +32,9 @@ type matchupKey struct {
 // alliances.
 type matchupTemplate struct {
 	matchupKey
-	displayName        string
+	ShortName          string
+	LongName           string
+	nameDetail         string
 	NumWinsToAdvance   int
 	redAllianceSource  allianceSource
 	blueAllianceSource allianceSource
@@ -66,26 +67,14 @@ func newMatchupKey(round, group int) matchupKey {
 	return matchupKey{Round: round, Group: group}
 }
 
-// Returns the display name for a specific match within a matchup.
-func (matchupTemplate *matchupTemplate) matchDisplayName(instance int) string {
-	displayName := matchupTemplate.displayName
+// Returns the display name suffix for a specific match within a matchup.
+func (matchupTemplate *matchupTemplate) matchNameSuffix(instance int) string {
 	if matchupTemplate.NumWinsToAdvance > 1 || instance > 1 {
 		// Append the instance if there is always more than one match in the series, or in exceptional circumstances
 		// like a tie in double-elimination unresolved by tiebreakers.
-		displayName += fmt.Sprintf("-%d", instance)
+		return fmt.Sprintf("-%d", instance)
 	}
-	return displayName
-}
-
-// Returns the display name for the overall matchup.
-func (matchup *Matchup) LongDisplayName() string {
-	if matchup.isFinal() {
-		return "Finals"
-	}
-	if _, err := strconv.Atoi(matchup.displayName); err == nil {
-		return "Match " + matchup.displayName
-	}
-	return matchup.displayName
+	return ""
 }
 
 // Returns the display name for the linked matchup from which the red alliance is populated.
@@ -94,9 +83,9 @@ func (matchup *Matchup) RedAllianceSourceDisplayName() string {
 		return ""
 	}
 	if matchup.redAllianceSource.useWinner {
-		return "W " + matchup.redAllianceSourceMatchup.displayName
+		return "W " + matchup.redAllianceSourceMatchup.ShortName
 	}
-	return "L " + matchup.redAllianceSourceMatchup.displayName
+	return "L " + matchup.redAllianceSourceMatchup.ShortName
 }
 
 // Returns the display name for the linked matchup from which the blue alliance is populated.
@@ -105,9 +94,9 @@ func (matchup *Matchup) BlueAllianceSourceDisplayName() string {
 		return ""
 	}
 	if matchup.blueAllianceSource.useWinner {
-		return "W " + matchup.blueAllianceSourceMatchup.displayName
+		return "W " + matchup.blueAllianceSourceMatchup.ShortName
 	}
-	return "L " + matchup.blueAllianceSourceMatchup.displayName
+	return "L " + matchup.blueAllianceSourceMatchup.ShortName
 }
 
 // Returns a pair of strings indicating the leading alliance and a readable status of the matchup.
@@ -164,7 +153,7 @@ func (matchup *Matchup) IsComplete() bool {
 
 // Returns true if the matchup represents the final matchup in the bracket.
 func (matchup *Matchup) isFinal() bool {
-	return matchup.displayName == "F"
+	return matchup.ShortName == "F"
 }
 
 // Recursively traverses the matchup graph to update the state of this matchup and all of its children based on match
@@ -292,7 +281,9 @@ func (matchup *Matchup) update(database *model.Database) error {
 			instance := len(matches) + i + 1
 			match := model.Match{
 				Type:                model.Playoff,
-				DisplayName:         matchup.matchDisplayName(instance),
+				ShortName:           matchup.ShortName + matchup.matchNameSuffix(instance),
+				LongName:            matchup.LongName + matchup.matchNameSuffix(instance),
+				NameDetail:          matchup.nameDetail,
 				PlayoffRound:        matchup.Round,
 				PlayoffGroup:        matchup.Group,
 				PlayoffInstance:     instance,

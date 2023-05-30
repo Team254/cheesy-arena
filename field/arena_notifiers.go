@@ -154,7 +154,6 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 	}
 
 	return &struct {
-		MatchType         string
 		Match             *model.Match
 		Teams             map[string]*model.Team
 		Rankings          map[string]*game.Ranking
@@ -162,7 +161,6 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		RedOffFieldTeams  []*model.Team
 		BlueOffFieldTeams []*model.Team
 	}{
-		arena.CurrentMatch.Type.String(),
 		arena.CurrentMatch,
 		teams,
 		rankings,
@@ -239,7 +237,6 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 	}
 
 	return &struct {
-		MatchType           string
 		Match               *model.Match
 		RedScoreSummary     *game.ScoreSummary
 		BlueScoreSummary    *game.ScoreSummary
@@ -257,7 +254,6 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		SeriesStatus        string
 		SeriesLeader        string
 	}{
-		arena.SavedMatch.Type.String(),
 		arena.SavedMatch,
 		redScoreSummary,
 		blueScoreSummary,

@@ -75,7 +75,7 @@ var setHighestPlayedMatch = function(highestPlayedMatch) {
   if (highestPlayedMatch === "") {
     $("#highestPlayedMatch").text("");
   } else {
-    $("#highestPlayedMatch").text("Standings as of Qualification Match " + highestPlayedMatch);
+    $("#highestPlayedMatch").text("Standings as of " + highestPlayedMatch);
   }
 };
 

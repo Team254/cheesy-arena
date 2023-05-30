@@ -65,7 +65,16 @@ func BuildRandomSchedule(
 	matches := make([]model.Match, numMatches)
 	for i, anonMatch := range anonSchedule {
 		matches[i].Type = matchType
-		matches[i].DisplayName = strconv.Itoa(i + 1)
+		matches[i].TypeOrder = i + 1
+		if matchType == model.Practice {
+			matches[i].ShortName = fmt.Sprintf("P%d", i+1)
+			matches[i].LongName = fmt.Sprintf("Practice %d", i+1)
+		} else if matchType == model.Qualification {
+			matches[i].ShortName = fmt.Sprintf("Q%d", i+1)
+			matches[i].LongName = fmt.Sprintf("Qualification %d", i+1)
+		} else {
+			return nil, fmt.Errorf("invalid match type %q", matchType)
+		}
 		matches[i].Red1 = teams[teamShuffle[anonMatch[0]-1]].Id
 		matches[i].Red1IsSurrogate = anonMatch[1] == 1
 		matches[i].Red2 = teams[teamShuffle[anonMatch[2]-1]].Id

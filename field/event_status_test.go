@@ -35,8 +35,8 @@ func TestEarlyLateMessage(t *testing.T) {
 	arena.LoadTestMatch()
 	assert.Equal(t, "", arena.getEarlyLateMessage())
 
-	arena.Database.CreateMatch(&model.Match{Type: model.Qualification, DisplayName: "1"})
-	arena.Database.CreateMatch(&model.Match{Type: model.Qualification, DisplayName: "2"})
+	arena.Database.CreateMatch(&model.Match{Type: model.Qualification, TypeOrder: 1})
+	arena.Database.CreateMatch(&model.Match{Type: model.Qualification, TypeOrder: 2})
 	matches, _ := arena.Database.GetMatchesByType(model.Qualification)
 	assert.Equal(t, 2, len(matches))
 

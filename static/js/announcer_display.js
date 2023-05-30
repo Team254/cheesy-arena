@@ -16,7 +16,7 @@ var handleAudienceDisplayMode = function(targetScreen) {
 
 // Handles a websocket message to update the teams for the current match.
 var handleMatchLoad = function(data) {
-  $("#matchName").text(data.MatchType + " Match " + data.Match.DisplayName);
+  $("#matchName").text(data.Match.LongName);
 
   const teams = $("#teams");
   teams.empty();

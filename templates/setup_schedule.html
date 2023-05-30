@@ -69,15 +69,13 @@
       <thead>
         <tr>
           <th>Match</th>
-          <th>Type</th>
           <th>Time</th>
         </tr>
       </thead>
       <tbody>
         {{range $match := .Matches}}
           <tr>
-            <td>{{$match.DisplayName}}</td>
-            <td>{{$match.Type}}</td>
+            <td>{{$match.LongName}}</td>
             <td>{{$match.Time}}</td>
           </tr>
         {{end}}

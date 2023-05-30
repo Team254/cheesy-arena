@@ -36,7 +36,7 @@
           <tbody>
             {{range $match := $matches}}
               <tr class="{{$match.ColorClass}}">
-                <td>{{$match.DisplayName}}</td>
+                <td>{{$match.ShortName}}</td>
                 <td>{{$match.Time}}</td>
                 <td class="text-center red-text">
                   {{index $match.RedTeams 0}}, {{index $match.RedTeams 1}}, {{index $match.RedTeams 2}}

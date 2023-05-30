@@ -41,9 +41,9 @@ func TestPublishTeams(t *testing.T) {
 func TestPublishMatches(t *testing.T) {
 	database := setupTestDb(t)
 
-	match1 := model.Match{Type: model.Qualification, DisplayName: "2", Time: time.Unix(600, 0), Red1: 7, Red2: 8,
+	match1 := model.Match{Type: model.Qualification, ShortName: "Q2", Time: time.Unix(600, 0), Red1: 7, Red2: 8,
 		Red3: 9, Blue1: 10, Blue2: 11, Blue3: 12, Status: game.RedWonMatch}
-	match2 := model.Match{Type: model.Playoff, DisplayName: "SF2-2", PlayoffRound: 3, PlayoffGroup: 2, PlayoffInstance: 2}
+	match2 := model.Match{Type: model.Playoff, ShortName: "SF2-2", PlayoffRound: 3, PlayoffGroup: 2, PlayoffInstance: 2}
 	database.CreateMatch(&match1)
 	database.CreateMatch(&match2)
 	matchResult1 := model.BuildTestMatchResult(match1.Id, 1)

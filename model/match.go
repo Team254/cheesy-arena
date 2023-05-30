@@ -30,8 +30,11 @@ func (t MatchType) Get() MatchType {
 type Match struct {
 	Id                  int `db:"id"`
 	Type                MatchType
-	DisplayName         string
+	TypeOrder           int
 	Time                time.Time
+	LongName            string
+	ShortName           string
+	NameDetail          string
 	PlayoffRound        int
 	PlayoffGroup        int
 	PlayoffInstance     int
@@ -75,14 +78,29 @@ func (database *Database) TruncateMatches() error {
 	return database.matchTable.truncate()
 }
 
-func (database *Database) GetMatchByName(matchType MatchType, displayName string) (*Match, error) {
+// TODO(pat): Deprecate this method
+func (database *Database) GetMatchByName(matchType MatchType, shortName string) (*Match, error) {
 	matches, err := database.matchTable.getAll()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, match := range matches {
-		if match.Type == matchType && match.DisplayName == displayName {
+		if match.Type == matchType && match.ShortName == shortName {
+			return &match, nil
+		}
+	}
+	return nil, nil
+}
+
+func (database *Database) GetMatchByTypeOrder(matchType MatchType, typeOrder int) (*Match, error) {
+	matches, err := database.GetMatchesByType(matchType)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, match := range matches {
+		if match.TypeOrder == typeOrder {
 			return &match, nil
 		}
 	}
@@ -121,7 +139,7 @@ func (database *Database) GetMatchesByType(matchType MatchType) ([]Match, error)
 		if matchingMatches[i].PlayoffRound == matchingMatches[j].PlayoffRound {
 			if matchingMatches[i].PlayoffInstance == matchingMatches[j].PlayoffInstance {
 				if matchingMatches[i].PlayoffGroup == matchingMatches[j].PlayoffGroup {
-					return matchingMatches[i].Id < matchingMatches[j].Id
+					return matchingMatches[i].TypeOrder < matchingMatches[j].TypeOrder
 				}
 				return matchingMatches[i].PlayoffGroup < matchingMatches[j].PlayoffGroup
 			}
@@ -134,16 +152,6 @@ func (database *Database) GetMatchesByType(matchType MatchType) ([]Match, error)
 
 func (match *Match) IsComplete() bool {
 	return match.Status != game.MatchNotPlayed
-}
-
-// TODO(pat): Deprecate this method.
-func (match *Match) TypePrefix() string {
-	if match.Type == Practice {
-		return "P"
-	} else if match.Type == Qualification {
-		return "Q"
-	}
-	return ""
 }
 
 // Returns true if the match is of a type that allows substitution of teams.

@@ -25,11 +25,11 @@ import (
 )
 
 type MatchPlayListItem struct {
-	Id          int
-	DisplayName string
-	Time        string
-	Status      game.MatchStatus
-	ColorClass  string
+	Id         int
+	ShortName  string
+	Time       string
+	Status     game.MatchStatus
+	ColorClass string
 }
 
 type MatchPlayList []MatchPlayListItem
@@ -373,7 +373,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
-			web.arena.CurrentMatch.DisplayName = name
+			web.arena.CurrentMatch.LongName = name
 			web.arena.MatchLoadNotifier.Notify()
 			continue
 		default:
@@ -506,7 +506,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 		// Back up the database, but don't error out if it fails.
 		err = web.arena.Database.Backup(web.arena.EventSettings.Name,
-			fmt.Sprintf("post_%s_match_%s", match.Type, match.DisplayName))
+			fmt.Sprintf("post_%s_match_%s", match.Type, match.ShortName))
 		if err != nil {
 			log.Println(err)
 		}
@@ -559,7 +559,7 @@ func (web *Web) buildMatchPlayList(matchType model.MatchType) (MatchPlayList, er
 	matchPlayList := make(MatchPlayList, len(matches))
 	for i, match := range matches {
 		matchPlayList[i].Id = match.Id
-		matchPlayList[i].DisplayName = match.TypePrefix() + match.DisplayName
+		matchPlayList[i].ShortName = match.ShortName
 		matchPlayList[i].Time = match.Time.Local().Format("3:04 PM")
 		matchPlayList[i].Status = match.Status
 		switch match.Status {

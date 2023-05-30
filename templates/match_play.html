@@ -34,7 +34,7 @@
             <tbody>
               {{range $match := $matches}}
                 <tr class="{{$match.ColorClass}}">
-                  <td>{{$match.DisplayName}}</td>
+                  <td>{{$match.ShortName}}</td>
                   <td>{{$match.Time}}</td>
                   <td class="nowrap">
                     <a href="/match_play/{{$match.Id}}/load">
@@ -57,8 +57,7 @@
   <div class="col-lg-8">
     <div class="row text-center">
       <div class="col-lg-3 well well-sm text-center" style="text-transform: uppercase;">
-        {{if eq .Match.Type playoffMatch}}playoff{{else}}{{.Match.Type}}{{end}}
-        {{if ne .Match.Type testMatch}}{{.Match.DisplayName}}{{end}}
+        {{.Match.LongName}}
       </div>
       <div id="matchState" class="col-lg-3 well well-sm text-center">&nbsp;</div>
       <div id="matchTime" class="col-lg-2 well well-sm text-center">&nbsp;</div>
@@ -251,7 +250,7 @@
           </div>
           <p>Shown Match Result</p>
           <span class="label label-saved-match">
-            {{if .SavedMatch.DisplayName}}{{.SavedMatchType}} {{.SavedMatch.DisplayName}}{{else}}None{{end}}
+            {{if .SavedMatch.LongName}}{{.SavedMatch.LongName}}{{else}}None{{end}}
           </span>
           &nbsp;
           <a href="/match_play/clear_result">
@@ -274,7 +273,7 @@
           {{if eq .Match.Type testMatch}}
             <br /><br />
             <p>Match Name</p>
-            <input type="text" id="testMatchName" value="{{.Match.DisplayName}}" onblur="setTestMatchName();" />
+            <input type="text" id="testMatchName" value="{{.Match.LongName}}" onblur="setTestMatchName();" />
           {{end}}
         </div>
       </div>
@@ -294,7 +293,7 @@
         <h4 class="modal-title">Confirm</h4>
       </div>
       <div class="modal-body">
-        <p id="confirmCommitReplay">This is a replay of Match {{.Match.DisplayName}}. Are you sure you want to
+        <p id="confirmCommitReplay">This is a replay of {{.Match.LongName}}. Are you sure you want to
             overwrite the previous results?</p>
         <p id="confirmCommitNotReady">Not all scoring sources are ready yet. Are you sure you want to
             commit the results?</p>
