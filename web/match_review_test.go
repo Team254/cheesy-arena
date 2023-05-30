@@ -47,6 +47,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	matchResult.MatchType = match.Type
 	assert.Nil(t, web.arena.Database.CreateMatchResult(matchResult))
 	tournament.CreateTestAlliances(web.arena.Database, 2)
+	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 	web.arena.CreatePlayoffBracket()
 
@@ -91,6 +92,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 		PlayoffBlueAlliance: 2}
 	web.arena.Database.CreateMatch(&match)
 	tournament.CreateTestAlliances(web.arena.Database, 2)
+	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 	web.arena.CreatePlayoffBracket()
 

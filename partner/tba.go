@@ -689,12 +689,12 @@ func createTbaScoringBreakdown(
 }
 
 // Sets the match key attributes on TbaMatch based on the match and bracket type.
-func setPlayoffMatchKey(tbaMatch *TbaMatch, match *model.Match, playoffType string) {
-	if playoffType == "single" {
+func setPlayoffMatchKey(tbaMatch *TbaMatch, match *model.Match, playoffType model.PlayoffType) {
+	if playoffType == model.SingleEliminationPlayoff {
 		tbaMatch.CompLevel = map[int]string{1: "ef", 2: "qf", 3: "sf", 4: "f"}[match.PlayoffRound]
 		tbaMatch.SetNumber = match.PlayoffGroup
 		tbaMatch.MatchNumber = match.PlayoffInstance
-	} else if playoffType == "double" {
+	} else if playoffType == model.DoubleEliminationPlayoff {
 		if tbaKey, ok := doubleEliminationMatchKeyMapping[playoffMatchKey{match.PlayoffRound, match.PlayoffGroup}]; ok {
 			tbaMatch.CompLevel = tbaKey.compLevel
 			tbaMatch.SetNumber = tbaKey.setNumber

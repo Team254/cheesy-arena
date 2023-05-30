@@ -56,7 +56,7 @@ func TestPublishMatches(t *testing.T) {
 		json.Unmarshal(body, &matches)
 		assert.Equal(t, 2, len(matches))
 		assert.Equal(t, "qm", matches[0].CompLevel)
-		assert.Equal(t, "sf", matches[1].CompLevel)
+		assert.Equal(t, "qf", matches[1].CompLevel)
 	}))
 	defer tbaServer.Close()
 	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")

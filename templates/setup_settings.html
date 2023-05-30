@@ -29,16 +29,18 @@
             <div class="col-lg-7">
               <div class="radio">
                 <label>
-                  <input type="radio" name="playoffType" value="single" onclick="updateNumPlayoffAlliances(false);"
-                      {{if eq .PlayoffType "single"}}checked{{end}}>
-                  Single-Elimination (2-16 alliances)
+                  <input type="radio" name="playoffType" value="DoubleEliminationPlayoff"
+                    onclick="updateNumPlayoffAlliances(true);"
+                    {{if eq .PlayoffType 0}}checked{{end}}>
+                  Double-Elimination (8 alliances)
                 </label>
               </div>
               <div class="radio">
                 <label>
-                  <input type="radio" name="playoffType" value="double" onclick="updateNumPlayoffAlliances(true);"
-                      {{if eq .PlayoffType "double"}}checked{{end}}>
-                  Double-Elimination (8 alliances)
+                  <input type="radio" name="playoffType" value="SingleEliminationPlayoff"
+                    onclick="updateNumPlayoffAlliances(false);"
+                      {{if eq .PlayoffType 1}}checked{{end}}>
+                  Single-Elimination (2-16 alliances)
                 </label>
               </div>
             </div>
@@ -47,7 +49,7 @@
             <label class="col-lg-5 control-label">Number of Alliances</label>
             <div class="col-lg-7">
               <input type="text" class="form-control" name="numPlayoffAlliances" value="{{.NumPlayoffAlliances}}"
-                  {{if eq .PlayoffType "double"}}disabled{{end}}>
+                  {{if eq .PlayoffType 0}}disabled{{end}}>
             </div>
           </div>
           <div class="form-group">

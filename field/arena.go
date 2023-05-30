@@ -187,10 +187,10 @@ func (arena *Arena) LoadSettings() error {
 func (arena *Arena) CreatePlayoffBracket() error {
 	var err error
 	switch arena.EventSettings.PlayoffType {
-	case "single":
-		arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
-	case "double":
+	case model.DoubleEliminationPlayoff:
 		arena.PlayoffBracket, err = bracket.NewDoubleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
+	case model.SingleEliminationPlayoff:
+		arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
 	default:
 		err = fmt.Errorf("Invalid playoff type: %v", arena.EventSettings.PlayoffType)
 	}

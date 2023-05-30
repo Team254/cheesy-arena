@@ -15,6 +15,7 @@ func TestAllianceSelection(t *testing.T) {
 
 	web.arena.AllianceSelectionAlliances = []model.Alliance{}
 	cachedRankedTeams = []*RankedTeam{}
+	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 15
 	web.arena.EventSettings.SelectionRound3Order = "L"
 	for i := 1; i <= 10; i++ {
@@ -102,6 +103,7 @@ func TestAllianceSelectionErrors(t *testing.T) {
 
 	web.arena.AllianceSelectionAlliances = []model.Alliance{}
 	cachedRankedTeams = []*RankedTeam{}
+	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 	for i := 1; i <= 6; i++ {
 		web.arena.Database.CreateRanking(&game.Ranking{TeamId: 100 + i, Rank: i})
@@ -163,6 +165,7 @@ func TestAllianceSelectionReset(t *testing.T) {
 
 	web.arena.AllianceSelectionAlliances = []model.Alliance{}
 	cachedRankedTeams = []*RankedTeam{}
+	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 	for i := 1; i <= 6; i++ {
 		web.arena.Database.CreateRanking(&game.Ranking{TeamId: 100 + i, Rank: i})
@@ -219,6 +222,7 @@ func TestAllianceSelectionAutofocus(t *testing.T) {
 
 	web.arena.AllianceSelectionAlliances = []model.Alliance{}
 	cachedRankedTeams = []*RankedTeam{}
+	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 
 	// Straight draft.

@@ -147,7 +147,7 @@ func TestArenaWebsocketApi(t *testing.T) {
 
 func TestBracketSvgApiDoubleElimination(t *testing.T) {
 	web := setupTestWeb(t)
-	web.arena.EventSettings.PlayoffType = "double"
+	web.arena.EventSettings.PlayoffType = model.DoubleEliminationPlayoff
 	tournament.CreateTestAlliances(web.arena.Database, 8)
 	web.arena.CreatePlayoffBracket()
 

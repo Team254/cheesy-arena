@@ -324,7 +324,7 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match, showTe
 
 	bracketType := "double"
 	numAlliances := web.arena.EventSettings.NumPlayoffAlliances
-	if web.arena.EventSettings.PlayoffType == "single" {
+	if web.arena.EventSettings.PlayoffType == model.SingleEliminationPlayoff {
 		if numAlliances > 8 {
 			bracketType = "16"
 		} else if numAlliances > 4 {

@@ -19,7 +19,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 		EventSettings{
 			Id:                          1,
 			Name:                        "Untitled Event",
-			PlayoffType:                 "single",
+			PlayoffType:                 DoubleEliminationPlayoff,
 			NumPlayoffAlliances:         8,
 			SelectionRound2Order:        "L",
 			SelectionRound3Order:        "",
