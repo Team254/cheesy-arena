@@ -10,11 +10,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
 	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/plc"
 )
 
@@ -74,7 +74,7 @@ type Arena struct {
 	SavedRankings              game.Rankings
 	AllianceStationDisplayMode string
 	AllianceSelectionAlliances []model.Alliance
-	PlayoffBracket             *bracket.Bracket
+	PlayoffBracket             *playoff.Bracket
 	LowerThird                 *model.LowerThird
 	ShowLowerThird             bool
 	MuteMatchSounds            bool
@@ -188,9 +188,9 @@ func (arena *Arena) CreatePlayoffBracket() error {
 	var err error
 	switch arena.EventSettings.PlayoffType {
 	case model.DoubleEliminationPlayoff:
-		arena.PlayoffBracket, err = bracket.NewDoubleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
+		arena.PlayoffBracket, err = playoff.NewDoubleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
 	case model.SingleEliminationPlayoff:
-		arena.PlayoffBracket, err = bracket.NewSingleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
+		arena.PlayoffBracket, err = playoff.NewSingleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
 	default:
 		err = fmt.Errorf("Invalid playoff type: %v", arena.EventSettings.PlayoffType)
 	}

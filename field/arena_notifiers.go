@@ -6,10 +6,10 @@
 package field
 
 import (
-	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
+	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
 	"strconv"
 )
@@ -137,7 +137,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		}
 	}
 
-	var matchup *bracket.Matchup
+	var matchup *playoff.Matchup
 	redOffFieldTeams := []*model.Team{}
 	blueOffFieldTeams := []*model.Team{}
 	if arena.CurrentMatch.Type == model.Playoff {
@@ -157,7 +157,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		Match             *model.Match
 		Teams             map[string]*model.Team
 		Rankings          map[string]*game.Ranking
-		Matchup           *bracket.Matchup
+		Matchup           *playoff.Matchup
 		RedOffFieldTeams  []*model.Team
 		BlueOffFieldTeams []*model.Team
 	}{
@@ -212,7 +212,7 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 
 	// For playoff matches, summarize the state of the series.
 	var seriesStatus, seriesLeader string
-	var matchup *bracket.Matchup
+	var matchup *playoff.Matchup
 	redOffFieldTeamIds := []int{}
 	blueOffFieldTeamIds := []int{}
 	if arena.SavedMatch.Type == model.Playoff {

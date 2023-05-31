@@ -13,9 +13,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/gorilla/mux"
 	"github.com/jung-kurt/gofpdf"
@@ -625,7 +625,7 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 		allianceStatuses[web.arena.PlayoffBracket.Winner()] = "Winner\n "
 		allianceStatuses[web.arena.PlayoffBracket.Finalist()] = "Finalist\n "
 	}
-	web.arena.PlayoffBracket.ReverseRoundOrderTraversal(func(matchup *bracket.Matchup) {
+	web.arena.PlayoffBracket.ReverseRoundOrderTraversal(func(matchup *playoff.Matchup) {
 		if matchup.IsComplete() {
 			if _, ok := allianceStatuses[matchup.Loser()]; !ok {
 				allianceStatuses[matchup.Loser()] = fmt.Sprintf("Eliminated in\n%s", matchup.LongName)

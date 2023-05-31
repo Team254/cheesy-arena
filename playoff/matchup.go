@@ -4,7 +4,7 @@
 // Models and logic encapsulating a group of one or more matches between the same two alliances at a given point in a
 // playoff tournament.
 
-package bracket
+package playoff
 
 import (
 	"fmt"

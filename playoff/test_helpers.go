@@ -3,7 +3,7 @@
 //
 // Helper methods for use in tests in this package and others.
 
-package bracket
+package playoff
 
 import (
 	"github.com/Team254/cheesy-arena/game"

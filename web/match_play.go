@@ -14,10 +14,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Team254/cheesy-arena/bracket"
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
@@ -473,7 +473,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			}
 
 			// Generate any subsequent playoff matches.
-			nextMatchTime := time.Now().Add(time.Second * bracket.PlayoffMatchSpacingSec)
+			nextMatchTime := time.Now().Add(time.Second * playoff.PlayoffMatchSpacingSec)
 			if err = web.arena.UpdatePlayoffBracket(&nextMatchTime); err != nil {
 				return err
 			}

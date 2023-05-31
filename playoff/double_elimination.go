@@ -3,7 +3,7 @@
 //
 // Defines the tournament structure for a double-elimination bracket culminating in a best-of-three final.
 
-package bracket
+package playoff
 
 import "fmt"
 

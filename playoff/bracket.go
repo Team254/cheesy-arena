@@ -3,7 +3,7 @@
 //
 // Model and logic encapsulating a playoff elimination bracket.
 
-package bracket
+package playoff
 
 import (
 	"fmt"
