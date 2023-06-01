@@ -54,6 +54,11 @@ func TestSetupSettingsInvalidValues(t *testing.T) {
 	// Invalid number of alliances.
 	recorder := web.postHttpResponse("/setup/settings", "playoffType=SingleEliminationPlayoff&numAlliances=1")
 	assert.Contains(t, recorder.Body.String(), "must be between 2 and 16")
+
+	// Changing the playoff type after alliance selection is finalized.
+	assert.Nil(t, web.arena.Database.CreateAlliance(&model.Alliance{Id: 1}))
+	recorder = web.postHttpResponse("/setup/settings", "playoffType=SingleEliminationPlayoff&numPlayoffAlliances=8")
+	assert.Contains(t, recorder.Body.String(), "Cannot change playoff type after alliance selection")
 }
 
 func TestSetupSettingsClearDb(t *testing.T) {

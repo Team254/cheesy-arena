@@ -42,19 +42,31 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	previousAdminPassword := eventSettings.AdminPassword
 
-	playoffType := r.PostFormValue("playoffType")
+	var playoffType model.PlayoffType
 	numAlliances := 0
-	if playoffType == "SingleEliminationPlayoff" {
-		eventSettings.PlayoffType = model.SingleEliminationPlayoff
+	if r.PostFormValue("playoffType") == "SingleEliminationPlayoff" {
+		playoffType = model.SingleEliminationPlayoff
 		numAlliances, _ = strconv.Atoi(r.PostFormValue("numPlayoffAlliances"))
 		if numAlliances < 2 || numAlliances > 16 {
 			web.renderSettings(w, r, "Number of alliances must be between 2 and 16.")
 			return
 		}
 	} else {
-		eventSettings.PlayoffType = model.DoubleEliminationPlayoff
+		playoffType = model.DoubleEliminationPlayoff
 		numAlliances = 8
 	}
+	if eventSettings.PlayoffType != playoffType {
+		alliances, err := web.arena.Database.GetAllAlliances()
+		if err != nil {
+			handleWebErr(w, err)
+			return
+		}
+		if len(alliances) > 0 {
+			web.renderSettings(w, r, "Cannot change playoff type after alliance selection has been finalized.")
+			return
+		}
+	}
+	eventSettings.PlayoffType = playoffType
 
 	eventSettings.NumPlayoffAlliances = numAlliances
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
