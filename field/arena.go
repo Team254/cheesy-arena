@@ -74,7 +74,7 @@ type Arena struct {
 	SavedRankings              game.Rankings
 	AllianceStationDisplayMode string
 	AllianceSelectionAlliances []model.Alliance
-	PlayoffBracket             *playoff.Bracket
+	PlayoffTournament          playoff.PlayoffTournament
 	LowerThird                 *model.LowerThird
 	ShowLowerThird             bool
 	MuteMatchSounds            bool
@@ -172,40 +172,35 @@ func (arena *Arena) LoadSettings() error {
 	game.SustainabilityBonusLinkThresholdWithCoop = settings.SustainabilityBonusLinkThresholdWithCoop
 	game.ActivationBonusPointThreshold = settings.ActivationBonusPointThreshold
 
-	// Reconstruct the playoff bracket in memory.
-	if err = arena.CreatePlayoffBracket(); err != nil {
+	// Reconstruct the playoff tournament in memory.
+	if err = arena.CreatePlayoffTournament(); err != nil {
 		return err
 	}
-	if err = arena.UpdatePlayoffBracket(nil); err != nil {
+	if err = arena.UpdatePlayoffTournament(nil); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// Constructs an empty playoff bracket in memory, based only on the number of alliances.
-func (arena *Arena) CreatePlayoffBracket() error {
+// Constructs an empty playoff tournament in memory, based only on the number of alliances.
+func (arena *Arena) CreatePlayoffTournament() error {
 	var err error
-	switch arena.EventSettings.PlayoffType {
-	case model.DoubleEliminationPlayoff:
-		arena.PlayoffBracket, err = playoff.NewDoubleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
-	case model.SingleEliminationPlayoff:
-		arena.PlayoffBracket, err = playoff.NewSingleEliminationBracket(arena.EventSettings.NumPlayoffAlliances)
-	default:
-		err = fmt.Errorf("Invalid playoff type: %v", arena.EventSettings.PlayoffType)
-	}
+	arena.PlayoffTournament, err = playoff.NewPlayoffTournament(
+		arena.Database, arena.EventSettings.PlayoffType, arena.EventSettings.NumPlayoffAlliances,
+	)
 	return err
 }
 
 // Traverses the in-memory playoff bracket to populate alliances, create matches, and assess winners. Does nothing if
 // the bracket has not been created.are
-func (arena *Arena) UpdatePlayoffBracket(startTime *time.Time) error {
+func (arena *Arena) UpdatePlayoffTournament(startTime *time.Time) error {
 	alliances, err := arena.Database.GetAllAlliances()
 	if err != nil {
 		return err
 	}
 	if len(alliances) > 0 {
-		return arena.PlayoffBracket.Update(arena.Database, startTime)
+		return arena.PlayoffTournament.Update(startTime)
 	}
 	return nil
 }

@@ -5,14 +5,17 @@
 
 package playoff
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/Team254/cheesy-arena/model"
+)
 
 // Creates an unpopulated double-elimination bracket. Only supports having exactly eight alliances.
-func NewDoubleEliminationBracket(numAlliances int) (*Bracket, error) {
+func newDoubleEliminationBracket(database *model.Database, numAlliances int) (*Bracket, error) {
 	if numAlliances != 8 {
 		return nil, fmt.Errorf("Must have exactly 8 alliances")
 	}
-	return newBracket(doubleEliminationBracketMatchupTemplates, newMatchupKey(6, 1), numAlliances)
+	return newBracket(database, doubleEliminationBracketMatchupTemplates, newMatchupKey(6, 1), numAlliances)
 }
 
 var doubleEliminationBracketMatchupTemplates = []matchupTemplate{

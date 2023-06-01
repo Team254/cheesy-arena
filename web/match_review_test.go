@@ -49,7 +49,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	tournament.CreateTestAlliances(web.arena.Database, 2)
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
-	web.arena.CreatePlayoffBracket()
+	web.arena.CreatePlayoffTournament()
 
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
@@ -94,7 +94,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	tournament.CreateTestAlliances(web.arena.Database, 2)
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
-	web.arena.CreatePlayoffBracket()
+	web.arena.CreatePlayoffTournament()
 
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)

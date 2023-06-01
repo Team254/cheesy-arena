@@ -5,18 +5,21 @@
 
 package playoff
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/Team254/cheesy-arena/model"
+)
 
 // Creates an unpopulated single-elimination bracket containing only the required matchups for the given number of
 // alliances.
-func NewSingleEliminationBracket(numAlliances int) (*Bracket, error) {
+func newSingleEliminationBracket(database *model.Database, numAlliances int) (*Bracket, error) {
 	if numAlliances < 2 {
 		return nil, fmt.Errorf("Must have at least 2 alliances")
 	}
 	if numAlliances > 16 {
 		return nil, fmt.Errorf("Must have at most 16 alliances")
 	}
-	return newBracket(singleEliminationBracketMatchupTemplates, newMatchupKey(4, 1), numAlliances)
+	return newBracket(database, singleEliminationBracketMatchupTemplates, newMatchupKey(4, 1), numAlliances)
 }
 
 var singleEliminationBracketMatchupTemplates = []matchupTemplate{

@@ -6,6 +6,7 @@ package field
 import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/stretchr/testify/assert"
@@ -428,7 +429,9 @@ func TestLoadNextMatch(t *testing.T) {
 func TestSubstituteTeam(t *testing.T) {
 	arena := setupTestArena(t)
 	tournament.CreateTestAlliances(arena.Database, 2)
-	arena.CreatePlayoffBracket()
+	arena.PlayoffTournament, _ = playoff.NewPlayoffTournament(
+		arena.Database, arena.EventSettings.PlayoffType, arena.EventSettings.NumPlayoffAlliances,
+	)
 
 	arena.Database.CreateTeam(&model.Team{Id: 101})
 	arena.Database.CreateTeam(&model.Team{Id: 102})

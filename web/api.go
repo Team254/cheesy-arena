@@ -289,8 +289,8 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match, showTe
 	}
 
 	matchups := make(map[string]*allianceMatchup)
-	if web.arena.PlayoffBracket != nil {
-		for _, matchup := range web.arena.PlayoffBracket.GetAllMatchups() {
+	if web.arena.PlayoffTournament != nil {
+		for _, matchup := range web.arena.PlayoffTournament.GetAllMatchups() {
 			allianceMatchup := allianceMatchup{
 				Round:              matchup.Round,
 				Group:              matchup.Group,

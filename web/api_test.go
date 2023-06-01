@@ -149,7 +149,7 @@ func TestBracketSvgApiDoubleElimination(t *testing.T) {
 	web := setupTestWeb(t)
 	web.arena.EventSettings.PlayoffType = model.DoubleEliminationPlayoff
 	tournament.CreateTestAlliances(web.arena.Database, 8)
-	web.arena.CreatePlayoffBracket()
+	web.arena.CreatePlayoffTournament()
 
 	recorder := web.getHttpResponse("/api/bracket/svg")
 	assert.Equal(t, 200, recorder.Code)

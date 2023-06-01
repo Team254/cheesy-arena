@@ -133,7 +133,7 @@ func TestWpaKeysCsvReport(t *testing.T) {
 func TestAlliancesPdfReport(t *testing.T) {
 	web := setupTestWeb(t)
 	tournament.CreateTestAlliances(web.arena.Database, 8)
-	web.arena.CreatePlayoffBracket()
+	web.arena.CreatePlayoffTournament()
 
 	// Can't really parse the PDF content and check it, so just check that what's sent back is a PDF.
 	recorder := web.getHttpResponse("/reports/pdf/alliances")

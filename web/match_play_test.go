@@ -46,7 +46,7 @@ func TestMatchPlay(t *testing.T) {
 func TestMatchPlayLoad(t *testing.T) {
 	web := setupTestWeb(t)
 	tournament.CreateTestAlliances(web.arena.Database, 8)
-	web.arena.CreatePlayoffBracket()
+	web.arena.CreatePlayoffTournament()
 
 	web.arena.Database.CreateTeam(&model.Team{Id: 101})
 	web.arena.Database.CreateTeam(&model.Team{Id: 102})
@@ -209,7 +209,7 @@ func TestCommitPlayoffTie(t *testing.T) {
 	assert.Equal(t, game.TieMatch, match.Status)
 
 	tournament.CreateTestAlliances(web.arena.Database, 2)
-	web.arena.CreatePlayoffBracket()
+	web.arena.CreatePlayoffTournament()
 	match.Type = model.Playoff
 	match.PlayoffRedAlliance = 1
 	match.PlayoffBlueAlliance = 2
@@ -235,7 +235,7 @@ func TestCommitPlayoffTie(t *testing.T) {
 	assert.Equal(t, game.RedWonMatch, match.Status)
 
 	// Check that playoff tiebreakers are not evaluated for finals matches.
-	match.PlayoffRound = web.arena.PlayoffBracket.FinalsMatchup.Round
+	match.PlayoffRound = web.arena.PlayoffTournament.FinalMatchup().Round
 	web.commitMatchScore(match, matchResult, true)
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, game.TieMatch, match.Status)
@@ -278,7 +278,7 @@ func TestCommitCards(t *testing.T) {
 	tournament.CreateTestAlliances(web.arena.Database, 2)
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
-	web.arena.CreatePlayoffBracket()
+	web.arena.CreatePlayoffTournament()
 	match.Type = model.Playoff
 	match.PlayoffRedAlliance = 1
 	match.PlayoffBlueAlliance = 2

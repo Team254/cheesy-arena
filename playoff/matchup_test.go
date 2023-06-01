@@ -12,14 +12,14 @@ import (
 func TestMatchupDisplayNames(t *testing.T) {
 	database := setupTestDb(t)
 	tournament.CreateTestAlliances(database, 8)
-	bracket, err := NewDoubleEliminationBracket(8)
+	bracket, err := newDoubleEliminationBracket(database, 8)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "Playoff F", bracket.FinalsMatchup.LongName)
-	assert.Equal(t, "F", bracket.FinalsMatchup.ShortName)
-	assert.Equal(t, "-1", bracket.FinalsMatchup.matchNameSuffix(1))
-	assert.Equal(t, "W 11", bracket.FinalsMatchup.RedAllianceSourceDisplayName())
-	assert.Equal(t, "W 13", bracket.FinalsMatchup.BlueAllianceSourceDisplayName())
+	assert.Equal(t, "Playoff F", bracket.finalMatchup.LongName)
+	assert.Equal(t, "F", bracket.finalMatchup.ShortName)
+	assert.Equal(t, "-1", bracket.finalMatchup.matchNameSuffix(1))
+	assert.Equal(t, "W 11", bracket.finalMatchup.RedAllianceSourceDisplayName())
+	assert.Equal(t, "W 13", bracket.finalMatchup.BlueAllianceSourceDisplayName())
 
 	match13, err := bracket.GetMatchup(5, 1)
 	assert.Nil(t, err)
@@ -30,14 +30,14 @@ func TestMatchupDisplayNames(t *testing.T) {
 	assert.Equal(t, "L 11", match13.RedAllianceSourceDisplayName())
 	assert.Equal(t, "W 12", match13.BlueAllianceSourceDisplayName())
 
-	bracket, err = NewSingleEliminationBracket(8)
+	bracket, err = newSingleEliminationBracket(database, 8)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "Playoff F", bracket.FinalsMatchup.LongName)
-	assert.Equal(t, "F", bracket.FinalsMatchup.ShortName)
-	assert.Equal(t, "-1", bracket.FinalsMatchup.matchNameSuffix(1))
-	assert.Equal(t, "W SF1", bracket.FinalsMatchup.RedAllianceSourceDisplayName())
-	assert.Equal(t, "W SF2", bracket.FinalsMatchup.BlueAllianceSourceDisplayName())
+	assert.Equal(t, "Playoff F", bracket.finalMatchup.LongName)
+	assert.Equal(t, "F", bracket.finalMatchup.ShortName)
+	assert.Equal(t, "-1", bracket.finalMatchup.matchNameSuffix(1))
+	assert.Equal(t, "W SF1", bracket.finalMatchup.RedAllianceSourceDisplayName())
+	assert.Equal(t, "W SF2", bracket.finalMatchup.BlueAllianceSourceDisplayName())
 
 	matchSf2, err := bracket.GetMatchup(3, 2)
 	assert.Nil(t, err)

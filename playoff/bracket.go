@@ -13,14 +13,17 @@ import (
 )
 
 type Bracket struct {
-	FinalsMatchup *Matchup
-	matchupMap    map[matchupKey]*Matchup
+	database     *model.Database
+	finalMatchup *Matchup
+	matchupMap   map[matchupKey]*Matchup
 }
 
 const PlayoffMatchSpacingSec = 600
 
 // Creates an unpopulated bracket with a format that is defined by the given matchup templates and number of alliances.
-func newBracket(matchupTemplates []matchupTemplate, finalsMatchupKey matchupKey, numAlliances int) (*Bracket, error) {
+func newBracket(
+	database *model.Database, matchupTemplates []matchupTemplate, finalsMatchupKey matchupKey, numAlliances int,
+) (*Bracket, error) {
 	// Create a map of matchup templates by key for easy lookup while creating the bracket.
 	matchupTemplateMap := make(map[matchupKey]matchupTemplate, len(matchupTemplates))
 	for _, matchupTemplate := range matchupTemplates {
@@ -34,7 +37,7 @@ func newBracket(matchupTemplates []matchupTemplate, finalsMatchupKey matchupKey,
 		return nil, err
 	}
 
-	return &Bracket{FinalsMatchup: finalsMatchup, matchupMap: matchupMap}, nil
+	return &Bracket{database: database, finalMatchup: finalsMatchup, matchupMap: matchupMap}, nil
 }
 
 // Recursive helper method to create the current matchup node and all of its children.
@@ -162,22 +165,18 @@ func createMatchupGraph(
 	return matchup, 0, nil
 }
 
-// Returns the winning alliance ID of the entire bracket, or 0 if it is not yet known.
-func (bracket *Bracket) Winner() int {
-	return bracket.FinalsMatchup.Winner()
-}
-
-// Returns the finalist alliance ID of the entire bracket, or 0 if it is not yet known.
-func (bracket *Bracket) Finalist() int {
-	return bracket.FinalsMatchup.Loser()
-}
-
-// Returns true if the bracket has been won, and false if it is still to be determined.
 func (bracket *Bracket) IsComplete() bool {
-	return bracket.FinalsMatchup.IsComplete()
+	return bracket.finalMatchup.IsComplete()
 }
 
-// Returns a slice of all matchups contained within the bracket.
+func (bracket *Bracket) WinningAlliance() int {
+	return bracket.finalMatchup.Winner()
+}
+
+func (bracket *Bracket) FinalistAlliance() int {
+	return bracket.finalMatchup.Loser()
+}
+
 func (bracket *Bracket) GetAllMatchups() []*Matchup {
 	var matchups []*Matchup
 	for _, matchup := range bracket.matchupMap {
@@ -192,7 +191,6 @@ func (bracket *Bracket) GetAllMatchups() []*Matchup {
 	return matchups
 }
 
-// Returns the matchup for the given round and group, or an error if it doesn't exist within the bracket.
 func (bracket *Bracket) GetMatchup(round, group int) (*Matchup, error) {
 	matchupKey := newMatchupKey(round, group)
 	if matchup, ok := bracket.matchupMap[matchupKey]; ok {
@@ -201,16 +199,18 @@ func (bracket *Bracket) GetMatchup(round, group int) (*Matchup, error) {
 	return nil, fmt.Errorf("bracket does not contain matchup for key %+v", matchupKey)
 }
 
-// Traverses the bracket to update the state of each matchup based on match results, counting wins and creating or
-// deleting matches as required.
-func (bracket *Bracket) Update(database *model.Database, startTime *time.Time) error {
-	if err := bracket.FinalsMatchup.update(database); err != nil {
+func (bracket *Bracket) FinalMatchup() *Matchup {
+	return bracket.finalMatchup
+}
+
+func (bracket *Bracket) Update(startTime *time.Time) error {
+	if err := bracket.finalMatchup.update(bracket.database); err != nil {
 		return err
 	}
 
 	if startTime != nil {
 		// Update the scheduled time for all matches that have yet to be run.
-		matches, err := database.GetMatchesByType(model.Playoff)
+		matches, err := bracket.database.GetMatchesByType(model.Playoff)
 		if err != nil {
 			return err
 		}
@@ -220,7 +220,7 @@ func (bracket *Bracket) Update(database *model.Database, startTime *time.Time) e
 				continue
 			}
 			match.Time = startTime.Add(time.Duration(matchIndex*PlayoffMatchSpacingSec) * time.Second)
-			if err = database.UpdateMatch(&match); err != nil {
+			if err = bracket.database.UpdateMatch(&match); err != nil {
 				return err
 			}
 			matchIndex++
@@ -230,10 +230,8 @@ func (bracket *Bracket) Update(database *model.Database, startTime *time.Time) e
 	return nil
 }
 
-// Performs a traversal of the bracket in reverse order of rounds and invokes the given function for each visited
-// matchup.
 func (bracket *Bracket) ReverseRoundOrderTraversal(visitFunction func(*Matchup)) {
-	matchupQueue := []*Matchup{bracket.FinalsMatchup}
+	matchupQueue := []*Matchup{bracket.finalMatchup}
 	for len(matchupQueue) > 0 {
 		// Reorder the queue since graph depth doesn't necessarily equate to round.
 		sort.Slice(matchupQueue, func(i, j int) bool {

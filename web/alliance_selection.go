@@ -167,7 +167,7 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// Replace the current in-memory bracket if it was populated with teams.
-	if err = web.arena.CreatePlayoffBracket(); err != nil {
+	if err = web.arena.CreatePlayoffTournament(); err != nil {
 		handleWebErr(w, err)
 		return
 	}
@@ -222,11 +222,11 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	}
 
 	// Generate the first round of playoff matches.
-	if err = web.arena.CreatePlayoffBracket(); err != nil {
+	if err = web.arena.CreatePlayoffTournament(); err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	if err = web.arena.UpdatePlayoffBracket(&startTime); err != nil {
+	if err = web.arena.UpdatePlayoffTournament(&startTime); err != nil {
 		handleWebErr(w, err)
 		return
 	}

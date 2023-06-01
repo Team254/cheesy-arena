@@ -407,7 +407,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 	if match.Type == model.Playoff {
 		// Playoff matches other than the finals should have ties broken by examining the scoring breakdown rather
 		// than being replayed.
-		if match.PlayoffRound < web.arena.PlayoffBracket.FinalsMatchup.Round {
+		if match.PlayoffRound < web.arena.PlayoffTournament.FinalMatchup().Round {
 			applyPlayoffTiebreakers = true
 		}
 	}
@@ -474,14 +474,14 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 			// Generate any subsequent playoff matches.
 			nextMatchTime := time.Now().Add(time.Second * playoff.PlayoffMatchSpacingSec)
-			if err = web.arena.UpdatePlayoffBracket(&nextMatchTime); err != nil {
+			if err = web.arena.UpdatePlayoffTournament(&nextMatchTime); err != nil {
 				return err
 			}
 
 			// Generate awards if the tournament is over.
-			if web.arena.PlayoffBracket.IsComplete() {
-				winnerAllianceId := web.arena.PlayoffBracket.Winner()
-				finalistAllianceId := web.arena.PlayoffBracket.Finalist()
+			if web.arena.PlayoffTournament.IsComplete() {
+				winnerAllianceId := web.arena.PlayoffTournament.WinningAlliance()
+				finalistAllianceId := web.arena.PlayoffTournament.FinalistAlliance()
 				if err = tournament.CreateOrUpdateWinnerAndFinalistAwards(
 					web.arena.Database, winnerAllianceId, finalistAllianceId,
 				); err != nil {
