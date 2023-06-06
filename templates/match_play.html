@@ -40,7 +40,7 @@
                     <a href="/match_play/{{$match.Id}}/load">
                       <b class="btn btn-info btn-xs">Load</b>
                     </a>
-                    {{if ne $match.Status ""}}
+                    {{if ne $match.Status matchScheduled}}
                       <a href="/match_play/{{$match.Id}}/show_result">
                         <b class="btn btn-info btn-xs">Show Result</b>
                       </a>

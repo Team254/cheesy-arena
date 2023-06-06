@@ -24,14 +24,19 @@ type ScoreSummary struct {
 	NumOpponentTechFouls            int
 }
 
-type MatchStatus string
+type MatchStatus int
 
 const (
-	RedWonMatch    MatchStatus = "R"
-	BlueWonMatch   MatchStatus = "B"
-	TieMatch       MatchStatus = "T"
-	MatchNotPlayed MatchStatus = ""
+	MatchScheduled MatchStatus = iota
+	MatchHidden
+	RedWonMatch
+	BlueWonMatch
+	TieMatch
 )
+
+func (t MatchStatus) Get() MatchStatus {
+	return t
+}
 
 // Determines the winner of the match given the score summaries for both alliances.
 func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, applyPlayoffTiebreakers bool) MatchStatus {

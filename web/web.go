@@ -71,10 +71,19 @@ func NewWeb(arena *field.Arena) *Web {
 		"nodeStateToInt": func(nodeState game.NodeState) int {
 			return int(nodeState)
 		},
+
+		// MatchType enum values.
 		"testMatch":          model.Test.Get,
 		"practiceMatch":      model.Practice.Get,
 		"qualificationMatch": model.Qualification.Get,
 		"playoffMatch":       model.Playoff.Get,
+
+		// MatchStatus enum values.
+		"matchScheduled": game.MatchScheduled.Get,
+		"matchHidden":    game.MatchHidden.Get,
+		"redWonMatch":    game.RedWonMatch.Get,
+		"blueWonMatch":   game.BlueWonMatch.Get,
+		"tieMatch":       game.TieMatch.Get,
 	}
 
 	return web

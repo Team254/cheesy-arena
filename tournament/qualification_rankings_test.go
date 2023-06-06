@@ -143,7 +143,7 @@ func setupMatchResultsForRankings(database *model.Database) {
 	database.CreateMatchResult(matchResult5)
 
 	match6 := model.Match{Type: model.Qualification, TypeOrder: 4, Red1: 7, Red2: 8, Red3: 9, Blue1: 10, Blue2: 11,
-		Blue3: 12, Status: game.MatchNotPlayed}
+		Blue3: 12, Status: game.MatchScheduled}
 	database.CreateMatch(&match6)
 	matchResult6 := model.BuildTestMatchResult(match6.Id, 1)
 	database.CreateMatchResult(matchResult6)

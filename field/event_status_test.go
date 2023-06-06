@@ -121,7 +121,7 @@ func setMatch(database *model.Database, match *model.Match, matchTime time.Time,
 	if isComplete {
 		match.Status = game.TieMatch
 	} else {
-		match.Status = game.MatchNotPlayed
+		match.Status = game.MatchScheduled
 	}
 	_ = database.UpdateMatch(match)
 }

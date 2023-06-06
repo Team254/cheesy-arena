@@ -7,6 +7,7 @@ import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestGetNonexistentMatch(t *testing.T) {
@@ -23,16 +24,20 @@ func TestMatchCrud(t *testing.T) {
 	defer db.Close()
 
 	match := Match{
-		Type:      Qualification,
-		TypeOrder: 254,
-		ShortName: "Q254",
-		LongName:  "Qualification 254",
-		Red1:      1,
-		Red2:      2,
-		Red3:      3,
-		Blue1:     4,
-		Blue2:     5,
-		Blue3:     6,
+		Type:                Qualification,
+		TypeOrder:           254,
+		Time:                time.Unix(1114, 0),
+		LongName:            "Qualification 254",
+		ShortName:           "Q254",
+		NameDetail:          "Qual Round",
+		Red1:                1,
+		Red2:                2,
+		Red3:                3,
+		Blue1:               4,
+		Blue2:               5,
+		Blue3:               6,
+		UseTiebreakCriteria: true,
+		TbaMatchKey:         TbaMatchKey{"qm", 0, 254},
 	}
 	assert.Nil(t, db.CreateMatch(&match))
 	match2, err := db.GetMatchById(1)
@@ -105,67 +110,6 @@ func TestGetMatchByTypeOrder(t *testing.T) {
 	match, err = db.GetMatchByTypeOrder(Practice, 2)
 	assert.Nil(t, err)
 	assert.Equal(t, match1, *match)
-}
-
-func TestGetMatchesByPlayoffRoundGroup(t *testing.T) {
-	db := setupTestDb(t)
-	defer db.Close()
-
-	match := Match{
-		Type:                Playoff,
-		ShortName:           "SF1-1",
-		PlayoffRound:        2,
-		PlayoffGroup:        1,
-		PlayoffInstance:     1,
-		PlayoffRedAlliance:  8,
-		PlayoffBlueAlliance: 4,
-	}
-	assert.Nil(t, db.CreateMatch(&match))
-	match2 := Match{
-		Type:                Playoff,
-		ShortName:           "SF2-2",
-		PlayoffRound:        2,
-		PlayoffGroup:        2,
-		PlayoffInstance:     2,
-		PlayoffRedAlliance:  2,
-		PlayoffBlueAlliance: 3,
-	}
-	assert.Nil(t, db.CreateMatch(&match2))
-	match3 := Match{
-		Type:                Playoff,
-		ShortName:           "SF2-1",
-		PlayoffRound:        2,
-		PlayoffGroup:        2,
-		PlayoffInstance:     1,
-		PlayoffRedAlliance:  8,
-		PlayoffBlueAlliance: 4,
-	}
-	assert.Nil(t, db.CreateMatch(&match3))
-	match4 := Match{
-		Type:                Playoff,
-		ShortName:           "QF2-1",
-		PlayoffRound:        4,
-		PlayoffGroup:        2,
-		PlayoffInstance:     1,
-		PlayoffRedAlliance:  4,
-		PlayoffBlueAlliance: 5,
-	}
-	assert.Nil(t, db.CreateMatch(&match4))
-	match5 := Match{
-		Type:      Practice,
-		ShortName: "P1",
-	}
-	assert.Nil(t, db.CreateMatch(&match5))
-
-	matches, err := db.GetMatchesByPlayoffRoundGroup(4, 1)
-	assert.Nil(t, err)
-	assert.Empty(t, matches)
-	matches, err = db.GetMatchesByPlayoffRoundGroup(2, 2)
-	assert.Nil(t, err)
-	if assert.Equal(t, 2, len(matches)) {
-		assert.Equal(t, "SF2-1", matches[0].ShortName)
-		assert.Equal(t, "SF2-2", matches[1].ShortName)
-	}
 }
 
 func TestGetMatchesByType(t *testing.T) {

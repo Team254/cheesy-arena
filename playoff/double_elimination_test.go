@@ -5,277 +5,228 @@ package playoff
 
 import (
 	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestDoubleEliminationInitial(t *testing.T) {
-	database := setupTestDb(t)
+	finalMatchup, err := newDoubleEliminationBracket(8)
+	assert.Nil(t, err)
 
-	tournament.CreateTestAlliances(database, 8)
-	bracket, err := newDoubleEliminationBracket(database, 8)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err := database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 4, len(matches)) {
-		assertMatch(t, matches[0], "Playoff 1", "1", "Round 1 Upper", 1, 8)
-		assertMatch(t, matches[1], "Playoff 2", "2", "Round 1 Upper", 4, 5)
-		assertMatch(t, matches[2], "Playoff 3", "3", "Round 1 Upper", 2, 7)
-		assertMatch(t, matches[3], "Playoff 4", "4", "Round 1 Upper", 3, 6)
+	if assert.Equal(t, 19, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs,
+			[]expectedMatchSpec{
+				{"Match 1", "M1", "Round 1 Upper", 1, "M1", true, false, "sf", 1, 1},
+				{"Match 2", "M2", "Round 1 Upper", 2, "M2", true, false, "sf", 2, 1},
+				{"Match 3", "M3", "Round 1 Upper", 3, "M3", true, false, "sf", 3, 1},
+				{"Match 4", "M4", "Round 1 Upper", 4, "M4", true, false, "sf", 4, 1},
+				{"Match 5", "M5", "Round 2 Lower", 5, "M5", true, false, "sf", 5, 1},
+				{"Match 6", "M6", "Round 2 Lower", 6, "M6", true, false, "sf", 6, 1},
+				{"Match 7", "M7", "Round 2 Upper", 7, "M7", true, false, "sf", 7, 1},
+				{"Match 8", "M8", "Round 2 Upper", 8, "M8", true, false, "sf", 8, 1},
+				{"Match 9", "M9", "Round 3 Lower", 9, "M9", true, false, "sf", 9, 1},
+				{"Match 10", "M10", "Round 3 Lower", 10, "M10", true, false, "sf", 10, 1},
+				{"Match 11", "M11", "Round 4 Upper", 11, "M11", true, false, "sf", 11, 1},
+				{"Match 12", "M12", "Round 4 Lower", 12, "M12", true, false, "sf", 12, 1},
+				{"Match 13", "M13", "Round 5 Lower", 13, "M13", true, false, "sf", 13, 1},
+				{"Final 1", "F1", "", 14, "F", false, false, "f", 1, 1},
+				{"Final 2", "F2", "", 15, "F", false, false, "f", 1, 2},
+				{"Final 3", "F3", "", 16, "F", false, false, "f", 1, 3},
+				{"Overtime 1", "O1", "", 17, "F", true, true, "f", 1, 4},
+				{"Overtime 2", "O2", "", 18, "F", true, true, "f", 1, 5},
+				{"Overtime 3", "O3", "", 19, "F", true, true, "f", 1, 6},
+			},
+		)
 	}
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:4],
+		[]expectedAlliances{
+			{1, 8},
+			{4, 5},
+			{2, 7},
+			{3, 6},
+		},
+	)
+	for i := 4; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(
+		t, matchGroups, "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10", "M11", "M12", "M13", "F",
+	)
 }
 
 func TestDoubleEliminationErrors(t *testing.T) {
-	_, err := newDoubleEliminationBracket(nil, 7)
+	_, err := newDoubleEliminationBracket(7)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "Must have exactly 8 alliances", err.Error())
+		assert.Equal(t, "double-elimination bracket must have exactly 8 alliances", err.Error())
 	}
 
-	_, err = newDoubleEliminationBracket(nil, 9)
+	_, err = newDoubleEliminationBracket(9)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "Must have exactly 8 alliances", err.Error())
+		assert.Equal(t, "double-elimination bracket must have exactly 8 alliances", err.Error())
 	}
 }
 
 func TestDoubleEliminationProgression(t *testing.T) {
-	database := setupTestDb(t)
+	finalMatchup, err := newDoubleEliminationBracket(8)
+	assert.Nil(t, err)
+	playoffMatchResults := map[int]playoffMatchResult{}
+	finalMatchup.update(playoffMatchResults)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
 
-	tournament.CreateTestAlliances(database, 8)
-	bracket, err := newDoubleEliminationBracket(database, 8)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err := database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 4, len(matches))
-
-	scoreMatch(database, "1", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 4, len(matches))
-
-	scoreMatch(database, "2", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[4], "Playoff 5", "5", "Round 2 Lower", 1, 5)
-		assertMatch(t, matches[5], "Playoff 7", "7", "Round 2 Upper", 8, 4)
+	playoffMatchResults[1] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[4:7], []expectedAlliances{{8, 0}, {0, 0}, {1, 0}})
+	for i := 7; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
 
-	scoreMatch(database, "3", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 6, len(matches))
-
-	scoreMatch(database, "4", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 8, len(matches)) {
-		assertMatch(t, matches[4], "Playoff 5", "5", "Round 2 Lower", 1, 5)
-		assertMatch(t, matches[5], "Playoff 6", "6", "Round 2 Lower", 2, 6)
-		assertMatch(t, matches[6], "Playoff 7", "7", "Round 2 Upper", 8, 4)
-		assertMatch(t, matches[7], "Playoff 8", "8", "Round 2 Upper", 7, 3)
+	// Reverse a previous outcome.
+	playoffMatchResults[1] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[4:7], []expectedAlliances{{1, 0}, {0, 0}, {8, 0}})
+	for i := 7; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
 
-	scoreMatch(database, "5", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 8, len(matches))
-
-	scoreMatch(database, "6", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 8, len(matches))
-
-	scoreMatch(database, "7", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 9, len(matches)) {
-		assertMatch(t, matches[8], "Playoff 9", "9", "Round 3 Lower", 8, 2)
+	playoffMatchResults[2] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[4:7], []expectedAlliances{{1, 5}, {0, 0}, {8, 4}})
+	for i := 7; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
 
-	scoreMatch(database, "8", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 11, len(matches)) {
-		assertMatch(t, matches[9], "Playoff 10", "10", "Round 3 Lower", 7, 5)
-		assertMatch(t, matches[10], "Playoff 11", "11", "Round 4 Upper", 4, 3)
+	playoffMatchResults[3] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[5:8], []expectedAlliances{{2, 0}, {8, 4}, {7, 0}})
+	for i := 8; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
 
-	scoreMatch(database, "9", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 11, len(matches))
-
-	scoreMatch(database, "10", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 12, len(matches)) {
-		assertMatch(t, matches[10], "Playoff 11", "11", "Round 4 Upper", 4, 3)
-		assertMatch(t, matches[11], "Playoff 12", "12", "Round 4 Lower", 7, 8)
+	playoffMatchResults[4] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[5:8], []expectedAlliances{{2, 6}, {8, 4}, {7, 3}})
+	for i := 8; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
 
-	scoreMatch(database, "11", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 12, len(matches))
-
-	scoreMatch(database, "12", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 13, len(matches)) {
-		assertMatch(t, matches[12], "Playoff 13", "13", "Round 5 Lower", 3, 7)
+	playoffMatchResults[5] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[8:10], []expectedAlliances{{0, 0}, {0, 5}})
+	for i := 10; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
 
-	scoreMatch(database, "13", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 15, len(matches)) {
-		assertMatch(t, matches[13], "Playoff F-1", "F-1", "", 4, 7)
-		assertMatch(t, matches[14], "Playoff F-2", "F-2", "", 4, 7)
-	}
-	assert.False(t, bracket.IsComplete())
-	assert.Equal(t, 0, bracket.WinningAlliance())
-	assert.Equal(t, 0, bracket.FinalistAlliance())
-
-	scoreMatch(database, "F-1", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 15, len(matches))
-	assert.False(t, bracket.IsComplete())
-	assert.Equal(t, 0, bracket.WinningAlliance())
-	assert.Equal(t, 0, bracket.FinalistAlliance())
-
-	scoreMatch(database, "F-2", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 16, len(matches)) {
-		assertMatch(t, matches[15], "Playoff F-3", "F-3", "", 4, 7)
-	}
-	assert.False(t, bracket.IsComplete())
-	assert.Equal(t, 0, bracket.WinningAlliance())
-	assert.Equal(t, 0, bracket.FinalistAlliance())
-
-	scoreMatch(database, "F-3", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 17, len(matches)) {
-		assertMatch(t, matches[16], "Playoff F-4", "F-4", "", 4, 7)
-	}
-	assert.False(t, bracket.IsComplete())
-	assert.Equal(t, 0, bracket.WinningAlliance())
-	assert.Equal(t, 0, bracket.FinalistAlliance())
-
-	scoreMatch(database, "F-4", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 18, len(matches)) {
-		assertMatch(t, matches[17], "Playoff F-5", "F-5", "", 4, 7)
-	}
-	assert.False(t, bracket.IsComplete())
-	assert.Equal(t, 0, bracket.WinningAlliance())
-	assert.Equal(t, 0, bracket.FinalistAlliance())
-
-	scoreMatch(database, "F-5", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 18, len(matches))
-	assert.True(t, bracket.IsComplete())
-	assert.Equal(t, 7, bracket.WinningAlliance())
-	assert.Equal(t, 4, bracket.FinalistAlliance())
-}
-
-func TestDoubleEliminationTie(t *testing.T) {
-	database := setupTestDb(t)
-
-	tournament.CreateTestAlliances(database, 8)
-	bracket, err := newDoubleEliminationBracket(database, 8)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err := database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 4, len(matches))
-
-	scoreMatch(database, "1", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 5, len(matches)) {
-		assertMatch(t, matches[4], "Playoff 1-2", "1-2", "Round 1 Upper", 1, 8)
+	playoffMatchResults[6] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[8:10], []expectedAlliances{{0, 2}, {0, 5}})
+	for i := 10; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
 
-	scoreMatch(database, "1-2", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[5], "Playoff 1-3", "1-3", "Round 1 Upper", 1, 8)
+	// Score a perfect tie; no alliance should advance until the match is replayed.
+	playoffMatchResults[7] = playoffMatchResult{game.TieMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[8:10], []expectedAlliances{{0, 2}, {0, 5}})
+	for i := 10; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
 
-	scoreMatch(database, "1-3", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 6, len(matches))
-}
-
-func TestDoubleEliminationChangeResult(t *testing.T) {
-	database := setupTestDb(t)
-
-	tournament.CreateTestAlliances(database, 8)
-	bracket, err := newDoubleEliminationBracket(database, 8)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err := database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 4, len(matches))
-
-	scoreMatch(database, "1", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 4, len(matches))
-
-	scoreMatch(database, "2", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[4], "Playoff 5", "5", "Round 2 Lower", 1, 5)
-		assertMatch(t, matches[5], "Playoff 7", "7", "Round 2 Upper", 8, 4)
+	playoffMatchResults[7] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[8:11], []expectedAlliances{{8, 2}, {0, 5}, {4, 0}})
+	for i := 11; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
 
-	scoreMatch(database, "2", game.MatchNotPlayed)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 4, len(matches))
-
-	scoreMatch(database, "2", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[4], "Playoff 5", "5", "Round 2 Lower", 1, 4)
-		assertMatch(t, matches[5], "Playoff 7", "7", "Round 2 Upper", 8, 5)
+	playoffMatchResults[8] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[8:11], []expectedAlliances{{8, 2}, {7, 5}, {4, 3}})
+	for i := 11; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
+
+	// Score two matches at the same time.
+	playoffMatchResults[9] = playoffMatchResult{game.RedWonMatch}
+	playoffMatchResults[10] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[11:12], []expectedAlliances{{7, 8}})
+	for i := 12; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	playoffMatchResults[11] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[12:13], []expectedAlliances{{3, 0}})
+	finalMatchup.update(playoffMatchResults)
+	for i := 13; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{4, 0}})
+	}
+
+	playoffMatchResults[12] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[12:13], []expectedAlliances{{3, 7}})
+	for i := 13; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{4, 0}})
+	}
+
+	playoffMatchResults[13] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	for i := 13; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{4, 3}})
+	}
+
+	// Unscore the previous match.
+	delete(playoffMatchResults, 13)
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[12:13], []expectedAlliances{{3, 7}})
+	for i := 13; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{4, 0}})
+	}
+
+	playoffMatchResults[13] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	for i := 13; i < 19; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{4, 7}})
+	}
+
+	playoffMatchResults[14] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.False(t, finalMatchup.IsComplete())
+	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+
+	playoffMatchResults[15] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.False(t, finalMatchup.IsComplete())
+	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+
+	playoffMatchResults[16] = playoffMatchResult{game.TieMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.False(t, finalMatchup.IsComplete())
+	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+
+	playoffMatchResults[17] = playoffMatchResult{game.TieMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.False(t, finalMatchup.IsComplete())
+	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+
+	playoffMatchResults[18] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.True(t, finalMatchup.IsComplete())
+	assert.Equal(t, 7, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 4, finalMatchup.LosingAllianceId())
 }

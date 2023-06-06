@@ -74,7 +74,7 @@ type Arena struct {
 	SavedRankings              game.Rankings
 	AllianceStationDisplayMode string
 	AllianceSelectionAlliances []model.Alliance
-	PlayoffTournament          playoff.PlayoffTournament
+	PlayoffTournament          *playoff.PlayoffTournament
 	LowerThird                 *model.LowerThird
 	ShowLowerThird             bool
 	MuteMatchSounds            bool
@@ -176,7 +176,7 @@ func (arena *Arena) LoadSettings() error {
 	if err = arena.CreatePlayoffTournament(); err != nil {
 		return err
 	}
-	if err = arena.UpdatePlayoffTournament(nil); err != nil {
+	if err = arena.UpdatePlayoffTournament(); err != nil {
 		return err
 	}
 
@@ -187,20 +187,24 @@ func (arena *Arena) LoadSettings() error {
 func (arena *Arena) CreatePlayoffTournament() error {
 	var err error
 	arena.PlayoffTournament, err = playoff.NewPlayoffTournament(
-		arena.Database, arena.EventSettings.PlayoffType, arena.EventSettings.NumPlayoffAlliances,
+		arena.EventSettings.PlayoffType, arena.EventSettings.NumPlayoffAlliances,
 	)
 	return err
 }
 
-// Traverses the in-memory playoff bracket to populate alliances, create matches, and assess winners. Does nothing if
-// the bracket has not been created.are
-func (arena *Arena) UpdatePlayoffTournament(startTime *time.Time) error {
+// Performs the one-time creation of all matches for the playoff tournament.
+func (arena *Arena) CreatePlayoffMatches(startTime time.Time) error {
+	return arena.PlayoffTournament.CreateMatches(arena.Database, startTime)
+}
+
+// Traverses the in-memory playoff bracket to assess winners and populate subsequent matches.
+func (arena *Arena) UpdatePlayoffTournament() error {
 	alliances, err := arena.Database.GetAllAlliances()
 	if err != nil {
 		return err
 	}
 	if len(alliances) > 0 {
-		return arena.PlayoffTournament.Update(startTime)
+		return arena.PlayoffTournament.UpdateMatches(arena.Database)
 	}
 	return nil
 }

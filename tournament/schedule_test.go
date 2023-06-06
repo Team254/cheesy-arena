@@ -141,4 +141,7 @@ func assertMatch(
 	assert.Equal(t, blue1, match.Blue1)
 	assert.Equal(t, blue2, match.Blue2)
 	assert.Equal(t, blue3, match.Blue3)
+	assert.Equal(t, "qm", match.TbaMatchKey.CompLevel)
+	assert.Equal(t, 0, match.TbaMatchKey.SetNumber)
+	assert.Equal(t, typeOrder, match.TbaMatchKey.MatchNumber)
 }

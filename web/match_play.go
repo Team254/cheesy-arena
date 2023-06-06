@@ -17,7 +17,6 @@ import (
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
@@ -403,15 +402,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 	match.ScoreCommittedAt = time.Now()
 	redScoreSummary := matchResult.RedScoreSummary()
 	blueScoreSummary := matchResult.BlueScoreSummary()
-	applyPlayoffTiebreakers := false
-	if match.Type == model.Playoff {
-		// Playoff matches other than the finals should have ties broken by examining the scoring breakdown rather
-		// than being replayed.
-		if match.PlayoffRound < web.arena.PlayoffTournament.FinalMatchup().Round {
-			applyPlayoffTiebreakers = true
-		}
-	}
-	match.Status = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, applyPlayoffTiebreakers)
+	match.Status = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, match.UseTiebreakCriteria)
 
 	if match.Type != model.Test {
 		if matchResult.PlayNumber == 0 {
@@ -472,16 +463,15 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 				return err
 			}
 
-			// Generate any subsequent playoff matches.
-			nextMatchTime := time.Now().Add(time.Second * playoff.PlayoffMatchSpacingSec)
-			if err = web.arena.UpdatePlayoffTournament(&nextMatchTime); err != nil {
+			// Populate any subsequent playoff matches.
+			if err = web.arena.UpdatePlayoffTournament(); err != nil {
 				return err
 			}
 
 			// Generate awards if the tournament is over.
 			if web.arena.PlayoffTournament.IsComplete() {
-				winnerAllianceId := web.arena.PlayoffTournament.WinningAlliance()
-				finalistAllianceId := web.arena.PlayoffTournament.FinalistAlliance()
+				winnerAllianceId := web.arena.PlayoffTournament.WinningAllianceId()
+				finalistAllianceId := web.arena.PlayoffTournament.FinalistAllianceId()
 				if err = tournament.CreateOrUpdateWinnerAndFinalistAwards(
 					web.arena.Database, winnerAllianceId, finalistAllianceId,
 				); err != nil {
@@ -541,7 +531,7 @@ func (list MatchPlayList) Len() int {
 
 // Helper function to implement the required interface for Sort.
 func (list MatchPlayList) Less(i, j int) bool {
-	return list[i].Status == game.MatchNotPlayed && list[j].Status != game.MatchNotPlayed
+	return list[i].Status == game.MatchScheduled && list[j].Status != game.MatchScheduled
 }
 
 // Helper function to implement the required interface for Sort.

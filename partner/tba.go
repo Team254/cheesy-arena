@@ -17,7 +17,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 const (
@@ -150,34 +149,8 @@ type TbaPublishedAward struct {
 	Awardee string `json:"awardee"`
 }
 
-type playoffMatchKey struct {
-	playoffRound int
-	playoffGroup int
-}
-
-type tbaPlayoffMatchKey struct {
-	compLevel string
-	setNumber int
-}
-
 var taxiMapping = map[bool]string{false: "No", true: "Yes"}
 var endgameMapping = []string{"None", "Low", "Mid", "High", "Traversal"}
-var doubleEliminationMatchKeyMapping = map[playoffMatchKey]tbaPlayoffMatchKey{
-	{1, 1}: {"ef", 1},
-	{1, 2}: {"ef", 2},
-	{1, 3}: {"ef", 3},
-	{1, 4}: {"ef", 4},
-	{2, 1}: {"ef", 5},
-	{2, 2}: {"ef", 6},
-	{2, 3}: {"qf", 1},
-	{2, 4}: {"qf", 2},
-	{3, 1}: {"qf", 3},
-	{3, 2}: {"qf", 4},
-	{4, 1}: {"sf", 1},
-	{4, 2}: {"sf", 2},
-	{5, 1}: {"f", 1},
-	{6, 1}: {"f", 2},
-}
 
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
 	return &TbaClient{BaseUrl: tbaBaseUrl, eventCode: eventCode, secretId: secretId, secret: secret,
@@ -381,16 +354,13 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 			[3]bool{match.Blue1IsSurrogate, match.Blue2IsSurrogate, match.Blue3IsSurrogate}, blueScore, blueCards)
 
 		tbaMatches[i] = TbaMatch{
-			CompLevel:      "qm",
-			SetNumber:      0,
-			MatchNumber:    match.TypeOrder,
+			CompLevel:      match.TbaMatchKey.CompLevel,
+			SetNumber:      match.TbaMatchKey.SetNumber,
+			MatchNumber:    match.TbaMatchKey.MatchNumber,
 			Alliances:      alliances,
 			ScoreBreakdown: scoreBreakdown,
 			TimeString:     match.Time.Local().Format("3:04 PM"),
 			TimeUtc:        match.Time.UTC().Format("2006-01-02T15:04:05"),
-		}
-		if match.Type == model.Playoff {
-			setPlayoffMatchKey(&tbaMatches[i], &match, eventSettings.PlayoffType)
 		}
 	}
 	jsonBody, err := json.Marshal(tbaMatches)
@@ -686,22 +656,4 @@ func createTbaScoringBreakdown(
 	}
 
 	return breakdownMap
-}
-
-// Sets the match key attributes on TbaMatch based on the match and bracket type.
-func setPlayoffMatchKey(tbaMatch *TbaMatch, match *model.Match, playoffType model.PlayoffType) {
-	if playoffType == model.SingleEliminationPlayoff {
-		tbaMatch.CompLevel = map[int]string{1: "ef", 2: "qf", 3: "sf", 4: "f"}[match.PlayoffRound]
-		tbaMatch.SetNumber = match.PlayoffGroup
-		tbaMatch.MatchNumber = match.PlayoffInstance
-	} else if playoffType == model.DoubleEliminationPlayoff {
-		if tbaKey, ok := doubleEliminationMatchKeyMapping[playoffMatchKey{match.PlayoffRound, match.PlayoffGroup}]; ok {
-			tbaMatch.CompLevel = tbaKey.compLevel
-			tbaMatch.SetNumber = tbaKey.setNumber
-		}
-		tbaMatch.MatchNumber = match.PlayoffInstance
-		if !strings.HasPrefix(match.ShortName, "F") {
-			tbaMatch.DisplayName = "Match " + match.ShortName
-		}
-	}
 }

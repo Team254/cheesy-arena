@@ -622,23 +622,33 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 	// Traverse the bracket to register the furthest level that the alliance has achieved.
 	allianceStatuses := make(map[int]string)
 	if web.arena.PlayoffTournament.IsComplete() {
-		allianceStatuses[web.arena.PlayoffTournament.WinningAlliance()] = "Winner\n "
-		allianceStatuses[web.arena.PlayoffTournament.FinalistAlliance()] = "Finalist\n "
+		allianceStatuses[web.arena.PlayoffTournament.WinningAllianceId()] = "Winner\n "
+		allianceStatuses[web.arena.PlayoffTournament.FinalistAllianceId()] = "Finalist\n "
 	}
-	web.arena.PlayoffTournament.ReverseRoundOrderTraversal(func(matchup *playoff.Matchup) {
+	err = web.arena.PlayoffTournament.Traverse(func(matchGroup playoff.MatchGroup) error {
+		// TODO(pat): Make this logic more generic, at the MatchGroup level.
+		matchup, ok := matchGroup.(*playoff.Matchup)
+		if !ok {
+			return nil
+		}
 		if matchup.IsComplete() {
-			if _, ok := allianceStatuses[matchup.Loser()]; !ok {
-				allianceStatuses[matchup.Loser()] = fmt.Sprintf("Eliminated in\n%s", matchup.LongName)
+			if _, ok := allianceStatuses[matchup.LosingAllianceId()]; !ok {
+				allianceStatuses[matchup.LosingAllianceId()] = fmt.Sprintf("Eliminated in\n%s", matchup.Id())
 			}
 		} else {
 			if matchup.RedAllianceId > 0 {
-				allianceStatuses[matchup.RedAllianceId] = fmt.Sprintf("Playing in\n%s", matchup.LongName)
+				allianceStatuses[matchup.RedAllianceId] = fmt.Sprintf("Playing in\n%s", matchup.Id())
 			}
 			if matchup.BlueAllianceId > 0 {
-				allianceStatuses[matchup.BlueAllianceId] = fmt.Sprintf("Playing in\n%s", matchup.LongName)
+				allianceStatuses[matchup.BlueAllianceId] = fmt.Sprintf("Playing in\n%s", matchup.Id())
 			}
 		}
+		return nil
 	})
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
 
 	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {

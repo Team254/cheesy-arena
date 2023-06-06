@@ -41,9 +41,20 @@ func TestPublishTeams(t *testing.T) {
 func TestPublishMatches(t *testing.T) {
 	database := setupTestDb(t)
 
-	match1 := model.Match{Type: model.Qualification, ShortName: "Q2", Time: time.Unix(600, 0), Red1: 7, Red2: 8,
-		Red3: 9, Blue1: 10, Blue2: 11, Blue3: 12, Status: game.RedWonMatch}
-	match2 := model.Match{Type: model.Playoff, ShortName: "SF2-2", PlayoffRound: 3, PlayoffGroup: 2, PlayoffInstance: 2}
+	match1 := model.Match{
+		Type:        model.Qualification,
+		ShortName:   "Q2",
+		Time:        time.Unix(600, 0),
+		Red1:        7,
+		Red2:        8,
+		Red3:        9,
+		Blue1:       10,
+		Blue2:       11,
+		Blue3:       12,
+		Status:      game.RedWonMatch,
+		TbaMatchKey: model.TbaMatchKey{"qm", 0, 2},
+	}
+	match2 := model.Match{Type: model.Playoff, ShortName: "SF2-2", TbaMatchKey: model.TbaMatchKey{"omg", 5, 29}}
 	database.CreateMatch(&match1)
 	database.CreateMatch(&match2)
 	matchResult1 := model.BuildTestMatchResult(match1.Id, 1)
@@ -56,7 +67,11 @@ func TestPublishMatches(t *testing.T) {
 		json.Unmarshal(body, &matches)
 		assert.Equal(t, 2, len(matches))
 		assert.Equal(t, "qm", matches[0].CompLevel)
-		assert.Equal(t, "qf", matches[1].CompLevel)
+		assert.Equal(t, 0, matches[0].SetNumber)
+		assert.Equal(t, 2, matches[0].MatchNumber)
+		assert.Equal(t, "omg", matches[1].CompLevel)
+		assert.Equal(t, 5, matches[1].SetNumber)
+		assert.Equal(t, 29, matches[1].MatchNumber)
 	}))
 	defer tbaServer.Close()
 	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")

@@ -7,7 +7,6 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"net/http"
@@ -166,12 +165,6 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// Replace the current in-memory bracket if it was populated with teams.
-	if err = web.arena.CreatePlayoffTournament(); err != nil {
-		handleWebErr(w, err)
-		return
-	}
-
 	web.arena.AllianceSelectionAlliances = []model.Alliance{}
 	cachedRankedTeams = []*RankedTeam{}
 	web.arena.AllianceSelectionNotifier.Notify()
@@ -222,11 +215,7 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	}
 
 	// Generate the first round of playoff matches.
-	if err = web.arena.CreatePlayoffTournament(); err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	if err = web.arena.UpdatePlayoffTournament(&startTime); err != nil {
+	if err = web.arena.CreatePlayoffMatches(startTime); err != nil {
 		handleWebErr(w, err)
 		return
 	}
@@ -320,7 +309,7 @@ func (web *Web) canResetAllianceSelection() bool {
 		return false
 	}
 	for _, match := range matches {
-		if match.Status != game.MatchNotPlayed {
+		if match.IsComplete() {
 			return false
 		}
 	}

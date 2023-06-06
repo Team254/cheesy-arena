@@ -11,6 +11,7 @@ import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/gorilla/mux"
 	"io"
@@ -36,9 +37,7 @@ type RankingWithNickname struct {
 }
 
 type allianceMatchup struct {
-	Round              int
-	Group              int
-	ShortName          string
+	Id                 string
 	RedAllianceSource  string
 	BlueAllianceSource string
 	RedAlliance        *model.Alliance
@@ -290,11 +289,13 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match, showTe
 
 	matchups := make(map[string]*allianceMatchup)
 	if web.arena.PlayoffTournament != nil {
-		for _, matchup := range web.arena.PlayoffTournament.GetAllMatchups() {
+		for _, matchGroup := range web.arena.PlayoffTournament.MatchGroups() {
+			matchup, ok := matchGroup.(*playoff.Matchup)
+			if !ok {
+				continue
+			}
 			allianceMatchup := allianceMatchup{
-				Round:              matchup.Round,
-				Group:              matchup.Group,
-				ShortName:          matchup.ShortName,
+				Id:                 matchup.Id(),
 				RedAllianceSource:  matchup.RedAllianceSourceDisplayName(),
 				BlueAllianceSource: matchup.BlueAllianceSourceDisplayName(),
 				IsComplete:         matchup.IsComplete(),
@@ -314,11 +315,10 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match, showTe
 				}
 			}
 			if activeMatch != nil {
-				allianceMatchup.IsActive = activeMatch.PlayoffRound == matchup.Round &&
-					activeMatch.PlayoffGroup == matchup.Group
+				allianceMatchup.IsActive = activeMatch.PlayoffMatchGroupId == matchup.Id()
 			}
 			allianceMatchup.SeriesLeader, allianceMatchup.SeriesStatus = matchup.StatusText()
-			matchups[fmt.Sprintf("%d_%d", matchup.Round, matchup.Group)] = &allianceMatchup
+			matchups[matchup.Id()] = &allianceMatchup
 		}
 	}
 

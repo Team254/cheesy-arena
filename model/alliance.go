@@ -104,7 +104,7 @@ func (database *Database) getOffFieldTeamIdsForAlliance(allianceId int, teamId1,
 	}
 
 	alliance, err := database.GetAllianceById(allianceId)
-	if err != nil {
+	if alliance == nil || err != nil {
 		return nil, err
 	}
 	offFieldTeamIds := []int{}

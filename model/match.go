@@ -35,9 +35,7 @@ type Match struct {
 	LongName            string
 	ShortName           string
 	NameDetail          string
-	PlayoffRound        int
-	PlayoffGroup        int
-	PlayoffInstance     int
+	PlayoffMatchGroupId string
 	PlayoffRedAlliance  int
 	PlayoffBlueAlliance int
 	Red1                int
@@ -56,6 +54,14 @@ type Match struct {
 	ScoreCommittedAt    time.Time
 	FieldReadyAt        time.Time
 	Status              game.MatchStatus
+	UseTiebreakCriteria bool
+	TbaMatchKey         TbaMatchKey
+}
+
+type TbaMatchKey struct {
+	CompLevel   string
+	SetNumber   int
+	MatchNumber int
 }
 
 func (database *Database) CreateMatch(match *Match) error {
@@ -78,21 +84,6 @@ func (database *Database) TruncateMatches() error {
 	return database.matchTable.truncate()
 }
 
-// TODO(pat): Deprecate this method
-func (database *Database) GetMatchByName(matchType MatchType, shortName string) (*Match, error) {
-	matches, err := database.matchTable.getAll()
-	if err != nil {
-		return nil, err
-	}
-
-	for _, match := range matches {
-		if match.Type == matchType && match.ShortName == shortName {
-			return &match, nil
-		}
-	}
-	return nil, nil
-}
-
 func (database *Database) GetMatchByTypeOrder(matchType MatchType, typeOrder int) (*Match, error) {
 	matches, err := database.GetMatchesByType(matchType)
 	if err != nil {
@@ -105,21 +96,6 @@ func (database *Database) GetMatchByTypeOrder(matchType MatchType, typeOrder int
 		}
 	}
 	return nil, nil
-}
-
-func (database *Database) GetMatchesByPlayoffRoundGroup(round int, group int) ([]Match, error) {
-	matches, err := database.GetMatchesByType(Playoff)
-	if err != nil {
-		return nil, err
-	}
-
-	var matchingMatches []Match
-	for _, match := range matches {
-		if match.PlayoffRound == round && match.PlayoffGroup == group {
-			matchingMatches = append(matchingMatches, match)
-		}
-	}
-	return matchingMatches, nil
 }
 
 func (database *Database) GetMatchesByType(matchType MatchType) ([]Match, error) {
@@ -136,22 +112,13 @@ func (database *Database) GetMatchesByType(matchType MatchType) ([]Match, error)
 	}
 
 	sort.Slice(matchingMatches, func(i, j int) bool {
-		if matchingMatches[i].PlayoffRound == matchingMatches[j].PlayoffRound {
-			if matchingMatches[i].PlayoffInstance == matchingMatches[j].PlayoffInstance {
-				if matchingMatches[i].PlayoffGroup == matchingMatches[j].PlayoffGroup {
-					return matchingMatches[i].TypeOrder < matchingMatches[j].TypeOrder
-				}
-				return matchingMatches[i].PlayoffGroup < matchingMatches[j].PlayoffGroup
-			}
-			return matchingMatches[i].PlayoffInstance < matchingMatches[j].PlayoffInstance
-		}
-		return matchingMatches[i].PlayoffRound < matchingMatches[j].PlayoffRound
+		return matchingMatches[i].TypeOrder < matchingMatches[j].TypeOrder
 	})
 	return matchingMatches, nil
 }
 
 func (match *Match) IsComplete() bool {
-	return match.Status != game.MatchNotPlayed
+	return match.Status == game.RedWonMatch || match.Status == game.BlueWonMatch || match.Status == game.TieMatch
 }
 
 // Returns true if the match is of a type that allows substitution of teams.

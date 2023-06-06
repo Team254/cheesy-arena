@@ -10,6 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestMatchReview(t *testing.T) {
@@ -39,17 +40,18 @@ func TestMatchReview(t *testing.T) {
 func TestMatchReviewEditExistingResult(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match := model.Match{Type: model.Playoff, LongName: "Playoff QF4-3", ShortName: "QF4-3", Status: game.RedWonMatch,
-		Red1: 1001, Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, PlayoffRedAlliance: 1,
-		PlayoffBlueAlliance: 2}
-	assert.Nil(t, web.arena.Database.CreateMatch(&match))
+	tournament.CreateTestAlliances(web.arena.Database, 8)
+	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
+	web.arena.EventSettings.NumPlayoffAlliances = 8
+	web.arena.CreatePlayoffTournament()
+	web.arena.CreatePlayoffMatches(time.Now())
+
+	match, _ := web.arena.Database.GetMatchByTypeOrder(model.Playoff, 36)
+	match.Status = game.RedWonMatch
+	web.arena.Database.UpdateMatch(match)
 	matchResult := model.BuildTestMatchResult(match.Id, 1)
 	matchResult.MatchType = match.Type
 	assert.Nil(t, web.arena.Database.CreateMatchResult(matchResult))
-	tournament.CreateTestAlliances(web.arena.Database, 2)
-	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
-	web.arena.EventSettings.NumPlayoffAlliances = 2
-	web.arena.CreatePlayoffTournament()
 
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
@@ -64,7 +66,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), " Playoff QF4-3 ")
+	assert.Contains(t, recorder.Body.String(), " Quarterfinal 4-3 ")
 
 	// Update the score to something else.
 	postBody := fmt.Sprintf(
@@ -87,14 +89,15 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 func TestMatchReviewCreateNewResult(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match := model.Match{Type: model.Playoff, LongName: "Playoff QF4-3", ShortName: "QF4-3", Status: game.RedWonMatch,
-		Red1: 1001, Red2: 1002, Red3: 1003, Blue1: 1004, Blue2: 1005, Blue3: 1006, PlayoffRedAlliance: 1,
-		PlayoffBlueAlliance: 2}
-	web.arena.Database.CreateMatch(&match)
-	tournament.CreateTestAlliances(web.arena.Database, 2)
+	tournament.CreateTestAlliances(web.arena.Database, 8)
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
-	web.arena.EventSettings.NumPlayoffAlliances = 2
+	web.arena.EventSettings.NumPlayoffAlliances = 8
 	web.arena.CreatePlayoffTournament()
+	web.arena.CreatePlayoffMatches(time.Now())
+
+	match, _ := web.arena.Database.GetMatchByTypeOrder(model.Playoff, 36)
+	match.Status = game.RedWonMatch
+	web.arena.Database.UpdateMatch(match)
 
 	recorder := web.getHttpResponse("/match_review")
 	assert.Equal(t, 200, recorder.Code)
@@ -104,7 +107,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), " Playoff QF4-3 ")
+	assert.Contains(t, recorder.Body.String(), " Quarterfinal 4-3 ")
 
 	// Update the score to something else.
 	postBody := fmt.Sprintf(
@@ -158,7 +161,7 @@ func TestMatchReviewEditCurrentMatch(t *testing.T) {
 
 	// Check that the persisted match is still unedited and that the realtime scores have been updated instead.
 	match2, _ := web.arena.Database.GetMatchById(match.Id)
-	assert.Equal(t, game.MatchNotPlayed, match2.Status)
+	assert.Equal(t, game.MatchScheduled, match2.Status)
 	assert.Equal(
 		t,
 		[3]game.EndgameStatus{game.EndgameNone, game.EndgameDocked, game.EndgameParked},

@@ -5,8 +5,6 @@ package playoff
 
 import (
 	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -14,560 +12,978 @@ import (
 
 var dummyStartTime = time.Unix(0, 0)
 
-func TestSingleEliminationInitial(t *testing.T) {
-	database := setupTestDb(t)
+func TestSingleEliminationInitialWith2Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(2)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
 
-	tournament.CreateTestAlliances(database, 2)
-	bracket, err := newSingleEliminationBracket(database, 2)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err := database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 2, len(matches)) {
-		assertMatch(t, matches[0], "Playoff F-1", "F-1", "", 1, 2)
-		assertMatch(t, matches[1], "Playoff F-2", "F-2", "", 1, 2)
-	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
+	assertFullFinals(t, matchSpecs, 0)
 
-	tournament.CreateTestAlliances(database, 3)
-	bracket, err = newSingleEliminationBracket(database, 3)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 2, len(matches)) {
-		assertMatch(t, matches[0], "Playoff SF2-1", "SF2-1", "", 2, 3)
-		assertMatch(t, matches[1], "Playoff SF2-2", "SF2-2", "", 2, 3)
+	finalMatchup.update(map[int]playoffMatchResult{})
+	for i := 0; i < 6; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 2}})
 	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
 
-	tournament.CreateTestAlliances(database, 4)
-	bracket, err = newSingleEliminationBracket(database, 4)
+	matchGroups, err := collectMatchGroups(finalMatchup)
 	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
+	assertMatchGroups(t, matchGroups, "F")
+}
+func TestSingleEliminationInitialWith3Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(3)
 	assert.Nil(t, err)
-	if assert.Equal(t, 4, len(matches)) {
-		assertMatch(t, matches[0], "Playoff SF1-1", "SF1-1", "", 1, 4)
-		assertMatch(t, matches[1], "Playoff SF2-1", "SF2-1", "", 2, 3)
-		assertMatch(t, matches[2], "Playoff SF1-2", "SF1-2", "", 1, 4)
-		assertMatch(t, matches[3], "Playoff SF2-2", "SF2-2", "", 2, 3)
-	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
 
-	tournament.CreateTestAlliances(database, 5)
-	bracket, err = newSingleEliminationBracket(database, 5)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 4, len(matches)) {
-		assertMatch(t, matches[0], "Playoff QF2-1", "QF2-1", "", 4, 5)
-		assertMatch(t, matches[1], "Playoff QF2-2", "QF2-2", "", 4, 5)
-		assertMatch(t, matches[2], "Playoff SF2-1", "SF2-1", "", 2, 3)
-		assertMatch(t, matches[3], "Playoff SF2-2", "SF2-2", "", 2, 3)
+	if assert.Equal(t, 9, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:3],
+			[]expectedMatchSpec{
+				{"Semifinal 2-1", "SF2-1", "", 38, "SF2", true, false, "sf", 2, 1},
+				{"Semifinal 2-2", "SF2-2", "", 40, "SF2", true, false, "sf", 2, 2},
+				{"Semifinal 2-3", "SF2-3", "", 42, "SF2", true, false, "sf", 2, 3},
+			},
+		)
 	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
+	assertFullFinals(t, matchSpecs, 3)
 
-	tournament.CreateTestAlliances(database, 6)
-	bracket, err = newSingleEliminationBracket(database, 6)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 4, len(matches)) {
-		assertMatch(t, matches[0], "Playoff QF2-1", "QF2-1", "", 4, 5)
-		assertMatch(t, matches[1], "Playoff QF4-1", "QF4-1", "", 3, 6)
-		assertMatch(t, matches[2], "Playoff QF2-2", "QF2-2", "", 4, 5)
-		assertMatch(t, matches[3], "Playoff QF4-2", "QF4-2", "", 3, 6)
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:3],
+		[]expectedAlliances{
+			{2, 3},
+			{2, 3},
+			{2, 3},
+		},
+	)
+	for i := 3; i < 9; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 0}})
 	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
 
-	tournament.CreateTestAlliances(database, 7)
-	bracket, err = newSingleEliminationBracket(database, 7)
+	matchGroups, err := collectMatchGroups(finalMatchup)
 	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[0], "Playoff QF2-1", "QF2-1", "", 4, 5)
-		assertMatch(t, matches[1], "Playoff QF3-1", "QF3-1", "", 2, 7)
-		assertMatch(t, matches[2], "Playoff QF4-1", "QF4-1", "", 3, 6)
-		assertMatch(t, matches[3], "Playoff QF2-2", "QF2-2", "", 4, 5)
-		assertMatch(t, matches[4], "Playoff QF3-2", "QF3-2", "", 2, 7)
-		assertMatch(t, matches[5], "Playoff QF4-2", "QF4-2", "", 3, 6)
-	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
+	assertMatchGroups(t, matchGroups, "SF2", "F")
+}
 
-	tournament.CreateTestAlliances(database, 8)
-	bracket, err = newSingleEliminationBracket(database, 8)
+func TestSingleEliminationInitialWith4Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(4)
 	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
-	if assert.Equal(t, 8, len(matches)) {
-		assertMatch(t, matches[0], "Playoff QF1-1", "QF1-1", "", 1, 8)
-		assertMatch(t, matches[1], "Playoff QF2-1", "QF2-1", "", 4, 5)
-		assertMatch(t, matches[2], "Playoff QF3-1", "QF3-1", "", 2, 7)
-		assertMatch(t, matches[3], "Playoff QF4-1", "QF4-1", "", 3, 6)
-		assertMatch(t, matches[4], "Playoff QF1-2", "QF1-2", "", 1, 8)
-		assertMatch(t, matches[5], "Playoff QF2-2", "QF2-2", "", 4, 5)
-		assertMatch(t, matches[6], "Playoff QF3-2", "QF3-2", "", 2, 7)
-		assertMatch(t, matches[7], "Playoff QF4-2", "QF4-2", "", 3, 6)
-	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
 
-	tournament.CreateTestAlliances(database, 9)
-	bracket, err = newSingleEliminationBracket(database, 9)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 8, len(matches)) {
-		assertMatch(t, matches[0], "Playoff EF2-1", "EF2-1", "", 8, 9)
-		assertMatch(t, matches[1], "Playoff EF2-2", "EF2-2", "", 8, 9)
-		assertMatch(t, matches[2], "Playoff QF2-1", "QF2-1", "", 4, 5)
-		assertMatch(t, matches[3], "Playoff QF3-1", "QF3-1", "", 2, 7)
-		assertMatch(t, matches[4], "Playoff QF4-1", "QF4-1", "", 3, 6)
-		assertMatch(t, matches[5], "Playoff QF2-2", "QF2-2", "", 4, 5)
-		assertMatch(t, matches[6], "Playoff QF3-2", "QF3-2", "", 2, 7)
-		assertMatch(t, matches[7], "Playoff QF4-2", "QF4-2", "", 3, 6)
-	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
+	assertFullSemifinalsOnward(t, matchSpecs, 0)
 
-	tournament.CreateTestAlliances(database, 10)
-	bracket, err = newSingleEliminationBracket(database, 10)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 8, len(matches)) {
-		assertMatch(t, matches[0], "Playoff EF2-1", "EF2-1", "", 8, 9)
-		assertMatch(t, matches[1], "Playoff EF6-1", "EF6-1", "", 7, 10)
-		assertMatch(t, matches[2], "Playoff EF2-2", "EF2-2", "", 8, 9)
-		assertMatch(t, matches[3], "Playoff EF6-2", "EF6-2", "", 7, 10)
-		assertMatch(t, matches[4], "Playoff QF2-1", "QF2-1", "", 4, 5)
-		assertMatch(t, matches[5], "Playoff QF4-1", "QF4-1", "", 3, 6)
-		assertMatch(t, matches[6], "Playoff QF2-2", "QF2-2", "", 4, 5)
-		assertMatch(t, matches[7], "Playoff QF4-2", "QF4-2", "", 3, 6)
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:6],
+		[]expectedAlliances{
+			{1, 4},
+			{2, 3},
+			{1, 4},
+			{2, 3},
+			{1, 4},
+			{2, 3},
+		},
+	)
+	for i := 6; i < 12; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
 
-	tournament.CreateTestAlliances(database, 11)
-	bracket, err = newSingleEliminationBracket(database, 11)
+	matchGroups, err := collectMatchGroups(finalMatchup)
 	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 8, len(matches)) {
-		assertMatch(t, matches[0], "Playoff EF2-1", "EF2-1", "", 8, 9)
-		assertMatch(t, matches[1], "Playoff EF6-1", "EF6-1", "", 7, 10)
-		assertMatch(t, matches[2], "Playoff EF8-1", "EF8-1", "", 6, 11)
-		assertMatch(t, matches[3], "Playoff EF2-2", "EF2-2", "", 8, 9)
-		assertMatch(t, matches[4], "Playoff EF6-2", "EF6-2", "", 7, 10)
-		assertMatch(t, matches[5], "Playoff EF8-2", "EF8-2", "", 6, 11)
-		assertMatch(t, matches[6], "Playoff QF2-1", "QF2-1", "", 4, 5)
-		assertMatch(t, matches[7], "Playoff QF2-2", "QF2-2", "", 4, 5)
-	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
+	assertMatchGroups(t, matchGroups, "SF1", "SF2", "F")
+}
 
-	tournament.CreateTestAlliances(database, 12)
-	bracket, err = newSingleEliminationBracket(database, 12)
+func TestSingleEliminationInitialWith5Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(5)
 	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
-	if assert.Equal(t, 8, len(matches)) {
-		assertMatch(t, matches[0], "Playoff EF2-1", "EF2-1", "", 8, 9)
-		assertMatch(t, matches[1], "Playoff EF4-1", "EF4-1", "", 5, 12)
-		assertMatch(t, matches[2], "Playoff EF6-1", "EF6-1", "", 7, 10)
-		assertMatch(t, matches[3], "Playoff EF8-1", "EF8-1", "", 6, 11)
-		assertMatch(t, matches[4], "Playoff EF2-2", "EF2-2", "", 8, 9)
-		assertMatch(t, matches[5], "Playoff EF4-2", "EF4-2", "", 5, 12)
-		assertMatch(t, matches[6], "Playoff EF6-2", "EF6-2", "", 7, 10)
-		assertMatch(t, matches[7], "Playoff EF8-2", "EF8-2", "", 6, 11)
-	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
 
-	tournament.CreateTestAlliances(database, 13)
-	bracket, err = newSingleEliminationBracket(database, 13)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 10, len(matches)) {
-		assertMatch(t, matches[0], "Playoff EF2-1", "EF2-1", "", 8, 9)
-		assertMatch(t, matches[1], "Playoff EF3-1", "EF3-1", "", 4, 13)
-		assertMatch(t, matches[2], "Playoff EF4-1", "EF4-1", "", 5, 12)
-		assertMatch(t, matches[3], "Playoff EF6-1", "EF6-1", "", 7, 10)
-		assertMatch(t, matches[4], "Playoff EF8-1", "EF8-1", "", 6, 11)
-		assertMatch(t, matches[5], "Playoff EF2-2", "EF2-2", "", 8, 9)
-		assertMatch(t, matches[6], "Playoff EF3-2", "EF3-2", "", 4, 13)
-		assertMatch(t, matches[7], "Playoff EF4-2", "EF4-2", "", 5, 12)
-		assertMatch(t, matches[8], "Playoff EF6-2", "EF6-2", "", 7, 10)
-		assertMatch(t, matches[9], "Playoff EF8-2", "EF8-2", "", 6, 11)
+	if assert.Equal(t, 15, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:3],
+			[]expectedMatchSpec{
+				{"Quarterfinal 2-1", "QF2-1", "", 26, "QF2", true, false, "qf", 2, 1},
+				{"Quarterfinal 2-2", "QF2-2", "", 30, "QF2", true, false, "qf", 2, 2},
+				{"Quarterfinal 2-3", "QF2-3", "", 34, "QF2", true, false, "qf", 2, 3},
+			},
+		)
 	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
+	assertFullSemifinalsOnward(t, matchSpecs, 3)
 
-	tournament.CreateTestAlliances(database, 14)
-	bracket, err = newSingleEliminationBracket(database, 14)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 12, len(matches)) {
-		assertMatch(t, matches[0], "Playoff EF2-1", "EF2-1", "", 8, 9)
-		assertMatch(t, matches[1], "Playoff EF3-1", "EF3-1", "", 4, 13)
-		assertMatch(t, matches[2], "Playoff EF4-1", "EF4-1", "", 5, 12)
-		assertMatch(t, matches[3], "Playoff EF6-1", "EF6-1", "", 7, 10)
-		assertMatch(t, matches[4], "Playoff EF7-1", "EF7-1", "", 3, 14)
-		assertMatch(t, matches[5], "Playoff EF8-1", "EF8-1", "", 6, 11)
-		assertMatch(t, matches[6], "Playoff EF2-2", "EF2-2", "", 8, 9)
-		assertMatch(t, matches[7], "Playoff EF3-2", "EF3-2", "", 4, 13)
-		assertMatch(t, matches[8], "Playoff EF4-2", "EF4-2", "", 5, 12)
-		assertMatch(t, matches[9], "Playoff EF6-2", "EF6-2", "", 7, 10)
-		assertMatch(t, matches[10], "Playoff EF7-2", "EF7-2", "", 3, 14)
-		assertMatch(t, matches[11], "Playoff EF8-2", "EF8-2", "", 6, 11)
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:9],
+		[]expectedAlliances{
+			{4, 5},
+			{4, 5},
+			{4, 5},
+			{1, 0},
+			{2, 3},
+			{1, 0},
+			{2, 3},
+			{1, 0},
+			{2, 3},
+		},
+	)
+	for i := 9; i < 15; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
 
-	tournament.CreateTestAlliances(database, 15)
-	bracket, err = newSingleEliminationBracket(database, 15)
+	matchGroups, err := collectMatchGroups(finalMatchup)
 	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 14, len(matches)) {
-		assertMatch(t, matches[0], "Playoff EF2-1", "EF2-1", "", 8, 9)
-		assertMatch(t, matches[1], "Playoff EF3-1", "EF3-1", "", 4, 13)
-		assertMatch(t, matches[2], "Playoff EF4-1", "EF4-1", "", 5, 12)
-		assertMatch(t, matches[3], "Playoff EF5-1", "EF5-1", "", 2, 15)
-		assertMatch(t, matches[4], "Playoff EF6-1", "EF6-1", "", 7, 10)
-		assertMatch(t, matches[5], "Playoff EF7-1", "EF7-1", "", 3, 14)
-		assertMatch(t, matches[6], "Playoff EF8-1", "EF8-1", "", 6, 11)
-		assertMatch(t, matches[7], "Playoff EF2-2", "EF2-2", "", 8, 9)
-		assertMatch(t, matches[8], "Playoff EF3-2", "EF3-2", "", 4, 13)
-		assertMatch(t, matches[9], "Playoff EF4-2", "EF4-2", "", 5, 12)
-		assertMatch(t, matches[10], "Playoff EF5-2", "EF5-2", "", 2, 15)
-		assertMatch(t, matches[11], "Playoff EF6-2", "EF6-2", "", 7, 10)
-		assertMatch(t, matches[12], "Playoff EF7-2", "EF7-2", "", 3, 14)
-		assertMatch(t, matches[13], "Playoff EF8-2", "EF8-2", "", 6, 11)
-	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
+	assertMatchGroups(t, matchGroups, "QF2", "SF1", "SF2", "F")
+}
 
-	tournament.CreateTestAlliances(database, 16)
-	bracket, err = newSingleEliminationBracket(database, 16)
+func TestSingleEliminationInitialWith6Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(6)
 	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
-	if assert.Equal(t, 16, len(matches)) {
-		assertMatch(t, matches[0], "Playoff EF1-1", "EF1-1", "", 1, 16)
-		assertMatch(t, matches[1], "Playoff EF2-1", "EF2-1", "", 8, 9)
-		assertMatch(t, matches[2], "Playoff EF3-1", "EF3-1", "", 4, 13)
-		assertMatch(t, matches[3], "Playoff EF4-1", "EF4-1", "", 5, 12)
-		assertMatch(t, matches[4], "Playoff EF5-1", "EF5-1", "", 2, 15)
-		assertMatch(t, matches[5], "Playoff EF6-1", "EF6-1", "", 7, 10)
-		assertMatch(t, matches[6], "Playoff EF7-1", "EF7-1", "", 3, 14)
-		assertMatch(t, matches[7], "Playoff EF8-1", "EF8-1", "", 6, 11)
-		assertMatch(t, matches[8], "Playoff EF1-2", "EF1-2", "", 1, 16)
-		assertMatch(t, matches[9], "Playoff EF2-2", "EF2-2", "", 8, 9)
-		assertMatch(t, matches[10], "Playoff EF3-2", "EF3-2", "", 4, 13)
-		assertMatch(t, matches[11], "Playoff EF4-2", "EF4-2", "", 5, 12)
-		assertMatch(t, matches[12], "Playoff EF5-2", "EF5-2", "", 2, 15)
-		assertMatch(t, matches[13], "Playoff EF6-2", "EF6-2", "", 7, 10)
-		assertMatch(t, matches[14], "Playoff EF7-2", "EF7-2", "", 3, 14)
-		assertMatch(t, matches[15], "Playoff EF8-2", "EF8-2", "", 6, 11)
+
+	if assert.Equal(t, 18, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:6],
+			[]expectedMatchSpec{
+				{"Quarterfinal 2-1", "QF2-1", "", 26, "QF2", true, false, "qf", 2, 1},
+				{"Quarterfinal 4-1", "QF4-1", "", 28, "QF4", true, false, "qf", 4, 1},
+				{"Quarterfinal 2-2", "QF2-2", "", 30, "QF2", true, false, "qf", 2, 2},
+				{"Quarterfinal 4-2", "QF4-2", "", 32, "QF4", true, false, "qf", 4, 2},
+				{"Quarterfinal 2-3", "QF2-3", "", 34, "QF2", true, false, "qf", 2, 3},
+				{"Quarterfinal 4-3", "QF4-3", "", 36, "QF4", true, false, "qf", 4, 3},
+			},
+		)
 	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
+	assertFullSemifinalsOnward(t, matchSpecs, 6)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:12],
+		[]expectedAlliances{
+			{4, 5},
+			{3, 6},
+			{4, 5},
+			{3, 6},
+			{4, 5},
+			{3, 6},
+			{1, 0},
+			{2, 0},
+			{1, 0},
+			{2, 0},
+			{1, 0},
+			{2, 0},
+		},
+	)
+	for i := 12; i < 18; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(t, matchGroups, "QF2", "QF4", "SF1", "SF2", "F")
+}
+
+func TestSingleEliminationInitialWith7Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(7)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	if assert.Equal(t, 21, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:9],
+			[]expectedMatchSpec{
+				{"Quarterfinal 2-1", "QF2-1", "", 26, "QF2", true, false, "qf", 2, 1},
+				{"Quarterfinal 3-1", "QF3-1", "", 27, "QF3", true, false, "qf", 3, 1},
+				{"Quarterfinal 4-1", "QF4-1", "", 28, "QF4", true, false, "qf", 4, 1},
+				{"Quarterfinal 2-2", "QF2-2", "", 30, "QF2", true, false, "qf", 2, 2},
+				{"Quarterfinal 3-2", "QF3-2", "", 31, "QF3", true, false, "qf", 3, 2},
+				{"Quarterfinal 4-2", "QF4-2", "", 32, "QF4", true, false, "qf", 4, 2},
+				{"Quarterfinal 2-3", "QF2-3", "", 34, "QF2", true, false, "qf", 2, 3},
+				{"Quarterfinal 3-3", "QF3-3", "", 35, "QF3", true, false, "qf", 3, 3},
+				{"Quarterfinal 4-3", "QF4-3", "", 36, "QF4", true, false, "qf", 4, 3},
+			},
+		)
+	}
+	assertFullSemifinalsOnward(t, matchSpecs, 9)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:15],
+		[]expectedAlliances{
+			{4, 5},
+			{2, 7},
+			{3, 6},
+			{4, 5},
+			{2, 7},
+			{3, 6},
+			{4, 5},
+			{2, 7},
+			{3, 6},
+			{1, 0},
+			{0, 0},
+			{1, 0},
+			{0, 0},
+			{1, 0},
+			{0, 0},
+		},
+	)
+	for i := 15; i < 21; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(t, matchGroups, "QF2", "QF3", "QF4", "SF1", "SF2", "F")
+}
+
+func TestSingleEliminationInitialWith8Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(8)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	assertFullQuarterfinalsOnward(t, matchSpecs, 0)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:12],
+		[]expectedAlliances{
+			{1, 8},
+			{4, 5},
+			{2, 7},
+			{3, 6},
+			{1, 8},
+			{4, 5},
+			{2, 7},
+			{3, 6},
+			{1, 8},
+			{4, 5},
+			{2, 7},
+			{3, 6},
+		},
+	)
+	for i := 12; i < 24; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(t, matchGroups, "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F")
+}
+
+func TestSingleEliminationInitialWith9Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(9)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	if assert.Equal(t, 27, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:3],
+			[]expectedMatchSpec{
+				{"Eighthfinal 2-1", "EF2-1", "", 2, "EF2", true, false, "ef", 2, 1},
+				{"Eighthfinal 2-2", "EF2-2", "", 10, "EF2", true, false, "ef", 2, 2},
+				{"Eighthfinal 2-3", "EF2-3", "", 18, "EF2", true, false, "ef", 2, 3},
+			},
+		)
+	}
+	assertFullQuarterfinalsOnward(t, matchSpecs, 3)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:15],
+		[]expectedAlliances{
+			{8, 9},
+			{8, 9},
+			{8, 9},
+			{1, 0},
+			{4, 5},
+			{2, 7},
+			{3, 6},
+			{1, 0},
+			{4, 5},
+			{2, 7},
+			{3, 6},
+			{1, 0},
+			{4, 5},
+			{2, 7},
+			{3, 6},
+		},
+	)
+	for i := 15; i < 27; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(t, matchGroups, "EF2", "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F")
+}
+
+func TestSingleEliminationInitialWith10Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(10)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	if assert.Equal(t, 30, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:6],
+			[]expectedMatchSpec{
+				{"Eighthfinal 2-1", "EF2-1", "", 2, "EF2", true, false, "ef", 2, 1},
+				{"Eighthfinal 6-1", "EF6-1", "", 6, "EF6", true, false, "ef", 6, 1},
+				{"Eighthfinal 2-2", "EF2-2", "", 10, "EF2", true, false, "ef", 2, 2},
+				{"Eighthfinal 6-2", "EF6-2", "", 14, "EF6", true, false, "ef", 6, 2},
+				{"Eighthfinal 2-3", "EF2-3", "", 18, "EF2", true, false, "ef", 2, 3},
+				{"Eighthfinal 6-3", "EF6-3", "", 22, "EF6", true, false, "ef", 6, 3},
+			},
+		)
+	}
+	assertFullQuarterfinalsOnward(t, matchSpecs, 6)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:18],
+		[]expectedAlliances{
+			{8, 9},
+			{7, 10},
+			{8, 9},
+			{7, 10},
+			{8, 9},
+			{7, 10},
+			{1, 0},
+			{4, 5},
+			{2, 0},
+			{3, 6},
+			{1, 0},
+			{4, 5},
+			{2, 0},
+			{3, 6},
+			{1, 0},
+			{4, 5},
+			{2, 0},
+			{3, 6},
+		},
+	)
+	for i := 18; i < 30; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(t, matchGroups, "EF2", "EF6", "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F")
+}
+
+func TestSingleEliminationInitialWith11Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(11)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	if assert.Equal(t, 33, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:9],
+			[]expectedMatchSpec{
+				{"Eighthfinal 2-1", "EF2-1", "", 2, "EF2", true, false, "ef", 2, 1},
+				{"Eighthfinal 6-1", "EF6-1", "", 6, "EF6", true, false, "ef", 6, 1},
+				{"Eighthfinal 8-1", "EF8-1", "", 8, "EF8", true, false, "ef", 8, 1},
+				{"Eighthfinal 2-2", "EF2-2", "", 10, "EF2", true, false, "ef", 2, 2},
+				{"Eighthfinal 6-2", "EF6-2", "", 14, "EF6", true, false, "ef", 6, 2},
+				{"Eighthfinal 8-2", "EF8-2", "", 16, "EF8", true, false, "ef", 8, 2},
+				{"Eighthfinal 2-3", "EF2-3", "", 18, "EF2", true, false, "ef", 2, 3},
+				{"Eighthfinal 6-3", "EF6-3", "", 22, "EF6", true, false, "ef", 6, 3},
+				{"Eighthfinal 8-3", "EF8-3", "", 24, "EF8", true, false, "ef", 8, 3},
+			},
+		)
+	}
+	assertFullQuarterfinalsOnward(t, matchSpecs, 9)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:21],
+		[]expectedAlliances{
+			{8, 9},
+			{7, 10},
+			{6, 11},
+			{8, 9},
+			{7, 10},
+			{6, 11},
+			{8, 9},
+			{7, 10},
+			{6, 11},
+			{1, 0},
+			{4, 5},
+			{2, 0},
+			{3, 0},
+			{1, 0},
+			{4, 5},
+			{2, 0},
+			{3, 0},
+			{1, 0},
+			{4, 5},
+			{2, 0},
+			{3, 0},
+		},
+	)
+	for i := 21; i < 33; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(t, matchGroups, "EF2", "EF6", "EF8", "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F")
+}
+
+func TestSingleEliminationInitialWith12Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(12)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	if assert.Equal(t, 36, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:12],
+			[]expectedMatchSpec{
+				{"Eighthfinal 2-1", "EF2-1", "", 2, "EF2", true, false, "ef", 2, 1},
+				{"Eighthfinal 4-1", "EF4-1", "", 4, "EF4", true, false, "ef", 4, 1},
+				{"Eighthfinal 6-1", "EF6-1", "", 6, "EF6", true, false, "ef", 6, 1},
+				{"Eighthfinal 8-1", "EF8-1", "", 8, "EF8", true, false, "ef", 8, 1},
+				{"Eighthfinal 2-2", "EF2-2", "", 10, "EF2", true, false, "ef", 2, 2},
+				{"Eighthfinal 4-2", "EF4-2", "", 12, "EF4", true, false, "ef", 4, 2},
+				{"Eighthfinal 6-2", "EF6-2", "", 14, "EF6", true, false, "ef", 6, 2},
+				{"Eighthfinal 8-2", "EF8-2", "", 16, "EF8", true, false, "ef", 8, 2},
+				{"Eighthfinal 2-3", "EF2-3", "", 18, "EF2", true, false, "ef", 2, 3},
+				{"Eighthfinal 4-3", "EF4-3", "", 20, "EF4", true, false, "ef", 4, 3},
+				{"Eighthfinal 6-3", "EF6-3", "", 22, "EF6", true, false, "ef", 6, 3},
+				{"Eighthfinal 8-3", "EF8-3", "", 24, "EF8", true, false, "ef", 8, 3},
+			},
+		)
+	}
+	assertFullQuarterfinalsOnward(t, matchSpecs, 12)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:24],
+		[]expectedAlliances{
+			{8, 9},
+			{5, 12},
+			{7, 10},
+			{6, 11},
+			{8, 9},
+			{5, 12},
+			{7, 10},
+			{6, 11},
+			{8, 9},
+			{5, 12},
+			{7, 10},
+			{6, 11},
+			{1, 0},
+			{4, 0},
+			{2, 0},
+			{3, 0},
+			{1, 0},
+			{4, 0},
+			{2, 0},
+			{3, 0},
+			{1, 0},
+			{4, 0},
+			{2, 0},
+			{3, 0},
+		},
+	)
+	for i := 24; i < 36; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(t, matchGroups, "EF2", "EF4", "EF6", "EF8", "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F")
+}
+
+func TestSingleEliminationInitialWith13Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(13)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	if assert.Equal(t, 39, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:15],
+			[]expectedMatchSpec{
+				{"Eighthfinal 2-1", "EF2-1", "", 2, "EF2", true, false, "ef", 2, 1},
+				{"Eighthfinal 3-1", "EF3-1", "", 3, "EF3", true, false, "ef", 3, 1},
+				{"Eighthfinal 4-1", "EF4-1", "", 4, "EF4", true, false, "ef", 4, 1},
+				{"Eighthfinal 6-1", "EF6-1", "", 6, "EF6", true, false, "ef", 6, 1},
+				{"Eighthfinal 8-1", "EF8-1", "", 8, "EF8", true, false, "ef", 8, 1},
+				{"Eighthfinal 2-2", "EF2-2", "", 10, "EF2", true, false, "ef", 2, 2},
+				{"Eighthfinal 3-2", "EF3-2", "", 11, "EF3", true, false, "ef", 3, 2},
+				{"Eighthfinal 4-2", "EF4-2", "", 12, "EF4", true, false, "ef", 4, 2},
+				{"Eighthfinal 6-2", "EF6-2", "", 14, "EF6", true, false, "ef", 6, 2},
+				{"Eighthfinal 8-2", "EF8-2", "", 16, "EF8", true, false, "ef", 8, 2},
+				{"Eighthfinal 2-3", "EF2-3", "", 18, "EF2", true, false, "ef", 2, 3},
+				{"Eighthfinal 3-3", "EF3-3", "", 19, "EF3", true, false, "ef", 3, 3},
+				{"Eighthfinal 4-3", "EF4-3", "", 20, "EF4", true, false, "ef", 4, 3},
+				{"Eighthfinal 6-3", "EF6-3", "", 22, "EF6", true, false, "ef", 6, 3},
+				{"Eighthfinal 8-3", "EF8-3", "", 24, "EF8", true, false, "ef", 8, 3},
+			},
+		)
+	}
+	assertFullQuarterfinalsOnward(t, matchSpecs, 15)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:27],
+		[]expectedAlliances{
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{7, 10},
+			{6, 11},
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{7, 10},
+			{6, 11},
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{7, 10},
+			{6, 11},
+			{1, 0},
+			{0, 0},
+			{2, 0},
+			{3, 0},
+			{1, 0},
+			{0, 0},
+			{2, 0},
+			{3, 0},
+			{1, 0},
+			{0, 0},
+			{2, 0},
+			{3, 0},
+		},
+	)
+	for i := 27; i < 39; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(t, matchGroups, "EF2", "EF3", "EF4", "EF6", "EF8", "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F")
+}
+
+func TestSingleEliminationInitialWith14Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(14)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	if assert.Equal(t, 42, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:18],
+			[]expectedMatchSpec{
+				{"Eighthfinal 2-1", "EF2-1", "", 2, "EF2", true, false, "ef", 2, 1},
+				{"Eighthfinal 3-1", "EF3-1", "", 3, "EF3", true, false, "ef", 3, 1},
+				{"Eighthfinal 4-1", "EF4-1", "", 4, "EF4", true, false, "ef", 4, 1},
+				{"Eighthfinal 6-1", "EF6-1", "", 6, "EF6", true, false, "ef", 6, 1},
+				{"Eighthfinal 7-1", "EF7-1", "", 7, "EF7", true, false, "ef", 7, 1},
+				{"Eighthfinal 8-1", "EF8-1", "", 8, "EF8", true, false, "ef", 8, 1},
+				{"Eighthfinal 2-2", "EF2-2", "", 10, "EF2", true, false, "ef", 2, 2},
+				{"Eighthfinal 3-2", "EF3-2", "", 11, "EF3", true, false, "ef", 3, 2},
+				{"Eighthfinal 4-2", "EF4-2", "", 12, "EF4", true, false, "ef", 4, 2},
+				{"Eighthfinal 6-2", "EF6-2", "", 14, "EF6", true, false, "ef", 6, 2},
+				{"Eighthfinal 7-2", "EF7-2", "", 15, "EF7", true, false, "ef", 7, 2},
+				{"Eighthfinal 8-2", "EF8-2", "", 16, "EF8", true, false, "ef", 8, 2},
+				{"Eighthfinal 2-3", "EF2-3", "", 18, "EF2", true, false, "ef", 2, 3},
+				{"Eighthfinal 3-3", "EF3-3", "", 19, "EF3", true, false, "ef", 3, 3},
+				{"Eighthfinal 4-3", "EF4-3", "", 20, "EF4", true, false, "ef", 4, 3},
+				{"Eighthfinal 6-3", "EF6-3", "", 22, "EF6", true, false, "ef", 6, 3},
+				{"Eighthfinal 7-3", "EF7-3", "", 23, "EF7", true, false, "ef", 7, 3},
+				{"Eighthfinal 8-3", "EF8-3", "", 24, "EF8", true, false, "ef", 8, 3},
+			},
+		)
+	}
+	assertFullQuarterfinalsOnward(t, matchSpecs, 18)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:30],
+		[]expectedAlliances{
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{7, 10},
+			{3, 14},
+			{6, 11},
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{7, 10},
+			{3, 14},
+			{6, 11},
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{7, 10},
+			{3, 14},
+			{6, 11},
+			{1, 0},
+			{0, 0},
+			{2, 0},
+			{0, 0},
+			{1, 0},
+			{0, 0},
+			{2, 0},
+			{0, 0},
+			{1, 0},
+			{0, 0},
+			{2, 0},
+			{0, 0},
+		},
+	)
+	for i := 30; i < 42; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(
+		t, matchGroups, "EF2", "EF3", "EF4", "EF6", "EF7", "EF8", "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F",
+	)
+}
+
+func TestSingleEliminationInitialWith15Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(15)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	if assert.Equal(t, 45, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:21],
+			[]expectedMatchSpec{
+				{"Eighthfinal 2-1", "EF2-1", "", 2, "EF2", true, false, "ef", 2, 1},
+				{"Eighthfinal 3-1", "EF3-1", "", 3, "EF3", true, false, "ef", 3, 1},
+				{"Eighthfinal 4-1", "EF4-1", "", 4, "EF4", true, false, "ef", 4, 1},
+				{"Eighthfinal 5-1", "EF5-1", "", 5, "EF5", true, false, "ef", 5, 1},
+				{"Eighthfinal 6-1", "EF6-1", "", 6, "EF6", true, false, "ef", 6, 1},
+				{"Eighthfinal 7-1", "EF7-1", "", 7, "EF7", true, false, "ef", 7, 1},
+				{"Eighthfinal 8-1", "EF8-1", "", 8, "EF8", true, false, "ef", 8, 1},
+				{"Eighthfinal 2-2", "EF2-2", "", 10, "EF2", true, false, "ef", 2, 2},
+				{"Eighthfinal 3-2", "EF3-2", "", 11, "EF3", true, false, "ef", 3, 2},
+				{"Eighthfinal 4-2", "EF4-2", "", 12, "EF4", true, false, "ef", 4, 2},
+				{"Eighthfinal 5-2", "EF5-2", "", 13, "EF5", true, false, "ef", 5, 2},
+				{"Eighthfinal 6-2", "EF6-2", "", 14, "EF6", true, false, "ef", 6, 2},
+				{"Eighthfinal 7-2", "EF7-2", "", 15, "EF7", true, false, "ef", 7, 2},
+				{"Eighthfinal 8-2", "EF8-2", "", 16, "EF8", true, false, "ef", 8, 2},
+				{"Eighthfinal 2-3", "EF2-3", "", 18, "EF2", true, false, "ef", 2, 3},
+				{"Eighthfinal 3-3", "EF3-3", "", 19, "EF3", true, false, "ef", 3, 3},
+				{"Eighthfinal 4-3", "EF4-3", "", 20, "EF4", true, false, "ef", 4, 3},
+				{"Eighthfinal 5-3", "EF5-3", "", 21, "EF5", true, false, "ef", 5, 3},
+				{"Eighthfinal 6-3", "EF6-3", "", 22, "EF6", true, false, "ef", 6, 3},
+				{"Eighthfinal 7-3", "EF7-3", "", 23, "EF7", true, false, "ef", 7, 3},
+				{"Eighthfinal 8-3", "EF8-3", "", 24, "EF8", true, false, "ef", 8, 3},
+			},
+		)
+	}
+	assertFullQuarterfinalsOnward(t, matchSpecs, 21)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:33],
+		[]expectedAlliances{
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{2, 15},
+			{7, 10},
+			{3, 14},
+			{6, 11},
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{2, 15},
+			{7, 10},
+			{3, 14},
+			{6, 11},
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{2, 15},
+			{7, 10},
+			{3, 14},
+			{6, 11},
+			{1, 0},
+			{0, 0},
+			{0, 0},
+			{0, 0},
+			{1, 0},
+			{0, 0},
+			{0, 0},
+			{0, 0},
+			{1, 0},
+			{0, 0},
+			{0, 0},
+			{0, 0},
+		},
+	)
+	for i := 33; i < 45; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(
+		t, matchGroups, "EF2", "EF3", "EF4", "EF5", "EF6", "EF7", "EF8", "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F",
+	)
+}
+
+func TestSingleEliminationInitialWith16Alliances(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(16)
+	assert.Nil(t, err)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+
+	if assert.Equal(t, 48, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[0:24],
+			[]expectedMatchSpec{
+				{"Eighthfinal 1-1", "EF1-1", "", 1, "EF1", true, false, "ef", 1, 1},
+				{"Eighthfinal 2-1", "EF2-1", "", 2, "EF2", true, false, "ef", 2, 1},
+				{"Eighthfinal 3-1", "EF3-1", "", 3, "EF3", true, false, "ef", 3, 1},
+				{"Eighthfinal 4-1", "EF4-1", "", 4, "EF4", true, false, "ef", 4, 1},
+				{"Eighthfinal 5-1", "EF5-1", "", 5, "EF5", true, false, "ef", 5, 1},
+				{"Eighthfinal 6-1", "EF6-1", "", 6, "EF6", true, false, "ef", 6, 1},
+				{"Eighthfinal 7-1", "EF7-1", "", 7, "EF7", true, false, "ef", 7, 1},
+				{"Eighthfinal 8-1", "EF8-1", "", 8, "EF8", true, false, "ef", 8, 1},
+				{"Eighthfinal 1-2", "EF1-2", "", 9, "EF1", true, false, "ef", 1, 2},
+				{"Eighthfinal 2-2", "EF2-2", "", 10, "EF2", true, false, "ef", 2, 2},
+				{"Eighthfinal 3-2", "EF3-2", "", 11, "EF3", true, false, "ef", 3, 2},
+				{"Eighthfinal 4-2", "EF4-2", "", 12, "EF4", true, false, "ef", 4, 2},
+				{"Eighthfinal 5-2", "EF5-2", "", 13, "EF5", true, false, "ef", 5, 2},
+				{"Eighthfinal 6-2", "EF6-2", "", 14, "EF6", true, false, "ef", 6, 2},
+				{"Eighthfinal 7-2", "EF7-2", "", 15, "EF7", true, false, "ef", 7, 2},
+				{"Eighthfinal 8-2", "EF8-2", "", 16, "EF8", true, false, "ef", 8, 2},
+				{"Eighthfinal 1-3", "EF1-3", "", 17, "EF1", true, false, "ef", 1, 3},
+				{"Eighthfinal 2-3", "EF2-3", "", 18, "EF2", true, false, "ef", 2, 3},
+				{"Eighthfinal 3-3", "EF3-3", "", 19, "EF3", true, false, "ef", 3, 3},
+				{"Eighthfinal 4-3", "EF4-3", "", 20, "EF4", true, false, "ef", 4, 3},
+				{"Eighthfinal 5-3", "EF5-3", "", 21, "EF5", true, false, "ef", 5, 3},
+				{"Eighthfinal 6-3", "EF6-3", "", 22, "EF6", true, false, "ef", 6, 3},
+				{"Eighthfinal 7-3", "EF7-3", "", 23, "EF7", true, false, "ef", 7, 3},
+				{"Eighthfinal 8-3", "EF8-3", "", 24, "EF8", true, false, "ef", 8, 3},
+			},
+		)
+	}
+	assertFullQuarterfinalsOnward(t, matchSpecs, 24)
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:24],
+		[]expectedAlliances{
+			{1, 16},
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{2, 15},
+			{7, 10},
+			{3, 14},
+			{6, 11},
+			{1, 16},
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{2, 15},
+			{7, 10},
+			{3, 14},
+			{6, 11},
+			{1, 16},
+			{8, 9},
+			{4, 13},
+			{5, 12},
+			{2, 15},
+			{7, 10},
+			{3, 14},
+			{6, 11},
+		},
+	)
+	for i := 24; i < 48; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(
+		t,
+		matchGroups,
+		"EF1", "EF2", "EF3", "EF4", "EF5", "EF6", "EF7", "EF8", "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F",
+	)
 }
 
 func TestSingleEliminationErrors(t *testing.T) {
-	_, err := newSingleEliminationBracket(nil, 1)
+	_, err := newSingleEliminationBracket(1)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "Must have at least 2 alliances", err.Error())
+		assert.Equal(t, "single-elimination bracket must have at least 2 alliances", err.Error())
 	}
 
-	_, err = newSingleEliminationBracket(nil, 17)
+	_, err = newSingleEliminationBracket(17)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "Must have at most 16 alliances", err.Error())
+		assert.Equal(t, "single-elimination bracket must have at most 16 alliances", err.Error())
 	}
 }
 
-func TestSingleEliminationPopulatePartialMatch(t *testing.T) {
-	database := setupTestDb(t)
+func TestSingleEliminationProgression(t *testing.T) {
+	finalMatchup, err := newSingleEliminationBracket(3)
+	assert.Nil(t, err)
+	playoffMatchResults := map[int]playoffMatchResult{}
+	finalMatchup.update(playoffMatchResults)
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
 
-	// Final should be updated after semifinal is concluded.
-	tournament.CreateTestAlliances(database, 3)
-	bracket, err := newSingleEliminationBracket(database, 3)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "SF2-1", game.BlueWonMatch)
-	scoreMatch(database, "SF2-2", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err := database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 4, len(matches)) {
-		assertMatch(t, matches[2], "Playoff F-1", "F-1", "", 1, 3)
-		assertMatch(t, matches[3], "Playoff F-2", "F-2", "", 1, 3)
+	playoffMatchResults[38] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	for i := 3; i < 9; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 0}})
 	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
-	database.TruncateMatchResults()
 
-	// Final should be generated and populated as both semifinals conclude.
-	tournament.CreateTestAlliances(database, 4)
-	bracket, err = newSingleEliminationBracket(database, 4)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "SF2-1", game.RedWonMatch)
-	scoreMatch(database, "SF2-2", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 4, len(matches))
-	scoreMatch(database, "SF1-1", game.RedWonMatch)
-	scoreMatch(database, "SF1-2", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[4], "Playoff F-1", "F-1", "", 1, 2)
-		assertMatch(t, matches[5], "Playoff F-2", "F-2", "", 1, 2)
+	playoffMatchResults[40] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	for i := 3; i < 9; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 2}})
 	}
-	database.TruncateAlliances()
-	database.TruncateMatches()
-	database.TruncateMatchResults()
+
+	// Reverse a previous outcome.
+	playoffMatchResults[40] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	for i := 3; i < 9; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 0}})
+	}
+
+	playoffMatchResults[42] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	for i := 3; i < 9; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 3}})
+	}
+
+	playoffMatchResults[43] = playoffMatchResult{game.TieMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.False(t, finalMatchup.IsComplete())
+	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+
+	playoffMatchResults[44] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.False(t, finalMatchup.IsComplete())
+	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+
+	playoffMatchResults[45] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.True(t, finalMatchup.IsComplete())
+	assert.Equal(t, 1, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 3, finalMatchup.LosingAllianceId())
+
+	// Unscore the previous match.
+	delete(playoffMatchResults, 45)
+	finalMatchup.update(playoffMatchResults)
+	assert.False(t, finalMatchup.IsComplete())
+	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+
+	playoffMatchResults[45] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.False(t, finalMatchup.IsComplete())
+	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+
+	playoffMatchResults[46] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.True(t, finalMatchup.IsComplete())
+	assert.Equal(t, 3, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 1, finalMatchup.LosingAllianceId())
 }
 
-func TestSingleEliminationCreateNextRound(t *testing.T) {
-	database := setupTestDb(t)
-
-	tournament.CreateTestAlliances(database, 4)
-	bracket, err := newSingleEliminationBracket(database, 4)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "SF1-1", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, _ := database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 4, len(matches))
-	scoreMatch(database, "SF2-1", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 4, len(matches))
-	scoreMatch(database, "SF1-2", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 4, len(matches))
-	scoreMatch(database, "SF2-2", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	if assert.Equal(t, 6, len(matches)) {
-		assertMatch(t, matches[4], "Playoff F-1", "F-1", "", 4, 3)
-		assertMatch(t, matches[5], "Playoff F-2", "F-2", "", 4, 3)
+func assertFullQuarterfinalsOnward(t *testing.T, matchSpecs []*matchSpec, startingIndex int) {
+	if assert.Equal(t, startingIndex+24, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[startingIndex:startingIndex+12],
+			[]expectedMatchSpec{
+				{"Quarterfinal 1-1", "QF1-1", "", 25, "QF1", true, false, "qf", 1, 1},
+				{"Quarterfinal 2-1", "QF2-1", "", 26, "QF2", true, false, "qf", 2, 1},
+				{"Quarterfinal 3-1", "QF3-1", "", 27, "QF3", true, false, "qf", 3, 1},
+				{"Quarterfinal 4-1", "QF4-1", "", 28, "QF4", true, false, "qf", 4, 1},
+				{"Quarterfinal 1-2", "QF1-2", "", 29, "QF1", true, false, "qf", 1, 2},
+				{"Quarterfinal 2-2", "QF2-2", "", 30, "QF2", true, false, "qf", 2, 2},
+				{"Quarterfinal 3-2", "QF3-2", "", 31, "QF3", true, false, "qf", 3, 2},
+				{"Quarterfinal 4-2", "QF4-2", "", 32, "QF4", true, false, "qf", 4, 2},
+				{"Quarterfinal 1-3", "QF1-3", "", 33, "QF1", true, false, "qf", 1, 3},
+				{"Quarterfinal 2-3", "QF2-3", "", 34, "QF2", true, false, "qf", 2, 3},
+				{"Quarterfinal 3-3", "QF3-3", "", 35, "QF3", true, false, "qf", 3, 3},
+				{"Quarterfinal 4-3", "QF4-3", "", 36, "QF4", true, false, "qf", 4, 3},
+			},
+		)
 	}
+	assertFullSemifinalsOnward(t, matchSpecs, startingIndex+12)
 }
 
-func TestSingleEliminationDetermineWinner(t *testing.T) {
-	database := setupTestDb(t)
-
-	// Round with one tie and a sweep.
-	tournament.CreateTestAlliances(database, 2)
-	bracket, err := newSingleEliminationBracket(database, 2)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "F-1", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	assert.Equal(t, 0, bracket.WinningAlliance())
-	assert.Equal(t, 0, bracket.FinalistAlliance())
-	matches, _ := database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 3, len(matches))
-	scoreMatch(database, "F-2", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 3, len(matches))
-	scoreMatch(database, "F-3", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.True(t, bracket.IsComplete())
-	assert.Equal(t, 2, bracket.WinningAlliance())
-	assert.Equal(t, 1, bracket.FinalistAlliance())
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 3, len(matches))
-	database.TruncateAlliances()
-	database.TruncateMatches()
-	database.TruncateMatchResults()
-
-	// Round with one tie and a split.
-	tournament.CreateTestAlliances(database, 2)
-	bracket, err = newSingleEliminationBracket(database, 2)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "F-1", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 2, len(matches))
-	scoreMatch(database, "F-2", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 3, len(matches))
-	scoreMatch(database, "F-3", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 4, len(matches))
-	assert.Equal(t, "F-4", matches[3].ShortName)
-	scoreMatch(database, "F-4", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	scoreMatch(database, "F-5", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.True(t, bracket.IsComplete())
-	assert.Equal(t, 1, bracket.WinningAlliance())
-	assert.Equal(t, 2, bracket.FinalistAlliance())
-	database.TruncateAlliances()
-	database.TruncateMatches()
-	database.TruncateMatchResults()
-
-	// Round with two ties.
-	tournament.CreateTestAlliances(database, 2)
-	bracket, err = newSingleEliminationBracket(database, 2)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "F-1", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 3, len(matches))
-	scoreMatch(database, "F-2", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 3, len(matches))
-	scoreMatch(database, "F-3", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	if assert.Equal(t, 4, len(matches)) {
-		assert.Equal(t, "F-4", matches[3].ShortName)
+func assertFullSemifinalsOnward(t *testing.T, matchSpecs []*matchSpec, startingIndex int) {
+	if assert.Equal(t, startingIndex+12, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[startingIndex:startingIndex+6],
+			[]expectedMatchSpec{
+				{"Semifinal 1-1", "SF1-1", "", 37, "SF1", true, false, "sf", 1, 1},
+				{"Semifinal 2-1", "SF2-1", "", 38, "SF2", true, false, "sf", 2, 1},
+				{"Semifinal 1-2", "SF1-2", "", 39, "SF1", true, false, "sf", 1, 2},
+				{"Semifinal 2-2", "SF2-2", "", 40, "SF2", true, false, "sf", 2, 2},
+				{"Semifinal 1-3", "SF1-3", "", 41, "SF1", true, false, "sf", 1, 3},
+				{"Semifinal 2-3", "SF2-3", "", 42, "SF2", true, false, "sf", 2, 3},
+			},
+		)
 	}
-	scoreMatch(database, "F-4", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.True(t, bracket.IsComplete())
-	database.TruncateAlliances()
-	database.TruncateMatches()
-	database.TruncateMatchResults()
-
-	// Round with repeated ties.
-	tournament.CreateTestAlliances(database, 2)
-	updateAndAssertSchedule := func(expectedNumMatches int, expectedWon bool) {
-		assert.Nil(t, bracket.Update(&dummyStartTime))
-		assert.Equal(t, expectedWon, bracket.IsComplete())
-		matches, _ = database.GetMatchesByType(model.Playoff)
-		assert.Equal(t, expectedNumMatches, len(matches))
-	}
-	updateAndAssertSchedule(2, false)
-	scoreMatch(database, "F-1", game.TieMatch)
-	updateAndAssertSchedule(3, false)
-	scoreMatch(database, "F-2", game.TieMatch)
-	updateAndAssertSchedule(4, false)
-	scoreMatch(database, "F-3", game.TieMatch)
-	updateAndAssertSchedule(5, false)
-	scoreMatch(database, "F-4", game.TieMatch)
-	updateAndAssertSchedule(6, false)
-	scoreMatch(database, "F-5", game.TieMatch)
-	updateAndAssertSchedule(7, false)
-	scoreMatch(database, "F-6", game.TieMatch)
-	updateAndAssertSchedule(8, false)
-	scoreMatch(database, "F-7", game.RedWonMatch)
-	updateAndAssertSchedule(8, false)
-	scoreMatch(database, "F-8", game.BlueWonMatch)
-	updateAndAssertSchedule(9, false)
-	scoreMatch(database, "F-9", game.RedWonMatch)
-	updateAndAssertSchedule(9, true)
+	assertFullFinals(t, matchSpecs, startingIndex+6)
 }
 
-func TestSingleEliminationRemoveUnneededMatches(t *testing.T) {
-	database := setupTestDb(t)
-
-	tournament.CreateTestAlliances(database, 2)
-	bracket, err := newSingleEliminationBracket(database, 2)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "F-1", game.RedWonMatch)
-	scoreMatch(database, "F-2", game.TieMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, _ := database.GetMatchesByType(model.Playoff)
-	assert.Equal(t, 3, len(matches))
-
-	// Check that the third match is deleted if the score is changed.
-	scoreMatch(database, "F-2", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.True(t, bracket.IsComplete())
-
-	// Check that the deleted match is recreated if the score is changed.
-	scoreMatch(database, "F-2", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	assert.False(t, bracket.IsComplete())
-	matches, _ = database.GetMatchesByType(model.Playoff)
-	if assert.Equal(t, 3, len(matches)) {
-		assert.Equal(t, "F-3", matches[2].ShortName)
+func assertFullFinals(t *testing.T, matchSpecs []*matchSpec, startingIndex int) {
+	if assert.Equal(t, startingIndex+6, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs[startingIndex:startingIndex+6],
+			[]expectedMatchSpec{
+				{"Final 1", "F1", "", 43, "F", false, false, "f", 1, 1},
+				{"Final 2", "F2", "", 44, "F", false, false, "f", 1, 2},
+				{"Final 3", "F3", "", 45, "F", false, false, "f", 1, 3},
+				{"Overtime 1", "O1", "", 46, "F", true, true, "f", 1, 4},
+				{"Overtime 2", "O2", "", 47, "F", true, true, "f", 1, 5},
+				{"Overtime 3", "O3", "", 48, "F", true, true, "f", 1, 6},
+			},
+		)
 	}
-}
-
-func TestSingleEliminationChangePreviousRoundResult(t *testing.T) {
-	database := setupTestDb(t)
-
-	tournament.CreateTestAlliances(database, 4)
-	bracket, err := newSingleEliminationBracket(database, 4)
-	assert.Nil(t, err)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "SF2-1", game.RedWonMatch)
-	scoreMatch(database, "SF2-2", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "SF2-3", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "SF2-3", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err := database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 5, len(matches))
-
-	scoreMatch(database, "SF1-1", game.RedWonMatch)
-	scoreMatch(database, "SF1-2", game.RedWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "SF1-2", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	scoreMatch(database, "SF1-3", game.BlueWonMatch)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	if assert.Equal(t, 8, len(matches)) {
-		assertMatch(t, matches[6], "Playoff F-1", "F-1", "", 4, 3)
-		assertMatch(t, matches[7], "Playoff F-2", "F-2", "", 4, 3)
-	}
-
-	scoreMatch(database, "SF2-3", game.MatchNotPlayed)
-	assert.Nil(t, bracket.Update(&dummyStartTime))
-	matches, err = database.GetMatchesByType(model.Playoff)
-	assert.Nil(t, err)
-	assert.Equal(t, 6, len(matches))
 }

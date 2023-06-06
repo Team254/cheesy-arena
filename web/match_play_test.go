@@ -179,10 +179,20 @@ func TestCommitMatch(t *testing.T) {
 	assert.Contains(t, writer.String(), "Failed to publish rankings")
 }
 
-func TestCommitPlayoffTie(t *testing.T) {
+func TestCommitTiebreak(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match := &model.Match{Id: 0, Type: model.Qualification, Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
+	match := &model.Match{
+		Type:                model.Qualification,
+		TypeOrder:           1,
+		Red1:                1,
+		Red2:                2,
+		Red3:                3,
+		Blue1:               4,
+		Blue2:               5,
+		Blue3:               6,
+		UseTiebreakCriteria: false,
+	}
 	web.arena.Database.CreateMatch(match)
 	matchResult := &model.MatchResult{
 		MatchId: match.Id,
@@ -208,17 +218,15 @@ func TestCommitPlayoffTie(t *testing.T) {
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, game.TieMatch, match.Status)
 
-	tournament.CreateTestAlliances(web.arena.Database, 2)
-	web.arena.CreatePlayoffTournament()
-	match.Type = model.Playoff
-	match.PlayoffRedAlliance = 1
-	match.PlayoffBlueAlliance = 2
+	// The match should still be tied since the tiebreaker criteria for a perfect tie are fulfilled.
+	match.UseTiebreakCriteria = true
 	web.arena.Database.UpdateMatch(match)
-	web.commitMatchScore(match, matchResult, true)
+	err = web.commitMatchScore(match, matchResult, true)
+	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, game.TieMatch, match.Status)
 
-	// Test that playoff tiebreakers are evaluated.
+	// Change the score to still be equal nominally but trigger the tiebreaker criteria.
 	matchResult.BlueScore.AutoDockStatuses = [3]bool{true, false, false}
 	matchResult.BlueScore.AutoChargeStationLevel = true
 	matchResult.BlueScore.Fouls = []game.Foul{{IsTechnical: false}, {IsTechnical: true}}
@@ -230,15 +238,25 @@ func TestCommitPlayoffTie(t *testing.T) {
 		matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
 	)
 
-	web.commitMatchScore(match, matchResult, true)
+	err = web.commitMatchScore(match, matchResult, true)
+	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
 	assert.Equal(t, game.RedWonMatch, match.Status)
 
-	// Check that playoff tiebreakers are not evaluated for finals matches.
-	match.PlayoffRound = web.arena.PlayoffTournament.FinalMatchup().Round
-	web.commitMatchScore(match, matchResult, true)
+	// Swap red and blue and verify that the tie is broken in the other direction.
+	matchResult.RedScore, matchResult.BlueScore = matchResult.BlueScore, matchResult.RedScore
+
+	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
+	assert.Equal(
+		t,
+		matchResult.RedScore.Summarize(matchResult.BlueScore).Score,
+		matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
+	)
+
+	err = web.commitMatchScore(match, matchResult, true)
+	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
-	assert.Equal(t, game.TieMatch, match.Status)
+	assert.Equal(t, game.BlueWonMatch, match.Status)
 }
 
 func TestCommitCards(t *testing.T) {
@@ -279,6 +297,7 @@ func TestCommitCards(t *testing.T) {
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 	web.arena.CreatePlayoffTournament()
+	web.arena.CreatePlayoffMatches(time.Now())
 	match.Type = model.Playoff
 	match.PlayoffRedAlliance = 1
 	match.PlayoffBlueAlliance = 2

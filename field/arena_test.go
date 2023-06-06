@@ -430,7 +430,7 @@ func TestSubstituteTeam(t *testing.T) {
 	arena := setupTestArena(t)
 	tournament.CreateTestAlliances(arena.Database, 2)
 	arena.PlayoffTournament, _ = playoff.NewPlayoffTournament(
-		arena.Database, arena.EventSettings.PlayoffType, arena.EventSettings.NumPlayoffAlliances,
+		arena.EventSettings.PlayoffType, arena.EventSettings.NumPlayoffAlliances,
 	)
 
 	arena.Database.CreateTeam(&model.Team{Id: 101})

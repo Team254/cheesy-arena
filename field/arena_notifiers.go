@@ -141,7 +141,9 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 	redOffFieldTeams := []*model.Team{}
 	blueOffFieldTeams := []*model.Team{}
 	if arena.CurrentMatch.Type == model.Playoff {
-		matchup, _ = arena.PlayoffTournament.GetMatchup(arena.CurrentMatch.PlayoffRound, arena.CurrentMatch.PlayoffGroup)
+		// TODO(pat): Make this logic more generic, at the MatchGroup level.
+		matchGroup := arena.PlayoffTournament.MatchGroups()[arena.CurrentMatch.PlayoffMatchGroupId]
+		matchup, _ = matchGroup.(*playoff.Matchup)
 		redOffFieldTeamIds, blueOffFieldTeamIds, _ := arena.Database.GetOffFieldTeamIds(arena.CurrentMatch)
 		for _, teamId := range redOffFieldTeamIds {
 			team, _ := arena.Database.GetTeamById(teamId)
@@ -212,12 +214,14 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 
 	// For playoff matches, summarize the state of the series.
 	var seriesStatus, seriesLeader string
-	var matchup *playoff.Matchup
 	redOffFieldTeamIds := []int{}
 	blueOffFieldTeamIds := []int{}
 	if arena.SavedMatch.Type == model.Playoff {
-		matchup, _ = arena.PlayoffTournament.GetMatchup(arena.SavedMatch.PlayoffRound, arena.SavedMatch.PlayoffGroup)
-		seriesLeader, seriesStatus = matchup.StatusText()
+		// TODO(pat): Make this logic more generic, at the MatchGroup level.
+		matchGroup := arena.PlayoffTournament.MatchGroups()[arena.SavedMatch.PlayoffMatchGroupId]
+		if matchup, ok := matchGroup.(*playoff.Matchup); ok {
+			seriesLeader, seriesStatus = matchup.StatusText()
+		}
 		redOffFieldTeamIds, blueOffFieldTeamIds, _ = arena.Database.GetOffFieldTeamIds(arena.SavedMatch)
 	}
 
