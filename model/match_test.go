@@ -26,7 +26,7 @@ func TestMatchCrud(t *testing.T) {
 	match := Match{
 		Type:                Qualification,
 		TypeOrder:           254,
-		Time:                time.Unix(1114, 0),
+		Time:                time.Unix(1114, 0).UTC(),
 		LongName:            "Qualification 254",
 		ShortName:           "Q254",
 		NameDetail:          "Qual Round",
