@@ -13,11 +13,11 @@ func TestScheduledBreakCrud(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	scheduledBreak1 := ScheduledBreak{0, Qualification, 50, time.Unix(100, 0), 600, "Lunch"}
+	scheduledBreak1 := ScheduledBreak{0, Qualification, 50, time.Unix(100, 0).UTC(), 600, "Lunch"}
 	assert.Nil(t, db.CreateScheduledBreak(&scheduledBreak1))
-	scheduledBreak2 := ScheduledBreak{0, Qualification, 25, time.Unix(200, 0), 300, "Breakfast"}
+	scheduledBreak2 := ScheduledBreak{0, Qualification, 25, time.Unix(200, 0).UTC(), 300, "Breakfast"}
 	assert.Nil(t, db.CreateScheduledBreak(&scheduledBreak2))
-	scheduledBreak3 := ScheduledBreak{0, Playoff, 4, time.Unix(500, 0), 900, "Awards"}
+	scheduledBreak3 := ScheduledBreak{0, Playoff, 4, time.Unix(500, 0).UTC(), 900, "Awards"}
 	assert.Nil(t, db.CreateScheduledBreak(&scheduledBreak3))
 
 	// Test retrieval of all blocks by match type.
