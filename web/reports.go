@@ -401,6 +401,12 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 		handleWebErr(w, err)
 		return
 	}
+	scheduledBreaks, err := web.arena.Database.GetScheduledBreaksByMatchType(matchType)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	breakIndex := 0
 	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
 		handleWebErr(w, err)
@@ -432,6 +438,16 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Blue 3", "1", 1, "C", true, 0, "")
 	pdf.SetFont("Arial", "", 10)
 	for _, match := range matches {
+		// Render break if there is one before this match.
+		if breakIndex < len(scheduledBreaks) && scheduledBreaks[breakIndex].TypeOrderBefore == match.TypeOrder {
+			scheduledBreak := scheduledBreaks[breakIndex]
+			formattedTime := scheduledBreak.Time.Local().Format("Mon 1/02 03:04 PM")
+			description := fmt.Sprintf("%s (%d minutes)", scheduledBreak.Description, scheduledBreak.DurationSec/60)
+			pdf.CellFormat(colWidths["Time"], rowHeight, formattedTime, "1", 0, "C", false, 0, "")
+			pdf.CellFormat(colWidths["Match"]+6*colWidths["Team"], rowHeight, description, "1", 1, "C", false, 0, "")
+			breakIndex++
+		}
+
 		height := rowHeight
 		borderStr := "1"
 		alignStr := "CM"
