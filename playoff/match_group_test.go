@@ -16,14 +16,14 @@ func TestCollectMatchGroupsErrors(t *testing.T) {
 		NumWinsToAdvance:   1,
 		redAllianceSource:  allianceSelectionSource{2},
 		blueAllianceSource: allianceSelectionSource{3},
-		matchSpecs:         newDoubleEliminationMatch(1, ""),
+		matchSpecs:         newDoubleEliminationMatch(1, "", 300),
 	}
 	matchGroup2 := Matchup{
 		id:                 "M1",
 		NumWinsToAdvance:   1,
 		redAllianceSource:  allianceSelectionSource{1},
 		blueAllianceSource: matchupSource{&matchGroup1, true},
-		matchSpecs:         newDoubleEliminationMatch(2, ""),
+		matchSpecs:         newDoubleEliminationMatch(2, "", 300),
 	}
 
 	_, err := collectMatchGroups(&matchGroup2)

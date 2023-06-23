@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-const playoffMatchSpacingSec = 600
-
 type PlayoffTournament struct {
 	matchGroups  map[string]MatchGroup
 	matchSpecs   []*matchSpec
@@ -174,7 +172,7 @@ func (tournament *PlayoffTournament) CreateMatchesAndBreaks(database *model.Data
 		}
 
 		matchIndex++
-		nextEventTime = nextEventTime.Add(playoffMatchSpacingSec * time.Second)
+		nextEventTime = nextEventTime.Add(time.Duration(matchSpec.durationSec) * time.Second)
 	}
 
 	return nil

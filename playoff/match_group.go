@@ -32,6 +32,7 @@ type matchSpec struct {
 	nameDetail          string
 	matchGroupId        string
 	order               int
+	durationSec         int
 	useTiebreakCriteria bool
 	isHidden            bool
 	tbaMatchKey         model.TbaMatchKey

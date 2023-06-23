@@ -23,28 +23,28 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 		NumWinsToAdvance:   1,
 		redAllianceSource:  allianceSelectionSource{1},
 		blueAllianceSource: allianceSelectionSource{8},
-		matchSpecs:         newDoubleEliminationMatch(1, "Round 1 Upper"),
+		matchSpecs:         newDoubleEliminationMatch(1, "Round 1 Upper", 480),
 	}
 	m2 := Matchup{
 		id:                 "M2",
 		NumWinsToAdvance:   1,
 		redAllianceSource:  allianceSelectionSource{4},
 		blueAllianceSource: allianceSelectionSource{5},
-		matchSpecs:         newDoubleEliminationMatch(2, "Round 1 Upper"),
+		matchSpecs:         newDoubleEliminationMatch(2, "Round 1 Upper", 480),
 	}
 	m3 := Matchup{
 		id:                 "M3",
 		NumWinsToAdvance:   1,
 		redAllianceSource:  allianceSelectionSource{2},
 		blueAllianceSource: allianceSelectionSource{7},
-		matchSpecs:         newDoubleEliminationMatch(3, "Round 1 Upper"),
+		matchSpecs:         newDoubleEliminationMatch(3, "Round 1 Upper", 480),
 	}
 	m4 := Matchup{
 		id:                 "M4",
 		NumWinsToAdvance:   1,
 		redAllianceSource:  allianceSelectionSource{3},
 		blueAllianceSource: allianceSelectionSource{6},
-		matchSpecs:         newDoubleEliminationMatch(4, "Round 1 Upper"),
+		matchSpecs:         newDoubleEliminationMatch(4, "Round 1 Upper", 300),
 	}
 
 	// Define Round 2 matches.
@@ -53,28 +53,28 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m1, useWinner: false},
 		blueAllianceSource: matchupSource{matchup: &m2, useWinner: false},
-		matchSpecs:         newDoubleEliminationMatch(5, "Round 2 Lower"),
+		matchSpecs:         newDoubleEliminationMatch(5, "Round 2 Lower", 480),
 	}
 	m6 := Matchup{
 		id:                 "M6",
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m3, useWinner: false},
 		blueAllianceSource: matchupSource{matchup: &m4, useWinner: false},
-		matchSpecs:         newDoubleEliminationMatch(6, "Round 2 Lower"),
+		matchSpecs:         newDoubleEliminationMatch(6, "Round 2 Lower", 480),
 	}
 	m7 := Matchup{
 		id:                 "M7",
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m1, useWinner: true},
 		blueAllianceSource: matchupSource{matchup: &m2, useWinner: true},
-		matchSpecs:         newDoubleEliminationMatch(7, "Round 2 Upper"),
+		matchSpecs:         newDoubleEliminationMatch(7, "Round 2 Upper", 480),
 	}
 	m8 := Matchup{
 		id:                 "M8",
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m3, useWinner: true},
 		blueAllianceSource: matchupSource{matchup: &m4, useWinner: true},
-		matchSpecs:         newDoubleEliminationMatch(8, "Round 2 Upper"),
+		matchSpecs:         newDoubleEliminationMatch(8, "Round 2 Upper", 300),
 	}
 
 	// Define Round 3 matches.
@@ -83,14 +83,14 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m7, useWinner: false},
 		blueAllianceSource: matchupSource{matchup: &m6, useWinner: true},
-		matchSpecs:         newDoubleEliminationMatch(9, "Round 3 Lower"),
+		matchSpecs:         newDoubleEliminationMatch(9, "Round 3 Lower", 480),
 	}
 	m10 := Matchup{
 		id:                 "M10",
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m8, useWinner: false},
 		blueAllianceSource: matchupSource{matchup: &m5, useWinner: true},
-		matchSpecs:         newDoubleEliminationMatch(10, "Round 3 Lower"),
+		matchSpecs:         newDoubleEliminationMatch(10, "Round 3 Lower", 300),
 	}
 
 	// Define Round 4 matches.
@@ -99,14 +99,14 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m7, useWinner: true},
 		blueAllianceSource: matchupSource{matchup: &m8, useWinner: true},
-		matchSpecs:         newDoubleEliminationMatch(11, "Round 4 Upper"),
+		matchSpecs:         newDoubleEliminationMatch(11, "Round 4 Upper", 480),
 	}
 	m12 := Matchup{
 		id:                 "M12",
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m10, useWinner: true},
 		blueAllianceSource: matchupSource{matchup: &m9, useWinner: true},
-		matchSpecs:         newDoubleEliminationMatch(12, "Round 4 Lower"),
+		matchSpecs:         newDoubleEliminationMatch(12, "Round 4 Lower", 300),
 	}
 
 	// Define Round 5 matches.
@@ -115,7 +115,7 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m11, useWinner: false},
 		blueAllianceSource: matchupSource{matchup: &m12, useWinner: true},
-		matchSpecs:         newDoubleEliminationMatch(13, "Round 5 Lower"),
+		matchSpecs:         newDoubleEliminationMatch(13, "Round 5 Lower", 300),
 	}
 
 	// Define final matches.
@@ -142,13 +142,14 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 }
 
 // Helper method to create the matches for a given pre-final double-elimination matchup.
-func newDoubleEliminationMatch(number int, nameDetail string) []*matchSpec {
+func newDoubleEliminationMatch(number int, nameDetail string, durationSec int) []*matchSpec {
 	return []*matchSpec{
 		{
 			longName:            fmt.Sprintf("Match %d", number),
 			shortName:           fmt.Sprintf("M%d", number),
 			nameDetail:          nameDetail,
 			order:               number,
+			durationSec:         durationSec,
 			useTiebreakCriteria: true,
 			tbaMatchKey:         model.TbaMatchKey{"sf", number, 1},
 		},
