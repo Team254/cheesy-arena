@@ -142,7 +142,7 @@ func (matchup *Matchup) IsComplete() bool {
 	return matchup.WinningAllianceId() > 0
 }
 
-// isFinal returns true if the matchup represents the final matchup in the bracket.
+// isFinal returns true if the matchup represents the final matchup in the playoff tournament.
 func (matchup *Matchup) isFinal() bool {
 	return matchup.id == "F"
 }

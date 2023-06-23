@@ -197,7 +197,7 @@ func (arena *Arena) CreatePlayoffMatches(startTime time.Time) error {
 	return arena.PlayoffTournament.CreateMatches(arena.Database, startTime)
 }
 
-// Traverses the in-memory playoff bracket to assess winners and populate subsequent matches.
+// Traverses the playoff tournament rounds to assess winners and populate subsequent matches.
 func (arena *Arena) UpdatePlayoffTournament() error {
 	alliances, err := arena.Database.GetAllAlliances()
 	if err != nil {

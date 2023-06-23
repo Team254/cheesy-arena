@@ -619,7 +619,7 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Traverse the bracket to register the furthest level that the alliance has achieved.
+	// Traverse the playoff tournament to register the furthest level that the alliance has achieved.
 	allianceStatuses := make(map[int]string)
 	if web.arena.PlayoffTournament.IsComplete() {
 		allianceStatuses[web.arena.PlayoffTournament.WinningAllianceId()] = "Winner\n "
