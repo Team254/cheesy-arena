@@ -158,6 +158,10 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 			return
 		}
 	}
+	if err = web.arena.Database.DeleteScheduledBreaksByMatchType(model.Playoff); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 
 	// Delete the saved alliances.
 	if err = web.arena.Database.TruncateAlliances(); err != nil {

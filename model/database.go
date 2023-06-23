@@ -21,19 +21,20 @@ const backupsDir = "db/backups"
 var BaseDir = "." // Mutable for testing
 
 type Database struct {
-	Path               string
-	bolt               *bbolt.DB
-	allianceTable      *table[Alliance]
-	awardTable         *table[Award]
-	eventSettingsTable *table[EventSettings]
-	lowerThirdTable    *table[LowerThird]
-	matchTable         *table[Match]
-	matchResultTable   *table[MatchResult]
-	rankingTable       *table[game.Ranking]
-	scheduleBlockTable *table[ScheduleBlock]
-	sponsorSlideTable  *table[SponsorSlide]
-	teamTable          *table[Team]
-	userSessionTable   *table[UserSession]
+	Path                string
+	bolt                *bbolt.DB
+	allianceTable       *table[Alliance]
+	awardTable          *table[Award]
+	eventSettingsTable  *table[EventSettings]
+	lowerThirdTable     *table[LowerThird]
+	matchTable          *table[Match]
+	matchResultTable    *table[MatchResult]
+	rankingTable        *table[game.Ranking]
+	scheduleBlockTable  *table[ScheduleBlock]
+	scheduledBreakTable *table[ScheduledBreak]
+	sponsorSlideTable   *table[SponsorSlide]
+	teamTable           *table[Team]
+	userSessionTable    *table[UserSession]
 }
 
 // Opens the Bolt database at the given path, creating it if it doesn't exist.
@@ -68,6 +69,9 @@ func OpenDatabase(filename string) (*Database, error) {
 		return nil, err
 	}
 	if database.scheduleBlockTable, err = newTable[ScheduleBlock](&database); err != nil {
+		return nil, err
+	}
+	if database.scheduledBreakTable, err = newTable[ScheduledBreak](&database); err != nil {
 		return nil, err
 	}
 	if database.sponsorSlideTable, err = newTable[SponsorSlide](&database); err != nil {
