@@ -632,7 +632,7 @@ func (arena *Arena) getNextMatch(excludeCurrent bool) (*model.Match, error) {
 		return nil, nil
 	}
 
-	matches, err := arena.Database.GetMatchesByType(arena.CurrentMatch.Type)
+	matches, err := arena.Database.GetMatchesByType(arena.CurrentMatch.Type, false)
 	if err != nil {
 		return nil, err
 	}

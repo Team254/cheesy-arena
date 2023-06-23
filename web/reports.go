@@ -367,7 +367,7 @@ func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	matches, err := web.arena.Database.GetMatchesByType(matchType)
+	matches, err := web.arena.Database.GetMatchesByType(matchType, false)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -396,7 +396,7 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	matches, err := web.arena.Database.GetMatchesByType(matchType)
+	matches, err := web.arena.Database.GetMatchesByType(matchType, false)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -749,7 +749,7 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matches, err := web.arena.Database.GetMatchesByType(matchType)
+	matches, err := web.arena.Database.GetMatchesByType(matchType, false)
 	if err != nil {
 		handleWebErr(w, err)
 		return

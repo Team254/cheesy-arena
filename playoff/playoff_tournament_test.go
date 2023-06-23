@@ -53,7 +53,7 @@ func TestPlayoffTournamentCreateMatches(t *testing.T) {
 		assert.Equal(t, "cannot create playoff matches; 19 matches already exist", err.Error())
 	}
 
-	matches, _ := database.GetMatchesByType(model.Playoff)
+	matches, _ := database.GetMatchesByType(model.Playoff, true)
 	if assert.Equal(t, 19, len(matches)) {
 		assertMatch(t, matches[0], 1, 5000, "Match 1", "M1", "Round 1 Upper", "M1", 1, 8, true, "sf", 1, 1)
 		assertMatch(t, matches[1], 2, 5600, "Match 2", "M2", "Round 1 Upper", "M2", 4, 5, true, "sf", 2, 1)
@@ -91,7 +91,7 @@ func TestPlayoffTournamentCreateMatches(t *testing.T) {
 	err = playoffTournament.CreateMatches(database, startTime)
 	assert.Nil(t, err)
 
-	matches, _ = database.GetMatchesByType(model.Playoff)
+	matches, _ = database.GetMatchesByType(model.Playoff, true)
 	if assert.Equal(t, 9, len(matches)) {
 		assertMatch(t, matches[0], 38, 1000, "Semifinal 2-1", "SF2-1", "", "SF2", 2, 3, true, "sf", 2, 1)
 		assertMatch(t, matches[1], 40, 1600, "Semifinal 2-2", "SF2-2", "", "SF2", 2, 3, true, "sf", 2, 2)
@@ -126,7 +126,7 @@ func TestPlayoffTournamentUpdateMatches(t *testing.T) {
 	err = playoffTournament.CreateMatches(database, time.Unix(0, 0))
 	assert.Nil(t, err)
 
-	matches, _ := database.GetMatchesByType(model.Playoff)
+	matches, _ := database.GetMatchesByType(model.Playoff, true)
 	assert.Equal(t, 102, matches[0].Red1)
 	assert.Equal(t, 101, matches[0].Red2)
 	assert.Equal(t, 103, matches[0].Red3)
@@ -145,7 +145,7 @@ func TestPlayoffTournamentUpdateMatches(t *testing.T) {
 	err = playoffTournament.UpdateMatches(database)
 	assert.Nil(t, err)
 
-	matches, _ = database.GetMatchesByType(model.Playoff)
+	matches, _ = database.GetMatchesByType(model.Playoff, true)
 	assert.Equal(t, 102, matches[0].Red1)
 	assert.Equal(t, 101, matches[0].Red2)
 	assert.Equal(t, 103, matches[0].Red3)
@@ -180,7 +180,7 @@ func TestPlayoffTournamentUpdateMatches(t *testing.T) {
 	err = playoffTournament.UpdateMatches(database)
 	assert.Nil(t, err)
 
-	matches, _ = database.GetMatchesByType(model.Playoff)
+	matches, _ = database.GetMatchesByType(model.Playoff, true)
 	assert.Equal(t, 103, matches[2].Red1)
 	assert.Equal(t, 102, matches[2].Red2)
 	assert.Equal(t, 101, matches[2].Red3)
@@ -207,7 +207,7 @@ func TestPlayoffTournamentUpdateMatches(t *testing.T) {
 	err = playoffTournament.UpdateMatches(database)
 	assert.Nil(t, err)
 
-	matches, _ = database.GetMatchesByType(model.Playoff)
+	matches, _ = database.GetMatchesByType(model.Playoff, true)
 	assert.Equal(t, 0, matches[6].PlayoffRedAlliance)
 	assert.Equal(t, 0, matches[6].PlayoffBlueAlliance)
 	assert.Equal(t, 0, matches[6].Red1)

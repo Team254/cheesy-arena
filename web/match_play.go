@@ -541,7 +541,7 @@ func (list MatchPlayList) Swap(i, j int) {
 
 // Constructs the list of matches to display on the side of the match play interface.
 func (web *Web) buildMatchPlayList(matchType model.MatchType) (MatchPlayList, error) {
-	matches, err := web.arena.Database.GetMatchesByType(matchType)
+	matches, err := web.arena.Database.GetMatchesByType(matchType, false)
 	if err != nil {
 		return MatchPlayList{}, err
 	}

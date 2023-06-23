@@ -37,7 +37,7 @@ func TestEarlyLateMessage(t *testing.T) {
 
 	arena.Database.CreateMatch(&model.Match{Type: model.Qualification, TypeOrder: 1})
 	arena.Database.CreateMatch(&model.Match{Type: model.Qualification, TypeOrder: 2})
-	matches, _ := arena.Database.GetMatchesByType(model.Qualification)
+	matches, _ := arena.Database.GetMatchesByType(model.Qualification, false)
 	assert.Equal(t, 2, len(matches))
 
 	setMatch(arena.Database, &matches[0], time.Now().Add(300*time.Second), time.Time{}, false)

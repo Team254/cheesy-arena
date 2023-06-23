@@ -24,7 +24,7 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matches, err := web.arena.Database.GetMatchesByType(web.arena.CurrentMatch.Type)
+	matches, err := web.arena.Database.GetMatchesByType(web.arena.CurrentMatch.Type, false)
 	if err != nil {
 		handleWebErr(w, err)
 		return

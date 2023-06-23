@@ -309,11 +309,11 @@ func (client *TbaClient) PublishTeams(database *model.Database) error {
 
 // Uploads the qualification and playoff match schedule and results to The Blue Alliance.
 func (client *TbaClient) PublishMatches(database *model.Database) error {
-	qualMatches, err := database.GetMatchesByType(model.Qualification)
+	qualMatches, err := database.GetMatchesByType(model.Qualification, false)
 	if err != nil {
 		return err
 	}
-	playoffMatches, err := database.GetMatchesByType(model.Playoff)
+	playoffMatches, err := database.GetMatchesByType(model.Playoff, false)
 	if err != nil {
 		return err
 	}

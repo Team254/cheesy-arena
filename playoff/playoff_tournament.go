@@ -91,7 +91,7 @@ func (tournament *PlayoffTournament) Traverse(visitFunction func(MatchGroup) err
 // CreateMatches creates all the playoff matches in the database, as a one-time action at the beginning of the
 // playoff tournament.
 func (tournament *PlayoffTournament) CreateMatches(database *model.Database, startTime time.Time) error {
-	matches, err := database.GetMatchesByType(model.Playoff)
+	matches, err := database.GetMatchesByType(model.Playoff, true)
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func (tournament *PlayoffTournament) CreateMatches(database *model.Database, sta
 // UpdateMatches updates the playoff matches in the database to assign teams based on the results of the playoff
 // tournament so far.
 func (tournament *PlayoffTournament) UpdateMatches(database *model.Database) error {
-	matches, err := database.GetMatchesByType(model.Playoff)
+	matches, err := database.GetMatchesByType(model.Playoff, true)
 	if err != nil {
 		return err
 	}

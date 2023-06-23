@@ -57,7 +57,7 @@ func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matches, err := web.arena.Database.GetMatchesByType(matchType)
+	matches, err := web.arena.Database.GetMatchesByType(matchType, false)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -150,7 +150,7 @@ func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the last match scored so we can report that on the display.
-	matches, err := web.arena.Database.GetMatchesByType(model.Qualification)
+	matches, err := web.arena.Database.GetMatchesByType(model.Qualification, false)
 	if err != nil {
 		handleWebErr(w, err)
 		return

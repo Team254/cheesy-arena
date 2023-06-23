@@ -181,7 +181,7 @@ func (web *Web) getMatchResultFromRequest(r *http.Request) (*model.Match, *model
 
 // Constructs the list of matches to display in the match review interface.
 func (web *Web) buildMatchReviewList(matchType model.MatchType) ([]MatchReviewListItem, error) {
-	matches, err := web.arena.Database.GetMatchesByType(matchType)
+	matches, err := web.arena.Database.GetMatchesByType(matchType, false)
 	if err != nil {
 		return []MatchReviewListItem{}, err
 	}

@@ -65,7 +65,7 @@ func (arena *Arena) getEarlyLateMessage() string {
 		minutesLate = currentMatch.StartedAt.Sub(currentMatch.Time).Minutes()
 	} else {
 		// We need to check the adjacent matches to accurately determine lateness.
-		matches, _ := arena.Database.GetMatchesByType(currentMatch.Type)
+		matches, _ := arena.Database.GetMatchesByType(currentMatch.Type, false)
 
 		previousMatchIndex := -1
 		nextMatchIndex := len(matches)

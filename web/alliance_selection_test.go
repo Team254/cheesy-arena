@@ -91,9 +91,9 @@ func TestAllianceSelection(t *testing.T) {
 		assert.Equal(t, 101, alliances[0].Lineup[1])
 		assert.Equal(t, 103, alliances[0].Lineup[2])
 	}
-	matches, err := web.arena.Database.GetMatchesByType(model.Playoff)
+	matches, err := web.arena.Database.GetMatchesByType(model.Playoff, false)
 	assert.Nil(t, err)
-	assert.Equal(t, 19, len(matches))
+	assert.Equal(t, 16, len(matches))
 	team, _ := web.arena.Database.GetTeamById(254)
 	assert.False(t, team.YellowCard)
 }
@@ -181,7 +181,7 @@ func TestAllianceSelectionReset(t *testing.T) {
 	assert.Equal(t, 303, recorder.Code)
 	alliances, _ := web.arena.Database.GetAllAlliances()
 	assert.NotEmpty(t, alliances)
-	matches, _ := web.arena.Database.GetMatchesByType(model.Playoff)
+	matches, _ := web.arena.Database.GetMatchesByType(model.Playoff, true)
 	assert.NotEmpty(t, matches)
 
 	// Reset the alliance selection before any matches have been played.
@@ -189,7 +189,7 @@ func TestAllianceSelectionReset(t *testing.T) {
 	assert.Equal(t, 303, recorder.Code)
 	alliances, _ = web.arena.Database.GetAllAlliances()
 	assert.Empty(t, alliances)
-	matches, _ = web.arena.Database.GetMatchesByType(model.Playoff)
+	matches, _ = web.arena.Database.GetMatchesByType(model.Playoff, true)
 	assert.Empty(t, matches)
 
 	// Start, populate, and finalize the alliance selection again.
@@ -202,7 +202,7 @@ func TestAllianceSelectionReset(t *testing.T) {
 	assert.Equal(t, 303, recorder.Code)
 	alliances, _ = web.arena.Database.GetAllAlliances()
 	assert.NotEmpty(t, alliances)
-	matches, _ = web.arena.Database.GetMatchesByType(model.Playoff)
+	matches, _ = web.arena.Database.GetMatchesByType(model.Playoff, true)
 	assert.NotEmpty(t, matches)
 
 	// Mark a match as played and verify that the alliance selection can no longer be reset.
@@ -213,7 +213,7 @@ func TestAllianceSelectionReset(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "matches have already started")
 	alliances, _ = web.arena.Database.GetAllAlliances()
 	assert.NotEmpty(t, alliances)
-	matches, _ = web.arena.Database.GetMatchesByType(model.Playoff)
+	matches, _ = web.arena.Database.GetMatchesByType(model.Playoff, true)
 	assert.NotEmpty(t, matches)
 }
 

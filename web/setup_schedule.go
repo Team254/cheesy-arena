@@ -125,7 +125,7 @@ func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	existingMatches, err := web.arena.Database.GetMatchesByType(matchType)
+	existingMatches, err := web.arena.Database.GetMatchesByType(matchType, true)
 	if err != nil {
 		handleWebErr(w, err)
 		return

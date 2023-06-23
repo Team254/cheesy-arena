@@ -147,7 +147,7 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// Delete any playoff matches that were already created (but not played since they would fail the above check).
-	matches, err := web.arena.Database.GetMatchesByType(model.Playoff)
+	matches, err := web.arena.Database.GetMatchesByType(model.Playoff, true)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -252,7 +252,7 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	web.arena.ScorePostedNotifier.Notify()
 
 	// Load the first playoff match.
-	matches, err := web.arena.Database.GetMatchesByType(model.Playoff)
+	matches, err := web.arena.Database.GetMatchesByType(model.Playoff, false)
 	if err == nil && len(matches) > 0 {
 		_ = web.arena.LoadMatch(&matches[0])
 	}
@@ -295,7 +295,7 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 
 // Returns true if it is safe to change the alliance selection (i.e. no playoff matches exist yet).
 func (web *Web) canModifyAllianceSelection() bool {
-	matches, err := web.arena.Database.GetMatchesByType(model.Playoff)
+	matches, err := web.arena.Database.GetMatchesByType(model.Playoff, true)
 	if err != nil || len(matches) > 0 {
 		return false
 	}
@@ -304,7 +304,7 @@ func (web *Web) canModifyAllianceSelection() bool {
 
 // Returns true if it is safe to reset the alliance selection (i.e. no playoff matches have been played yet).
 func (web *Web) canResetAllianceSelection() bool {
-	matches, err := web.arena.Database.GetMatchesByType(model.Playoff)
+	matches, err := web.arena.Database.GetMatchesByType(model.Playoff, true)
 	if err != nil {
 		return false
 	}

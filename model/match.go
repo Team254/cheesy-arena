@@ -85,7 +85,7 @@ func (database *Database) TruncateMatches() error {
 }
 
 func (database *Database) GetMatchByTypeOrder(matchType MatchType, typeOrder int) (*Match, error) {
-	matches, err := database.GetMatchesByType(matchType)
+	matches, err := database.GetMatchesByType(matchType, true)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (database *Database) GetMatchByTypeOrder(matchType MatchType, typeOrder int
 	return nil, nil
 }
 
-func (database *Database) GetMatchesByType(matchType MatchType) ([]Match, error) {
+func (database *Database) GetMatchesByType(matchType MatchType, includeHidden bool) ([]Match, error) {
 	matches, err := database.matchTable.getAll()
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (database *Database) GetMatchesByType(matchType MatchType) ([]Match, error)
 
 	var matchingMatches []Match
 	for _, match := range matches {
-		if match.Type == matchType {
+		if match.Type == matchType && (includeHidden || match.Status != game.MatchHidden) {
 			matchingMatches = append(matchingMatches, match)
 		}
 	}

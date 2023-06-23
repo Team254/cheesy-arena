@@ -37,7 +37,7 @@ func TestSetupSchedule(t *testing.T) {
 	// Save schedule and check that it was persisted.
 	recorder = web.postHttpResponse("/setup/schedule/save?matchType=qualification", "")
 	assert.Equal(t, 303, recorder.Code)
-	matches, err := web.arena.Database.GetMatchesByType(model.Qualification)
+	matches, err := web.arena.Database.GetMatchesByType(model.Qualification, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 64, len(matches))
 	location, _ := time.LoadLocation("Local")

@@ -74,7 +74,7 @@ func TestSetupSettingsClearDb(t *testing.T) {
 
 	teams, _ := web.arena.Database.GetAllTeams()
 	assert.NotEmpty(t, teams)
-	matches, _ := web.arena.Database.GetMatchesByType(model.Qualification)
+	matches, _ := web.arena.Database.GetMatchesByType(model.Qualification, true)
 	assert.Empty(t, matches)
 	rankings, _ := web.arena.Database.GetAllRankings()
 	assert.Empty(t, rankings)

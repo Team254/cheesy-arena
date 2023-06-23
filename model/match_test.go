@@ -135,19 +135,34 @@ func TestGetMatchesByType(t *testing.T) {
 	}
 	assert.Nil(t, db.CreateMatch(&match2))
 
-	matches, err := db.GetMatchesByType(Test)
+	matches, err := db.GetMatchesByType(Test, false)
 	assert.Nil(t, err)
 	assert.Empty(t, matches)
-	matches, err = db.GetMatchesByType(Practice)
+	matches, err = db.GetMatchesByType(Practice, false)
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(matches)) {
 		assert.Equal(t, match2, matches[0])
 		assert.Equal(t, match3, matches[1])
 	}
-	matches, err = db.GetMatchesByType(Qualification)
+	matches, err = db.GetMatchesByType(Qualification, false)
 	assert.Nil(t, err)
 	if assert.Equal(t, 1, len(matches)) {
 		assert.Equal(t, match1, matches[0])
+	}
+
+	// Test filtering of hidden matches.
+	match3.Status = game.MatchHidden
+	assert.Nil(t, db.UpdateMatch(&match3))
+	matches, err = db.GetMatchesByType(Practice, false)
+	assert.Nil(t, err)
+	if assert.Equal(t, 1, len(matches)) {
+		assert.Equal(t, match2, matches[0])
+	}
+	matches, err = db.GetMatchesByType(Practice, true)
+	assert.Nil(t, err)
+	if assert.Equal(t, 2, len(matches)) {
+		assert.Equal(t, match2, matches[0])
+		assert.Equal(t, match3, matches[1])
 	}
 }
 
