@@ -9,7 +9,6 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
 func setupTestDb(t *testing.T) *model.Database {
@@ -99,7 +98,7 @@ func assertMatch(
 ) {
 	assert.Equal(t, model.Playoff, match.Type)
 	assert.Equal(t, typeOrder, match.TypeOrder)
-	assert.Equal(t, time.Unix(timeSec, 0), match.Time)
+	assert.Equal(t, timeSec, match.Time.Unix())
 	assert.Equal(t, longName, match.LongName)
 	assert.Equal(t, shortName, match.ShortName)
 	assert.Equal(t, nameDetail, match.NameDetail)
