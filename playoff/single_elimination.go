@@ -247,7 +247,7 @@ func newFinalMatches(startingOrder int) []*matchSpec {
 			shortName:           "O1",
 			order:               startingOrder + 3,
 			useTiebreakCriteria: true,
-			isOvertime:          true,
+			isHidden:            true,
 			tbaMatchKey:         model.TbaMatchKey{"f", 1, 4},
 		},
 		{
@@ -255,7 +255,7 @@ func newFinalMatches(startingOrder int) []*matchSpec {
 			shortName:           "O2",
 			order:               startingOrder + 4,
 			useTiebreakCriteria: true,
-			isOvertime:          true,
+			isHidden:            true,
 			tbaMatchKey:         model.TbaMatchKey{"f", 1, 5},
 		},
 		{
@@ -263,7 +263,7 @@ func newFinalMatches(startingOrder int) []*matchSpec {
 			shortName:           "O3",
 			order:               startingOrder + 5,
 			useTiebreakCriteria: true,
-			isOvertime:          true,
+			isHidden:            true,
 			tbaMatchKey:         model.TbaMatchKey{"f", 1, 6},
 		},
 	}

@@ -124,7 +124,7 @@ func (tournament *PlayoffTournament) CreateMatches(database *model.Database, sta
 		if match.PlayoffBlueAlliance > 0 && len(alliances) >= match.PlayoffBlueAlliance {
 			positionBlueTeams(&match, &alliances[match.PlayoffBlueAlliance-1])
 		}
-		if spec.isOvertime {
+		if spec.isHidden {
 			match.Status = game.MatchHidden
 		} else {
 			match.Status = game.MatchScheduled
@@ -174,24 +174,33 @@ func (tournament *PlayoffTournament) UpdateMatches(database *model.Database) err
 		if !ok {
 			return fmt.Errorf("cannot update playoff matches; match with order %d does not exist", spec.order)
 		}
-		if match.Status == game.MatchScheduled {
-			match.PlayoffRedAlliance = spec.redAllianceId
-			match.PlayoffBlueAlliance = spec.blueAllianceId
-			if match.PlayoffRedAlliance > 0 && len(alliances) >= match.PlayoffRedAlliance {
-				positionRedTeams(match, &alliances[match.PlayoffRedAlliance-1])
-			} else {
-				// Zero out the teams.
-				positionRedTeams(match, &model.Alliance{})
-			}
-			if match.PlayoffBlueAlliance > 0 && len(alliances) >= match.PlayoffBlueAlliance {
-				positionBlueTeams(match, &alliances[match.PlayoffBlueAlliance-1])
-			} else {
-				// Zero out the teams.
-				positionBlueTeams(match, &model.Alliance{})
-			}
-			if err = database.UpdateMatch(match); err != nil {
-				return err
-			}
+		if match.IsComplete() {
+			continue
+		}
+
+		if spec.isHidden {
+			match.Status = game.MatchHidden
+		} else {
+			match.Status = game.MatchScheduled
+		}
+		match.PlayoffRedAlliance = spec.redAllianceId
+		match.PlayoffBlueAlliance = spec.blueAllianceId
+		if match.Status == game.MatchScheduled && match.PlayoffRedAlliance > 0 &&
+			len(alliances) >= match.PlayoffRedAlliance {
+			positionRedTeams(match, &alliances[match.PlayoffRedAlliance-1])
+		} else {
+			// Zero out the teams.
+			positionRedTeams(match, &model.Alliance{})
+		}
+		if match.Status == game.MatchScheduled && match.PlayoffBlueAlliance > 0 &&
+			len(alliances) >= match.PlayoffBlueAlliance {
+			positionBlueTeams(match, &alliances[match.PlayoffBlueAlliance-1])
+		} else {
+			// Zero out the teams.
+			positionBlueTeams(match, &model.Alliance{})
+		}
+		if err = database.UpdateMatch(match); err != nil {
+			return err
 		}
 	}
 

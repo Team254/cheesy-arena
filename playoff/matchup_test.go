@@ -4,6 +4,7 @@
 package playoff
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -88,4 +89,99 @@ func TestMatchupStatusText(t *testing.T) {
 	leader, status = matchup.StatusText()
 	assert.Equal(t, "", leader)
 	assert.Equal(t, "", status)
+}
+
+func TestMatchupHideUnnecessaryMatches(t *testing.T) {
+	qf1 := Matchup{
+		id:                 "QF1",
+		NumWinsToAdvance:   2,
+		redAllianceSource:  allianceSelectionSource{1},
+		blueAllianceSource: allianceSelectionSource{8},
+		matchSpecs: []*matchSpec{
+			newSingleEliminationMatch("Quarterfinal", "QF", 1, 1, 1),
+			newSingleEliminationMatch("Quarterfinal", "QF", 1, 2, 5),
+			newSingleEliminationMatch("Quarterfinal", "QF", 1, 3, 9),
+		},
+	}
+
+	matchSpecs, err := collectMatchSpecs(&qf1)
+	assert.Nil(t, err)
+	for _, matchSpec := range matchSpecs {
+		assert.False(t, matchSpec.isHidden)
+	}
+
+	playoffMatchResults := map[int]playoffMatchResult{1: {game.BlueWonMatch}}
+	qf1.update(playoffMatchResults)
+	for _, matchSpec := range matchSpecs {
+		assert.False(t, matchSpec.isHidden)
+	}
+
+	// Check that the third match is hidden if the first two are won by the same alliance.
+	playoffMatchResults[5] = playoffMatchResult{game.BlueWonMatch}
+	qf1.update(playoffMatchResults)
+	assert.False(t, matchSpecs[0].isHidden)
+	assert.False(t, matchSpecs[1].isHidden)
+	assert.True(t, matchSpecs[2].isHidden)
+
+	// Check that the third match is unhidden if the prior outcome is reversed.
+	playoffMatchResults[5] = playoffMatchResult{game.RedWonMatch}
+	qf1.update(playoffMatchResults)
+	for _, matchSpec := range matchSpecs {
+		assert.False(t, matchSpec.isHidden)
+	}
+}
+
+func TestMatchupOvertime(t *testing.T) {
+	final := Matchup{
+		id:                 "F",
+		NumWinsToAdvance:   2,
+		redAllianceSource:  allianceSelectionSource{1},
+		blueAllianceSource: allianceSelectionSource{8},
+		matchSpecs:         newFinalMatches(1),
+	}
+
+	matchSpecs, err := collectMatchSpecs(&final)
+	assert.Nil(t, err)
+	for i := 0; i < 3; i++ {
+		assert.False(t, matchSpecs[i].isHidden)
+	}
+	for i := 3; i < 6; i++ {
+		assert.True(t, matchSpecs[i].isHidden)
+	}
+
+	playoffMatchResults := map[int]playoffMatchResult{1: {game.RedWonMatch}, 2: {game.TieMatch}}
+	final.update(playoffMatchResults)
+	for i := 0; i < 3; i++ {
+		assert.False(t, matchSpecs[i].isHidden)
+	}
+	for i := 3; i < 6; i++ {
+		assert.True(t, matchSpecs[i].isHidden)
+	}
+
+	playoffMatchResults[3] = playoffMatchResult{game.BlueWonMatch}
+	final.update(playoffMatchResults)
+	for i := 0; i < 4; i++ {
+		assert.False(t, matchSpecs[i].isHidden)
+	}
+	for i := 4; i < 6; i++ {
+		assert.True(t, matchSpecs[i].isHidden)
+	}
+
+	playoffMatchResults[4] = playoffMatchResult{game.TieMatch}
+	final.update(playoffMatchResults)
+	for i := 0; i < 5; i++ {
+		assert.False(t, matchSpecs[i].isHidden)
+	}
+	for i := 5; i < 6; i++ {
+		assert.True(t, matchSpecs[i].isHidden)
+	}
+
+	playoffMatchResults[5] = playoffMatchResult{game.BlueWonMatch}
+	final.update(playoffMatchResults)
+	for i := 0; i < 5; i++ {
+		assert.False(t, matchSpecs[i].isHidden)
+	}
+	for i := 5; i < 6; i++ {
+		assert.True(t, matchSpecs[i].isHidden)
+	}
 }

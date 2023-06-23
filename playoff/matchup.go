@@ -9,6 +9,7 @@ package playoff
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"math"
 )
 
 type Matchup struct {
@@ -49,6 +50,7 @@ func (matchup *Matchup) update(playoffMatchResults map[int]playoffMatchResult) {
 	matchup.RedAllianceWins = 0
 	matchup.BlueAllianceWins = 0
 	matchup.NumMatchesPlayed = 0
+	var unplayedMatches []*matchSpec
 	for _, match := range matchup.matchSpecs {
 		if matchResult, ok := playoffMatchResults[match.order]; ok {
 			switch matchResult.status {
@@ -61,6 +63,23 @@ func (matchup *Matchup) update(playoffMatchResults map[int]playoffMatchResult) {
 			case game.TieMatch:
 				matchup.NumMatchesPlayed++
 			}
+		} else {
+			unplayedMatches = append(unplayedMatches, match)
+		}
+	}
+
+	numMatchesToSchedule := int(
+		math.Min(
+			float64(matchup.NumWinsToAdvance-matchup.RedAllianceWins),
+			float64(matchup.NumWinsToAdvance-matchup.BlueAllianceWins),
+		),
+	)
+	for _, match := range unplayedMatches {
+		if numMatchesToSchedule > 0 {
+			match.isHidden = false
+			numMatchesToSchedule--
+		} else if matchup.IsComplete() {
+			match.isHidden = true
 		}
 	}
 }

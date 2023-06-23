@@ -22,7 +22,7 @@ type expectedMatchSpec struct {
 	order               int
 	matchGroupId        string
 	useTiebreakCriteria bool
-	isOvertime          bool
+	isHidden            bool
 	tbaCompLevel        string
 	tbaSetNumber        int
 	tbaMatchNumber      int
@@ -41,7 +41,7 @@ func assertMatchSpecs(
 			assert.Equal(t, expectedValue.matchGroupId, matchSpecs[i].matchGroupId)
 			assert.Equal(t, expectedValue.order, matchSpecs[i].order)
 			assert.Equal(t, expectedValue.useTiebreakCriteria, matchSpecs[i].useTiebreakCriteria)
-			assert.Equal(t, expectedValue.isOvertime, matchSpecs[i].isOvertime)
+			assert.Equal(t, expectedValue.isHidden, matchSpecs[i].isHidden)
 			assert.Equal(t, expectedValue.tbaCompLevel, matchSpecs[i].tbaMatchKey.CompLevel)
 			assert.Equal(t, expectedValue.tbaSetNumber, matchSpecs[i].tbaMatchKey.SetNumber)
 			assert.Equal(t, expectedValue.tbaMatchNumber, matchSpecs[i].tbaMatchKey.MatchNumber)

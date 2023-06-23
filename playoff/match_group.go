@@ -33,7 +33,7 @@ type matchSpec struct {
 	matchGroupId        string
 	order               int
 	useTiebreakCriteria bool
-	isOvertime          bool
+	isHidden            bool
 	tbaMatchKey         model.TbaMatchKey
 	redAllianceId       int
 	blueAllianceId      int
