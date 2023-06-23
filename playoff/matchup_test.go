@@ -11,7 +11,7 @@ import (
 
 func TestMatchupAllianceSourceDisplayNames(t *testing.T) {
 	// Test double-elimination.
-	matchup, err := newDoubleEliminationBracket(8)
+	matchup, _, err := newDoubleEliminationBracket(8)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "W M11", matchup.RedAllianceSourceDisplayName())
@@ -24,7 +24,7 @@ func TestMatchupAllianceSourceDisplayNames(t *testing.T) {
 	assert.Equal(t, "W M12", match13.BlueAllianceSourceDisplayName())
 
 	// Test single-elimination.
-	matchup, err = newSingleEliminationBracket(5)
+	matchup, _, err = newSingleEliminationBracket(5)
 	assert.Nil(t, err)
 
 	assert.Equal(t, "W SF1", matchup.RedAllianceSourceDisplayName())

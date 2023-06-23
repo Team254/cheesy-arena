@@ -194,7 +194,7 @@ func (arena *Arena) CreatePlayoffTournament() error {
 
 // Performs the one-time creation of all matches for the playoff tournament.
 func (arena *Arena) CreatePlayoffMatches(startTime time.Time) error {
-	return arena.PlayoffTournament.CreateMatches(arena.Database, startTime)
+	return arena.PlayoffTournament.CreateMatchesAndBreaks(arena.Database, startTime)
 }
 
 // Traverses the playoff tournament rounds to assess winners and populate subsequent matches.

@@ -10,7 +10,7 @@ import (
 )
 
 func TestDoubleEliminationInitial(t *testing.T) {
-	finalMatchup, err := newDoubleEliminationBracket(8)
+	finalMatchup, _, err := newDoubleEliminationBracket(8)
 	assert.Nil(t, err)
 
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
@@ -66,19 +66,19 @@ func TestDoubleEliminationInitial(t *testing.T) {
 }
 
 func TestDoubleEliminationErrors(t *testing.T) {
-	_, err := newDoubleEliminationBracket(7)
+	_, _, err := newDoubleEliminationBracket(7)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "double-elimination bracket must have exactly 8 alliances", err.Error())
 	}
 
-	_, err = newDoubleEliminationBracket(9)
+	_, _, err = newDoubleEliminationBracket(9)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "double-elimination bracket must have exactly 8 alliances", err.Error())
 	}
 }
 
 func TestDoubleEliminationProgression(t *testing.T) {
-	finalMatchup, err := newDoubleEliminationBracket(8)
+	finalMatchup, _, err := newDoubleEliminationBracket(8)
 	assert.Nil(t, err)
 	playoffMatchResults := map[int]playoffMatchResult{}
 	finalMatchup.update(playoffMatchResults)

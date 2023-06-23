@@ -12,13 +12,13 @@ import (
 )
 
 // Creates a single-elimination bracket containing only the required matchups for the given number of alliances, and
-// returns the root matchup comprising the tournament finals.
-func newSingleEliminationBracket(numAlliances int) (*Matchup, error) {
+// returns the root matchup comprising the tournament finals along with scheduled breaks.
+func newSingleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error) {
 	if numAlliances < 2 {
-		return nil, fmt.Errorf("single-elimination bracket must have at least 2 alliances")
+		return nil, nil, fmt.Errorf("single-elimination bracket must have at least 2 alliances")
 	}
 	if numAlliances > 16 {
-		return nil, fmt.Errorf("single-elimination bracket must have at most 16 alliances")
+		return nil, nil, fmt.Errorf("single-elimination bracket must have at most 16 alliances")
 	}
 
 	// Define eighthfinal matches.
@@ -190,7 +190,14 @@ func newSingleEliminationBracket(numAlliances int) (*Matchup, error) {
 		matchSpecs:         newFinalMatches(43),
 	}
 
-	return &final, nil
+	// Define scheduled breaks.
+	breakSpecs := []breakSpec{
+		{43, 480, "Field Break"},
+		{44, 480, "Field Break"},
+		{45, 480, "Field Break"},
+	}
+
+	return &final, breakSpecs, nil
 }
 
 // Helper method to create an allianceSource while pruning any unnecessary matchups due to the number of alliances.

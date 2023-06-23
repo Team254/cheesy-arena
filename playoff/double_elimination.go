@@ -10,11 +10,11 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 )
 
-// Creates a double-elimination bracket and returns the root matchup comprising the tournament finals. Only supports
-// having exactly eight alliances.
-func newDoubleEliminationBracket(numAlliances int) (*Matchup, error) {
+// Creates a double-elimination bracket and returns the root matchup comprising the tournament finals along with
+// scheduled breaks. Only supports having exactly eight alliances.
+func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error) {
 	if numAlliances != 8 {
-		return nil, fmt.Errorf("double-elimination bracket must have exactly 8 alliances")
+		return nil, nil, fmt.Errorf("double-elimination bracket must have exactly 8 alliances")
 	}
 
 	// Define Round 1 matches.
@@ -127,7 +127,18 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, error) {
 		matchSpecs:         newFinalMatches(14),
 	}
 
-	return &final, nil
+	// Define scheduled breaks.
+	breakSpecs := []breakSpec{
+		{5, 480, "Field Break"},
+		{9, 480, "Field Break"},
+		{11, 480, "Field Break"},
+		{13, 900, "Awards Break"},
+		{14, 900, "Awards Break"},
+		{15, 900, "Awards Break"},
+		{16, 900, "Awards Break"},
+	}
+
+	return &final, breakSpecs, nil
 }
 
 // Helper method to create the matches for a given pre-final double-elimination matchup.

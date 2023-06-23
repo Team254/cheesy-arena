@@ -13,7 +13,7 @@ import (
 var dummyStartTime = time.Unix(0, 0)
 
 func TestSingleEliminationInitialWith2Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(2)
+	finalMatchup, _, err := newSingleEliminationBracket(2)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -30,7 +30,7 @@ func TestSingleEliminationInitialWith2Alliances(t *testing.T) {
 	assertMatchGroups(t, matchGroups, "F")
 }
 func TestSingleEliminationInitialWith3Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(3)
+	finalMatchup, _, err := newSingleEliminationBracket(3)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -68,7 +68,7 @@ func TestSingleEliminationInitialWith3Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith4Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(4)
+	finalMatchup, _, err := newSingleEliminationBracket(4)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -98,7 +98,7 @@ func TestSingleEliminationInitialWith4Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith5Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(5)
+	finalMatchup, _, err := newSingleEliminationBracket(5)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -142,7 +142,7 @@ func TestSingleEliminationInitialWith5Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith6Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(6)
+	finalMatchup, _, err := newSingleEliminationBracket(6)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -192,7 +192,7 @@ func TestSingleEliminationInitialWith6Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith7Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(7)
+	finalMatchup, _, err := newSingleEliminationBracket(7)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -248,7 +248,7 @@ func TestSingleEliminationInitialWith7Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith8Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(8)
+	finalMatchup, _, err := newSingleEliminationBracket(8)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -284,7 +284,7 @@ func TestSingleEliminationInitialWith8Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith9Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(9)
+	finalMatchup, _, err := newSingleEliminationBracket(9)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -334,7 +334,7 @@ func TestSingleEliminationInitialWith9Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith10Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(10)
+	finalMatchup, _, err := newSingleEliminationBracket(10)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -390,7 +390,7 @@ func TestSingleEliminationInitialWith10Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith11Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(11)
+	finalMatchup, _, err := newSingleEliminationBracket(11)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -452,7 +452,7 @@ func TestSingleEliminationInitialWith11Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith12Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(12)
+	finalMatchup, _, err := newSingleEliminationBracket(12)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -520,7 +520,7 @@ func TestSingleEliminationInitialWith12Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith13Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(13)
+	finalMatchup, _, err := newSingleEliminationBracket(13)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -594,7 +594,7 @@ func TestSingleEliminationInitialWith13Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith14Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(14)
+	finalMatchup, _, err := newSingleEliminationBracket(14)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -676,7 +676,7 @@ func TestSingleEliminationInitialWith14Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith15Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(15)
+	finalMatchup, _, err := newSingleEliminationBracket(15)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -764,7 +764,7 @@ func TestSingleEliminationInitialWith15Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith16Alliances(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(16)
+	finalMatchup, _, err := newSingleEliminationBracket(16)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -848,19 +848,19 @@ func TestSingleEliminationInitialWith16Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationErrors(t *testing.T) {
-	_, err := newSingleEliminationBracket(1)
+	_, _, err := newSingleEliminationBracket(1)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "single-elimination bracket must have at least 2 alliances", err.Error())
 	}
 
-	_, err = newSingleEliminationBracket(17)
+	_, _, err = newSingleEliminationBracket(17)
 	if assert.NotNil(t, err) {
 		assert.Equal(t, "single-elimination bracket must have at most 16 alliances", err.Error())
 	}
 }
 
 func TestSingleEliminationProgression(t *testing.T) {
-	finalMatchup, err := newSingleEliminationBracket(3)
+	finalMatchup, _, err := newSingleEliminationBracket(3)
 	assert.Nil(t, err)
 	playoffMatchResults := map[int]playoffMatchResult{}
 	finalMatchup.update(playoffMatchResults)

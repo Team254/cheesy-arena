@@ -128,3 +128,18 @@ func assertMatch(
 	assert.Equal(t, tbaSetNumber, match.TbaMatchKey.SetNumber)
 	assert.Equal(t, tbaMatchNumber, match.TbaMatchKey.MatchNumber)
 }
+
+func assertBreak(
+	t *testing.T,
+	scheduledBreak model.ScheduledBreak,
+	typeOrderBefore int,
+	timeSec int64,
+	durationSec int,
+	description string,
+) {
+	assert.Equal(t, model.Playoff, scheduledBreak.MatchType)
+	assert.Equal(t, typeOrderBefore, scheduledBreak.TypeOrderBefore)
+	assert.Equal(t, timeSec, scheduledBreak.Time.Unix())
+	assert.Equal(t, durationSec, scheduledBreak.DurationSec)
+	assert.Equal(t, description, scheduledBreak.Description)
+}

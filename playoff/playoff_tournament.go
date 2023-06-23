@@ -17,6 +17,7 @@ const playoffMatchSpacingSec = 600
 type PlayoffTournament struct {
 	matchGroups  map[string]MatchGroup
 	matchSpecs   []*matchSpec
+	breakSpecs   []breakSpec
 	finalMatchup *Matchup
 }
 
@@ -24,12 +25,13 @@ type PlayoffTournament struct {
 // if the number of alliances is invalid for the given tournament type.
 func NewPlayoffTournament(playoffType model.PlayoffType, numPlayoffAlliances int) (*PlayoffTournament, error) {
 	var finalMatchup *Matchup
+	var breakSpecs []breakSpec
 	var err error
 	switch playoffType {
 	case model.DoubleEliminationPlayoff:
-		finalMatchup, err = newDoubleEliminationBracket(numPlayoffAlliances)
+		finalMatchup, breakSpecs, err = newDoubleEliminationBracket(numPlayoffAlliances)
 	case model.SingleEliminationPlayoff:
-		finalMatchup, err = newSingleEliminationBracket(numPlayoffAlliances)
+		finalMatchup, breakSpecs, err = newSingleEliminationBracket(numPlayoffAlliances)
 	default:
 		err = fmt.Errorf("invalid playoff type: %v", playoffType)
 	}
@@ -53,6 +55,7 @@ func NewPlayoffTournament(playoffType model.PlayoffType, numPlayoffAlliances int
 		finalMatchup: finalMatchup,
 		matchGroups:  matchGroups,
 		matchSpecs:   matchSpecs,
+		breakSpecs:   breakSpecs,
 	}, nil
 }
 
@@ -88,9 +91,9 @@ func (tournament *PlayoffTournament) Traverse(visitFunction func(MatchGroup) err
 	return tournament.finalMatchup.traverse(visitFunction)
 }
 
-// CreateMatches creates all the playoff matches in the database, as a one-time action at the beginning of the
-// playoff tournament.
-func (tournament *PlayoffTournament) CreateMatches(database *model.Database, startTime time.Time) error {
+// CreateMatchesAndBreaks creates all the playoff matches and scheduled breaks in the database, as a one-time action at
+// the beginning of the playoff tournament.
+func (tournament *PlayoffTournament) CreateMatchesAndBreaks(database *model.Database, startTime time.Time) error {
 	matches, err := database.GetMatchesByType(model.Playoff, true)
 	if err != nil {
 		return err
@@ -98,25 +101,61 @@ func (tournament *PlayoffTournament) CreateMatches(database *model.Database, sta
 	if len(matches) > 0 {
 		return fmt.Errorf("cannot create playoff matches; %d matches already exist", len(matches))
 	}
+	scheduledBreaks, err := database.GetScheduledBreaksByMatchType(model.Playoff)
+	if err != nil {
+		return err
+	}
+	if len(scheduledBreaks) > 0 {
+		return fmt.Errorf("cannot create playoff breaks; %d breaks already exist", len(scheduledBreaks))
+	}
 
 	alliances, err := database.GetAllAlliances()
 	if err != nil {
 		return err
 	}
 
-	for i, spec := range tournament.matchSpecs {
+	breakIndex := 0
+	matchIndex := 0
+	nextEventTime := startTime
+
+	for matchIndex < len(tournament.matchSpecs) {
+		// Advance the break index past any nonexistent matches.
+		for breakIndex < len(tournament.breakSpecs) &&
+			tournament.breakSpecs[breakIndex].orderBefore < tournament.matchSpecs[matchIndex].order {
+			breakIndex++
+		}
+
+		if breakIndex < len(tournament.breakSpecs) &&
+			tournament.breakSpecs[breakIndex].orderBefore == tournament.matchSpecs[matchIndex].order {
+			// Create the break that is scheduled before the next match.
+			breakSpec := tournament.breakSpecs[breakIndex]
+			scheduledBreak := model.ScheduledBreak{
+				MatchType:       model.Playoff,
+				TypeOrderBefore: breakSpec.orderBefore,
+				Time:            nextEventTime,
+				DurationSec:     breakSpec.durationSec,
+				Description:     breakSpec.description,
+			}
+			if err := database.CreateScheduledBreak(&scheduledBreak); err != nil {
+				return err
+			}
+			breakIndex++
+			nextEventTime = nextEventTime.Add(time.Duration(breakSpec.durationSec) * time.Second)
+		}
+
+		matchSpec := tournament.matchSpecs[matchIndex]
 		match := model.Match{
 			Type:                model.Playoff,
-			TypeOrder:           spec.order,
-			Time:                startTime.Add(time.Duration(i) * playoffMatchSpacingSec * time.Second),
-			LongName:            spec.longName,
-			ShortName:           spec.shortName,
-			NameDetail:          spec.nameDetail,
-			PlayoffMatchGroupId: spec.matchGroupId,
-			PlayoffRedAlliance:  spec.redAllianceId,
-			PlayoffBlueAlliance: spec.blueAllianceId,
-			UseTiebreakCriteria: spec.useTiebreakCriteria,
-			TbaMatchKey:         spec.tbaMatchKey,
+			TypeOrder:           matchSpec.order,
+			Time:                nextEventTime,
+			LongName:            matchSpec.longName,
+			ShortName:           matchSpec.shortName,
+			NameDetail:          matchSpec.nameDetail,
+			PlayoffMatchGroupId: matchSpec.matchGroupId,
+			PlayoffRedAlliance:  matchSpec.redAllianceId,
+			PlayoffBlueAlliance: matchSpec.blueAllianceId,
+			UseTiebreakCriteria: matchSpec.useTiebreakCriteria,
+			TbaMatchKey:         matchSpec.tbaMatchKey,
 		}
 		if match.PlayoffRedAlliance > 0 && len(alliances) >= match.PlayoffRedAlliance {
 			positionRedTeams(&match, &alliances[match.PlayoffRedAlliance-1])
@@ -124,7 +163,7 @@ func (tournament *PlayoffTournament) CreateMatches(database *model.Database, sta
 		if match.PlayoffBlueAlliance > 0 && len(alliances) >= match.PlayoffBlueAlliance {
 			positionBlueTeams(&match, &alliances[match.PlayoffBlueAlliance-1])
 		}
-		if spec.isHidden {
+		if matchSpec.isHidden {
 			match.Status = game.MatchHidden
 		} else {
 			match.Status = game.MatchScheduled
@@ -133,6 +172,9 @@ func (tournament *PlayoffTournament) CreateMatches(database *model.Database, sta
 		if err := database.CreateMatch(&match); err != nil {
 			return err
 		}
+
+		matchIndex++
+		nextEventTime = nextEventTime.Add(playoffMatchSpacingSec * time.Second)
 	}
 
 	return nil
