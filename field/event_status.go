@@ -50,8 +50,7 @@ func (arena *Arena) updateEarlyLateMessage() {
 // Updates the string that indicates how early or late the event is running.
 func (arena *Arena) getEarlyLateMessage() string {
 	currentMatch := arena.CurrentMatch
-	if currentMatch.Type != model.Practice && currentMatch.Type != model.Qualification {
-		// Only practice and qualification matches have a strict schedule.
+	if currentMatch.Type == model.Test {
 		return ""
 	}
 	if currentMatch.IsComplete() {

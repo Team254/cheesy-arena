@@ -112,7 +112,7 @@ func TestEarlyLateMessage(t *testing.T) {
 	assert.Equal(t, "Event is running 3 minutes late", arena.getEarlyLateMessage())
 
 	arena.CurrentMatch = &model.Match{Type: model.Playoff, Time: time.Now().Add(-181 * time.Second)}
-	assert.Equal(t, "", arena.getEarlyLateMessage())
+	assert.Equal(t, "Event is running 3 minutes late", arena.getEarlyLateMessage())
 }
 
 func setMatch(database *model.Database, match *model.Match, matchTime time.Time, startedAt time.Time, isComplete bool) {
