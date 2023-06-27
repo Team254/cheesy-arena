@@ -234,18 +234,16 @@ func (web *Web) teamAvatarsApiHandler(w http.ResponseWriter, r *http.Request) {
 
 func (web *Web) bracketSvgApiHandler(w http.ResponseWriter, r *http.Request) {
 	var activeMatch *model.Match
-	showTemporaryConnectors := false
 	if activeMatchValue, ok := r.URL.Query()["activeMatch"]; ok {
 		if activeMatchValue[0] == "current" {
 			activeMatch = web.arena.CurrentMatch
 		} else if activeMatchValue[0] == "saved" {
 			activeMatch = web.arena.SavedMatch
-			showTemporaryConnectors = true
 		}
 	}
 
 	w.Header().Set("Content-Type", "image/svg+xml")
-	if err := web.generateBracketSvg(w, activeMatch, showTemporaryConnectors); err != nil {
+	if err := web.generateBracketSvg(w, activeMatch); err != nil {
 		handleWebErr(w, err)
 		return
 	}
@@ -281,7 +279,7 @@ func (web *Web) gridSvgApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match, showTemporaryConnectors bool) error {
+func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match) error {
 	alliances, err := web.arena.Database.GetAllAlliances()
 	if err != nil {
 		return err
@@ -341,9 +339,8 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match, showTe
 		return err
 	}
 	data := struct {
-		BracketType             string
-		Matchups                map[string]*allianceMatchup
-		ShowTemporaryConnectors bool
-	}{bracketType, matchups, showTemporaryConnectors}
+		BracketType string
+		Matchups    map[string]*allianceMatchup
+	}{bracketType, matchups}
 	return template.ExecuteTemplate(w, "bracket", data)
 }

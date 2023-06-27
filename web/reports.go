@@ -729,7 +729,7 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 // suitable Go library for doing so appears to exist).
 func (web *Web) bracketPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	buffer := new(bytes.Buffer)
-	err := web.generateBracketSvg(buffer, nil, false)
+	err := web.generateBracketSvg(buffer, nil)
 	if err != nil {
 		handleWebErr(w, err)
 		return
