@@ -220,3 +220,29 @@ html {
   font-size: 15px;
   font-weight: 200;
 }
+#timeoutDetails {
+  position: absolute;
+  bottom: 95px;
+  width: 140px;
+  height: 50px;
+  z-index: -1;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff;
+  color: #222;
+  border: 1px solid #222;
+}
+#timeoutBreakDescription {
+  font-weight: bold;
+  font-size: 20px;
+  opacity: 0;
+}
+#timeoutNextMatch {
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  opacity: 0;
+}
