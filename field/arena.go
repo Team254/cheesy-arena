@@ -25,6 +25,7 @@ const (
 	matchEndScoreDwellSec    = 3
 	postTimeoutSec           = 4
 	preLoadNextMatchDelaySec = 5
+	scheduledBreakDelaySec   = 5
 	earlyLateThresholdMin    = 2.5
 	MaxMatchGapMin           = 20
 )
@@ -59,7 +60,6 @@ type Arena struct {
 	MatchState
 	lastMatchState             MatchState
 	CurrentMatch               *model.Match
-	CurrentBreak               *model.ScheduledBreak
 	MatchStartTime             time.Time
 	LastMatchTimeSec           float64
 	RedRealtimeScore           *RealtimeScore
@@ -81,6 +81,7 @@ type Arena struct {
 	MuteMatchSounds            bool
 	matchAborted               bool
 	soundsPlayed               map[*game.MatchSound]struct{}
+	breakDescription           string
 }
 
 type AllianceStation struct {
@@ -246,11 +247,6 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 		arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
 		arena.AllianceStations["B3"].Team})
 
-	arena.CurrentBreak, err = arena.Database.GetScheduledBreakByMatchTypeOrder(match.Type, match.TypeOrder)
-	if err != nil {
-		return err
-	}
-
 	// Reset the arena state and realtime scores.
 	arena.soundsPlayed = make(map[*game.MatchSound]struct{})
 	arena.RedRealtimeScore = NewRealtimeScore()
@@ -276,7 +272,7 @@ func (arena *Arena) LoadTestMatch() error {
 }
 
 // Loads the first unplayed match of the current match type.
-func (arena *Arena) LoadNextMatch() error {
+func (arena *Arena) LoadNextMatch(startScheduledBreak bool) error {
 	nextMatch, err := arena.getNextMatch(false)
 	if err != nil {
 		return err
@@ -284,7 +280,26 @@ func (arena *Arena) LoadNextMatch() error {
 	if nextMatch == nil {
 		return arena.LoadTestMatch()
 	}
-	return arena.LoadMatch(nextMatch)
+	err = arena.LoadMatch(nextMatch)
+	if err != nil {
+		return err
+	}
+
+	// Start the timeout timer if there is a scheduled break before this match.
+	if startScheduledBreak {
+		scheduledBreak, err := arena.Database.GetScheduledBreakByMatchTypeOrder(nextMatch.Type, nextMatch.TypeOrder)
+		if err != nil {
+			return err
+		}
+		if scheduledBreak != nil {
+			go func() {
+				time.Sleep(time.Second * scheduledBreakDelaySec)
+				_ = arena.StartTimeout(scheduledBreak.Description, scheduledBreak.DurationSec)
+			}()
+		}
+	}
+
+	return nil
 }
 
 // Assigns the given team to the given station, also substituting it into the match record.
@@ -396,7 +411,7 @@ func (arena *Arena) ResetMatch() error {
 }
 
 // Starts a timeout of the given duration.
-func (arena *Arena) StartTimeout(durationSec int) error {
+func (arena *Arena) StartTimeout(description string, durationSec int) error {
 	if arena.MatchState != PreMatch {
 		return fmt.Errorf("Cannot start timeout while there is a match still in progress or with results pending.")
 	}
@@ -405,6 +420,8 @@ func (arena *Arena) StartTimeout(durationSec int) error {
 	game.UpdateMatchSounds()
 	arena.soundsPlayed = make(map[*game.MatchSound]struct{})
 	arena.MatchTimingNotifier.Notify()
+	arena.breakDescription = description
+	arena.MatchLoadNotifier.Notify()
 	arena.MatchState = TimeoutActive
 	arena.MatchStartTime = time.Now()
 	arena.LastMatchTimeSec = -1

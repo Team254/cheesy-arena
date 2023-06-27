@@ -395,7 +395,7 @@ func TestLoadNextMatch(t *testing.T) {
 	err := arena.SubstituteTeam(1114, "R1")
 	assert.Nil(t, err)
 	arena.CurrentMatch.Status = game.TieMatch
-	err = arena.LoadNextMatch()
+	err = arena.LoadNextMatch(false)
 	assert.Nil(t, err)
 	assert.Equal(t, 0, arena.CurrentMatch.Id)
 	assert.Equal(t, 0, arena.CurrentMatch.Red1)
@@ -404,24 +404,24 @@ func TestLoadNextMatch(t *testing.T) {
 	// Other matches should be loaded by type until they're all complete.
 	err = arena.LoadMatch(&practiceMatch2)
 	assert.Nil(t, err)
-	err = arena.LoadNextMatch()
+	err = arena.LoadNextMatch(false)
 	assert.Nil(t, err)
 	assert.Equal(t, practiceMatch1.Id, arena.CurrentMatch.Id)
 	practiceMatch1.Status = game.RedWonMatch
 	arena.Database.UpdateMatch(&practiceMatch1)
-	err = arena.LoadNextMatch()
+	err = arena.LoadNextMatch(false)
 	assert.Nil(t, err)
 	assert.Equal(t, practiceMatch3.Id, arena.CurrentMatch.Id)
 	practiceMatch3.Status = game.BlueWonMatch
 	arena.Database.UpdateMatch(&practiceMatch3)
-	err = arena.LoadNextMatch()
+	err = arena.LoadNextMatch(false)
 	assert.Nil(t, err)
 	assert.Equal(t, 0, arena.CurrentMatch.Id)
 	assert.Equal(t, model.Test, arena.CurrentMatch.Type)
 
 	err = arena.LoadMatch(&qualificationMatch1)
 	assert.Nil(t, err)
-	err = arena.LoadNextMatch()
+	err = arena.LoadNextMatch(false)
 	assert.Nil(t, err)
 	assert.Equal(t, qualificationMatch2.Id, arena.CurrentMatch.Id)
 }
@@ -481,9 +481,10 @@ func TestArenaTimeout(t *testing.T) {
 
 	// Test regular ending of timeout.
 	timeoutDurationSec := 9
-	assert.Nil(t, arena.StartTimeout(timeoutDurationSec))
+	assert.Nil(t, arena.StartTimeout("Break 1", timeoutDurationSec))
 	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
 	assert.Equal(t, TimeoutActive, arena.MatchState)
+	assert.Equal(t, "Break 1", arena.breakDescription)
 	arena.MatchStartTime = time.Now().Add(-time.Duration(timeoutDurationSec) * time.Second)
 	arena.Update()
 	assert.Equal(t, PostTimeout, arena.MatchState)
@@ -493,9 +494,10 @@ func TestArenaTimeout(t *testing.T) {
 
 	// Test early cancellation of timeout.
 	timeoutDurationSec = 28
-	assert.Nil(t, arena.StartTimeout(timeoutDurationSec))
-	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
+	assert.Nil(t, arena.StartTimeout("Break 2", timeoutDurationSec))
+	assert.Equal(t, "Break 2", arena.breakDescription)
 	assert.Equal(t, TimeoutActive, arena.MatchState)
+	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
 	assert.Nil(t, arena.AbortMatch())
 	arena.Update()
 	assert.Equal(t, PostTimeout, arena.MatchState)
@@ -512,7 +514,7 @@ func TestArenaTimeout(t *testing.T) {
 	arena.AllianceStations["B3"].Bypass = true
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
-	assert.NotNil(t, arena.StartTimeout(1))
+	assert.NotNil(t, arena.StartTimeout("Timeout", 1))
 	assert.NotEqual(t, TimeoutActive, arena.MatchState)
 	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
 	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
@@ -520,7 +522,7 @@ func TestArenaTimeout(t *testing.T) {
 		time.Second)
 	for arena.MatchState != PostMatch {
 		arena.Update()
-		assert.NotNil(t, arena.StartTimeout(1))
+		assert.NotNil(t, arena.StartTimeout("Timeout", 1))
 	}
 }
 

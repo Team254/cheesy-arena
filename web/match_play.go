@@ -307,7 +307,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
-			err = web.arena.LoadNextMatch()
+			err = web.arena.LoadNextMatch(true)
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
@@ -324,7 +324,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
-			err = web.arena.LoadNextMatch()
+			err = web.arena.LoadNextMatch(false)
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
@@ -357,7 +357,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
-			err = web.arena.StartTimeout(int(durationSec))
+			err = web.arena.StartTimeout("Timeout", int(durationSec))
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
