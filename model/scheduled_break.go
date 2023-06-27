@@ -42,6 +42,23 @@ func (database *Database) GetScheduledBreaksByMatchType(matchType MatchType) ([]
 	return matchingScheduledBreaks, nil
 }
 
+func (database *Database) GetScheduledBreakByMatchTypeOrder(
+	matchType MatchType,
+	typeOrder int,
+) (*ScheduledBreak, error) {
+	scheduledBreaks, err := database.GetScheduledBreaksByMatchType(matchType)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, scheduledBreak := range scheduledBreaks {
+		if scheduledBreak.TypeOrderBefore == typeOrder {
+			return &scheduledBreak, nil
+		}
+	}
+	return nil, nil
+}
+
 func (database *Database) DeleteScheduledBreaksByMatchType(matchType MatchType) error {
 	scheduledBreaks, err := database.GetScheduledBreaksByMatchType(matchType)
 	if err != nil {

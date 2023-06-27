@@ -36,6 +36,17 @@ func TestScheduledBreakCrud(t *testing.T) {
 		assert.Equal(t, scheduledBreak3, scheduledBreaks[0])
 	}
 
+	// Test individual retrieval by match type and order.
+	scheduledBreak, err := db.GetScheduledBreakByMatchTypeOrder(Qualification, 25)
+	assert.Nil(t, err)
+	assert.Equal(t, scheduledBreak2, *scheduledBreak)
+	scheduledBreak, err = db.GetScheduledBreakByMatchTypeOrder(Playoff, 4)
+	assert.Nil(t, err)
+	assert.Equal(t, scheduledBreak3, *scheduledBreak)
+	scheduledBreak, err = db.GetScheduledBreakByMatchTypeOrder(Qualification, 100)
+	assert.Nil(t, err)
+	assert.Nil(t, scheduledBreak)
+
 	// Test deletion of breaks.
 	assert.Nil(t, db.DeleteScheduledBreaksByMatchType(Playoff))
 	scheduledBreaks, err = db.GetScheduledBreaksByMatchType(Playoff)

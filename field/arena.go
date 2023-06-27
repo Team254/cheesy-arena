@@ -59,6 +59,7 @@ type Arena struct {
 	MatchState
 	lastMatchState             MatchState
 	CurrentMatch               *model.Match
+	CurrentBreak               *model.ScheduledBreak
 	MatchStartTime             time.Time
 	LastMatchTimeSec           float64
 	RedRealtimeScore           *RealtimeScore
@@ -244,6 +245,11 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
 		arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
 		arena.AllianceStations["B3"].Team})
+
+	arena.CurrentBreak, err = arena.Database.GetScheduledBreakByMatchTypeOrder(match.Type, match.TypeOrder)
+	if err != nil {
+		return err
+	}
 
 	// Reset the arena state and realtime scores.
 	arena.soundsPlayed = make(map[*game.MatchSound]struct{})

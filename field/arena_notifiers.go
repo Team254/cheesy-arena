@@ -155,6 +155,11 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		}
 	}
 
+	breakDescription := "Timeout"
+	if arena.CurrentBreak != nil {
+		breakDescription = arena.CurrentBreak.Description
+	}
+
 	return &struct {
 		Match             *model.Match
 		Teams             map[string]*model.Team
@@ -162,6 +167,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		Matchup           *playoff.Matchup
 		RedOffFieldTeams  []*model.Team
 		BlueOffFieldTeams []*model.Team
+		BreakDescription  string
 	}{
 		arena.CurrentMatch,
 		teams,
@@ -169,6 +175,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		matchup,
 		redOffFieldTeams,
 		blueOffFieldTeams,
+		breakDescription,
 	}
 }
 

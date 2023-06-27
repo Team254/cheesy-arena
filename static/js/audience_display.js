@@ -35,6 +35,8 @@ const scoreFieldsOut = "210px";
 const scoreLogoTop = "-450px";
 const bracketLogoTop = "-780px";
 const bracketLogoScale = 0.75;
+const timeoutDetailsIn = $("#timeoutDetails").css("width");
+const timeoutDetailsOut = "570px";
 
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function(targetScreen) {
@@ -123,6 +125,8 @@ const handleMatchLoad = function(data) {
     matchName += " &ndash; " + data.Match.NameDetail;
   }
   $("#matchName").html(matchName);
+  $("#timeoutNextMatchName").html(matchName);
+  $("#timeoutBreakDescription").text(data.BreakDescription);
 };
 
 // Handles a websocket message to update the match time countdown.
@@ -376,7 +380,9 @@ const transitionBlankToSponsor = function(callback) {
 
 const transitionBlankToTimeout = function(callback) {
   $("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function () {
+    $("#timeoutDetails").transition({queue: false, width: timeoutDetailsOut}, 500, "ease");
     $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function() {
+      $(".timeout-detail").transition({queue: false, opacity: 1}, 750, "ease");
       $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
     });
   });
@@ -449,7 +455,9 @@ const transitionIntroToTimeout = function(callback) {
       $(".avatars").css("opacity", 0);
       $(".avatars").hide();
       $(".teams").hide();
+      $("#timeoutDetails").transition({queue: false, width: timeoutDetailsOut}, 500, "ease");
       $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function() {
+        $(".timeout-detail").transition({queue: false, opacity: 1}, 750, "ease");
         $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
       });
     });
@@ -621,7 +629,9 @@ const transitionSponsorToScore = function(callback) {
 };
 
 const transitionTimeoutToBlank = function(callback) {
+  $(".timeout-detail").transition({queue: false, opacity: 0}, 300, "linear");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
+    $("#timeoutDetails").transition({queue: false, width: timeoutDetailsIn}, 500, "ease");
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function() {
       $("#overlayCentering").transition(overlayCenteringHideParams, 1000, "ease", callback);
     });
@@ -629,7 +639,9 @@ const transitionTimeoutToBlank = function(callback) {
 };
 
 const transitionTimeoutToIntro = function(callback) {
+  $(".timeout-detail").transition({queue: false, opacity: 0}, 300, "linear");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
+    $("#timeoutDetails").transition({queue: false, width: timeoutDetailsIn}, 500, "ease");
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function() {
       $(".avatars").css("display", "flex");
       $(".avatars").css("opacity", 1);
@@ -751,7 +763,7 @@ $(function() {
     matchTiming: function(event) { handleMatchTiming(event.data); },
     playSound: function(event) { handlePlaySound(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    scorePosted: function(event) { handleScorePosted(event.data); }
+    scorePosted: function(event) { handleScorePosted(event.data); },
   });
 
   // Map how to transition from one screen to another. Missing links between screens indicate that first we
