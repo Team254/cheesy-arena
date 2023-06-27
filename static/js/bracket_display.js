@@ -7,7 +7,9 @@ var websocket;
 
 // Handles a websocket message to load a new match.
 const handleMatchLoad = function(data) {
-  $("#bracketSvg").attr("src", "/api/bracket/svg?activeMatch=current&v=" + new Date().getTime());
+  fetch("/api/bracket/svg?activeMatch=current")
+    .then(response => response.text())
+    .then(svg => $("#bracket").html(svg));
 };
 
 $(function() {
