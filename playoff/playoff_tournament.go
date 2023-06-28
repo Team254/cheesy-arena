@@ -46,6 +46,9 @@ func NewPlayoffTournament(playoffType model.PlayoffType, numPlayoffAlliances int
 		return nil, err
 	}
 
+	// Doubly link the match group tree in order to populate alliance destinations.
+	finalMatchup.setSourceDestinations()
+
 	// Trigger an initial update to populate the alliances.
 	finalMatchup.update(map[int]playoffMatchResult{})
 

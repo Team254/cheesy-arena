@@ -13,16 +13,18 @@ import (
 )
 
 type Matchup struct {
-	id                 string
-	NumWinsToAdvance   int
-	redAllianceSource  allianceSource
-	blueAllianceSource allianceSource
-	matchSpecs         []*matchSpec
-	RedAllianceId      int
-	BlueAllianceId     int
-	RedAllianceWins    int
-	BlueAllianceWins   int
-	NumMatchesPlayed   int
+	id                         string
+	NumWinsToAdvance           int
+	redAllianceSource          allianceSource
+	blueAllianceSource         allianceSource
+	matchSpecs                 []*matchSpec
+	RedAllianceId              int
+	BlueAllianceId             int
+	RedAllianceWins            int
+	BlueAllianceWins           int
+	NumMatchesPlayed           int
+	winningAllianceDestination MatchGroup
+	losingAllianceDestination  MatchGroup
 }
 
 func (matchup *Matchup) Id() string {
@@ -84,6 +86,12 @@ func (matchup *Matchup) update(playoffMatchResults map[int]playoffMatchResult) {
 	}
 }
 
+// setSourceDestinations recursively sets the destination of the alliance sources to this matchup.
+func (matchup *Matchup) setSourceDestinations() {
+	matchup.redAllianceSource.setDestination(matchup)
+	matchup.blueAllianceSource.setDestination(matchup)
+}
+
 func (matchup *Matchup) traverse(visitFunction func(MatchGroup) error) error {
 	if err := visitFunction(matchup); err != nil {
 		return err
@@ -107,6 +115,16 @@ func (matchup *Matchup) RedAllianceSourceDisplayName() string {
 // populated.
 func (matchup *Matchup) BlueAllianceSourceDisplayName() string {
 	return matchup.blueAllianceSource.displayName()
+}
+
+// RedAllianceDestination returns a string representing the red alliance's next destination in the tournament.
+func (matchup *Matchup) RedAllianceDestination() string {
+	return matchup.allianceDestination(matchup.RedAllianceId)
+}
+
+// BlueAllianceDestination returns a string representing the blue alliance's next destination in the tournament.
+func (matchup *Matchup) BlueAllianceDestination() string {
+	return matchup.allianceDestination(matchup.BlueAllianceId)
 }
 
 // StatusText returns a pair of strings indicating the leading alliance and a readable status of the matchup.
@@ -164,4 +182,42 @@ func (matchup *Matchup) IsComplete() bool {
 // isFinal returns true if the matchup represents the final matchup in the playoff tournament.
 func (matchup *Matchup) isFinal() bool {
 	return matchup.id == "F"
+}
+
+// allianceDestination returns a string representing the given alliance's next destination in the tournament.
+func (matchup *Matchup) allianceDestination(allianceId int) string {
+	if !matchup.IsComplete() {
+		return ""
+	}
+
+	if matchup.isFinal() {
+		if matchup.WinningAllianceId() == allianceId {
+			return "Tournament Winner"
+		} else {
+			return "Tournament Finalist"
+		}
+	}
+
+	if matchup.WinningAllianceId() == allianceId {
+		return fmt.Sprintf("Advances to %s", formatDestinationMatchName(matchup.winningAllianceDestination))
+	} else {
+		if matchup.losingAllianceDestination == nil {
+			return "Eliminated"
+		}
+		return fmt.Sprintf("Advances to %s", formatDestinationMatchName(matchup.losingAllianceDestination))
+	}
+}
+
+// Returns a string representation of the first match from the given matchup.
+func formatDestinationMatchName(destination MatchGroup) string {
+	if destination == nil || len(destination.MatchSpecs()) == 0 {
+		return ""
+	}
+
+	destinationMatch := destination.MatchSpecs()[0]
+	destinationMatchName := destinationMatch.longName
+	if destinationMatch.nameDetail != "" {
+		destinationMatchName += " &ndash; " + destinationMatch.nameDetail
+	}
+	return destinationMatchName
 }

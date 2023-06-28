@@ -143,3 +143,11 @@ func assertBreak(
 	assert.Equal(t, durationSec, scheduledBreak.DurationSec)
 	assert.Equal(t, description, scheduledBreak.Description)
 }
+
+func assertMatchupOutcome(t *testing.T, matchGroup MatchGroup, redDestination string, blueDestination string) {
+	matchup, ok := matchGroup.(*Matchup)
+	if assert.True(t, ok) {
+		assert.Equal(t, redDestination, matchup.RedAllianceDestination())
+		assert.Equal(t, blueDestination, matchup.BlueAllianceDestination())
+	}
+}

@@ -14,6 +14,9 @@ type allianceSource interface {
 	// displayName returns a human-readable name for the source of this alliance.
 	displayName() string
 
+	// setDestination passes back the match group filled by this alliance source to the source.
+	setDestination(destination MatchGroup)
+
 	// update updates the state of each match group based on the results of the given played matches.
 	update(playoffMatchResults map[int]playoffMatchResult)
 
@@ -33,6 +36,10 @@ func (source allianceSelectionSource) AllianceId() int {
 
 func (source allianceSelectionSource) displayName() string {
 	return fmt.Sprintf("A %d", source.allianceId)
+}
+
+func (source allianceSelectionSource) setDestination(destination MatchGroup) {
+	// Do nothing as there are no child match groups.
 }
 
 func (source allianceSelectionSource) update(playoffMatchResults map[int]playoffMatchResult) {
@@ -63,6 +70,17 @@ func (source matchupSource) displayName() string {
 		return "W " + source.matchup.Id()
 	}
 	return "L " + source.matchup.Id()
+}
+
+func (source matchupSource) setDestination(destination MatchGroup) {
+	if source.useWinner {
+		source.matchup.winningAllianceDestination = destination
+	} else {
+		source.matchup.losingAllianceDestination = destination
+	}
+
+	// Recurse down through the playoff tournament tree.
+	source.matchup.setSourceDestinations()
 }
 
 func (source matchupSource) update(playoffMatchResults map[int]playoffMatchResult) {

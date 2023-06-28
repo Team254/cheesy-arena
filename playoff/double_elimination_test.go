@@ -5,6 +5,7 @@ package playoff
 
 import (
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -78,11 +79,14 @@ func TestDoubleEliminationErrors(t *testing.T) {
 }
 
 func TestDoubleEliminationProgression(t *testing.T) {
-	finalMatchup, _, err := newDoubleEliminationBracket(8)
+	playoffTournament, err := NewPlayoffTournament(model.DoubleEliminationPlayoff, 8)
 	assert.Nil(t, err)
+	finalMatchup := playoffTournament.FinalMatchup()
+	matchSpecs := playoffTournament.matchSpecs
+	matchGroups := playoffTournament.MatchGroups()
 	playoffMatchResults := map[int]playoffMatchResult{}
-	finalMatchup.update(playoffMatchResults)
-	matchSpecs, err := collectMatchSpecs(finalMatchup)
+
+	assertMatchupOutcome(t, matchGroups["M1"], "", "")
 
 	playoffMatchResults[1] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
@@ -90,6 +94,9 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	for i := 7; i < 19; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
+	assertMatchupOutcome(
+		t, matchGroups["M1"], "Advances to Match 7 &ndash; Round 2 Upper", "Advances to Match 5 &ndash; Round 2 Lower",
+	)
 
 	// Reverse a previous outcome.
 	playoffMatchResults[1] = playoffMatchResult{game.BlueWonMatch}
@@ -98,6 +105,9 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	for i := 7; i < 19; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
+	assertMatchupOutcome(
+		t, matchGroups["M1"], "Advances to Match 5 &ndash; Round 2 Lower", "Advances to Match 7 &ndash; Round 2 Upper",
+	)
 
 	playoffMatchResults[2] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
@@ -105,6 +115,9 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	for i := 7; i < 19; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
+	assertMatchupOutcome(
+		t, matchGroups["M2"], "Advances to Match 7 &ndash; Round 2 Upper", "Advances to Match 5 &ndash; Round 2 Lower",
+	)
 
 	playoffMatchResults[3] = playoffMatchResult{game.BlueWonMatch}
 	finalMatchup.update(playoffMatchResults)
@@ -112,6 +125,9 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	for i := 8; i < 19; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
+	assertMatchupOutcome(
+		t, matchGroups["M3"], "Advances to Match 6 &ndash; Round 2 Lower", "Advances to Match 8 &ndash; Round 2 Upper",
+	)
 
 	playoffMatchResults[4] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
@@ -126,6 +142,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	for i := 10; i < 19; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
 	}
+	assertMatchupOutcome(t, matchGroups["M5"], "Eliminated", "Advances to Match 10 &ndash; Round 3 Lower")
 
 	playoffMatchResults[6] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
@@ -172,6 +189,9 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	for i := 13; i < 19; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{4, 0}})
 	}
+	assertMatchupOutcome(
+		t, matchGroups["M11"], "Advances to Final 1", "Advances to Match 13 &ndash; Round 5 Lower",
+	)
 
 	playoffMatchResults[12] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
@@ -185,6 +205,7 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	for i := 13; i < 19; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{4, 3}})
 	}
+	assertMatchupOutcome(t, matchGroups["M13"], "Advances to Final 1", "Eliminated")
 
 	// Unscore the previous match.
 	delete(playoffMatchResults, 13)
@@ -193,40 +214,47 @@ func TestDoubleEliminationProgression(t *testing.T) {
 	for i := 13; i < 19; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{4, 0}})
 	}
+	assertMatchupOutcome(t, matchGroups["M13"], "", "")
 
 	playoffMatchResults[13] = playoffMatchResult{game.BlueWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	for i := 13; i < 19; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{4, 7}})
 	}
+	assertMatchupOutcome(t, matchGroups["M13"], "Eliminated", "Advances to Final 1")
 
 	playoffMatchResults[14] = playoffMatchResult{game.BlueWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.False(t, finalMatchup.IsComplete())
 	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "", "")
 
 	playoffMatchResults[15] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.False(t, finalMatchup.IsComplete())
 	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "", "")
 
 	playoffMatchResults[16] = playoffMatchResult{game.TieMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.False(t, finalMatchup.IsComplete())
 	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "", "")
 
 	playoffMatchResults[17] = playoffMatchResult{game.TieMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.False(t, finalMatchup.IsComplete())
 	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "", "")
 
 	playoffMatchResults[18] = playoffMatchResult{game.BlueWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.True(t, finalMatchup.IsComplete())
 	assert.Equal(t, 7, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 4, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "Tournament Finalist", "Tournament Winner")
 }

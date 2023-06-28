@@ -5,6 +5,7 @@ package playoff
 
 import (
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -860,23 +861,28 @@ func TestSingleEliminationErrors(t *testing.T) {
 }
 
 func TestSingleEliminationProgression(t *testing.T) {
-	finalMatchup, _, err := newSingleEliminationBracket(3)
+	playoffTournament, err := NewPlayoffTournament(model.SingleEliminationPlayoff, 3)
 	assert.Nil(t, err)
+	finalMatchup := playoffTournament.FinalMatchup()
+	matchSpecs := playoffTournament.matchSpecs
+	matchGroups := playoffTournament.MatchGroups()
 	playoffMatchResults := map[int]playoffMatchResult{}
-	finalMatchup.update(playoffMatchResults)
-	matchSpecs, err := collectMatchSpecs(finalMatchup)
+
+	assertMatchupOutcome(t, matchGroups["SF2"], "", "")
 
 	playoffMatchResults[38] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	for i := 3; i < 9; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 0}})
 	}
+	assertMatchupOutcome(t, matchGroups["SF2"], "", "")
 
 	playoffMatchResults[40] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	for i := 3; i < 9; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 2}})
 	}
+	assertMatchupOutcome(t, matchGroups["SF2"], "Advances to Final 1", "Eliminated")
 
 	// Reverse a previous outcome.
 	playoffMatchResults[40] = playoffMatchResult{game.BlueWonMatch}
@@ -884,30 +890,35 @@ func TestSingleEliminationProgression(t *testing.T) {
 	for i := 3; i < 9; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 0}})
 	}
+	assertMatchupOutcome(t, matchGroups["SF2"], "", "")
 
 	playoffMatchResults[42] = playoffMatchResult{game.BlueWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	for i := 3; i < 9; i++ {
 		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{1, 3}})
 	}
+	assertMatchupOutcome(t, matchGroups["SF2"], "Eliminated", "Advances to Final 1")
 
 	playoffMatchResults[43] = playoffMatchResult{game.TieMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.False(t, finalMatchup.IsComplete())
 	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "", "")
 
 	playoffMatchResults[44] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.False(t, finalMatchup.IsComplete())
 	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "", "")
 
 	playoffMatchResults[45] = playoffMatchResult{game.RedWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.True(t, finalMatchup.IsComplete())
 	assert.Equal(t, 1, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 3, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "Tournament Winner", "Tournament Finalist")
 
 	// Unscore the previous match.
 	delete(playoffMatchResults, 45)
@@ -915,18 +926,21 @@ func TestSingleEliminationProgression(t *testing.T) {
 	assert.False(t, finalMatchup.IsComplete())
 	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "", "")
 
 	playoffMatchResults[45] = playoffMatchResult{game.BlueWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.False(t, finalMatchup.IsComplete())
 	assert.Equal(t, 0, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 0, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "", "")
 
 	playoffMatchResults[46] = playoffMatchResult{game.BlueWonMatch}
 	finalMatchup.update(playoffMatchResults)
 	assert.True(t, finalMatchup.IsComplete())
 	assert.Equal(t, 3, finalMatchup.WinningAllianceId())
 	assert.Equal(t, 1, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "Tournament Finalist", "Tournament Winner")
 }
 
 func assertFullQuarterfinalsOnward(t *testing.T, matchSpecs []*matchSpec, startingIndex int) {
