@@ -141,7 +141,6 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 	redOffFieldTeams := []*model.Team{}
 	blueOffFieldTeams := []*model.Team{}
 	if arena.CurrentMatch.Type == model.Playoff {
-		// TODO(pat): Make this logic more generic, at the MatchGroup level.
 		matchGroup := arena.PlayoffTournament.MatchGroups()[arena.CurrentMatch.PlayoffMatchGroupId]
 		matchup, _ = matchGroup.(*playoff.Matchup)
 		redOffFieldTeamIds, blueOffFieldTeamIds, _ := arena.Database.GetOffFieldTeamIds(arena.CurrentMatch)
@@ -215,14 +214,17 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 	}
 
 	// For playoff matches, summarize the state of the series.
-	var seriesStatus, seriesLeader string
+	var redWins, blueWins int
+	var redDestination, blueDestination string
 	redOffFieldTeamIds := []int{}
 	blueOffFieldTeamIds := []int{}
 	if arena.SavedMatch.Type == model.Playoff {
-		// TODO(pat): Make this logic more generic, at the MatchGroup level.
 		matchGroup := arena.PlayoffTournament.MatchGroups()[arena.SavedMatch.PlayoffMatchGroupId]
 		if matchup, ok := matchGroup.(*playoff.Matchup); ok {
-			seriesLeader, seriesStatus = matchup.StatusText()
+			redWins = matchup.RedAllianceWins
+			blueWins = matchup.BlueAllianceWins
+			redDestination = matchup.RedAllianceDestination()
+			blueDestination = matchup.BlueAllianceDestination()
 		}
 		redOffFieldTeamIds, blueOffFieldTeamIds, _ = arena.Database.GetOffFieldTeamIds(arena.SavedMatch)
 	}
@@ -257,8 +259,12 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		BlueRankings        map[int]*game.Ranking
 		RedOffFieldTeamIds  []int
 		BlueOffFieldTeamIds []int
-		SeriesStatus        string
-		SeriesLeader        string
+		RedWon              bool
+		BlueWon             bool
+		RedWins             int
+		BlueWins            int
+		RedDestination      string
+		BlueDestination     string
 	}{
 		arena.SavedMatch,
 		redScoreSummary,
@@ -274,8 +280,12 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		blueRankings,
 		redOffFieldTeamIds,
 		blueOffFieldTeamIds,
-		seriesStatus,
-		seriesLeader,
+		arena.SavedMatch.Status == game.RedWonMatch,
+		arena.SavedMatch.Status == game.BlueWonMatch,
+		redWins,
+		blueWins,
+		redDestination,
+		blueDestination,
 	}
 }
 

@@ -642,7 +642,6 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 		allianceStatuses[web.arena.PlayoffTournament.FinalistAllianceId()] = "Finalist\n "
 	}
 	err = web.arena.PlayoffTournament.Traverse(func(matchGroup playoff.MatchGroup) error {
-		// TODO(pat): Make this logic more generic, at the MatchGroup level.
 		matchup, ok := matchGroup.(*playoff.Matchup)
 		if !ok {
 			return nil

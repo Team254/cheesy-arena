@@ -198,6 +198,11 @@ const handleScorePosted = function(data) {
     "data-checked", data.RedScoreSummary.ActivationBonusRankingPoint
   );
   $("#" + redSide + "FinalRankingPoints").html(data.RedRankingPoints);
+  $("#" + redSide + "FinalWins").text(data.RedWins);
+  const redFinalDestination = $("#" + redSide + "FinalDestination");
+  redFinalDestination.html(data.RedDestination.replace("Advances to ", "Advances to<br>"));
+  redFinalDestination.toggle(data.RedDestination !== "");
+  redFinalDestination.attr("data-won", data.RedWon);
 
   $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
   $("#" + blueSide + "FinalAlliance").text("Alliance " + data.Match.PlayoffBlueAlliance);
@@ -227,8 +232,13 @@ const handleScorePosted = function(data) {
     "data-checked", data.BlueScoreSummary.ActivationBonusRankingPoint
   );
   $("#" + blueSide + "FinalRankingPoints").html(data.BlueRankingPoints);
-  $("#finalSeriesStatus").text(data.SeriesStatus);
-  $("#finalSeriesStatus").attr("data-leader", data.SeriesLeader);
+  $("#" + blueSide + "FinalWins").text(data.BlueWins);
+  const blueFinalDestination = $("#" + blueSide + "FinalDestination");
+  blueFinalDestination.html(data.BlueDestination.replace("Advances to ", "Advances to<br>"));
+  console.log(data);
+  blueFinalDestination.toggle(data.BlueDestination !== "");
+  blueFinalDestination.attr("data-won", data.BlueWon);
+
   let matchName = data.Match.LongName;
   if (data.Match.NameDetail !== "") {
     matchName += " &ndash; " + data.Match.NameDetail;

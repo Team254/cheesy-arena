@@ -121,6 +121,9 @@
                   </div>
                 {{end}}
               </div>
+              <div class="playoff-only-field">
+                <div class="final-destination" id="leftFinalDestination"></div>
+              </div>
             </div>
             <div class="final-breakdown" id="leftFinalBreakdown">
               <div id="leftFinalMobilityPoints"></div>
@@ -132,6 +135,10 @@
                 <div id="leftFinalSustainabilityBonusRankingPoint"></div>
                 <div id="leftFinalActivationBonusRankingPoint"></div>
                 <div id="leftFinalRankingPoints"></div>
+              </div>
+              <div class="playoff-only-field">
+                <div>&nbsp;</div>
+                <div id="leftFinalWins"></div>
               </div>
             </div>
             <div class="final-breakdown" id="centerFinalBreakdown">
@@ -145,6 +152,10 @@
                 <div>Activation Bonus</div>
                 <div>Ranking Points</div>
               </div>
+              <div class="playoff-only-field">
+                <div>&nbsp;</div>
+                <div>Wins</div>
+              </div>
             </div>
             <div class="final-breakdown" id="rightFinalBreakdown">
               <div id="rightFinalMobilityPoints"></div>
@@ -156,6 +167,10 @@
                 <div id="rightFinalSustainabilityBonusRankingPoint"></div>
                 <div id="rightFinalActivationBonusRankingPoint"></div>
                 <div id="rightFinalRankingPoints"></div>
+              </div>
+              <div class="playoff-only-field">
+                <div>&nbsp;</div>
+                <div id="rightFinalWins"></div>
               </div>
             </div>
             <div class="final-breakdown final-breakdown-teams">
@@ -172,11 +187,13 @@
                   </div>
                 {{end}}
               </div>
+              <div class="playoff-only-field">
+                <div class="final-destination" id="rightFinalDestination"></div>
+              </div>
             </div>
           </div>
           <div class="final-score-row" id="finalEventMatchInfo">
             <div class="final-footer">{{.EventSettings.Name}}</div>
-            <div class="final-footer" id="finalSeriesStatus">&nbsp;</div>
             <div class="final-footer" id="finalMatchName">&nbsp;</div>
           </div>
         </div>

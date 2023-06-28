@@ -403,6 +403,22 @@ html {
   color: #fff;
   font-size: 20px;
 }
+.final-destination {
+  margin-top: 10px;
+  width: 200px;
+  height: 45px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-color: #999;
+  font-size: 15px;
+  line-height: 18px;
+}
+.final-destination[data-won=true] {
+  background-color: #fc3;
+}
 #finalEventMatchInfo {
   height: 60px;
   display: flex;
@@ -425,16 +441,6 @@ html {
   float: left;
   width: 33.3%;
   white-space: nowrap;
-}
-#finalSeriesStatus {
-  text-align: center;
-  min-height: 1px;
-}
-#finalSeriesStatus[data-leader="red"] {
-  color: #f66;
-}
-#finalSeriesStatus[data-leader="blue"] {
-  color: #39f;
 }
 #finalMatchName {
   text-align: right;
