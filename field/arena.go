@@ -145,22 +145,25 @@ func (arena *Arena) LoadSettings() error {
 	arena.EventSettings = settings
 
 	// Initialize the components that depend on settings.
-	arena.accessPoint.SetSettings(settings.ApAddress, settings.ApUsername, settings.ApPassword,
-		settings.ApTeamChannel, settings.ApAdminChannel, settings.ApAdminWpaKey, settings.NetworkSecurityEnabled, settings.UseMultiConnectionAPConfiguration)
-	arena.accessPoint2.SetSettings(settings.Ap2Address, settings.Ap2Username, settings.Ap2Password,
-		settings.Ap2TeamChannel, 0, "", settings.NetworkSecurityEnabled, settings.UseMultiConnectionAPConfiguration)
+	arena.accessPoint.SetSettings(
+		settings.ApAddress,
+		settings.ApUsername,
+		settings.ApPassword,
+		settings.ApTeamChannel,
+		settings.NetworkSecurityEnabled,
+		settings.UseMultiConnectionAPConfiguration,
+	)
+	arena.accessPoint2.SetSettings(
+		settings.Ap2Address,
+		settings.Ap2Username,
+		settings.Ap2Password,
+		settings.Ap2TeamChannel,
+		settings.NetworkSecurityEnabled,
+		settings.UseMultiConnectionAPConfiguration,
+	)
 	arena.networkSwitch = network.NewSwitch(settings.SwitchAddress, settings.SwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
-
-	if arena.EventSettings.NetworkSecurityEnabled && arena.MatchState == PreMatch {
-		if err = arena.accessPoint.ConfigureAdminWifi(); err != nil {
-			log.Printf("Failed to configure admin WiFi: %s", err.Error())
-		}
-		if err = arena.accessPoint2.ConfigureAdminWifi(); err != nil {
-			log.Printf("Failed to configure admin WiFi: %s", err.Error())
-		}
-	}
 
 	game.MatchTiming.WarmupDurationSec = settings.WarmupDurationSec
 	game.MatchTiming.AutoDurationSec = settings.AutoDurationSec

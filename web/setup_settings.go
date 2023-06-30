@@ -82,8 +82,6 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.ApUsername = r.PostFormValue("apUsername")
 	eventSettings.ApPassword = r.PostFormValue("apPassword")
 	eventSettings.ApTeamChannel, _ = strconv.Atoi(r.PostFormValue("apTeamChannel"))
-	eventSettings.ApAdminChannel, _ = strconv.Atoi(r.PostFormValue("apAdminChannel"))
-	eventSettings.ApAdminWpaKey = r.PostFormValue("apAdminWpaKey")
 	eventSettings.Ap2Address = r.PostFormValue("ap2Address")
 	eventSettings.Ap2Username = r.PostFormValue("ap2Username")
 	eventSettings.Ap2Password = r.PostFormValue("ap2Password")

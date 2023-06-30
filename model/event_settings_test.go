@@ -25,8 +25,6 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			SelectionRound3Order:        "",
 			TbaDownloadEnabled:          true,
 			ApTeamChannel:               157,
-			ApAdminChannel:              0,
-			ApAdminWpaKey:               "1234Five",
 			WarmupDurationSec:           0,
 			AutoDurationSec:             15,
 			PauseDurationSec:            3,

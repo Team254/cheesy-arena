@@ -198,23 +198,6 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-5 control-label">AP Admin Channel (2.4GHz)</label>
-            <div class="col-lg-7">
-              <select class="form-control" name="apAdminChannel" value="{{.ApAdminChannel}}">
-                <option{{if eq .ApAdminChannel 0}} selected{{end}}>Disabled</option>
-                <option{{if eq .ApAdminChannel 1}} selected{{end}}>1</option>
-                <option{{if eq .ApAdminChannel 6}} selected{{end}}>6</option>
-                <option{{if eq .ApAdminChannel 11}} selected{{end}}>11</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">AP Admin WPA Key</label>
-            <div class="col-lg-7">
-              <input type="password" class="form-control" name="apAdminWpaKey" value="{{.ApAdminWpaKey}}">
-            </div>
-          </div>
-          <div class="form-group">
             <label class="col-lg-5 control-label">Switch Address</label>
             <div class="col-lg-7">
               <input type="text" class="form-control" name="switchAddress" value="{{.SwitchAddress}}">

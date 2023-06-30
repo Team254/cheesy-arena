@@ -31,8 +31,6 @@ type AccessPoint struct {
 	username                string
 	password                string
 	teamChannel             int
-	adminChannel            int
-	adminWpaKey             string
 	networkSecurityEnabled  bool
 	multiConnectionAPConfig bool
 	configRequestChan       chan [6]*model.Team
@@ -51,14 +49,13 @@ type sshOutput struct {
 	err    error
 }
 
-func (ap *AccessPoint) SetSettings(address, username, password string, teamChannel, adminChannel int,
-	adminWpaKey string, networkSecurityEnabled bool, multiConnectionAPConfig bool) {
+func (ap *AccessPoint) SetSettings(
+	address, username, password string, teamChannel int, networkSecurityEnabled bool, multiConnectionAPConfig bool,
+) {
 	ap.address = address
 	ap.username = username
 	ap.password = password
 	ap.teamChannel = teamChannel
-	ap.adminChannel = adminChannel
-	ap.adminWpaKey = adminWpaKey
 	ap.networkSecurityEnabled = networkSecurityEnabled
 	ap.multiConnectionAPConfig = multiConnectionAPConfig
 
@@ -101,27 +98,6 @@ func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
 	default:
 		return fmt.Errorf("WiFi config request buffer full")
 	}
-}
-
-func (ap *AccessPoint) ConfigureAdminWifi() error {
-	if !ap.networkSecurityEnabled {
-		return nil
-	}
-
-	disabled := 0
-	if ap.adminChannel == 0 {
-		disabled = 1
-	}
-	commands := []string{
-		fmt.Sprintf("set wireless.radio0.channel='%d'", ap.teamChannel),
-		fmt.Sprintf("set wireless.radio1.disabled='%d'", disabled),
-		fmt.Sprintf("set wireless.radio1.channel='%d'", ap.adminChannel),
-		fmt.Sprintf("set wireless.@wifi-iface[0].key='%s'", ap.adminWpaKey),
-		"commit wireless",
-	}
-	command := fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio1\n%s\nENDCONFIG\n", strings.Join(commands, "\n"))
-	_, err := ap.runCommand(command)
-	return err
 }
 
 func (ap *AccessPoint) loadTeamsIndividually(teams [6]*model.Team) {
@@ -341,8 +317,7 @@ func decodeWifiInfo(wifiInfo string, statuses []TeamWifiStatus) error {
 	linkQualityRe := regexp.MustCompile("Link Quality: ([-\\w ]+)/([-\\w ]+)")
 	linkQualities := linkQualityRe.FindAllStringSubmatch(wifiInfo, -1)
 
-	// There should be at least six networks present -- one for each team on the 5GHz radio, plus one on the 2.4GHz
-	// radio if the admin network is enabled.
+	// There should be six networks present -- one for each team on the 5GHz radio.
 	if len(ssids) < 6 || len(linkQualities) < 6 {
 		return fmt.Errorf("Could not parse wifi info; expected 6 team networks, got %d.", len(ssids))
 	}
