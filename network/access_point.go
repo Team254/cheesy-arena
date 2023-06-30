@@ -27,15 +27,14 @@ const (
 )
 
 type AccessPoint struct {
-	address                 string
-	username                string
-	password                string
-	teamChannel             int
-	networkSecurityEnabled  bool
-	multiConnectionAPConfig bool
-	configRequestChan       chan [6]*model.Team
-	TeamWifiStatuses        [6]TeamWifiStatus
-	initialStatusesFetched  bool
+	address                string
+	username               string
+	password               string
+	teamChannel            int
+	networkSecurityEnabled bool
+	configRequestChan      chan [6]*model.Team
+	TeamWifiStatuses       [6]TeamWifiStatus
+	initialStatusesFetched bool
 }
 
 type TeamWifiStatus struct {
@@ -49,15 +48,12 @@ type sshOutput struct {
 	err    error
 }
 
-func (ap *AccessPoint) SetSettings(
-	address, username, password string, teamChannel int, networkSecurityEnabled bool, multiConnectionAPConfig bool,
-) {
+func (ap *AccessPoint) SetSettings(address, username, password string, teamChannel int, networkSecurityEnabled bool) {
 	ap.address = address
 	ap.username = username
 	ap.password = password
 	ap.teamChannel = teamChannel
 	ap.networkSecurityEnabled = networkSecurityEnabled
-	ap.multiConnectionAPConfig = multiConnectionAPConfig
 
 	// Create config channel the first time this method is called.
 	if ap.configRequestChan == nil {
@@ -77,11 +73,7 @@ func (ap *AccessPoint) Run() {
 				request = <-ap.configRequestChan
 			}
 
-			if ap.multiConnectionAPConfig {
-				ap.handleTeamWifiMultiConnection(request)
-			} else {
-				ap.handleTeamWifiConfiguration(request)
-			}
+			ap.handleTeamWifiConfiguration(request)
 		case <-time.After(time.Second * accessPointPollPeriodSec):
 			ap.updateTeamWifiStatuses()
 			ap.updateTeamWifiBTU()
@@ -100,17 +92,27 @@ func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
 	}
 }
 
-func (ap *AccessPoint) loadTeamsIndividually(teams [6]*model.Team) {
+func (ap *AccessPoint) handleTeamWifiConfiguration(teams [6]*model.Team) {
+	if !ap.networkSecurityEnabled {
+		return
+	}
+
+	if ap.configIsCorrectForTeams(teams) {
+		return
+	}
+
+	// Clear the state of the radio before loading teams.
+	ap.configureTeams([6]*model.Team{nil, nil, nil, nil, nil, nil})
+	ap.configureTeams(teams)
+}
+
+func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 	retryCount := 1
 
 	for {
-		teamIdx := 1
-		for {
-			if teamIdx == 7 {
-				break
-			}
-
-			config, err := generateIndividualAccessPointConfig(teams[teamIdx-1], teamIdx)
+		teamIndex := 0
+		for teamIndex < 6 {
+			config, err := generateTeamAccessPointConfig(teams[teamIndex], teamIndex+1)
 			if err != nil {
 				log.Printf("Failed to generate WiFi configuration: %v", err)
 			}
@@ -122,11 +124,10 @@ func (ap *AccessPoint) loadTeamsIndividually(teams [6]*model.Team) {
 				log.Printf("Error writing team configuration to AP: %v", err)
 				retryCount++
 				time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
-
 				continue
 			}
 
-			teamIdx++
+			teamIndex++
 		}
 		time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
 		err := ap.updateTeamWifiStatuses()
@@ -135,67 +136,6 @@ func (ap *AccessPoint) loadTeamsIndividually(teams [6]*model.Team) {
 			break
 		}
 		log.Printf("WiFi configuration still incorrect after %d attempts; trying again.", retryCount)
-	}
-}
-
-func (ap *AccessPoint) handleTeamWifiMultiConnection(teams [6]*model.Team) {
-	if !ap.networkSecurityEnabled {
-		return
-	}
-
-	if ap.configIsCorrectForTeams(teams) {
-		return
-	}
-
-	// First, load invalid SSID configurations to clear the state of the radios
-	invalidTeams := [6]*model.Team{nil, nil, nil, nil, nil, nil}
-
-	ap.loadTeamsIndividually(invalidTeams)
-
-	ap.loadTeamsIndividually(teams)
-}
-
-func (ap *AccessPoint) handleTeamWifiConfiguration(teams [6]*model.Team) {
-	if !ap.networkSecurityEnabled {
-		return
-	}
-
-	if ap.configIsCorrectForTeams(teams) {
-		return
-	}
-
-	// Generate the configuration command.
-	config, err := generateAccessPointConfig(teams)
-	if err != nil {
-		fmt.Printf("Failed to configure team WiFi: %v", err)
-		return
-	}
-
-	command := addConfigurationHeader(config)
-
-	// Loop indefinitely at writing the configuration and reading it back until it is successfully applied.
-	attemptCount := 1
-	for {
-		_, err := ap.runCommand(command)
-
-		// Wait before reading the config back on write success as it doesn't take effect right away, or before retrying
-		// on failure.
-		time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
-
-		if err == nil {
-			err = ap.updateTeamWifiStatuses()
-			if err == nil && ap.configIsCorrectForTeams(teams) {
-				log.Printf("Successfully configured WiFi after %d attempts.", attemptCount)
-				return
-			}
-		}
-
-		if err != nil {
-			log.Printf("Error configuring WiFi: %v", err)
-		}
-
-		log.Printf("WiFi configuration still incorrect after %d attempts; trying again.", attemptCount)
-		attemptCount++
 	}
 }
 
@@ -276,7 +216,12 @@ func addConfigurationHeader(commandList string) string {
 	return fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\ncommit wireless\nENDCONFIG\n", commandList)
 }
 
-func generateIndividualAccessPointConfig(team *model.Team, position int) (string, error) {
+// Verifies WPA key validity and produces the configuration command for the given team.
+func generateTeamAccessPointConfig(team *model.Team, position int) (string, error) {
+	if position < 1 || position > 6 {
+		return "", fmt.Errorf("invalid team position %d", position)
+	}
+
 	commands := &[]string{}
 	if team == nil {
 		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
@@ -292,21 +237,6 @@ func generateIndividualAccessPointConfig(team *model.Team, position int) (string
 			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
 	}
 
-	return strings.Join(*commands, "\n"), nil
-}
-
-// Verifies WPA key validity and produces the configuration command for the given list of teams.
-func generateAccessPointConfig(teams [6]*model.Team) (string, error) {
-	commands := &[]string{}
-	for i, team := range teams {
-		position := i + 1
-		subcommands, err := generateIndividualAccessPointConfig(team, position)
-		if err != nil {
-			return "", err
-		}
-
-		*commands = append(*commands, subcommands)
-	}
 	return strings.Join(*commands, "\n"), nil
 }
 

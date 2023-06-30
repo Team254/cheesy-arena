@@ -155,15 +155,6 @@
               <input type="checkbox" name="networkSecurityEnabled"{{if .NetworkSecurityEnabled}} checked{{end}}>
             </div>
           </div>
-          <p>This setting controls how configuration is sent to the AP. In general, it is more reliable to
-               send the configuration one team at a time, and clearing the config between loading new teams.
-               However, this mode is still experimental and will slow down configuring the AP.</p>
-          <div class="form-group">
-            <label class="col-lg-7 control-label">Enable AP configuration multi-connection</label>
-            <div class="col-lg-1 checkbox">
-              <input type="checkbox" name="multiConnectionAPConfig"{{if .UseMultiConnectionAPConfiguration}} checked{{end}}>
-            </div>
-          </div>
           <div class="form-group">
             <label class="col-lg-5 control-label">AP Address</label>
             <div class="col-lg-7">

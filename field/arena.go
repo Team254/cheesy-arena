@@ -151,7 +151,6 @@ func (arena *Arena) LoadSettings() error {
 		settings.ApPassword,
 		settings.ApTeamChannel,
 		settings.NetworkSecurityEnabled,
-		settings.UseMultiConnectionAPConfiguration,
 	)
 	arena.accessPoint2.SetSettings(
 		settings.Ap2Address,
@@ -159,7 +158,6 @@ func (arena *Arena) LoadSettings() error {
 		settings.Ap2Password,
 		settings.Ap2TeamChannel,
 		settings.NetworkSecurityEnabled,
-		settings.UseMultiConnectionAPConfiguration,
 	)
 	arena.networkSwitch = network.NewSwitch(settings.SwitchAddress, settings.SwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
