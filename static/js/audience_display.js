@@ -235,7 +235,6 @@ const handleScorePosted = function(data) {
   $("#" + blueSide + "FinalWins").text(data.BlueWins);
   const blueFinalDestination = $("#" + blueSide + "FinalDestination");
   blueFinalDestination.html(data.BlueDestination.replace("Advances to ", "Advances to<br>"));
-  console.log(data);
   blueFinalDestination.toggle(data.BlueDestination !== "");
   blueFinalDestination.attr("data-won", data.BlueWon);
 

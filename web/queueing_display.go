@@ -42,7 +42,7 @@ func (web *Web) queueingDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Renders the queueing display that shows upcoming matches and timing information.
+// Renders a partial template containing the list of matches.
 func (web *Web) queueingDisplayMatchLoadHandler(w http.ResponseWriter, r *http.Request) {
 	matches, err := web.arena.Database.GetMatchesByType(web.arena.CurrentMatch.Type, false)
 	if err != nil {

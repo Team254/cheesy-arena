@@ -1,0 +1,41 @@
+<b class="btn btn-info" onclick="loadMatch(0);">Load Test Match</b></b><br /><br />
+<ul class="nav nav-tabs" style="margin-bottom: 15px;">
+  <li{{if eq .CurrentMatchType practiceMatch }} class="active"{{end}}>
+  <a href="#Practice" data-toggle="tab">Practice</a>
+  </li>
+  <li{{if eq .CurrentMatchType qualificationMatch }} class="active"{{end}}>
+  <a href="#Qualification" data-toggle="tab">Qualification</a>
+  </li>
+  <li{{if eq .CurrentMatchType playoffMatch }} class="active"{{end}}>
+  <a href="#Playoff" data-toggle="tab">Playoff</a>
+  </li>
+</ul>
+<div class="tab-content">
+  {{range $type, $matches := .MatchesByType}}
+  <div class="match-list tab-pane {{if eq $.CurrentMatchType $type}} active{{end}}" id="{{$type}}">
+    <table class="table table-striped table-hover ">
+      <thead>
+        <tr>
+          <th>Match</th>
+          <th>Time</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range $match := $matches}}
+        <tr class="{{$match.ColorClass}}">
+          <td>{{$match.ShortName}}</td>
+          <td>{{$match.Time}}</td>
+          <td class="nowrap">
+            <b class="btn btn-info btn-xs" onclick="loadMatch({{$match.Id}});">Load</b>
+            {{if ne $match.Status matchScheduled}}
+              <b class="btn btn-info btn-xs" onclick="showResult({{$match.Id}});">Show Result</b>
+            {{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+  {{end}}
+</div>

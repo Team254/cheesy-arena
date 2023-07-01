@@ -4,72 +4,82 @@
 // Client-side logic for the match play page.
 
 var websocket;
-var currentMatchId;
-var scoreIsReady;
-var lowBatteryThreshold = 8;
+let scoreIsReady;
+let isReplay;
+const lowBatteryThreshold = 8;
+
+// Sends a websocket message to load the specified match.
+const loadMatch = function(matchId) {
+  websocket.send("loadMatch", { matchId: matchId });
+}
+
+// Sends a websocket message to load the results for the specified match into the display buffer.
+const showResult = function(matchId) {
+  websocket.send("showResult", { matchId: matchId });
+}
 
 // Sends a websocket message to load a team into an alliance station.
-var substituteTeam = function(team, position) {
+const substituteTeam = function(team, position) {
   websocket.send("substituteTeam", { team: parseInt(team), position: position })
 };
 
 // Sends a websocket message to toggle the bypass status for an alliance station.
-var toggleBypass = function(station) {
+const toggleBypass = function(station) {
   websocket.send("toggleBypass", station);
 };
 
 // Sends a websocket message to start the match.
-var startMatch = function() {
+const startMatch = function() {
   websocket.send("startMatch",
       { muteMatchSounds: $("#muteMatchSounds").prop("checked") });
 };
 
 // Sends a websocket message to abort the match.
-var abortMatch = function() {
+const abortMatch = function() {
   websocket.send("abortMatch");
 };
 
 // Sends a websocket message to signal to the volunteers that they may enter the field.
-var signalVolunteers = function() {
+const signalVolunteers = function() {
   websocket.send("signalVolunteers");
 };
 
 // Sends a websocket message to signal to the teams that they may enter the field.
-var signalReset = function() {
+const signalReset = function() {
   websocket.send("signalReset");
 };
 
 // Sends a websocket message to commit the match score and load the next match.
-var commitResults = function() {
+const commitResults = function() {
   websocket.send("commitResults");
 };
 
 // Sends a websocket message to discard the match score and load the next match.
-var discardResults = function() {
+const discardResults = function() {
   websocket.send("discardResults");
 };
 
 // Sends a websocket message to change what the audience display is showing.
-var setAudienceDisplay = function() {
+const setAudienceDisplay = function() {
   websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
 };
 
 // Sends a websocket message to change what the alliance station display is showing.
-var setAllianceStationDisplay = function() {
+const setAllianceStationDisplay = function() {
   websocket.send("setAllianceStationDisplay", $("input[name=allianceStationDisplay]:checked").val());
 };
 
 // Sends a websocket message to start the timeout.
-var startTimeout = function() {
-  var duration = $("#timeoutDuration").val().split(":");
-  var durationSec = parseFloat(duration[0]);
+const startTimeout = function() {
+  const duration = $("#timeoutDuration").val().split(":");
+  let durationSec = parseFloat(duration[0]);
   if (duration.length > 1) {
     durationSec = durationSec * 60 + parseFloat(duration[1]);
   }
   websocket.send("startTimeout", durationSec);
 };
 
-var confirmCommit = function(isReplay) {
+const confirmCommit = function() {
   if (isReplay || !scoreIsReady) {
     // Show the appropriate message(s) in the confirmation dialog.
     $("#confirmCommitReplay").css("display", isReplay ? "block" : "none");
@@ -81,27 +91,20 @@ var confirmCommit = function(isReplay) {
 };
 
 // Sends a websocket message to specify a custom name for the current test match.
-var setTestMatchName = function() {
+const setTestMatchName = function() {
   websocket.send("setTestMatchName", $("#testMatchName").val());
 };
 
 // Handles a websocket message to update the team connection status.
-var handleArenaStatus = function(data) {
-  // If getting data for the wrong match (e.g. after a server restart), reload the page.
-  if (currentMatchId == null) {
-    currentMatchId = data.MatchId;
-  } else if (currentMatchId !== data.MatchId) {
-    location.reload();
-  }
-
+const handleArenaStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
-    var wifiStatus = data.TeamWifiStatuses[station];
+    const wifiStatus = data.TeamWifiStatuses[station];
     $("#status" + station + " .radio-status").text(wifiStatus.TeamId);
 
     if (stationStatus.DsConn) {
       // Format the driver station status box.
-      var dsConn = stationStatus.DsConn;
+      const dsConn = stationStatus.DsConn;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
       if (dsConn.DsLinked) {
         $("#status" + station + " .ds-status").text(wifiStatus.MBits.toFixed(2)  + "Mb");
@@ -109,11 +112,11 @@ var handleArenaStatus = function(data) {
         $("#status" + station + " .ds-status").text("");
       }
       // Format the radio status box according to the connection status of the robot radio.
-      var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
+      const radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
       $("#status" + station + " .radio-status").attr("data-status-ok", radioOkay);
 
       // Format the robot status box.
-      var robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
+      const robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
       $("#status" + station + " .robot-status").attr("data-status-ok", robotOkay);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
         $("#status" + station + " .robot-status").text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
@@ -126,7 +129,7 @@ var handleArenaStatus = function(data) {
       $("#status" + station + " .robot-status").text("");
 
       // Format the robot status box according to whether the AP is configured with the correct SSID.
-      var expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+      const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
       if (wifiStatus.TeamId === expectedTeamId) {
         if (wifiStatus.RadioLinked) {
           $("#status" + station + " .radio-status").attr("data-status-ok", true);
@@ -226,8 +229,28 @@ var handleArenaStatus = function(data) {
   });
 };
 
+// Handles a websocket message to update the teams for the current match.
+const handleMatchLoad = function(data) {
+  isReplay = data.IsReplay;
+
+  fetch("/match_play/match_load")
+    .then(response => response.text())
+    .then(html => $("#matchListColumn").html(html));
+
+  $("#matchName").text(data.Match.LongName);
+  $("#testMatchName").val(data.Match.LongName);
+  $("#testMatchSettings").toggle(data.Match.Type === matchTypeTest);
+  $.each(data.Teams, function(station, team) {
+    const teamId = $(`#status${station} .team-number`);
+    teamId.val(team ? team.Id : "");
+    teamId.prop("disabled", !data.AllowSubstitution);
+  });
+  $("#playoffRedAllianceInfo").html(formatPlayoffAllianceInfo(data.Match.PlayoffRedAlliance, data.RedOffFieldTeams));
+  $("#playoffBlueAllianceInfo").html(formatPlayoffAllianceInfo(data.Match.PlayoffBlueAlliance, data.BlueOffFieldTeams));
+}
+
 // Handles a websocket message to update the match time countdown.
-var handleMatchTime = function(data) {
+const handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
     $("#matchTime").text(countdownSec);
@@ -235,19 +258,28 @@ var handleMatchTime = function(data) {
 };
 
 // Handles a websocket message to update the match score.
-var handleRealtimeScore = function(data) {
+const handleRealtimeScore = function(data) {
   $("#redScore").text(data.Red.ScoreSummary.Score);
   $("#blueScore").text(data.Blue.ScoreSummary.Score);
 };
 
+// Handles a websocket message to populate the final score data.
+const handleScorePosted = function(data) {
+  let matchName = data.Match.LongName;
+  if (!matchName) {
+    matchName = "None"
+  }
+  $("#savedMatchName").html(matchName);
+}
+
 // Handles a websocket message to update the audience display screen selector.
-var handleAudienceDisplayMode = function(data) {
+const handleAudienceDisplayMode = function(data) {
   $("input[name=audienceDisplay]:checked").prop("checked", false);
   $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
 };
 
 // Handles a websocket message to signal whether the referee and scorers have committed after the match.
-var handleScoringStatus = function(data) {
+const handleScoringStatus = function(data) {
   scoreIsReady = data.RefereeScoreReady && data.RedScoreReady && data.BlueScoreReady;
   $("#refereeScoreStatus").attr("data-ready", data.RefereeScoreReady);
   $("#redScoreStatus").text("Red Scoring " + data.NumRedScoringPanelsReady + "/" + data.NumRedScoringPanels);
@@ -257,13 +289,13 @@ var handleScoringStatus = function(data) {
 };
 
 // Handles a websocket message to update the alliance station display screen selector.
-var handleAllianceStationDisplayMode = function(data) {
+const handleAllianceStationDisplayMode = function(data) {
   $("input[name=allianceStationDisplay]:checked").prop("checked", false);
   $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);
 };
 
 // Handles a websocket message to update the event status message.
-var handleEventStatus = function(data) {
+const handleEventStatus = function(data) {
   if (data.CycleTime === "") {
     $("#cycleTimeMessage").text("Last cycle time: Unknown");
   } else {
@@ -271,6 +303,17 @@ var handleEventStatus = function(data) {
   }
   $("#earlyLateMessage").text(data.EarlyLateMessage);
 };
+
+const formatPlayoffAllianceInfo = function(allianceNumber, offFieldTeams) {
+  if (allianceNumber === 0) {
+    return "";
+  }
+  let allianceInfo = `<b>Alliance ${allianceNumber}</b>`;
+  if (offFieldTeams.length > 0) {
+    allianceInfo += ` (not on field: ${offFieldTeams.map(team => team.Id).join(", ")})`;
+  }
+  return allianceInfo;
+}
 
 $(function() {
   // Activate tooltips above the status headers.
@@ -282,9 +325,11 @@ $(function() {
     arenaStatus: function(event) { handleArenaStatus(event.data); },
     audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
     eventStatus: function(event) { handleEventStatus(event.data); },
+    matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
+    scorePosted: function(event) { handleScorePosted(event.data); },
     scoringStatus: function(event) { handleScoringStatus(event.data); },
   });
 });

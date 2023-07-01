@@ -5,7 +5,6 @@ package web
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
@@ -22,6 +21,15 @@ import (
 func TestMatchPlay(t *testing.T) {
 	web := setupTestWeb(t)
 
+	// Check that some text near the bottom of the page is present.
+	recorder := web.getHttpResponse("/match_play")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "Are you sure you want to discard the results for this match?")
+}
+
+func TestMatchPlayMatchList(t *testing.T) {
+	web := setupTestWeb(t)
+
 	match1 := model.Match{Type: model.Practice, ShortName: "P1", Status: game.RedWonMatch}
 	match2 := model.Match{Type: model.Practice, ShortName: "P2"}
 	match3 := model.Match{Type: model.Qualification, ShortName: "Q1", Status: game.BlueWonMatch}
@@ -34,93 +42,13 @@ func TestMatchPlay(t *testing.T) {
 	web.arena.Database.CreateMatch(&match5)
 
 	// Check that all matches are listed on the page.
-	recorder := web.getHttpResponse("/match_play")
+	recorder := web.getHttpResponse("/match_play/match_load")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "P1")
 	assert.Contains(t, recorder.Body.String(), "P2")
 	assert.Contains(t, recorder.Body.String(), "Q1")
 	assert.Contains(t, recorder.Body.String(), "SF1-1")
 	assert.Contains(t, recorder.Body.String(), "SF1-2")
-}
-
-func TestMatchPlayLoad(t *testing.T) {
-	web := setupTestWeb(t)
-	tournament.CreateTestAlliances(web.arena.Database, 8)
-	web.arena.CreatePlayoffTournament()
-
-	web.arena.Database.CreateTeam(&model.Team{Id: 101})
-	web.arena.Database.CreateTeam(&model.Team{Id: 102})
-	web.arena.Database.CreateTeam(&model.Team{Id: 103})
-	web.arena.Database.CreateTeam(&model.Team{Id: 104})
-	web.arena.Database.CreateTeam(&model.Team{Id: 105})
-	web.arena.Database.CreateTeam(&model.Team{Id: 106})
-	match := model.Match{Type: model.Playoff, ShortName: "QF4-3", Status: game.RedWonMatch, Red1: 101,
-		Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
-	web.arena.Database.CreateMatch(&match)
-	recorder := web.getHttpResponse("/match_play")
-	assert.Equal(t, 200, recorder.Code)
-	assert.NotContains(t, recorder.Body.String(), "101")
-	assert.NotContains(t, recorder.Body.String(), "102")
-	assert.NotContains(t, recorder.Body.String(), "103")
-	assert.NotContains(t, recorder.Body.String(), "104")
-	assert.NotContains(t, recorder.Body.String(), "105")
-	assert.NotContains(t, recorder.Body.String(), "106")
-
-	// Load the match and check for the team numbers again.
-	recorder = web.getHttpResponse(fmt.Sprintf("/match_play/%d/load", match.Id))
-	assert.Equal(t, 303, recorder.Code)
-	recorder = web.getHttpResponse("/match_play")
-	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "101")
-	assert.Contains(t, recorder.Body.String(), "102")
-	assert.Contains(t, recorder.Body.String(), "103")
-	assert.Contains(t, recorder.Body.String(), "104")
-	assert.Contains(t, recorder.Body.String(), "105")
-	assert.Contains(t, recorder.Body.String(), "106")
-
-	// Load a test match.
-	recorder = web.getHttpResponse("/match_play/0/load")
-	assert.Equal(t, 303, recorder.Code)
-	recorder = web.getHttpResponse("/match_play")
-	assert.Equal(t, 200, recorder.Code)
-	assert.NotContains(t, recorder.Body.String(), "101")
-	assert.NotContains(t, recorder.Body.String(), "102")
-	assert.NotContains(t, recorder.Body.String(), "103")
-	assert.NotContains(t, recorder.Body.String(), "104")
-	assert.NotContains(t, recorder.Body.String(), "105")
-	assert.NotContains(t, recorder.Body.String(), "106")
-}
-
-func TestMatchPlayShowAndClearResult(t *testing.T) {
-	web := setupTestWeb(t)
-
-	recorder := web.getHttpResponse("/match_play/1/show_result")
-	assert.Equal(t, 500, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Invalid match")
-	match := model.Match{Type: model.Qualification, ShortName: "Q1", Status: game.TieMatch}
-	web.arena.Database.CreateMatch(&match)
-	recorder = web.getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
-	assert.Equal(t, 500, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "No result found")
-	web.arena.Database.CreateMatchResult(model.BuildTestMatchResult(match.Id, 1))
-	recorder = web.getHttpResponse(fmt.Sprintf("/match_play/%d/show_result", match.Id))
-	assert.Equal(t, 303, recorder.Code)
-	assert.Equal(t, match.Id, web.arena.SavedMatch.Id)
-	assert.Equal(t, match.Id, web.arena.SavedMatchResult.MatchId)
-
-	recorder = web.getHttpResponse("/match_play/clear_result")
-	assert.Equal(t, 303, recorder.Code)
-	assert.Equal(t, model.Match{}, *web.arena.SavedMatch)
-	assert.Equal(t, *model.NewMatchResult(), *web.arena.SavedMatchResult)
-}
-
-func TestMatchPlayErrors(t *testing.T) {
-	web := setupTestWeb(t)
-
-	// Load an invalid match.
-	recorder := web.getHttpResponse("/match_play/1114/load")
-	assert.Equal(t, 500, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Invalid match")
 }
 
 func TestCommitMatch(t *testing.T) {
@@ -322,13 +250,15 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, ws, "matchTiming")
+	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	readWebsocketType(t, ws, "arenaStatus")
+	readWebsocketType(t, ws, "audienceDisplayMode")
+	readWebsocketType(t, ws, "eventStatus")
+	readWebsocketType(t, ws, "matchLoad")
 	readWebsocketType(t, ws, "matchTime")
 	readWebsocketType(t, ws, "realtimeScore")
+	readWebsocketType(t, ws, "scorePosted")
 	readWebsocketType(t, ws, "scoringStatus")
-	readWebsocketType(t, ws, "audienceDisplayMode")
-	readWebsocketType(t, ws, "allianceStationDisplayMode")
-	readWebsocketType(t, ws, "eventStatus")
 
 	// Test that a server-side error is communicated to the client.
 	ws.Write("nonexistenttype", nil)
@@ -340,10 +270,10 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	ws.Write("substituteTeam", map[string]any{"team": 254, "position": "B5"})
 	assert.Contains(t, readWebsocketError(t, ws), "Invalid alliance station")
 	ws.Write("substituteTeam", map[string]any{"team": 254, "position": "B1"})
-	readWebsocketType(t, ws, "arenaStatus")
+	readWebsocketType(t, ws, "matchLoad")
 	assert.Equal(t, 254, web.arena.CurrentMatch.Blue1)
 	ws.Write("substituteTeam", map[string]any{"team": 0, "position": "B1"})
-	readWebsocketType(t, ws, "arenaStatus")
+	readWebsocketType(t, ws, "matchLoad")
 	assert.Equal(t, 0, web.arena.CurrentMatch.Blue1)
 	ws.Write("toggleBypass", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "Failed to parse")
@@ -358,9 +288,9 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 
 	// Go through match flow.
 	ws.Write("abortMatch", nil)
-	assert.Contains(t, readWebsocketError(t, ws), "Cannot abort match")
+	assert.Contains(t, readWebsocketError(t, ws), "cannot abort match")
 	ws.Write("startMatch", nil)
-	assert.Contains(t, readWebsocketError(t, ws), "Cannot start match")
+	assert.Contains(t, readWebsocketError(t, ws), "cannot start match")
 	web.arena.AllianceStations["R1"].Bypass = true
 	web.arena.AllianceStations["R2"].Bypass = true
 	web.arena.AllianceStations["R3"].Bypass = true
@@ -368,27 +298,25 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web.arena.AllianceStations["B2"].Bypass = true
 	web.arena.AllianceStations["B3"].Bypass = true
 	ws.Write("startMatch", nil)
-	readWebsocketType(t, ws, "arenaStatus")
 	readWebsocketType(t, ws, "eventStatus")
 	assert.Equal(t, field.StartMatch, web.arena.MatchState)
 	ws.Write("commitResults", nil)
-	assert.Contains(t, readWebsocketError(t, ws), "Cannot reset match")
+	assert.Contains(t, readWebsocketError(t, ws), "cannot commit match while it is in progress")
 	ws.Write("discardResults", nil)
-	assert.Contains(t, readWebsocketError(t, ws), "Cannot reset match")
+	assert.Contains(t, readWebsocketError(t, ws), "cannot reset match while it is in progress")
 	ws.Write("abortMatch", nil)
-	readWebsocketType(t, ws, "arenaStatus")
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
 	web.arena.RedRealtimeScore.CurrentScore.AutoDockStatuses = [3]bool{false, true, true}
 	web.arena.BlueRealtimeScore.CurrentScore.MobilityStatuses = [3]bool{true, false, true}
 	ws.Write("commitResults", nil)
-	readWebsocketMultiple(t, ws, 4) // reload, realtimeScore, setAllianceStationDisplay, scoringStatus
+	readWebsocketMultiple(t, ws, 5) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
 	assert.Equal(t, [3]bool{false, true, true}, web.arena.SavedMatchResult.RedScore.AutoDockStatuses)
 	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.MobilityStatuses)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)
-	readWebsocketMultiple(t, ws, 4) // reload, realtimeScore, setAllianceStationDisplay, scoringStatus
+	readWebsocketMultiple(t, ws, 4) // matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 
 	// Test changing the displays.
@@ -398,6 +326,95 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	ws.Write("setAllianceStationDisplay", "logo")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, "logo", web.arena.AllianceStationDisplayMode)
+}
+
+func TestMatchPlayWebsocketLoadMatch(t *testing.T) {
+	web := setupTestWeb(t)
+	tournament.CreateTestAlliances(web.arena.Database, 8)
+	web.arena.CreatePlayoffTournament()
+
+	server, wsUrl := web.startTestServer()
+	defer server.Close()
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
+	assert.Nil(t, err)
+	defer conn.Close()
+	ws := websocket.NewTestWebsocket(conn)
+
+	// Should get a few status updates right after connection.
+	readWebsocketMultiple(t, ws, 10)
+
+	web.arena.Database.CreateTeam(&model.Team{Id: 101})
+	web.arena.Database.CreateTeam(&model.Team{Id: 102})
+	web.arena.Database.CreateTeam(&model.Team{Id: 103})
+	web.arena.Database.CreateTeam(&model.Team{Id: 104})
+	web.arena.Database.CreateTeam(&model.Team{Id: 105})
+	web.arena.Database.CreateTeam(&model.Team{Id: 106})
+	match := model.Match{Type: model.Playoff, ShortName: "QF4-3", Status: game.RedWonMatch, Red1: 101,
+		Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	web.arena.Database.CreateMatch(&match)
+
+	matchIdMessage := struct{ MatchId int }{match.Id}
+	ws.Write("loadMatch", matchIdMessage)
+	readWebsocketType(t, ws, "matchLoad")
+	readWebsocketMultiple(t, ws, 3)
+	assert.Equal(t, 101, web.arena.CurrentMatch.Red1)
+	assert.Equal(t, 102, web.arena.CurrentMatch.Red2)
+	assert.Equal(t, 103, web.arena.CurrentMatch.Red3)
+	assert.Equal(t, 104, web.arena.CurrentMatch.Blue1)
+	assert.Equal(t, 105, web.arena.CurrentMatch.Blue2)
+	assert.Equal(t, 106, web.arena.CurrentMatch.Blue3)
+
+	// Load a test match.
+	matchIdMessage.MatchId = 0
+	ws.Write("loadMatch", matchIdMessage)
+	readWebsocketType(t, ws, "matchLoad")
+	readWebsocketMultiple(t, ws, 3)
+	assert.Equal(t, 0, web.arena.CurrentMatch.Red1)
+	assert.Equal(t, 0, web.arena.CurrentMatch.Red2)
+	assert.Equal(t, 0, web.arena.CurrentMatch.Red3)
+	assert.Equal(t, 0, web.arena.CurrentMatch.Blue1)
+	assert.Equal(t, 0, web.arena.CurrentMatch.Blue2)
+	assert.Equal(t, 0, web.arena.CurrentMatch.Blue3)
+
+	// Load a nonexistent match.
+	matchIdMessage.MatchId = 254
+	ws.Write("loadMatch", matchIdMessage)
+	assert.Contains(t, readWebsocketError(t, ws), "invalid match ID 254")
+}
+
+func TestMatchPlayWebsocketShowAndClearResult(t *testing.T) {
+	web := setupTestWeb(t)
+
+	server, wsUrl := web.startTestServer()
+	defer server.Close()
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/match_play/websocket", nil)
+	assert.Nil(t, err)
+	defer conn.Close()
+	ws := websocket.NewTestWebsocket(conn)
+
+	// Should get a few status updates right after connection.
+	readWebsocketMultiple(t, ws, 10)
+
+	matchIdMessage := struct{ MatchId int }{1}
+	ws.Write("showResult", matchIdMessage)
+	assert.Contains(t, readWebsocketError(t, ws), "invalid match ID 1")
+
+	match := model.Match{Type: model.Qualification, ShortName: "Q1", Status: game.TieMatch}
+	web.arena.Database.CreateMatch(&match)
+	ws.Write("showResult", matchIdMessage)
+	assert.Contains(t, readWebsocketError(t, ws), "No result found")
+
+	web.arena.Database.CreateMatchResult(model.BuildTestMatchResult(match.Id, 1))
+	ws.Write("showResult", matchIdMessage)
+	readWebsocketType(t, ws, "scorePosted")
+	assert.Equal(t, match.Id, web.arena.SavedMatch.Id)
+	assert.Equal(t, match.Id, web.arena.SavedMatchResult.MatchId)
+
+	matchIdMessage.MatchId = 0
+	ws.Write("showResult", matchIdMessage)
+	readWebsocketType(t, ws, "scorePosted")
+	assert.Equal(t, model.Match{}, *web.arena.SavedMatch)
+	assert.Equal(t, *model.NewMatchResult(), *web.arena.SavedMatchResult)
 }
 
 func TestMatchPlayWebsocketNotifications(t *testing.T) {
@@ -413,14 +430,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	ws := websocket.NewTestWebsocket(conn)
 
 	// Should get a few status updates right after connection.
-	readWebsocketType(t, ws, "matchTiming")
-	readWebsocketType(t, ws, "arenaStatus")
-	readWebsocketType(t, ws, "matchTime")
-	readWebsocketType(t, ws, "realtimeScore")
-	readWebsocketType(t, ws, "scoringStatus")
-	readWebsocketType(t, ws, "audienceDisplayMode")
-	readWebsocketType(t, ws, "allianceStationDisplayMode")
-	readWebsocketType(t, ws, "eventStatus")
+	readWebsocketMultiple(t, ws, 10)
 
 	web.arena.AllianceStations["R1"].Bypass = true
 	web.arena.AllianceStations["R2"].Bypass = true

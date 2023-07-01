@@ -137,6 +137,9 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		}
 	}
 
+	matchResult, _ := arena.Database.GetMatchResultForMatch(arena.CurrentMatch.Id)
+	isReplay := matchResult != nil
+
 	var matchup *playoff.Matchup
 	redOffFieldTeams := []*model.Team{}
 	blueOffFieldTeams := []*model.Team{}
@@ -156,6 +159,8 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 
 	return &struct {
 		Match             *model.Match
+		AllowSubstitution bool
+		IsReplay          bool
 		Teams             map[string]*model.Team
 		Rankings          map[string]*game.Ranking
 		Matchup           *playoff.Matchup
@@ -164,6 +169,8 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		BreakDescription  string
 	}{
 		arena.CurrentMatch,
+		arena.CurrentMatch.ShouldAllowSubstitution(),
+		isReplay,
 		teams,
 		rankings,
 		matchup,

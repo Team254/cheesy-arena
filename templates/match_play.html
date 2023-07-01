@@ -7,58 +7,10 @@
 {{define "title"}}Match Play{{end}}
 {{define "body"}}
 <div class="row">
-  <div class="col-lg-4">
-    <a href="/match_play/0/load"><b class="btn btn-info">Load Test Match</b></a><br /><br />
-    <ul class="nav nav-tabs" style="margin-bottom: 15px;">
-      <li{{if eq .CurrentMatchType practiceMatch }} class="active"{{end}}>
-        <a href="#Practice" data-toggle="tab">Practice</a>
-      </li>
-      <li{{if eq .CurrentMatchType qualificationMatch }} class="active"{{end}}>
-        <a href="#Qualification" data-toggle="tab">Qualification</a>
-      </li>
-      <li{{if eq .CurrentMatchType playoffMatch }} class="active"{{end}}>
-        <a href="#Playoff" data-toggle="tab">Playoff</a>
-      </li>
-    </ul>
-    <div class="tab-content">
-      {{range $type, $matches := .MatchesByType}}
-        <div class="match-list tab-pane {{if eq $.CurrentMatchType $type}} active{{end}}" id="{{$type}}">
-          <table class="table table-striped table-hover ">
-            <thead>
-              <tr>
-                <th>Match</th>
-                <th>Time</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{range $match := $matches}}
-                <tr class="{{$match.ColorClass}}">
-                  <td>{{$match.ShortName}}</td>
-                  <td>{{$match.Time}}</td>
-                  <td class="nowrap">
-                    <a href="/match_play/{{$match.Id}}/load">
-                      <b class="btn btn-info btn-xs">Load</b>
-                    </a>
-                    {{if ne $match.Status matchScheduled}}
-                      <a href="/match_play/{{$match.Id}}/show_result">
-                        <b class="btn btn-info btn-xs">Show Result</b>
-                      </a>
-                    {{end}}
-                  </td>
-                </tr>
-              {{end}}
-            </tbody>
-          </table>
-        </div>
-      {{end}}
-    </div>
-  </div>
+  <div class="col-lg-4" id="matchListColumn"></div>
   <div class="col-lg-8">
     <div class="row text-center">
-      <div class="col-lg-3 well well-sm text-center" style="text-transform: uppercase;">
-        {{.Match.LongName}}
-      </div>
+      <div id="matchName" class="col-lg-3 well well-sm text-center" style="text-transform: uppercase;">&nbsp;</div>
       <div id="matchState" class="col-lg-3 well well-sm text-center">&nbsp;</div>
       <div id="matchTime" class="col-lg-2 well well-sm text-center">&nbsp;</div>
       <div id="redScore" class="col-lg-2 well well-sm well-red text-center">&nbsp;</div>
@@ -73,17 +25,10 @@
           <div class="col-lg-2" data-toggle="tooltip" title="Robot">Rbt</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
-        {{template "matchPlayTeam" dict "team" .Match.Blue1 "color" "B" "position" 1 "data" .}}
-        {{template "matchPlayTeam" dict "team" .Match.Blue2 "color" "B" "position" 2 "data" .}}
-        {{template "matchPlayTeam" dict "team" .Match.Blue3 "color" "B" "position" 3 "data" .}}
-        {{if eq .Match.Type playoffMatch}}
-          <div>
-            <b>Alliance {{.Match.PlayoffBlueAlliance}}</b>
-            {{if .BlueOffFieldTeams}}
-              (not on field: {{range $i, $team := .BlueOffFieldTeams}}{{if $i}}, {{end}}{{$team}}{{end}})
-            {{end}}
-          </div>
-        {{end}}
+        {{template "matchPlayTeam" dict "color" "B" "position" 1}}
+        {{template "matchPlayTeam" dict "color" "B" "position" 2}}
+        {{template "matchPlayTeam" dict "color" "B" "position" 3}}
+        <div id="playoffBlueAllianceInfo"></div>
       </div>
       <div class="col-lg-6 well well-darkred status-well">
         <div class="row form-group">
@@ -93,17 +38,10 @@
           <div class="col-lg-2" data-toggle="tooltip" title="Robot">Rbt</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
-        {{template "matchPlayTeam" dict "team" .Match.Red3 "color" "R" "position" 3 "data" .}}
-        {{template "matchPlayTeam" dict "team" .Match.Red2 "color" "R" "position" 2 "data" .}}
-        {{template "matchPlayTeam" dict "team" .Match.Red1 "color" "R" "position" 1 "data" .}}
-        {{if eq .Match.Type playoffMatch}}
-        <div>
-          <b>Alliance {{.Match.PlayoffRedAlliance}}</b>
-          {{if .RedOffFieldTeams}}
-            (not on field: {{range $i, $team := .RedOffFieldTeams}}{{if $i}}, {{end}}{{$team}}{{end}})
-          {{end}}
-        </div>
-        {{end}}
+        {{template "matchPlayTeam" dict "color" "R" "position" 3}}
+        {{template "matchPlayTeam" dict "color" "R" "position" 2}}
+        {{template "matchPlayTeam" dict "color" "R" "position" 1}}
+        <div id="playoffRedAllianceInfo"></div>
       </div>
     </div>
     <div class="row text-center">
@@ -126,7 +64,7 @@
     </div>
     <div id="buttonBottomRow" class="row text-center">
       <button type="button" id="commitResults" class="btn btn-info btn-lg btn-match-play"
-          onclick="confirmCommit({{.IsReplay}});" disabled>
+          onclick="confirmCommit();" disabled>
         Commit Results
       </button>
       <button type="button" id="discardResults" class="btn btn-danger btn-lg btn-match-play"
@@ -249,13 +187,9 @@
             </div>
           </div>
           <p>Shown Match Result</p>
-          <span class="label label-saved-match">
-            {{if .SavedMatch.LongName}}{{.SavedMatch.LongName}}{{else}}None{{end}}
-          </span>
+          <span class="label label-saved-match" id="savedMatchName">None</span>
           &nbsp;
-          <a href="/match_play/clear_result">
-            <b class="btn btn-info btn-xs">Clear</b>
-          </a>
+          <b class="btn btn-info btn-xs" onclick="showResult(0);">Clear</b>
         </div>
         <div class="col-lg-3">
           <p>Match Sounds</p>
@@ -270,11 +204,11 @@
           <button type="button" id="startTimeout" class="btn btn-info btn-xs" onclick="startTimeout();">
             Start
           </button>
-          {{if eq .Match.Type testMatch}}
+          <div id="testMatchSettings">
             <br /><br />
             <p>Match Name</p>
-            <input type="text" id="testMatchName" value="{{.Match.LongName}}" onblur="setTestMatchName();" />
-          {{end}}
+            <input type="text" id="testMatchName" onblur="setTestMatchName();" />
+          </div>
         </div>
       </div>
       <div class="row">
@@ -293,15 +227,16 @@
         <h4 class="modal-title">Confirm</h4>
       </div>
       <div class="modal-body">
-        <p id="confirmCommitReplay">This is a replay of {{.Match.LongName}}. Are you sure you want to
-            overwrite the previous results?</p>
+        <p id="confirmCommitReplay">This is a replay. Are you sure you want to overwrite the previous results?</p>
         <p id="confirmCommitNotReady">Not all scoring sources are ready yet. Are you sure you want to
             commit the results?</p>
       </div>
       <div class="modal-footer">
         <form class="form-horizontal" action="/setup/teams/clear" method="POST">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" onclick="commitResults();">Commit Results</button>
+          <button type="button" class="btn btn-primary" onclick="commitResults();" data-dismiss="modal">
+            Commit Results
+          </button>
         </form>
       </div>
     </div>
@@ -320,7 +255,9 @@
       <div class="modal-footer">
         <form class="form-horizontal" action="/setup/teams/clear" method="POST">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" onclick="discardResults();">Discard Results</button>
+          <button type="button" class="btn btn-primary" onclick="discardResults();" data-dismiss="modal">
+            Discard Results
+          </button>
         </form>
       </div>
     </div>
@@ -335,9 +272,8 @@
 <div class="row form-group" id="status{{.color}}{{.position}}">
   <div class="col-lg-1">{{.position}} </div>
   <div class="col-lg-3">
-    <input type="number" class="form-control input-sm" value="{{if ne 0 .team}}{{.team}}{{end}}"
-        onblur="substituteTeam($(this).val(), '{{.color}}{{.position}}');"
-        {{if not .data.AllowSubstitution}}disabled{{end}}>
+    <input type="number" class="team-number form-control input-sm"
+      onblur="substituteTeam($(this).val(), '{{.color}}{{.position}}');">
   </div>
   <div class="col-lg-2 col-no-padding"><div class="ds-status"></div></div>
   <div class="col-lg-2 col-no-padding"><div class="radio-status"></div></div>
