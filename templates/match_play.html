@@ -22,7 +22,7 @@
     </ul>
     <div class="tab-content">
       {{range $type, $matches := .MatchesByType}}
-        <div class="tab-pane {{if eq $.CurrentMatchType $type}} active{{end}}" id="{{$type}}">
+        <div class="match-list tab-pane {{if eq $.CurrentMatchType $type}} active{{end}}" id="{{$type}}">
           <table class="table table-striped table-hover ">
             <thead>
               <tr>

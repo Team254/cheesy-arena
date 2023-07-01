@@ -118,3 +118,15 @@ input[data-changed="true"], select[data-changed="true"] {
   margin-top: 5px;
   margin-bottom: 10px;
 }
+.match-list {
+  height: 610px;
+  overflow-y: auto;
+}
+.match-list table {
+  border-collapse: separate;
+}
+.match-list th {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+}
