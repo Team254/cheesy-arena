@@ -4,15 +4,12 @@
 // Client-side logic for the queueing display.
 
 var websocket;
-var firstMatchLoad = true;
 
 // Handles a websocket message to update the teams for the current match.
 var handleMatchLoad = function(data) {
-  // Since the server always sends a matchLoad message upon establishing the websocket connection, ignore the first one.
-  if (!firstMatchLoad) {
-    location.reload();
-  }
-  firstMatchLoad = false;
+  fetch("/displays/queueing/match_load")
+    .then(response => response.text())
+    .then(html => $("#matches").html(html));
 };
 
 // Handles a websocket message to update the match time countdown.

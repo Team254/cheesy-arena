@@ -55,6 +55,8 @@ h1 {
   line-height: 48px;
 }
 #earlyLateMessage {
+  position: absolute;
+  bottom: 40px;
   font-size: 25px;
   font-family: "FuturaLTBold";
   color: #fff;

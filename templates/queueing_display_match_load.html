@@ -1,0 +1,85 @@
+{{range $i, $match := .Matches}}
+<div class="col-lg-10 col-lg-offset-1 well">
+  <div class="col-lg-6">
+    <div class="row">
+      <div class="col-lg-4">
+        <h1>
+          {{if eq $i 0}}
+          On Field
+          {{else if eq $i 1}}
+          On Deck
+          {{else if eq $i 2}}
+          Up In 2
+          {{else if eq $i 3}}
+          Up In 3
+          {{else if eq $i 4}}
+          Up In 4
+          {{end}}
+        </h1>
+        <br />
+      </div>
+      <div class="col-lg-3">
+        <h1>{{$match.ShortName}}</h1>
+      </div>
+      <div class="col-lg-5">
+        <h1>{{$match.Time.Local.Format "3:04 PM"}}</h1>
+      </div>
+    </div>
+    {{if eq $i 0}}
+    <div class="row">
+      <div id="matchState" class="col-lg-4"></div>
+      <div id="matchTime" class="col-lg-3"></div>
+    </div>
+    {{end}}
+  </div>
+  <div class="col-lg-1 avatars text-right">
+    <img class="avatar" src="/api/teams/{{$match.Red1}}/avatar" /><br />
+    <img class="avatar" src="/api/teams/{{$match.Red2}}/avatar" /><br />
+    <img class="avatar" src="/api/teams/{{$match.Red3}}/avatar" />
+  </div>
+  <div class="col-lg-2 red-teams">
+    {{if $match.Red1}}
+    <div class="row">
+      <div class="col-lg-7">
+        {{$match.Red1}}<br />{{$match.Red2}}<br />{{$match.Red3}}
+        {{range $team := (index $.RedOffFieldTeams $i) }}
+        <br />{{$team}}
+        {{end}}
+      </div>
+      <div class="col-lg-5">
+        {{if $match.PlayoffRedAlliance}}
+        <div class="alliance-container">
+          <div class="alliance-number">{{$match.PlayoffRedAlliance}}</div>
+        </div>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+  <div class="col-lg-2 blue-teams text-right">
+    {{if $match.Blue1}}
+    <div class="row">
+      <div class="col-lg-5">
+        {{if $match.PlayoffBlueAlliance}}
+        <div class="alliance-container">
+          <div></div>
+          <div class="alliance-number">{{$match.PlayoffBlueAlliance}}</div>
+        </div>
+        {{end}}
+      </div>
+      <div class="col-lg-7">
+        {{$match.Blue1}}<br />{{$match.Blue2}}<br />{{$match.Blue3}}
+        {{range $team := (index $.BlueOffFieldTeams $i) }}
+        <br />{{$team}}
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+  <div class="col-lg-1 avatars">
+    <img class="avatar" src="/api/teams/{{$match.Blue1}}/avatar" /><br />
+    <img class="avatar" src="/api/teams/{{$match.Blue2}}/avatar" /><br />
+    <img class="avatar" src="/api/teams/{{$match.Blue3}}/avatar" />
+  </div>
+</div>
+{{end}}
