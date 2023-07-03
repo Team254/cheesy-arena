@@ -9,7 +9,7 @@ import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -62,7 +62,7 @@ func TestPublishMatches(t *testing.T) {
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		var matches []*TbaMatch
 		json.Unmarshal(body, &matches)
 		assert.Equal(t, 2, len(matches))
@@ -88,7 +88,7 @@ func TestPublishRankings(t *testing.T) {
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, _ := ioutil.ReadAll(r.Body)
+		body, _ := io.ReadAll(r.Body)
 		var response TbaRankings
 		json.Unmarshal(body, &response)
 		assert.Equal(t, 2, len(response.Rankings))
