@@ -1,0 +1,14 @@
+{
+  "name": "Hub Wall",
+  "icons": [
+    {
+      "src": "/static/img/panel-icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "scope": "/panels/hub",
+  "start_url": "/panels/hub",
+  "display": "standalone",
+  "orientation": "landscape"
+}

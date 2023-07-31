@@ -1,0 +1,54 @@
+{{/*
+  Copyright 2023 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  UI for entering and tracking fouls and red/yellow cards.
+*/}}
+{{define "title"}}Hub Wall Panel{{end}}
+{{define "body"}}
+<div id="matchName"></div>
+<div id="refereePanel">
+  <div id="cards">
+    <h3>Red/Yellow Cards</h3>
+    <div class="alliance-cards" id="redCards">
+      {{range $i := seq 3}}
+        {{template "teamCard" dict "alliance" "red" "position" $i}}
+      {{end}}
+    </div>
+    <div class="alliance-cards" id="blueCards">
+      {{range $i := seq 3}}
+        {{template "teamCard" dict "alliance" "blue" "position" $i}}
+      {{end}}
+    </div>
+  </div>
+  <div id="fouls">
+    <h3>Fouls</h3>
+    <div id="foulButtons">
+      <div class="foul-button red-foul" onclick="addFoul('red', false);">Red</div>
+      <div class="foul-button red-foul" onclick="addFoul('red', true);">Red Tech</div>
+      <div class="foul-button blue-foul" onclick="addFoul('blue', false);">Blue</div>
+      <div class="foul-button blue-foul" onclick="addFoul('blue', true);">Blue Tech</div>
+    </div>
+    <div id="foulList"></div>
+  </div>
+</div>
+<p>Note: Team and rule assignment are optional.</p>
+<div id="controlButtons">
+  <div class="control-button" id="volunteerButton" onclick="signalVolunteers();">Signal Volunteers</div>
+  <div class="control-button" id="resetButton" onclick="signalReset();">Signal Reset</div>
+  <div class="control-button" id="commitButton" onclick="commitMatch();">Commit Match</div>
+</div>
+{{end}}
+{{define "head"}}
+<link rel="manifest" href="/static/manifest/referee.manifest">
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<link href="/static/css/referee_panel.css" rel="stylesheet">
+{{end}}
+{{define "script"}}
+<script src="/static/js/match_timing.js"></script>
+<script src="/static/js/referee_panel.js"></script>
+{{end}}
+{{define "teamCard"}}
+<div class="team-card" id="{{.alliance}}Team{{.position}}Card" data-alliance="{{.alliance}}" onclick="cycleCard(this);">
+</div>
+{{end}}
