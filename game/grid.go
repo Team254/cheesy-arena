@@ -21,12 +21,12 @@ const (
 	TwoCubes
 	ConeThenCube
 	CubeThenCone
-	NodeStateCount
 	BlueCargo
 	Gear
 	RedCargo
 	WhiteCrate
 	YellowCrate
+	NodeStateCount // This must be last
 )
 
 type Link struct {
