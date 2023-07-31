@@ -16,11 +16,16 @@ func _() {
 	_ = x[ConeThenCube-5]
 	_ = x[CubeThenCone-6]
 	_ = x[NodeStateCount-7]
+	_ = x[BlueCargo-8]
+	_ = x[Gear-9]
+	_ = x[RedCargo-10]
+	_ = x[WhiteCrate-11]
+	_ = x[YellowCrate-12]
 }
 
-const _NodeState_name = "EmptyConeCubeTwoConesTwoCubesConeThenCubeCubeThenConeNodeStateCount"
+const _NodeState_name = "EmptyConeCubeTwoConesTwoCubesConeThenCubeCubeThenConeNodeStateCountBlueCargoGearRedCargoWhiteCrateYellowCrate"
 
-var _NodeState_index = [...]uint8{0, 5, 9, 13, 21, 29, 41, 53, 67}
+var _NodeState_index = [...]uint8{0, 5, 9, 13, 21, 29, 41, 53, 67, 76, 80, 88, 98, 109}
 
 func (i NodeState) String() string {
 	if i < 0 || i >= NodeState(len(_NodeState_index)-1) {

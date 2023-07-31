@@ -22,6 +22,11 @@ const (
 	ConeThenCube
 	CubeThenCone
 	NodeStateCount
+	BlueCargo
+	Gear
+	RedCargo
+	WhiteCrate
+	YellowCrate
 )
 
 type Link struct {
