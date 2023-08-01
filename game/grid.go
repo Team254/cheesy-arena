@@ -204,12 +204,14 @@ func createValidGridStates() map[Row]map[int]map[NodeState]string {
 			validGridNodeStates[row][column] = make(map[NodeState]string)
 			for nodeState := Empty; nodeState < NodeStateCount; nodeState++ {
 				if nodeState != Empty && row != rowBottom {
+					additionalNodeStates := nodeState != BlueCargo && nodeState != Gear && nodeState != RedCargo && nodeState != WhiteCrate && nodeState != YellowCrate
+
 					if column == 1 || column == 4 || column == 7 {
-						if nodeState != Cube && nodeState != TwoCubes {
+						if nodeState != Cube && nodeState != TwoCubes && additionalNodeStates {
 							continue
 						}
 					} else {
-						if nodeState != Cone && nodeState != TwoCones {
+						if nodeState != Cone && nodeState != TwoCones && additionalNodeStates {
 							continue
 						}
 					}
