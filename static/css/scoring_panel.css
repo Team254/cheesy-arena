@@ -46,7 +46,7 @@ body {
   font-size: 1.5vw;
   color: #ccc;
 }
-.scoring-header>div{
+.scoring-header > div {
   height: 3.3vw;
   display: flex;
   align-items: center;
@@ -110,7 +110,8 @@ body {
   margin-top: -1px;
   margin-left: -1px;
 }
-.grid-node[data-node="2"], .grid-node[data-node="5"] {
+.grid-node[data-node="2"],
+.grid-node[data-node="5"] {
   margin-right: 1vw;
 }
 .grid-node-auto {
@@ -165,6 +166,50 @@ body {
   display: none;
   align-items: center;
 }
-#commitMatchScore>button {
+#commitMatchScore > button {
   font-size: 1vw;
+}
+
+.modal {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-open {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+.modal-bg {
+  position: absolute;
+  background: black;
+  opacity: 0.5;
+  width: 100%;
+  height: 100%;
+}
+.modal-container {
+  border-radius: 10px;
+  background: #fff;
+  position: relative;
+  padding: 30px;
+}
+.modal-close {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  outline: none;
+  appearance: none;
+  color: red;
+  background: none;
+  border: 0px;
+  font-weight: bold;
+  cursor: pointer;
 }

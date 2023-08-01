@@ -7,7 +7,7 @@ var websocket;
 let alliance;
 
 // Handles a websocket message to update the teams for the current match.
-const handleMatchLoad = function(data) {
+const handleMatchLoad = function (data) {
   $("#matchName").text(data.Match.LongName);
   if (alliance === "red") {
     $("#team1").text(data.Match.Red1);
@@ -21,7 +21,7 @@ const handleMatchLoad = function(data) {
 };
 
 // Handles a websocket message to update the match status.
-const handleMatchTime = function(data) {
+const handleMatchTime = function (data) {
   switch (matchStates[data.MatchState]) {
     case "PRE_MATCH":
       // Pre-match message state is set in handleRealtimeScore().
@@ -39,7 +39,7 @@ const handleMatchTime = function(data) {
 };
 
 // Handles a websocket message to update the realtime scoring fields.
-const handleRealtimeScore = function(data) {
+const handleRealtimeScore = function (data) {
   let realtimeScore;
   if (alliance === "red") {
     realtimeScore = data.Red;
@@ -47,47 +47,64 @@ const handleRealtimeScore = function(data) {
     realtimeScore = data.Blue;
   }
   const score = realtimeScore.Score;
-
+  console.log(data);
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
-    $(`#mobilityStatus${i1}>.value`).text(score.MobilityStatuses[i] ? "Yes" : "No");
+    $(`#mobilityStatus${i1}>.value`).text(
+      score.MobilityStatuses[i] ? "Yes" : "No"
+    );
     $("#mobilityStatus" + i1).attr("data-value", score.MobilityStatuses[i]);
-    $("#autoDockStatus" + i1 + ">.value").text(score.AutoDockStatuses[i] ? "Yes" : "No");
+    $("#autoDockStatus" + i1 + ">.value").text(
+      score.AutoDockStatuses[i] ? "Yes" : "No"
+    );
     $("#autoDockStatus" + i1).attr("data-value", score.AutoDockStatuses[i]);
-    $("#endgameStatus" + i1 + ">.value").text(getEndgameStatusText(score.EndgameStatuses[i]));
+    $("#endgameStatus" + i1 + ">.value").text(
+      getEndgameStatusText(score.EndgameStatuses[i])
+    );
     $("#endgameStatus" + i1).attr("data-value", score.EndgameStatuses[i]);
   }
 
-  $("#autoChargeStationLevel>.value").text(score.AutoChargeStationLevel ? "Level" : "Not Level");
+  $("#autoChargeStationLevel>.value").text(
+    score.AutoChargeStationLevel ? "Level" : "Not Level"
+  );
   $("#autoChargeStationLevel").attr("data-value", score.AutoChargeStationLevel);
-  $("#endgameChargeStationLevel>.value").text(score.EndgameChargeStationLevel ? "Level" : "Not Level");
-  $("#endgameChargeStationLevel").attr("data-value", score.EndgameChargeStationLevel);
+  $("#endgameChargeStationLevel>.value").text(
+    score.EndgameChargeStationLevel ? "Level" : "Not Level"
+  );
+  $("#endgameChargeStationLevel").attr(
+    "data-value",
+    score.EndgameChargeStationLevel
+  );
 
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 9; j++) {
-      $(`#gridAutoScoringRow${i}Node${j}`).attr("data-value", score.Grid.AutoScoring[i][j]);
-      $(`#gridNodeStatesRow${i}Node${j}`).children().each(function() {
-        const element = $(this);
-        element.attr("data-value", element.attr("data-node-state") === score.Grid.Nodes[i][j].toString());
-      });
+      $(`#gridAutoScoringRow${i}Node${j}`).attr(
+        "data-value",
+        score.Grid.AutoScoring[i][j]
+      );
+      $(`#gridNodeStatesRow${i}Node${j}`)
+        .children()
+        .each(function () {
+          const element = $(this);
+          element.attr(
+            "data-value",
+            element.attr("data-node-state") ===
+              score.Grid.Nodes[i][j].toString()
+          );
+        });
     }
   }
 };
 
-// Handles an element click and sends the appropriate websocket message.
-const handleClick = function(command, teamPosition = 0, gridRow = 0, gridNode = 0, nodeState = 0) {
-  websocket.send(command, {TeamPosition: teamPosition, GridRow: gridRow, GridNode: gridNode, NodeState: nodeState});
-};
-
 // Sends a websocket message to indicate that the score for this alliance is ready.
-const commitMatchScore = function() {
+const commitMatchScore = function () {
   websocket.send("commitMatch");
   $("#postMatchMessage").css("display", "flex");
   $("#commitMatchScore").hide();
 };
 
 // Returns the display text corresponding to the given integer endgame status value.
-const getEndgameStatusText = function(level) {
+const getEndgameStatusText = function (level) {
   switch (level) {
     case 1:
       return "Park";
@@ -98,14 +115,72 @@ const getEndgameStatusText = function(level) {
   }
 };
 
-$(function() {
+$(function () {
   alliance = window.location.href.split("/").slice(-1)[0];
   $("#alliance").attr("data-alliance", alliance);
 
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/panels/scoring/" + alliance + "/websocket", {
-    matchLoad: function(event) { handleMatchLoad(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); },
+  websocket = new CheesyWebsocket(
+    "/panels/scoring/" + alliance + "/websocket",
+    {
+      matchLoad: function (event) {
+        handleMatchLoad(event.data);
+      },
+      matchTime: function (event) {
+        handleMatchTime(event.data);
+      },
+      realtimeScore: function (event) {
+        handleRealtimeScore(event.data);
+      },
+    }
+  );
+});
+
+const modals = document.querySelectorAll("[data-modal]");
+
+modals.forEach(function (trigger) {
+  trigger.addEventListener("click", function (event) {
+    event.preventDefault();
+    const modal = document.getElementById(trigger.dataset.modal);
+    modal.classList.add("modal-open");
+    const exits = modal.querySelectorAll(".modal-exit");
+    exits.forEach(function (exit) {
+      exit.addEventListener("click", function (event) {
+        event.preventDefault();
+        modal.classList.remove("modal-open");
+      });
+    });
   });
 });
+
+// Handles an element click and sends the appropriate websocket message.
+const modalContent = document.querySelectorAll("[data-modal-content]");
+
+const handleClick = function (
+  command,
+  teamPosition = 0,
+  gridRow = 0,
+  gridNode = 0,
+  nodeState = 0
+) {
+  console.log(teamPosition, gridRow, gridNode, nodeState);
+  websocket.send(command, {
+    TeamPosition: teamPosition,
+    GridRow: gridRow,
+    GridNode: gridNode,
+    NodeState: nodeState,
+  });
+};
+
+// Handles an element click within the modal and sends the appropriate websocket message as well as closing the modal.
+const handleModalClick = function (
+  command,
+  teamPosition = 0,
+  gridRow = 0,
+  gridNode = 0,
+  nodeState = 0
+) {
+  handleClick(command, teamPosition, gridRow, gridNode, nodeState);
+  const modal = document.getElementById("modal");
+  modal.classList.remove("modal-open");
+};

@@ -1,11 +1,6 @@
-{{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
-
-  UI for entering realtime scores.
-*/}}
-{{define "title"}}Scoring Panel{{end}}
-{{define "body"}}
+{{/* Copyright 2014 Team 254. All Rights Reserved. Author: pat@patfairbank.com
+(Patrick Fairbank) UI for entering realtime scores. */}} {{define
+"title"}}Scoring Panel{{end}} {{define "body"}}
 <div id="matchName">&nbsp;</div>
 <div id="alliance">
   <div class="scoring-section">
@@ -16,38 +11,56 @@
       <div>Endgame</div>
     </div>
     {{range $i := seq 3}}
-      <div>
-        <div id="team{{$i}}" class="team robot-field"></div>
-        <div id="mobilityStatus{{$i}}" class="boolean robot-field" onclick="handleClick('mobilityStatus', {{$i}});">
-          <div class="value"></div>
-        </div>
-        <div id="autoDockStatus{{$i}}" class="boolean robot-field" onclick="handleClick('autoDockStatus', {{$i}});">
-          <div class="value"></div>
-        </div>
-        <div id="endgameStatus{{$i}}" class="endgame-status robot-field"
-          onclick="handleClick('endgameStatus', {{$i}});">
-          <div class="value"></div>
-        </div>
+    <div>
+      <div id="team{{$i}}" class="team robot-field"></div>
+      <div
+        id="mobilityStatus{{$i}}"
+        class="boolean robot-field"
+        onclick="handleClick('mobilityStatus', {{$i}});"
+      >
+        <div class="value"></div>
       </div>
+      <div
+        id="autoDockStatus{{$i}}"
+        class="boolean robot-field"
+        onclick="handleClick('autoDockStatus', {{$i}});"
+      >
+        <div class="value"></div>
+      </div>
+      <div
+        id="endgameStatus{{$i}}"
+        class="endgame-status robot-field"
+        onclick="handleClick('endgameStatus', {{$i}});"
+      >
+        <div class="value"></div>
+      </div>
+    </div>
     {{end}}
   </div>
   <div id="chargeStation" class="scoring-section">
-    <div id="autoChargeStationLevel" class="charge-station-level robot-field"
-      onclick="handleClick('autoChargeStationLevel');">
+    <div
+      id="autoChargeStationLevel"
+      class="charge-station-level robot-field"
+      onclick="handleClick('autoChargeStationLevel');"
+    >
       <div class="value"></div>
     </div>
     <div>Auto</div>
     <div>Charge Station</div>
     <div>Endgame</div>
-    <div id="endgameChargeStationLevel" class="charge-station-level robot-field"
-      onclick="handleClick('endgameChargeStationLevel');">
+    <div
+      id="endgameChargeStationLevel"
+      class="charge-station-level robot-field"
+      onclick="handleClick('endgameChargeStationLevel');"
+    >
       <div class="value"></div>
     </div>
   </div>
   <div id="grid">
-    {{template "gridRow" dict "rowIndex" 2 "validNodeStates" (index .ValidGridNodeStates 2)}}
-    {{template "gridRow" dict "rowIndex" 1 "validNodeStates" (index .ValidGridNodeStates 1)}}
-    {{template "gridRow" dict "rowIndex" 0 "validNodeStates" (index .ValidGridNodeStates 0)}}
+    {{template "gridRow" dict "rowIndex" 2 "validNodeStates" (index
+    .ValidGridNodeStates 2)}} {{template "gridRow" dict "rowIndex" 1
+    "validNodeStates" (index .ValidGridNodeStates 1)}} {{template "gridRow" dict
+    "rowIndex" 0 "validNodeStates" (index .ValidGridNodeStates 0)}}
   </div>
 </div>
 <div id="commitMatchScore">
@@ -56,41 +69,60 @@
   </button>
 </div>
 <div id="postMatchMessage">Waiting for the next match...</div>
-{{end}}
-{{define "head"}}
-<link rel="manifest" href="/static/manifest/{{.Alliance}}_scoring.manifest">
-<meta name="viewport" content="width=device-width, user-scalable=no">
-<link href="/static/css/scoring_panel.css" rel="stylesheet">
-{{end}}
-{{define "script"}}
+{{end}} {{define "head"}}
+<link rel="manifest" href="/static/manifest/{{.Alliance}}_scoring.manifest" />
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+<link href="/static/css/scoring_panel.css" rel="stylesheet" />
+{{end}} {{define "script"}}
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/scoring_panel.js"></script>
-{{end}}
-{{define "gridRow"}}
+{{end}} {{define "gridRow"}}
 <div class="grid-row">
-  {{range $i, $validStates := .validNodeStates}}
-    {{template "gridNode" dict "rowIndex" $.rowIndex "nodeIndex" $i "validStates" $validStates}}
-  {{end}}
+  {{range $i, $validStates := .validNodeStates}} {{template "gridNode" dict
+  "rowIndex" $.rowIndex "nodeIndex" $i "validStates" $validStates}} {{end}}
 </div>
-{{end}}
-{{define "gridNode"}}
+{{end}} {{define "gridNode"}}
 <div class="grid-node" data-node="{{.nodeIndex}}">
-  <div id="gridAutoScoringRow{{$.rowIndex}}Node{{$.nodeIndex}}" class="grid-node-auto"
-    onclick="handleClick('gridAutoScoring', 0, {{$.rowIndex}}, {{$.nodeIndex}})">
+  <div
+    id="gridAutoScoringRow{{$.rowIndex}}Node{{$.nodeIndex}}"
+    class="grid-node-auto"
+  >
     Auto
   </div>
-  <div id="gridNodeStatesRow{{$.rowIndex}}Node{{$.nodeIndex}}" class="grid-node-states">
-    {{range $i, $state := .validStates}}
-      {{if ne $state "Empty"}}
-        {{template "gridNodeButton" dict "i" $i "state" $state "rowIndex" $.rowIndex "nodeIndex" $.nodeIndex}}
-      {{end}}
-    {{end}}
+  <!-- this should be a square that shows the current node's value
+        then, when clicked on, it should open the modal
+        when a user clicks an object in the modal, it should trigger
+        the webhook call, and then close the modal -->
+  <div
+    id="gridNodeStatesRow{{$.rowIndex}}Node{{$.nodeIndex}}"
+    class="grid-node-states"
+  >
+    <div class="modal-container">
+      <a data-modal="modal-one"
+        ><img src="/static/img/node_states/{{.state}}.svg"
+      /></a>
+    </div>
+    <div class="modal" id="modal-one">
+      <div class="modal-bg modal-exit"></div>
+      <div
+        class="modal-container"
+        onclick="handleClick('gridAutoScoring', 0, {{$.rowIndex}}, {{$.nodeIndex}})"
+      >
+        {{range $i, $state := .validStates}} {{if ne $state "Empty"}} {{template
+        "gridNodeButton" dict "i" $i "state" $state "rowIndex" $.rowIndex
+        "nodeIndex" $.nodeIndex}} {{end}} {{end}}
+        <button class="modal-close modal-exit">X</button>
+      </div>
+    </div>
   </div>
 </div>
-{{end}}
-{{define "gridNodeButton"}}
-<div class="grid-node-button" data-node-state="{{nodeStateToInt .i}}"
-  onclick="handleClick('gridNode', 0, {{.rowIndex}}, {{.nodeIndex}}, {{nodeStateToInt .i}})">
+{{end}} {{define "gridNodeButton"}}
+<div
+  class="grid-node-button"
+  data-node-state="{{nodeStateToInt .i}}"
+  onclick="handleClick('gridNode', 0, {{.rowIndex}}, {{.nodeIndex}}, {{nodeStateToInt .i}})"
+>
+  >
   <img src="/static/img/node_states/{{.state}}.svg" />
 </div>
 {{end}}
