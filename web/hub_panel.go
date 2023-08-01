@@ -1,7 +1,4 @@
-// Copyright 2014 Team 254. All Rights Reserved.
-// Author: pat@patfairbank.com (Patrick Fairbank)
-//
-// Web handlers for the referee interface.
+// Web handlers for the hub interface.
 
 package web
 
