@@ -1,7 +1,7 @@
 // Copyright 2017 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Methods for configuring a Linksys WRT1900ACS access point running OpenWRT for team SSIDs and VLANs.
+// Methods for configuring a Vivid-Hosting VH-109 radio in AP mode running OpenWRT for team SSIDs and VLANs.
 
 package network
 
@@ -20,10 +20,10 @@ import (
 const (
 	accessPointSshPort                = 22
 	accessPointConnectTimeoutSec      = 1
-	accessPointCommandTimeoutSec      = 5
+	accessPointCommandTimeoutSec      = 30
 	accessPointPollPeriodSec          = 3
 	accessPointRequestBufferSize      = 10
-	accessPointConfigRetryIntervalSec = 5
+	accessPointConfigRetryIntervalSec = 30
 )
 
 type AccessPoint struct {
@@ -102,12 +102,17 @@ func (ap *AccessPoint) handleTeamWifiConfiguration(teams [6]*model.Team) {
 	}
 
 	// Clear the state of the radio before loading teams.
-	ap.configureTeams([6]*model.Team{nil, nil, nil, nil, nil, nil})
+	//ap.configureTeams([6]*model.Team{nil, nil, nil, nil, nil, nil})
 	ap.configureTeams(teams)
 }
 
 func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 	retryCount := 1
+	err := ap.updateTeamWifiStatuses()
+	if err == nil && ap.configIsCorrectForTeams(teams) {
+		log.Printf("Successfully configured WiFi after %d attempts.", retryCount)
+		return
+	}
 
 	for {
 		teamIndex := 0
@@ -118,6 +123,7 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 			}
 
 			command := addConfigurationHeader(config)
+            log.Printf("Config: %s\n", command)
 
 			_, err = ap.runCommand(command)
 			if err != nil {
@@ -126,10 +132,12 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 				time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
 				continue
 			}
-
 			teamIndex++
 		}
-		time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
+        ap.runCommand("uci commit wireless")
+		log.Printf("Restarting wireless phy")
+        ap.runCommand("/sbin/wifi reload")
+		//time.Sleep(time.Second * 40)
 		err := ap.updateTeamWifiStatuses()
 		if err == nil && ap.configIsCorrectForTeams(teams) {
 			log.Printf("Successfully configured WiFi after %d attempts.", retryCount)
@@ -165,6 +173,7 @@ func (ap *AccessPoint) updateTeamWifiStatuses() error {
 	}
 
 	output, err := ap.runCommand("iwinfo")
+    log.Printf("Received: %s\n", output)
 	if err == nil {
 		err = decodeWifiInfo(output, ap.TeamWifiStatuses[:])
 	}
@@ -213,7 +222,7 @@ func (ap *AccessPoint) runCommand(command string) (string, error) {
 }
 
 func addConfigurationHeader(commandList string) string {
-	return fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\ncommit wireless\nENDCONFIG\n", commandList)
+	return fmt.Sprintf("uci batch <<ENDCONFIG\n%s\nENDCONFIG\n", commandList)
 }
 
 // Verifies WPA key validity and produces the configuration command for the given team.
@@ -224,17 +233,23 @@ func generateTeamAccessPointConfig(team *model.Team, position int) (string, erro
 
 	commands := &[]string{}
 	if team == nil {
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='no-team-%d'", position, position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='no-team-%d'", position, position))
+		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position-1),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='no-team-%d'", position-1, position),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].key='no-team-%d'", position-1, position),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].sae_password='no-team-%d'", position-1, position))
+        vlan := position*10
+        *commands = append(*commands, fmt.Sprintf("set network.vlan%d.ipaddr='10.%d.%d.4'", vlan, position/100, position%100))
 	} else {
 		if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
 			return "", fmt.Errorf("invalid WPA key '%s' configured for team %d", team.WpaKey, team.Id)
 		}
 
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position, team.Id),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
+		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position-1),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position-1, team.Id),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position-1, team.WpaKey),
+			fmt.Sprintf("set wireless.@wifi-iface[%d].sae_password='%s'", position-1, team.WpaKey))
+        vlan := position*10
+        *commands = append(*commands, fmt.Sprintf("set network.vlan%d.ipaddr='10.%d.%d.4'", vlan, team.Id/100, team.Id%100))
 	}
 
 	return strings.Join(*commands, "\n"), nil
