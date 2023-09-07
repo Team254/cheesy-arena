@@ -20,7 +20,7 @@ func (web *Web) fieldMonitorDisplayHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if !web.enforceDisplayConfiguration(w, r, map[string]string{"reversed": "false", "fta": "false"}) {
+	if !web.enforceDisplayConfiguration(w, r, map[string]string{"ds": "false", "fta": "false", "reversed": "false"}) {
 		return
 	}
 
