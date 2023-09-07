@@ -17,7 +17,7 @@
     <link rel="stylesheet" href="/static/css/field_monitor_display.css" />
   </head>
   <body>
-  <div id="matchStatusRow">
+  <div id="matchStatusRow" class="ds-dependent">
   <div id="matchName" class="text-left" style="width: 45%; padding-left: 1%;"></div>
   <div id="matchTime" class="text-center" style="width: 10%;"></div>
   <div id="matchState" class="text-right" style="width: 45%; padding-right: 1%;"></div>
@@ -25,11 +25,11 @@
     {{template "row" dict "leftPosition" "1" "rightPosition" "3"}}
     {{template "row" dict "leftPosition" "2" "rightPosition" "2"}}
     {{template "row" dict "leftPosition" "3" "rightPosition" "1"}}
-  <div id="eventStatusRow">
-      <div id="leftScore" class="fta-dependent left-score text-center reversible-left" style="width: 8%; vertical-center;"></div>
-      <div id="cycleTimeMessage" class="text-center" style="width: 42%;"></div>
-      <div id="earlyLateMessage" class="text-center" style="width: 42%;"></div>
-      <div id="rightScore" class="right-score text-center fta-dependent reversible-right " style="width: 8%;"></div>
+  <div id="eventStatusRow" class="ds-dependent">
+      <div id="leftScore" class="fta-dependent ds-dependent left-score text-center reversible-left" style="width: 8%; vertical-center;"></div>
+      <div id="cycleTimeMessage" class="text-center ds-dependent" style="width: 42%;"></div>
+      <div id="earlyLateMessage" class="text-center ds-dependent" style="width: 42%;"></div>
+      <div id="rightScore" class="right-score ds-dependent text-center fta-dependent reversible-right " style="width: 8%;"></div>
   </div>
   </body>
   <script src="/static/js/lib/jquery.min.js"></script>
@@ -43,16 +43,16 @@
 </html>
 
 {{define "row"}}
-  <div class="position-row center">
+  <div class="position-row center ds-dependent">
     <div class="left-position center reversible-left">{{.leftPosition}}</div>
     {{template "team" dict "side" "left" "position" .leftPosition}}
     {{template "team" dict "side" "right" "position" .rightPosition}}
-    <div class="right-position center reversible-right">{{.rightPosition}}</div>
+    <div class="right-position center ds-dependent reversible-right">{{.rightPosition}}</div>
   </div>
 {{end}}
 
 {{define "team"}}
-  <div id="{{.side}}Team{{.position}}" class="team">
+  <div id="{{.side}}Team{{.position}}" class="team team-{{.side}} ds-dependent">
     <div id="{{.side}}Team{{.position}}Id" class="team-id center fta-dependent"></div>
     <div id="{{.side}}Team{{.position}}Notes" class="team-notes fta-dependent" title="FTA Notes">
       <i class="glyphicon glyphicon-comment"></i>
