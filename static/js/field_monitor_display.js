@@ -143,7 +143,12 @@ var handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
     $("#matchTime").text(countdownSec);
-    });
+    if (matchStateText === "PRE-MATCH" | matchStateText === "POST-MATCH") {
+      $(".ds-dependent").attr("data-preMatch", "true");
+    } else {
+      $(".ds-dependent").attr("data-preMatch", "false");
+    }
+  });
 };
 
 // Handles a websocket message to update the match score.
@@ -200,9 +205,21 @@ $(function() {
     redSide = "left";
     blueSide = "right";
   }
+  
+  //Read if display to be used in a Driver Station, ignore FTA flag if so.
+  var driverStation = urlParams.get("ds");
+  if (driverStation === "true") {
+  $(".fta-dependent").attr("data-fta", "false");
+  $(".ds-dependent").attr("data-ds", driverStation);
+  } else {
+  $(".fta-dependent").attr("data-fta", urlParams.get("fta"));
+  $(".ds-dependent").attr("data-ds", driverStation);
+  }
+  
   $(".reversible-left").attr("data-reversed", reversed);
   $(".reversible-right").attr("data-reversed", reversed);
-  $(".fta-dependent").attr("data-fta", urlParams.get("fta"));
+
+
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/field_monitor/websocket", {
