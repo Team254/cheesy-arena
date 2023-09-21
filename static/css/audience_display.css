@@ -159,12 +159,12 @@ html {
 }
 #logo {
   position: relative;
-  top: 30px;
-  height: 80px;
+  top: 25px;
+  height: 90px;
 }
 #matchTime {
   position: relative;
-  top: 15px;
+  top: 8px;
   height: 60px;
   color: #222;
   font-family: "FuturaLTBold";
@@ -289,8 +289,8 @@ html {
 }
 #blindsLogo {
   position: relative;
-  top: 90px;
-  height: 120px;
+  top: 24px;
+  height: 300px;
 }
 #finalScoreCentering {
   position: fixed;
