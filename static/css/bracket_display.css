@@ -11,8 +11,8 @@ html {
 }
 body {
   height: 100%;
-  background: -moz-linear-gradient(top, #003375 1%, #3C679D 100%); /* FF3.6+ */
-  background: -webkit-linear-gradient(top, #003375 1%, #3C679D 100%); /* Chrome10+,Safari5.1+ */
+  background: -moz-linear-gradient(top, #6D23B6 1%, #915AC7 100%); /* FF3.6+ */
+  background: -webkit-linear-gradient(top, #6D23B6 1%, #915AC7 100%); /* Chrome10+,Safari5.1+ */
   background-repeat: no-repeat;
   font-family: "FuturaLT";
 }
