@@ -248,8 +248,8 @@ func generateTeamAccessPointConfig(team *model.Team, position int) (string, erro
 			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position-1, team.Id),
 			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position-1, team.WpaKey),
 			fmt.Sprintf("set wireless.@wifi-iface[%d].sae_password='%s'", position-1, team.WpaKey))
-        vlan := position*10
-        *commands = append(*commands, fmt.Sprintf("set network.vlan%d.ipaddr='10.%d.%d.1'", vlan, team.Id/100, team.Id%100))
+	//Uncomment below when testing with just the access point w/no L3 switch (Cisco)
+	//*commands = append(*commands, fmt.Sprintf("set network.vlan%d.ipaddr='10.%d.%d.1'", vlan, team.Id/100, team.Id%100))
 	}
 
 	return strings.Join(*commands, "\n"), nil
