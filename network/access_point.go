@@ -123,7 +123,7 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 			}
 
 			command := addConfigurationHeader(config)
-            log.Printf("Config: %s\n", command)
+			log.Printf("Config: %s\n", command)
 
 			_, err = ap.runCommand(command)
 			if err != nil {
@@ -134,9 +134,9 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 			}
 			teamIndex++
 		}
-        ap.runCommand("uci commit")
+		ap.runCommand("uci commit")
 		log.Printf("Restarting wireless phy")
-        ap.runCommand("/sbin/wifi reload")
+		ap.runCommand("/sbin/wifi reload")
 		//time.Sleep(time.Second * 40)
 		err := ap.updateTeamWifiStatuses()
 		if err == nil && ap.configIsCorrectForTeams(teams) {
@@ -173,7 +173,7 @@ func (ap *AccessPoint) updateTeamWifiStatuses() error {
 	}
 
 	output, err := ap.runCommand("iwinfo")
-    log.Printf("Received: %s\n", output)
+	log.Printf("Received: %s\n", output)
 	if err == nil {
 		err = decodeWifiInfo(output, ap.TeamWifiStatuses[:])
 	}
