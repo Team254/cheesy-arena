@@ -134,7 +134,7 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 			}
 			teamIndex++
 		}
-        ap.runCommand("uci commit wireless")
+        ap.runCommand("uci commit")
 		log.Printf("Restarting wireless phy")
         ap.runCommand("/sbin/wifi reload")
 		//time.Sleep(time.Second * 40)
@@ -238,7 +238,7 @@ func generateTeamAccessPointConfig(team *model.Team, position int) (string, erro
 			fmt.Sprintf("set wireless.@wifi-iface[%d].key='no-team-%d'", position-1, position),
 			fmt.Sprintf("set wireless.@wifi-iface[%d].sae_password='no-team-%d'", position-1, position))
         vlan := position*10
-        *commands = append(*commands, fmt.Sprintf("set network.vlan%d.ipaddr='10.%d.%d.4'", vlan, position/100, position%100))
+        *commands = append(*commands, fmt.Sprintf("set network.vlan%d.ipaddr='10.%d.%d.1'", vlan, position/100, position%100))
 	} else {
 		if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
 			return "", fmt.Errorf("invalid WPA key '%s' configured for team %d", team.WpaKey, team.Id)
@@ -249,7 +249,7 @@ func generateTeamAccessPointConfig(team *model.Team, position int) (string, erro
 			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position-1, team.WpaKey),
 			fmt.Sprintf("set wireless.@wifi-iface[%d].sae_password='%s'", position-1, team.WpaKey))
         vlan := position*10
-        *commands = append(*commands, fmt.Sprintf("set network.vlan%d.ipaddr='10.%d.%d.4'", vlan, team.Id/100, team.Id%100))
+        *commands = append(*commands, fmt.Sprintf("set network.vlan%d.ipaddr='10.%d.%d.1'", vlan, team.Id/100, team.Id%100))
 	}
 
 	return strings.Join(*commands, "\n"), nil
@@ -283,10 +283,10 @@ func (ap *AccessPoint) updateTeamWifiBTU() error {
 		return nil
 	}
 
-	infWifi := []string{"0", "0-1", "0-2", "0-3", "0-4", "0-5"}
+	infWifi := []string{"1", "11", "12", "13", "14", "15"}
 	for i := range ap.TeamWifiStatuses {
 
-		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i wlan%s", infWifi[i]))
+		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i ath%s", infWifi[i]))
 		if err == nil {
 			btu := parseBtu(output)
 			ap.TeamWifiStatuses[i].MBits = btu
