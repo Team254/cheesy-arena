@@ -552,7 +552,8 @@ html {
   line-height: 110px;
 }
 #sponsor img {
-  max-width: 800px;
+  min-height: 200px;
+  max-width: 600px;
   max-height: 400px;
 }
 #allianceRankingsCentering {
