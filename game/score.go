@@ -16,8 +16,8 @@ type Score struct {
 	PlayoffDq                 bool
 }
 
-var SustainabilityBonusLinkThresholdWithoutCoop = 7
-var SustainabilityBonusLinkThresholdWithCoop = 6
+var SustainabilityBonusLinkThresholdWithoutCoop = 6
+var SustainabilityBonusLinkThresholdWithCoop = 5
 var ActivationBonusPointThreshold = 26
 
 // Represents the state of a robot at the end of the match.
