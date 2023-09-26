@@ -64,12 +64,12 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 					"no ip dhcp pool dhcp%d\n"+
 					"ip dhcp pool dhcp%d\n"+
 					"network 10.%d.%d.0 255.255.255.0\n"+
-					"default-router 10.%d.%d.61\n"+
+					"default-router 10.%d.%d.1\n"+
 					"lease 7\n"+
 					"no access-list 1%d\n"+
 					"access-list 1%d permit ip 10.%d.%d.0 0.0.0.255 host %s\n"+
 					"access-list 1%d permit udp any eq bootpc any eq bootps\n"+
-					"interface Vlan%d\nip address 10.%d.%d.61 255.255.255.0\n",
+					"interface Vlan%d\nip address 10.%d.%d.1 255.255.255.0\n",
 				team.Id/100, team.Id%100, team.Id/100, team.Id%100, vlan, vlan, team.Id/100, team.Id%100, team.Id/100,
 				team.Id%100, vlan, vlan, team.Id/100, team.Id%100, ServerIpAddress, vlan, vlan, team.Id/100,
 				team.Id%100)
@@ -109,7 +109,7 @@ func (sw *Switch) getTeamVlans() (map[int]int, error) {
 	}
 
 	// Parse out the team IDs and VLANs from the config dump.
-	re := regexp.MustCompile("(?s)interface Vlan(\\d\\d)\\s+ip address 10\\.(\\d+)\\.(\\d+)\\.61")
+	re := regexp.MustCompile("(?s)interface Vlan(\\d\\d)\\s+ip address 10\\.(\\d+)\\.(\\d+)\\.1")
 	teamVlanMatches := re.FindAllStringSubmatch(config, -1)
 	if teamVlanMatches == nil {
 		// There are probably no teams currently configured.
