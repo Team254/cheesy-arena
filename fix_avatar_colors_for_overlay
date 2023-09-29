@@ -15,5 +15,5 @@ read
 
 for f in *.png
 do
-  convert $f -fill $REPLACEMENT_COLOR -fuzz 10% -opaque $COLOR_TO_REPLACE $f
+  convert $f -fill $REPLACEMENT_COLOR -fuzz 50% -opaque $COLOR_TO_REPLACE $f
 done
