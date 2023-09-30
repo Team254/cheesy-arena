@@ -831,6 +831,8 @@ func (arena *Arena) handlePlcInputOutput() {
 	redScore := &arena.RedRealtimeScore.CurrentScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
 	redChargeStationLevel, blueChargeStationLevel := arena.Plc.GetChargeStationsLevel()
+	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
+	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
 
 	switch arena.MatchState {
 	case PreMatch:
@@ -843,8 +845,6 @@ func (arena *Arena) handlePlcInputOutput() {
 	case PostTimeout:
 		// Set the stack light state -- solid alliance color(s) if robots are not connected, solid orange if scores are
 		// not input, or blinking green if ready.
-		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
-		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
 		greenStackLight := redAllianceReady && blueAllianceReady && arena.Plc.GetCycleState(2, 0, 2)
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, greenStackLight)
 		arena.Plc.SetStackBuzzer(redAllianceReady && blueAllianceReady)
@@ -883,7 +883,7 @@ func (arena *Arena) handlePlcInputOutput() {
 		}
 	case AutoPeriod:
 		arena.Plc.SetStackBuzzer(false)
-		arena.Plc.SetStackLights(false, false, false, true)
+		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, true)
 		fallthrough
 	case PausePeriod:
 		// Game-specific PLC functions.
@@ -891,6 +891,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	case TeleopPeriod:
 		// Game-specific PLC functions.
 		arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
+		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, true)
 		if arena.lastMatchState != TeleopPeriod {
 			// Capture a single reading of the charge station levels after the autonomous pause.
 			redScore.AutoChargeStationLevel, blueScore.AutoChargeStationLevel = arena.Plc.GetChargeStationsLevel()
