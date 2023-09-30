@@ -63,16 +63,17 @@
 {{range $foul := .fouls}}
   <div class="row">
     <div class="col-sm-4 col-sm-offset-1">
-      {{if (index $.rulesViolated $foul.RuleId).IsRankingPoint}}
+      {{if and (index $.rulesViolated $foul.RuleId) (index $.rulesViolated $foul.RuleId).IsRankingPoint}}
         Free RP
       {{else}}
-        {{if (index $.rulesViolated $foul.RuleId).IsTechnical}}Tech {{end}}
+        {{if $foul.IsTechnical}}Tech {{end}}
         Foul
       {{end}}
     </div>
     <div class="col-sm-4">Team {{$foul.TeamId}}</div>
-    <div class="col-sm-3" data-toggle="tooltip" title="{{(index $.rulesViolated $foul.RuleId).Description}}">
-      {{(index $.rulesViolated $foul.RuleId).RuleNumber}}
+    <div class="col-sm-3" data-toggle="tooltip"
+      {{if index $.rulesViolated $foul.RuleId}}title="{{(index $.rulesViolated $foul.RuleId).Description}}"{{end}}>
+      {{if index $.rulesViolated $foul.RuleId}}{{(index $.rulesViolated $foul.RuleId).RuleNumber}}{{end}}
     </div>
   </div>
 {{end}}
