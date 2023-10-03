@@ -1,0 +1,243 @@
+{{/*
+  Copyright 2014 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  Display shown on the audience screen overlayed over the video.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Field Audience Display - {{.EventSettings.Name}} - Cheesy Arena </title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/field_audience_display.css" />
+  </head>
+  <body>
+    <div id="outerCentering">
+      <div id="overlayCentering">
+        <div id="matchOverlayContainer">
+          <div class="playoff-alliance" id="leftPlayoffAlliance"></div>
+          <div id="matchOverlay">
+            <div id="matchOverlayTop">
+              <div class="teams" id="leftTeams">
+                <div id="leftTeam1"></div>
+                <div id="leftTeam2"></div>
+                <div id="leftTeam3"></div>
+              </div>
+              <div class="score reversible-left">
+                <div class="avatars">
+                  <img class="avatar" id="leftTeam1Avatar" src="" />
+                  <img class="avatar" id="leftTeam2Avatar" src="" />
+                  <img class="avatar" id="leftTeam3Avatar" src="" />
+                </div>
+                <div class="score-number" id="leftScoreNumber"></div>
+              </div>
+              <div class="score score-right reversible-right">
+                <div class="score-number" id="rightScoreNumber"></div>
+                <div class="avatars">
+                  <img class="avatar" id="rightTeam1Avatar" src="" />
+                  <img class="avatar" id="rightTeam2Avatar" src="" />
+                  <img class="avatar" id="rightTeam3Avatar" src="" />
+                </div>
+              </div>
+              <div class="teams" id="rightTeams">
+                <div id="rightTeam1"></div>
+                <div id="rightTeam2"></div>
+                <div id="rightTeam3"></div>
+              </div>
+            </div>
+            <div id="eventMatchInfo">
+              <span>{{.EventSettings.Name}}</span>
+              <span id="matchName"></span>
+            </div>
+          </div>
+          <div class="playoff-alliance" id="rightPlayoffAlliance"></div>
+        </div>
+        <div id="playoffSeriesStatus">
+          <span id="leftPlayoffAllianceWins"></span>&nbsp;-&nbsp;<span id="rightPlayoffAllianceWins"></span>
+        </div>
+        <div class="text-center" id="matchCircle">
+          <img id="logo" src="/static/img/game-logo-rocket.png" alt="logo" />
+          <div id="matchTime"></div>
+        </div>
+        <div id="timeoutDetails">
+          <div class="timeout-detail" id="timeoutBreakDescription"></div>
+          <div class="timeout-detail" id="timeoutNextMatch">
+            Next Up:<br />
+            <span id="timeoutNextMatchName"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="blindsContainer">
+      <div class="blinds right background">
+        <div class="blindsCenter blank"></div>
+      </div>
+      <div class="blinds left background">
+        <div class="blindsCenter blank"></div>
+      </div>
+      <div class="blindsCenter full">
+        <img id="blindsLogo" src="/static/img/game-logo.png" alt="logo" />
+      </div>
+      <div id="finalScoreCentering">
+        <div id="finalScore">
+          <div class="final-score-row">
+            <div class="final-score reversible-left" id="leftFinalScore"></div>
+            <div class="final-score reversible-right" id="rightFinalScore"></div>
+          </div>
+          <div class="final-score-row">
+            <div class="final-breakdown final-breakdown-teams">
+              <div class="final-teams reversible-left">
+                <div class="final-alliance playoff-only-field" id="leftFinalAlliance"></div>
+                {{range $i := seq 4}}
+                  <div class="final-team-row">
+                    <img class="final-team-avatar" id="leftFinalTeam{{$i}}Avatar" src="" />
+                    <div class="final-team-number" id="leftFinalTeam{{$i}}"></div>
+                    <div class="final-team-rank">
+                      <img id="leftFinalTeam{{$i}}RankIndicator" src="" />
+                      <div id="leftFinalTeam{{$i}}RankNumber"></div>
+                    </div>
+                  </div>
+                {{end}}
+              </div>
+              <div class="playoff-only-field">
+                <div class="final-destination" id="leftFinalDestination"></div>
+              </div>
+            </div>
+            <div class="final-breakdown" id="leftFinalBreakdown">
+              <div id="leftFinalMobilityPoints"></div>
+              <div id="leftFinalGridPoints"></div>
+              <div id="leftFinalChargeStationPoints"></div>
+              <div id="leftFinalParkPoints"></div>
+              <div id="leftFinalFoulPoints"></div>
+              <div class="playoff-hidden-field">
+                <div id="leftFinalSustainabilityBonusRankingPoint"></div>
+                <div id="leftFinalActivationBonusRankingPoint"></div>
+                <div id="leftFinalRankingPoints"></div>
+              </div>
+              <div class="playoff-only-field">
+                <div>&nbsp;</div>
+                <div id="leftFinalWins"></div>
+              </div>
+            </div>
+            <div class="final-breakdown" id="centerFinalBreakdown">
+              <div>Mobility</div>
+              <div>Grid</div>
+              <div>Charge Station</div>
+              <div>Park</div>
+              <div>Foul</div>
+              <div class="playoff-hidden-field">
+                <div>Sustainability Bonus</div>
+                <div>Activation Bonus</div>
+                <div>Ranking Points</div>
+              </div>
+              <div class="playoff-only-field">
+                <div>&nbsp;</div>
+                <div>Wins</div>
+              </div>
+            </div>
+            <div class="final-breakdown" id="rightFinalBreakdown">
+              <div id="rightFinalMobilityPoints"></div>
+              <div id="rightFinalGridPoints"></div>
+              <div id="rightFinalChargeStationPoints"></div>
+              <div id="rightFinalParkPoints"></div>
+              <div id="rightFinalFoulPoints"></div>
+              <div class="playoff-hidden-field">
+                <div id="rightFinalSustainabilityBonusRankingPoint"></div>
+                <div id="rightFinalActivationBonusRankingPoint"></div>
+                <div id="rightFinalRankingPoints"></div>
+              </div>
+              <div class="playoff-only-field">
+                <div>&nbsp;</div>
+                <div id="rightFinalWins"></div>
+              </div>
+            </div>
+            <div class="final-breakdown final-breakdown-teams">
+              <div class="final-teams reversible-right">
+                <div class="final-alliance playoff-only-field" id="rightFinalAlliance"></div>
+                {{range $i := seq 4}}
+                  <div class="final-team-row">
+                    <img class="final-team-avatar" id="rightFinalTeam{{$i}}Avatar" src="" />
+                    <div class="final-team-number" id="rightFinalTeam{{$i}}"></div>
+                    <div class="final-team-rank">
+                      <img id="rightFinalTeam{{$i}}RankIndicator" src="" />
+                      <div id="rightFinalTeam{{$i}}RankNumber"></div>
+                    </div>
+                  </div>
+                {{end}}
+              </div>
+              <div class="playoff-only-field">
+                <div class="final-destination" id="rightFinalDestination"></div>
+              </div>
+            </div>
+          </div>
+          <div class="final-score-row" id="finalEventMatchInfo">
+            <div class="final-footer">{{.EventSettings.Name}}</div>
+            <div class="final-footer" id="finalMatchName">&nbsp;</div>
+          </div>
+        </div>
+      </div>
+      <div id="bracket">
+        <img id="bracketSvg" src="" />
+      </div>
+      <div id="sponsor" class="carousel slide">
+        <div class="carousel-inner" id="sponsorContainer">
+        </div>
+      </div>
+    </div>
+    <div id="allianceSelectionCentering" style="display: none;">
+      <div id="allianceSelection"></div>
+    </div>
+    <div id="lowerThird">
+      <img id="lowerThirdLogo" src="/static/img/lower-third-logo.png" alt="logo" />
+      <div id="lowerThirdTop"></div>
+      <div id="lowerThirdBottom"></div>
+      <div id="lowerThirdSingle"></div>
+    </div>
+    <script id="allianceSelectionTemplate" type="text/x-handlebars-template">
+      <table id="allianceSelectionTable">
+        <tr>
+          <td colspan="{{"{{numColumns}}"}}">
+            <img src="/static/img/alliance-selection-logo.png" alt="logo" />
+          </td>
+        </tr>
+        {{"{{#each alliances}}"}}
+          <tr>
+            <td class="alliance-cell">{{"{{Index}}"}}</td>
+            {{"{{#each this.TeamIds}}"}}
+              <td class="selection-cell">{{"{{#if this}}"}}{{"{{this}}"}}{{"{{/if}}"}}</td>
+            {{"{{/each}}"}}
+          </tr>
+        {{"{{/each}}"}}
+      </table>
+    </script>
+    <script id="sponsorImageTemplate" type="text/x-handlebars-template">
+      <div class="item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-interval="{{"{{DisplayTimeMs}}"}}">
+        <div class="sponsor-image-container">
+          <img src="/static/img/sponsors/{{"{{Image}}"}}" />
+        </div>
+        <h1>{{"{{Subtitle}}"}}</h1>
+      </div>
+    </script>
+    <script id="sponsorTextTemplate" type="text/x-handlebars-template">
+      <div class="item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-interval="{{"{{DisplayTimeMs}}"}}">
+        <h2>{{"{{Line1}}"}}<br />{{"{{Line2}}"}}</h2>
+        <h1>{{"{{Subtitle}}"}}</h1>
+      </div>
+    </script>
+    {{range $sound := .MatchSounds}}
+      <audio id="sound-{{$sound.Name}}" src="/static/audio/{{$sound.Name}}.{{$sound.FileExtension}}" preload="auto">
+      </audio>
+    {{end}}
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/lib/jquery.transit.min.js"></script>
+    <script src="/static/js/lib/handlebars-1.3.0.js"></script>
+    <script src="/static/js/lib/bootstrap.min.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/match_timing.js"></script>
+    <script src="/static/js/field_audience_display.js"></script>
+  </body>
+</html>
