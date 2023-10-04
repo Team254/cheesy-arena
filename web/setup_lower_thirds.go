@@ -151,6 +151,7 @@ func (web *Web) saveLowerThird(lowerThird *model.LowerThird) error {
 		lowerThird.DisplayOrder = web.arena.Database.GetNextLowerThirdDisplayOrder()
 		err = web.arena.Database.CreateLowerThird(lowerThird)
 	} else {
+		lowerThird.DisplayOrder = oldLowerThird.DisplayOrder
 		err = web.arena.Database.UpdateLowerThird(lowerThird)
 	}
 	if err != nil {
