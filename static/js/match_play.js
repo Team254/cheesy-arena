@@ -18,9 +18,18 @@ const showResult = function(matchId) {
   websocket.send("showResult", { matchId: matchId });
 }
 
-// Sends a websocket message to load a team into an alliance station.
-const substituteTeam = function(team, position) {
-  websocket.send("substituteTeam", { team: parseInt(team), position: position })
+// Sends a websocket message to load all teams into their respective alliance stations.
+const substituteTeams = function(team, position) {
+  const teams = {
+    Red1: getTeamNumber("R1"),
+    Red2: getTeamNumber("R2"),
+    Red3: getTeamNumber("R3"),
+    Blue1: getTeamNumber("B1"),
+    Blue2: getTeamNumber("B2"),
+    Blue3: getTeamNumber("B3"),
+  };
+
+  websocket.send("substituteTeams", teams);
 };
 
 // Sends a websocket message to toggle the bypass status for an alliance station.
@@ -89,6 +98,12 @@ const confirmCommit = function() {
 const setTestMatchName = function() {
   websocket.send("setTestMatchName", $("#testMatchName").val());
 };
+
+// Returns the integer team number entered into the team number input box for the given station, or 0 if it is empty.
+const getTeamNumber = function(station) {
+  const teamId = $(`#status${station} .team-number`).val().trim();
+  return teamId ? parseInt(teamId) : 0;
+}
 
 // Handles a websocket message to update the team connection status.
 const handleArenaStatus = function(data) {
@@ -237,6 +252,8 @@ const handleMatchLoad = function(data) {
   });
   $("#playoffRedAllianceInfo").html(formatPlayoffAllianceInfo(data.Match.PlayoffRedAlliance, data.RedOffFieldTeams));
   $("#playoffBlueAllianceInfo").html(formatPlayoffAllianceInfo(data.Match.PlayoffBlueAlliance, data.BlueOffFieldTeams));
+
+  $("#substituteTeams").prop("disabled", true);
 }
 
 // Handles a websocket message to update the match time countdown.

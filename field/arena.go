@@ -302,28 +302,39 @@ func (arena *Arena) LoadNextMatch(startScheduledBreak bool) error {
 }
 
 // Assigns the given team to the given station, also substituting it into the match record.
-func (arena *Arena) SubstituteTeam(teamId int, station string) error {
+func (arena *Arena) SubstituteTeams(red1, red2, red3, blue1, blue2, blue3 int) error {
 	if !arena.CurrentMatch.ShouldAllowSubstitution() {
 		return fmt.Errorf("Can't substitute teams for qualification matches.")
 	}
-	err := arena.assignTeam(teamId, station)
-	if err != nil {
+
+	if err := arena.validateTeams(red1, red2, red3, blue1, blue2, blue3); err != nil {
 		return err
 	}
-	switch station {
-	case "R1":
-		arena.CurrentMatch.Red1 = teamId
-	case "R2":
-		arena.CurrentMatch.Red2 = teamId
-	case "R3":
-		arena.CurrentMatch.Red3 = teamId
-	case "B1":
-		arena.CurrentMatch.Blue1 = teamId
-	case "B2":
-		arena.CurrentMatch.Blue2 = teamId
-	case "B3":
-		arena.CurrentMatch.Blue3 = teamId
+	if err := arena.assignTeam(red1, "R1"); err != nil {
+		return err
 	}
+	if err := arena.assignTeam(red2, "R2"); err != nil {
+		return err
+	}
+	if err := arena.assignTeam(red3, "R3"); err != nil {
+		return err
+	}
+	if err := arena.assignTeam(blue1, "B1"); err != nil {
+		return err
+	}
+	if err := arena.assignTeam(blue2, "B2"); err != nil {
+		return err
+	}
+	if err := arena.assignTeam(blue3, "B3"); err != nil {
+		return err
+	}
+
+	arena.CurrentMatch.Red1 = red1
+	arena.CurrentMatch.Red2 = red2
+	arena.CurrentMatch.Red3 = red3
+	arena.CurrentMatch.Blue1 = blue1
+	arena.CurrentMatch.Blue2 = blue2
+	arena.CurrentMatch.Blue3 = blue3
 	arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
 		arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
 		arena.AllianceStations["B3"].Team})
@@ -609,6 +620,23 @@ func (arena *Arena) RedScoreSummary() *game.ScoreSummary {
 // Calculates the blue alliance score summary for the given realtime snapshot.
 func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
 	return arena.BlueRealtimeScore.CurrentScore.Summarize(&arena.RedRealtimeScore.CurrentScore)
+}
+
+// Checks that the given teams are present in the database, allowing team ID 0 which indicates an empty spot.
+func (arena *Arena) validateTeams(teamIds ...int) error {
+	for _, teamId := range teamIds {
+		if teamId == 0 {
+			continue
+		}
+		team, err := arena.Database.GetTeamById(teamId)
+		if err != nil {
+			return err
+		}
+		if team == nil {
+			return fmt.Errorf("Team %d is not present at the event.", teamId)
+		}
+	}
+	return nil
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.

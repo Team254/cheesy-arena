@@ -240,6 +240,7 @@ func TestCommitCards(t *testing.T) {
 
 func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web := setupTestWeb(t)
+	web.arena.Database.CreateTeam(&model.Team{Id: 254})
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
@@ -265,14 +266,12 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	assert.Contains(t, readWebsocketError(t, ws), "Invalid message type")
 
 	// Test match setup commands.
-	ws.Write("substituteTeam", nil)
-	assert.Contains(t, readWebsocketError(t, ws), "Invalid alliance station")
-	ws.Write("substituteTeam", map[string]any{"team": 254, "position": "B5"})
-	assert.Contains(t, readWebsocketError(t, ws), "Invalid alliance station")
-	ws.Write("substituteTeam", map[string]any{"team": 254, "position": "B1"})
+	ws.Write("substituteTeams", map[string]int{"Red1": 0, "Red2": 0, "Red3": 0, "Blue1": 1, "Blue2": 0, "Blue3": 0})
+	assert.Equal(t, readWebsocketError(t, ws), "Team 1 is not present at the event.")
+	ws.Write("substituteTeams", map[string]int{"Red1": 0, "Red2": 0, "Red3": 0, "Blue1": 254, "Blue2": 0, "Blue3": 0})
 	readWebsocketType(t, ws, "matchLoad")
 	assert.Equal(t, 254, web.arena.CurrentMatch.Blue1)
-	ws.Write("substituteTeam", map[string]any{"team": 0, "position": "B1"})
+	ws.Write("substituteTeams", map[string]int{"Red1": 0, "Red2": 0, "Red3": 0, "Blue1": 0, "Blue2": 0, "Blue3": 0})
 	readWebsocketType(t, ws, "matchLoad")
 	assert.Equal(t, 0, web.arena.CurrentMatch.Blue1)
 	ws.Write("toggleBypass", nil)

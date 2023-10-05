@@ -392,7 +392,7 @@ func TestLoadNextMatch(t *testing.T) {
 
 	// Test match should be followed by another, empty test match.
 	assert.Equal(t, 0, arena.CurrentMatch.Id)
-	err := arena.SubstituteTeam(1114, "R1")
+	err := arena.SubstituteTeams(1114, 0, 0, 0, 0, 0)
 	assert.Nil(t, err)
 	arena.CurrentMatch.Status = game.TieMatch
 	err = arena.LoadNextMatch(false)
@@ -442,7 +442,7 @@ func TestSubstituteTeam(t *testing.T) {
 	arena.Database.CreateTeam(&model.Team{Id: 107})
 
 	// Substitute teams into test match.
-	err := arena.SubstituteTeam(101, "B1")
+	err := arena.SubstituteTeams(0, 0, 0, 101, 0, 0)
 	assert.Nil(t, err)
 	assert.Equal(t, 101, arena.CurrentMatch.Blue1)
 	assert.Equal(t, 101, arena.AllianceStations["B1"].Team.Id)
@@ -455,7 +455,7 @@ func TestSubstituteTeam(t *testing.T) {
 	match := model.Match{Type: model.Practice, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
-	err = arena.SubstituteTeam(107, "R1")
+	err = arena.SubstituteTeams(107, 102, 103, 104, 105, 106)
 	assert.Nil(t, err)
 	assert.Equal(t, 107, arena.CurrentMatch.Red1)
 	assert.Equal(t, 107, arena.AllianceStations["R1"].Team.Id)
@@ -466,14 +466,20 @@ func TestSubstituteTeam(t *testing.T) {
 	match = model.Match{Type: model.Qualification, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
-	err = arena.SubstituteTeam(107, "R1")
+	err = arena.SubstituteTeams(107, 102, 103, 104, 105, 106)
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Can't substitute teams for qualification matches.")
 	}
 	match = model.Match{Type: model.Playoff, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
-	assert.Nil(t, arena.SubstituteTeam(107, "R1"))
+	assert.Nil(t, arena.SubstituteTeams(107, 102, 103, 104, 105, 106))
+
+	// Check that loading a nonexistent team fails.
+	err = arena.SubstituteTeams(101, 102, 103, 104, 105, 108)
+	if assert.NotNil(t, err) {
+		assert.Equal(t, err.Error(), "Team 108 is not present at the event.")
+	}
 }
 
 func TestArenaTimeout(t *testing.T) {

@@ -53,6 +53,10 @@
           onclick="abortMatch();" disabled>
         Abort Match
       </button>
+      <button type="button" id="substituteTeams" class="btn btn-warning btn-lg btn-match-play"
+        onclick="substituteTeams();" disabled>
+        Substitute Teams
+      </button>
       <button type="button" id="signalReset" class="btn btn-success btn-lg btn-match-play"
           onclick="signalReset();" disabled>
         Signal Reset
@@ -269,7 +273,7 @@
   <div class="col-lg-1">{{.position}} </div>
   <div class="col-lg-3">
     <input type="number" class="team-number form-control input-sm"
-      onblur="substituteTeam($(this).val(), '{{.color}}{{.position}}');">
+      onchange="$('#substituteTeams').prop('disabled', false);">
   </div>
   <div class="col-lg-2 col-no-padding"><div class="ds-status"></div></div>
   <div class="col-lg-2 col-no-padding"><div class="radio-status"></div></div>
