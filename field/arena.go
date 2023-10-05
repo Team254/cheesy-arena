@@ -67,7 +67,6 @@ type Arena struct {
 	lastDsPacketTime           time.Time
 	lastPeriodicTaskTime       time.Time
 	EventStatus                EventStatus
-	FieldVolunteers            bool
 	FieldReset                 bool
 	AudienceDisplayMode        string
 	SavedMatch                 *model.Match
@@ -252,7 +251,6 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.soundsPlayed = make(map[*game.MatchSound]struct{})
 	arena.RedRealtimeScore = NewRealtimeScore()
 	arena.BlueRealtimeScore = NewRealtimeScore()
-	arena.FieldVolunteers = false
 	arena.FieldReset = false
 	arena.ScoringPanelRegistry.resetScoreCommitted()
 	arena.Plc.ResetMatch()

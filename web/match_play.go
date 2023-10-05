@@ -277,13 +277,6 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
-		case "signalVolunteers":
-			if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
-				// Don't allow clearing the field until the match is over.
-				continue
-			}
-			web.arena.FieldVolunteers = true
-			continue // Skip sending an arena status update.
 		case "signalReset":
 			if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
 				// Don't allow clearing the field until the match is over.

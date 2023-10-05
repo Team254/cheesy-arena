@@ -47,11 +47,6 @@ var cycleCard = function(cardButton) {
   $(cardButton).attr("data-card", newCard);
 };
 
-// Sends a websocket message to signal to the volunteers that they may enter the field.
-var signalVolunteers = function() {
-  websocket.send("signalVolunteers");
-};
-
 // Sends a websocket message to signal to the teams that they may enter the field.
 var signalReset = function() {
   websocket.send("signalReset");
