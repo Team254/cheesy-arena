@@ -14,6 +14,16 @@ var handleAudienceDisplayMode = function(targetScreen) {
   }
 };
 
+// Handles a websocket message to update the event status message.
+const handleEventStatus = function(data) {
+  if (data.CycleTime === "") {
+    $("#cycleTimeMessage").text("Last cycle time: Unknown");
+  } else {
+    $("#cycleTimeMessage").text("Last cycle time: " + data.CycleTime);
+  }
+  $("#earlyLateMessage").text(data.EarlyLateMessage);
+};
+
 // Handles a websocket message to update the teams for the current match.
 var handleMatchLoad = function(data) {
   $("#matchName").text(data.Match.LongName);
@@ -62,6 +72,7 @@ $(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/announcer/websocket", {
     audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
+    eventStatus: function(event) { handleEventStatus(event.data); },
     matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },
