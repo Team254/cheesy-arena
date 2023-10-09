@@ -81,6 +81,21 @@ func (ap *AccessPoint) Run() {
 	}
 }
 
+// Calls the access point to configure the non-team-related settings.
+func (ap *AccessPoint) ConfigureAdminSettings() error {
+	if !ap.networkSecurityEnabled {
+		return nil
+	}
+
+	commands := []string{
+		fmt.Sprintf("set wireless.radio0.channel='%d'", ap.teamChannel),
+		"commit wireless",
+	}
+	command := fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\nENDCONFIG\n", strings.Join(commands, "\n"))
+	_, err := ap.runCommand(command)
+	return err
+}
+
 // Adds a request to set up wireless networks for the given set of teams to the asynchronous queue.
 func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
 	// Use a channel to serialize configuration requests; the monitoring goroutine will service them.
