@@ -77,6 +77,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TbaSecretId = r.PostFormValue("tbaSecretId")
 	eventSettings.TbaSecret = r.PostFormValue("tbaSecret")
 	eventSettings.NetworkSecurityEnabled = r.PostFormValue("networkSecurityEnabled") == "on"
+	eventSettings.ApType = r.PostFormValue("apType")
 	eventSettings.ApAddress = r.PostFormValue("apAddress")
 	eventSettings.ApUsername = r.PostFormValue("apUsername")
 	eventSettings.ApPassword = r.PostFormValue("apPassword")

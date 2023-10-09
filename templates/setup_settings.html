@@ -147,12 +147,31 @@
         </fieldset>
         <fieldset>
           <legend>Networking</legend>
-          <p>Enable this setting if you have a Linksys WRT1900ACS access point and Catalyst 3500-series
-              switch available, for isolating each team to its own SSID and VLAN.</p>
+          <p>Enable this setting if you have a Linksys WRT1900ACS or Vivid-Hosting access point and Cisco Catalyst
+            3500-series switch available, for isolating each team to its own SSID and VLAN.</p>
           <div class="form-group">
             <label class="col-lg-7 control-label">Enable advanced network security</label>
             <div class="col-lg-1 checkbox">
               <input type="checkbox" name="networkSecurityEnabled"{{if .NetworkSecurityEnabled}} checked{{end}}>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">AP Type</label>
+            <div class="col-lg-7">
+              <div class="radio">
+                <label>
+                  <input type="radio" name="apType" value="linksys"
+                    {{if eq .ApType "linksys"}}checked{{end}}>
+                  Linksys WRT1900ACS
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" name="apType" value="vivid"
+                    {{if eq .ApType "vivid"}}checked{{end}}>
+                  Vivid-Hosting VH109
+                </label>
+              </div>
             </div>
           </div>
           <div class="form-group">
@@ -200,8 +219,8 @@
               <input type="password" class="form-control" name="switchPassword" value="{{.SwitchPassword}}">
             </div>
           </div>
-          <p>If you have a second access point available and want to use one for each alliance to increase available
-            bandwidth, configure the second one below.</p>
+          <p>If you have a second access point (of identical type) available and want to use one for each alliance to
+            increase available bandwidth, configure the second one below.</p>
           <div class="form-group">
             <label class="col-lg-5 control-label">Second AP Address</label>
             <div class="col-lg-7">

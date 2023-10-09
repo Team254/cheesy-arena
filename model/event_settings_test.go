@@ -24,6 +24,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			SelectionRound2Order:        "L",
 			SelectionRound3Order:        "",
 			TbaDownloadEnabled:          true,
+			ApType:                      "linksys",
 			ApTeamChannel:               157,
 			WarmupDurationSec:           0,
 			AutoDurationSec:             15,

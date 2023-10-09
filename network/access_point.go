@@ -27,6 +27,7 @@ const (
 )
 
 type AccessPoint struct {
+	isVividType            bool
 	address                string
 	username               string
 	password               string
@@ -48,7 +49,10 @@ type sshOutput struct {
 	err    error
 }
 
-func (ap *AccessPoint) SetSettings(address, username, password string, teamChannel int, networkSecurityEnabled bool) {
+func (ap *AccessPoint) SetSettings(
+	isVividType bool, address, username, password string, teamChannel int, networkSecurityEnabled bool,
+) {
+	ap.isVividType = isVividType
 	ap.address = address
 	ap.username = username
 	ap.password = password
