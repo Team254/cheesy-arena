@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright 2018 Team 254. All Rights Reserved.
   Author: pat@patfairbank.com (Patrick Fairbank)
 */
@@ -51,6 +51,9 @@ body {
 #eventStatusRow[data-ds="true"] {
   display: none;
 }
+#eventStatusRow[data-fta="false"] {
+  display: none;
+}
 .left-position, .right-position {
   width: 8%;
   height: 100%;
@@ -82,20 +85,20 @@ body {
   font-size: 6vw;
 }
 .team-id[data-status=no-link], .team-notes[data-status=no-link] {
-  background-color: #963;
+  background-color: #AAA;
 }
 .team-id[data-status=ds-linked], .team-notes[data-status=ds-linked]  {
-  background-color: #ff0;
-  color: #333;
+  background-color: #EDAB33;
 }
 .team-id[data-status=robot-linked], .team-notes[data-status=robot-linked]  {
-  background-color: #0a3;
+  background-color: #00ff00;
+  color: #333;
 }
 .team-id[data-status=radio-linked], .team-notes[data-status=radio-linked]  {
-  background-color: #ff00ff;
+  background-color: #AA3377;
 }
 .team-id[data-status=wrong-station], .team-notes[data-status=wrong-station]  {
-  background-color: #246f92;
+  background-color: #4477AA;
 }
 .team-box-row {
   display: flex;
@@ -109,7 +112,8 @@ body {
   background-color: #333;
 }
 .team-box[data-status-ok="true"] {
-  background-color: #0a3;
+  background-color: #00ff00;
+  color: #333;
 }
 .team-box[data-status-ok="false"] {
   background-color: #f44;
@@ -156,3 +160,4 @@ textarea {
 .left-score[data-reversed=true], .right-score[data-reversed=false] {
   color: #2080ff;
 }
+
