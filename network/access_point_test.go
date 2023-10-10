@@ -14,16 +14,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateTeamAccessPointConfig(t *testing.T) {
+func TestGenerateTeamAccessPointConfigForLinksys(t *testing.T) {
 	model.BaseDir = ".."
+	ap := AccessPoint{isVividType: false}
 
+	ifaceRe := regexp.MustCompile("^set wireless\\.@wifi-iface\\[(\\d)\\]\\.")
 	disabledRe := regexp.MustCompile("disabled='([-\\w ]+)'")
 	ssidRe := regexp.MustCompile("ssid='([-\\w ]*)'")
 	wpaKeyRe := regexp.MustCompile("key='([-\\w ]*)'")
 
 	// Should reject invalid positions.
 	for _, position := range []int{-1, 0, 7, 8, 254} {
-		_, err := generateTeamAccessPointConfig(nil, position)
+		_, err := ap.generateTeamAccessPointConfig(nil, position)
 		if assert.NotNil(t, err) {
 			assert.Equal(t, err.Error(), fmt.Sprintf("invalid team position %d", position))
 		}
@@ -31,11 +33,13 @@ func TestGenerateTeamAccessPointConfig(t *testing.T) {
 
 	// Should configure dummy values for all team SSIDs if there are no teams.
 	for position := 1; position <= 6; position++ {
-		config, _ := generateTeamAccessPointConfig(nil, position)
+		config, _ := ap.generateTeamAccessPointConfig(nil, position)
+		ifaces := ifaceRe.FindAllStringSubmatch(config, -1)
 		disableds := disabledRe.FindAllStringSubmatch(config, -1)
 		ssids := ssidRe.FindAllStringSubmatch(config, -1)
 		wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
 		if assert.Equal(t, 1, len(disableds)) && assert.Equal(t, 1, len(ssids)) && assert.Equal(t, 1, len(wpaKeys)) {
+			assert.Equal(t, strconv.Itoa(position), ifaces[0][1])
 			assert.Equal(t, "0", disableds[0][1])
 			assert.Equal(t, fmt.Sprintf("no-team-%d", position), ssids[0][1])
 			assert.Equal(t, fmt.Sprintf("no-team-%d", position), wpaKeys[0][1])
@@ -45,17 +49,81 @@ func TestGenerateTeamAccessPointConfig(t *testing.T) {
 	// Should configure a different SSID for each team.
 	for position := 1; position <= 6; position++ {
 		team := &model.Team{Id: 254 + position, WpaKey: fmt.Sprintf("aaaaaaa%d", position)}
-		config, _ := generateTeamAccessPointConfig(team, position)
+		config, _ := ap.generateTeamAccessPointConfig(team, position)
+		ifaces := ifaceRe.FindAllStringSubmatch(config, -1)
+		disableds := disabledRe.FindAllStringSubmatch(config, -1)
 		ssids := ssidRe.FindAllStringSubmatch(config, -1)
 		wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
 		if assert.Equal(t, 1, len(ssids)) && assert.Equal(t, 1, len(wpaKeys)) {
+			assert.Equal(t, strconv.Itoa(position), ifaces[0][1])
+			assert.Equal(t, "0", disableds[0][1])
 			assert.Equal(t, strconv.Itoa(team.Id), ssids[0][1])
 			assert.Equal(t, fmt.Sprintf("aaaaaaa%d", position), wpaKeys[0][1])
 		}
 	}
 
 	// Should reject a missing WPA key.
-	_, err := generateTeamAccessPointConfig(&model.Team{Id: 254}, 4)
+	_, err := ap.generateTeamAccessPointConfig(&model.Team{Id: 254}, 4)
+	if assert.NotNil(t, err) {
+		assert.Contains(t, err.Error(), "invalid WPA key")
+	}
+}
+
+func TestGenerateTeamAccessPointConfigForVividHosting(t *testing.T) {
+	model.BaseDir = ".."
+	ap := AccessPoint{isVividType: true}
+
+	ifaceRe := regexp.MustCompile("^set wireless\\.@wifi-iface\\[(\\d)\\]\\.")
+	disabledRe := regexp.MustCompile("disabled='([-\\w ]+)'")
+	ssidRe := regexp.MustCompile("ssid='([-\\w ]*)'")
+	wpaKeyRe := regexp.MustCompile("key='([-\\w ]*)'")
+	saePasswordRe := regexp.MustCompile("sae_password='([-\\w ]*)'")
+
+	// Should reject invalid positions.
+	for _, position := range []int{-1, 0, 7, 8, 254} {
+		_, err := ap.generateTeamAccessPointConfig(nil, position)
+		if assert.NotNil(t, err) {
+			assert.Equal(t, err.Error(), fmt.Sprintf("invalid team position %d", position))
+		}
+	}
+
+	// Should configure dummy values for all team SSIDs if there are no teams.
+	for position := 1; position <= 6; position++ {
+		config, _ := ap.generateTeamAccessPointConfig(nil, position)
+		ifaces := ifaceRe.FindAllStringSubmatch(config, -1)
+		disableds := disabledRe.FindAllStringSubmatch(config, -1)
+		ssids := ssidRe.FindAllStringSubmatch(config, -1)
+		wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
+		saePasswords := saePasswordRe.FindAllStringSubmatch(config, -1)
+		if assert.Equal(t, 1, len(disableds)) && assert.Equal(t, 1, len(ssids)) && assert.Equal(t, 1, len(wpaKeys)) {
+			assert.Equal(t, strconv.Itoa(position), ifaces[0][1])
+			assert.Equal(t, "0", disableds[0][1])
+			assert.Equal(t, fmt.Sprintf("no-team-%d", position), ssids[0][1])
+			assert.Equal(t, fmt.Sprintf("no-team-%d", position), wpaKeys[0][1])
+			assert.Equal(t, fmt.Sprintf("no-team-%d", position), saePasswords[0][1])
+		}
+	}
+
+	// Should configure a different SSID for each team.
+	for position := 1; position <= 6; position++ {
+		team := &model.Team{Id: 254 + position, WpaKey: fmt.Sprintf("aaaaaaa%d", position)}
+		config, _ := ap.generateTeamAccessPointConfig(team, position)
+		ifaces := ifaceRe.FindAllStringSubmatch(config, -1)
+		disableds := disabledRe.FindAllStringSubmatch(config, -1)
+		ssids := ssidRe.FindAllStringSubmatch(config, -1)
+		wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
+		saePasswords := saePasswordRe.FindAllStringSubmatch(config, -1)
+		if assert.Equal(t, 1, len(ssids)) && assert.Equal(t, 1, len(wpaKeys)) {
+			assert.Equal(t, strconv.Itoa(position), ifaces[0][1])
+			assert.Equal(t, "0", disableds[0][1])
+			assert.Equal(t, strconv.Itoa(team.Id), ssids[0][1])
+			assert.Equal(t, fmt.Sprintf("aaaaaaa%d", position), wpaKeys[0][1])
+			assert.Equal(t, fmt.Sprintf("aaaaaaa%d", position), saePasswords[0][1])
+		}
+	}
+
+	// Should reject a missing WPA key.
+	_, err := ap.generateTeamAccessPointConfig(&model.Team{Id: 254}, 4)
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "invalid WPA key")
 	}

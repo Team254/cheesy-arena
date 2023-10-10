@@ -1,7 +1,8 @@
 // Copyright 2017 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Methods for configuring a Linksys WRT1900ACS access point running OpenWRT for team SSIDs and VLANs.
+// Methods for configuring a Linksys WRT1900ACS or Vivid-Hosting VH-109 access point running OpenWRT for team SSIDs and
+// VLANs.
 
 package network
 
@@ -20,10 +21,10 @@ import (
 const (
 	accessPointSshPort                = 22
 	accessPointConnectTimeoutSec      = 1
-	accessPointCommandTimeoutSec      = 5
+	accessPointCommandTimeoutSec      = 30
 	accessPointPollPeriodSec          = 3
 	accessPointRequestBufferSize      = 10
-	accessPointConfigRetryIntervalSec = 5
+	accessPointConfigRetryIntervalSec = 30
 )
 
 type AccessPoint struct {
@@ -101,12 +102,16 @@ func (ap *AccessPoint) handleTeamWifiConfiguration(teams [6]*model.Team) {
 		return
 	}
 
-	if ap.configIsCorrectForTeams(teams) {
+	err := ap.updateTeamWifiStatuses()
+	if err == nil && ap.configIsCorrectForTeams(teams) {
+		log.Printf("WiFi configuration is already correct; skipping configuration cycle.")
 		return
 	}
 
-	// Clear the state of the radio before loading teams.
-	ap.configureTeams([6]*model.Team{nil, nil, nil, nil, nil, nil})
+	if !ap.isVividType {
+		// Clear the state of the radio before loading teams; the Linksys AP is crash-prone otherwise.
+		ap.configureTeams([6]*model.Team{nil, nil, nil, nil, nil, nil})
+	}
 	ap.configureTeams(teams)
 }
 
@@ -116,12 +121,13 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 	for {
 		teamIndex := 0
 		for teamIndex < 6 {
-			config, err := generateTeamAccessPointConfig(teams[teamIndex], teamIndex+1)
+			config, err := ap.generateTeamAccessPointConfig(teams[teamIndex], teamIndex+1)
 			if err != nil {
 				log.Printf("Failed to generate WiFi configuration: %v", err)
 			}
 
 			command := addConfigurationHeader(config)
+			log.Printf("Configuring access point with command: %s\n", command)
 
 			_, err = ap.runCommand(command)
 			if err != nil {
@@ -133,7 +139,9 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 
 			teamIndex++
 		}
-		time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
+
+		_, _ = ap.runCommand("uci commit wireless")
+		_, _ = ap.runCommand("wifi reload")
 		err := ap.updateTeamWifiStatuses()
 		if err == nil && ap.configIsCorrectForTeams(teams) {
 			log.Printf("Successfully configured WiFi after %d attempts.", retryCount)
@@ -170,6 +178,7 @@ func (ap *AccessPoint) updateTeamWifiStatuses() error {
 
 	output, err := ap.runCommand("iwinfo")
 	if err == nil {
+		log.Printf("Access point status: %s\n", output)
 		err = decodeWifiInfo(output, ap.TeamWifiStatuses[:])
 	}
 
@@ -217,31 +226,37 @@ func (ap *AccessPoint) runCommand(command string) (string, error) {
 }
 
 func addConfigurationHeader(commandList string) string {
-	return fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\ncommit wireless\nENDCONFIG\n", commandList)
+	return fmt.Sprintf("uci batch <<ENDCONFIG\n%s\nENDCONFIG\n", commandList)
 }
 
 // Verifies WPA key validity and produces the configuration command for the given team.
-func generateTeamAccessPointConfig(team *model.Team, position int) (string, error) {
+func (ap *AccessPoint) generateTeamAccessPointConfig(team *model.Team, position int) (string, error) {
 	if position < 1 || position > 6 {
 		return "", fmt.Errorf("invalid team position %d", position)
 	}
 
-	commands := &[]string{}
+	var ssid, key string
 	if team == nil {
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='no-team-%d'", position, position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='no-team-%d'", position, position))
+		ssid = fmt.Sprintf("no-team-%d", position)
+		key = fmt.Sprintf("no-team-%d", position)
 	} else {
 		if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
 			return "", fmt.Errorf("invalid WPA key '%s' configured for team %d", team.WpaKey, team.Id)
 		}
-
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position, team.Id),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
+		ssid = strconv.Itoa(team.Id)
+		key = team.WpaKey
 	}
 
-	return strings.Join(*commands, "\n"), nil
+	commands := []string{
+		fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
+		fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%s'", position, ssid),
+		fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, key),
+	}
+	if ap.isVividType {
+		commands = append(commands, fmt.Sprintf("set wireless.@wifi-iface[%d].sae_password='%s'", position, key))
+	}
+
+	return strings.Join(commands, "\n"), nil
 }
 
 // Parses the given output from the "iwinfo" command on the AP and updates the given status structure with the result.
@@ -266,16 +281,21 @@ func decodeWifiInfo(wifiInfo string, statuses []TeamWifiStatus) error {
 	return nil
 }
 
-// Polls the 6 wlans on the ap for bandwith use and updates data structure.
+// Polls the 6 wlans on the ap for bandwidth use and updates data structure.
 func (ap *AccessPoint) updateTeamWifiBTU() error {
 	if !ap.networkSecurityEnabled {
 		return nil
 	}
 
-	infWifi := []string{"0", "0-1", "0-2", "0-3", "0-4", "0-5"}
-	for i := range ap.TeamWifiStatuses {
+	var infWifi []string
+	if ap.isVividType {
+		infWifi = []string{"1", "11", "12", "13", "14", "15"}
+	} else {
+		infWifi = []string{"0", "0-1", "0-2", "0-3", "0-4", "0-5"}
+	}
 
-		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i wlan%s", infWifi[i]))
+	for i := range ap.TeamWifiStatuses {
+		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i ath%s", infWifi[i]))
 		if err == nil {
 			btu := parseBtu(output)
 			ap.TeamWifiStatuses[i].MBits = btu
