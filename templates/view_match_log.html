@@ -1,0 +1,83 @@
+{{/*
+  Copyright 2018 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  Display showing robot connection status.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Match Log - {{.Match.ShortName}} - {{ .MatchLogs.TeamId}}({{.MatchLogs.AllianceStation}}) - Cheesy Arena</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no" />
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/view_match_log.css" />
+    {{template "script" .}}
+  </head>
+  <body>
+  <div class="container">
+  <h1>{{.Match.ShortName}} - {{ .MatchLogs.TeamId}}({{.MatchLogs.AllianceStation}}) Log </h1>
+  <ul id="matchTabs" class="nav nav-tabs" style="margin-bottom: 15px;">
+  {{range $logs := .MatchLogs.Logs}}
+    <li{{if eq $logs.StartTime $.FirstMatch }} class="active"{{end}}>
+      <a href="#{{$logs.StartTime}}" data-toggle="tab">{{$logs.StartTime}}</a>
+    </li>
+  {{end}}
+  </ul>
+  <div class="tab-content">
+    {{range $logs := .MatchLogs.Logs}}
+      <div class="tab-pane {{if eq $.FirstMatch $logs.StartTime}} active{{end}}" id="{{$logs.StartTime}}">
+        <table class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th>Match Time</th>
+              <th>DS Linked</th>
+              <th>Radio Linked</th>
+              <th>Robot Linked</th>
+              <th>Mode</th>
+              <th>Enabled</th>
+              <th>E-Stop</th>
+              <th>Voltage</th>
+              <th>Missed Packets</th>
+              <th>Latency</th>
+              <th>TX Rate</th>
+              <th>RX Rate</th>
+              <th>SNR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range $row := $logs.Rows}}
+              <tr>
+                <td data-status-ok="{{and $row.DsLinked $row.RadioLinked $row.RobotLinked}}">{{printf "%.2f" $row.MatchTimeSec}}</td>
+                <td>{{$row.DsLinked}}</td>
+                <td>{{if $row.DsLinked}}{{$row.RadioLinked}}{{else}}*****{{end}}</td>
+                <td>{{if and $row.DsLinked $row.RadioLinked}}{{$row.RobotLinked}}{{else}}*****{{end}}</td>
+                <td>{{if $row.Auto}}Auto{{else}}Telop{{end}}</td>
+                <td>{{$row.Enabled}}</td>
+                <td>{{$row.EmergencyStop}}</td>
+                <td>{{printf "%.3f" $row.BatteryVoltage}}</td>
+                <td>{{$row.MissedPacketCount}}</td>
+                <td>{{$row.DsRobotTripTimeMs}}</td>
+                <td>{{$row.TxRate}}</td>
+                <td>{{$row.RxRate}}</td>
+                <td>{{$row.SignalNoiseRatio}}</td>
+              </tr>
+            {{end}}
+          </tbody>
+        </table>
+      </div>
+      {{end}}
+    </div>
+</body>
+</html>
+{{define "script"}}
+
+<script src="/static/js/lib/jquery.min.js"></script>
+<script src="/static/js/lib/bootstrap.min.js"></script>
+<script src="/static/js/lib/moment.min.js"></script>
+<script src="/static/js/lib/bootstrap-datetimepicker.min.js"></script>
+<script src="/static/js/lib/handlebars-1.3.0.js"></script>
+{{end}}

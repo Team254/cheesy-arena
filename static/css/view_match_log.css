@@ -1,0 +1,26 @@
+.table thead{
+    position: sticky;
+    top: 82px;
+    background-color: #fcfcfc;
+}
+
+.table {
+    text-align: center;
+}
+
+#matchTabs{
+    position: sticky;
+    top:40px;
+    background-color: #fcfcfc;
+    height:42px;
+}
+
+h1{
+    position: sticky;
+    top:0px;
+    height: 40px;
+    background-color: #fcfcfc;
+}
+[data-status-ok] {
+    color:black;
+}
