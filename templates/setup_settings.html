@@ -160,14 +160,14 @@
             <div class="col-lg-7">
               <div class="radio">
                 <label>
-                  <input type="radio" name="apType" value="linksys"
+                  <input type="radio" name="apType" value="linksys" onclick="updateAccessPointType(false);"
                     {{if eq .ApType "linksys"}}checked{{end}}>
                   Linksys WRT1900ACS
                 </label>
               </div>
               <div class="radio">
                 <label>
-                  <input type="radio" name="apType" value="vivid"
+                  <input type="radio" name="apType" value="vivid" onclick="updateAccessPointType(true);"
                     {{if eq .ApType "vivid"}}checked{{end}}>
                   Vivid-Hosting VH109
                 </label>
@@ -195,7 +195,8 @@
           <div class="form-group">
             <label class="col-lg-5 control-label">AP Team Channel (5GHz)</label>
             <div class="col-lg-7">
-              <select class="form-control" name="apTeamChannel" value="{{.ApTeamChannel}}">
+              <select class="form-control" name="apTeamChannel5" value="{{.ApTeamChannel}}"
+                {{if eq .ApType "vivid"}}disabled{{end}}>
                 <option{{if eq .ApTeamChannel 36}} selected{{end}}>36</option>
                 <option{{if eq .ApTeamChannel 40}} selected{{end}}>40</option>
                 <option{{if eq .ApTeamChannel 44}} selected{{end}}>44</option>
@@ -204,6 +205,19 @@
                 <option{{if eq .ApTeamChannel 153}} selected{{end}}>153</option>
                 <option{{if eq .ApTeamChannel 157}} selected{{end}}>157</option>
                 <option{{if eq .ApTeamChannel 161}} selected{{end}}>161</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-lg-5 control-label">AP Team Channel (6GHz)</label>
+            <div class="col-lg-7">
+              <select class="form-control" name="apTeamChannel6" value="{{.ApTeamChannel}}"
+                {{if ne .ApType "vivid"}}disabled{{end}}>
+                {{range $i, $j := seq 29}}
+                  <option{{if eq $.ApTeamChannel (add 5 (multiply $i 8))}} selected{{end}}>
+                    {{(add 5 (multiply $i 8))}}
+                  </option>
+                {{end}}
               </select>
             </div>
           </div>
@@ -414,6 +428,17 @@
     numPlayoffAlliances.prop("disabled", isDoubleElimination);
     if (isDoubleElimination) {
       numPlayoffAlliances.val(8);
+    }
+  };
+  updateAccessPointType = function(isVividType) {
+    const apTeamChannel5 = $("select[name=apTeamChannel5]");
+    const apTeamChannel6 = $("select[name=apTeamChannel6]");
+    if (isVividType) {
+      apTeamChannel5.prop("disabled", true);
+      apTeamChannel6.prop("disabled", false);
+    } else {
+      apTeamChannel5.prop("disabled", false);
+      apTeamChannel6.prop("disabled", true);
     }
   };
 </script>

@@ -81,7 +81,11 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.ApAddress = r.PostFormValue("apAddress")
 	eventSettings.ApUsername = r.PostFormValue("apUsername")
 	eventSettings.ApPassword = r.PostFormValue("apPassword")
-	eventSettings.ApTeamChannel, _ = strconv.Atoi(r.PostFormValue("apTeamChannel"))
+	if eventSettings.ApType == "vivid" {
+		eventSettings.ApTeamChannel, _ = strconv.Atoi(r.PostFormValue("apTeamChannel6"))
+	} else {
+		eventSettings.ApTeamChannel, _ = strconv.Atoi(r.PostFormValue("apTeamChannel5"))
+	}
 	eventSettings.Ap2Address = r.PostFormValue("ap2Address")
 	eventSettings.Ap2Username = r.PostFormValue("ap2Username")
 	eventSettings.Ap2Password = r.PostFormValue("ap2Password")

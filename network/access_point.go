@@ -92,11 +92,13 @@ func (ap *AccessPoint) ConfigureAdminSettings() error {
 		return nil
 	}
 
-	commands := []string{
-		fmt.Sprintf("set wireless.radio0.channel='%d'", ap.teamChannel),
-		"commit wireless",
+	var device string
+	if ap.isVividType {
+		device = "wifi1"
+	} else {
+		device = "radio0"
 	}
-	command := fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\nENDCONFIG\n", strings.Join(commands, "\n"))
+	command := fmt.Sprintf("uci set wireless.%s.channel=%d && uci commit wireless", device, ap.teamChannel)
 	_, err := ap.runCommand(command)
 	return err
 }
