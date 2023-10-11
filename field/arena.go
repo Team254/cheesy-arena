@@ -164,6 +164,15 @@ func (arena *Arena) LoadSettings() error {
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 
+	if arena.EventSettings.NetworkSecurityEnabled && arena.MatchState == PreMatch {
+		if err = arena.accessPoint.ConfigureAdminSettings(); err != nil {
+			log.Printf("Failed to configure access point admin settings: %s", err.Error())
+		}
+		if err = arena.accessPoint2.ConfigureAdminSettings(); err != nil {
+			log.Printf("Failed to configure second access point admin settings: %s", err.Error())
+		}
+	}
+
 	game.MatchTiming.WarmupDurationSec = settings.WarmupDurationSec
 	game.MatchTiming.AutoDurationSec = settings.AutoDurationSec
 	game.MatchTiming.PauseDurationSec = settings.PauseDurationSec
