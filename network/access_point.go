@@ -40,9 +40,12 @@ type AccessPoint struct {
 }
 
 type TeamWifiStatus struct {
-	TeamId      int
-	RadioLinked bool
-	MBits       float64
+	TeamId           int
+	RadioLinked      bool
+	MBits            float64
+	RxRate           float64
+	TxRate           float64
+	SignalNoiseRatio int
 }
 
 type sshOutput struct {
@@ -311,7 +314,7 @@ func (ap *AccessPoint) updateTeamWifiBTU() error {
 		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i %s && iwinfo %s assoclist", interfaces[i], interfaces[i]))
 		if err == nil {
 			ap.TeamWifiStatuses[i].MBits = parseBtu(output)
-			ap.TeamWifiStatuses[i].RadioLinked = parseIsRadioLinked(output)
+			ap.TeamWifiStatuses[i].parseAssocList(output)
 		}
 		if err != nil {
 			return fmt.Errorf("Error getting BTU info from AP: %v", err)
@@ -338,15 +341,31 @@ func parseBtu(response string) float64 {
 	return mBits
 }
 
-// Parses the given data from the access point's association list and returns true if the radio is linked.
-func parseIsRadioLinked(response string) bool {
-	radioLinkRe := regexp.MustCompile("((?:[0-9A-F]{2}:){5}(?:[0-9A-F]{2})).* (\\d+) ms ago")
+// Parses the given data from the access point's association list and updates the status structure with the result.
+func (wifiStatus *TeamWifiStatus) parseAssocList(response string) {
+	radioLinkRe := regexp.MustCompile("((?:[0-9A-F]{2}:){5}(?:[0-9A-F]{2})).*\\(SNR (\\d+)\\)\\s+(\\d+) ms ago")
+	rxRateRe := regexp.MustCompile("RX:\\s+(\\d+\\.\\d+)\\s+MBit/s")
+	txRateRe := regexp.MustCompile("TX:\\s+(\\d+\\.\\d+)\\s+MBit/s")
+
+	wifiStatus.RadioLinked = false
+	wifiStatus.RxRate = 0
+	wifiStatus.TxRate = 0
+	wifiStatus.SignalNoiseRatio = 0
 	for _, radioLinkMatch := range radioLinkRe.FindAllStringSubmatch(response, -1) {
 		macAddress := radioLinkMatch[1]
-		dataAgeMs, _ := strconv.Atoi(radioLinkMatch[2])
+		dataAgeMs, _ := strconv.Atoi(radioLinkMatch[3])
 		if macAddress != "00:00:00:00:00:00" && dataAgeMs <= 4000 {
-			return true
+			wifiStatus.RadioLinked = true
+			wifiStatus.SignalNoiseRatio, _ = strconv.Atoi(radioLinkMatch[2])
+			rxRateMatch := rxRateRe.FindStringSubmatch(response)
+			if len(rxRateMatch) > 0 {
+				wifiStatus.RxRate, _ = strconv.ParseFloat(rxRateMatch[1], 64)
+			}
+			txRateMatch := txRateRe.FindStringSubmatch(response)
+			if len(txRateMatch) > 0 {
+				wifiStatus.TxRate, _ = strconv.ParseFloat(txRateMatch[1], 64)
+			}
+			break
 		}
 	}
-	return false
 }

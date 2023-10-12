@@ -213,34 +213,41 @@ func TestParseBtu(t *testing.T) {
 	assert.Equal(t, 15.0, math.Floor(parseBtu(response)))
 }
 
-func TestParseIsRadioLinked(t *testing.T) {
-	assert.Equal(t, false, parseIsRadioLinked(""))
+func TestParseAssocList(t *testing.T) {
+	var wifiStatus TeamWifiStatus
+
+	wifiStatus.parseAssocList("")
+	assert.Equal(t, TeamWifiStatus{}, wifiStatus)
 
 	// MAC address is invalid.
 	response := "00:00:00:00:00:00  -53 dBm / -95 dBm (SNR 42)  0 ms ago\n" +
 		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
 		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
 		"\texpected throughput: unknown"
-	assert.Equal(t, false, parseIsRadioLinked(response))
+	wifiStatus.parseAssocList(response)
+	assert.Equal(t, TeamWifiStatus{}, wifiStatus)
 
 	// Link is valid.
 	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 42)  0 ms ago\n" +
 		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
+		"\tTX: 254.0 MBit/s                                   0 Pkts.\n" +
+		"\texpected throughput: unknown"
+	wifiStatus.parseAssocList(response)
+	assert.Equal(t, TeamWifiStatus{RadioLinked: true, RxRate: 550.6, TxRate: 254.0, SignalNoiseRatio: 42}, wifiStatus)
+	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 7)  4000 ms ago\n" +
+		"\tRX: 123.4 MBit/s                                4095 Pkts.\n" +
 		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
 		"\texpected throughput: unknown"
-	assert.Equal(t, true, parseIsRadioLinked(response))
-	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 42)  4000 ms ago\n" +
-		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
-		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
-		"\texpected throughput: unknown"
-	assert.Equal(t, true, parseIsRadioLinked(response))
+	wifiStatus.parseAssocList(response)
+	assert.Equal(t, TeamWifiStatus{RadioLinked: true, RxRate: 123.4, TxRate: 550.6, SignalNoiseRatio: 7}, wifiStatus)
 
 	// Link is stale.
 	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 42)  4001 ms ago\n" +
 		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
 		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
 		"\texpected throughput: unknown"
-	assert.Equal(t, false, parseIsRadioLinked(response))
+	wifiStatus.parseAssocList(response)
+	assert.Equal(t, TeamWifiStatus{}, wifiStatus)
 
 	// Response also includes BTU information.
 	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
@@ -254,7 +261,8 @@ func TestParseIsRadioLinked(t *testing.T) {
 		"\tRX: 619.4 MBit/s                                4095 Pkts.\n" +
 		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
 		"\texpected throughput: unknown"
-	assert.Equal(t, true, parseIsRadioLinked(response))
+	wifiStatus.parseAssocList(response)
+	assert.Equal(t, TeamWifiStatus{RadioLinked: true, RxRate: 619.4, TxRate: 550.6, SignalNoiseRatio: 43}, wifiStatus)
 	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
 		"[ 1687496919, 26097, 177, 70454, 846 ],\n" +
 		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
@@ -266,5 +274,6 @@ func TestParseIsRadioLinked(t *testing.T) {
 		"\tRX: 619.4 MBit/s                                4095 Pkts.\n" +
 		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
 		"\texpected throughput: unknown"
-	assert.Equal(t, false, parseIsRadioLinked(response))
+	wifiStatus.parseAssocList(response)
+	assert.Equal(t, TeamWifiStatus{}, wifiStatus)
 }

@@ -370,10 +370,20 @@ func (arena *Arena) StartMatch() error {
 		}
 		arena.updateCycleTime(arena.CurrentMatch.StartedAt)
 
+		// Convert AP team wifi network status array to a map by station for ease of client use.
+		teamWifiStatuses := make(map[string]*network.TeamWifiStatus)
+		for i, station := range []string{"R1", "R2", "R3", "B1", "B2", "B3"} {
+			if arena.EventSettings.Ap2TeamChannel == 0 || i < 3 {
+				teamWifiStatuses[station] = &arena.accessPoint.TeamWifiStatuses[i]
+			} else {
+				teamWifiStatuses[station] = &arena.accessPoint2.TeamWifiStatuses[i]
+			}
+		}
+
 		// Save the missed packet count to subtract it from the running count.
-		for _, allianceStation := range arena.AllianceStations {
+		for station, allianceStation := range arena.AllianceStations {
 			if allianceStation.DsConn != nil {
-				err = allianceStation.DsConn.signalMatchStart(arena.CurrentMatch)
+				err = allianceStation.DsConn.signalMatchStart(arena.CurrentMatch, teamWifiStatuses[station])
 				if err != nil {
 					log.Println(err)
 				}
