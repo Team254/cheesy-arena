@@ -280,19 +280,15 @@ func (ap *AccessPoint) generateTeamAccessPointConfig(team *model.Team, position 
 func decodeWifiInfo(wifiInfo string, statuses []TeamWifiStatus) error {
 	ssidRe := regexp.MustCompile("ESSID: \"([-\\w ]*)\"")
 	ssids := ssidRe.FindAllStringSubmatch(wifiInfo, -1)
-	linkQualityRe := regexp.MustCompile("Link Quality: ([-\\w ]+)/([-\\w ]+)")
-	linkQualities := linkQualityRe.FindAllStringSubmatch(wifiInfo, -1)
 
 	// There should be six networks present -- one for each team on the 5GHz radio.
-	if len(ssids) < 6 || len(linkQualities) < 6 {
+	if len(ssids) < 6 {
 		return fmt.Errorf("Could not parse wifi info; expected 6 team networks, got %d.", len(ssids))
 	}
 
 	for i := range statuses {
 		ssid := ssids[i][1]
 		statuses[i].TeamId, _ = strconv.Atoi(ssid) // Any non-numeric SSIDs will be represented by a zero.
-		linkQualityNumerator := linkQualities[i][1]
-		statuses[i].RadioLinked = linkQualityNumerator != "unknown"
 	}
 
 	return nil
@@ -304,18 +300,18 @@ func (ap *AccessPoint) updateTeamWifiBTU() error {
 		return nil
 	}
 
-	var infWifi []string
+	var interfaces []string
 	if ap.isVividType {
-		infWifi = []string{"ath1", "ath11", "ath12", "ath13", "ath14", "ath15"}
+		interfaces = []string{"ath1", "ath11", "ath12", "ath13", "ath14", "ath15"}
 	} else {
-		infWifi = []string{"wlan0", "wlan0-1", "wlan0-2", "wlan0-3", "wlan0-4", "wlan0-5"}
+		interfaces = []string{"wlan0", "wlan0-1", "wlan0-2", "wlan0-3", "wlan0-4", "wlan0-5"}
 	}
 
 	for i := range ap.TeamWifiStatuses {
-		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i %s", infWifi[i]))
+		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i %s && iwinfo %s assoclist", interfaces[i], interfaces[i]))
 		if err == nil {
-			btu := parseBtu(output)
-			ap.TeamWifiStatuses[i].MBits = btu
+			ap.TeamWifiStatuses[i].MBits = parseBtu(output)
+			ap.TeamWifiStatuses[i].RadioLinked = parseIsRadioLinked(output)
 		}
 		if err != nil {
 			return fmt.Errorf("Error getting BTU info from AP: %v", err)
@@ -324,18 +320,33 @@ func (ap *AccessPoint) updateTeamWifiBTU() error {
 	return nil
 }
 
-// Parses Bytes from ap's onboard bandwith monitor returns 5 sec average bandwidth in Megabits per second for the given data.
+// Parses the given data from the access point's onboard bandwidth monitor and returns five-second average bandwidth in
+// megabits per second.
 func parseBtu(response string) float64 {
 	mBits := 0.0
-	lines := strings.Split(response, "],")
-	if len(lines) > 6 {
-		fiveCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-6]), "["), "]"), ",")
-		lastCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-1]), "["), "]"), ",")
-		rXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[1]))
-		tXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[3]))
-		rXBytesOld, _ := strconv.Atoi(strings.TrimSpace(fiveCnt[1]))
-		tXBytesOld, _ := strconv.Atoi(strings.TrimSpace(fiveCnt[3]))
+	btuRe := regexp.MustCompile("\\[ (\\d+), (\\d+), (\\d+), (\\d+), (\\d+) ]")
+	btuMatches := btuRe.FindAllStringSubmatch(response, -1)
+	if len(btuMatches) >= 7 {
+		firstMatch := btuMatches[len(btuMatches)-6]
+		lastMatch := btuMatches[len(btuMatches)-1]
+		rXBytes, _ := strconv.Atoi(lastMatch[2])
+		tXBytes, _ := strconv.Atoi(lastMatch[4])
+		rXBytesOld, _ := strconv.Atoi(firstMatch[2])
+		tXBytesOld, _ := strconv.Atoi(firstMatch[4])
 		mBits = float64(rXBytes-rXBytesOld+tXBytes-tXBytesOld) * 0.000008 / 5.0
 	}
 	return mBits
+}
+
+// Parses the given data from the access point's association list and returns true if the radio is linked.
+func parseIsRadioLinked(response string) bool {
+	radioLinkRe := regexp.MustCompile("((?:[0-9A-F]{2}:){5}(?:[0-9A-F]{2})).* (\\d+) ms ago")
+	for _, radioLinkMatch := range radioLinkRe.FindAllStringSubmatch(response, -1) {
+		macAddress := radioLinkMatch[1]
+		dataAgeMs, _ := strconv.Atoi(radioLinkMatch[2])
+		if macAddress != "00:00:00:00:00:00" && dataAgeMs <= 4000 {
+			return true
+		}
+	}
+	return false
 }

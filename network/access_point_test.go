@@ -6,6 +6,7 @@ package network
 import (
 	"fmt"
 	"io/ioutil"
+	"math"
 	"regexp"
 	"strconv"
 	"testing"
@@ -136,36 +137,36 @@ func TestDecodeWifiInfo(t *testing.T) {
 	output, err := ioutil.ReadFile("testdata/iwinfo_0_teams.txt")
 	if assert.Nil(t, err) {
 		assert.Nil(t, decodeWifiInfo(string(output), statuses[:]))
-		assertTeamWifiStatus(t, 0, false, statuses[0])
-		assertTeamWifiStatus(t, 0, false, statuses[1])
-		assertTeamWifiStatus(t, 0, false, statuses[2])
-		assertTeamWifiStatus(t, 0, false, statuses[3])
-		assertTeamWifiStatus(t, 0, false, statuses[4])
-		assertTeamWifiStatus(t, 0, false, statuses[5])
+		assert.Equal(t, 0, statuses[0].TeamId)
+		assert.Equal(t, 0, statuses[1].TeamId)
+		assert.Equal(t, 0, statuses[2].TeamId)
+		assert.Equal(t, 0, statuses[3].TeamId)
+		assert.Equal(t, 0, statuses[4].TeamId)
+		assert.Equal(t, 0, statuses[5].TeamId)
 	}
 
 	// Test with two team networks configured.
 	output, err = ioutil.ReadFile("testdata/iwinfo_2_teams.txt")
 	if assert.Nil(t, err) {
 		assert.Nil(t, decodeWifiInfo(string(output), statuses[:]))
-		assertTeamWifiStatus(t, 0, false, statuses[0])
-		assertTeamWifiStatus(t, 2471, true, statuses[1])
-		assertTeamWifiStatus(t, 0, false, statuses[2])
-		assertTeamWifiStatus(t, 254, false, statuses[3])
-		assertTeamWifiStatus(t, 0, false, statuses[4])
-		assertTeamWifiStatus(t, 0, false, statuses[5])
+		assert.Equal(t, 0, statuses[0].TeamId)
+		assert.Equal(t, 2471, statuses[1].TeamId)
+		assert.Equal(t, 0, statuses[2].TeamId)
+		assert.Equal(t, 254, statuses[3].TeamId)
+		assert.Equal(t, 0, statuses[4].TeamId)
+		assert.Equal(t, 0, statuses[5].TeamId)
 	}
 
 	// Test with six team networks configured.
 	output, err = ioutil.ReadFile("testdata/iwinfo_6_teams.txt")
 	if assert.Nil(t, err) {
 		assert.Nil(t, decodeWifiInfo(string(output), statuses[:]))
-		assertTeamWifiStatus(t, 254, false, statuses[0])
-		assertTeamWifiStatus(t, 1678, false, statuses[1])
-		assertTeamWifiStatus(t, 2910, true, statuses[2])
-		assertTeamWifiStatus(t, 604, false, statuses[3])
-		assertTeamWifiStatus(t, 8, false, statuses[4])
-		assertTeamWifiStatus(t, 2471, true, statuses[5])
+		assert.Equal(t, 254, statuses[0].TeamId)
+		assert.Equal(t, 1678, statuses[1].TeamId)
+		assert.Equal(t, 2910, statuses[2].TeamId)
+		assert.Equal(t, 604, statuses[3].TeamId)
+		assert.Equal(t, 8, statuses[4].TeamId)
+		assert.Equal(t, 2471, statuses[5].TeamId)
 	}
 
 	// Test with invalid input.
@@ -176,7 +177,94 @@ func TestDecodeWifiInfo(t *testing.T) {
 	}
 }
 
-func assertTeamWifiStatus(t *testing.T, expectedTeamId int, expectedRadioLinked bool, status TeamWifiStatus) {
-	assert.Equal(t, expectedTeamId, status.TeamId)
-	assert.Equal(t, expectedRadioLinked, status.RadioLinked)
+func TestParseBtu(t *testing.T) {
+	// Response is too short.
+	assert.Equal(t, 0.0, parseBtu(""))
+	response := "[ 1687496957, 26097, 177, 71670, 865 ],\n" +
+		"[ 1687496958, 26097, 177, 71734, 866 ],\n" +
+		"[ 1687496959, 26097, 177, 71734, 866 ],\n" +
+		"[ 1687496960, 26097, 177, 71798, 867 ],\n" +
+		"[ 1687496960, 26097, 177, 71798, 867 ],\n" +
+		"[ 1687496961, 26097, 177, 71798, 867 ]"
+	assert.Equal(t, 0.0, parseBtu(response))
+
+	// Response is normal.
+	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
+		"[ 1687496919, 26097, 177, 70454, 846 ],\n" +
+		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
+		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
+		"[ 1687496921, 26097, 177, 70582, 848 ],\n" +
+		"[ 1687496922, 26097, 177, 70582, 848 ],\n" +
+		"[ 1687496923, 2609700, 177, 7064600, 849 ]"
+	assert.Equal(t, 15.0, math.Floor(parseBtu(response)))
+
+	// Response also includes associated client information.
+	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
+		"[ 1687496919, 26097, 177, 70454, 846 ],\n" +
+		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
+		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
+		"[ 1687496921, 26097, 177, 70582, 848 ],\n" +
+		"[ 1687496922, 26097, 177, 70582, 848 ],\n" +
+		"[ 1687496923, 2609700, 177, 7064600, 849 ]\n" +
+		"48:DA:35:B0:00:CF  -52 dBm / -95 dBm (SNR 43)  1000 ms ago\n" +
+		"\tRX: 619.4 MBit/s                                4095 Pkts.\n" +
+		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
+		"\texpected throughput: unknown"
+	assert.Equal(t, 15.0, math.Floor(parseBtu(response)))
+}
+
+func TestParseIsRadioLinked(t *testing.T) {
+	assert.Equal(t, false, parseIsRadioLinked(""))
+
+	// MAC address is invalid.
+	response := "00:00:00:00:00:00  -53 dBm / -95 dBm (SNR 42)  0 ms ago\n" +
+		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
+		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
+		"\texpected throughput: unknown"
+	assert.Equal(t, false, parseIsRadioLinked(response))
+
+	// Link is valid.
+	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 42)  0 ms ago\n" +
+		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
+		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
+		"\texpected throughput: unknown"
+	assert.Equal(t, true, parseIsRadioLinked(response))
+	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 42)  4000 ms ago\n" +
+		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
+		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
+		"\texpected throughput: unknown"
+	assert.Equal(t, true, parseIsRadioLinked(response))
+
+	// Link is stale.
+	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 42)  4001 ms ago\n" +
+		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
+		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
+		"\texpected throughput: unknown"
+	assert.Equal(t, false, parseIsRadioLinked(response))
+
+	// Response also includes BTU information.
+	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
+		"[ 1687496919, 26097, 177, 70454, 846 ],\n" +
+		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
+		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
+		"[ 1687496921, 26097, 177, 70582, 848 ],\n" +
+		"[ 1687496922, 26097, 177, 70582, 848 ],\n" +
+		"[ 1687496923, 2609700, 177, 7064600, 849 ]\n" +
+		"48:DA:35:B0:00:CF  -52 dBm / -95 dBm (SNR 43)  1000 ms ago\n" +
+		"\tRX: 619.4 MBit/s                                4095 Pkts.\n" +
+		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
+		"\texpected throughput: unknown"
+	assert.Equal(t, true, parseIsRadioLinked(response))
+	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
+		"[ 1687496919, 26097, 177, 70454, 846 ],\n" +
+		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
+		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
+		"[ 1687496921, 26097, 177, 70582, 848 ],\n" +
+		"[ 1687496922, 26097, 177, 70582, 848 ],\n" +
+		"[ 1687496923, 2609700, 177, 7064600, 849 ]\n" +
+		"00:00:00:00:00:00  -52 dBm / -95 dBm (SNR 43)  0 ms ago\n" +
+		"\tRX: 619.4 MBit/s                                4095 Pkts.\n" +
+		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
+		"\texpected throughput: unknown"
+	assert.Equal(t, false, parseIsRadioLinked(response))
 }

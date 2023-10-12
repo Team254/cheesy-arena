@@ -121,9 +121,6 @@ const handleArenaStatus = function(data) {
       } else {
         $("#status" + station + " .ds-status").text("");
       }
-      // Format the radio status box according to the connection status of the robot radio.
-      const radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
-      $("#status" + station + " .radio-status").attr("data-status-ok", radioOkay);
 
       // Format the robot status box.
       const robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
@@ -137,19 +134,20 @@ const handleArenaStatus = function(data) {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").text("");
+    }
 
-      // Format the robot status box according to whether the AP is configured with the correct SSID.
-      const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
-      if (wifiStatus.TeamId === expectedTeamId) {
-        if (wifiStatus.RadioLinked) {
-          $("#status" + station + " .radio-status").attr("data-status-ok", true);
-        } else {
-          $("#status" + station + " .radio-status").attr("data-status-ok", "");
-        }
+    // Format the radio status box according to whether the AP is configured with the correct SSID and the connection
+    // status of the robot radio.
+    const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+    let radioStatus = 0;
+    if (expectedTeamId === wifiStatus.TeamId) {
+      if (wifiStatus.RadioLinked) {
+        radioStatus = 2;
       } else {
-        $("#status" + station + " .radio-status").attr("data-status-ok", false);
+        radioStatus = 1;
       }
     }
+    $(`#status${station} .radio-status`).attr("data-status-ternary", radioStatus);
 
     if (stationStatus.Estop) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);

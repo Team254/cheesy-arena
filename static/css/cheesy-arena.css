@@ -61,11 +61,14 @@
 .bypass-status {
   cursor: pointer;
 }
-[data-status-ok="true"] {
+[data-status-ok="true"], [data-status-ternary="2"] {
   background-color: #0e8;
 }
-[data-status-ok="false"] {
+[data-status-ok="false"], [data-status-ternary="0"] {
   background-color: #e66;
+}
+[data-status-ternary="1"] {
+  background-color: #fc3;
 }
 [data-blink="true"] {
   background-color: #fc0;
