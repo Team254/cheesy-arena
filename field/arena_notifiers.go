@@ -8,7 +8,6 @@ package field
 import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
 	"strconv"
@@ -73,28 +72,23 @@ func (arena *Arena) generateAllianceStationDisplayModeMessage() any {
 }
 
 func (arena *Arena) generateArenaStatusMessage() any {
-	// Convert AP team wifi network status array to a map by station for ease of client use.
-	teamWifiStatuses := make(map[string]network.TeamWifiStatus)
-	for i, station := range []string{"R1", "R2", "R3", "B1", "B2", "B3"} {
-		if arena.EventSettings.Ap2TeamChannel == 0 || i < 3 {
-			teamWifiStatuses[station] = arena.accessPoint.TeamWifiStatuses[i]
-		} else {
-			teamWifiStatuses[station] = arena.accessPoint2.TeamWifiStatuses[i]
-		}
-	}
-
 	return &struct {
 		MatchId          int
 		AllianceStations map[string]*AllianceStation
-		TeamWifiStatuses map[string]network.TeamWifiStatus
 		MatchState
 		CanStartMatch         bool
 		PlcIsHealthy          bool
 		FieldEstop            bool
 		PlcArmorBlockStatuses map[string]bool
-	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState,
-		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy(), arena.Plc.GetFieldEstop(),
-		arena.Plc.GetArmorBlockStatuses()}
+	}{
+		arena.CurrentMatch.Id,
+		arena.AllianceStations,
+		arena.MatchState,
+		arena.checkCanStartMatch() == nil,
+		arena.Plc.IsHealthy(),
+		arena.Plc.GetFieldEstop(),
+		arena.Plc.GetArmorBlockStatuses(),
+	}
 }
 
 func (arena *Arena) generateAudienceDisplayModeMessage() any {

@@ -131,49 +131,57 @@ func TestGenerateTeamAccessPointConfigForVividHosting(t *testing.T) {
 }
 
 func TestDecodeWifiInfo(t *testing.T) {
-	var statuses [6]TeamWifiStatus
+	statuses := [6]*TeamWifiStatus{
+		nil,
+		&TeamWifiStatus{},
+		&TeamWifiStatus{},
+		&TeamWifiStatus{},
+		nil,
+		&TeamWifiStatus{},
+	}
+	ap := AccessPoint{isVividType: true, TeamWifiStatuses: statuses}
 
 	// Test with zero team networks configured.
 	output, err := ioutil.ReadFile("testdata/iwinfo_0_teams.txt")
 	if assert.Nil(t, err) {
-		assert.Nil(t, decodeWifiInfo(string(output), statuses[:]))
-		assert.Equal(t, 0, statuses[0].TeamId)
+		assert.Nil(t, ap.decodeWifiInfo(string(output)))
+		assert.Nil(t, statuses[0])
 		assert.Equal(t, 0, statuses[1].TeamId)
 		assert.Equal(t, 0, statuses[2].TeamId)
 		assert.Equal(t, 0, statuses[3].TeamId)
-		assert.Equal(t, 0, statuses[4].TeamId)
+		assert.Nil(t, statuses[4])
 		assert.Equal(t, 0, statuses[5].TeamId)
 	}
 
 	// Test with two team networks configured.
 	output, err = ioutil.ReadFile("testdata/iwinfo_2_teams.txt")
 	if assert.Nil(t, err) {
-		assert.Nil(t, decodeWifiInfo(string(output), statuses[:]))
-		assert.Equal(t, 0, statuses[0].TeamId)
+		assert.Nil(t, ap.decodeWifiInfo(string(output)))
+		assert.Nil(t, statuses[0])
 		assert.Equal(t, 2471, statuses[1].TeamId)
 		assert.Equal(t, 0, statuses[2].TeamId)
 		assert.Equal(t, 254, statuses[3].TeamId)
-		assert.Equal(t, 0, statuses[4].TeamId)
+		assert.Nil(t, statuses[4])
 		assert.Equal(t, 0, statuses[5].TeamId)
 	}
 
 	// Test with six team networks configured.
 	output, err = ioutil.ReadFile("testdata/iwinfo_6_teams.txt")
 	if assert.Nil(t, err) {
-		assert.Nil(t, decodeWifiInfo(string(output), statuses[:]))
-		assert.Equal(t, 254, statuses[0].TeamId)
+		assert.Nil(t, ap.decodeWifiInfo(string(output)))
+		assert.Nil(t, statuses[0])
 		assert.Equal(t, 1678, statuses[1].TeamId)
 		assert.Equal(t, 2910, statuses[2].TeamId)
 		assert.Equal(t, 604, statuses[3].TeamId)
-		assert.Equal(t, 8, statuses[4].TeamId)
+		assert.Nil(t, statuses[4])
 		assert.Equal(t, 2471, statuses[5].TeamId)
 	}
 
 	// Test with invalid input.
-	assert.NotNil(t, decodeWifiInfo("", statuses[:]))
+	assert.NotNil(t, ap.decodeWifiInfo(""))
 	output, err = ioutil.ReadFile("testdata/iwinfo_invalid.txt")
 	if assert.Nil(t, err) {
-		assert.NotNil(t, decodeWifiInfo(string(output), statuses[:]))
+		assert.NotNil(t, ap.decodeWifiInfo(string(output)))
 	}
 }
 

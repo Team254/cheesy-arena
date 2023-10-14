@@ -38,7 +38,7 @@ type AccessPoint struct {
 	teamChannel            int
 	networkSecurityEnabled bool
 	configRequestChan      chan [6]*model.Team
-	TeamWifiStatuses       [6]TeamWifiStatus
+	TeamWifiStatuses       [6]*TeamWifiStatus
 	initialStatusesFetched bool
 }
 
@@ -57,7 +57,11 @@ type sshOutput struct {
 }
 
 func (ap *AccessPoint) SetSettings(
-	isVividType bool, address, username, password string, teamChannel int, networkSecurityEnabled bool,
+	isVividType bool,
+	address, username, password string,
+	teamChannel int,
+	networkSecurityEnabled bool,
+	wifiStatuses [6]*TeamWifiStatus,
 ) {
 	ap.isVividType = isVividType
 	ap.address = address
@@ -65,6 +69,7 @@ func (ap *AccessPoint) SetSettings(
 	ap.password = password
 	ap.teamChannel = teamChannel
 	ap.networkSecurityEnabled = networkSecurityEnabled
+	ap.TeamWifiStatuses = wifiStatuses
 
 	// Create config channel the first time this method is called.
 	if ap.configRequestChan == nil {
@@ -207,7 +212,7 @@ func (ap *AccessPoint) updateTeamWifiStatuses() error {
 	output, err := ap.runCommand("iwinfo")
 	if err == nil {
 		logWifiInfo(output)
-		err = decodeWifiInfo(output, ap.TeamWifiStatuses[:])
+		err = ap.decodeWifiInfo(output)
 	}
 
 	if err != nil {
@@ -303,7 +308,7 @@ func logWifiInfo(wifiInfo string) {
 }
 
 // Parses the given output from the "iwinfo" command on the AP and updates the given status structure with the result.
-func decodeWifiInfo(wifiInfo string, statuses []TeamWifiStatus) error {
+func (ap *AccessPoint) decodeWifiInfo(wifiInfo string) error {
 	ssidRe := regexp.MustCompile("ESSID: \"([-\\w ]*)\"")
 	ssids := ssidRe.FindAllStringSubmatch(wifiInfo, -1)
 
@@ -312,9 +317,11 @@ func decodeWifiInfo(wifiInfo string, statuses []TeamWifiStatus) error {
 		return fmt.Errorf("Could not parse wifi info; expected 6 team networks, got %d.", len(ssids))
 	}
 
-	for i := range statuses {
-		ssid := ssids[i][1]
-		statuses[i].TeamId, _ = strconv.Atoi(ssid) // Any non-numeric SSIDs will be represented by a zero.
+	for i, wifiStatus := range ap.TeamWifiStatuses {
+		if wifiStatus != nil {
+			ssid := ssids[i][1]
+			wifiStatus.TeamId, _ = strconv.Atoi(ssid) // Any non-numeric SSIDs will be represented by a zero.
+		}
 	}
 
 	return nil

@@ -109,7 +109,7 @@ const getTeamNumber = function(station) {
 const handleArenaStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
-    const wifiStatus = data.TeamWifiStatuses[station];
+    const wifiStatus = stationStatus.WifiStatus;
     $("#status" + station + " .radio-status").text(wifiStatus.TeamId);
 
     if (stationStatus.DsConn) {

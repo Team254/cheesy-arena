@@ -18,7 +18,7 @@ var handleArenaStatus = function(data) {
   } else if (currentMatchId !== data.MatchId) {
     location.reload();
   }
-	
+
   $.each(data.AllianceStations, function(station, stationStatus) {
     // Select the DOM elements corresponding to the team station.
     var teamElementPrefix;
@@ -75,7 +75,7 @@ var handleArenaStatus = function(data) {
       teamEthernetElement.text("ETH");
     }
 
-    var wifiStatus = data.TeamWifiStatuses[station];
+    const wifiStatus = stationStatus.WifiStatus;
     teamRadioTextElement.text(wifiStatus.TeamId);
 
     if (stationStatus.DsConn) {
@@ -205,7 +205,7 @@ $(function() {
     redSide = "left";
     blueSide = "right";
   }
-  
+
   //Read if display to be used in a Driver Station, ignore FTA flag if so.
   var driverStation = urlParams.get("ds");
   if (driverStation === "true") {
@@ -215,7 +215,7 @@ $(function() {
   $(".fta-dependent").attr("data-fta", urlParams.get("fta"));
   $(".ds-dependent").attr("data-ds", driverStation);
   }
-  
+
   $(".reversible-left").attr("data-reversed", reversed);
   $(".reversible-right").attr("data-reversed", reversed);
 
