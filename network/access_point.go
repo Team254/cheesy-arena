@@ -25,6 +25,7 @@ const (
 	accessPointPollPeriodSec          = 3
 	accessPointRequestBufferSize      = 10
 	accessPointConfigRetryIntervalSec = 30
+	accessPointConfigBackoffSec       = 5
 )
 
 type AccessPoint struct {
@@ -162,6 +163,11 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 
 		_, _ = ap.runCommand("uci commit wireless")
 		_, _ = ap.runCommand("wifi reload")
+		if !ap.isVividType {
+			// The Linksys AP returns immediately after 'wifi reload' but may not have applied the configuration yet;
+			// sleep for a bit to compensate. (The Vivid AP waits for the configuration to be applied before returning.)
+			time.Sleep(time.Second * accessPointConfigBackoffSec)
+		}
 		err := ap.updateTeamWifiStatuses()
 		if err == nil && ap.configIsCorrectForTeams(teams) {
 			log.Printf("Successfully configured WiFi after %d attempts.", retryCount)
