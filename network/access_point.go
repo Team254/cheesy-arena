@@ -28,6 +28,8 @@ const (
 	accessPointConfigBackoffSec       = 5
 )
 
+var accessPointInfoLines = []string{"ESSID: ", "Mode: ", "Tx-Power: ", "Signal: ", "Bit Rate: "}
+
 type AccessPoint struct {
 	isVividType            bool
 	address                string
@@ -204,7 +206,7 @@ func (ap *AccessPoint) updateTeamWifiStatuses() error {
 
 	output, err := ap.runCommand("iwinfo")
 	if err == nil {
-		log.Printf("Access point status: %s\n", output)
+		logWifiInfo(output)
 		err = decodeWifiInfo(output, ap.TeamWifiStatuses[:])
 	}
 
@@ -283,6 +285,21 @@ func (ap *AccessPoint) generateTeamAccessPointConfig(team *model.Team, position 
 	}
 
 	return strings.Join(commands, "\n"), nil
+}
+
+// Filters the given output from the "iwiinfo" command on the AP and logs the relevant parts.
+func logWifiInfo(wifiInfo string) {
+	lines := strings.Split(wifiInfo, "\n")
+	var filteredLines []string
+	for _, line := range lines {
+		for _, infoLine := range accessPointInfoLines {
+			if strings.Contains(line, infoLine) {
+				filteredLines = append(filteredLines, line)
+				break
+			}
+		}
+	}
+	log.Printf("Access point status:\n%s\n", strings.Join(filteredLines, "\n"))
 }
 
 // Parses the given output from the "iwinfo" command on the AP and updates the given status structure with the result.
