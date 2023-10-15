@@ -103,7 +103,7 @@
           <div class="form-group">
             <label class="col-lg-9 control-label">Enable Automatic Team Info Download (From TBA)</label>
             <div class="col-lg-1 checkbox">
-              <input type="checkbox" name="TbaDownloadEnabled"{{if .TbaDownloadEnabled}} checked{{end}}>
+              <input type="checkbox" name="tbaDownloadEnabled"{{if .TbaDownloadEnabled}} checked{{end}}>
             </div>
           </div>
         </fieldset>
@@ -132,6 +132,17 @@
             <label class="col-lg-5 control-label">TBA Secret</label>
             <div class="col-lg-7">
               <input type="text" class="form-control" name="tbaSecret" value="{{.TbaSecret}}">
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Nexus</legend>
+          <p>Automatically populates practice and playoff match lineups from Nexus. Uses the same event code as TBA;
+            configure it above if enabling.</p>
+          <div class="form-group">
+            <label class="col-lg-7 control-label">Enable pulling lineup from Nexus</label>
+            <div class="col-lg-1 checkbox">
+              <input type="checkbox" name="nexusEnabled"{{if .NexusEnabled}} checked{{end}}>
             </div>
           </div>
         </fieldset>

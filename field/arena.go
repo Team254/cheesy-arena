@@ -53,6 +53,7 @@ type Arena struct {
 	networkSwitch    *network.Switch
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
+	NexusClient      *partner.NexusClient
 	AllianceStations map[string]*AllianceStation
 	Displays         map[string]*Display
 	ScoringPanelRegistry
@@ -195,6 +196,7 @@ func (arena *Arena) LoadSettings() error {
 	arena.networkSwitch = network.NewSwitch(settings.SwitchAddress, settings.SwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
+	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
 
 	if arena.EventSettings.NetworkSecurityEnabled && arena.MatchState == PreMatch {
 		if err = arena.accessPoint.ConfigureAdminSettings(); err != nil {
@@ -263,34 +265,56 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	}
 
 	arena.CurrentMatch = match
-	err := arena.assignTeam(match.Red1, "R1")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Red2, "R2")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Red3, "R3")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Blue1, "B1")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Blue2, "B2")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Blue3, "B3")
-	if err != nil {
-		return err
+
+	loadedByNexus := false
+	if match.ShouldAllowNexusSubstitution() && arena.EventSettings.NexusEnabled {
+		// Attempt to get the match lineup from Nexus for FRC.
+		lineup, err := arena.NexusClient.GetLineup(match.TbaMatchKey)
+		if err != nil {
+			log.Printf("Failed to load lineup from Nexus: %s", err.Error())
+		} else {
+			err = arena.SubstituteTeams(lineup[0], lineup[1], lineup[2], lineup[3], lineup[4], lineup[5])
+			if err != nil {
+				log.Printf("Failed to substitute teams using Nexus lineup; loading match normally: %s", err.Error())
+			} else {
+				log.Printf(
+					"Successfully loaded lineup for match %s from Nexus: %v", match.TbaMatchKey.String(), *lineup,
+				)
+				loadedByNexus = true
+			}
+		}
 	}
 
-	arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
-		arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
-		arena.AllianceStations["B3"].Team})
+	if !loadedByNexus {
+		err := arena.assignTeam(match.Red1, "R1")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Red2, "R2")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Red3, "R3")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Blue1, "B1")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Blue2, "B2")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Blue3, "B3")
+		if err != nil {
+			return err
+		}
+
+		arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
+			arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
+			arena.AllianceStations["B3"].Team})
+	}
 
 	// Reset the arena state and realtime scores.
 	arena.soundsPlayed = make(map[*game.MatchSound]struct{})
