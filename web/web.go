@@ -126,6 +126,7 @@ func addNoCacheHeader(handler http.Handler) http.Handler {
 
 // Sets up the mapping between URLs and handlers.
 func (web *Web) newHandler() http.Handler {
+
 	router := mux.NewRouter()
 	router.HandleFunc("/", web.indexHandler).Methods("GET")
 	router.HandleFunc("/alliance_selection", web.allianceSelectionGetHandler).Methods("GET")
@@ -169,6 +170,8 @@ func (web *Web) newHandler() http.Handler {
 	router.HandleFunc("/match_play", web.matchPlayHandler).Methods("GET")
 	router.HandleFunc("/match_play/match_load", web.matchPlayMatchLoadHandler).Methods("GET")
 	router.HandleFunc("/match_play/websocket", web.matchPlayWebsocketHandler).Methods("GET")
+	router.HandleFunc("/match_logs", web.matchLogsHandler).Methods("GET")
+	router.HandleFunc("/match_logs/{matchId}/{stationId}/log", web.matchLogsViewGetHandler).Methods("GET")
 	router.HandleFunc("/match_review", web.matchReviewHandler).Methods("GET")
 	router.HandleFunc("/match_review/{matchId}/edit", web.matchReviewEditGetHandler).Methods("GET")
 	router.HandleFunc("/match_review/{matchId}/edit", web.matchReviewEditPostHandler).Methods("POST")
