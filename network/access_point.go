@@ -192,10 +192,14 @@ func (ap *AccessPoint) configIsCorrectForTeams(teams [6]*model.Team) bool {
 
 	for i, team := range teams {
 		expectedTeamId := 0
+		actualTeamId := 0
 		if team != nil {
 			expectedTeamId = team.Id
 		}
-		if ap.TeamWifiStatuses[i].TeamId != expectedTeamId {
+		if ap.TeamWifiStatuses[i] != nil {
+			actualTeamId = ap.TeamWifiStatuses[i].TeamId
+		}
+		if actualTeamId != expectedTeamId {
 			return false
 		}
 	}
