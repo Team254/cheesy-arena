@@ -345,6 +345,9 @@ func (ap *AccessPoint) updateTeamWifiBTU() error {
 	}
 
 	for i := range ap.TeamWifiStatuses {
+		if ap.TeamWifiStatuses[i] == nil {
+			continue
+		}
 		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i %s && iwinfo %s assoclist", interfaces[i], interfaces[i]))
 		if err == nil {
 			ap.TeamWifiStatuses[i].MBits = parseBtu(output)
