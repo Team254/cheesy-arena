@@ -130,12 +130,6 @@ func (ap *AccessPoint) handleTeamWifiConfiguration(teams [6]*model.Team) {
 		return
 	}
 
-	err := ap.updateTeamWifiStatuses()
-	if err == nil && ap.configIsCorrectForTeams(teams) {
-		log.Printf("WiFi configuration is already correct; skipping configuration cycle.")
-		return
-	}
-
 	if !ap.isVividType {
 		// Clear the state of the radio before loading teams; the Linksys AP is crash-prone otherwise.
 		ap.configureTeams([6]*model.Team{nil, nil, nil, nil, nil, nil})

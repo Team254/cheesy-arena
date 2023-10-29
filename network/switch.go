@@ -11,14 +11,13 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"net"
-	"regexp"
-	"strconv"
 	"sync"
 	"time"
 )
 
 const (
 	switchConfigBackoffDurationSec = 5
+	switchConfigPauseDurationSec   = 2
 	switchTeamGatewayAddress       = 4
 	switchTelnetPort               = 23
 )
@@ -38,6 +37,7 @@ type Switch struct {
 	password              string
 	mutex                 sync.Mutex
 	configBackoffDuration time.Duration
+	configPauseDuration   time.Duration
 }
 
 var ServerIpAddress = "10.0.100.5" // The DS will try to connect to this address only.
@@ -48,6 +48,7 @@ func NewSwitch(address, password string) *Switch {
 		port:                  switchTelnetPort,
 		password:              password,
 		configBackoffDuration: switchConfigBackoffDurationSec * time.Second,
+		configPauseDuration:   switchConfigPauseDurationSec * time.Second,
 	}
 }
 
@@ -57,66 +58,58 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	sw.mutex.Lock()
 	defer sw.mutex.Unlock()
 
-	// Determine what new team VLANs are needed and build the commands to set them up.
-	oldTeamVlans, err := sw.getTeamVlans()
+	// Remove old team VLANs to reset the switch state.
+	removeTeamVlansCommand := ""
+	for vlan := 10; vlan <= 60; vlan += 10 {
+		removeTeamVlansCommand += fmt.Sprintf(
+			"interface Vlan%d\nno ip address\nno access-list 1%d\nno ip dhcp pool dhcp%d\n", vlan, vlan, vlan,
+		)
+	}
+	_, err := sw.runConfigCommand(removeTeamVlansCommand)
 	if err != nil {
 		return err
 	}
+	time.Sleep(sw.configPauseDuration)
+
+	// Create the new team VLANs.
 	addTeamVlansCommand := ""
-	replaceTeamVlan := func(team *model.Team, vlan int) {
+	addTeamVlan := func(team *model.Team, vlan int) {
 		if team == nil {
 			return
 		}
-		if oldTeamVlans[team.Id] == vlan {
-			delete(oldTeamVlans, team.Id)
-		} else {
-			teamPartialIp := fmt.Sprintf("%d.%d", team.Id/100, team.Id%100)
-			addTeamVlansCommand += fmt.Sprintf(
-				"ip dhcp excluded-address 10.%s.1 10.%s.100\n"+
-					"no ip dhcp pool dhcp%d\n"+
-					"ip dhcp pool dhcp%d\n"+
-					"network 10.%s.0 255.255.255.0\n"+
-					"default-router 10.%s.%d\n"+
-					"lease 7\n"+
-					"no access-list 1%d\n"+
-					"access-list 1%d permit ip 10.%s.0 0.0.0.255 host %s\n"+
-					"access-list 1%d permit udp any eq bootpc any eq bootps\n"+
-					"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
-				teamPartialIp,
-				teamPartialIp,
-				vlan,
-				vlan,
-				teamPartialIp,
-				teamPartialIp,
-				switchTeamGatewayAddress,
-				vlan,
-				vlan,
-				teamPartialIp,
-				ServerIpAddress,
-				vlan,
-				vlan,
-				teamPartialIp,
-				switchTeamGatewayAddress,
-			)
-		}
+		teamPartialIp := fmt.Sprintf("%d.%d", team.Id/100, team.Id%100)
+		addTeamVlansCommand += fmt.Sprintf(
+			"ip dhcp excluded-address 10.%s.1 10.%s.100\n"+
+				"ip dhcp pool dhcp%d\n"+
+				"network 10.%s.0 255.255.255.0\n"+
+				"default-router 10.%s.%d\n"+
+				"lease 7\n"+
+				"access-list 1%d permit ip 10.%s.0 0.0.0.255 host %s\n"+
+				"access-list 1%d permit udp any eq bootpc any eq bootps\n"+
+				"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
+			teamPartialIp,
+			teamPartialIp,
+			vlan,
+			teamPartialIp,
+			teamPartialIp,
+			switchTeamGatewayAddress,
+			vlan,
+			teamPartialIp,
+			ServerIpAddress,
+			vlan,
+			vlan,
+			teamPartialIp,
+			switchTeamGatewayAddress,
+		)
 	}
-	replaceTeamVlan(teams[0], red1Vlan)
-	replaceTeamVlan(teams[1], red2Vlan)
-	replaceTeamVlan(teams[2], red3Vlan)
-	replaceTeamVlan(teams[3], blue1Vlan)
-	replaceTeamVlan(teams[4], blue2Vlan)
-	replaceTeamVlan(teams[5], blue3Vlan)
-
-	// Build the command to remove the team VLANs that are no longer needed.
-	removeTeamVlansCommand := ""
-	for _, vlan := range oldTeamVlans {
-		removeTeamVlansCommand += fmt.Sprintf("interface Vlan%d\nno ip address\nno access-list 1%d\n", vlan, vlan)
-	}
-
-	// Build and run the overall command to do everything in a single telnet session.
-	command := removeTeamVlansCommand + addTeamVlansCommand
-	if len(command) > 0 {
-		_, err = sw.runConfigCommand(removeTeamVlansCommand + addTeamVlansCommand)
+	addTeamVlan(teams[0], red1Vlan)
+	addTeamVlan(teams[1], red2Vlan)
+	addTeamVlan(teams[2], red3Vlan)
+	addTeamVlan(teams[3], blue1Vlan)
+	addTeamVlan(teams[4], blue2Vlan)
+	addTeamVlan(teams[5], blue3Vlan)
+	if len(addTeamVlansCommand) > 0 {
+		_, err = sw.runConfigCommand(addTeamVlansCommand)
 		if err != nil {
 			return err
 		}
@@ -126,36 +119,6 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	time.Sleep(sw.configBackoffDuration)
 
 	return nil
-}
-
-// Returns a map of currently-configured teams to VLANs.
-func (sw *Switch) getTeamVlans() (map[int]int, error) {
-	// Get the entire config dump.
-	config, err := sw.runCommand("show running-config\n")
-	if err != nil {
-		return nil, err
-	}
-
-	// Parse out the team IDs and VLANs from the config dump.
-	re := regexp.MustCompile(
-		fmt.Sprintf("(?s)interface Vlan(\\d\\d)\\s+ip address 10\\.(\\d+)\\.(\\d+)\\.%d", switchTeamGatewayAddress),
-	)
-	teamVlanMatches := re.FindAllStringSubmatch(config, -1)
-	if teamVlanMatches == nil {
-		// There are probably no teams currently configured.
-		return nil, nil
-	}
-
-	// Build the map of team to VLAN.
-	teamVlans := make(map[int]int)
-	for _, match := range teamVlanMatches {
-		team100s, _ := strconv.Atoi(match[2])
-		team1s, _ := strconv.Atoi(match[3])
-		team := int(team100s)*100 + team1s
-		vlan, _ := strconv.Atoi(match[1])
-		teamVlans[team] = vlan
-	}
-	return teamVlans, nil
 }
 
 // Logs into the switch via Telnet and runs the given command in user exec mode. Reads the output and
