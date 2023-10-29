@@ -36,6 +36,7 @@
               <th>Match Time</th>
               <th>DS Linked</th>
               <th>Radio Linked</th>
+              <th>Rio Linked</th>
               <th>Robot Linked</th>
               <th>Mode</th>
               <th>Enabled</th>
@@ -54,7 +55,8 @@
                 <td data-status-ok="{{and $row.DsLinked $row.RadioLinked $row.RobotLinked}}">{{printf "%.2f" $row.MatchTimeSec}}</td>
                 <td>{{$row.DsLinked}}</td>
                 <td>{{if $row.DsLinked}}{{$row.RadioLinked}}{{else}}*****{{end}}</td>
-                <td>{{if and $row.DsLinked $row.RadioLinked}}{{$row.RobotLinked}}{{else}}*****{{end}}</td>
+                <td>{{if and $row.DsLinked $row.RadioLinked}}{{$row.RioLinked}}{{else}}*****{{end}}</td>
+                <td>{{if and $row.DsLinked $row.RadioLinked $row.RioLinked}}{{$row.RobotLinked}}{{else}}*****{{end}}</td>
                 <td>{{if $row.Auto}}Auto{{else}}Telop{{end}}</td>
                 <td>{{$row.Enabled}}</td>
                 <td>{{$row.EmergencyStop}}</td>

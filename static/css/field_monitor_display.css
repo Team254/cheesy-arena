@@ -94,6 +94,9 @@ body {
   background-color: #00ff00;
   color: #333;
 }
+.team-id[data-status=rio-linked], .team-notes[data-status=rio-linked]  {
+  background-color: #00cc00;
+}
 .team-id[data-status=radio-linked], .team-notes[data-status=radio-linked]  {
   background-color: #AA3377;
 }
