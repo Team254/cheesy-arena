@@ -6,10 +6,14 @@ package field
 import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -392,7 +396,7 @@ func TestLoadNextMatch(t *testing.T) {
 
 	// Test match should be followed by another, empty test match.
 	assert.Equal(t, 0, arena.CurrentMatch.Id)
-	err := arena.SubstituteTeam(1114, "R1")
+	err := arena.SubstituteTeams(1114, 0, 0, 0, 0, 0)
 	assert.Nil(t, err)
 	arena.CurrentMatch.Status = game.TieMatch
 	err = arena.LoadNextMatch(false)
@@ -442,7 +446,7 @@ func TestSubstituteTeam(t *testing.T) {
 	arena.Database.CreateTeam(&model.Team{Id: 107})
 
 	// Substitute teams into test match.
-	err := arena.SubstituteTeam(101, "B1")
+	err := arena.SubstituteTeams(0, 0, 0, 101, 0, 0)
 	assert.Nil(t, err)
 	assert.Equal(t, 101, arena.CurrentMatch.Blue1)
 	assert.Equal(t, 101, arena.AllianceStations["B1"].Team.Id)
@@ -455,7 +459,7 @@ func TestSubstituteTeam(t *testing.T) {
 	match := model.Match{Type: model.Practice, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
-	err = arena.SubstituteTeam(107, "R1")
+	err = arena.SubstituteTeams(107, 102, 103, 104, 105, 106)
 	assert.Nil(t, err)
 	assert.Equal(t, 107, arena.CurrentMatch.Red1)
 	assert.Equal(t, 107, arena.AllianceStations["R1"].Team.Id)
@@ -466,14 +470,90 @@ func TestSubstituteTeam(t *testing.T) {
 	match = model.Match{Type: model.Qualification, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
-	err = arena.SubstituteTeam(107, "R1")
+	err = arena.SubstituteTeams(107, 102, 103, 104, 105, 106)
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Can't substitute teams for qualification matches.")
 	}
 	match = model.Match{Type: model.Playoff, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
-	assert.Nil(t, arena.SubstituteTeam(107, "R1"))
+	assert.Nil(t, arena.SubstituteTeams(107, 102, 103, 104, 105, 106))
+
+	// Check that loading a nonexistent team fails.
+	err = arena.SubstituteTeams(101, 102, 103, 104, 105, 108)
+	if assert.NotNil(t, err) {
+		assert.Equal(t, err.Error(), "Team 108 is not present at the event.")
+	}
+}
+
+func TestLoadTeamsFromNexus(t *testing.T) {
+	arena := setupTestArena(t)
+
+	for i := 1; i <= 12; i++ {
+		arena.Database.CreateTeam(&model.Team{Id: 100 + i})
+	}
+	match := model.Match{
+		Type:        model.Practice,
+		Red1:        101,
+		Red2:        102,
+		Red3:        103,
+		Blue1:       104,
+		Blue2:       105,
+		Blue3:       106,
+		TbaMatchKey: model.TbaMatchKey{CompLevel: "p", SetNumber: 0, MatchNumber: 1},
+	}
+	arena.Database.CreateMatch(&match)
+
+	assertTeams := func(red1, red2, red3, blue1, blue2, blue int) {
+		assert.Equal(t, red1, arena.CurrentMatch.Red1)
+		assert.Equal(t, red2, arena.CurrentMatch.Red2)
+		assert.Equal(t, red3, arena.CurrentMatch.Red3)
+		assert.Equal(t, blue1, arena.CurrentMatch.Blue1)
+		assert.Equal(t, blue2, arena.CurrentMatch.Blue2)
+		assert.Equal(t, blue, arena.CurrentMatch.Blue3)
+		assert.Equal(t, red1, arena.AllianceStations["R1"].Team.Id)
+		assert.Equal(t, red2, arena.AllianceStations["R2"].Team.Id)
+		assert.Equal(t, red3, arena.AllianceStations["R3"].Team.Id)
+		assert.Equal(t, blue1, arena.AllianceStations["B1"].Team.Id)
+		assert.Equal(t, blue2, arena.AllianceStations["B2"].Team.Id)
+		assert.Equal(t, blue, arena.AllianceStations["B3"].Team.Id)
+	}
+
+	// Sanity check that the match loads correctly without Nexus enabled.
+	assert.Nil(t, arena.LoadMatch(&match))
+	assertTeams(101, 102, 103, 104, 105, 106)
+
+	// Mock the Nexus server.
+	nexusServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.Contains(r.URL.String(), "/v1/my_event_code/p1/lineup") {
+			w.Write([]byte("{\"red\":[\"112\",\"111\",\"110\"],\"blue\":[\"109\",\"108\",\"107\"]}"))
+		} else {
+			http.Error(w, "Match not found", 404)
+		}
+	}))
+	defer nexusServer.Close()
+	arena.NexusClient = partner.NewNexusClient("my_event_code")
+	arena.NexusClient.BaseUrl = nexusServer.URL
+	arena.EventSettings.NexusEnabled = true
+
+	// Check that the correct teams are loaded from Nexus.
+	assert.Nil(t, arena.LoadMatch(&match))
+	assertTeams(112, 111, 110, 109, 108, 107)
+
+	// Check with a match that Nexus doesn't know about.
+	match = model.Match{
+		Type:        model.Practice,
+		Red1:        106,
+		Red2:        105,
+		Red3:        104,
+		Blue1:       103,
+		Blue2:       102,
+		Blue3:       101,
+		TbaMatchKey: model.TbaMatchKey{CompLevel: "p", SetNumber: 0, MatchNumber: 2},
+	}
+	arena.Database.CreateMatch(&match)
+	assert.Nil(t, arena.LoadMatch(&match))
+	assertTeams(106, 105, 104, 103, 102, 101)
 }
 
 func TestArenaTimeout(t *testing.T) {

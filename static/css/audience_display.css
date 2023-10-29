@@ -329,7 +329,7 @@ html {
   padding-left: 150px;
 }
 .final-breakdown {
-  height: 310px;
+  height: 330px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -387,6 +387,7 @@ html {
   color: #fff;
   font-family: "FuturaLT";
   font-size: 32px;
+  line-height: 43px;
 }
 .final-team-rank {
   width: 20px;

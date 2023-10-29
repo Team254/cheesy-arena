@@ -1,7 +1,8 @@
 // Copyright 2017 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Methods for configuring a Linksys WRT1900ACS access point running OpenWRT for team SSIDs and VLANs.
+// Methods for configuring a Linksys WRT1900ACS or Vivid-Hosting VH-109 access point running OpenWRT for team SSIDs and
+// VLANs.
 
 package network
 
@@ -20,27 +21,34 @@ import (
 const (
 	accessPointSshPort                = 22
 	accessPointConnectTimeoutSec      = 1
-	accessPointCommandTimeoutSec      = 5
+	accessPointCommandTimeoutSec      = 30
 	accessPointPollPeriodSec          = 3
 	accessPointRequestBufferSize      = 10
-	accessPointConfigRetryIntervalSec = 5
+	accessPointConfigRetryIntervalSec = 30
+	accessPointConfigBackoffSec       = 5
 )
 
+var accessPointInfoLines = []string{"ESSID: ", "Mode: ", "Tx-Power: ", "Signal: ", "Bit Rate: "}
+
 type AccessPoint struct {
+	isVividType            bool
 	address                string
 	username               string
 	password               string
 	teamChannel            int
 	networkSecurityEnabled bool
 	configRequestChan      chan [6]*model.Team
-	TeamWifiStatuses       [6]TeamWifiStatus
+	TeamWifiStatuses       [6]*TeamWifiStatus
 	initialStatusesFetched bool
 }
 
 type TeamWifiStatus struct {
-	TeamId      int
-	RadioLinked bool
-	MBits       float64
+	TeamId           int
+	RadioLinked      bool
+	MBits            float64
+	RxRate           float64
+	TxRate           float64
+	SignalNoiseRatio int
 }
 
 type sshOutput struct {
@@ -48,12 +56,20 @@ type sshOutput struct {
 	err    error
 }
 
-func (ap *AccessPoint) SetSettings(address, username, password string, teamChannel int, networkSecurityEnabled bool) {
+func (ap *AccessPoint) SetSettings(
+	isVividType bool,
+	address, username, password string,
+	teamChannel int,
+	networkSecurityEnabled bool,
+	wifiStatuses [6]*TeamWifiStatus,
+) {
+	ap.isVividType = isVividType
 	ap.address = address
 	ap.username = username
 	ap.password = password
 	ap.teamChannel = teamChannel
 	ap.networkSecurityEnabled = networkSecurityEnabled
+	ap.TeamWifiStatuses = wifiStatuses
 
 	// Create config channel the first time this method is called.
 	if ap.configRequestChan == nil {
@@ -81,6 +97,23 @@ func (ap *AccessPoint) Run() {
 	}
 }
 
+// Calls the access point to configure the non-team-related settings.
+func (ap *AccessPoint) ConfigureAdminSettings() error {
+	if !ap.networkSecurityEnabled {
+		return nil
+	}
+
+	var device string
+	if ap.isVividType {
+		device = "wifi1"
+	} else {
+		device = "radio0"
+	}
+	command := fmt.Sprintf("uci set wireless.%s.channel=%d && uci commit wireless", device, ap.teamChannel)
+	_, err := ap.runCommand(command)
+	return err
+}
+
 // Adds a request to set up wireless networks for the given set of teams to the asynchronous queue.
 func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
 	// Use a channel to serialize configuration requests; the monitoring goroutine will service them.
@@ -97,12 +130,10 @@ func (ap *AccessPoint) handleTeamWifiConfiguration(teams [6]*model.Team) {
 		return
 	}
 
-	if ap.configIsCorrectForTeams(teams) {
-		return
+	if !ap.isVividType {
+		// Clear the state of the radio before loading teams; the Linksys AP is crash-prone otherwise.
+		ap.configureTeams([6]*model.Team{nil, nil, nil, nil, nil, nil})
 	}
-
-	// Clear the state of the radio before loading teams.
-	ap.configureTeams([6]*model.Team{nil, nil, nil, nil, nil, nil})
 	ap.configureTeams(teams)
 }
 
@@ -112,12 +143,13 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 	for {
 		teamIndex := 0
 		for teamIndex < 6 {
-			config, err := generateTeamAccessPointConfig(teams[teamIndex], teamIndex+1)
+			config, err := ap.generateTeamAccessPointConfig(teams[teamIndex], teamIndex+1)
 			if err != nil {
 				log.Printf("Failed to generate WiFi configuration: %v", err)
 			}
 
 			command := addConfigurationHeader(config)
+			log.Printf("Configuring access point with command: %s\n", command)
 
 			_, err = ap.runCommand(command)
 			if err != nil {
@@ -129,7 +161,14 @@ func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
 
 			teamIndex++
 		}
-		time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
+
+		_, _ = ap.runCommand("uci commit wireless")
+		_, _ = ap.runCommand("wifi reload")
+		if !ap.isVividType {
+			// The Linksys AP returns immediately after 'wifi reload' but may not have applied the configuration yet;
+			// sleep for a bit to compensate. (The Vivid AP waits for the configuration to be applied before returning.)
+			time.Sleep(time.Second * accessPointConfigBackoffSec)
+		}
 		err := ap.updateTeamWifiStatuses()
 		if err == nil && ap.configIsCorrectForTeams(teams) {
 			log.Printf("Successfully configured WiFi after %d attempts.", retryCount)
@@ -147,10 +186,14 @@ func (ap *AccessPoint) configIsCorrectForTeams(teams [6]*model.Team) bool {
 
 	for i, team := range teams {
 		expectedTeamId := 0
+		actualTeamId := 0
 		if team != nil {
 			expectedTeamId = team.Id
 		}
-		if ap.TeamWifiStatuses[i].TeamId != expectedTeamId {
+		if ap.TeamWifiStatuses[i] != nil {
+			actualTeamId = ap.TeamWifiStatuses[i].TeamId
+		}
+		if actualTeamId != expectedTeamId {
 			return false
 		}
 	}
@@ -166,7 +209,8 @@ func (ap *AccessPoint) updateTeamWifiStatuses() error {
 
 	output, err := ap.runCommand("iwinfo")
 	if err == nil {
-		err = decodeWifiInfo(output, ap.TeamWifiStatuses[:])
+		logWifiInfo(output)
+		err = ap.decodeWifiInfo(output)
 	}
 
 	if err != nil {
@@ -213,68 +257,95 @@ func (ap *AccessPoint) runCommand(command string) (string, error) {
 }
 
 func addConfigurationHeader(commandList string) string {
-	return fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\ncommit wireless\nENDCONFIG\n", commandList)
+	return fmt.Sprintf("uci batch <<ENDCONFIG\n%s\nENDCONFIG\n", commandList)
 }
 
 // Verifies WPA key validity and produces the configuration command for the given team.
-func generateTeamAccessPointConfig(team *model.Team, position int) (string, error) {
+func (ap *AccessPoint) generateTeamAccessPointConfig(team *model.Team, position int) (string, error) {
 	if position < 1 || position > 6 {
 		return "", fmt.Errorf("invalid team position %d", position)
 	}
 
-	commands := &[]string{}
+	var ssid, key string
 	if team == nil {
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='no-team-%d'", position, position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='no-team-%d'", position, position))
+		ssid = fmt.Sprintf("no-team-%d", position)
+		key = fmt.Sprintf("no-team-%d", position)
 	} else {
 		if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
 			return "", fmt.Errorf("invalid WPA key '%s' configured for team %d", team.WpaKey, team.Id)
 		}
-
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position, team.Id),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
+		ssid = strconv.Itoa(team.Id)
+		key = team.WpaKey
 	}
 
-	return strings.Join(*commands, "\n"), nil
+	commands := []string{
+		fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
+		fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%s'", position, ssid),
+		fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, key),
+	}
+	if ap.isVividType {
+		commands = append(commands, fmt.Sprintf("set wireless.@wifi-iface[%d].sae_password='%s'", position, key))
+	}
+
+	return strings.Join(commands, "\n"), nil
+}
+
+// Filters the given output from the "iwiinfo" command on the AP and logs the relevant parts.
+func logWifiInfo(wifiInfo string) {
+	lines := strings.Split(wifiInfo, "\n")
+	var filteredLines []string
+	for _, line := range lines {
+		for _, infoLine := range accessPointInfoLines {
+			if strings.Contains(line, infoLine) {
+				filteredLines = append(filteredLines, line)
+				break
+			}
+		}
+	}
+	log.Printf("Access point status:\n%s\n", strings.Join(filteredLines, "\n"))
 }
 
 // Parses the given output from the "iwinfo" command on the AP and updates the given status structure with the result.
-func decodeWifiInfo(wifiInfo string, statuses []TeamWifiStatus) error {
+func (ap *AccessPoint) decodeWifiInfo(wifiInfo string) error {
 	ssidRe := regexp.MustCompile("ESSID: \"([-\\w ]*)\"")
 	ssids := ssidRe.FindAllStringSubmatch(wifiInfo, -1)
-	linkQualityRe := regexp.MustCompile("Link Quality: ([-\\w ]+)/([-\\w ]+)")
-	linkQualities := linkQualityRe.FindAllStringSubmatch(wifiInfo, -1)
 
 	// There should be six networks present -- one for each team on the 5GHz radio.
-	if len(ssids) < 6 || len(linkQualities) < 6 {
+	if len(ssids) < 6 {
 		return fmt.Errorf("Could not parse wifi info; expected 6 team networks, got %d.", len(ssids))
 	}
 
-	for i := range statuses {
-		ssid := ssids[i][1]
-		statuses[i].TeamId, _ = strconv.Atoi(ssid) // Any non-numeric SSIDs will be represented by a zero.
-		linkQualityNumerator := linkQualities[i][1]
-		statuses[i].RadioLinked = linkQualityNumerator != "unknown"
+	for i, wifiStatus := range ap.TeamWifiStatuses {
+		if wifiStatus != nil {
+			ssid := ssids[i][1]
+			wifiStatus.TeamId, _ = strconv.Atoi(ssid) // Any non-numeric SSIDs will be represented by a zero.
+		}
 	}
 
 	return nil
 }
 
-// Polls the 6 wlans on the ap for bandwith use and updates data structure.
+// Polls the 6 wlans on the ap for bandwidth use and updates data structure.
 func (ap *AccessPoint) updateTeamWifiBTU() error {
 	if !ap.networkSecurityEnabled {
 		return nil
 	}
 
-	infWifi := []string{"0", "0-1", "0-2", "0-3", "0-4", "0-5"}
-	for i := range ap.TeamWifiStatuses {
+	var interfaces []string
+	if ap.isVividType {
+		interfaces = []string{"ath1", "ath11", "ath12", "ath13", "ath14", "ath15"}
+	} else {
+		interfaces = []string{"wlan0", "wlan0-1", "wlan0-2", "wlan0-3", "wlan0-4", "wlan0-5"}
+	}
 
-		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i wlan%s", infWifi[i]))
+	for i := range ap.TeamWifiStatuses {
+		if ap.TeamWifiStatuses[i] == nil {
+			continue
+		}
+		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i %s && iwinfo %s assoclist", interfaces[i], interfaces[i]))
 		if err == nil {
-			btu := parseBtu(output)
-			ap.TeamWifiStatuses[i].MBits = btu
+			ap.TeamWifiStatuses[i].MBits = parseBtu(output)
+			ap.TeamWifiStatuses[i].parseAssocList(output)
 		}
 		if err != nil {
 			return fmt.Errorf("Error getting BTU info from AP: %v", err)
@@ -283,18 +354,49 @@ func (ap *AccessPoint) updateTeamWifiBTU() error {
 	return nil
 }
 
-// Parses Bytes from ap's onboard bandwith monitor returns 5 sec average bandwidth in Megabits per second for the given data.
+// Parses the given data from the access point's onboard bandwidth monitor and returns five-second average bandwidth in
+// megabits per second.
 func parseBtu(response string) float64 {
 	mBits := 0.0
-	lines := strings.Split(response, "],")
-	if len(lines) > 6 {
-		fiveCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-6]), "["), "]"), ",")
-		lastCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-1]), "["), "]"), ",")
-		rXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[1]))
-		tXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[3]))
-		rXBytesOld, _ := strconv.Atoi(strings.TrimSpace(fiveCnt[1]))
-		tXBytesOld, _ := strconv.Atoi(strings.TrimSpace(fiveCnt[3]))
+	btuRe := regexp.MustCompile("\\[ (\\d+), (\\d+), (\\d+), (\\d+), (\\d+) ]")
+	btuMatches := btuRe.FindAllStringSubmatch(response, -1)
+	if len(btuMatches) >= 7 {
+		firstMatch := btuMatches[len(btuMatches)-6]
+		lastMatch := btuMatches[len(btuMatches)-1]
+		rXBytes, _ := strconv.Atoi(lastMatch[2])
+		tXBytes, _ := strconv.Atoi(lastMatch[4])
+		rXBytesOld, _ := strconv.Atoi(firstMatch[2])
+		tXBytesOld, _ := strconv.Atoi(firstMatch[4])
 		mBits = float64(rXBytes-rXBytesOld+tXBytes-tXBytesOld) * 0.000008 / 5.0
 	}
 	return mBits
+}
+
+// Parses the given data from the access point's association list and updates the status structure with the result.
+func (wifiStatus *TeamWifiStatus) parseAssocList(response string) {
+	radioLinkRe := regexp.MustCompile("((?:[0-9A-F]{2}:){5}(?:[0-9A-F]{2})).*\\(SNR (\\d+)\\)\\s+(\\d+) ms ago")
+	rxRateRe := regexp.MustCompile("RX:\\s+(\\d+\\.\\d+)\\s+MBit/s")
+	txRateRe := regexp.MustCompile("TX:\\s+(\\d+\\.\\d+)\\s+MBit/s")
+
+	wifiStatus.RadioLinked = false
+	wifiStatus.RxRate = 0
+	wifiStatus.TxRate = 0
+	wifiStatus.SignalNoiseRatio = 0
+	for _, radioLinkMatch := range radioLinkRe.FindAllStringSubmatch(response, -1) {
+		macAddress := radioLinkMatch[1]
+		dataAgeMs, _ := strconv.Atoi(radioLinkMatch[3])
+		if macAddress != "00:00:00:00:00:00" && dataAgeMs <= 4000 {
+			wifiStatus.RadioLinked = true
+			wifiStatus.SignalNoiseRatio, _ = strconv.Atoi(radioLinkMatch[2])
+			rxRateMatch := rxRateRe.FindStringSubmatch(response)
+			if len(rxRateMatch) > 0 {
+				wifiStatus.RxRate, _ = strconv.ParseFloat(rxRateMatch[1], 64)
+			}
+			txRateMatch := txRateRe.FindStringSubmatch(response)
+			if len(txRateMatch) > 0 {
+				wifiStatus.TxRate, _ = strconv.ParseFloat(txRateMatch[1], 64)
+			}
+			break
+		}
+	}
 }

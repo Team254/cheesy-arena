@@ -143,11 +143,11 @@ func (dsConn *DriverStationConnection) close() {
 }
 
 // Called at the start of the match to allow for driver station initialization.
-func (dsConn *DriverStationConnection) signalMatchStart(match *model.Match) error {
+func (dsConn *DriverStationConnection) signalMatchStart(match *model.Match, wifiStatus *network.TeamWifiStatus) error {
 	// Zero out missed packet count and begin logging.
 	dsConn.missedPacketOffset = dsConn.MissedPacketCount
 	var err error
-	dsConn.log, err = NewTeamMatchLog(dsConn.TeamId, match)
+	dsConn.log, err = NewTeamMatchLog(dsConn.TeamId, match, wifiStatus)
 	return err
 }
 

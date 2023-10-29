@@ -197,3 +197,17 @@ func TestMatchTypeFromString(t *testing.T) {
 		assert.Equal(t, "invalid match type \"elimination\"", err.Error())
 	}
 }
+
+func TestTbaMatchKeyString(t *testing.T) {
+	key := TbaMatchKey{CompLevel: "p", SetNumber: 0, MatchNumber: 3}
+	assert.Equal(t, "p3", key.String())
+
+	key = TbaMatchKey{CompLevel: "qm", SetNumber: 0, MatchNumber: 17}
+	assert.Equal(t, "qm17", key.String())
+
+	key = TbaMatchKey{CompLevel: "sf", SetNumber: 5, MatchNumber: 1}
+	assert.Equal(t, "sf5m1", key.String())
+
+	key = TbaMatchKey{CompLevel: "f", SetNumber: 1, MatchNumber: 4}
+	assert.Equal(t, "f1m4", key.String())
+}

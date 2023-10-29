@@ -625,6 +625,7 @@ func createTbaScoringBreakdown(
 			}
 		}
 	}
+	breakdown.Links = make([]TbaLink, 0)
 	for _, link := range score.Grid.Links() {
 		tbaLink := TbaLink{
 			Nodes: [3]int{link.StartColumn, link.StartColumn + 1, link.StartColumn + 2},

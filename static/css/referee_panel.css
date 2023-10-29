@@ -177,9 +177,6 @@ h3 {
 .control-button[data-enabled=true] {
   opacity: 1;
 }
-#volunteerButton {
-  background-color: #90c;
-}
 #resetButton {
   background-color: #093;
 }

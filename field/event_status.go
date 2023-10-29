@@ -12,16 +12,20 @@ import (
 	"time"
 )
 
+const maxExpectedCycleTimeSec = 900
+
 type EventStatus struct {
-	CycleTime          string
-	EarlyLateMessage   string
-	lastMatchStartTime time.Time
+	CycleTime                   string
+	EarlyLateMessage            string
+	lastMatchStartTime          time.Time
+	lastMatchScheduledStartTime time.Time
 }
 
 // Calculates the last cycle time and publishes an update to the displays that show it.
 func (arena *Arena) updateCycleTime(matchStartTime time.Time) {
-	if arena.EventStatus.lastMatchStartTime.IsZero() {
-		// We don't know when the previous match was started.
+	expectedCycleTimeSec := arena.CurrentMatch.Time.Sub(arena.EventStatus.lastMatchScheduledStartTime).Seconds()
+	if arena.EventStatus.lastMatchStartTime.IsZero() || expectedCycleTimeSec > maxExpectedCycleTimeSec {
+		// We don't know when the previous match was started or there was a big gap that we shouldn't count.
 		arena.EventStatus.CycleTime = ""
 	} else {
 		cycleTimeSec := int(matchStartTime.Sub(arena.EventStatus.lastMatchStartTime).Seconds())
@@ -33,8 +37,21 @@ func (arena *Arena) updateCycleTime(matchStartTime time.Time) {
 		} else {
 			arena.EventStatus.CycleTime = fmt.Sprintf("%d:%02d", minutes, seconds)
 		}
+
+		deltaSec := cycleTimeSec - int(expectedCycleTimeSec)
+		var direction string
+		if deltaSec > 0 {
+			direction = "slower"
+		} else {
+			direction = "faster"
+			deltaSec = -deltaSec
+		}
+		arena.EventStatus.CycleTime += fmt.Sprintf(
+			" (%d:%02d %s than scheduled)", deltaSec/60, deltaSec%60, direction,
+		)
 	}
 	arena.EventStatus.lastMatchStartTime = matchStartTime
+	arena.EventStatus.lastMatchScheduledStartTime = arena.CurrentMatch.Time
 	arena.EventStatusNotifier.Notify()
 }
 

@@ -53,6 +53,7 @@ type Arena struct {
 	networkSwitch    *network.Switch
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
+	NexusClient      *partner.NexusClient
 	AllianceStations map[string]*AllianceStation
 	Displays         map[string]*Display
 	ScoringPanelRegistry
@@ -67,7 +68,6 @@ type Arena struct {
 	lastDsPacketTime           time.Time
 	lastPeriodicTaskTime       time.Time
 	EventStatus                EventStatus
-	FieldVolunteers            bool
 	FieldReset                 bool
 	AudienceDisplayMode        string
 	SavedMatch                 *model.Match
@@ -85,12 +85,13 @@ type Arena struct {
 }
 
 type AllianceStation struct {
-	DsConn   *DriverStationConnection
-	Ethernet bool
-	Astop    bool
-	Estop    bool
-	Bypass   bool
-	Team     *model.Team
+	DsConn     *DriverStationConnection
+	Ethernet   bool
+	Astop      bool
+	Estop      bool
+	Bypass     bool
+	Team       *model.Team
+	WifiStatus network.TeamWifiStatus
 }
 
 // Creates the arena and sets it to its initial state.
@@ -98,16 +99,6 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena := new(Arena)
 	arena.configureNotifiers()
 	arena.Plc = new(plc.ModbusPlc)
-
-	var err error
-	arena.Database, err = model.OpenDatabase(dbPath)
-	if err != nil {
-		return nil, err
-	}
-	err = arena.LoadSettings()
-	if err != nil {
-		return nil, err
-	}
 
 	arena.AllianceStations = make(map[string]*AllianceStation)
 	arena.AllianceStations["R1"] = new(AllianceStation)
@@ -118,6 +109,16 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.AllianceStations["B3"] = new(AllianceStation)
 
 	arena.Displays = make(map[string]*Display)
+
+	var err error
+	arena.Database, err = model.OpenDatabase(dbPath)
+	if err != nil {
+		return nil, err
+	}
+	err = arena.LoadSettings()
+	if err != nil {
+		return nil, err
+	}
 
 	arena.ScoringPanelRegistry.initialize()
 
@@ -145,23 +146,68 @@ func (arena *Arena) LoadSettings() error {
 	arena.EventSettings = settings
 
 	// Initialize the components that depend on settings.
+	var accessPoint1WifiStatuses, accessPoint2WifiStatuses [6]*network.TeamWifiStatus
+	if arena.EventSettings.Ap2TeamChannel == 0 {
+		accessPoint1WifiStatuses = [6]*network.TeamWifiStatus{
+			&arena.AllianceStations["R1"].WifiStatus,
+			&arena.AllianceStations["R2"].WifiStatus,
+			&arena.AllianceStations["R3"].WifiStatus,
+			&arena.AllianceStations["B1"].WifiStatus,
+			&arena.AllianceStations["B2"].WifiStatus,
+			&arena.AllianceStations["B3"].WifiStatus,
+		}
+	} else {
+		accessPoint1WifiStatuses = [6]*network.TeamWifiStatus{
+			&arena.AllianceStations["R1"].WifiStatus,
+			&arena.AllianceStations["R2"].WifiStatus,
+			&arena.AllianceStations["R3"].WifiStatus,
+			nil,
+			nil,
+			nil,
+		}
+		accessPoint2WifiStatuses = [6]*network.TeamWifiStatus{
+			nil,
+			nil,
+			nil,
+			&arena.AllianceStations["B1"].WifiStatus,
+			&arena.AllianceStations["B2"].WifiStatus,
+			&arena.AllianceStations["B3"].WifiStatus,
+		}
+	}
+
 	arena.accessPoint.SetSettings(
+		settings.ApType == "vivid",
 		settings.ApAddress,
 		settings.ApUsername,
 		settings.ApPassword,
 		settings.ApTeamChannel,
 		settings.NetworkSecurityEnabled,
+		accessPoint1WifiStatuses,
 	)
 	arena.accessPoint2.SetSettings(
+		settings.ApType == "vivid",
 		settings.Ap2Address,
 		settings.Ap2Username,
 		settings.Ap2Password,
 		settings.Ap2TeamChannel,
 		settings.NetworkSecurityEnabled,
+		accessPoint2WifiStatuses,
 	)
 	arena.networkSwitch = network.NewSwitch(settings.SwitchAddress, settings.SwitchPassword)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
+	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
+
+	if arena.EventSettings.NetworkSecurityEnabled && arena.MatchState == PreMatch {
+		if err = arena.accessPoint.ConfigureAdminSettings(); err != nil {
+			log.Printf("Failed to configure access point admin settings: %s", err.Error())
+		}
+		if arena.EventSettings.Ap2TeamChannel != 0 {
+			if err = arena.accessPoint2.ConfigureAdminSettings(); err != nil {
+				log.Printf("Failed to configure second access point admin settings: %s", err.Error())
+			}
+		}
+	}
 
 	game.MatchTiming.WarmupDurationSec = settings.WarmupDurationSec
 	game.MatchTiming.AutoDurationSec = settings.AutoDurationSec
@@ -219,40 +265,61 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	}
 
 	arena.CurrentMatch = match
-	err := arena.assignTeam(match.Red1, "R1")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Red2, "R2")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Red3, "R3")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Blue1, "B1")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Blue2, "B2")
-	if err != nil {
-		return err
-	}
-	err = arena.assignTeam(match.Blue3, "B3")
-	if err != nil {
-		return err
+
+	loadedByNexus := false
+	if match.ShouldAllowNexusSubstitution() && arena.EventSettings.NexusEnabled {
+		// Attempt to get the match lineup from Nexus for FRC.
+		lineup, err := arena.NexusClient.GetLineup(match.TbaMatchKey)
+		if err != nil {
+			log.Printf("Failed to load lineup from Nexus: %s", err.Error())
+		} else {
+			err = arena.SubstituteTeams(lineup[0], lineup[1], lineup[2], lineup[3], lineup[4], lineup[5])
+			if err != nil {
+				log.Printf("Failed to substitute teams using Nexus lineup; loading match normally: %s", err.Error())
+			} else {
+				log.Printf(
+					"Successfully loaded lineup for match %s from Nexus: %v", match.TbaMatchKey.String(), *lineup,
+				)
+				loadedByNexus = true
+			}
+		}
 	}
 
-	arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
-		arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
-		arena.AllianceStations["B3"].Team})
+	if !loadedByNexus {
+		err := arena.assignTeam(match.Red1, "R1")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Red2, "R2")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Red3, "R3")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Blue1, "B1")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Blue2, "B2")
+		if err != nil {
+			return err
+		}
+		err = arena.assignTeam(match.Blue3, "B3")
+		if err != nil {
+			return err
+		}
+
+		arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
+			arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
+			arena.AllianceStations["B3"].Team})
+	}
 
 	// Reset the arena state and realtime scores.
 	arena.soundsPlayed = make(map[*game.MatchSound]struct{})
 	arena.RedRealtimeScore = NewRealtimeScore()
 	arena.BlueRealtimeScore = NewRealtimeScore()
-	arena.FieldVolunteers = false
 	arena.FieldReset = false
 	arena.ScoringPanelRegistry.resetScoreCommitted()
 	arena.Plc.ResetMatch()
@@ -304,28 +371,39 @@ func (arena *Arena) LoadNextMatch(startScheduledBreak bool) error {
 }
 
 // Assigns the given team to the given station, also substituting it into the match record.
-func (arena *Arena) SubstituteTeam(teamId int, station string) error {
+func (arena *Arena) SubstituteTeams(red1, red2, red3, blue1, blue2, blue3 int) error {
 	if !arena.CurrentMatch.ShouldAllowSubstitution() {
 		return fmt.Errorf("Can't substitute teams for qualification matches.")
 	}
-	err := arena.assignTeam(teamId, station)
-	if err != nil {
+
+	if err := arena.validateTeams(red1, red2, red3, blue1, blue2, blue3); err != nil {
 		return err
 	}
-	switch station {
-	case "R1":
-		arena.CurrentMatch.Red1 = teamId
-	case "R2":
-		arena.CurrentMatch.Red2 = teamId
-	case "R3":
-		arena.CurrentMatch.Red3 = teamId
-	case "B1":
-		arena.CurrentMatch.Blue1 = teamId
-	case "B2":
-		arena.CurrentMatch.Blue2 = teamId
-	case "B3":
-		arena.CurrentMatch.Blue3 = teamId
+	if err := arena.assignTeam(red1, "R1"); err != nil {
+		return err
 	}
+	if err := arena.assignTeam(red2, "R2"); err != nil {
+		return err
+	}
+	if err := arena.assignTeam(red3, "R3"); err != nil {
+		return err
+	}
+	if err := arena.assignTeam(blue1, "B1"); err != nil {
+		return err
+	}
+	if err := arena.assignTeam(blue2, "B2"); err != nil {
+		return err
+	}
+	if err := arena.assignTeam(blue3, "B3"); err != nil {
+		return err
+	}
+
+	arena.CurrentMatch.Red1 = red1
+	arena.CurrentMatch.Red2 = red2
+	arena.CurrentMatch.Red3 = red3
+	arena.CurrentMatch.Blue1 = blue1
+	arena.CurrentMatch.Blue2 = blue2
+	arena.CurrentMatch.Blue3 = blue3
 	arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
 		arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
 		arena.AllianceStations["B3"].Team})
@@ -351,7 +429,7 @@ func (arena *Arena) StartMatch() error {
 		// Save the missed packet count to subtract it from the running count.
 		for _, allianceStation := range arena.AllianceStations {
 			if allianceStation.DsConn != nil {
-				err = allianceStation.DsConn.signalMatchStart(arena.CurrentMatch)
+				err = allianceStation.DsConn.signalMatchStart(arena.CurrentMatch, &allianceStation.WifiStatus)
 				if err != nil {
 					log.Println(err)
 				}
@@ -611,6 +689,23 @@ func (arena *Arena) RedScoreSummary() *game.ScoreSummary {
 // Calculates the blue alliance score summary for the given realtime snapshot.
 func (arena *Arena) BlueScoreSummary() *game.ScoreSummary {
 	return arena.BlueRealtimeScore.CurrentScore.Summarize(&arena.RedRealtimeScore.CurrentScore)
+}
+
+// Checks that the given teams are present in the database, allowing team ID 0 which indicates an empty spot.
+func (arena *Arena) validateTeams(teamIds ...int) error {
+	for _, teamId := range teamIds {
+		if teamId == 0 {
+			continue
+		}
+		team, err := arena.Database.GetTeamById(teamId)
+		if err != nil {
+			return err
+		}
+		if team == nil {
+			return fmt.Errorf("Team %d is not present at the event.", teamId)
+		}
+	}
+	return nil
 }
 
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.

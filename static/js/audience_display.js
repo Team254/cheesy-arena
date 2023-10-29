@@ -724,9 +724,9 @@ const setTeamInfo = function(side, position, teamId, rankings) {
   if (ranking !== undefined && ranking !== null && ranking.Rank !== 0) {
     rankNumber = ranking.Rank;
     if (rankNumber > ranking.PreviousRank && ranking.PreviousRank > 0) {
-      rankIndicator = "rank-up";
-    } else if (rankNumber < ranking.PreviousRank) {
       rankIndicator = "rank-down";
+    } else if (rankNumber < ranking.PreviousRank) {
+      rankIndicator = "rank-up";
     }
   }
 

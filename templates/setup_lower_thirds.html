@@ -19,7 +19,6 @@
                   placeholder="Top Text"/>
               <input type="text" class="form-control" name="bottomText" value="{{$lowerThird.BottomText}}"
                   placeholder="Bottom Text"/>
-              <input type="hidden" name="displayOrder" value="{{$i}}" />
             </div>
             <div class="col-lg-6">
               <button type="button" class="btn btn-info btn-lower-third" onclick="saveLowerThird(this);">
@@ -51,7 +50,6 @@
             <input type="hidden" name="id" value="0" />
             <input type="text" class="form-control" name="topText" placeholder="Top or Solo Text" />
             <input type="text" class="form-control" name="bottomText" placeholder="Bottom Text" />
-            <input type="hidden" name="displayOrder" value="{{len .LowerThirds}}" />
           </div>
           <div class="col-lg-6">
             <button type="button" class="btn btn-info btn-lower-third" name="save" onclick="saveLowerThird(this);">

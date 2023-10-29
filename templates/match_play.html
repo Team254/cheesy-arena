@@ -20,9 +20,9 @@
       <div class="col-lg-6 well well-darkblue status-well">
         <div class="row form-group">
           <div class="col-lg-4">Blue Teams</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station">DS</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Radio (AP Configured SSID)">Rad</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Robot">Rbt</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station Status">DS</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Radio Status">Rad</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Robot Status">Rbt</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
         {{template "matchPlayTeam" dict "color" "B" "position" 1}}
@@ -33,9 +33,9 @@
       <div class="col-lg-6 well well-darkred status-well">
         <div class="row form-group">
           <div class="col-lg-4">Red Teams</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station">DS</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Radio (AP Configured SSID)">Rad</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Robot">Rbt</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station Status">DS</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Radio Status">Rad</div>
+          <div class="col-lg-2" data-toggle="tooltip" title="Robot Status">Rbt</div>
           <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
         {{template "matchPlayTeam" dict "color" "R" "position" 3}}
@@ -53,9 +53,9 @@
           onclick="abortMatch();" disabled>
         Abort Match
       </button>
-      <button type="button" id="signalVolunteers" class="btn btn-warning btn-lg btn-match-play"
-          onclick="signalVolunteers();" disabled>
-        Signal Volunteers
+      <button type="button" id="substituteTeams" class="btn btn-warning btn-lg btn-match-play"
+        onclick="substituteTeams();" disabled>
+        Substitute Teams
       </button>
       <button type="button" id="signalReset" class="btn btn-success btn-lg btn-match-play"
           onclick="signalReset();" disabled>
@@ -273,11 +273,17 @@
   <div class="col-lg-1">{{.position}} </div>
   <div class="col-lg-3">
     <input type="number" class="team-number form-control input-sm"
-      onblur="substituteTeam($(this).val(), '{{.color}}{{.position}}');">
+      onchange="$('#substituteTeams').prop('disabled', false);">
   </div>
-  <div class="col-lg-2 col-no-padding"><div class="ds-status"></div></div>
-  <div class="col-lg-2 col-no-padding"><div class="radio-status"></div></div>
-  <div class="col-lg-2 col-no-padding"><div class="robot-status"></div></div>
+  <div class="col-lg-2 col-no-padding">
+    <div class="ds-status" data-toggle="tooltip" title="Bandwidth Consumed"></div>
+  </div>
+  <div class="col-lg-2 col-no-padding">
+    <div class="radio-status" data-toggle="tooltip" title="AP SSID"></div>
+  </div>
+  <div class="col-lg-2 col-no-padding">
+    <div class="robot-status" data-toggle="tooltip" title="Battery / Time Since Link Lost"></div>
+  </div>
   <div class="col-lg-2 col-no-padding">
     <div class="bypass-status" onclick="toggleBypass('{{.color}}{{.position}}');"></div>
   </div>

@@ -227,17 +227,21 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			web.arena.SavedMatch = match
 			web.arena.SavedMatchResult = matchResult
 			web.arena.ScorePostedNotifier.Notify()
-		case "substituteTeam":
+		case "substituteTeams":
 			args := struct {
-				Team     int
-				Position string
+				Red1  int
+				Red2  int
+				Red3  int
+				Blue1 int
+				Blue2 int
+				Blue3 int
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
 			}
-			err = web.arena.SubstituteTeam(args.Team, args.Position)
+			err = web.arena.SubstituteTeams(args.Red1, args.Red2, args.Red3, args.Blue1, args.Blue2, args.Blue3)
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
@@ -277,13 +281,6 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				ws.WriteError(err.Error())
 				continue
 			}
-		case "signalVolunteers":
-			if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
-				// Don't allow clearing the field until the match is over.
-				continue
-			}
-			web.arena.FieldVolunteers = true
-			continue // Skip sending an arena status update.
 		case "signalReset":
 			if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
 				// Don't allow clearing the field until the match is over.

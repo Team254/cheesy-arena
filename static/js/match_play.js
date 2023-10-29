@@ -18,9 +18,18 @@ const showResult = function(matchId) {
   websocket.send("showResult", { matchId: matchId });
 }
 
-// Sends a websocket message to load a team into an alliance station.
-const substituteTeam = function(team, position) {
-  websocket.send("substituteTeam", { team: parseInt(team), position: position })
+// Sends a websocket message to load all teams into their respective alliance stations.
+const substituteTeams = function(team, position) {
+  const teams = {
+    Red1: getTeamNumber("R1"),
+    Red2: getTeamNumber("R2"),
+    Red3: getTeamNumber("R3"),
+    Blue1: getTeamNumber("B1"),
+    Blue2: getTeamNumber("B2"),
+    Blue3: getTeamNumber("B3"),
+  };
+
+  websocket.send("substituteTeams", teams);
 };
 
 // Sends a websocket message to toggle the bypass status for an alliance station.
@@ -37,11 +46,6 @@ const startMatch = function() {
 // Sends a websocket message to abort the match.
 const abortMatch = function() {
   websocket.send("abortMatch");
-};
-
-// Sends a websocket message to signal to the volunteers that they may enter the field.
-const signalVolunteers = function() {
-  websocket.send("signalVolunteers");
 };
 
 // Sends a websocket message to signal to the teams that they may enter the field.
@@ -95,11 +99,17 @@ const setTestMatchName = function() {
   websocket.send("setTestMatchName", $("#testMatchName").val());
 };
 
+// Returns the integer team number entered into the team number input box for the given station, or 0 if it is empty.
+const getTeamNumber = function(station) {
+  const teamId = $(`#status${station} .team-number`).val().trim();
+  return teamId ? parseInt(teamId) : 0;
+}
+
 // Handles a websocket message to update the team connection status.
 const handleArenaStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
-    const wifiStatus = data.TeamWifiStatuses[station];
+    const wifiStatus = stationStatus.WifiStatus;
     $("#status" + station + " .radio-status").text(wifiStatus.TeamId);
 
     if (stationStatus.DsConn) {
@@ -111,9 +121,6 @@ const handleArenaStatus = function(data) {
       } else {
         $("#status" + station + " .ds-status").text("");
       }
-      // Format the radio status box according to the connection status of the robot radio.
-      const radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
-      $("#status" + station + " .radio-status").attr("data-status-ok", radioOkay);
 
       // Format the robot status box.
       const robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
@@ -127,19 +134,20 @@ const handleArenaStatus = function(data) {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").text("");
+    }
 
-      // Format the robot status box according to whether the AP is configured with the correct SSID.
-      const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
-      if (wifiStatus.TeamId === expectedTeamId) {
-        if (wifiStatus.RadioLinked) {
-          $("#status" + station + " .radio-status").attr("data-status-ok", true);
-        } else {
-          $("#status" + station + " .radio-status").attr("data-status-ok", "");
-        }
+    // Format the radio status box according to whether the AP is configured with the correct SSID and the connection
+    // status of the robot radio.
+    const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+    let radioStatus = 0;
+    if (expectedTeamId === wifiStatus.TeamId) {
+      if (wifiStatus.RadioLinked) {
+        radioStatus = 2;
       } else {
-        $("#status" + station + " .radio-status").attr("data-status-ok", false);
+        radioStatus = 1;
       }
     }
+    $(`#status${station} .radio-status`).attr("data-status-ternary", radioStatus);
 
     if (stationStatus.Estop) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);
@@ -158,7 +166,6 @@ const handleArenaStatus = function(data) {
     case "PRE_MATCH":
       $("#startMatch").prop("disabled", !data.CanStartMatch);
       $("#abortMatch").prop("disabled", true);
-      $("#signalVolunteers").prop("disabled", false);
       $("#signalReset").prop("disabled", false);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
@@ -173,7 +180,6 @@ const handleArenaStatus = function(data) {
     case "TELEOP_PERIOD":
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
-      $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
       $("#fieldResetRadio").prop("disabled", true);
       $("#commitResults").prop("disabled", true);
@@ -184,7 +190,6 @@ const handleArenaStatus = function(data) {
     case "POST_MATCH":
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
-      $("#signalVolunteers").prop("disabled", false);
       $("#signalReset").prop("disabled", false);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", false);
@@ -195,7 +200,6 @@ const handleArenaStatus = function(data) {
     case "TIMEOUT_ACTIVE":
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
-      $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
@@ -206,7 +210,6 @@ const handleArenaStatus = function(data) {
     case "POST_TIMEOUT":
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
-      $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
@@ -247,6 +250,8 @@ const handleMatchLoad = function(data) {
   });
   $("#playoffRedAllianceInfo").html(formatPlayoffAllianceInfo(data.Match.PlayoffRedAlliance, data.RedOffFieldTeams));
   $("#playoffBlueAllianceInfo").html(formatPlayoffAllianceInfo(data.Match.PlayoffBlueAlliance, data.BlueOffFieldTeams));
+
+  $("#substituteTeams").prop("disabled", true);
 }
 
 // Handles a websocket message to update the match time countdown.
