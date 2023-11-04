@@ -8,13 +8,14 @@ package web
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/gorilla/mux"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/gorilla/mux"
 )
 
 type MatchLogsListItem struct {
@@ -34,6 +35,7 @@ type MatchLogRow struct {
 	AllianceStation   string
 	DsLinked          bool
 	RadioLinked       bool
+	RioLinked         bool
 	RobotLinked       bool
 	Auto              bool
 	Enabled           bool
@@ -201,6 +203,7 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 			curRow.AllianceStation = record[headerMap["allianceStation"]]
 			curRow.DsLinked, _ = strconv.ParseBool(record[headerMap["dsLinked"]])
 			curRow.RadioLinked, _ = strconv.ParseBool(record[headerMap["radioLinked"]])
+			curRow.RioLinked, _ = strconv.ParseBool(record[headerMap["rioLinked"]])
 			curRow.RobotLinked, _ = strconv.ParseBool(record[headerMap["robotLinked"]])
 			curRow.Auto, _ = strconv.ParseBool(record[headerMap["auto"]])
 			curRow.Enabled, _ = strconv.ParseBool(record[headerMap["enabled"]])
