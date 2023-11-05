@@ -178,6 +178,7 @@ func (arena *Arena) LoadSettings() error {
 	}
 
 	arena.accessPoint.SetSettings(
+		1,
 		settings.ApType == "vivid",
 		settings.ApAddress,
 		settings.ApUsername,
@@ -187,6 +188,7 @@ func (arena *Arena) LoadSettings() error {
 		accessPoint1WifiStatuses,
 	)
 	arena.accessPoint2.SetSettings(
+		2,
 		settings.ApType == "vivid",
 		settings.Ap2Address,
 		settings.Ap2Username,
