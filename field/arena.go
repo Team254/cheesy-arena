@@ -8,6 +8,7 @@ package field
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"time"
 
 	"github.com/Team254/cheesy-arena/game"
@@ -82,6 +83,7 @@ type Arena struct {
 	matchAborted               bool
 	soundsPlayed               map[*game.MatchSound]struct{}
 	breakDescription           string
+	preloadedTeams             *[6]*model.Team
 }
 
 type AllianceStation struct {
@@ -176,6 +178,7 @@ func (arena *Arena) LoadSettings() error {
 	}
 
 	arena.accessPoint.SetSettings(
+		1,
 		settings.ApType == "vivid",
 		settings.ApAddress,
 		settings.ApUsername,
@@ -185,6 +188,7 @@ func (arena *Arena) LoadSettings() error {
 		accessPoint1WifiStatuses,
 	)
 	arena.accessPoint2.SetSettings(
+		2,
 		settings.ApType == "vivid",
 		settings.Ap2Address,
 		settings.Ap2Username,
@@ -311,9 +315,17 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 			return err
 		}
 
-		arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
-			arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
-			arena.AllianceStations["B3"].Team})
+		arena.setupNetwork(
+			[6]*model.Team{
+				arena.AllianceStations["R1"].Team,
+				arena.AllianceStations["R2"].Team,
+				arena.AllianceStations["R3"].Team,
+				arena.AllianceStations["B1"].Team,
+				arena.AllianceStations["B2"].Team,
+				arena.AllianceStations["B3"].Team,
+			},
+			false,
+		)
 	}
 
 	// Reset the arena state and realtime scores.
@@ -404,9 +416,17 @@ func (arena *Arena) SubstituteTeams(red1, red2, red3, blue1, blue2, blue3 int) e
 	arena.CurrentMatch.Blue1 = blue1
 	arena.CurrentMatch.Blue2 = blue2
 	arena.CurrentMatch.Blue3 = blue3
-	arena.setupNetwork([6]*model.Team{arena.AllianceStations["R1"].Team, arena.AllianceStations["R2"].Team,
-		arena.AllianceStations["R3"].Team, arena.AllianceStations["B1"].Team, arena.AllianceStations["B2"].Team,
-		arena.AllianceStations["B3"].Team})
+	arena.setupNetwork(
+		[6]*model.Team{
+			arena.AllianceStations["R1"].Team,
+			arena.AllianceStations["R2"].Team,
+			arena.AllianceStations["R3"].Team,
+			arena.AllianceStations["B1"].Team,
+			arena.AllianceStations["B2"].Team,
+			arena.AllianceStations["B3"].Team,
+		},
+		false,
+	)
 	arena.MatchLoadNotifier.Notify()
 
 	if arena.CurrentMatch.Type != model.Test {
@@ -790,11 +810,22 @@ func (arena *Arena) preLoadNextMatch() {
 			log.Printf("Failed to get model for Team %d while pre-loading next match: %s", teamId, err.Error())
 		}
 	}
-	arena.setupNetwork(teams)
+	arena.setupNetwork(teams, true)
 }
 
 // Asynchronously reconfigures the networking hardware for the new set of teams.
-func (arena *Arena) setupNetwork(teams [6]*model.Team) {
+func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
+	if isPreload {
+		arena.preloadedTeams = &teams
+	} else if arena.preloadedTeams != nil {
+		preloadedTeams := *arena.preloadedTeams
+		arena.preloadedTeams = nil
+		if reflect.DeepEqual(teams, preloadedTeams) {
+			// Skip configuring the network; this is the same set of teams that was preloaded.
+			return
+		}
+	}
+
 	if arena.EventSettings.NetworkSecurityEnabled {
 		if arena.EventSettings.Ap2TeamChannel == 0 {
 			// Only one AP is being used.

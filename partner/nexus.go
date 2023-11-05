@@ -61,6 +61,13 @@ func (client *NexusClient) GetLineup(tbaMatchKey model.TbaMatchKey) (*[6]int, er
 	lineup[4], _ = strconv.Atoi(nexusLineup.Blue[1])
 	lineup[5], _ = strconv.Atoi(nexusLineup.Blue[2])
 
+	// Check that each spot is filled with a valid team number; otherwise return an error.
+	for _, team := range lineup {
+		if team == 0 {
+			return nil, fmt.Errorf("Lineup not yet submitted")
+		}
+	}
+
 	return &lineup, err
 }
 
