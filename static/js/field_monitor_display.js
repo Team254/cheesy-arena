@@ -51,6 +51,8 @@ var handleArenaStatus = function(data) {
           status = "wrong-station";
         } else if (stationStatus.DsConn.RobotLinked) {
           status = "robot-linked";
+        } else if (stationStatus.DsConn.RioLinked) {
+          status = "rio-linked";
         } else if (stationStatus.DsConn.RadioLinked) {
           status = "radio-linked";
         } else if (stationStatus.DsConn.DsLinked) {
