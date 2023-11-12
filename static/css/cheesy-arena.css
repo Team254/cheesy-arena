@@ -28,16 +28,16 @@
   color: #00f;
 }
 .well-red {
-  background-color: #f2dede;
+  background-color: #700000;
 }
 .well-darkred {
-  background-color: #ebcccc;
+  background-color: #700000;
 }
 .well-blue {
-  background-color: #d9edf7;
+  background-color: #002560;
 }
 .well-darkblue {
-  background-color: #c4e3f3;
+  background-color: #002560;
 }
 .col-no-padding {
   padding-left: 0;
@@ -62,7 +62,7 @@
   cursor: pointer;
 }
 [data-status-ok="true"], [data-status-ternary="2"] {
-  background-color: #0e8;
+  background-color: #0b6;
 }
 [data-status-ok="false"], [data-status-ternary="0"] {
   background-color: #e66;
@@ -131,7 +131,7 @@ input[data-changed="true"], select[data-changed="true"] {
 .match-list th {
   position: sticky;
   top: 0;
-  background-color: #fff;
+  background-color: #333;
 }
 #testMatchSettings {
   display: none;
