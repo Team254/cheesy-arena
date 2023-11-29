@@ -4,284 +4,147 @@
 package network
 
 import (
-	"fmt"
-	"io/ioutil"
-	"math"
-	"regexp"
-	"strconv"
-	"testing"
-
+	"encoding/json"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
-func TestGenerateTeamAccessPointConfigForLinksys(t *testing.T) {
-	model.BaseDir = ".."
-	ap := AccessPoint{isVividType: false}
+func TestAccessPoint_ConfigureTeamWifi(t *testing.T) {
+	var ap AccessPoint
+	var request configurationRequest
+	wifiStatuses := [6]*TeamWifiStatus{{}, {}, {}, {}, {}, {}}
+	ap.SetSettings("dummy", "password1", 123, true, wifiStatuses)
+	ap.Status = "INITIAL"
 
-	ifaceRe := regexp.MustCompile("^set wireless\\.@wifi-iface\\[(\\d)\\]\\.")
-	disabledRe := regexp.MustCompile("disabled='([-\\w ]+)'")
-	ssidRe := regexp.MustCompile("ssid='([-\\w ]*)'")
-	wpaKeyRe := regexp.MustCompile("key='([-\\w ]*)'")
+	// Mock the radio API server.
+	radioServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.URL.Path, "/configuration")
+		assert.Equal(t, "Bearer password1", r.Header.Get("Authorization"))
+		assert.Nil(t, json.NewDecoder(r.Body).Decode(&request))
+	}))
+	ap.apiUrl = radioServer.URL
 
-	// Should reject invalid positions.
-	for _, position := range []int{-1, 0, 7, 8, 254} {
-		_, err := ap.generateTeamAccessPointConfig(nil, position)
-		if assert.NotNil(t, err) {
-			assert.Equal(t, err.Error(), fmt.Sprintf("invalid team position %d", position))
-		}
-	}
+	// All stations assigned.
+	team1 := &model.Team{Id: 254, WpaKey: "11111111"}
+	team2 := &model.Team{Id: 1114, WpaKey: "22222222"}
+	team3 := &model.Team{Id: 469, WpaKey: "33333333"}
+	team4 := &model.Team{Id: 2046, WpaKey: "44444444"}
+	team5 := &model.Team{Id: 2056, WpaKey: "55555555"}
+	team6 := &model.Team{Id: 1678, WpaKey: "66666666"}
+	assert.Nil(t, ap.ConfigureTeamWifi([6]*model.Team{team1, team2, team3, team4, team5, team6}))
+	assert.Equal(
+		t,
+		configurationRequest{
+			Channel: 123,
+			StationConfigurations: map[string]stationConfiguration{
+				"red1":  {"254", "11111111"},
+				"red2":  {"1114", "22222222"},
+				"red3":  {"469", "33333333"},
+				"blue1": {"2046", "44444444"},
+				"blue2": {"2056", "55555555"},
+				"blue3": {"1678", "66666666"},
+			},
+		},
+		request,
+	)
 
-	// Should configure dummy values for all team SSIDs if there are no teams.
-	for position := 1; position <= 6; position++ {
-		config, _ := ap.generateTeamAccessPointConfig(nil, position)
-		ifaces := ifaceRe.FindAllStringSubmatch(config, -1)
-		disableds := disabledRe.FindAllStringSubmatch(config, -1)
-		ssids := ssidRe.FindAllStringSubmatch(config, -1)
-		wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
-		if assert.Equal(t, 1, len(disableds)) && assert.Equal(t, 1, len(ssids)) && assert.Equal(t, 1, len(wpaKeys)) {
-			assert.Equal(t, strconv.Itoa(position), ifaces[0][1])
-			assert.Equal(t, "0", disableds[0][1])
-			assert.Equal(t, fmt.Sprintf("no-team-%d", position), ssids[0][1])
-			assert.Equal(t, fmt.Sprintf("no-team-%d", position), wpaKeys[0][1])
-		}
-	}
+	// Different channel and only some stations assigned.
+	ap.channel = 456
+	request = configurationRequest{}
+	assert.Nil(t, ap.ConfigureTeamWifi([6]*model.Team{nil, nil, team2, nil, team1, nil}))
+	assert.Equal(
+		t,
+		configurationRequest{
+			Channel: 456,
+			StationConfigurations: map[string]stationConfiguration{
+				"red3":  {"1114", "22222222"},
+				"blue2": {"254", "11111111"},
+			},
+		},
+		request,
+	)
 
-	// Should configure a different SSID for each team.
-	for position := 1; position <= 6; position++ {
-		team := &model.Team{Id: 254 + position, WpaKey: fmt.Sprintf("aaaaaaa%d", position)}
-		config, _ := ap.generateTeamAccessPointConfig(team, position)
-		ifaces := ifaceRe.FindAllStringSubmatch(config, -1)
-		disableds := disabledRe.FindAllStringSubmatch(config, -1)
-		ssids := ssidRe.FindAllStringSubmatch(config, -1)
-		wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
-		if assert.Equal(t, 1, len(ssids)) && assert.Equal(t, 1, len(wpaKeys)) {
-			assert.Equal(t, strconv.Itoa(position), ifaces[0][1])
-			assert.Equal(t, "0", disableds[0][1])
-			assert.Equal(t, strconv.Itoa(team.Id), ssids[0][1])
-			assert.Equal(t, fmt.Sprintf("aaaaaaa%d", position), wpaKeys[0][1])
-		}
-	}
-
-	// Should reject a missing WPA key.
-	_, err := ap.generateTeamAccessPointConfig(&model.Team{Id: 254}, 4)
+	// Radio API returns an error.
+	radioServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.URL.Path, "/configuration")
+		http.Error(w, "oh noes", 507)
+	}))
+	ap.apiUrl = radioServer.URL
+	err := ap.ConfigureTeamWifi([6]*model.Team{team1, team2, team3, team4, team5, team6})
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "invalid WPA key")
+		assert.Contains(t, err.Error(), "returned status 507: oh noes")
 	}
+	assert.Equal(t, "INITIAL", ap.Status)
 }
 
-func TestGenerateTeamAccessPointConfigForVividHosting(t *testing.T) {
-	model.BaseDir = ".."
-	ap := AccessPoint{isVividType: true}
+func TestAccessPoint_updateMonitoring(t *testing.T) {
+	var ap AccessPoint
+	wifiStatuses := [6]*TeamWifiStatus{{}, {}, {}, {}, {}, {}}
+	ap.SetSettings("dummy", "password2", 123, true, wifiStatuses)
 
-	ifaceRe := regexp.MustCompile("^set wireless\\.@wifi-iface\\[(\\d)\\]\\.")
-	disabledRe := regexp.MustCompile("disabled='([-\\w ]+)'")
-	ssidRe := regexp.MustCompile("ssid='([-\\w ]*)'")
-	wpaKeyRe := regexp.MustCompile("key='([-\\w ]*)'")
-	saePasswordRe := regexp.MustCompile("sae_password='([-\\w ]*)'")
-
-	// Should reject invalid positions.
-	for _, position := range []int{-1, 0, 7, 8, 254} {
-		_, err := ap.generateTeamAccessPointConfig(nil, position)
-		if assert.NotNil(t, err) {
-			assert.Equal(t, err.Error(), fmt.Sprintf("invalid team position %d", position))
-		}
+	apStatus := accessPointStatus{
+		Channel: 456,
+		Status:  "ACTIVE",
+		StationStatuses: map[string]*stationStatus{
+			"red1":  {"254", "hash111", "salt1", true, 1, 2, 3, 4},
+			"red2":  {"1114", "hash222", "salt2", false, 5, 6, 7, 8},
+			"red3":  {"469", "hash333", "salt3", true, 9, 10, 11, 12},
+			"blue1": {"2046", "hash444", "salt4", false, 13, 14, 15, 16},
+			"blue2": {"2056", "hash555", "salt5", true, 17, 18, 19, 20},
+			"blue3": {"1678", "hash666", "salt6", false, 21, 22, 23, 24},
+		},
 	}
 
-	// Should configure dummy values for all team SSIDs if there are no teams.
-	for position := 1; position <= 6; position++ {
-		config, _ := ap.generateTeamAccessPointConfig(nil, position)
-		ifaces := ifaceRe.FindAllStringSubmatch(config, -1)
-		disableds := disabledRe.FindAllStringSubmatch(config, -1)
-		ssids := ssidRe.FindAllStringSubmatch(config, -1)
-		wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
-		saePasswords := saePasswordRe.FindAllStringSubmatch(config, -1)
-		if assert.Equal(t, 1, len(disableds)) && assert.Equal(t, 1, len(ssids)) && assert.Equal(t, 1, len(wpaKeys)) {
-			assert.Equal(t, strconv.Itoa(position), ifaces[0][1])
-			assert.Equal(t, "0", disableds[0][1])
-			assert.Equal(t, fmt.Sprintf("no-team-%d", position), ssids[0][1])
-			assert.Equal(t, fmt.Sprintf("no-team-%d", position), wpaKeys[0][1])
-			assert.Equal(t, fmt.Sprintf("no-team-%d", position), saePasswords[0][1])
-		}
-	}
+	// Mock the radio API server.
+	radioServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.URL.Path, "/status")
+		assert.Equal(t, "Bearer password2", r.Header.Get("Authorization"))
+		assert.Nil(t, json.NewEncoder(w).Encode(apStatus))
+	}))
+	ap.apiUrl = radioServer.URL
 
-	// Should configure a different SSID for each team.
-	for position := 1; position <= 6; position++ {
-		team := &model.Team{Id: 254 + position, WpaKey: fmt.Sprintf("aaaaaaa%d", position)}
-		config, _ := ap.generateTeamAccessPointConfig(team, position)
-		ifaces := ifaceRe.FindAllStringSubmatch(config, -1)
-		disableds := disabledRe.FindAllStringSubmatch(config, -1)
-		ssids := ssidRe.FindAllStringSubmatch(config, -1)
-		wpaKeys := wpaKeyRe.FindAllStringSubmatch(config, -1)
-		saePasswords := saePasswordRe.FindAllStringSubmatch(config, -1)
-		if assert.Equal(t, 1, len(ssids)) && assert.Equal(t, 1, len(wpaKeys)) {
-			assert.Equal(t, strconv.Itoa(position), ifaces[0][1])
-			assert.Equal(t, "0", disableds[0][1])
-			assert.Equal(t, strconv.Itoa(team.Id), ssids[0][1])
-			assert.Equal(t, fmt.Sprintf("aaaaaaa%d", position), wpaKeys[0][1])
-			assert.Equal(t, fmt.Sprintf("aaaaaaa%d", position), saePasswords[0][1])
-		}
-	}
+	// All stations assigned.
+	assert.Nil(t, ap.updateMonitoring())
+	assert.Equal(t, 123, ap.channel) // Should not have changed to reflect the radio API.
+	assert.Equal(t, "ACTIVE", ap.Status)
+	assert.Equal(t, TeamWifiStatus{254, true, 4, 1, 2, 3}, *wifiStatuses[0])
+	assert.Equal(t, TeamWifiStatus{1114, false, 8, 5, 6, 7}, *wifiStatuses[1])
+	assert.Equal(t, TeamWifiStatus{469, true, 12, 9, 10, 11}, *wifiStatuses[2])
+	assert.Equal(t, TeamWifiStatus{2046, false, 16, 13, 14, 15}, *wifiStatuses[3])
+	assert.Equal(t, TeamWifiStatus{2056, true, 20, 17, 18, 19}, *wifiStatuses[4])
+	assert.Equal(t, TeamWifiStatus{1678, false, 24, 21, 22, 23}, *wifiStatuses[5])
 
-	// Should reject a missing WPA key.
-	_, err := ap.generateTeamAccessPointConfig(&model.Team{Id: 254}, 4)
+	// Only some stations assigned.
+	apStatus.Status = "CONFIGURING"
+	apStatus.StationStatuses = map[string]*stationStatus{
+		"red1":  nil,
+		"red2":  nil,
+		"red3":  {"469", "hash333", "salt3", true, 9, 10, 11, 12},
+		"blue1": nil,
+		"blue2": {"2056", "hash555", "salt5", true, 17, 18, 19, 20},
+		"blue3": nil,
+	}
+	assert.Nil(t, ap.updateMonitoring())
+	assert.Equal(t, "CONFIGURING", ap.Status)
+	assert.Equal(t, TeamWifiStatus{}, *wifiStatuses[0])
+	assert.Equal(t, TeamWifiStatus{}, *wifiStatuses[1])
+	assert.Equal(t, TeamWifiStatus{469, true, 12, 9, 10, 11}, *wifiStatuses[2])
+	assert.Equal(t, TeamWifiStatus{}, *wifiStatuses[3])
+	assert.Equal(t, TeamWifiStatus{2056, true, 20, 17, 18, 19}, *wifiStatuses[4])
+	assert.Equal(t, TeamWifiStatus{}, *wifiStatuses[5])
+
+	// Radio API returns an error.
+	radioServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.URL.Path, "/status")
+		http.Error(w, "gosh darn", 404)
+	}))
+	ap.apiUrl = radioServer.URL
+	err := ap.updateMonitoring()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "invalid WPA key")
+		assert.Contains(t, err.Error(), "returned status 404: gosh darn")
 	}
-}
-
-func TestDecodeWifiInfo(t *testing.T) {
-	statuses := [6]*TeamWifiStatus{
-		nil,
-		&TeamWifiStatus{},
-		&TeamWifiStatus{},
-		&TeamWifiStatus{},
-		nil,
-		&TeamWifiStatus{},
-	}
-	ap := AccessPoint{isVividType: true, TeamWifiStatuses: statuses}
-
-	// Test with zero team networks configured.
-	output, err := ioutil.ReadFile("testdata/iwinfo_0_teams.txt")
-	if assert.Nil(t, err) {
-		assert.Nil(t, ap.decodeWifiInfo(string(output)))
-		assert.Nil(t, statuses[0])
-		assert.Equal(t, 0, statuses[1].TeamId)
-		assert.Equal(t, 0, statuses[2].TeamId)
-		assert.Equal(t, 0, statuses[3].TeamId)
-		assert.Nil(t, statuses[4])
-		assert.Equal(t, 0, statuses[5].TeamId)
-	}
-
-	// Test with two team networks configured.
-	output, err = ioutil.ReadFile("testdata/iwinfo_2_teams.txt")
-	if assert.Nil(t, err) {
-		assert.Nil(t, ap.decodeWifiInfo(string(output)))
-		assert.Nil(t, statuses[0])
-		assert.Equal(t, 2471, statuses[1].TeamId)
-		assert.Equal(t, 0, statuses[2].TeamId)
-		assert.Equal(t, 254, statuses[3].TeamId)
-		assert.Nil(t, statuses[4])
-		assert.Equal(t, 0, statuses[5].TeamId)
-	}
-
-	// Test with six team networks configured.
-	output, err = ioutil.ReadFile("testdata/iwinfo_6_teams.txt")
-	if assert.Nil(t, err) {
-		assert.Nil(t, ap.decodeWifiInfo(string(output)))
-		assert.Nil(t, statuses[0])
-		assert.Equal(t, 1678, statuses[1].TeamId)
-		assert.Equal(t, 2910, statuses[2].TeamId)
-		assert.Equal(t, 604, statuses[3].TeamId)
-		assert.Nil(t, statuses[4])
-		assert.Equal(t, 2471, statuses[5].TeamId)
-	}
-
-	// Test with invalid input.
-	assert.NotNil(t, ap.decodeWifiInfo(""))
-	output, err = ioutil.ReadFile("testdata/iwinfo_invalid.txt")
-	if assert.Nil(t, err) {
-		assert.NotNil(t, ap.decodeWifiInfo(string(output)))
-	}
-}
-
-func TestParseBtu(t *testing.T) {
-	// Response is too short.
-	assert.Equal(t, 0.0, parseBtu(""))
-	response := "[ 1687496957, 26097, 177, 71670, 865 ],\n" +
-		"[ 1687496958, 26097, 177, 71734, 866 ],\n" +
-		"[ 1687496959, 26097, 177, 71734, 866 ],\n" +
-		"[ 1687496960, 26097, 177, 71798, 867 ],\n" +
-		"[ 1687496960, 26097, 177, 71798, 867 ],\n" +
-		"[ 1687496961, 26097, 177, 71798, 867 ]"
-	assert.Equal(t, 0.0, parseBtu(response))
-
-	// Response is normal.
-	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
-		"[ 1687496919, 26097, 177, 70454, 846 ],\n" +
-		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
-		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
-		"[ 1687496921, 26097, 177, 70582, 848 ],\n" +
-		"[ 1687496922, 26097, 177, 70582, 848 ],\n" +
-		"[ 1687496923, 2609700, 177, 7064600, 849 ]"
-	assert.Equal(t, 15.0, math.Floor(parseBtu(response)))
-
-	// Response also includes associated client information.
-	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
-		"[ 1687496919, 26097, 177, 70454, 846 ],\n" +
-		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
-		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
-		"[ 1687496921, 26097, 177, 70582, 848 ],\n" +
-		"[ 1687496922, 26097, 177, 70582, 848 ],\n" +
-		"[ 1687496923, 2609700, 177, 7064600, 849 ]\n" +
-		"48:DA:35:B0:00:CF  -52 dBm / -95 dBm (SNR 43)  1000 ms ago\n" +
-		"\tRX: 619.4 MBit/s                                4095 Pkts.\n" +
-		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
-		"\texpected throughput: unknown"
-	assert.Equal(t, 15.0, math.Floor(parseBtu(response)))
-}
-
-func TestParseAssocList(t *testing.T) {
-	var wifiStatus TeamWifiStatus
-
-	wifiStatus.parseAssocList("")
-	assert.Equal(t, TeamWifiStatus{}, wifiStatus)
-
-	// MAC address is invalid.
-	response := "00:00:00:00:00:00  -53 dBm / -95 dBm (SNR 42)  0 ms ago\n" +
-		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
-		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
-		"\texpected throughput: unknown"
-	wifiStatus.parseAssocList(response)
-	assert.Equal(t, TeamWifiStatus{}, wifiStatus)
-
-	// Link is valid.
-	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 42)  0 ms ago\n" +
-		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
-		"\tTX: 254.0 MBit/s                                   0 Pkts.\n" +
-		"\texpected throughput: unknown"
-	wifiStatus.parseAssocList(response)
-	assert.Equal(t, TeamWifiStatus{RadioLinked: true, RxRate: 550.6, TxRate: 254.0, SignalNoiseRatio: 42}, wifiStatus)
-	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 7)  4000 ms ago\n" +
-		"\tRX: 123.4 MBit/s                                4095 Pkts.\n" +
-		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
-		"\texpected throughput: unknown"
-	wifiStatus.parseAssocList(response)
-	assert.Equal(t, TeamWifiStatus{RadioLinked: true, RxRate: 123.4, TxRate: 550.6, SignalNoiseRatio: 7}, wifiStatus)
-
-	// Link is stale.
-	response = "48:DA:35:B0:00:CF  -53 dBm / -95 dBm (SNR 42)  4001 ms ago\n" +
-		"\tRX: 550.6 MBit/s                                4095 Pkts.\n" +
-		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
-		"\texpected throughput: unknown"
-	wifiStatus.parseAssocList(response)
-	assert.Equal(t, TeamWifiStatus{}, wifiStatus)
-
-	// Response also includes BTU information.
-	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
-		"[ 1687496919, 26097, 177, 70454, 846 ],\n" +
-		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
-		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
-		"[ 1687496921, 26097, 177, 70582, 848 ],\n" +
-		"[ 1687496922, 26097, 177, 70582, 848 ],\n" +
-		"[ 1687496923, 2609700, 177, 7064600, 849 ]\n" +
-		"48:DA:35:B0:00:CF  -52 dBm / -95 dBm (SNR 43)  1000 ms ago\n" +
-		"\tRX: 619.4 MBit/s                                4095 Pkts.\n" +
-		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
-		"\texpected throughput: unknown"
-	wifiStatus.parseAssocList(response)
-	assert.Equal(t, TeamWifiStatus{RadioLinked: true, RxRate: 619.4, TxRate: 550.6, SignalNoiseRatio: 43}, wifiStatus)
-	response = "[ 1687496917, 26097, 177, 70454, 846 ],\n" +
-		"[ 1687496919, 26097, 177, 70454, 846 ],\n" +
-		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
-		"[ 1687496920, 26097, 177, 70518, 847 ],\n" +
-		"[ 1687496921, 26097, 177, 70582, 848 ],\n" +
-		"[ 1687496922, 26097, 177, 70582, 848 ],\n" +
-		"[ 1687496923, 2609700, 177, 7064600, 849 ]\n" +
-		"00:00:00:00:00:00  -52 dBm / -95 dBm (SNR 43)  0 ms ago\n" +
-		"\tRX: 619.4 MBit/s                                4095 Pkts.\n" +
-		"\tTX: 550.6 MBit/s                                   0 Pkts.\n" +
-		"\texpected throughput: unknown"
-	wifiStatus.parseAssocList(response)
-	assert.Equal(t, TeamWifiStatus{}, wifiStatus)
+	assert.Equal(t, "ERROR", ap.Status)
 }

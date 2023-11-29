@@ -78,19 +78,9 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TbaSecret = r.PostFormValue("tbaSecret")
 	eventSettings.NexusEnabled = r.PostFormValue("nexusEnabled") == "on"
 	eventSettings.NetworkSecurityEnabled = r.PostFormValue("networkSecurityEnabled") == "on"
-	eventSettings.ApType = r.PostFormValue("apType")
 	eventSettings.ApAddress = r.PostFormValue("apAddress")
-	eventSettings.ApUsername = r.PostFormValue("apUsername")
 	eventSettings.ApPassword = r.PostFormValue("apPassword")
-	if eventSettings.ApType == "vivid" {
-		eventSettings.ApTeamChannel, _ = strconv.Atoi(r.PostFormValue("apTeamChannel6"))
-	} else {
-		eventSettings.ApTeamChannel, _ = strconv.Atoi(r.PostFormValue("apTeamChannel5"))
-	}
-	eventSettings.Ap2Address = r.PostFormValue("ap2Address")
-	eventSettings.Ap2Username = r.PostFormValue("ap2Username")
-	eventSettings.Ap2Password = r.PostFormValue("ap2Password")
-	eventSettings.Ap2TeamChannel, _ = strconv.Atoi(r.PostFormValue("ap2TeamChannel"))
+	eventSettings.ApChannel, _ = strconv.Atoi(r.PostFormValue("apChannel"))
 	eventSettings.SwitchAddress = r.PostFormValue("switchAddress")
 	eventSettings.SwitchPassword = r.PostFormValue("switchPassword")
 	eventSettings.PlcAddress = r.PostFormValue("plcAddress")
@@ -105,11 +95,6 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.SustainabilityBonusLinkThresholdWithCoop, _ =
 		strconv.Atoi(r.PostFormValue("sustainabilityBonusLinkThresholdWithCoop"))
 	eventSettings.ActivationBonusPointThreshold, _ = strconv.Atoi(r.PostFormValue("activationBonusPointThreshold"))
-
-	if eventSettings.Ap2TeamChannel != 0 && eventSettings.Ap2TeamChannel == eventSettings.ApTeamChannel {
-		web.renderSettings(w, r, "Cannot use same channel for both access points.")
-		return
-	}
 
 	err := web.arena.Database.UpdateEventSettings(eventSettings)
 	if err != nil {

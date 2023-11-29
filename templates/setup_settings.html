@@ -167,66 +167,33 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-5 control-label">AP Type</label>
-            <div class="col-lg-7">
-              <div class="radio">
-                <label>
-                  <input type="radio" name="apType" value="linksys" onclick="updateAccessPointType(false);"
-                    {{if eq .ApType "linksys"}}checked{{end}}>
-                  Linksys WRT1900ACS
-                </label>
-              </div>
-              <div class="radio">
-                <label>
-                  <input type="radio" name="apType" value="vivid" onclick="updateAccessPointType(true);"
-                    {{if eq .ApType "vivid"}}checked{{end}}>
-                  Vivid-Hosting VH109
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
             <label class="col-lg-5 control-label">AP Address</label>
             <div class="col-lg-7">
               <input type="text" class="form-control" name="apAddress" value="{{.ApAddress}}">
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-5 control-label">AP Username</label>
-            <div class="col-lg-7">
-              <input type="text" class="form-control" name="apUsername" value="{{.ApUsername}}">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">AP Password</label>
+            <label class="col-lg-5 control-label">AP API Password</label>
             <div class="col-lg-7">
               <input type="password" class="form-control" name="apPassword" value="{{.ApPassword}}">
             </div>
           </div>
           <div class="form-group">
-            <label class="col-lg-5 control-label">AP Team Channel (5GHz)</label>
+            <label class="col-lg-5 control-label">AP Channel</label>
             <div class="col-lg-7">
-              <select class="form-control" name="apTeamChannel5" value="{{.ApTeamChannel}}"
-                {{if eq .ApType "vivid"}}disabled{{end}}>
-                <option{{if eq .ApTeamChannel 36}} selected{{end}}>36</option>
-                <option{{if eq .ApTeamChannel 40}} selected{{end}}>40</option>
-                <option{{if eq .ApTeamChannel 44}} selected{{end}}>44</option>
-                <option{{if eq .ApTeamChannel 48}} selected{{end}}>48</option>
-                <option{{if eq .ApTeamChannel 149}} selected{{end}}>149</option>
-                <option{{if eq .ApTeamChannel 153}} selected{{end}}>153</option>
-                <option{{if eq .ApTeamChannel 157}} selected{{end}}>157</option>
-                <option{{if eq .ApTeamChannel 161}} selected{{end}}>161</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">AP Team Channel (6GHz)</label>
-            <div class="col-lg-7">
-              <select class="form-control" name="apTeamChannel6" value="{{.ApTeamChannel}}"
-                {{if ne .ApType "vivid"}}disabled{{end}}>
+              <select class="form-control" name="apChannel" value="{{.ApChannel}}">
+                <option value="36"{{if eq .ApChannel 36}} selected{{end}}>36 (5 GHz)</option>
+                <option value="40"{{if eq .ApChannel 40}} selected{{end}}>40 (5 GHz)</option>
+                <option value="44"{{if eq .ApChannel 44}} selected{{end}}>44 (5 GHz)</option>
+                <option value="48"{{if eq .ApChannel 48}} selected{{end}}>48 (5 GHz)</option>
+                <option value="149"{{if eq .ApChannel 149}} selected{{end}}>149 (5 GHz)</option>
+                <option value="153"{{if eq .ApChannel 153}} selected{{end}}>153 (5 GHz)</option>
+                <option value="157"{{if eq .ApChannel 157}} selected{{end}}>157 (5 GHz)</option>
+                <option value="161"{{if eq .ApChannel 161}} selected{{end}}>161 (5 GHz)</option>
                 {{range $i, $j := seq 29}}
-                  <option{{if eq $.ApTeamChannel (add 5 (multiply $i 8))}} selected{{end}}>
-                    {{(add 5 (multiply $i 8))}}
+                  <option value="{{(add 5 (multiply $i 8))}}"
+                    {{if eq $.ApChannel (add 5 (multiply $i 8))}} selected{{end}}>
+                    {{(add 5 (multiply $i 8))}} (6 GHz)
                   </option>
                 {{end}}
               </select>
@@ -242,42 +209,6 @@
             <label class="col-lg-5 control-label">Switch Password</label>
             <div class="col-lg-7">
               <input type="password" class="form-control" name="switchPassword" value="{{.SwitchPassword}}">
-            </div>
-          </div>
-          <p>If you have a second access point (of identical type) available and want to use one for each alliance to
-            increase available bandwidth, configure the second one below.</p>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Second AP Address</label>
-            <div class="col-lg-7">
-              <input type="text" class="form-control" name="ap2Address" value="{{.Ap2Address}}">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Second AP Username</label>
-            <div class="col-lg-7">
-              <input type="text" class="form-control" name="ap2Username" value="{{.Ap2Username}}">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Second AP Password</label>
-            <div class="col-lg-7">
-              <input type="password" class="form-control" name="ap2Password" value="{{.Ap2Password}}">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Second AP Team Channel (5GHz)</label>
-            <div class="col-lg-7">
-              <select class="form-control" name="ap2TeamChannel" value="{{.Ap2TeamChannel}}">
-                <option{{if eq .Ap2TeamChannel 0}} selected{{end}}>Disabled</option>
-                <option{{if eq .Ap2TeamChannel 36}} selected{{end}}>36</option>
-                <option{{if eq .Ap2TeamChannel 40}} selected{{end}}>40</option>
-                <option{{if eq .Ap2TeamChannel 44}} selected{{end}}>44</option>
-                <option{{if eq .Ap2TeamChannel 48}} selected{{end}}>48</option>
-                <option{{if eq .Ap2TeamChannel 149}} selected{{end}}>149</option>
-                <option{{if eq .Ap2TeamChannel 153}} selected{{end}}>153</option>
-                <option{{if eq .Ap2TeamChannel 157}} selected{{end}}>157</option>
-                <option{{if eq .Ap2TeamChannel 161}} selected{{end}}>161</option>
-              </select>
             </div>
           </div>
         </fieldset>
@@ -439,17 +370,6 @@
     numPlayoffAlliances.prop("disabled", isDoubleElimination);
     if (isDoubleElimination) {
       numPlayoffAlliances.val(8);
-    }
-  };
-  updateAccessPointType = function(isVividType) {
-    const apTeamChannel5 = $("select[name=apTeamChannel5]");
-    const apTeamChannel6 = $("select[name=apTeamChannel6]");
-    if (isVividType) {
-      apTeamChannel5.prop("disabled", true);
-      apTeamChannel6.prop("disabled", false);
-    } else {
-      apTeamChannel5.prop("disabled", false);
-      apTeamChannel6.prop("disabled", true);
     }
   };
 </script>
