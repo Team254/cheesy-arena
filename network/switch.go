@@ -90,6 +90,8 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 				"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
 			teamPartialIp,
 			teamPartialIp,
+			teamPartialIp,
+			teamPartialIp,
 			vlan,
 			teamPartialIp,
 			teamPartialIp,
