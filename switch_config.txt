@@ -23,7 +23,8 @@ no aaa new-model
 system mtu routing 1500
 ip routing
 !
-ip dhcp excluded-address 10.0.100.1 10.0.100.100
+ip dhcp excluded-address 10.0.100.1 10.0.100.125
+ip dhcp excluded-address 10.0.100.200 10.0.100.225
 !
 ip dhcp pool dhcppool
  network 10.0.100.0 255.255.255.0

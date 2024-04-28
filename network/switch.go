@@ -79,7 +79,8 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 		}
 		teamPartialIp := fmt.Sprintf("%d.%d", team.Id/100, team.Id%100)
 		addTeamVlansCommand += fmt.Sprintf(
-			"ip dhcp excluded-address 10.%s.1 10.%s.100\n"+
+			"ip dhcp excluded-address 10.%s.1 10.%s.19\n"+
+				"ip dhcp excluded-address 10.%s.200 10.%s.254\n"+
 				"ip dhcp pool dhcp%d\n"+
 				"network 10.%s.0 255.255.255.0\n"+
 				"default-router 10.%s.%d\n"+
@@ -87,6 +88,8 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 				"access-list 1%d permit ip 10.%s.0 0.0.0.255 host %s\n"+
 				"access-list 1%d permit udp any eq bootpc any eq bootps\n"+
 				"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
+			teamPartialIp,
+			teamPartialIp,
 			teamPartialIp,
 			teamPartialIp,
 			vlan,
