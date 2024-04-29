@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/dchest/uniuri"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 	"strings"
@@ -114,8 +113,7 @@ func (web *Web) teamEditGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	teamId, _ := strconv.Atoi(vars["id"])
+	teamId, _ := strconv.Atoi(r.PathValue("id"))
 	team, err := web.arena.Database.GetTeamById(teamId)
 	if err != nil {
 		handleWebErr(w, err)
@@ -148,8 +146,7 @@ func (web *Web) teamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	teamId, _ := strconv.Atoi(vars["id"])
+	teamId, _ := strconv.Atoi(r.PathValue("id"))
 	team, err := web.arena.Database.GetTeamById(teamId)
 	if err != nil {
 		handleWebErr(w, err)
@@ -195,8 +192,7 @@ func (web *Web) teamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	teamId, _ := strconv.Atoi(vars["id"])
+	teamId, _ := strconv.Atoi(r.PathValue("id"))
 	team, err := web.arena.Database.GetTeamById(teamId)
 	if err != nil {
 		handleWebErr(w, err)

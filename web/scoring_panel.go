@@ -11,7 +11,6 @@ import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
-	"github.com/gorilla/mux"
 	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
@@ -24,8 +23,7 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	alliance := vars["alliance"]
+	alliance := r.PathValue("alliance")
 	if alliance != "red" && alliance != "blue" {
 		handleWebErr(w, fmt.Errorf("Invalid alliance '%s'.", alliance))
 		return
@@ -55,8 +53,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	vars := mux.Vars(r)
-	alliance := vars["alliance"]
+	alliance := r.PathValue("alliance")
 	if alliance != "red" && alliance != "blue" {
 		handleWebErr(w, fmt.Errorf("Invalid alliance '%s'.", alliance))
 		return

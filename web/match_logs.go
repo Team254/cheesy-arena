@@ -15,7 +15,6 @@ import (
 
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/gorilla/mux"
 )
 
 type MatchLogsListItem struct {
@@ -135,9 +134,8 @@ func (web *Web) matchLogsViewGetHandler(w http.ResponseWriter, r *http.Request) 
 
 // Load the match result for the match referenced in the HTTP query string.
 func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLogs, bool, error) {
-	vars := mux.Vars(r)
-	matchId, _ := strconv.Atoi(vars["matchId"])
-	stationId := vars["stationId"]
+	matchId, _ := strconv.Atoi(r.PathValue("matchId"))
+	stationId := r.PathValue("stationId")
 	match, err := web.arena.Database.GetMatchById(matchId)
 
 	logs := MatchLogs{

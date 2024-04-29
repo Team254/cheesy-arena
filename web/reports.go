@@ -18,7 +18,6 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/tournament"
-	"github.com/gorilla/mux"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -361,8 +360,7 @@ func drawPdfLogo(pdf gofpdf.Pdf, x float64, y float64, width float64) {
 
 // Generates a CSV-formatted report of the match schedule.
 func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchType, err := model.MatchTypeFromString(vars["type"])
+	matchType, err := model.MatchTypeFromString(r.PathValue("type"))
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -390,8 +388,7 @@ func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request)
 
 // Generates a PDF-formatted report of the match schedule.
 func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchType, err := model.MatchTypeFromString(vars["type"])
+	matchType, err := model.MatchTypeFromString(r.PathValue("type"))
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -792,8 +789,7 @@ func surrogateText(isSurrogate bool) string {
 
 // Generates a PDF-formatted report of the match cycle times.
 func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchType, err := model.MatchTypeFromString(vars["type"])
+	matchType, err := model.MatchTypeFromString(r.PathValue("type"))
 	if err != nil {
 		handleWebErr(w, err)
 		return

@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
 )
@@ -150,14 +149,12 @@ func (web *Web) matchReviewEditPostHandler(w http.ResponseWriter, r *http.Reques
 
 // Load the match result for the match referenced in the HTTP query string.
 func (web *Web) getMatchResultFromRequest(r *http.Request) (*model.Match, *model.MatchResult, bool, error) {
-	vars := mux.Vars(r)
-
 	// If editing the current match, get it from memory instead of the DB.
-	if vars["matchId"] == "current" {
+	if r.PathValue("matchId") == "current" {
 		return web.arena.CurrentMatch, web.getCurrentMatchResult(), true, nil
 	}
 
-	matchId, _ := strconv.Atoi(vars["matchId"])
+	matchId, _ := strconv.Atoi(r.PathValue("matchId"))
 	match, err := web.arena.Database.GetMatchById(matchId)
 	if err != nil {
 		return nil, nil, false, err
