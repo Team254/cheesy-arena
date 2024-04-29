@@ -1,6 +1,6 @@
 module github.com/Team254/cheesy-arena
 
-go 1.20
+go 1.22
 
 require (
 	github.com/dchest/uniuri v1.2.0
@@ -12,7 +12,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.8.2
 	go.etcd.io/bbolt v1.3.7
-	golang.org/x/crypto v0.17.0
 )
 
 require (
