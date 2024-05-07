@@ -14,9 +14,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"encoding/json"
 )
 
 const wpaKeyLength = 8
+var progress float64 = 5
 
 // Shows the team list.
 func (web *Web) teamsGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +48,8 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	progInc := 95.00 / float64(len(teamNumbers))
+
 	for _, teamNumber := range teamNumbers {
 		team := model.Team{Id: teamNumber}
 		if web.arena.EventSettings.TbaDownloadEnabled {
@@ -58,8 +62,12 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 			handleWebErr(w, err)
 			return
 		}
+
+		progress += progInc
 	}
+	progress = 100
 	http.Redirect(w, r, "/setup/teams", 303)
+	progress = 5
 }
 
 // Re-downloads the data for all teams from TBA and overwrites any local edits.
@@ -74,6 +82,8 @@ func (web *Web) teamsRefreshHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	progInc := 95.00 / float64(len(teams))
+
 	for _, team := range teams {
 		if err = web.populateOfficialTeamInfo(&team); err != nil {
 			handleWebErr(w, err)
@@ -83,9 +93,13 @@ func (web *Web) teamsRefreshHandler(w http.ResponseWriter, r *http.Request) {
 			handleWebErr(w, err)
 			return
 		}
+
+		progress += progInc
 	}
 
+	progress = 100
 	http.Redirect(w, r, "/setup/teams", 303)
+	progress = 5
 }
 
 // Clears the team list.
@@ -311,4 +325,9 @@ func (web *Web) populateOfficialTeamInfo(team *model.Team) error {
 	web.arena.TbaClient.DownloadTeamAvatar(team.Id, time.Now().Year())
 
 	return nil
+}
+
+// Returns current TBA Load Progress
+func (web *Web) checkProgress(w http.ResponseWriter, r *http.Request)  {
+	json.NewEncoder(w).Encode(progress)
 }

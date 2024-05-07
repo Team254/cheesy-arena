@@ -8,7 +8,7 @@
 {{define "body"}}
 {{if .ShowErrorMessage}}
   <div class="alert alert-dismissable alert-danger">
-    <button type="button" class="close" data-dismiss="alert">×</button>
+    <button type="button" class="close" data-bs-dismiss="alert">×</button>
     You can't modify the team list once the qualification schedule has been generated. If you need to change
     the team list, clear all other data first on the Settings page.
   </div>
@@ -24,11 +24,11 @@
               placeholder="One team number per line"></textarea>
         </div>
         <div class="form-group">
-          <button type="submit" class="btn btn-info">Add Teams</button>
+          <button type="submit" class="btn btn-info" onclick="$('#loadingFromTBA').modal('show');">Add Teams</button>
         </div>
         {{if .EventSettings.TbaDownloadEnabled}}
           <div class="form-group">
-            <a href="/setup/teams/refresh" class="btn btn-info">Refresh Team Data from TBA</a>
+            <a href="/setup/teams/refresh" class="btn btn-info" onclick="$('#loadingFromTBA').modal('show');">Refresh Team Data from TBA</a>
           </div>
         {{end}}
         <div class="form-group">
@@ -96,7 +96,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
         <h4 class="modal-title">Confirm</h4>
       </div>
       <div class="modal-body">
@@ -104,7 +104,7 @@
       </div>
       <div class="modal-footer">
         <form class="form-horizontal" action="/setup/teams/clear" method="POST">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary">Clear Team List</button>
         </form>
       </div>
@@ -115,7 +115,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true">×</button>
         <h4 class="modal-title">Confirm</h4>
       </div>
       <div class="modal-body">
@@ -124,12 +124,51 @@
       </div>
       <div class="modal-footer">
         <form class="form-horizontal" action="/setup/teams/publish" method="POST">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary">Publish Team List</button>
         </form>
       </div>
     </div>
   </div>
 </div>
+<div id="loadingFromTBA" class="modal fade" style="top: 20%;" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Loading Teams<h4>
+      </div>
+      <div class="modal-body">
+        <div class="progress">
+          <div id="loadProgressBar"
+               class="progress-bar progress-bar-striped progress-bar-animated"
+               role="progressbar"
+               style="width: 10%;"
+               aria-valuemin="0"
+               aria-valuemax="100">
+            5%
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {{end}}
-{{define "script"}}{{end}}
+{{define "script"}}
+<script>
+  $(function worker() {
+    $.ajax({
+      url: '/setup/teams/progress',
+      success: function(data) {
+        $("#loadProgressBar").css("width", (data + "%").replace("\n", ""))
+        $("#loadProgressBar").text(data.replace("\n", "").split(".")[0] + "%")
+      },
+      error: function(error) {
+        console.log(error)
+      },
+      complete: function() {
+        setTimeout(worker, 100)
+      }
+    })
+  })
+</script>
+{{end}}
