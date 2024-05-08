@@ -6,78 +6,78 @@
 */}}
 {{define "title"}}Edit Team{{end}}
 {{define "body"}}
-<div class="row">
-  <div class="col-lg-6 col-lg-offset-3">
-    <div class="well">
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card card-body bg-body-tertiary">
       <form class="form-horizontal" action="/setup/teams/{{.Team.Id}}/edit" method="POST">
         <fieldset>
           <legend>Edit Team {{.Team.Id}}</legend>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-3 control-label">Name</label>
             <div class="col-lg-9">
               <textarea class="form-control" rows="5" name="name">{{.Team.Name}}</textarea>
             </div>
           </div>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-3 control-label">Nickname</label>
             <div class="col-lg-9">
               <input type="text" class="form-control" name="nickname" value="{{.Team.Nickname}}">
             </div>
           </div>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-3 control-label">City</label>
             <div class="col-lg-9">
               <input type="text" class="form-control" name="city" value="{{.Team.City}}">
             </div>
           </div>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-3 control-label">State/Province</label>
             <div class="col-lg-9">
               <input type="text" class="form-control" name="stateProv" value="{{.Team.StateProv}}">
             </div>
           </div>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-3 control-label">Country</label>
             <div class="col-lg-9">
               <input type="text" class="form-control" name="country" value="{{.Team.Country}}">
             </div>
           </div>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-3 control-label">Rookie Year</label>
             <div class="col-lg-9">
               <input type="text" class="form-control" name="rookieYear" value="{{.Team.RookieYear}}">
             </div>
           </div>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-3 control-label">Robot Name</label>
             <div class="col-lg-9">
               <input type="text" class="form-control" name="robotName" value="{{.Team.RobotName}}">
             </div>
           </div>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-3 control-label">Recent Accomplishments</label>
             <div class="col-lg-9">
               <textarea class="form-control" rows="5" name="accomplishments">{{.Team.Accomplishments}}</textarea>
             </div>
           </div>
-          <div class="form-group">
-            <label class="col-lg-5 control-label">Has Connected to Field?</label>
+          <div class="row mb-3">
+            <label class="col-lg-5 control-label" for="hasConnected">Has Connected to Field?</label>
             <div class="col-lg-1 checkbox">
-              <input type="checkbox" name="hasConnected"{{if .Team.HasConnected}} checked{{end}} />
+              <input type="checkbox" id="hasConnected" name="hasConnected"{{if .Team.HasConnected}} checked{{end}} />
             </div>
           </div>
           {{if .EventSettings.NetworkSecurityEnabled}}
-            <div class="form-group">
+            <div class="row mb-3">
               <label class="col-lg-3 control-label">WPA Key</label>
               <div class="col-lg-9">
                 <input type="text" class="form-control" name="wpaKey" value="{{.Team.WpaKey}}">
               </div>
             </div>
           {{end}}
-          <div class="form-group">
-            <div class="col-lg-9 col-lg-offset-3">
-              <a href="/setup/teams"><button type="button" class="btn btn-default">Cancel</button></a>
-              <button type="submit" class="btn btn-info">Save</button>
+          <div class="row justify-content-center">
+            <div class="col-md-auto">
+              <a href="/setup/teams"><button type="button" class="btn btn-secondary">Cancel</button></a>
+              <button type="submit" class="btn btn-primary">Save</button>
             </div>
           </div>
         </fieldset>

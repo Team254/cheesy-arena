@@ -18,6 +18,9 @@ import (
 
 const wpaKeyLength = 8
 
+// Global var to hold the team download progress percentage.
+var progressPercentage float64 = 5
+
 // Shows the team list.
 func (web *Web) teamsGetHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
@@ -46,6 +49,8 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	progressPercentage = 5
+	progressIncrement := 95.0 / float64(len(teamNumbers))
 	for _, teamNumber := range teamNumbers {
 		team := model.Team{Id: teamNumber}
 		if web.arena.EventSettings.TbaDownloadEnabled {
@@ -58,7 +63,11 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 			handleWebErr(w, err)
 			return
 		}
+
+		progressPercentage += progressIncrement
 	}
+	progressPercentage = 100
+
 	http.Redirect(w, r, "/setup/teams", 303)
 }
 
@@ -74,6 +83,8 @@ func (web *Web) teamsRefreshHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	progInc := 95.00 / float64(len(teams))
+
 	for _, team := range teams {
 		if err = web.populateOfficialTeamInfo(&team); err != nil {
 			handleWebErr(w, err)
@@ -83,9 +94,13 @@ func (web *Web) teamsRefreshHandler(w http.ResponseWriter, r *http.Request) {
 			handleWebErr(w, err)
 			return
 		}
+
+		progressPercentage += progInc
 	}
 
+	progressPercentage = 100
 	http.Redirect(w, r, "/setup/teams", 303)
+	progressPercentage = 5
 }
 
 // Clears the team list.
@@ -234,6 +249,12 @@ func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	http.Redirect(w, r, "/setup/teams", 303)
+}
+
+// Returns the current TBA team data download progress.
+func (web *Web) teamsUpdateProgressBarHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	_, _ = w.Write([]byte(fmt.Sprintf("%.0f", progressPercentage)))
 }
 
 func (web *Web) renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) {
