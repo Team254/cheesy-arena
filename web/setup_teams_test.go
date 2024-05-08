@@ -205,3 +205,12 @@ func TestSetupTeamsWpaKeys(t *testing.T) {
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "WPA key must be between 8 and 63 characters")
 }
+
+func TestSetupTeamsProgress(t *testing.T) {
+	web := setupTestWeb(t)
+	progressPercentage = 25.4
+
+	recorder := web.getHttpResponse("/setup/teams/progress")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "25", recorder.Body.String())
+}

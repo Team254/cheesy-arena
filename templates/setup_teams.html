@@ -18,17 +18,21 @@
     <form class="form-horizontal" action="/setup/teams" method="POST">
       <fieldset>
         <legend>Import Teams</legend>
-        {{if not .EventSettings.TbaDownloadEnabled}}<p>To automatically download data about teams, enable TBA Team Info Download on the settings page</p>{{end}}
+        {{if not .EventSettings.TbaDownloadEnabled}}
+          <p>To automatically download data about teams, enable TBA Team Info Download on the settings page</p>
+        {{end}}
         <div class="form-group">
           <textarea class="form-control" rows="10" name="teamNumbers"
               placeholder="One team number per line"></textarea>
         </div>
         <div class="form-group">
-          <button type="submit" class="btn btn-info" onclick="$('#loadingFromTBA').modal('show');">Add Teams</button>
+          <button type="submit" class="btn btn-info" onclick="$('#loadingFromTba').modal('show');">Add Teams</button>
         </div>
         {{if .EventSettings.TbaDownloadEnabled}}
           <div class="form-group">
-            <a href="/setup/teams/refresh" class="btn btn-info" onclick="$('#loadingFromTBA').modal('show');">Refresh Team Data from TBA</a>
+            <a href="/setup/teams/refresh" class="btn btn-info" onclick="$('#loadingFromTba').modal('show');">
+              Refresh Team Data from TBA
+            </a>
           </div>
         {{end}}
         <div class="form-group">
@@ -131,18 +135,18 @@
     </div>
   </div>
 </div>
-<div id="loadingFromTBA" class="modal fade" style="top: 20%;" data-bs-backdrop="static" data-bs-keyboard="false">
+<div id="loadingFromTba" class="modal fade" style="top: 20%;" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Loading Teams<h4>
+        <h5 class="modal-title">Downloading Team Data from TBA...<h5>
       </div>
       <div class="modal-body">
         <div class="progress">
-          <div id="loadProgressBar"
+          <div id="teamDownloadProgressBar"
                class="progress-bar progress-bar-striped progress-bar-animated"
                role="progressbar"
-               style="width: 10%;"
+               style="width: 10%"
                aria-valuemin="0"
                aria-valuemax="100">
             5%
@@ -155,18 +159,19 @@
 {{end}}
 {{define "script"}}
 <script>
-  $(function worker() {
+  const teamDownloadProgressBar = $("#teamDownloadProgressBar");
+  $(function updateProgressBar() {
     $.ajax({
       url: '/setup/teams/progress',
       success: function(data) {
-        $("#loadProgressBar").css("width", (data + "%").replace("\n", ""))
-        $("#loadProgressBar").text(data.replace("\n", "").split(".")[0] + "%")
+        teamDownloadProgressBar.css("width", `${data}%`);
+        teamDownloadProgressBar.text(`${data}%`);
       },
       error: function(error) {
         console.log(error)
       },
       complete: function() {
-        setTimeout(worker, 100)
+        setTimeout(updateProgressBar, 2000)
       }
     })
   })

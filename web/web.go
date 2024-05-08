@@ -223,8 +223,8 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("POST /setup/teams/{id}/edit", web.teamEditPostHandler)
 	mux.HandleFunc("POST /setup/teams/clear", web.teamsClearHandler)
 	mux.HandleFunc("GET /setup/teams/generate_wpa_keys", web.teamsGenerateWpaKeysHandler)
+	mux.HandleFunc("GET /setup/teams/progress", web.teamsUpdateProgressBarHandler)
 	mux.HandleFunc("GET /setup/teams/refresh", web.teamsRefreshHandler)
-	mux.HandleFunc("GET /setup/teams/progress", web.checkProgress)
 	return mux
 }
 

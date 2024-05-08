@@ -14,11 +14,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"encoding/json"
 )
 
 const wpaKeyLength = 8
-var progress float64 = 5
+
+// Global var to hold the team download progress percentage.
+var progressPercentage float64 = 5
 
 // Shows the team list.
 func (web *Web) teamsGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,8 +49,8 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	progInc := 95.00 / float64(len(teamNumbers))
-
+	progressPercentage = 5
+	progressIncrement := 95.0 / float64(len(teamNumbers))
 	for _, teamNumber := range teamNumbers {
 		team := model.Team{Id: teamNumber}
 		if web.arena.EventSettings.TbaDownloadEnabled {
@@ -63,11 +64,11 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		progress += progInc
+		progressPercentage += progressIncrement
 	}
-	progress = 100
+	progressPercentage = 100
+
 	http.Redirect(w, r, "/setup/teams", 303)
-	progress = 5
 }
 
 // Re-downloads the data for all teams from TBA and overwrites any local edits.
@@ -94,12 +95,12 @@ func (web *Web) teamsRefreshHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		progress += progInc
+		progressPercentage += progInc
 	}
 
-	progress = 100
+	progressPercentage = 100
 	http.Redirect(w, r, "/setup/teams", 303)
-	progress = 5
+	progressPercentage = 5
 }
 
 // Clears the team list.
@@ -250,6 +251,12 @@ func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Reque
 	http.Redirect(w, r, "/setup/teams", 303)
 }
 
+// Returns the current TBA team data download progress.
+func (web *Web) teamsUpdateProgressBarHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	_, _ = w.Write([]byte(fmt.Sprintf("%.0f", progressPercentage)))
+}
+
 func (web *Web) renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) {
 	teams, err := web.arena.Database.GetAllTeams()
 	if err != nil {
@@ -325,9 +332,4 @@ func (web *Web) populateOfficialTeamInfo(team *model.Team) error {
 	web.arena.TbaClient.DownloadTeamAvatar(team.Id, time.Now().Year())
 
 	return nil
-}
-
-// Returns current TBA Load Progress
-func (web *Web) checkProgress(w http.ResponseWriter, r *http.Request)  {
-	json.NewEncoder(w).Encode(progress)
 }
