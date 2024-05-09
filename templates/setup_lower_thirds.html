@@ -6,53 +6,53 @@
 */}}
 {{define "title"}}Lower Thirds{{end}}
 {{define "body"}}
-<div class="row">
-  <div class="col-lg-6 col-lg-offset-3">
-    <div class="well">
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card card-body bg-body-tertiary">
       <legend>Lower Thirds</legend>
       {{range $i, $lowerThird := .LowerThirds}}
-        <form class="form-horizontal">
-          <div class="form-group">
+        <form>
+          <div class="row mt-1 mb-3">
             <div class="col-lg-6">
               <input type="hidden" name="id" value="{{$lowerThird.Id}}" />
-              <input type="text" class="form-control" name="topText" value="{{$lowerThird.TopText}}"
+              <input type="text" class="form-control mb-1" name="topText" value="{{$lowerThird.TopText}}"
                   placeholder="Top Text"/>
               <input type="text" class="form-control" name="bottomText" value="{{$lowerThird.BottomText}}"
                   placeholder="Bottom Text"/>
             </div>
             <div class="col-lg-6">
-              <button type="button" class="btn btn-info btn-lower-third" onclick="saveLowerThird(this);">
+              <button type="button" class="btn btn-primary btn-lower-third mb-1" onclick="saveLowerThird(this);">
                 Save
               </button>
-              <button type="button" class="btn btn-success btn-lower-third" onclick="showLowerThird(this);">
+              <button type="button" class="btn btn-success btn-lower-third mb-1" onclick="showLowerThird(this);">
                 Show
               </button>
-              <button type="button" class="btn btn-info" onclick="reorderLowerThird(this, true);">
-                <i class="glyphicon glyphicon-arrow-up"></i>
+              <button type="button" class="btn btn-primary mb-1" onclick="reorderLowerThird(this, true);">
+                <i class="bi-arrow-up"></i>
               </button>
               <br />
-              <button type="button" class="btn btn-primary btn-lower-third" onclick="deleteLowerThird(this);">
+              <button type="button" class="btn btn-danger btn-lower-third" onclick="deleteLowerThird(this);">
                 Delete
               </button>
-              <button type="button" class="btn btn-default btn-lower-third" onclick="hideLowerThird(this);">
+              <button type="button" class="btn btn-secondary btn-lower-third" onclick="hideLowerThird(this);">
                 Hide
               </button>
-              <button type="button" class="btn btn-info" onclick="reorderLowerThird(this, false);">
-                <i class="glyphicon glyphicon-arrow-down"></i>
+              <button type="button" class="btn btn-primary" onclick="reorderLowerThird(this, false);">
+                <i class="bi-arrow-down"></i>
               </button>
             </div>
           </div>
         </form>
       {{end}}
       <form class="form-horizontal">
-        <div class="form-group">
+        <div class="row mb-3">
           <div class="col-lg-6">
             <input type="hidden" name="id" value="0" />
-            <input type="text" class="form-control" name="topText" placeholder="Top or Solo Text" />
+            <input type="text" class="form-control mb-1" name="topText" placeholder="Top or Solo Text" />
             <input type="text" class="form-control" name="bottomText" placeholder="Bottom Text" />
           </div>
           <div class="col-lg-6">
-            <button type="button" class="btn btn-info btn-lower-third" name="save" onclick="saveLowerThird(this);">
+            <button type="button" class="btn btn-primary btn-lower-third" name="save" onclick="saveLowerThird(this);">
               Save
             </button>
           </div>
