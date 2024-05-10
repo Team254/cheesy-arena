@@ -7,15 +7,22 @@
 {{define "title"}}Match Logs{{end}}
 {{define "body"}}
 <div class="row">
-  <ul class="nav nav-tabs" style="margin-bottom: 15px;">
-    <li{{if eq .CurrentMatchType practiceMatch }} class="active"{{end}}>
-      <a href="#Practice" data-toggle="tab">Practice</a>
+  <ul class="nav nav-tabs">
+    <li>
+      <a href="#Practice" class="nav-link{{if eq .CurrentMatchType practiceMatch }} active{{end}}" data-bs-toggle="tab">
+        Practice
+      </a>
     </li>
-    <li{{if eq .CurrentMatchType qualificationMatch }} class="active"{{end}}>
-      <a href="#Qualification" data-toggle="tab">Qualification</a>
+    <li>
+      <a href="#Qualification" class="nav-link{{if eq .CurrentMatchType qualificationMatch }} active{{end}}"
+        data-bs-toggle="tab">
+        Qualification
+      </a>
     </li>
-    <li{{if eq .CurrentMatchType playoffMatch }} class="active"{{end}}>
-      <a href="#Playoff" data-toggle="tab">Playoff</a>
+    <li>
+      <a href="#Playoff" class="nav-link{{if eq .CurrentMatchType playoffMatch }} active{{end}}" data-bs-toggle="tab">
+        Playoff
+      </a>
     </li>
   </ul>
   <div class="tab-content">
@@ -32,18 +39,30 @@
           </thead>
           <tbody>
             {{range $match := $matches}}
-              <tr class="{{$match.ColorClass}}">
-                <td>{{$match.ShortName}}</td>
-                <td>{{$match.Time}}</td>
-                <td class="text-center red-text">
-                  <a href="/match_logs/{{$match.Id}}/R1/log" target="_blank"><b class="btn btn-info btn-xs">{{index $match.RedTeams 0}}</b></a>
-                  <a href="/match_logs/{{$match.Id}}/R2/log" target="_blank"><b class="btn btn-info btn-xs">{{index $match.RedTeams 1}}</b></a>
-                  <a href="/match_logs/{{$match.Id}}/R3/log" target="_blank"><b class="btn btn-info btn-xs">{{index $match.RedTeams 2}}</b></a>
+              <tr>
+                <td class="bg-{{$match.ColorClass}}">{{$match.ShortName}}</td>
+                <td class="bg-{{$match.ColorClass}}">{{$match.Time}}</td>
+                <td class="bg-{{$match.ColorClass}} text-center">
+                  <a href="/match_logs/{{$match.Id}}/R1/log" target="_blank"><b class="btn btn-danger btn-sm btn-logs">
+                    {{index $match.RedTeams 0}}
+                  </b></a>
+                  <a href="/match_logs/{{$match.Id}}/R2/log" target="_blank"><b class="btn btn-danger btn-sm btn-logs">
+                    {{index $match.RedTeams 1}}
+                  </b></a>
+                  <a href="/match_logs/{{$match.Id}}/R3/log" target="_blank"><b class="btn btn-danger btn-sm btn-logs">
+                    {{index $match.RedTeams 2}}
+                  </b></a>
                 </td>
-                <td class="text-center blue-text">
-                  <a href="/match_logs/{{$match.Id}}/B1/log" target="_blank"><b class="btn btn-info btn-xs">{{index $match.BlueTeams 0}}</b></a>
-                  <a href="/match_logs/{{$match.Id}}/B2/log" target="_blank"><b class="btn btn-info btn-xs">{{index $match.BlueTeams 1}}</b></a>
-                  <a href="/match_logs/{{$match.Id}}/B3/log" target="_blank"><b class="btn btn-info btn-xs">{{index $match.BlueTeams 2}}</b></a>
+                <td class="bg-{{$match.ColorClass}} text-center">
+                  <a href="/match_logs/{{$match.Id}}/B1/log" target="_blank"><b class="btn btn-primary btn-sm btn-logs">
+                    {{index $match.BlueTeams 0}}
+                  </b></a>
+                  <a href="/match_logs/{{$match.Id}}/B2/log" target="_blank"><b class="btn btn-primary btn-sm btn-logs">
+                    {{index $match.BlueTeams 1}}
+                  </b></a>
+                  <a href="/match_logs/{{$match.Id}}/B3/log" target="_blank"><b class="btn btn-primary btn-sm btn-logs">
+                    {{index $match.BlueTeams 2}}
+                  </b></a>
                 </td>
               </tr>
             {{end}}

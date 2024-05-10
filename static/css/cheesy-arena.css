@@ -105,6 +105,9 @@
   padding-left: 20px;
   text-indent: -20px;
 }
+.btn-logs {
+  width: 60px;
+}
 .btn-lower-third {
   width: 80px;
 }

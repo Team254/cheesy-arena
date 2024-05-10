@@ -111,7 +111,7 @@ func (web *Web) matchLogsViewGetHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	template, err := web.parseFiles("templates/view_match_log.html")
+	template, err := web.parseFiles("templates/view_match_log.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -125,7 +125,7 @@ func (web *Web) matchLogsViewGetHandler(w http.ResponseWriter, r *http.Request) 
 		MatchLogs  *MatchLogs
 		FirstMatch string
 	}{web.arena.EventSettings, match, matchLogs, firstMatch}
-	err = template.ExecuteTemplate(w, "view_match_log.html", data)
+	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -249,13 +249,13 @@ func (web *Web) buildMatchLogsList(matchType model.MatchType) ([]MatchLogsListIt
 		}
 		switch match.Status {
 		case game.RedWonMatch:
-			matchLogsList[i].ColorClass = "danger"
+			matchLogsList[i].ColorClass = "red"
 			matchLogsList[i].IsComplete = true
 		case game.BlueWonMatch:
-			matchLogsList[i].ColorClass = "info"
+			matchLogsList[i].ColorClass = "blue"
 			matchLogsList[i].IsComplete = true
 		case game.TieMatch:
-			matchLogsList[i].ColorClass = "warning"
+			matchLogsList[i].ColorClass = "yellow"
 			matchLogsList[i].IsComplete = true
 		default:
 			matchLogsList[i].ColorClass = ""
