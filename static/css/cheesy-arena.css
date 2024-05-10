@@ -27,17 +27,11 @@
 .blue-text {
   color: #00f;
 }
-.well-red {
-  background-color: #f2dede;
+.card-red {
+  background-color: #422;
 }
-.well-darkred {
-  background-color: #ebcccc;
-}
-.well-blue {
-  background-color: #d9edf7;
-}
-.well-darkblue {
-  background-color: #c4e3f3;
+.card-blue {
+  background-color: #192945;
 }
 .col-no-padding {
   padding-left: 0;
@@ -45,6 +39,9 @@
 }
 .modal-large {
   width: 60%;
+}
+.team-number {
+  height: 27px;
 }
 .ds-status, .radio-status, .robot-status, .bypass-status {
   background-color: #aaa;
@@ -74,17 +71,19 @@
   background-color: #fc0;
 }
 .btn-match-play {
-  width: 150px;
+  width: 180px;
+  height: 50px;
+  line-height: 36px;
   font-size: 16px;
 }
-.label-scoring {
+.badge-scoring {
   background-color: #e66;
 }
-.label-scoring[data-ready=true] {
+.badge-scoring[data-ready=true] {
   background-color: #0c6;
 }
-.label-saved-match {
-  background-color: #999;
+.badge-saved-match {
+  background-color: #666;
 }
 .nowrap {
   white-space: nowrap;
@@ -114,13 +113,6 @@ td[data-plc-value="true"] {
 input[data-changed="true"], select[data-changed="true"] {
   border: 2px solid #f00;
 }
-.status-well {
-  margin-bottom: 10px;
-}
-#buttonBottomRow {
-  margin-top: 5px;
-  margin-bottom: 10px;
-}
 .match-list {
   height: 610px;
   overflow-y: auto;
@@ -131,7 +123,6 @@ input[data-changed="true"], select[data-changed="true"] {
 .match-list th {
   position: sticky;
   top: 0;
-  background-color: #fff;
 }
 #testMatchSettings {
   display: none;

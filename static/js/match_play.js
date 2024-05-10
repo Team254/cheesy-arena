@@ -322,7 +322,8 @@ const formatPlayoffAllianceInfo = function(allianceNumber, offFieldTeams) {
 
 $(function() {
   // Activate tooltips above the status headers.
-  $("[data-toggle=tooltip]").tooltip({"placement": "top"});
+  const tooltipTriggerList = document.querySelectorAll("[data-bs-toggle=tooltip]")
+  const tooltipList = [...tooltipTriggerList].map(element => new bootstrap.Tooltip(element))
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/match_play/websocket", {
