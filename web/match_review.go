@@ -200,13 +200,13 @@ func (web *Web) buildMatchReviewList(matchType model.MatchType) ([]MatchReviewLi
 		}
 		switch match.Status {
 		case game.RedWonMatch:
-			matchReviewList[i].ColorClass = "danger"
+			matchReviewList[i].ColorClass = "red"
 			matchReviewList[i].IsComplete = true
 		case game.BlueWonMatch:
-			matchReviewList[i].ColorClass = "info"
+			matchReviewList[i].ColorClass = "blue"
 			matchReviewList[i].IsComplete = true
 		case game.TieMatch:
-			matchReviewList[i].ColorClass = "warning"
+			matchReviewList[i].ColorClass = "yellow"
 			matchReviewList[i].IsComplete = true
 		default:
 			matchReviewList[i].ColorClass = ""

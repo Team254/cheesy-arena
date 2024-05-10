@@ -7,16 +7,16 @@
 {{define "title"}}Edit Match Results{{end}}
 {{define "body"}}
 <div class="row">
-  <div class="well">
-    <form class="form-horizontal" method="POST">
+  <div class="card card-body bg-body-tertiary">
+    <form method="POST">
       <fieldset>
         <legend>Edit {{.Match.LongName}} Results</legend>
         <div id="redScore"></div>
         <div id="blueScore"></div>
-        <div class="row form-group">
+        <div class="row">
           <div class="text-center col-lg-12">
-            <a href="/match_review"><button type="button" class="btn btn-default">Cancel</button></a>
-            <button type="submit" class="btn btn-info">Save</button>
+            <a href="/match_review"><button type="button" class="btn btn-secondary">Cancel</button></a>
+            <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </div>
       </fieldset>
@@ -24,41 +24,37 @@
   </div>
 </div>
 <div id="scoreTemplate" style="display: none;">
-  <div class="well well-{{"{{alliance}}"}}">
+  <div class="card card-body bg-{{"{{alliance}}"}} mb-3">
     <fieldset>
       <legend>Autonomous</legend>
       <b>Mobility</b>
-      <div class="form-group">
-        <div class="row">
-          {{range $i := seq 3}}
-            <div class="col-lg-2">
-              <label class="col-lg-8 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-              <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}MobilityStatuses{{$i}}">
-            </div>
-          {{end}}
-        </div>
+      <div class="row mb-3">
+        {{range $i := seq 3}}
+          <div class="col-lg-2">
+            <label class="control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+            <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}MobilityStatuses{{$i}}">
+          </div>
+        {{end}}
       </div>
       <b>Charge Station Docking</b>
-      <div class="form-group">
-        <div class="row">
-          {{range $i := seq 3}}
-          <div class="col-lg-2">
-            <label class="col-lg-8 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-            <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}AutoDockStatuses{{$i}}">
-          </div>
-          {{end}}
+      <div class="row mb-3">
+        {{range $i := seq 3}}
+        <div class="col-lg-2">
+          <label class="control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}AutoDockStatuses{{$i}}">
         </div>
-        <div class="row">
-          <div class="col-lg-4 col-lg-offset-1">
-            <label class="col-lg-8 control-label">Charge Station Is Level?</label>
-            <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}AutoChargeStationLevel">
-          </div>
+        {{end}}
+      </div>
+      <div class="row mb-3">
+        <div class="col-lg-4 col-lg-offset-1">
+          <label class="control-label">Charge Station Is Level?</label>
+          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}AutoChargeStationLevel">
         </div>
       </div>
     </fieldset>
     <fieldset>
       <legend>Grid</legend>
-      <div class="row">
+      <div class="row text-center">
         <div class="col-lg-1"></div>
         {{range $i := seq 9}}
         <label class="col-lg-1 control-label">{{$i}}</label>
@@ -71,24 +67,25 @@
     </fieldset>
     <fieldset>
       <legend>Endgame</legend>
-      <div class="form-group">
+      <div class="mb-3">
         {{range $i := seq 3}}
-          <div class="row">
-            <label class="col-lg-1 col-lg-offset-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-            <div class="radio col-lg-1">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="0">None
+          <div class="row mb-2">
+            <div class="col-lg-1"></div>
+            <label class="col-lg-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+            <div class="col-lg-1">
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="0"> None
             </div>
-            <div class="radio col-lg-1">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1">Parked
+            <div class="col-lg-1">
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1"> Parked
             </div>
-            <div class="radio col-lg-1">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2">Docked
+            <div class="col-lg-1">
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2"> Docked
             </div>
           </div>
         {{end}}
-        <div class="col-lg-4 col-lg-offset-1">
-          <label class="col-lg-8 control-label">Charge Station Is Level?</label>
-          <input type="checkbox" class="input-sm" name="{{"{{alliance}}"}}EndgameChargeStationLevel">
+        <div class="mt-3">
+          <label class="control-label">Charge Station Is Level?</label>
+          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}EndgameChargeStationLevel">
         </div>
       </div>
     </fieldset>
@@ -97,41 +94,42 @@
       {{"{{#each score.Fouls}}"}}
         <input type="hidden" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Index"
           value="{{"{{@index}}"}}">
-        <div class="well well-sm well-dark{{"{{../alliance}}"}}">
-          <button type="button" class="close" onclick="deleteFoul('{{"{{../alliance}}"}}', {{"{{@index}}"}});">
-            ×
+        <div class="card card-body bg-dark-{{"{{../alliance}}"}} mb-2">
+          <button type="button" class="btn-close" onclick="deleteFoul('{{"{{../alliance}}"}}', {{"{{@index}}"}});">
           </button>
           <br />
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-2 control-label">Is Technical?</label>
             <div class="col-lg-3">
               <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsTechnical">
             </div>
           </div>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-2 control-label">Team</label>
             <div class="col-lg-8">
-              <div class="radio col-lg-2">
-                <label>
-                  <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team1}}"}}">
-                  {{"{{../team1}}"}}
-                 </label>
-              </div>
-              <div class="radio col-lg-2">
-                <label>
-                  <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team2}}"}}">
-                  {{"{{../team2}}"}}
-                </label>
-              </div>
-              <div class="radio col-lg-2">
-                <label>
-                  <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team3}}"}}">
-                  {{"{{../team3}}"}}
-                </label>
+              <div class="row">
+                <div class="col-lg-2">
+                  <label>
+                    <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team1}}"}}">
+                    Team {{"{{../team1}}"}}
+                   </label>
+                </div>
+                <div class="col-lg-2">
+                  <label>
+                    <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team2}}"}}">
+                    Team {{"{{../team2}}"}}
+                  </label>
+                </div>
+                <div class="col-lg-2">
+                  <label>
+                    <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team3}}"}}">
+                    Team {{"{{../team3}}"}}
+                  </label>
+                </div>
               </div>
             </div>
           </div>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-2 control-label">Rule</label>
             <div class="col-lg-9">
               <select class="form-control" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleId">
@@ -146,7 +144,7 @@
           </div>
         </div>
       {{"{{/each}}"}}
-      <button type="button" class="btn btn-default btn-sm" onclick="addFoul('{{"{{alliance}}"}}');">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="addFoul('{{"{{alliance}}"}}');">
         Add Foul
       </button>
       <br /><br />
@@ -154,26 +152,28 @@
     <fieldset>
       <legend>Cards</legend>
       {{range $i := seq 3}}
-        <div class="form-group">
+        <div class="row mb-3">
           <label class="col-lg-2 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
           <div class="col-lg-8">
-            <div class="radio col-lg-2">
-              <label>
-                <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="" checked>
-                None
-              </label>
-            </div>
-            <div class="radio col-lg-2">
-              <label>
-                <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="yellow">
-                Yellow
-              </label>
-            </div>
-            <div class="radio col-lg-2">
-              <label>
-                <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="red">
-                Red
-              </label>
+            <div class="row">
+              <div class="col-lg-2">
+                <label>
+                  <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="" checked>
+                  None
+                </label>
+              </div>
+              <div class="col-lg-2">
+                <label>
+                  <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="yellow">
+                  Yellow
+                </label>
+              </div>
+              <div class="col-lg-2">
+                <label>
+                  <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="red">
+                  Red
+                </label>
+              </div>
             </div>
           </div>
         </div>

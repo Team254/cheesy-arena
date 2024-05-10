@@ -528,16 +528,16 @@ func (web *Web) buildMatchPlayList(matchType model.MatchType) (MatchPlayList, er
 		matchPlayList[i].Status = match.Status
 		switch match.Status {
 		case game.RedWonMatch:
-			matchPlayList[i].ColorClass = "danger"
+			matchPlayList[i].ColorClass = "red"
 		case game.BlueWonMatch:
-			matchPlayList[i].ColorClass = "info"
+			matchPlayList[i].ColorClass = "blue"
 		case game.TieMatch:
-			matchPlayList[i].ColorClass = "warning"
+			matchPlayList[i].ColorClass = "yellow"
 		default:
 			matchPlayList[i].ColorClass = ""
 		}
 		if web.arena.CurrentMatch != nil && matchPlayList[i].Id == web.arena.CurrentMatch.Id {
-			matchPlayList[i].ColorClass = "success"
+			matchPlayList[i].ColorClass = "green"
 		}
 	}
 

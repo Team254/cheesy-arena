@@ -27,11 +27,23 @@
 .blue-text {
   color: #00f;
 }
-.card-red {
-  background-color: #422;
+.bg-red {
+  background-color: #422 !important;
 }
-.card-blue {
-  background-color: #192945;
+.bg-dark-red {
+  background-color: #311 !important;
+}
+.bg-blue {
+  background-color: #192945 !important;
+}
+.bg-dark-blue {
+  background-color: #113 !important;
+}
+.bg-yellow {
+  background-color: #442 !important;
+}
+.bg-green {
+  background-color: #132 !important;
 }
 .col-no-padding {
   padding-left: 0;
@@ -116,9 +128,6 @@ input[data-changed="true"], select[data-changed="true"] {
 .match-list {
   height: 610px;
   overflow-y: auto;
-}
-.match-list table {
-  border-collapse: separate;
 }
 .match-list th {
   position: sticky;

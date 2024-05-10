@@ -7,15 +7,22 @@
 {{define "title"}}Match Review{{end}}
 {{define "body"}}
 <div class="row">
-  <ul class="nav nav-tabs" style="margin-bottom: 15px;">
-    <li{{if eq .CurrentMatchType practiceMatch }} class="active"{{end}}>
-      <a href="#Practice" data-toggle="tab">Practice</a>
+  <ul class="nav nav-tabs">
+    <li>
+      <a href="#Practice" class="nav-link{{if eq .CurrentMatchType practiceMatch }} active{{end}}" data-bs-toggle="tab">
+        Practice
+      </a>
     </li>
-    <li{{if eq .CurrentMatchType qualificationMatch }} class="active"{{end}}>
-      <a href="#Qualification" data-toggle="tab">Qualification</a>
+    <li>
+      <a href="#Qualification" class="nav-link{{if eq .CurrentMatchType qualificationMatch }} active{{end}}"
+        data-bs-toggle="tab">
+        Qualification
+      </a>
     </li>
-    <li{{if eq .CurrentMatchType playoffMatch }} class="active"{{end}}>
-      <a href="#Playoff" data-toggle="tab">Playoff</a>
+    <li>
+      <a href="#Playoff" class="nav-link{{if eq .CurrentMatchType playoffMatch }} active{{end}}" data-bs-toggle="tab">
+        Playoff
+      </a>
     </li>
   </ul>
   <div class="tab-content">
@@ -35,19 +42,19 @@
           </thead>
           <tbody>
             {{range $match := $matches}}
-              <tr class="{{$match.ColorClass}}">
-                <td>{{$match.ShortName}}</td>
-                <td>{{$match.Time}}</td>
-                <td class="text-center red-text">
+              <tr>
+                <td class="bg-{{$match.ColorClass}}">{{$match.ShortName}}</td>
+                <td class="bg-{{$match.ColorClass}}">{{$match.Time}}</td>
+                <td class="bg-{{$match.ColorClass}} text-center red-text">
                   {{index $match.RedTeams 0}}, {{index $match.RedTeams 1}}, {{index $match.RedTeams 2}}
                 </td>
-                <td class="text-center blue-text">
+                <td class="bg-{{$match.ColorClass}} text-center blue-text">
                   {{index $match.BlueTeams 0}}, {{index $match.BlueTeams 1}}, {{index $match.BlueTeams 2}}
                 </td>
-                <td class="text-center red-text">{{if $match.IsComplete}}{{$match.RedScore}}{{end}}</td>
-                <td class="text-center blue-text">{{if $match.IsComplete}}{{$match.BlueScore}}{{end}}</td>
-                <td class="text-center nowrap">
-                  <a href="/match_review/{{$match.Id}}/edit"><b class="btn btn-info btn-xs">Edit</b></a>
+                <td class="bg-{{$match.ColorClass}} text-center red-text">{{if $match.IsComplete}}{{$match.RedScore}}{{end}}</td>
+                <td class="bg-{{$match.ColorClass}} text-center blue-text">{{if $match.IsComplete}}{{$match.BlueScore}}{{end}}</td>
+                <td class="bg-{{$match.ColorClass}} text-center nowrap">
+                  <a href="/match_review/{{$match.Id}}/edit"><b class="btn btn-primary btn-sm">Edit</b></a>
                 </td>
               </tr>
             {{end}}
