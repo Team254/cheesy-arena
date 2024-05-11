@@ -806,7 +806,7 @@ func (arena *Arena) checkCanStartMatch() error {
 		if !arena.Plc.IsHealthy() {
 			return fmt.Errorf("cannot start match while PLC is not healthy")
 		}
-		if arena.Plc.GetFieldEstop() {
+		if arena.Plc.GetFieldEStop() {
 			return fmt.Errorf("cannot start match while field emergency stop is active")
 		}
 		for name, status := range arena.Plc.GetArmorBlockStatuses() {
@@ -870,16 +870,16 @@ func (arena *Arena) handlePlcInputOutput() {
 	}
 
 	// Handle PLC functions that are always active.
-	if arena.Plc.GetFieldEstop() && !arena.matchAborted {
+	if arena.Plc.GetFieldEStop() && !arena.matchAborted {
 		arena.AbortMatch()
 	}
-	redEstops, blueEstops := arena.Plc.GetTeamEstops()
-	arena.handleEstop("R1", redEstops[0])
-	arena.handleEstop("R2", redEstops[1])
-	arena.handleEstop("R3", redEstops[2])
-	arena.handleEstop("B1", blueEstops[0])
-	arena.handleEstop("B2", blueEstops[1])
-	arena.handleEstop("B3", blueEstops[2])
+	redEStops, blueEStops := arena.Plc.GetTeamEStops()
+	arena.handleEStop("R1", redEStops[0])
+	arena.handleEStop("R2", redEStops[1])
+	arena.handleEStop("R3", redEStops[2])
+	arena.handleEStop("B1", blueEStops[0])
+	arena.handleEStop("B2", blueEStops[1])
+	arena.handleEStop("B3", blueEStops[2])
 	redEthernets, blueEthernets := arena.Plc.GetEthernetConnected()
 	arena.AllianceStations["R1"].Ethernet = redEthernets[0]
 	arena.AllianceStations["R2"].Ethernet = redEthernets[1]
@@ -889,14 +889,15 @@ func (arena *Arena) handlePlcInputOutput() {
 	arena.AllianceStations["B3"].Ethernet = blueEthernets[2]
 
 	// Handle in-match PLC functions.
-	matchStartTime := arena.MatchStartTime
-	currentTime := time.Now()
-	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.ChargeStationTeleopGracePeriod)
-	inGracePeriod := currentTime.Before(teleopGracePeriod)
-
-	redScore := &arena.RedRealtimeScore.CurrentScore
-	blueScore := &arena.BlueRealtimeScore.CurrentScore
-	redChargeStationLevel, blueChargeStationLevel := arena.Plc.GetChargeStationsLevel()
+	// TODO(pat): Update for 2024.
+	//matchStartTime := arena.MatchStartTime
+	//currentTime := time.Now()
+	//teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.ChargeStationTeleopGracePeriod)
+	//inGracePeriod := currentTime.Before(teleopGracePeriod)
+	//
+	//redScore := &arena.RedRealtimeScore.CurrentScore
+	//blueScore := &arena.BlueRealtimeScore.CurrentScore
+	//redChargeStationLevel, blueChargeStationLevel := arena.Plc.GetChargeStationsLevel()
 	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
 
@@ -923,7 +924,8 @@ func (arena *Arena) handlePlcInputOutput() {
 			}
 		}
 
-		arena.Plc.SetChargeStationLights(false, false)
+		// TODO(pat): Update for 2024.
+		//arena.Plc.SetChargeStationLights(false, false)
 	case PostMatch:
 		if arena.FieldReset {
 			arena.Plc.SetFieldResetLight(true)
@@ -933,40 +935,43 @@ func (arena *Arena) handlePlcInputOutput() {
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
 
 		// Game-specific PLC functions.
-		if inGracePeriod {
-			arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
-		} else {
-			arena.Plc.SetChargeStationLights(false, false)
-		}
-		if arena.lastMatchState != PostMatch {
-			go func() {
-				// Capture a single reading of the charge station levels after the grace period following the match.
-				time.Sleep(game.ChargeStationTeleopGracePeriod)
-				redScore.EndgameChargeStationLevel, blueScore.EndgameChargeStationLevel =
-					arena.Plc.GetChargeStationsLevel()
-				arena.RealtimeScoreNotifier.Notify()
-			}()
-		}
+		// TODO(pat): Update for 2024.
+		//if inGracePeriod {
+		//	arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
+		//} else {
+		//	arena.Plc.SetChargeStationLights(false, false)
+		//}
+		//if arena.lastMatchState != PostMatch {
+		//	go func() {
+		//		// Capture a single reading of the charge station levels after the grace period following the match.
+		//		time.Sleep(game.ChargeStationTeleopGracePeriod)
+		//		redScore.EndgameChargeStationLevel, blueScore.EndgameChargeStationLevel =
+		//			arena.Plc.GetChargeStationsLevel()
+		//		arena.RealtimeScoreNotifier.Notify()
+		//	}()
+		//}
 	case AutoPeriod:
 		arena.Plc.SetStackBuzzer(false)
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, true)
 		fallthrough
 	case PausePeriod:
 		// Game-specific PLC functions.
-		arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
+		// TODO(pat): Update for 2024.
+		//arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
 	case TeleopPeriod:
 		// Game-specific PLC functions.
-		arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
+		// TODO(pat): Update for 2024.
+		//arena.Plc.SetChargeStationLights(redChargeStationLevel, blueChargeStationLevel)
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, true)
-		if arena.lastMatchState != TeleopPeriod {
-			// Capture a single reading of the charge station levels after the autonomous pause.
-			redScore.AutoChargeStationLevel, blueScore.AutoChargeStationLevel = arena.Plc.GetChargeStationsLevel()
-			arena.RealtimeScoreNotifier.Notify()
-		}
+		//if arena.lastMatchState != TeleopPeriod {
+		//	// Capture a single reading of the charge station levels after the autonomous pause.
+		//	redScore.AutoChargeStationLevel, blueScore.AutoChargeStationLevel = arena.Plc.GetChargeStationsLevel()
+		//	arena.RealtimeScoreNotifier.Notify()
+		//}
 	}
 }
 
-func (arena *Arena) handleEstop(station string, state bool) {
+func (arena *Arena) handleEStop(station string, state bool) {
 	allianceStation := arena.AllianceStations[station]
 	if state {
 		if arena.MatchState == AutoPeriod {
