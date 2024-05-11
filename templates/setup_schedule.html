@@ -8,7 +8,7 @@
 {{define "body"}}
 <div class="row">
   {{if .ErrorMessage}}
-    <div class="alert alert-dismissable alert-danger">
+    <div class="alert alert-dismissible alert-danger">
       <button type="button" class="close" data-dismiss="alert">×</button>
       {{.ErrorMessage}}
     </div>
@@ -138,26 +138,6 @@
     <div class="row mb-3">
       <div class="col-lg-4">Match count: <span id="numMatches{{"{{blockNumber}}"}}"></span></div>
       <div class="col-lg-8">Actual end time: <span id="actualEndTime{{"{{blockNumber}}"}}"></span></div>
-    </div>
-  </div>
-</div>
-<div id="confirmPublishSchedule" class="modal" style="top: 20%;">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h4 class="modal-title">Confirm</h4>
-      </div>
-      <div class="modal-body">
-        <p>Are you sure you want to publish the schedule to The Blue Alliance? This will overwrite any
-          existing matches and their data.</p>
-      </div>
-      <div class="modal-footer">
-        <form class="form-horizontal" action="/setup/schedule/republish?matchType={{.MatchType}}" method="POST">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Publish Schedule</button>
-        </form>
-      </div>
     </div>
   </div>
 </div>

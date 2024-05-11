@@ -16,9 +16,6 @@ body {
   background: -webkit-linear-gradient(top, #003375 1%, #3C679D 100%); /* Chrome10+,Safari5.1+ */
   background-repeat: no-repeat;
 }
-h1 {
-  font-size: 40px;
-}
 #header {
   padding: 10px 0px;
   font-size: 40px;
@@ -26,7 +23,7 @@ h1 {
   color: #fff;
   text-transform: uppercase;
 }
-.well {
+.card {
   background-color: #ccc;
   border: 1px solid #333;
   padding: 10px;

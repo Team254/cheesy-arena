@@ -13,6 +13,7 @@
     <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no" />
     <link rel="shortcut icon" href="/static/img/favicon.ico">
     <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/lib/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
     <link rel="stylesheet" href="/static/css/field_monitor_display.css" />
   </head>
@@ -37,7 +38,7 @@
   <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
   <script src="/static/js/cheesy-websocket.js"></script>
   <script src="/static/js/lib/jquery.transit.min.js"></script>
-  <script src="/static/js/lib/bootstrap.min.js"></script>
+  <script src="/static/js/lib/bootstrap.bundle.min.js"></script>
   <script src="/static/js/match_timing.js"></script>
   <script src="/static/js/field_monitor_display.js"></script>
 </html>
@@ -55,7 +56,7 @@
   <div id="{{.side}}Team{{.position}}" class="team team-{{.side}} ds-dependent">
     <div id="{{.side}}Team{{.position}}Id" class="team-id center fta-dependent"></div>
     <div id="{{.side}}Team{{.position}}Notes" class="team-notes fta-dependent" title="FTA Notes">
-      <i class="glyphicon glyphicon-comment"></i>
+      <i class="bi-chat-left-fill"></i>
       <div onclick="editFtaNotes(this);"></div>
     </div>
     <div class="team-box-row">
@@ -64,7 +65,7 @@
       <div id="{{.side}}Team{{.position}}Ds" class="team-box center"
           title="Driver Station Software Running&#10;Missed Packets">DS</div>
       <div id="{{.side}}Team{{.position}}Radio" class="team-box center" title="Field Access Point Configured Team">
-        <i class="glyphicon glyphicon-signal"></i>
+        <i class="bi-reception-4"></i>
         <span></span>
       </div>
       <div id="{{.side}}Team{{.position}}Robot" class="team-box center"
