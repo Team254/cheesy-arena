@@ -10,14 +10,13 @@ import "time"
 var ChargeStationTeleopGracePeriod = 3 * time.Second
 
 var MatchTiming = struct {
-	WarmupDurationSec                  int
-	AutoDurationSec                    int
-	PauseDurationSec                   int
-	TeleopDurationSec                  int
-	WarningRemainingDurationSec        int
-	TimeoutDurationSec                 int
-	TimeoutWarningRemainingDurationSec int
-}{0, 15, 3, 135, 30, 0, 60}
+	WarmupDurationSec           int
+	AutoDurationSec             int
+	PauseDurationSec            int
+	TeleopDurationSec           int
+	WarningRemainingDurationSec int
+	TimeoutDurationSec          int
+}{0, 15, 3, 135, 20, 0}
 
 func GetDurationToAutoEnd() time.Duration {
 	return time.Duration(MatchTiming.WarmupDurationSec+MatchTiming.AutoDurationSec) * time.Second

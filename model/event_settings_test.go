@@ -29,7 +29,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			AutoDurationSec:             15,
 			PauseDurationSec:            3,
 			TeleopDurationSec:           135,
-			WarningRemainingDurationSec: 30,
+			WarningRemainingDurationSec: 20,
 			SustainabilityBonusLinkThresholdWithoutCoop: 6,
 			SustainabilityBonusLinkThresholdWithCoop:    5,
 			ActivationBonusPointThreshold:               26,

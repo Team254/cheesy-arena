@@ -986,7 +986,7 @@ func (arena *Arena) handleEstop(station string, state bool) {
 }
 
 func (arena *Arena) handleSounds(matchTimeSec float64) {
-	if arena.MatchState == PreMatch {
+	if arena.MatchState == PreMatch || arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout {
 		// Only apply this logic during a match.
 		return
 	}
@@ -994,11 +994,6 @@ func (arena *Arena) handleSounds(matchTimeSec float64) {
 	for _, sound := range game.MatchSounds {
 		if sound.MatchTimeSec < 0 {
 			// Skip sounds with negative timestamps; they are meant to only be triggered explicitly.
-			continue
-		}
-		if sound.Timeout && !(arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout) ||
-			!sound.Timeout && (arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout) {
-			// Skip timeout sounds if this is a regular match, and vice versa.
 			continue
 		}
 		if _, ok := arena.soundsPlayed[sound]; !ok {
