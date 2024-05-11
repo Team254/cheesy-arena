@@ -1,5 +1,5 @@
 {{define "announcer_display_match_load"}}
-<div class="row well-sm well-darkred">
+<div class="row card card-body bg-red">
   {{if eq .Match.Type playoffMatch}}
     <h4><b>Alliance {{.Match.PlayoffRedAlliance}}</b></h4>
   {{end}}
@@ -10,7 +10,7 @@
     {{template "team" dict "alliance" "red" "team" $team "isOffField" true}}
   {{end}}
 </div>
-<div class="row well-sm well-darkblue">
+<div class="row card card-body bg-blue">
   {{if eq .Match.Type playoffMatch}}
     <h4><b>Alliance {{.Match.PlayoffBlueAlliance}}</b></h4>
   {{end}}
@@ -25,29 +25,31 @@
 {{define "team"}}
 <div class="row">
   {{if .team}}
-    <div class="col-sm-3"><h2><b>{{.team.Id}}</b>{{if .isOffField}} (not on field){{end}}</h2></div>
+    <div class="col-sm-2"><h2><b>{{.team.Id}}</b>{{if .isOffField}} (not on field){{end}}</h2></div>
     <div class="col-sm-5"><h2>{{.team.Nickname}}</h2></div>
-    <div class="col-sm-3">
+    <div class="col-sm-4">
       <div><h4>{{.team.City}}, {{.team.StateProv}}, {{.team.Country}}</h4></div>
     </div>
     <div class="col-sm-1">
-      <button type="button" class="btn btn-sm" onclick="$('#team{{.team.Id}}Details').modal('show');">More</button>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="$('#team{{.team.Id}}Details').modal('show');">
+        More
+      </button>
     </div>
     <div id="team{{.team.Id}}Details" class="modal">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
             <h4 class="modal-title">Team {{.team.Id}}</span></h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            <div class="row"><b>Rookie Year:</b> {{.team.RookieYear}}</div>
-            <div class="row"><b>Robot Name:</b> {{.team.RobotName}}</div>
-            <div class="row"><b>Recent Accomplishments:</b></div>
+            <div class="mb-3"><b>Rookie Year:</b> {{.team.RookieYear}}</div>
+            <div class="mb-3"><b>Robot Name:</b> {{.team.RobotName}}</div>
+            <div class="mb-1"><b>Recent Accomplishments:</b></div>
             <div>{{.team.Accomplishments}}</div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Dismiss</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>

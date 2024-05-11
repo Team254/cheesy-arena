@@ -61,11 +61,14 @@ var handleScorePosted = function(data) {
   const matchResult = $("#matchResult");
   fetch("/displays/announcer/score_posted")
     .then(response => response.text())
-    .then(html => matchResult.html(html));
-  matchResult.modal("show");
+    .then(html => {
+      matchResult.html(html);
+      matchResult.modal("show");
 
-  // Activate tooltips above the foul listings.
-  $("[data-toggle=tooltip]").tooltip({"placement": "top"});
+      // Activate tooltips above the foul listings.
+      const tooltipTriggerList = document.querySelectorAll("[data-bs-toggle=tooltip]");
+      const tooltipList = [...tooltipTriggerList].map(element => new bootstrap.Tooltip(element));
+    });
 };
 
 $(function() {
