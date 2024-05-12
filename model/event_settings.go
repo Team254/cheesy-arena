@@ -15,34 +15,35 @@ const (
 )
 
 type EventSettings struct {
-	Id                                          int `db:"id"`
-	Name                                        string
-	PlayoffType                                 PlayoffType
-	NumPlayoffAlliances                         int
-	SelectionRound2Order                        string
-	SelectionRound3Order                        string
-	TbaDownloadEnabled                          bool
-	TbaPublishingEnabled                        bool
-	TbaEventCode                                string
-	TbaSecretId                                 string
-	TbaSecret                                   string
-	NexusEnabled                                bool
-	NetworkSecurityEnabled                      bool
-	ApAddress                                   string
-	ApPassword                                  string
-	ApChannel                                   int
-	SwitchAddress                               string
-	SwitchPassword                              string
-	PlcAddress                                  string
-	AdminPassword                               string
-	WarmupDurationSec                           int
-	AutoDurationSec                             int
-	PauseDurationSec                            int
-	TeleopDurationSec                           int
-	WarningRemainingDurationSec                 int
-	SustainabilityBonusLinkThresholdWithoutCoop int
-	SustainabilityBonusLinkThresholdWithCoop    int
-	ActivationBonusPointThreshold               int
+	Id                              int `db:"id"`
+	Name                            string
+	PlayoffType                     PlayoffType
+	NumPlayoffAlliances             int
+	SelectionRound2Order            string
+	SelectionRound3Order            string
+	TbaDownloadEnabled              bool
+	TbaPublishingEnabled            bool
+	TbaEventCode                    string
+	TbaSecretId                     string
+	TbaSecret                       string
+	NexusEnabled                    bool
+	NetworkSecurityEnabled          bool
+	ApAddress                       string
+	ApPassword                      string
+	ApChannel                       int
+	SwitchAddress                   string
+	SwitchPassword                  string
+	PlcAddress                      string
+	AdminPassword                   string
+	WarmupDurationSec               int
+	AutoDurationSec                 int
+	PauseDurationSec                int
+	TeleopDurationSec               int
+	WarningRemainingDurationSec     int
+	MelodyBonusThresholdWithoutCoop int
+	MelodyBonusWithCoop             int
+	AmplificationNoteLimit          int
+	AmplificationDurationSec        int
 }
 
 func (database *Database) GetEventSettings() (*EventSettings, error) {
@@ -56,21 +57,22 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 
 	// Database record doesn't exist yet; create it now.
 	eventSettings := EventSettings{
-		Name:                        "Untitled Event",
-		PlayoffType:                 DoubleEliminationPlayoff,
-		NumPlayoffAlliances:         8,
-		SelectionRound2Order:        "L",
-		SelectionRound3Order:        "",
-		TbaDownloadEnabled:          true,
-		ApChannel:                   36,
-		WarmupDurationSec:           game.MatchTiming.WarmupDurationSec,
-		AutoDurationSec:             game.MatchTiming.AutoDurationSec,
-		PauseDurationSec:            game.MatchTiming.PauseDurationSec,
-		TeleopDurationSec:           game.MatchTiming.TeleopDurationSec,
-		WarningRemainingDurationSec: game.MatchTiming.WarningRemainingDurationSec,
-		SustainabilityBonusLinkThresholdWithoutCoop: game.SustainabilityBonusLinkThresholdWithoutCoop,
-		SustainabilityBonusLinkThresholdWithCoop:    game.SustainabilityBonusLinkThresholdWithCoop,
-		ActivationBonusPointThreshold:               game.ActivationBonusPointThreshold,
+		Name:                            "Untitled Event",
+		PlayoffType:                     DoubleEliminationPlayoff,
+		NumPlayoffAlliances:             8,
+		SelectionRound2Order:            "L",
+		SelectionRound3Order:            "",
+		TbaDownloadEnabled:              true,
+		ApChannel:                       36,
+		WarmupDurationSec:               game.MatchTiming.WarmupDurationSec,
+		AutoDurationSec:                 game.MatchTiming.AutoDurationSec,
+		PauseDurationSec:                game.MatchTiming.PauseDurationSec,
+		TeleopDurationSec:               game.MatchTiming.TeleopDurationSec,
+		WarningRemainingDurationSec:     game.MatchTiming.WarningRemainingDurationSec,
+		MelodyBonusThresholdWithoutCoop: game.MelodyBonusThresholdWithoutCoop,
+		MelodyBonusWithCoop:             game.MelodyBonusWithCoop,
+		AmplificationNoteLimit:          game.AmplificationNoteLimit,
+		AmplificationDurationSec:        game.AmplificationDurationSec,
 	}
 
 	if err := database.eventSettingsTable.create(&eventSettings); err != nil {

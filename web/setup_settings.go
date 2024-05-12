@@ -90,11 +90,10 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))
 	eventSettings.TeleopDurationSec, _ = strconv.Atoi(r.PostFormValue("teleopDurationSec"))
 	eventSettings.WarningRemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warningRemainingDurationSec"))
-	eventSettings.SustainabilityBonusLinkThresholdWithoutCoop, _ =
-		strconv.Atoi(r.PostFormValue("sustainabilityBonusLinkThresholdWithoutCoop"))
-	eventSettings.SustainabilityBonusLinkThresholdWithCoop, _ =
-		strconv.Atoi(r.PostFormValue("sustainabilityBonusLinkThresholdWithCoop"))
-	eventSettings.ActivationBonusPointThreshold, _ = strconv.Atoi(r.PostFormValue("activationBonusPointThreshold"))
+	eventSettings.MelodyBonusThresholdWithoutCoop, _ = strconv.Atoi(r.PostFormValue("melodyBonusThresholdWithoutCoop"))
+	eventSettings.MelodyBonusWithCoop, _ = strconv.Atoi(r.PostFormValue("melodyBonusWithCoop"))
+	eventSettings.AmplificationNoteLimit, _ = strconv.Atoi(r.PostFormValue("amplificationNoteLimit"))
+	eventSettings.AmplificationDurationSec, _ = strconv.Atoi(r.PostFormValue("amplificationDurationSec"))
 
 	err := web.arena.Database.UpdateEventSettings(eventSettings)
 	if err != nil {

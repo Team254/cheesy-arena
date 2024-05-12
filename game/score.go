@@ -16,9 +16,10 @@ type Score struct {
 	PlayoffDq                 bool
 }
 
-var SustainabilityBonusLinkThresholdWithoutCoop = 6
-var SustainabilityBonusLinkThresholdWithCoop = 5
-var ActivationBonusPointThreshold = 26
+var MelodyBonusThresholdWithoutCoop = 18
+var MelodyBonusWithCoop = 15
+var AmplificationNoteLimit = 4
+var AmplificationDurationSec = 10
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
@@ -100,15 +101,15 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	summary.CoopertitionBonus = score.Grid.IsCoopertitionThresholdAchieved() &&
 		opponentScore.Grid.IsCoopertitionThresholdAchieved()
 	summary.NumLinks = len(score.Grid.Links())
-	summary.NumLinksGoal = SustainabilityBonusLinkThresholdWithoutCoop
+	//summary.NumLinksGoal = SustainabilityBonusLinkThresholdWithoutCoop
 	// A SustainabilityBonusLinkThresholdWithCoop of 0 disables the coopertition bonus.
-	if SustainabilityBonusLinkThresholdWithCoop > 0 && summary.CoopertitionBonus {
-		summary.NumLinksGoal = SustainabilityBonusLinkThresholdWithCoop
-	}
+	//if SustainabilityBonusLinkThresholdWithCoop > 0 && summary.CoopertitionBonus {
+	//	summary.NumLinksGoal = SustainabilityBonusLinkThresholdWithCoop
+	//}
 	if summary.NumLinks >= summary.NumLinksGoal {
 		summary.SustainabilityBonusRankingPoint = true
 	}
-	summary.ActivationBonusRankingPoint = summary.ChargeStationPoints >= ActivationBonusPointThreshold
+	//summary.ActivationBonusRankingPoint = summary.ChargeStationPoints >= ActivationBonusPointThreshold
 
 	if summary.SustainabilityBonusRankingPoint {
 		summary.BonusRankingPoints++

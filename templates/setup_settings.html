@@ -255,29 +255,34 @@
           </div>
           <div class="row mb-3">
             <label class="col-lg-6 control-label">
-              Sustainability Bonus RP Link Threshold<br />(Without Coopertition)
+              Melody Bonus RP Note Threshold<br />(Without Coopertition)
             </label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" id="sustainabilityBonusLinkThresholdWithoutCoop"
-                name="sustainabilityBonusLinkThresholdWithoutCoop"
-                value="{{.SustainabilityBonusLinkThresholdWithoutCoop}}">
+              <input type="text" class="form-control" id="melodyBonusThresholdWithoutCoop"
+                name="melodyBonusThresholdWithoutCoop" value="{{.MelodyBonusThresholdWithoutCoop}}">
             </div>
           </div>
           <div class="row mb-3">
             <label class="col-lg-6 control-label">
-              Sustainability Bonus RP Link Threshold<br />(With Coopertition; 0 = Coopertition Disabled)
+              Melody Bonus RP Note Threshold<br />(With Coopertition; 0 = Coopertition Disabled)
             </label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" id="sustainabilityBonusLinkThresholdWithCoop"
-                name="sustainabilityBonusLinkThresholdWithCoop"
-                value="{{.SustainabilityBonusLinkThresholdWithCoop}}">
+              <input type="text" class="form-control" id="melodyBonusWithCoop" name="melodyBonusWithCoop"
+                value="{{.MelodyBonusWithCoop}}">
             </div>
           </div>
           <div class="row">
-            <label class="col-lg-6 control-label">Activation Bonus RP Point Threshold</label>
+            <label class="col-lg-6 control-label">Amplification Note Limit (0 = No Limit)</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" id="activationBonusPointThreshold"
-                name="activationBonusPointThreshold" value="{{.ActivationBonusPointThreshold}}">
+              <input type="text" class="form-control" id="amplificationNoteLimit" name="amplificationNoteLimit"
+                value="{{.AmplificationNoteLimit}}">
+            </div>
+          </div>
+          <div class="row">
+            <label class="col-lg-6 control-label">Amplification Duration (seconds)</label>
+            <div class="col-lg-6">
+              <input type="text" class="form-control" id="amplificationDurationSec" name="amplificationDurationSec"
+                value="{{.AmplificationDurationSec}}">
             </div>
           </div>
         </fieldset>

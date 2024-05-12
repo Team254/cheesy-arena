@@ -176,9 +176,10 @@ func (arena *Arena) LoadSettings() error {
 	game.UpdateMatchSounds()
 	arena.MatchTimingNotifier.Notify()
 
-	game.SustainabilityBonusLinkThresholdWithoutCoop = settings.SustainabilityBonusLinkThresholdWithoutCoop
-	game.SustainabilityBonusLinkThresholdWithCoop = settings.SustainabilityBonusLinkThresholdWithCoop
-	game.ActivationBonusPointThreshold = settings.ActivationBonusPointThreshold
+	game.MelodyBonusThresholdWithoutCoop = settings.MelodyBonusThresholdWithoutCoop
+	game.MelodyBonusWithCoop = settings.MelodyBonusWithCoop
+	game.AmplificationNoteLimit = settings.AmplificationNoteLimit
+	game.AmplificationDurationSec = settings.AmplificationDurationSec
 
 	// Reconstruct the playoff tournament in memory.
 	if err = arena.CreatePlayoffTournament(); err != nil {

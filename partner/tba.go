@@ -667,7 +667,7 @@ func createTbaScoringBreakdown(
 	// event settings.
 	breakdownMap := make(map[string]any)
 	_ = mapstructure.Decode(breakdown, &breakdownMap)
-	if eventSettings.SustainabilityBonusLinkThresholdWithCoop == 0 {
+	if eventSettings.MelodyBonusWithCoop == 0 {
 		delete(breakdownMap, "coopertitionCriteriaMet")
 	}
 
