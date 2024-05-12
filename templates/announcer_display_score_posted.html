@@ -62,16 +62,15 @@
 <h4 class="mt-3">Fouls</h4>
 {{range $foul := .fouls}}
   <div class="row justify-content-center">
-    <div class="col-sm-3">
+    <div class="col-sm-4">
       {{if and (index $.rulesViolated $foul.RuleId) (index $.rulesViolated $foul.RuleId).IsRankingPoint}}
-        Free RP
+        {{if $foul.IsTechnical}}Tech {{end}}Foul + Free RP
       {{else}}
-        {{if $foul.IsTechnical}}Tech {{end}}
-        Foul
+        {{if $foul.IsTechnical}}Tech {{end}}Foul
       {{end}}
     </div>
     <div class="col-sm-3">Team {{$foul.TeamId}}</div>
-    <div class="col-sm-4" data-bs-toggle="tooltip"
+    <div class="col-sm-3" data-bs-toggle="tooltip"
       {{if index $.rulesViolated $foul.RuleId}}title="{{(index $.rulesViolated $foul.RuleId).Description}}"{{end}}>
       {{if index $.rulesViolated $foul.RuleId}}{{(index $.rulesViolated $foul.RuleId).RuleNumber}}{{end}}
     </div>

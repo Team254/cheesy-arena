@@ -135,8 +135,8 @@
               <select class="form-control" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleId">
                 {{range $rule := .Rules}}
                   <option value="{{$rule.Id}}">{{$rule.RuleNumber}}
-                      [{{if $rule.IsRankingPoint}}Foul + Free RP{{else}}{{if $rule.IsTechnical}}Tech {{end}}Foul{{end}}]:
-                      {{$rule.Description}}
+                      [{{if $rule.IsRankingPoint}}{{if $rule.IsTechnical}}Tech {{end}}Foul + Free RP{{else}}
+                      {{if $rule.IsTechnical}}Tech {{end}}Foul{{end}}]: {{$rule.Description}}
                   </option>
                 {{end}}
               </select>
