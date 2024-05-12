@@ -93,6 +93,7 @@ type AllianceStation struct {
 	Bypass     bool
 	Team       *model.Team
 	WifiStatus network.TeamWifiStatus
+	aStopReset bool
 }
 
 // Creates the arena and sets it to its initial state.
@@ -688,6 +689,9 @@ func (arena *Arena) assignTeam(teamId int, station string) error {
 		return fmt.Errorf("Invalid alliance station '%s'.", station)
 	}
 
+	// Force the A-stop to be reset by the new team if it is already pressed (if the PLC is enabled).
+	arena.AllianceStations[station].aStopReset = !arena.Plc.IsEnabled()
+
 	// Do nothing if the station is already assigned to the requested team.
 	dsConn := arena.AllianceStations[station].DsConn
 	if dsConn != nil && dsConn.TeamId == teamId {
@@ -822,8 +826,11 @@ func (arena *Arena) checkCanStartMatch() error {
 func (arena *Arena) checkAllianceStationsReady(stations ...string) error {
 	for _, station := range stations {
 		allianceStation := arena.AllianceStations[station]
-		if allianceStation.EStop || allianceStation.AStop {
-			return fmt.Errorf("cannot start match while an emergency or autonomous stop is active")
+		if allianceStation.EStop {
+			return fmt.Errorf("cannot start match while an emergency stop is active")
+		}
+		if !allianceStation.aStopReset {
+			return fmt.Errorf("cannot start match if an autonomous stop has not been reset since the previous match")
 		}
 		if !allianceStation.Bypass {
 			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
@@ -987,6 +994,7 @@ func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) 
 	} else if arena.MatchState != AutoPeriod {
 		// Keep the A-stop latched until the autonomous period is over.
 		allianceStation.AStop = false
+		allianceStation.aStopReset = true
 	}
 }
 
