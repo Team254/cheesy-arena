@@ -39,6 +39,7 @@ type MatchLogRow struct {
 	Auto              bool
 	Enabled           bool
 	EmergencyStop     bool
+	AutonomousStop    bool
 	BatteryVoltage    float64
 	MissedPacketCount int
 	DsRobotTripTimeMs int
@@ -206,6 +207,7 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 			curRow.Auto, _ = strconv.ParseBool(record[headerMap["auto"]])
 			curRow.Enabled, _ = strconv.ParseBool(record[headerMap["enabled"]])
 			curRow.EmergencyStop, _ = strconv.ParseBool(record[headerMap["emergencyStop"]])
+			curRow.AutonomousStop, _ = strconv.ParseBool(record[headerMap["autonomousStop"]])
 			curRow.BatteryVoltage, _ = strconv.ParseFloat(record[headerMap["batteryVoltage"]], 64)
 			curRow.MissedPacketCount, _ = strconv.Atoi(record[headerMap["missedPacketCount"]])
 			curRow.DsRobotTripTimeMs, _ = strconv.Atoi(record[headerMap["dsRobotTripTimeMs"]])

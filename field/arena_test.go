@@ -693,6 +693,8 @@ func TestPlcEStopAStop(t *testing.T) {
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.EStop)
+	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.AStop)
 	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn.Enabled)
 
 	// Unpress the R1 A-stop and press the R2 E-stop.
@@ -708,7 +710,11 @@ func TestPlcEStopAStop(t *testing.T) {
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.EStop)
+	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.AStop)
 	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn.EStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.AStop)
 
 	// Unpress the R2 E-stop.
 	plc.redAStops[0] = false

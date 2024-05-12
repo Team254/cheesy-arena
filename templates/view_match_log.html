@@ -28,7 +28,8 @@
             <th>Robot Linked</th>
             <th>Mode</th>
             <th>Enabled</th>
-            <th>E-Stop</th>
+            <th class="nowrap">E-Stop</th>
+            <th class="nowrap">A-Stop</th>
             <th>Voltage</th>
             <th>Missed Packets</th>
             <th>Latency</th>
@@ -50,6 +51,7 @@
               <td>{{if $row.Auto}}Auto{{else}}Telop{{end}}</td>
               <td>{{$row.Enabled}}</td>
               <td>{{$row.EmergencyStop}}</td>
+              <td>{{$row.AutonomousStop}}</td>
               <td>{{printf "%.3f" $row.BatteryVoltage}}</td>
               <td>{{$row.MissedPacketCount}}</td>
               <td>{{$row.DsRobotTripTimeMs}}</td>

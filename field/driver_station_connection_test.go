@@ -80,6 +80,10 @@ func TestEncodeControlPacket(t *testing.T) {
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(132), data[3])
 
+	dsConn.AStop = true
+	data = dsConn.encodeControlPacket(arena)
+	assert.Equal(t, byte(196), data[3])
+
 	// Check different match types.
 	arena.CurrentMatch.Type = model.Practice
 	data = dsConn.encodeControlPacket(arena)
