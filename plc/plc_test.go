@@ -63,7 +63,7 @@ func TestPlcGetNames(t *testing.T) {
 	assert.Equal(
 		t,
 		[]string{
-			"fieldEstop",
+			"fieldEStop",
 			"red1EStop",
 			"red1AStop",
 			"red2EStop",

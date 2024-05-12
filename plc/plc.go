@@ -71,7 +71,7 @@ const (
 type input int
 
 const (
-	fieldEstop input = iota
+	fieldEStop input = iota
 	red1EStop
 	red1AStop
 	red2EStop
@@ -214,7 +214,7 @@ func (plc *ModbusPlc) GetArmorBlockStatuses() map[string]bool {
 
 // Returns the state of the field emergency stop button (true if e-stop is active).
 func (plc *ModbusPlc) GetFieldEStop() bool {
-	return !plc.inputs[fieldEstop]
+	return !plc.inputs[fieldEStop]
 }
 
 // Returns the state of the red and blue driver station emergency stop buttons (true if E-stop is active).

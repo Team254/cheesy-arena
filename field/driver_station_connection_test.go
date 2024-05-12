@@ -76,7 +76,7 @@ func TestEncodeControlPacket(t *testing.T) {
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(4), data[3])
 
-	dsConn.Estop = true
+	dsConn.EStop = true
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(132), data[3])
 

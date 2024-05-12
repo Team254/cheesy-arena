@@ -149,9 +149,12 @@ const handleArenaStatus = function(data) {
     }
     $(`#status${station} .radio-status`).attr("data-status-ternary", radioStatus);
 
-    if (stationStatus.Estop) {
+    if (stationStatus.EStop) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);
       $("#status" + station + " .bypass-status").text("ES");
+    } else if (stationStatus.AStop) {
+      $("#status" + station + " .bypass-status").attr("data-status-ok", true);
+      $("#status" + station + " .bypass-status").text("AS");
     } else if (stationStatus.Bypass) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);
       $("#status" + station + " .bypass-status").text("B");
@@ -226,7 +229,7 @@ const handleArenaStatus = function(data) {
     $("#plcStatus").text("Not Connected");
     $("#plcStatus").attr("data-ready", false);
   }
-  $("#fieldEstop").attr("data-ready", !data.FieldEstop);
+  $("#fieldEStop").attr("data-ready", !data.FieldEStop);
   $.each(data.PlcArmorBlockStatuses, function(name, status) {
     $("#plc" + name + "Status").attr("data-ready", status);
   });

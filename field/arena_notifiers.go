@@ -78,7 +78,7 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		MatchState
 		CanStartMatch         bool
 		PlcIsHealthy          bool
-		FieldEstop            bool
+		FieldEStop            bool
 		PlcArmorBlockStatuses map[string]bool
 	}{
 		arena.CurrentMatch.Id,

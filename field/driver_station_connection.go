@@ -34,7 +34,7 @@ type DriverStationConnection struct {
 	AllianceStation           string
 	Auto                      bool
 	Enabled                   bool
-	Estop                     bool
+	EStop                     bool
 	DsLinked                  bool
 	RadioLinked               bool
 	RioLinked                 bool
@@ -173,7 +173,7 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	if dsConn.Enabled {
 		packet[3] |= 0x04
 	}
-	if dsConn.Estop {
+	if dsConn.EStop {
 		packet[3] |= 0x80
 	}
 

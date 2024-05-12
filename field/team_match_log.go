@@ -59,7 +59,7 @@ func (log *TeamMatchLog) LogDsPacket(matchTimeSec float64, packetType int, dsCon
 		dsConn.RobotLinked,
 		dsConn.Auto,
 		dsConn.Enabled,
-		dsConn.Estop,
+		dsConn.EStop,
 		dsConn.BatteryVoltage,
 		dsConn.MissedPacketCount,
 		dsConn.DsRobotTripTimeMs,

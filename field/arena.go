@@ -88,8 +88,8 @@ type Arena struct {
 type AllianceStation struct {
 	DsConn     *DriverStationConnection
 	Ethernet   bool
-	Astop      bool
-	Estop      bool
+	AStop      bool
+	EStop      bool
 	Bypass     bool
 	Team       *model.Team
 	WifiStatus network.TeamWifiStatus
@@ -822,8 +822,8 @@ func (arena *Arena) checkCanStartMatch() error {
 func (arena *Arena) checkAllianceStationsReady(stations ...string) error {
 	for _, station := range stations {
 		allianceStation := arena.AllianceStations[station]
-		if allianceStation.Estop {
-			return fmt.Errorf("cannot start match while an emergency stop is active")
+		if allianceStation.EStop || allianceStation.AStop {
+			return fmt.Errorf("cannot start match while an emergency or autonomous stop is active")
 		}
 		if !allianceStation.Bypass {
 			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
@@ -840,8 +840,9 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 		dsConn := allianceStation.DsConn
 		if dsConn != nil {
 			dsConn.Auto = auto
-			dsConn.Enabled = enabled && !allianceStation.Estop && !allianceStation.Astop && !allianceStation.Bypass
-			dsConn.Estop = allianceStation.Estop
+			dsConn.Enabled = enabled && !allianceStation.EStop && !(auto && allianceStation.AStop) &&
+				!allianceStation.Bypass
+			dsConn.EStop = allianceStation.EStop
 			err := dsConn.update(arena)
 			if err != nil {
 				log.Printf("Unable to send driver station packet for team %d.", allianceStation.Team.Id)
@@ -874,12 +875,13 @@ func (arena *Arena) handlePlcInputOutput() {
 		arena.AbortMatch()
 	}
 	redEStops, blueEStops := arena.Plc.GetTeamEStops()
-	arena.handleEStop("R1", redEStops[0])
-	arena.handleEStop("R2", redEStops[1])
-	arena.handleEStop("R3", redEStops[2])
-	arena.handleEStop("B1", blueEStops[0])
-	arena.handleEStop("B2", blueEStops[1])
-	arena.handleEStop("B3", blueEStops[2])
+	redAStops, blueAStops := arena.Plc.GetTeamAStops()
+	arena.handleTeamStop("R1", redEStops[0], redAStops[0])
+	arena.handleTeamStop("R2", redEStops[1], redAStops[1])
+	arena.handleTeamStop("R3", redEStops[2], redAStops[2])
+	arena.handleTeamStop("B1", blueEStops[0], blueAStops[0])
+	arena.handleTeamStop("B2", blueEStops[1], blueAStops[1])
+	arena.handleTeamStop("B3", blueEStops[2], blueAStops[2])
 	redEthernets, blueEthernets := arena.Plc.GetEthernetConnected()
 	arena.AllianceStations["R1"].Ethernet = redEthernets[0]
 	arena.AllianceStations["R2"].Ethernet = redEthernets[1]
@@ -971,22 +973,19 @@ func (arena *Arena) handlePlcInputOutput() {
 	}
 }
 
-func (arena *Arena) handleEStop(station string, state bool) {
+func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) {
 	allianceStation := arena.AllianceStations[station]
-	if state {
-		if arena.MatchState == AutoPeriod {
-			allianceStation.Astop = true
-		} else {
-			allianceStation.Estop = true
-		}
-	} else {
-		if arena.MatchState != AutoPeriod {
-			allianceStation.Astop = false
-		}
-		if arena.MatchTimeSec() == 0 {
-			// Don't reset the e-stop while a match is in progress.
-			allianceStation.Estop = false
-		}
+	if eStopState {
+		allianceStation.EStop = true
+	} else if arena.MatchTimeSec() == 0 {
+		// Keep the E-stop latched until the match is over.
+		allianceStation.EStop = false
+	}
+	if aStopState {
+		allianceStation.AStop = true
+	} else if arena.MatchState != AutoPeriod {
+		// Keep the A-stop latched until the autonomous period is over.
+		allianceStation.AStop = false
 	}
 }
 

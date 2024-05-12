@@ -159,8 +159,8 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
 
-	// Check e-stop and bypass.
-	arena.AllianceStations["B3"].Estop = true
+	// Check E-stop and bypass.
+	arena.AllianceStations["B3"].EStop = true
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
@@ -172,7 +172,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
-	arena.AllianceStations["B3"].Estop = false
+	arena.AllianceStations["B3"].EStop = false
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
@@ -327,13 +327,19 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	assert.Nil(t, err)
 	arena.MatchState = PreMatch
 
-	// Check with a single team e-stopped, not linked and bypassed.
-	arena.AllianceStations["R1"].Estop = true
+	// Check with a single team E-stopped, A-stopped, not linked, and bypassed.
+	arena.AllianceStations["R1"].EStop = true
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "while an emergency stop is active")
+		assert.Contains(t, err.Error(), "while an emergency or autonomous stop is active")
 	}
-	arena.AllianceStations["R1"].Estop = false
+	arena.AllianceStations["R1"].EStop = false
+	arena.AllianceStations["R1"].AStop = true
+	err = arena.StartMatch()
+	if assert.NotNil(t, err) {
+		assert.Contains(t, err.Error(), "while an emergency or autonomous stop is active")
+	}
+	arena.AllianceStations["R1"].AStop = false
 	arena.AllianceStations["R1"].DsConn.RobotLinked = false
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
@@ -369,12 +375,12 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].Bypass = true
-	arena.AllianceStations["B3"].Estop = true
+	arena.AllianceStations["B3"].EStop = true
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "while an emergency stop is active")
+		assert.Contains(t, err.Error(), "while an emergency or autonomous stop is active")
 	}
-	arena.AllianceStations["B3"].Estop = false
+	arena.AllianceStations["B3"].EStop = false
 	err = arena.StartMatch()
 	assert.Nil(t, err)
 }
@@ -674,72 +680,142 @@ func TestPlcEStopAStop(t *testing.T) {
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
 
-	plc.redEStops[0] = true
+	// Press the R1 A-stop.
+	plc.redAStops[0] = true
+	plc.redEStops[0] = false
+	plc.redAStops[1] = false
 	plc.redEStops[1] = false
 	arena.Update()
-	assert.Equal(t, true, arena.AllianceStations["R1"].Astop)
-	assert.Equal(t, false, arena.AllianceStations["R1"].Estop)
-	assert.Equal(t, false, arena.AllianceStations["R2"].Astop)
-	assert.Equal(t, false, arena.AllianceStations["R2"].Estop)
+	assert.Equal(t, true, arena.AllianceStations["R1"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].EStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].EStop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
 	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn.Enabled)
 
-	plc.redEStops[0] = true
-	plc.redEStops[1] = true
-	arena.Update()
-	assert.Equal(t, true, arena.AllianceStations["R1"].Astop)
-	assert.Equal(t, false, arena.AllianceStations["R1"].Estop)
-	assert.Equal(t, true, arena.AllianceStations["R2"].Astop)
-	assert.Equal(t, false, arena.AllianceStations["R2"].Estop)
-	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
-	arena.Update()
-	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
-	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
-
+	// Unpress the R1 A-stop and press the R2 E-stop.
+	plc.redAStops[0] = false
 	plc.redEStops[0] = false
+	plc.redAStops[1] = false
 	plc.redEStops[1] = true
 	arena.Update()
-	assert.Equal(t, true, arena.AllianceStations["R1"].Astop)
-	assert.Equal(t, false, arena.AllianceStations["R1"].Estop)
-	assert.Equal(t, true, arena.AllianceStations["R2"].Astop)
-	assert.Equal(t, false, arena.AllianceStations["R2"].Estop)
+	assert.Equal(t, true, arena.AllianceStations["R1"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].EStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].AStop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].EStop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
 
-	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
-		game.MatchTiming.AutoDurationSec) * time.Second)
+	// Unpress the R2 E-stop.
+	plc.redAStops[0] = false
+	plc.redEStops[0] = false
+	plc.redAStops[1] = false
+	plc.redEStops[1] = false
+	arena.Update()
+	assert.Equal(t, true, arena.AllianceStations["R1"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].EStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].AStop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].EStop)
+	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
+	arena.Update()
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
+
+	// Transition into the teleop period without any stops.
+	arena.MatchStartTime = time.Now().Add(
+		-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
+	)
 	arena.Update()
 	assert.Equal(t, PausePeriod, arena.MatchState)
-	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
-		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec) * time.Second)
-	plc.redEStops[0] = false
-	plc.redEStops[1] = true
+	arena.MatchStartTime = time.Now().Add(
+		-time.Duration(
+			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
+		) * time.Second,
+	)
 	arena.Update()
-	assert.Equal(t, false, arena.AllianceStations["R1"].Astop)
-	assert.Equal(t, false, arena.AllianceStations["R1"].Estop)
-	assert.Equal(t, true, arena.AllianceStations["R2"].Astop)
-	assert.Equal(t, true, arena.AllianceStations["R2"].Estop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].EStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].AStop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].EStop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
 
+	// Press the R1 E-stop and the R2 A-stop.
+	plc.redAStops[0] = false
 	plc.redEStops[0] = true
+	plc.redAStops[1] = true
 	plc.redEStops[1] = false
 	arena.Update()
-	assert.Equal(t, false, arena.AllianceStations["R1"].Astop)
-	assert.Equal(t, true, arena.AllianceStations["R1"].Estop)
-	assert.Equal(t, false, arena.AllianceStations["R2"].Astop)
-	assert.Equal(t, true, arena.AllianceStations["R2"].Estop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].AStop)
+	assert.Equal(t, true, arena.AllianceStations["R1"].EStop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].AStop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].EStop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
+
+	// Ensure the other stations A-stops are working as well.
+	plc.redAStops[2] = true
+	plc.redEStops[2] = false
+	plc.blueAStops[0] = true
+	plc.blueEStops[0] = false
+	plc.blueAStops[1] = true
+	plc.blueEStops[1] = false
+	plc.blueAStops[2] = true
+	plc.blueEStops[2] = false
+	arena.Update()
+	assert.Equal(t, true, arena.AllianceStations["R3"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["R3"].EStop)
+	assert.Equal(t, true, arena.AllianceStations["B1"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["B1"].EStop)
+	assert.Equal(t, true, arena.AllianceStations["B2"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["B2"].EStop)
+	assert.Equal(t, true, arena.AllianceStations["B3"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["B3"].EStop)
+
+	// Ensure the other stations E-stops are working as well.
+	plc.redAStops[2] = false
+	plc.redEStops[2] = true
+	plc.blueAStops[0] = false
+	plc.blueEStops[0] = true
+	plc.blueAStops[1] = false
+	plc.blueEStops[1] = true
+	plc.blueAStops[2] = false
+	plc.blueEStops[2] = true
+	arena.Update()
+	assert.Equal(t, false, arena.AllianceStations["R3"].AStop)
+	assert.Equal(t, true, arena.AllianceStations["R3"].EStop)
+	assert.Equal(t, false, arena.AllianceStations["B1"].AStop)
+	assert.Equal(t, true, arena.AllianceStations["B1"].EStop)
+	assert.Equal(t, false, arena.AllianceStations["B2"].AStop)
+	assert.Equal(t, true, arena.AllianceStations["B2"].EStop)
+	assert.Equal(t, false, arena.AllianceStations["B3"].AStop)
+	assert.Equal(t, true, arena.AllianceStations["B3"].EStop)
+
+	// Ensure unpressed E-stops are cleared at the end of the match.
+	arena.MatchStartTime = time.Now().Add(
+		-time.Duration(
+			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
+				game.MatchTiming.TeleopDurationSec,
+		) * time.Second,
+	)
+	arena.Update()
+	plc.blueEStops[2] = false
+	arena.Update()
+	assert.Equal(t, true, arena.AllianceStations["R1"].EStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].EStop)
+	assert.Equal(t, true, arena.AllianceStations["R3"].EStop)
+	assert.Equal(t, true, arena.AllianceStations["B1"].EStop)
+	assert.Equal(t, true, arena.AllianceStations["B2"].EStop)
+	assert.Equal(t, false, arena.AllianceStations["B3"].EStop)
 }
 
 func TestPlcAstopWithPlcDisabled(t *testing.T) {
@@ -769,12 +845,12 @@ func TestPlcAstopWithPlcDisabled(t *testing.T) {
 
 	plc.redEStops[0] = true
 	arena.Update()
-	assert.Equal(t, false, arena.AllianceStations["R1"].Astop)
-	assert.Equal(t, false, arena.AllianceStations["R1"].Estop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].EStop)
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
 }
 
-func TestPlcFieldEstop(t *testing.T) {
+func TestPlcFieldEStop(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc
 	plc.isEnabled = true
@@ -798,7 +874,7 @@ func TestPlcFieldEstop(t *testing.T) {
 	assert.Equal(t, PostMatch, arena.MatchState)
 }
 
-func TestPlcFieldEstopWithPlcDisabled(t *testing.T) {
+func TestPlcFieldEStopWithPlcDisabled(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc
 	plc.isEnabled = false

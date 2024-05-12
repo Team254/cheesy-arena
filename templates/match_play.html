@@ -88,7 +88,7 @@
           <p>PLC Status</p>
           <p>
             <span class="badge badge-scoring" id="plcStatus"></span><br />
-            <span class="badge badge-scoring" id="fieldEstop">E-Stop</span>
+            <span class="badge badge-scoring" id="fieldEStop">E-Stop</span>
             {{range $name, $status := .PlcArmorBlockStatuses}}
               <br /><span class="badge badge-scoring" id="plc{{$name}}Status">{{$name}}</span>
             {{end}}
