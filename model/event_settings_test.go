@@ -31,7 +31,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			TeleopDurationSec:               135,
 			WarningRemainingDurationSec:     20,
 			MelodyBonusThresholdWithoutCoop: 18,
-			MelodyBonusWithCoop:             15,
+			MelodyBonusThresholdWithCoop:    15,
 			AmplificationNoteLimit:          4,
 			AmplificationDurationSec:        10,
 		},

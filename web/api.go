@@ -246,35 +246,6 @@ func (web *Web) bracketSvgApiHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (web *Web) gridSvgApiHandler(w http.ResponseWriter, r *http.Request) {
-	alliance := r.PathValue("alliance")
-	var grid game.Grid
-	if alliance == "red" {
-		grid = web.arena.RedRealtimeScore.CurrentScore.Grid
-	} else if alliance == "blue" {
-		grid = web.arena.BlueRealtimeScore.CurrentScore.Grid
-	} else {
-		handleWebErr(w, fmt.Errorf("invalid alliance %q", alliance))
-		return
-	}
-
-	w.Header().Set("Content-Type", "image/svg+xml")
-	template, err := web.parseFiles("templates/grid.svg")
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	data := struct {
-		Nodes [3][9]game.NodeState
-		Links []game.Link
-	}{grid.Nodes, grid.Links()}
-	err = template.ExecuteTemplate(w, "grid", data)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-}
-
 func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match) error {
 	alliances, err := web.arena.Database.GetAllAlliances()
 	if err != nil {

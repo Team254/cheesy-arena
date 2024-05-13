@@ -1,3 +1,3 @@
-Rank,TeamId,RankingPoints,MatchPoints,ChargeStationPoints,AutoPoints,Wins,Losses,Ties,Disqualifications,Played
-{{range $ranking := .}}{{$ranking.Rank}},{{$ranking.TeamId}},{{$ranking.RankingPoints}},{{$ranking.MatchPoints}},{{$ranking.ChargeStationPoints}},{{$ranking.AutoPoints}},{{$ranking.Wins}},{{$ranking.Losses}},{{$ranking.Ties}},{{$ranking.Disqualifications}},{{$ranking.Played}}
+Rank,TeamId,RankingPoints,CoopertitionPoints,MatchPoints,AutoPoints,StagePoints,Wins,Losses,Ties,Disqualifications,Played
+{{range $ranking := .}}{{$ranking.Rank}},{{$ranking.TeamId}},{{$ranking.RankingPoints}},{{$ranking.CoopertitionPoints}},{{$ranking.MatchPoints}},{{$ranking.AutoPoints}},{{$ranking.StagePoints}},{{$ranking.Wins}},{{$ranking.Losses}},{{$ranking.Ties}},{{$ranking.Disqualifications}},{{$ranking.Played}}
 {{end}}

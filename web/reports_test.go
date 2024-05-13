@@ -23,8 +23,8 @@ func TestRankingsCsvReport(t *testing.T) {
 	recorder := web.getHttpResponse("/reports/csv/rankings")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.Header()["Content-Type"][0])
-	expectedBody := "Rank,TeamId,RankingPoints,MatchPoints,ChargeStationPoints,AutoPoints,Wins,Losses,Ties," +
-		"Disqualifications,Played\n1,254,20,625,90,554,3,2,1,0,10\n2,1114,18,700,625,90,1,3,2,0,10\n\n"
+	expectedBody := "Rank,TeamId,RankingPoints,CoopertitionPoints,MatchPoints,AutoPoints,StagePoints,Wins,Losses," +
+		"Ties,Disqualifications,Played\n1,254,20,625,90,554,12,3,2,1,0,10\n2,1114,18,700,625,90,23,1,3,2,0,10\n\n"
 	assert.Equal(t, expectedBody, recorder.Body.String())
 }
 

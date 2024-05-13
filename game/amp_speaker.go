@@ -9,16 +9,14 @@ import (
 	"time"
 )
 
-const bankedAmpNoteLimit = 2
-
 type AmpSpeaker struct {
 	BankedAmpNotes                int
 	CoopActivated                 bool
-	autoAmpNotes                  int
-	teleopAmpNotes                int
-	autoSpeakerNotes              int
-	teleopUnamplifiedSpeakerNotes int
-	teleopAmplifiedSpeakerNotes   int
+	AutoAmpNotes                  int
+	TeleopAmpNotes                int
+	AutoSpeakerNotes              int
+	TeleopUnamplifiedSpeakerNotes int
+	TeleopAmplifiedSpeakerNotes   int
 	lastAmplifiedTime             time.Time
 	lastAmplifiedSpeakerNotes     int
 }
@@ -33,9 +31,9 @@ func (ampSpeaker *AmpSpeaker) UpdateState(
 	// Handle the autonomous period.
 	autoValidityCutoff := matchStartTime.Add(GetDurationToAutoEnd() + speakerAutoGracePeriodSec*time.Second)
 	if currentTime.Before(autoValidityCutoff) {
-		ampSpeaker.autoAmpNotes += newAmpNotes
+		ampSpeaker.AutoAmpNotes += newAmpNotes
 		ampSpeaker.BankedAmpNotes = min(ampSpeaker.BankedAmpNotes+newAmpNotes, bankedAmpNoteLimit)
-		ampSpeaker.autoSpeakerNotes += newSpeakerNotes
+		ampSpeaker.AutoSpeakerNotes += newSpeakerNotes
 
 		// Bail out to avoid exercising the teleop logic.
 		return
@@ -45,7 +43,7 @@ func (ampSpeaker *AmpSpeaker) UpdateState(
 	teleopAmpValidityCutoff := matchStartTime.Add(GetDurationToTeleopEnd())
 	if currentTime.Before(teleopAmpValidityCutoff) {
 		// Handle incoming Amp notes.
-		ampSpeaker.teleopAmpNotes += newAmpNotes
+		ampSpeaker.TeleopAmpNotes += newAmpNotes
 		if !ampSpeaker.isAmplified(currentTime, false) {
 			ampSpeaker.BankedAmpNotes = min(ampSpeaker.BankedAmpNotes+newAmpNotes, bankedAmpNoteLimit)
 		}
@@ -71,11 +69,11 @@ func (ampSpeaker *AmpSpeaker) UpdateState(
 	)
 	if currentTime.Before(teleopSpeakerValidityCutoff) {
 		for newSpeakerNotes > 0 && ampSpeaker.isAmplified(currentTime, true) {
-			ampSpeaker.teleopAmplifiedSpeakerNotes++
+			ampSpeaker.TeleopAmplifiedSpeakerNotes++
 			ampSpeaker.lastAmplifiedSpeakerNotes++
 			newSpeakerNotes--
 		}
-		ampSpeaker.teleopUnamplifiedSpeakerNotes += newSpeakerNotes
+		ampSpeaker.TeleopUnamplifiedSpeakerNotes += newSpeakerNotes
 	}
 }
 
@@ -90,7 +88,7 @@ func (ampSpeaker *AmpSpeaker) AmplifiedTimeRemaining(currentTime time.Time) floa
 // Returns true if the co-op window during the match is currently open.
 func (ampSpeaker *AmpSpeaker) IsCoopWindowOpen(matchStartTime, currentTime time.Time) bool {
 	coopValidityCutoff := matchStartTime.Add(GetDurationToTeleopStart() + coopTeleopWindowSec*time.Second)
-	return MelodyBonusWithCoop > 0 && currentTime.Before(coopValidityCutoff)
+	return MelodyBonusThresholdWithCoop > 0 && currentTime.Before(coopValidityCutoff)
 }
 
 // Returns the total number of notes scored in the Amp and Speaker.
@@ -100,38 +98,31 @@ func (ampSpeaker *AmpSpeaker) TotalNotesScored() int {
 
 // Returns the total points scored in the Amp and Speaker during the autonomous period.
 func (ampSpeaker *AmpSpeaker) AutoNotePoints() int {
-	return 2*ampSpeaker.autoAmpNotes + 5*ampSpeaker.autoSpeakerNotes
-}
-
-// Returns the total points scored in the Amp and Speaker during the teleoperated period.
-func (ampSpeaker *AmpSpeaker) TeleopNotePoints() int {
-	return ampSpeaker.teleopAmpNotes +
-		2*ampSpeaker.teleopUnamplifiedSpeakerNotes +
-		5*ampSpeaker.teleopAmplifiedSpeakerNotes
+	return 2*ampSpeaker.AutoAmpNotes + 5*ampSpeaker.AutoSpeakerNotes
 }
 
 // Returns the total points scored in the Amp.
 func (ampSpeaker *AmpSpeaker) AmpPoints() int {
-	return 2*ampSpeaker.autoAmpNotes + ampSpeaker.teleopAmpNotes
+	return 2*ampSpeaker.AutoAmpNotes + ampSpeaker.TeleopAmpNotes
 }
 
 // Returns the total points scored in the Speaker.
 func (ampSpeaker *AmpSpeaker) SpeakerPoints() int {
-	return 5*ampSpeaker.autoSpeakerNotes +
-		2*ampSpeaker.teleopUnamplifiedSpeakerNotes +
-		5*ampSpeaker.teleopAmplifiedSpeakerNotes
+	return 5*ampSpeaker.AutoSpeakerNotes +
+		2*ampSpeaker.TeleopUnamplifiedSpeakerNotes +
+		5*ampSpeaker.TeleopAmplifiedSpeakerNotes
 }
 
 // Returns the total number of notes scored in the Amp.
 func (ampSpeaker *AmpSpeaker) ampNotesScored() int {
-	return ampSpeaker.autoAmpNotes + ampSpeaker.teleopAmpNotes
+	return ampSpeaker.AutoAmpNotes + ampSpeaker.TeleopAmpNotes
 }
 
 // Returns the total number of notes scored in the Speaker.
 func (ampSpeaker *AmpSpeaker) speakerNotesScored() int {
-	return ampSpeaker.autoSpeakerNotes +
-		ampSpeaker.teleopUnamplifiedSpeakerNotes +
-		ampSpeaker.teleopAmplifiedSpeakerNotes
+	return ampSpeaker.AutoSpeakerNotes +
+		ampSpeaker.TeleopUnamplifiedSpeakerNotes +
+		ampSpeaker.TeleopAmplifiedSpeakerNotes
 }
 
 // Returns whether the Speaker should be counting new incoming notes as amplified.

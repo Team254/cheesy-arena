@@ -13,17 +13,16 @@ var matchStartTime = time.Unix(10, 0)
 
 func TestAmpSpeaker_CalculationMethods(t *testing.T) {
 	ampSpeaker := AmpSpeaker{
-		autoAmpNotes:                  1,
-		teleopAmpNotes:                2,
-		autoSpeakerNotes:              3,
-		teleopUnamplifiedSpeakerNotes: 5,
-		teleopAmplifiedSpeakerNotes:   8,
+		AutoAmpNotes:                  1,
+		TeleopAmpNotes:                2,
+		AutoSpeakerNotes:              3,
+		TeleopUnamplifiedSpeakerNotes: 5,
+		TeleopAmplifiedSpeakerNotes:   8,
 	}
 	assert.Equal(t, 3, ampSpeaker.ampNotesScored())
 	assert.Equal(t, 16, ampSpeaker.speakerNotesScored())
 	assert.Equal(t, 19, ampSpeaker.TotalNotesScored())
 	assert.Equal(t, 17, ampSpeaker.AutoNotePoints())
-	assert.Equal(t, 52, ampSpeaker.TeleopNotePoints())
 	assert.Equal(t, 4, ampSpeaker.AmpPoints())
 	assert.Equal(t, 65, ampSpeaker.SpeakerPoints())
 }
@@ -33,11 +32,11 @@ func TestAmpSpeaker_MatchSequence(t *testing.T) {
 	assertAmpSpeaker := func(
 		autoAmpNotes, teleopAmpNotes, autoSpeakerNotes, teleopUnamplifiedSpeakerNotes, teleopAmplifiedSpeakerNotes int,
 	) {
-		assert.Equal(t, autoAmpNotes, ampSpeaker.autoAmpNotes)
-		assert.Equal(t, teleopAmpNotes, ampSpeaker.teleopAmpNotes)
-		assert.Equal(t, autoSpeakerNotes, ampSpeaker.autoSpeakerNotes)
-		assert.Equal(t, teleopUnamplifiedSpeakerNotes, ampSpeaker.teleopUnamplifiedSpeakerNotes)
-		assert.Equal(t, teleopAmplifiedSpeakerNotes, ampSpeaker.teleopAmplifiedSpeakerNotes)
+		assert.Equal(t, autoAmpNotes, ampSpeaker.AutoAmpNotes)
+		assert.Equal(t, teleopAmpNotes, ampSpeaker.TeleopAmpNotes)
+		assert.Equal(t, autoSpeakerNotes, ampSpeaker.AutoSpeakerNotes)
+		assert.Equal(t, teleopUnamplifiedSpeakerNotes, ampSpeaker.TeleopUnamplifiedSpeakerNotes)
+		assert.Equal(t, teleopAmplifiedSpeakerNotes, ampSpeaker.TeleopAmplifiedSpeakerNotes)
 	}
 
 	ampSpeaker.UpdateState(0, 0, false, false, matchStartTime, timeAfterStart(0))
@@ -171,7 +170,7 @@ func TestAmpSpeaker_MatchSequence(t *testing.T) {
 	assertAmpSpeaker(0, 1, 0, 0, 0)
 	assert.Equal(t, 1, ampSpeaker.BankedAmpNotes)
 	assert.Equal(t, true, ampSpeaker.IsCoopWindowOpen(matchStartTime, timeAfterStart(60)))
-	MelodyBonusWithCoop = 0
+	MelodyBonusThresholdWithCoop = 0
 	assert.Equal(t, false, ampSpeaker.IsCoopWindowOpen(matchStartTime, timeAfterStart(60)))
 	ampSpeaker.UpdateState(2, 0, false, true, matchStartTime, timeAfterStart(60))
 	assertAmpSpeaker(0, 2, 0, 0, 0)
@@ -217,7 +216,7 @@ func TestAmpSpeaker_MatchSequence(t *testing.T) {
 	assert.Equal(t, false, ampSpeaker.isAmplified(timeAfterStart(99.1), true))
 	assert.Equal(t, 0.0, ampSpeaker.AmplifiedTimeRemaining(timeAfterStart(99.1)))
 
-	// Restore global constants.
+	// Restore default settings.
 	AmplificationNoteLimit = 4
 	AmplificationDurationSec = 10
 

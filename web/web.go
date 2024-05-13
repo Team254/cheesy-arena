@@ -64,12 +64,6 @@ func NewWeb(arena *field.Arena) *Web {
 		"toUpper": func(str string) string {
 			return strings.ToUpper(str)
 		},
-		"rowToInt": func(row game.Row) int {
-			return int(row)
-		},
-		"nodeStateToInt": func(nodeState game.NodeState) int {
-			return int(nodeState)
-		},
 
 		// MatchType enum values.
 		"testMatch":          model.Test.Get,
@@ -136,7 +130,6 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /api/alliances", web.alliancesApiHandler)
 	mux.HandleFunc("GET /api/arena/websocket", web.arenaWebsocketApiHandler)
 	mux.HandleFunc("GET /api/bracket/svg", web.bracketSvgApiHandler)
-	mux.HandleFunc("GET /api/grid/{alliance}/svg", web.gridSvgApiHandler)
 	mux.HandleFunc("GET /api/matches/{type}", web.matchesApiHandler)
 	mux.HandleFunc("GET /api/rankings", web.rankingsApiHandler)
 	mux.HandleFunc("GET /api/sponsor_slides", web.sponsorSlidesApiHandler)

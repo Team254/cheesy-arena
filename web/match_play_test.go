@@ -57,7 +57,7 @@ func TestCommitMatch(t *testing.T) {
 	// Committing test match should update the stored saved match but not persist anything.
 	match := &model.Match{Id: 0, Type: model.Test, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	matchResult := &model.MatchResult{MatchId: match.Id, RedScore: &game.Score{}, BlueScore: &game.Score{}}
-	matchResult.BlueScore.MobilityStatuses[2] = true
+	matchResult.BlueScore.LeaveStatuses[2] = true
 	err := web.commitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	matchResult, err = web.arena.Database.GetMatchResultForMatch(match.Id)
@@ -71,7 +71,7 @@ func TestCommitMatch(t *testing.T) {
 	assert.Nil(t, web.arena.Database.CreateMatch(match))
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	matchResult.BlueScore = &game.Score{MobilityStatuses: [3]bool{true, false, false}}
+	matchResult.BlueScore = &game.Score{LeaveStatuses: [3]bool{true, false, false}}
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, matchResult.PlayNumber)
@@ -80,7 +80,7 @@ func TestCommitMatch(t *testing.T) {
 
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	matchResult.RedScore = &game.Score{MobilityStatuses: [3]bool{true, false, true}}
+	matchResult.RedScore = &game.Score{LeaveStatuses: [3]bool{true, false, true}}
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, matchResult.PlayNumber)
@@ -126,7 +126,8 @@ func TestCommitTiebreak(t *testing.T) {
 		MatchId: match.Id,
 		// These should all be fields that aren't part of the tiebreaker.
 		RedScore: &game.Score{
-			Grid:  game.Grid{Nodes: [3][9]game.NodeState{{game.Cube}, {game.Cone}}},
+			// TODO(pat): Update for 2024.
+			//Grid:  game.Grid{Nodes: [3][9]game.NodeState{{game.Cube}, {game.Cone}}},
 			Fouls: []game.Foul{{RuleId: 1}, {RuleId: 2}},
 		},
 		BlueScore: &game.Score{
@@ -158,8 +159,9 @@ func TestCommitTiebreak(t *testing.T) {
 	//assert.Equal(t, game.TieMatch, match.Status)
 
 	// Change the score to still be equal nominally but trigger the tiebreaker criteria.
-	matchResult.BlueScore.AutoDockStatuses = [3]bool{true, false, false}
-	matchResult.BlueScore.AutoChargeStationLevel = true
+	// TODO(pat): Update for 2024.
+	//matchResult.BlueScore.AutoDockStatuses = [3]bool{true, false, false}
+	//matchResult.BlueScore.AutoChargeStationLevel = true
 	matchResult.BlueScore.Fouls = []game.Foul{{IsTechnical: false}, {IsTechnical: true}}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
@@ -314,12 +316,13 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
-	web.arena.RedRealtimeScore.CurrentScore.AutoDockStatuses = [3]bool{false, true, true}
-	web.arena.BlueRealtimeScore.CurrentScore.MobilityStatuses = [3]bool{true, false, true}
+	// TODO(pat): Update for 2024.
+	//web.arena.RedRealtimeScore.CurrentScore.AutoDockStatuses = [3]bool{false, true, true}
+	web.arena.BlueRealtimeScore.CurrentScore.LeaveStatuses = [3]bool{true, false, true}
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 5) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
-	assert.Equal(t, [3]bool{false, true, true}, web.arena.SavedMatchResult.RedScore.AutoDockStatuses)
-	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.MobilityStatuses)
+	//assert.Equal(t, [3]bool{false, true, true}, web.arena.SavedMatchResult.RedScore.AutoDockStatuses)
+	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.LeaveStatuses)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)
 	readWebsocketMultiple(t, ws, 4) // matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus

@@ -92,17 +92,18 @@ type TbaLink struct {
 }
 
 type TbaRanking struct {
-	TeamKey       string `json:"team_key"`
-	Rank          int    `json:"rank"`
-	RP            float32
-	Match         float32
-	ChargeStation float32
-	Auto          float32
-	Wins          int `json:"wins"`
-	Losses        int `json:"losses"`
-	Ties          int `json:"ties"`
-	Dqs           int `json:"dqs"`
-	Played        int `json:"played"`
+	TeamKey string `json:"team_key"`
+	Rank    int    `json:"rank"`
+	RP      float32
+	Coop    float32
+	Match   float32
+	Auto    float32
+	Stage   float32
+	Wins    int `json:"wins"`
+	Losses  int `json:"losses"`
+	Ties    int `json:"ties"`
+	Dqs     int `json:"dqs"`
+	Played  int `json:"played"`
 }
 
 type TbaRankings struct {
@@ -150,9 +151,11 @@ type TbaPublishedAward struct {
 var mobilityMapping = map[bool]string{false: "No", true: "Yes"}
 var autoChargeStationMapping = map[bool]string{false: "None", true: "Docked"}
 var endGameChargeStationMapping = map[game.EndgameStatus]string{
-	game.EndgameNone:   "None",
-	game.EndgameParked: "Park",
-	game.EndgameDocked: "Docked",
+	game.EndgameNone:        "None",
+	game.EndgameParked:      "Parked",
+	game.EndgameStageLeft:   "StageLeft",
+	game.EndgameCenterStage: "CenterStage",
+	game.EndgameStageRight:  "StageRight",
 }
 var chargeStationLevelMapping = map[bool]string{false: "NotLevel", true: "Level"}
 var gridRowMapping = map[int]string{0: "Bottom", 1: "Mid", 2: "Top"}
@@ -393,21 +396,22 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "Match", "ChargeStation", "Auto"}
+	breakdowns := []string{"RP", "Coop", "Match", "Auto", "Stage"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{
-			TeamKey:       getTbaTeam(ranking.TeamId),
-			Rank:          ranking.Rank,
-			RP:            float32(ranking.RankingPoints) / float32(ranking.Played),
-			Match:         float32(ranking.MatchPoints) / float32(ranking.Played),
-			ChargeStation: float32(ranking.ChargeStationPoints) / float32(ranking.Played),
-			Auto:          float32(ranking.AutoPoints) / float32(ranking.Played),
-			Wins:          ranking.Wins,
-			Losses:        ranking.Losses,
-			Ties:          ranking.Ties,
-			Dqs:           ranking.Disqualifications,
-			Played:        ranking.Played,
+			TeamKey: getTbaTeam(ranking.TeamId),
+			Rank:    ranking.Rank,
+			RP:      float32(ranking.RankingPoints) / float32(ranking.Played),
+			Coop:    float32(ranking.CoopertitionPoints) / float32(ranking.Played),
+			Match:   float32(ranking.MatchPoints) / float32(ranking.Played),
+			Auto:    float32(ranking.AutoPoints) / float32(ranking.Played),
+			Stage:   float32(ranking.StagePoints) / float32(ranking.Played),
+			Wins:    ranking.Wins,
+			Losses:  ranking.Losses,
+			Ties:    ranking.Ties,
+			Dqs:     ranking.Disqualifications,
+			Played:  ranking.Played,
 		}
 	}
 	jsonBody, err := json.Marshal(TbaRankings{breakdowns, tbaRankings})
@@ -600,52 +604,53 @@ func createTbaScoringBreakdown(
 		opponentScoreSummary = matchResult.RedScoreSummary()
 	}
 
-	breakdown.MobilityRobot1 = mobilityMapping[score.MobilityStatuses[0]]
-	breakdown.MobilityRobot2 = mobilityMapping[score.MobilityStatuses[1]]
-	breakdown.MobilityRobot3 = mobilityMapping[score.MobilityStatuses[2]]
-	breakdown.AutoMobilityPoints = scoreSummary.MobilityPoints
-	breakdown.AutoChargeStationRobot1 = autoChargeStationMapping[score.AutoDockStatuses[0]]
-	breakdown.AutoChargeStationRobot2 = autoChargeStationMapping[score.AutoDockStatuses[1]]
-	breakdown.AutoChargeStationRobot3 = autoChargeStationMapping[score.AutoDockStatuses[2]]
-	breakdown.AutoBridgeState = chargeStationLevelMapping[score.AutoChargeStationLevel]
-	breakdown.AutoCommunity = make(map[string][9]string)
-	breakdown.TeleopCommunity = make(map[string][9]string)
-	for rowIndex, rowName := range gridRowMapping {
-		shortRowName := string([]rune(rowName)[0])
-		breakdown.AutoCommunity[shortRowName] = createTbaGridRow(&score.Grid, rowIndex, true)
-		breakdown.TeleopCommunity[shortRowName] = createTbaGridRow(&score.Grid, rowIndex, false)
-	}
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 9; j++ {
-			if score.Grid.Nodes[i][j] != game.Empty {
-				if score.Grid.AutoScoring[i][j] {
-					breakdown.AutoGamePieceCount++
-				}
-				breakdown.TeleopGamePieceCount++
-			}
-		}
-	}
-	breakdown.Links = make([]TbaLink, 0)
-	for _, link := range score.Grid.Links() {
-		tbaLink := TbaLink{
-			Nodes: [3]int{link.StartColumn, link.StartColumn + 1, link.StartColumn + 2},
-			Row:   gridRowMapping[int(link.Row)],
-		}
-		breakdown.Links = append(breakdown.Links, tbaLink)
-	}
-	breakdown.LinkPoints = score.Grid.LinkPoints()
-	breakdown.AutoGamePiecePoints = score.Grid.AutoGamePiecePoints()
-	breakdown.TeleopGamePiecePoints = score.Grid.TeleopGamePiecePoints() + score.Grid.SuperchargedPoints()
-	breakdown.AutoPoints = scoreSummary.AutoPoints
-	breakdown.ExtraGamePieceCount = score.Grid.NumSuperchargedNodes()
-	breakdown.EndGameChargeStationRobot1 = endGameChargeStationMapping[score.EndgameStatuses[0]]
-	breakdown.EndGameChargeStationRobot2 = endGameChargeStationMapping[score.EndgameStatuses[1]]
-	breakdown.EndGameChargeStationRobot3 = endGameChargeStationMapping[score.EndgameStatuses[2]]
-	breakdown.EndGameBridgeState = chargeStationLevelMapping[score.EndgameChargeStationLevel]
-	breakdown.TeleopPoints = breakdown.TeleopGamePiecePoints + scoreSummary.EndgamePoints
-	breakdown.CoopertitionCriteriaMet = score.Grid.IsCoopertitionThresholdAchieved()
-	breakdown.SustainabilityBonusAchieved = scoreSummary.SustainabilityBonusRankingPoint
-	breakdown.ActivationBonusAchieved = scoreSummary.ActivationBonusRankingPoint
+	breakdown.MobilityRobot1 = mobilityMapping[score.LeaveStatuses[0]]
+	breakdown.MobilityRobot2 = mobilityMapping[score.LeaveStatuses[1]]
+	breakdown.MobilityRobot3 = mobilityMapping[score.LeaveStatuses[2]]
+	breakdown.AutoMobilityPoints = scoreSummary.LeavePoints
+	// TODO(pat): Update for 2024.
+	//breakdown.AutoChargeStationRobot1 = autoChargeStationMapping[score.AutoDockStatuses[0]]
+	//breakdown.AutoChargeStationRobot2 = autoChargeStationMapping[score.AutoDockStatuses[1]]
+	//breakdown.AutoChargeStationRobot3 = autoChargeStationMapping[score.AutoDockStatuses[2]]
+	//breakdown.AutoBridgeState = chargeStationLevelMapping[score.AutoChargeStationLevel]
+	//breakdown.AutoCommunity = make(map[string][9]string)
+	//breakdown.TeleopCommunity = make(map[string][9]string)
+	//for rowIndex, rowName := range gridRowMapping {
+	//	shortRowName := string([]rune(rowName)[0])
+	//	breakdown.AutoCommunity[shortRowName] = createTbaGridRow(&score.Grid, rowIndex, true)
+	//	breakdown.TeleopCommunity[shortRowName] = createTbaGridRow(&score.Grid, rowIndex, false)
+	//}
+	//for i := 0; i < 3; i++ {
+	//	for j := 0; j < 9; j++ {
+	//		if score.Grid.Nodes[i][j] != game.Empty {
+	//			if score.Grid.AutoScoring[i][j] {
+	//				breakdown.AutoGamePieceCount++
+	//			}
+	//			breakdown.TeleopGamePieceCount++
+	//		}
+	//	}
+	//}
+	//breakdown.Links = make([]TbaLink, 0)
+	//for _, link := range score.Grid.Links() {
+	//	tbaLink := TbaLink{
+	//		Nodes: [3]int{link.StartColumn, link.StartColumn + 1, link.StartColumn + 2},
+	//		Row:   gridRowMapping[int(link.Row)],
+	//	}
+	//	breakdown.Links = append(breakdown.Links, tbaLink)
+	//}
+	//breakdown.LinkPoints = score.Grid.LinkPoints()
+	//breakdown.AutoGamePiecePoints = score.Grid.AutoGamePiecePoints()
+	//breakdown.TeleopGamePiecePoints = score.Grid.TeleopGamePiecePoints() + score.Grid.SuperchargedPoints()
+	//breakdown.AutoPoints = scoreSummary.AutoPoints
+	//breakdown.ExtraGamePieceCount = score.Grid.NumSuperchargedNodes()
+	//breakdown.EndGameChargeStationRobot1 = endGameChargeStationMapping[score.EndgameStatuses[0]]
+	//breakdown.EndGameChargeStationRobot2 = endGameChargeStationMapping[score.EndgameStatuses[1]]
+	//breakdown.EndGameChargeStationRobot3 = endGameChargeStationMapping[score.EndgameStatuses[2]]
+	//breakdown.EndGameBridgeState = chargeStationLevelMapping[score.EndgameChargeStationLevel]
+	//breakdown.TeleopPoints = breakdown.TeleopGamePiecePoints + scoreSummary.StagePoints
+	//breakdown.CoopertitionCriteriaMet = score.Grid.IsCoopertitionThresholdAchieved()
+	breakdown.SustainabilityBonusAchieved = scoreSummary.MelodyBonusRankingPoint
+	breakdown.ActivationBonusAchieved = scoreSummary.EnsembleBonusRankingPoint
 	for _, foul := range score.Fouls {
 		if foul.IsTechnical {
 			breakdown.TechFoulCount++
@@ -667,31 +672,9 @@ func createTbaScoringBreakdown(
 	// event settings.
 	breakdownMap := make(map[string]any)
 	_ = mapstructure.Decode(breakdown, &breakdownMap)
-	if eventSettings.MelodyBonusWithCoop == 0 {
+	if eventSettings.MelodyBonusThresholdWithCoop == 0 {
 		delete(breakdownMap, "coopertitionCriteriaMet")
 	}
 
 	return breakdownMap
-}
-
-func createTbaGridRow(grid *game.Grid, row int, isAuto bool) [9]string {
-	var gridRow [9]string
-	for column := 0; column < 9; column++ {
-		gridRow[column] = createTbaGridNode(grid, row, column, isAuto)
-	}
-	return gridRow
-}
-
-func createTbaGridNode(grid *game.Grid, row int, column int, isAuto bool) string {
-	if isAuto && !grid.AutoScoring[row][column] {
-		return "None"
-	}
-	switch grid.Nodes[row][column] {
-	case game.Cone, game.ConeThenCube, game.TwoCones:
-		return "Cone"
-	case game.Cube, game.CubeThenCone, game.TwoCubes:
-		return "Cube"
-	default:
-		return "None"
-	}
 }

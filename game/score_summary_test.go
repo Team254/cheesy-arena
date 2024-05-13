@@ -24,11 +24,11 @@ func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
 
 	redScoreSummary.Score = 12
 	redScoreSummary.NumOpponentTechFouls = 11
-	redScoreSummary.ChargeStationPoints = 11
 	redScoreSummary.AutoPoints = 11
+	redScoreSummary.StagePoints = 11
 	blueScoreSummary.NumOpponentTechFouls = 10
-	blueScoreSummary.ChargeStationPoints = 10
 	blueScoreSummary.AutoPoints = 10
+	blueScoreSummary.StagePoints = 10
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
@@ -40,19 +40,19 @@ func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	blueScoreSummary.ChargeStationPoints = 12
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	redScoreSummary.ChargeStationPoints = 12
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
 	blueScoreSummary.AutoPoints = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
 	redScoreSummary.AutoPoints = 12
+	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
+	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
+
+	blueScoreSummary.StagePoints = 12
+	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
+	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
+
+	redScoreSummary.StagePoints = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 }

@@ -177,7 +177,7 @@ func (arena *Arena) LoadSettings() error {
 	arena.MatchTimingNotifier.Notify()
 
 	game.MelodyBonusThresholdWithoutCoop = settings.MelodyBonusThresholdWithoutCoop
-	game.MelodyBonusWithCoop = settings.MelodyBonusWithCoop
+	game.MelodyBonusThresholdWithCoop = settings.MelodyBonusThresholdWithCoop
 	game.AmplificationNoteLimit = settings.AmplificationNoteLimit
 	game.AmplificationDurationSec = settings.AmplificationDurationSec
 
