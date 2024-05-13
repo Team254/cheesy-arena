@@ -7,7 +7,12 @@ package game
 
 import "time"
 
-var ChargeStationTeleopGracePeriod = 3 * time.Second
+const (
+	speakerAutoGracePeriodSec      = 3
+	speakerTeleopGracePeriodSec    = 5
+	speakerAmplifiedGracePeriodSec = 3
+	coopTeleopWindowSec            = 45
+)
 
 var MatchTiming = struct {
 	WarmupDurationSec           int
