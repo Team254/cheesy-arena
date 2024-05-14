@@ -134,29 +134,30 @@ const handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function(data) {
-  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints);
-  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints);
+  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.StagePoints);
+  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.StagePoints);
 
-  $("#" + redSide + "LinkNumerator").text(data.Red.ScoreSummary.NumLinks);
-  $("#" + redSide + "LinkDenominator").text(data.Red.ScoreSummary.NumLinksGoal);
-  $("#" + blueSide + "LinkNumerator").text(data.Blue.ScoreSummary.NumLinks);
-  $("#" + blueSide + "LinkDenominator").text(data.Blue.ScoreSummary.NumLinksGoal);
-  if (currentMatch.Type === matchTypePlayoff) {
-    $("#" + redSide + "LinkDenominator").hide();
-    $("#" + blueSide + "LinkDenominator").hide();
-    $(".link-splitter").hide();
-  } else {
-    $("#" + redSide + "LinkDenominator").show();
-    $("#" + blueSide + "LinkDenominator").show();
-    $(".link-splitter").show();
-  }
-
-  fetch("/api/grid/red/svg")
-    .then(response => response.text())
-    .then(svg => $(`#${redSide}Grid`).html(svg));
-  fetch("/api/grid/blue/svg")
-    .then(response => response.text())
-    .then(svg => $(`#${blueSide}Grid`).html(svg));
+  // TODO(pat): Update for 2024.
+  // $("#" + redSide + "LinkNumerator").text(data.Red.ScoreSummary.NumLinks);
+  // $("#" + redSide + "LinkDenominator").text(data.Red.ScoreSummary.NumLinksGoal);
+  // $("#" + blueSide + "LinkNumerator").text(data.Blue.ScoreSummary.NumLinks);
+  // $("#" + blueSide + "LinkDenominator").text(data.Blue.ScoreSummary.NumLinksGoal);
+  // if (currentMatch.Type === matchTypePlayoff) {
+  //   $("#" + redSide + "LinkDenominator").hide();
+  //   $("#" + blueSide + "LinkDenominator").hide();
+  //   $(".link-splitter").hide();
+  // } else {
+  //   $("#" + redSide + "LinkDenominator").show();
+  //   $("#" + blueSide + "LinkDenominator").show();
+  //   $(".link-splitter").show();
+  // }
+  //
+  // fetch("/api/grid/red/svg")
+  //   .then(response => response.text())
+  //   .then(svg => $(`#${redSide}Grid`).html(svg));
+  // fetch("/api/grid/blue/svg")
+  //   .then(response => response.text())
+  //   .then(svg => $(`#${blueSide}Grid`).html(svg));
 };
 
 const transitionBlankToIntro = function(callback) {

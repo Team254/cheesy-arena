@@ -143,33 +143,35 @@ const handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function(data) {
-  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints);
-  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints);
-
-  $("#" + redSide + "LinkNumerator").text(data.Red.ScoreSummary.NumLinks);
-  $("#" + redSide + "LinkDenominator").text(data.Red.ScoreSummary.NumLinksGoal);
-  $("#" + blueSide + "LinkNumerator").text(data.Blue.ScoreSummary.NumLinks);
-  $("#" + blueSide + "LinkDenominator").text(data.Blue.ScoreSummary.NumLinksGoal);
-  if (currentMatch.Type === matchTypePlayoff) {
-    $("#" + redSide + "LinkDenominator").hide();
-    $("#" + blueSide + "LinkDenominator").hide();
-    $(".link-splitter").hide();
-  } else {
-    $("#" + redSide + "LinkDenominator").show();
-    $("#" + blueSide + "LinkDenominator").show();
-    $(".link-splitter").show();
-  }
-
-  fetch("/api/grid/red/svg")
-    .then(response => response.text())
-    .then(svg => $(`#${redSide}Grid`).html(svg));
-  fetch("/api/grid/blue/svg")
-    .then(response => response.text())
-    .then(svg => $(`#${blueSide}Grid`).html(svg));
+  // TODO(pat): Update for 2024.
+  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.StagePoints);
+  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.StagePoints);
+  //
+  // $("#" + redSide + "LinkNumerator").text(data.Red.ScoreSummary.NumLinks);
+  // $("#" + redSide + "LinkDenominator").text(data.Red.ScoreSummary.NumLinksGoal);
+  // $("#" + blueSide + "LinkNumerator").text(data.Blue.ScoreSummary.NumLinks);
+  // $("#" + blueSide + "LinkDenominator").text(data.Blue.ScoreSummary.NumLinksGoal);
+  // if (currentMatch.Type === matchTypePlayoff) {
+  //   $("#" + redSide + "LinkDenominator").hide();
+  //   $("#" + blueSide + "LinkDenominator").hide();
+  //   $(".link-splitter").hide();
+  // } else {
+  //   $("#" + redSide + "LinkDenominator").show();
+  //   $("#" + blueSide + "LinkDenominator").show();
+  //   $(".link-splitter").show();
+  // }
+  //
+  // fetch("/api/grid/red/svg")
+  //   .then(response => response.text())
+  //   .then(svg => $(`#${redSide}Grid`).html(svg));
+  // fetch("/api/grid/blue/svg")
+  //   .then(response => response.text())
+  //   .then(svg => $(`#${blueSide}Grid`).html(svg));
 };
 
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function(data) {
+  // TODO(pat): Update for 2024.
   $("#" + redSide + "FinalScore").text(data.RedScoreSummary.Score);
   $("#" + redSide + "FinalAlliance").text("Alliance " + data.Match.PlayoffRedAlliance);
   setTeamInfo(redSide, 1, data.Match.Red1, data.RedRankings);
@@ -180,23 +182,23 @@ const handleScorePosted = function(data) {
   } else {
     setTeamInfo(redSide, 4, 0, data.RedRankings);
   }
-  $("#" + redSide + "FinalMobilityPoints").text(data.RedScoreSummary.MobilityPoints);
-  $("#" + redSide + "FinalGridPoints").text(data.RedScoreSummary.GridPoints);
-  $("#" + redSide + "FinalChargeStationPoints").text(data.RedScoreSummary.ChargeStationPoints);
-  $("#" + redSide + "FinalParkPoints").text(data.RedScoreSummary.ParkPoints);
-  $("#" + redSide + "FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
-  $("#" + redSide + "FinalSustainabilityBonusRankingPoint").html(
-    data.RedScoreSummary.SustainabilityBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $("#" + redSide + "FinalSustainabilityBonusRankingPoint").attr(
-    "data-checked", data.RedScoreSummary.SustainabilityBonusRankingPoint
-  );
-  $("#" + redSide + "FinalActivationBonusRankingPoint").html(
-    data.RedScoreSummary.ActivationBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $("#" + redSide + "FinalActivationBonusRankingPoint").attr(
-    "data-checked", data.RedScoreSummary.ActivationBonusRankingPoint
-  );
+  // $("#" + redSide + "FinalMobilityPoints").text(data.RedScoreSummary.MobilityPoints);
+  // $("#" + redSide + "FinalGridPoints").text(data.RedScoreSummary.GridPoints);
+  // $("#" + redSide + "FinalChargeStationPoints").text(data.RedScoreSummary.ChargeStationPoints);
+  // $("#" + redSide + "FinalParkPoints").text(data.RedScoreSummary.ParkPoints);
+  // $("#" + redSide + "FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
+  // $("#" + redSide + "FinalSustainabilityBonusRankingPoint").html(
+  //   data.RedScoreSummary.SustainabilityBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  // );
+  // $("#" + redSide + "FinalSustainabilityBonusRankingPoint").attr(
+  //   "data-checked", data.RedScoreSummary.SustainabilityBonusRankingPoint
+  // );
+  // $("#" + redSide + "FinalActivationBonusRankingPoint").html(
+  //   data.RedScoreSummary.ActivationBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  // );
+  // $("#" + redSide + "FinalActivationBonusRankingPoint").attr(
+  //   "data-checked", data.RedScoreSummary.ActivationBonusRankingPoint
+  // );
   $("#" + redSide + "FinalRankingPoints").html(data.RedRankingPoints);
   $("#" + redSide + "FinalWins").text(data.RedWins);
   const redFinalDestination = $("#" + redSide + "FinalDestination");
@@ -214,23 +216,23 @@ const handleScorePosted = function(data) {
   } else {
     setTeamInfo(blueSide, 4, 0, data.BlueRankings);
   }
-  $("#" + blueSide + "FinalMobilityPoints").text(data.BlueScoreSummary.MobilityPoints);
-  $("#" + blueSide + "FinalGridPoints").text(data.BlueScoreSummary.GridPoints);
-  $("#" + blueSide + "FinalChargeStationPoints").text(data.BlueScoreSummary.ChargeStationPoints);
-  $("#" + blueSide + "FinalParkPoints").text(data.BlueScoreSummary.ParkPoints);
-  $("#" + blueSide + "FinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
-  $("#" + blueSide + "FinalSustainabilityBonusRankingPoint").html(
-    data.BlueScoreSummary.SustainabilityBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $("#" + blueSide + "FinalSustainabilityBonusRankingPoint").attr(
-    "data-checked", data.BlueScoreSummary.SustainabilityBonusRankingPoint
-  );
-  $("#" + blueSide + "FinalActivationBonusRankingPoint").html(
-    data.BlueScoreSummary.ActivationBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $("#" + blueSide + "FinalActivationBonusRankingPoint").attr(
-    "data-checked", data.BlueScoreSummary.ActivationBonusRankingPoint
-  );
+  // $("#" + blueSide + "FinalMobilityPoints").text(data.BlueScoreSummary.MobilityPoints);
+  // $("#" + blueSide + "FinalGridPoints").text(data.BlueScoreSummary.GridPoints);
+  // $("#" + blueSide + "FinalChargeStationPoints").text(data.BlueScoreSummary.ChargeStationPoints);
+  // $("#" + blueSide + "FinalParkPoints").text(data.BlueScoreSummary.ParkPoints);
+  // $("#" + blueSide + "FinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
+  // $("#" + blueSide + "FinalSustainabilityBonusRankingPoint").html(
+  //   data.BlueScoreSummary.SustainabilityBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  // );
+  // $("#" + blueSide + "FinalSustainabilityBonusRankingPoint").attr(
+  //   "data-checked", data.BlueScoreSummary.SustainabilityBonusRankingPoint
+  // );
+  // $("#" + blueSide + "FinalActivationBonusRankingPoint").html(
+  //   data.BlueScoreSummary.ActivationBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  // );
+  // $("#" + blueSide + "FinalActivationBonusRankingPoint").attr(
+  //   "data-checked", data.BlueScoreSummary.ActivationBonusRankingPoint
+  // );
   $("#" + blueSide + "FinalRankingPoints").html(data.BlueRankingPoints);
   $("#" + blueSide + "FinalWins").text(data.BlueWins);
   const blueFinalDestination = $("#" + blueSide + "FinalDestination");
@@ -731,7 +733,7 @@ const setTeamInfo = function(side, position, teamId, rankings) {
   }
 
   const rankIndicatorElement = $(`#${side}FinalTeam${position}RankIndicator`);
-  rankIndicatorElement.attr("src", `/static/img/${rankIndicator}.svg`);
+  rankIndicatorElement.attr("src", rankIndicator === "" ? "" : `/static/img/${rankIndicator}.svg`);
   rankIndicatorElement.toggle(rankIndicator !== "" && teamId > 0);
 
   const rankNumberElement = $(`#${side}FinalTeam${position}RankNumber`);
