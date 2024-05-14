@@ -31,21 +31,21 @@ const renderResults = function(alliance) {
   $("#" + alliance + "Score").html(scoreContent);
 
   // Set the values of the form fields from the JSON results data.
+  getInputElement(alliance, "CoopActivated").prop("checked", result.score.AmpSpeaker.CoopActivated);
+  getInputElement(alliance, "AutoAmpNotes").val(result.score.AmpSpeaker.AutoAmpNotes);
+  getInputElement(alliance, "AutoSpeakerNotes").val(result.score.AmpSpeaker.AutoSpeakerNotes);
+  getInputElement(alliance, "TeleopAmpNotes").val(result.score.AmpSpeaker.TeleopAmpNotes);
+  getInputElement(alliance, "TeleopUnamplifiedSpeakerNotes").val(result.score.AmpSpeaker.TeleopUnamplifiedSpeakerNotes);
+  getInputElement(alliance, "TeleopAmplifiedSpeakerNotes").val(result.score.AmpSpeaker.TeleopAmplifiedSpeakerNotes);
+
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
 
-    getInputElement(alliance, "MobilityStatuses" + i1).prop("checked", result.score.MobilityStatuses[i]);
-    getInputElement(alliance, "AutoDockStatuses" + i1).prop("checked", result.score.AutoDockStatuses[i]);
+    getInputElement(alliance, "LeaveStatuses" + i1).prop("checked", result.score.LeaveStatuses[i]);
     getInputElement(alliance, "EndgameStatuses" + i1, result.score.EndgameStatuses[i]).prop("checked", true);
-
-    for (let j = 0; j < 9; j++) {
-      getInputElement(alliance, `GridAutoScoringRow${i}Node${j}`).prop("checked", result.score.Grid.AutoScoring[i][j]);
-      getSelectElement(alliance, `GridNodeStatesRow${i}Node${j}`).val(result.score.Grid.Nodes[i][j]);
-    }
+    getInputElement(alliance, "MicrophoneStatuses" + i1).prop("checked", result.score.MicrophoneStatuses[i]);
+    getInputElement(alliance, "TrapStatuses" + i1).prop("checked", result.score.TrapStatuses[i]);
   }
-
-  getInputElement(alliance, "AutoChargeStationLevel").prop("checked", result.score.AutoChargeStationLevel);
-  getInputElement(alliance, "EndgameChargeStationLevel").prop("checked", result.score.EndgameChargeStationLevel);
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
@@ -70,27 +70,26 @@ const updateResults = function(alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.MobilityStatuses = [];
-  result.score.Grid = {AutoScoring: [], Nodes: []};
-  result.score.AutoDockStatuses = [];
+  result.score.LeaveStatuses = [];
+  result.score.AmpSpeaker = {
+    CoopActivated: formData[alliance + "CoopActivated"] === "on",
+    AutoAmpNotes: parseInt(formData[alliance + "AutoAmpNotes"]),
+    AutoSpeakerNotes: parseInt(formData[alliance + "AutoSpeakerNotes"]),
+    TeleopAmpNotes: parseInt(formData[alliance + "TeleopAmpNotes"]),
+    TeleopUnamplifiedSpeakerNotes: parseInt(formData[alliance + "TeleopUnamplifiedSpeakerNotes"]),
+    TeleopAmplifiedSpeakerNotes: parseInt(formData[alliance + "TeleopAmplifiedSpeakerNotes"]),
+  };
   result.score.EndgameStatuses = [];
+  result.score.MicrophoneStatuses = [];
+  result.score.TrapStatuses = [];
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
 
-    result.score.MobilityStatuses[i] = formData[alliance + "MobilityStatuses" + i1] === "on";
-    result.score.AutoDockStatuses[i] = formData[alliance + "AutoDockStatuses" + i1] === "on";
+    result.score.LeaveStatuses[i] = formData[alliance + "LeaveStatuses" + i1] === "on";
     result.score.EndgameStatuses[i] = parseInt(formData[alliance + "EndgameStatuses" + i1]);
-
-    result.score.Grid.AutoScoring[i] = [];
-    result.score.Grid.Nodes[i] = [];
-    for (let j = 0; j < 9; j++) {
-      result.score.Grid.AutoScoring[i][j] = formData[alliance + `GridAutoScoringRow${i}Node${j}`] === "on";
-      result.score.Grid.Nodes[i][j] = parseInt(formData[alliance + `GridNodeStatesRow${i}Node${j}`]);
-    }
+    result.score.MicrophoneStatuses[i] = formData[alliance + "MicrophoneStatuses" + i1] === "on";
+    result.score.TrapStatuses[i] = formData[alliance + "TrapStatuses" + i1] === "on";
   }
-
-  result.score.AutoChargeStationLevel = formData[alliance + "AutoChargeStationLevel"] === "on";
-  result.score.EndgameChargeStationLevel = formData[alliance + "EndgameChargeStationLevel"] === "on";
 
   result.score.Fouls = [];
 
