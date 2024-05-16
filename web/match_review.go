@@ -76,7 +76,7 @@ func (web *Web) matchReviewEditGetHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	match, matchResult, _, err := web.getMatchResultFromRequest(r)
+	match, matchResult, isCurrent, err := web.getMatchResultFromRequest(r)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -96,8 +96,9 @@ func (web *Web) matchReviewEditGetHandler(w http.ResponseWriter, r *http.Request
 		*model.EventSettings
 		Match           *model.Match
 		MatchResultJson string
+		IsCurrentMatch  bool
 		Rules           map[int]*game.Rule
-	}{web.arena.EventSettings, match, string(matchResultJson), game.GetAllRules()}
+	}{web.arena.EventSettings, match, string(matchResultJson), isCurrent, game.GetAllRules()}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
