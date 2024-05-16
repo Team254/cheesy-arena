@@ -32,7 +32,7 @@ const scoreIn = $(".score").css("width");
 const scoreMid = "185px";
 const scoreOut = "400px";
 const scoreFieldsOut = "180px";
-const scoreLogoTop = "-450px";
+const scoreLogoTop = "-470px";
 const bracketLogoTop = "-780px";
 const bracketLogoScale = 0.75;
 const timeoutDetailsIn = $("#timeoutDetails").css("width");
@@ -227,7 +227,6 @@ const handleRealtimeScore = function(data) {
 
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function(data) {
-  // TODO(pat): Update for 2024.
   $(`#${redSide}FinalScore`).text(data.RedScoreSummary.Score);
   $(`#${redSide}FinalAlliance`).text("Alliance " + data.Match.PlayoffRedAlliance);
   setTeamInfo(redSide, 1, data.Match.Red1, data.RedRankings);
@@ -238,23 +237,23 @@ const handleScorePosted = function(data) {
   } else {
     setTeamInfo(redSide, 4, 0, data.RedRankings);
   }
-  // $(`#${redSide}FinalMobilityPoints").text(data.RedScoreSummary.MobilityPoints);
-  // $(`#${redSide}FinalGridPoints").text(data.RedScoreSummary.GridPoints);
-  // $(`#${redSide}FinalChargeStationPoints").text(data.RedScoreSummary.ChargeStationPoints);
-  // $(`#${redSide}FinalParkPoints").text(data.RedScoreSummary.ParkPoints);
-  // $(`#${redSide}FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
-  // $(`#${redSide}FinalSustainabilityBonusRankingPoint").html(
-  //   data.RedScoreSummary.SustainabilityBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  // );
-  // $(`#${redSide}FinalSustainabilityBonusRankingPoint").attr(
-  //   "data-checked", data.RedScoreSummary.SustainabilityBonusRankingPoint
-  // );
-  // $(`#${redSide}FinalActivationBonusRankingPoint").html(
-  //   data.RedScoreSummary.ActivationBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  // );
-  // $(`#${redSide}FinalActivationBonusRankingPoint").attr(
-  //   "data-checked", data.RedScoreSummary.ActivationBonusRankingPoint
-  // );
+  $(`#${redSide}FinalLeavePoints`).text(data.RedScoreSummary.LeavePoints);
+  $(`#${redSide}FinalSpeakerPoints`).text(data.RedScoreSummary.SpeakerPoints);
+  $(`#${redSide}FinalAmpPoints`).text(data.RedScoreSummary.AmpPoints);
+  $(`#${redSide}FinalStagePoints`).text(data.RedScoreSummary.StagePoints);
+  $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
+  $(`#${redSide}FinalMelodyBonusRankingPoint`).html(
+    data.RedScoreSummary.MelodyBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  );
+  $(`#${redSide}FinalMelodyBonusRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.MelodyBonusRankingPoint
+  );
+  $(`#${redSide}FinalEnsembleBonusRankingPoint`).html(
+    data.RedScoreSummary.EnsembleBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  );
+  $(`#${redSide}FinalEnsembleBonusRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.EnsembleBonusRankingPoint
+  );
   $(`#${redSide}FinalRankingPoints`).html(data.RedRankingPoints);
   $(`#${redSide}FinalWins`).text(data.RedWins);
   const redFinalDestination = $(`#${redSide}FinalDestination`);
@@ -272,23 +271,23 @@ const handleScorePosted = function(data) {
   } else {
     setTeamInfo(blueSide, 4, 0, data.BlueRankings);
   }
-  // $(`#${blueSide}FinalMobilityPoints`).text(data.BlueScoreSummary.MobilityPoints);
-  // $(`#${blueSide}FinalGridPoints`).text(data.BlueScoreSummary.GridPoints);
-  // $(`#${blueSide}FinalChargeStationPoints`).text(data.BlueScoreSummary.ChargeStationPoints);
-  // $(`#${blueSide}FinalParkPoints`).text(data.BlueScoreSummary.ParkPoints);
-  // $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
-  // $(`#${blueSide}FinalSustainabilityBonusRankingPoint`).html(
-  //   data.BlueScoreSummary.SustainabilityBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  // );
-  // $(`#${blueSide}FinalSustainabilityBonusRankingPoint`).attr(
-  //   "data-checked", data.BlueScoreSummary.SustainabilityBonusRankingPoint
-  // );
-  // $(`#${blueSide}FinalActivationBonusRankingPoint`).html(
-  //   data.BlueScoreSummary.ActivationBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  // );
-  // $(`#${blueSide}FinalActivationBonusRankingPoint`).attr(
-  //   "data-checked", data.BlueScoreSummary.ActivationBonusRankingPoint
-  // );
+  $(`#${blueSide}FinalLeavePoints`).text(data.BlueScoreSummary.LeavePoints);
+  $(`#${blueSide}FinalSpeakerPoints`).text(data.BlueScoreSummary.SpeakerPoints);
+  $(`#${blueSide}FinalAmpPoints`).text(data.BlueScoreSummary.AmpPoints);
+  $(`#${blueSide}FinalStagePoints`).text(data.BlueScoreSummary.StagePoints);
+  $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
+  $(`#${blueSide}FinalMelodyBonusRankingPoint`).html(
+    data.BlueScoreSummary.MelodyBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  );
+  $(`#${blueSide}FinalMelodyBonusRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.MelodyBonusRankingPoint
+  );
+  $(`#${blueSide}FinalEnsembleBonusRankingPoint`).html(
+    data.BlueScoreSummary.EnsembleBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  );
+  $(`#${blueSide}FinalEnsembleBonusRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.EnsembleBonusRankingPoint
+  );
   $(`#${blueSide}FinalRankingPoints`).html(data.BlueRankingPoints);
   $(`#${blueSide}FinalWins`).text(data.BlueWins);
   const blueFinalDestination = $(`#${blueSide}FinalDestination`);
