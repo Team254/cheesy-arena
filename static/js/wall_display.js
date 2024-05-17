@@ -25,6 +25,13 @@ const overlayTopOffset = 110;
 const timeoutDetailsIn = $("#timeoutDetails").css("width");
 const timeoutDetailsOut = "570px";
 
+// Game-specific constants and variables.
+const amplifyProgressStartOffset = $("#leftAmplified svg circle").css("stroke-dashoffset");
+const amplifyFadeTimeMs = 300;
+const amplifyDwellTimeMs = 500;
+let redAmplified = false;
+let blueAmplified = false;
+
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function(targetScreen) {
   if (
@@ -137,27 +144,76 @@ const handleRealtimeScore = function(data) {
   $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.StagePoints);
   $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.StagePoints);
 
-  // TODO(pat): Update for 2024.
-  // $("#" + redSide + "LinkNumerator").text(data.Red.ScoreSummary.NumLinks);
-  // $("#" + redSide + "LinkDenominator").text(data.Red.ScoreSummary.NumLinksGoal);
-  // $("#" + blueSide + "LinkNumerator").text(data.Blue.ScoreSummary.NumLinks);
-  // $("#" + blueSide + "LinkDenominator").text(data.Blue.ScoreSummary.NumLinksGoal);
-  // if (currentMatch.Type === matchTypePlayoff) {
-  //   $("#" + redSide + "LinkDenominator").hide();
-  //   $("#" + blueSide + "LinkDenominator").hide();
-  //   $(".link-splitter").hide();
-  // } else {
-  //   $("#" + redSide + "LinkDenominator").show();
-  //   $("#" + blueSide + "LinkDenominator").show();
-  //   $(".link-splitter").show();
-  // }
-  //
-  // fetch("/api/grid/red/svg")
-  //   .then(response => response.text())
-  //   .then(svg => $(`#${redSide}Grid`).html(svg));
-  // fetch("/api/grid/blue/svg")
-  //   .then(response => response.text())
-  //   .then(svg => $(`#${blueSide}Grid`).html(svg));
+  $(`#${redSide}NoteNumerator`).text(data.Red.ScoreSummary.NumNotes);
+  $(`#${redSide}NoteDenominator`).text(data.Red.ScoreSummary.NumNotesGoal);
+  $(`#${blueSide}NoteNumerator`).text(data.Blue.ScoreSummary.NumNotes);
+  $(`#${blueSide}NoteDenominator`).text(data.Blue.ScoreSummary.NumNotesGoal);
+  if (currentMatch.Type === matchTypePlayoff) {
+    $(`#${redSide}NoteDenominator`).hide();
+    $(`#${blueSide}NoteDenominator`).hide();
+    $(".note-splitter").hide();
+  } else {
+    $(`#${redSide}NoteDenominator`).show();
+    $(`#${blueSide}NoteDenominator`).show();
+    $(".note-splitter").show();
+  }
+
+  const redLightsDiv = $(`#${redSide}Lights`);
+  const redAmplifiedDiv = $(`#${redSide}Amplified`);
+  if (data.Red.AmplifiedTimeRemainingSec > 0 && !redAmplified) {
+    redAmplified = true;
+    redLightsDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function() {
+      redLightsDiv.hide();
+      redAmplifiedDiv.show();
+      redAmplifiedDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
+      $(`#${redSide}Amplified svg circle`).transition(
+        {queue: false, strokeDashoffset: 158}, data.Red.AmplifiedTimeRemainingSec * 1000 - amplifyFadeTimeMs, "linear"
+      );
+    });
+  } else if (data.Red.AmplifiedTimeRemainingSec === 0 && redAmplified) {
+    redAmplified = false;
+    setTimeout(function() {
+      redAmplifiedDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function () {
+        $(`#${redSide}Amplified svg circle`).css("stroke-dashoffset", amplifyProgressStartOffset);
+        redAmplifiedDiv.hide();
+        redLightsDiv.show();
+        redLightsDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
+      });
+    }, amplifyDwellTimeMs);
+  }
+
+  const blueLightsDiv = $(`#${blueSide}Lights`);
+  const blueAmplifiedDiv = $(`#${blueSide}Amplified`);
+  if (data.Blue.AmplifiedTimeRemainingSec > 0 && !blueAmplified) {
+    blueAmplified = true;
+    blueLightsDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function() {
+      blueLightsDiv.hide();
+      blueAmplifiedDiv.show();
+      blueAmplifiedDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
+      $(`#${blueSide}Amplified svg circle`).transition(
+        {queue: false, strokeDashoffset: -158}, data.Blue.AmplifiedTimeRemainingSec * 1000 - amplifyFadeTimeMs, "linear"
+      );
+    });
+  } else if (data.Blue.AmplifiedTimeRemainingSec === 0 && blueAmplified) {
+    blueAmplified = false;
+    setTimeout(function() {
+      blueAmplifiedDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function () {
+        $(`#${blueSide}Amplified svg circle`).css("stroke-dashoffset", "-" + amplifyProgressStartOffset);
+        blueAmplifiedDiv.hide();
+        blueLightsDiv.show();
+        blueLightsDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
+      });
+    }, amplifyDwellTimeMs);
+  }
+
+  $(`#${redSide}Lights .amp-low`).attr("data-lit", data.Red.Score.AmpSpeaker.BankedAmpNotes >= 1);
+  $(`#${redSide}Lights .amp-high`).attr("data-lit", data.Red.Score.AmpSpeaker.BankedAmpNotes >= 2);
+  $(`#${redSide}Lights .amp-coop`).attr("data-lit", data.Red.Score.AmpSpeaker.CoopActivated);
+  $(`#${redSide}Amplified svg text`).text(data.Red.AmplifiedTimeRemainingSec);
+  $(`#${blueSide}Lights .amp-low`).attr("data-lit", data.Blue.Score.AmpSpeaker.BankedAmpNotes >= 1);
+  $(`#${blueSide}Lights .amp-high`).attr("data-lit", data.Blue.Score.AmpSpeaker.BankedAmpNotes >= 2);
+  $(`#${blueSide}Lights .amp-coop`).attr("data-lit", data.Blue.Score.AmpSpeaker.CoopActivated);
+  $(`#${blueSide}Amplified svg text`).text(data.Blue.AmplifiedTimeRemainingSec);
 };
 
 const transitionBlankToIntro = function(callback) {

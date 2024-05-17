@@ -124,15 +124,6 @@ html {
   justify-content: space-evenly;
   opacity: 0;
 }
-.score-links {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-family: "FuturaLTBold";
-  font-size: 17px;
-  color: #fff;
-}
 #matchOverlayAux {
   display: flex;
   flex-direction: row;
@@ -156,18 +147,39 @@ html {
 #rightScoreAux {
   padding-left: 35px;
 }
-.link-splitter {
+.score-notes {
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: "FuturaLTBold";
+  font-size: 20px;
+  color: #fff;
+}
+.score-notes i {
+  margin-top: -3px;
+  font-size: 25px;
+}
+.note-splitter {
   margin: 0 -4px;
 }
-.link-icon {
-  margin-top: 5px;
-  width: 25px;
-}
-.score-grid {
-  width: 70%;
+.score-lights {
+  width: 70px;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.amp-light {
+  fill-opacity: 0.2;
+}
+.amp-light[data-lit=true] {
+  fill-opacity: 1;
+}
+.score-amplified {
+  width: 70px;
+  display: none;
+  opacity: 0;
 }
 #matchCircle {
   position: absolute;
