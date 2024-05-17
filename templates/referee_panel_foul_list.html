@@ -28,8 +28,8 @@
       {{range $rule := .rules}}
         {{if eq $.foul.IsTechnical $rule.IsTechnical}}
           <option value="{{$rule.Id}}"{{if eq $.foul.RuleId $rule.Id}} selected{{end}}>{{$rule.RuleNumber}}
-            [{{if $rule.IsRankingPoint}}{{if $rule.IsTechnical}}Tech {{end}}Foul + Free RP{{else}}
-            {{if $rule.IsTechnical}}Tech {{end}}Foul{{end}}]: {{$rule.Description}}
+            [{{if $rule.IsRankingPoint}}{{if $rule.IsTechnical}}Tech {{end}}Foul +
+            Free RP{{else}}{{if $rule.IsTechnical}}Tech {{end}}Foul{{end}}]: {{$rule.Description}}
           </option>
         {{end}}
       {{end}}

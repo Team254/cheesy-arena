@@ -18,9 +18,10 @@ h3 {
 .container {
   padding-top: 1vw;
   width: 100%;
+  max-width: none;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   color: #fff;
 }
