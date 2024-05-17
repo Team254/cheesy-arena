@@ -9,13 +9,15 @@
       <div class="col-sm-6">
         <div class="card card-body bg-red">
           {{template "alliance_match_result" dict "summary" .RedScoreSummary "fouls" .RedFouls "cards" .RedCards
-            "rankings" .RedRankings "rulesViolated" .RulesViolated}}
+            "rankings" .RedRankings "rulesViolated" .RulesViolated "rankingPoints" .RedRankingPoints
+            "matchType" .Match.Type}}
         </div>
       </div>
       <div class="col-sm-6">
         <div class="card card-body bg-blue">
           {{template "alliance_match_result" dict "summary" .BlueScoreSummary "fouls" .BlueFouls "cards" .BlueCards
-          "rankings" .BlueRankings "rulesViolated" .RulesViolated}}
+          "rankings" .BlueRankings "rulesViolated" .RulesViolated "rankingPoints" .BlueRankingPoints
+          "matchType" .Match.Type}}
         </div>
       </div>
     </div>
@@ -28,37 +30,45 @@
 {{define "alliance_match_result"}}
 <h4>Score</h4>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Auto Mobility Points</div>
-  <div class="col-sm-4">{{.summary.MobilityPoints}}</div>
+  <div class="col-sm-6">Auto Leave Points</div>
+  <div class="col-sm-4">{{.summary.LeavePoints}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Grid Points</div>
-  <div class="col-sm-4">{{.summary.GridPoints}}</div>
+  <div class="col-sm-6">Speaker Points</div>
+  <div class="col-sm-4">{{.summary.SpeakerPoints}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Charge Station Points</div>
-  <div class="col-sm-4">{{.summary.ChargeStationPoints}}</div>
+  <div class="col-sm-6">Amp Points</div>
+  <div class="col-sm-4">{{.summary.AmpPoints}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Endgame Park Points</div>
-  <div class="col-sm-4">{{.summary.ParkPoints}}</div>
+  <div class="col-sm-6">Stage Points</div>
+  <div class="col-sm-4">{{.summary.StagePoints}}</div>
 </div>
 <div class="row justify-content-center">
   <div class="col-sm-6">Foul Points</div>
   <div class="col-sm-4">{{.summary.FoulPoints}}</div>
 </div>
-<div class="row justify-content-center">
-  <div class="col-sm-6">Sustainability Bonus RP</div>
-  <div class="col-sm-4">{{if .summary.SustainabilityBonusRankingPoint}}Yes{{else}}No{{end}}</div>
-</div>
-<div class="row justify-content-center">
-  <div class="col-sm-6">Activation Bonus RP</div>
-  <div class="col-sm-4">{{if .summary.ActivationBonusRankingPoint}}Yes{{else}}No{{end}}</div>
-</div>
+{{if ne .matchType playoffMatch}}
+  <div class="row justify-content-center">
+    <div class="col-sm-6">Melody Bonus RP</div>
+    <div class="col-sm-4">{{if .summary.MelodyBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-sm-6">Ensemble Bonus RP</div>
+    <div class="col-sm-4">{{if .summary.EnsembleBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+  </div>
+{{end}}
 <div class="row justify-content-center mt-3">
   <div class="col-sm-6"><b>Final Score</b></div>
   <div class="col-sm-4"><b>{{.summary.Score}}</b></div>
 </div>
+{{if ne .matchType playoffMatch}}
+  <div class="row justify-content-center">
+    <div class="col-sm-6"><b>Ranking Points</b></div>
+    <div class="col-sm-4"><b>{{.rankingPoints}}</b></div>
+  </div>
+{{end}}
 <h4 class="mt-3">Fouls</h4>
 {{range $foul := .fouls}}
   <div class="row justify-content-center">
