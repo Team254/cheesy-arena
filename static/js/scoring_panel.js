@@ -10,13 +10,13 @@ let alliance;
 const handleMatchLoad = function(data) {
   $("#matchName").text(data.Match.LongName);
   if (alliance === "red") {
-    $("#team1").text(data.Match.Red1);
-    $("#team2").text(data.Match.Red2);
-    $("#team3").text(data.Match.Red3);
+    $(".team-1").text(data.Match.Red1);
+    $(".team-2").text(data.Match.Red2);
+    $(".team-3").text(data.Match.Red3);
   } else {
-    $("#team1").text(data.Match.Blue1);
-    $("#team2").text(data.Match.Blue2);
-    $("#team3").text(data.Match.Blue3);
+    $(".team-1").text(data.Match.Blue1);
+    $(".team-2").text(data.Match.Blue2);
+    $(".team-3").text(data.Match.Blue3);
   }
 };
 
@@ -50,33 +50,20 @@ const handleRealtimeScore = function(data) {
 
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
-    $(`#mobilityStatus${i1}>.value`).text(score.MobilityStatuses[i] ? "Yes" : "No");
-    $("#mobilityStatus" + i1).attr("data-value", score.MobilityStatuses[i]);
-    $("#autoDockStatus" + i1 + ">.value").text(score.AutoDockStatuses[i] ? "Yes" : "No");
-    $("#autoDockStatus" + i1).attr("data-value", score.AutoDockStatuses[i]);
-    $("#endgameStatus" + i1 + ">.value").text(getEndgameStatusText(score.EndgameStatuses[i]));
-    $("#endgameStatus" + i1).attr("data-value", score.EndgameStatuses[i]);
-  }
-
-  $("#autoChargeStationLevel>.value").text(score.AutoChargeStationLevel ? "Level" : "Not Level");
-  $("#autoChargeStationLevel").attr("data-value", score.AutoChargeStationLevel);
-  $("#endgameChargeStationLevel>.value").text(score.EndgameChargeStationLevel ? "Level" : "Not Level");
-  $("#endgameChargeStationLevel").attr("data-value", score.EndgameChargeStationLevel);
-
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 9; j++) {
-      $(`#gridAutoScoringRow${i}Node${j}`).attr("data-value", score.Grid.AutoScoring[i][j]);
-      $(`#gridNodeStatesRow${i}Node${j}`).children().each(function() {
-        const element = $(this);
-        element.attr("data-value", element.attr("data-node-state") === score.Grid.Nodes[i][j].toString());
-      });
-    }
+    $(`#leaveStatus${i1}>.value`).text(score.LeaveStatuses[i] ? "Yes" : "No");
+    $(`#leaveStatus${i1}`).attr("data-value", score.LeaveStatuses[i]);
+    $(`#parkTeam${i1}`).attr("data-value", score.EndgameStatuses[i] === 1);
+    $(`#stageSide0Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 2);
+    $(`#stageSide1Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 3);
+    $(`#stageSide2Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 4);
+    $(`#stageSide${i}Microphone`).attr("data-value", score.MicrophoneStatuses[i]);
+    $(`#stageSide${i}Trap`).attr("data-value", score.TrapStatuses[i]);
   }
 };
 
 // Handles an element click and sends the appropriate websocket message.
-const handleClick = function(command, teamPosition = 0, gridRow = 0, gridNode = 0, nodeState = 0) {
-  websocket.send(command, {TeamPosition: teamPosition, GridRow: gridRow, GridNode: gridNode, NodeState: nodeState});
+const handleClick = function(command, teamPosition = 0, stageIndex = 0) {
+  websocket.send(command, {TeamPosition: teamPosition, StageIndex: stageIndex});
 };
 
 // Sends a websocket message to indicate that the score for this alliance is ready.
@@ -84,18 +71,6 @@ const commitMatchScore = function() {
   websocket.send("commitMatch");
   $("#postMatchMessage").css("display", "flex");
   $("#commitMatchScore").hide();
-};
-
-// Returns the display text corresponding to the given integer endgame status value.
-const getEndgameStatusText = function(level) {
-  switch (level) {
-    case 1:
-      return "Park";
-    case 2:
-      return "Dock";
-    default:
-      return "None";
-  }
 };
 
 $(function() {

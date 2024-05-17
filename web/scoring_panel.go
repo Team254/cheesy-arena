@@ -8,8 +8,10 @@ package web
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
+	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
 	"net/http"
@@ -56,13 +58,12 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// TODO(pat): Update for 2024.
-	//var realtimeScore **field.RealtimeScore
-	//if alliance == "red" {
-	//	realtimeScore = &web.arena.RedRealtimeScore
-	//} else {
-	//	realtimeScore = &web.arena.BlueRealtimeScore
-	//}
+	var realtimeScore **field.RealtimeScore
+	if alliance == "red" {
+		realtimeScore = &web.arena.RedRealtimeScore
+	} else {
+		realtimeScore = &web.arena.BlueRealtimeScore
+	}
 
 	ws, err := websocket.NewWebsocket(w, r)
 	if err != nil {
@@ -81,9 +82,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		// TODO(pat): Update for 2024.
-		//command, data, err := ws.Read()
-		command, _, err := ws.Read()
+		command, data, err := ws.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
@@ -92,8 +91,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			log.Println(err)
 			return
 		}
-		// TODO(pat): Update for 2024.
-		//score := &(*realtimeScore).CurrentScore
+		score := &(*realtimeScore).CurrentScore
 		scoreChanged := false
 
 		if command == "commitMatch" {
@@ -105,67 +103,52 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(alliance, ws)
 			web.arena.ScoringStatusNotifier.Notify()
 		} else {
-			// TODO(pat): Update for 2024.
-			//args := struct {
-			//	TeamPosition int
-			//	GridRow      int
-			//	GridNode     int
-			//	NodeState    game.NodeState
-			//}{}
-			//err = mapstructure.Decode(data, &args)
-			//if err != nil {
-			//	ws.WriteError(err.Error())
-			//	continue
-			//}
-			//
-			//switch command {
-			//case "mobilityStatus":
-			//	if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
-			//		score.LeaveStatuses[args.TeamPosition-1] = !score.LeaveStatuses[args.TeamPosition-1]
-			//		scoreChanged = true
-			//	}
-			//case "autoDockStatus":
-			//	if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
-			//		score.AutoDockStatuses[args.TeamPosition-1] = !score.AutoDockStatuses[args.TeamPosition-1]
-			//		scoreChanged = true
-			//	}
-			//case "endgameStatus":
-			//	if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
-			//		score.EndgameStatuses[args.TeamPosition-1]++
-			//		if score.EndgameStatuses[args.TeamPosition-1] > 2 {
-			//			score.EndgameStatuses[args.TeamPosition-1] = 0
-			//		}
-			//		scoreChanged = true
-			//	}
-			//case "autoChargeStationLevel":
-			//	score.AutoChargeStationLevel = !score.AutoChargeStationLevel
-			//	scoreChanged = true
-			//case "endgameChargeStationLevel":
-			//	score.EndgameChargeStationLevel = !score.EndgameChargeStationLevel
-			//	scoreChanged = true
-			//case "gridAutoScoring":
-			//	if args.GridRow >= 0 && args.GridRow <= 2 && args.GridNode >= 0 && args.GridNode <= 8 {
-			//		score.Grid.AutoScoring[args.GridRow][args.GridNode] =
-			//			!score.Grid.AutoScoring[args.GridRow][args.GridNode]
-			//		scoreChanged = true
-			//	}
-			//case "gridNode":
-			//	if args.GridRow >= 0 && args.GridRow <= 2 && args.GridNode >= 0 && args.GridNode <= 8 {
-			//		currentState := score.Grid.Nodes[args.GridRow][args.GridNode]
-			//		if currentState == args.NodeState {
-			//			score.Grid.Nodes[args.GridRow][args.GridNode] = game.Empty
-			//			if web.arena.MatchState == field.AutoPeriod || web.arena.MatchState == field.PausePeriod {
-			//				score.Grid.AutoScoring[args.GridRow][args.GridNode] = false
-			//			}
-			//		} else {
-			//			score.Grid.Nodes[args.GridRow][args.GridNode] = args.NodeState
-			//			if web.arena.MatchState == field.AutoPeriod || web.arena.MatchState == field.PausePeriod {
-			//				score.Grid.AutoScoring[args.GridRow][args.GridNode] = true
-			//			}
-			//		}
-			//		scoreChanged = true
-			//	}
-			//}
+			args := struct {
+				TeamPosition int
+				StageIndex   int
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
+
+			switch command {
+			case "leave":
+				if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
+					score.LeaveStatuses[args.TeamPosition-1] = !score.LeaveStatuses[args.TeamPosition-1]
+					scoreChanged = true
+				}
+			case "onStage":
+				if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.StageIndex >= 0 && args.StageIndex <= 2 {
+					endgameStatus := game.EndgameStatus(args.StageIndex + 2)
+					if score.EndgameStatuses[args.TeamPosition-1] == endgameStatus {
+						score.EndgameStatuses[args.TeamPosition-1] = game.EndgameNone
+					} else {
+						score.EndgameStatuses[args.TeamPosition-1] = endgameStatus
+					}
+					scoreChanged = true
+				}
+			case "park":
+				if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
+					if score.EndgameStatuses[args.TeamPosition-1] == game.EndgameParked {
+						score.EndgameStatuses[args.TeamPosition-1] = game.EndgameNone
+					} else {
+						score.EndgameStatuses[args.TeamPosition-1] = game.EndgameParked
+					}
+					scoreChanged = true
+				}
+			case "microphone":
+				if args.StageIndex >= 0 && args.StageIndex <= 2 {
+					score.MicrophoneStatuses[args.StageIndex] = !score.MicrophoneStatuses[args.StageIndex]
+					scoreChanged = true
+				}
+			case "trap":
+				if args.StageIndex >= 0 && args.StageIndex <= 2 {
+					score.TrapStatuses[args.StageIndex] = !score.TrapStatuses[args.StageIndex]
+					scoreChanged = true
+				}
+			}
 
 			if scoreChanged {
 				web.arena.RealtimeScoreNotifier.Notify()
