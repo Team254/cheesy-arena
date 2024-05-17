@@ -144,7 +144,9 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	if summary.NumNotes >= summary.NumNotesGoal {
 		summary.MelodyBonusRankingPoint = true
 	}
-	summary.EnsembleBonusRankingPoint = summary.StagePoints >= ensembleBonusPointThreshold && totalOnstageRobots >= 2
+	if summary.StagePoints >= ensembleBonusPointThreshold && totalOnstageRobots >= 2 {
+		summary.EnsembleBonusRankingPoint = true
+	}
 
 	if summary.MelodyBonusRankingPoint {
 		summary.BonusRankingPoints++

@@ -159,7 +159,7 @@ func TestScoreMelodyBonusRankingPoint(t *testing.T) {
 	assert.Equal(t, true, blueScoreSummary.MelodyBonusRankingPoint)
 }
 
-func TestScoreActivationBonusRankingPoint(t *testing.T) {
+func TestScoreEnsembleBonusRankingPoint(t *testing.T) {
 	var score Score
 
 	score.EndgameStatuses = [3]EndgameStatus{EndgameNone, EndgameNone, EndgameNone}
@@ -214,6 +214,25 @@ func TestScoreActivationBonusRankingPoint(t *testing.T) {
 	score.EndgameStatuses = [3]EndgameStatus{EndgameParked, EndgameParked, EndgameParked}
 	assert.Equal(t, 18, score.Summarize(&Score{}).StagePoints)
 	assert.Equal(t, false, score.Summarize(&Score{}).EnsembleBonusRankingPoint)
+}
+
+func TestScoreFreeEnsembleBonusRankingPointFromFoul(t *testing.T) {
+	var score1, score2 Score
+	foul := Foul{IsTechnical: true, RuleId: 29}
+
+	assert.Equal(t, true, foul.Rule().IsTechnical)
+	assert.Equal(t, true, foul.Rule().IsRankingPoint)
+	score2.Fouls = []Foul{foul}
+
+	summary := score1.Summarize(&score2)
+	assert.Equal(t, 5, summary.Score)
+	assert.Equal(t, true, summary.EnsembleBonusRankingPoint)
+	assert.Equal(t, 1, summary.BonusRankingPoints)
+
+	summary = score2.Summarize(&score1)
+	assert.Equal(t, 0, summary.Score)
+	assert.Equal(t, false, summary.EnsembleBonusRankingPoint)
+	assert.Equal(t, 0, summary.BonusRankingPoints)
 }
 
 func TestScoreEquals(t *testing.T) {
