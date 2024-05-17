@@ -126,9 +126,8 @@ func TestCommitTiebreak(t *testing.T) {
 		MatchId: match.Id,
 		// These should all be fields that aren't part of the tiebreaker.
 		RedScore: &game.Score{
-			// TODO(pat): Update for 2024.
-			//Grid:  game.Grid{Nodes: [3][9]game.NodeState{{game.Cube}, {game.Cone}}},
-			Fouls: []game.Foul{{RuleId: 1}, {RuleId: 2}},
+			AmpSpeaker: game.AmpSpeaker{TeleopUnamplifiedSpeakerNotes: 1},
+			Fouls:      []game.Foul{{RuleId: 1}, {RuleId: 2}},
 		},
 		BlueScore: &game.Score{
 			Fouls: []game.Foul{{RuleId: 1}},
@@ -136,18 +135,16 @@ func TestCommitTiebreak(t *testing.T) {
 	}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
-	// TODO(pat): Update for 2024.
-	//assert.Equal(
-	//	t,
-	//	matchResult.RedScore.Summarize(matchResult.BlueScore).Score,
-	//	matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
-	//)
+	assert.Equal(
+		t,
+		matchResult.RedScore.Summarize(matchResult.BlueScore).Score,
+		matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
+	)
 
 	err := web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
-	// TODO(pat): Update for 2024.
-	//assert.Equal(t, game.TieMatch, match.Status)
+	assert.Equal(t, game.TieMatch, match.Status)
 
 	// The match should still be tied since the tiebreaker criteria for a perfect tie are fulfilled.
 	match.UseTiebreakCriteria = true
@@ -155,45 +152,38 @@ func TestCommitTiebreak(t *testing.T) {
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
-	// TODO(pat): Update for 2024.
-	//assert.Equal(t, game.TieMatch, match.Status)
+	assert.Equal(t, game.TieMatch, match.Status)
 
 	// Change the score to still be equal nominally but trigger the tiebreaker criteria.
-	// TODO(pat): Update for 2024.
-	//matchResult.BlueScore.AutoDockStatuses = [3]bool{true, false, false}
-	//matchResult.BlueScore.AutoChargeStationLevel = true
+	matchResult.BlueScore.TrapStatuses = [3]bool{true, false, false}
 	matchResult.BlueScore.Fouls = []game.Foul{{IsTechnical: false}, {IsTechnical: true}}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
-	// TODO(pat): Update for 2024.
-	//assert.Equal(
-	//	t,
-	//	matchResult.RedScore.Summarize(matchResult.BlueScore).Score,
-	//	matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
-	//)
+	assert.Equal(
+		t,
+		matchResult.RedScore.Summarize(matchResult.BlueScore).Score,
+		matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
+	)
 
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
-	// TODO(pat): Update for 2024.
-	//assert.Equal(t, game.RedWonMatch, match.Status)
+	assert.Equal(t, game.RedWonMatch, match.Status)
 
 	// Swap red and blue and verify that the tie is broken in the other direction.
 	matchResult.RedScore, matchResult.BlueScore = matchResult.BlueScore, matchResult.RedScore
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
-	// TODO(pat): Update for 2024.
-	//assert.Equal(
-	//	t,
-	//	matchResult.RedScore.Summarize(matchResult.BlueScore).Score,
-	//	matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
-	//)
+	assert.Equal(
+		t,
+		matchResult.RedScore.Summarize(matchResult.BlueScore).Score,
+		matchResult.BlueScore.Summarize(matchResult.RedScore).Score,
+	)
 
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	match, _ = web.arena.Database.GetMatchById(1)
-	// TODO(pat): Update for 2024.
-	//assert.Equal(t, game.BlueWonMatch, match.Status)
+	assert.Equal(t, game.BlueWonMatch, match.Status)
 }
 
 func TestCommitCards(t *testing.T) {
@@ -316,12 +306,11 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
-	// TODO(pat): Update for 2024.
-	//web.arena.RedRealtimeScore.CurrentScore.AutoDockStatuses = [3]bool{false, true, true}
+	web.arena.RedRealtimeScore.CurrentScore.AmpSpeaker.TeleopAmplifiedSpeakerNotes = 6
 	web.arena.BlueRealtimeScore.CurrentScore.LeaveStatuses = [3]bool{true, false, true}
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 5) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
-	//assert.Equal(t, [3]bool{false, true, true}, web.arena.SavedMatchResult.RedScore.AutoDockStatuses)
+	assert.Equal(t, 6, web.arena.SavedMatchResult.RedScore.AmpSpeaker.TeleopAmplifiedSpeakerNotes)
 	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.LeaveStatuses)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)
