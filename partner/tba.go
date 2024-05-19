@@ -53,37 +53,48 @@ type TbaAlliance struct {
 }
 
 type TbaScoreBreakdown struct {
-	MobilityRobot1              string               `mapstructure:"mobilityRobot1"`
-	MobilityRobot2              string               `mapstructure:"mobilityRobot2"`
-	MobilityRobot3              string               `mapstructure:"mobilityRobot3"`
-	AutoMobilityPoints          int                  `mapstructure:"autoMobilityPoints"`
-	AutoChargeStationRobot1     string               `mapstructure:"autoChargeStationRobot1"`
-	AutoChargeStationRobot2     string               `mapstructure:"autoChargeStationRobot2"`
-	AutoChargeStationRobot3     string               `mapstructure:"autoChargeStationRobot3"`
-	AutoBridgeState             string               `mapstructure:"autoBridgeState"`
-	AutoCommunity               map[string][9]string `mapstructure:"autoCommunity"`
-	AutoGamePieceCount          int                  `mapstructure:"autoGamePieceCount"`
-	AutoGamePiecePoints         int                  `mapstructure:"autoGamePiecePoints"`
-	AutoPoints                  int                  `mapstructure:"autoPoints"`
-	TeleopCommunity             map[string][9]string `mapstructure:"teleopCommunity"`
-	TeleopGamePieceCount        int                  `mapstructure:"teleopGamePieceCount"`
-	TeleopGamePiecePoints       int                  `mapstructure:"teleopGamePiecePoints"`
-	Links                       []TbaLink            `mapstructure:"links"`
-	LinkPoints                  int                  `mapstructure:"linkPoints"`
-	ExtraGamePieceCount         int                  `mapstructure:"extraGamePieceCount"`
-	EndGameChargeStationRobot1  string               `mapstructure:"endGameChargeStationRobot1"`
-	EndGameChargeStationRobot2  string               `mapstructure:"endGameChargeStationRobot2"`
-	EndGameChargeStationRobot3  string               `mapstructure:"endGameChargeStationRobot3"`
-	EndGameBridgeState          string               `mapstructure:"endGameBridgeState"`
-	TeleopPoints                int                  `mapstructure:"teleopPoints"`
-	CoopertitionCriteriaMet     bool                 `mapstructure:"coopertitionCriteriaMet"`
-	SustainabilityBonusAchieved bool                 `mapstructure:"sustainabilityBonusAchieved"`
-	ActivationBonusAchieved     bool                 `mapstructure:"activationBonusAchieved"`
-	FoulCount                   int                  `mapstructure:"foulCount"`
-	TechFoulCount               int                  `mapstructure:"techFoulCount"`
-	FoulPoints                  int                  `mapstructure:"foulPoints"`
-	TotalPoints                 int                  `mapstructure:"totalPoints"`
-	RP                          int                  `mapstructure:"rp"`
+	AutoLineRobot1                   string `mapstructure:"autoLineRobot1"`
+	AutoLineRobot2                   string `mapstructure:"autoLineRobot2"`
+	AutoLineRobot3                   string `mapstructure:"autoLineRobot3"`
+	AutoLeavePoints                  int    `mapstructure:"autoLeavePoints"`
+	AutoAmpNoteCount                 int    `mapstructure:"autoAmpNoteCount"`
+	AutoAmpNotePoints                int    `mapstructure:"autoAmpNotePoints"`
+	AutoSpeakerNoteCount             int    `mapstructure:"autoSpeakerNoteCount"`
+	AutoSpeakerNotePoints            int    `mapstructure:"autoSpeakerNotePoints"`
+	AutoTotalNotePoints              int    `mapstructure:"autoTotalNotePoints"`
+	AutoPoints                       int    `mapstructure:"autoPoints"`
+	TeleopAmpNoteCount               int    `mapstructure:"teleopAmpNoteCount"`
+	TeleopAmpNotePoints              int    `mapstructure:"teleopAmpNotePoints"`
+	TeleopSpeakerNoteCount           int    `mapstructure:"teleopSpeakerNoteCount"`
+	TeleopSpeakerNotePoints          int    `mapstructure:"teleopSpeakerNotePoints"`
+	TeleopSpeakerNoteAmplifiedCount  int    `mapstructure:"teleopSpeakerNoteAmplifiedCount"`
+	TeleopSpeakerNoteAmplifiedPoints int    `mapstructure:"teleopSpeakerNoteAmplifiedPoints"`
+	TeleopTotalNotePoints            int    `mapstructure:"teleopTotalNotePoints"`
+	EndGameRobot1                    string `mapstructure:"endGameRobot1"`
+	EndGameRobot2                    string `mapstructure:"endGameRobot2"`
+	EndGameRobot3                    string `mapstructure:"endGameRobot3"`
+	EndGameParkPoints                int    `mapstructure:"endGameParkPoints"`
+	EndGameOnStagePoints             int    `mapstructure:"endGameOnStagePoints"`
+	EndGameHarmonyPoints             int    `mapstructure:"endGameHarmonyPoints"`
+	MicStageLeft                     bool   `mapstructure:"micStageLeft"`
+	MicCenterStage                   bool   `mapstructure:"micCenterStage"`
+	MicStageRight                    bool   `mapstructure:"micStageRight"`
+	EndGameSpotLightBonusPoints      int    `mapstructure:"endGameSpotLightBonusPoints"`
+	TrapStageLeft                    bool   `mapstructure:"trapStageLeft"`
+	TrapCenterStage                  bool   `mapstructure:"trapCenterStage"`
+	TrapStageRight                   bool   `mapstructure:"trapStageRight"`
+	EndGameNoteInTrapPoints          int    `mapstructure:"endGameNoteInTrapPoints"`
+	EndGameTotalStagePoints          int    `mapstructure:"endGameTotalStagePoints"`
+	TeleopPoints                     int    `mapstructure:"teleopPoints"`
+	CoopertitionCriteriaMet          bool   `mapstructure:"coopertitionCriteriaMet"`
+	MelodyBonusAchieved              bool   `mapstructure:"melodyBonusAchieved"`
+	EnsembleBonusAchieved            bool   `mapstructure:"ensembleBonusAchieved"`
+	FoulCount                        int    `mapstructure:"foulCount"`
+	TechFoulCount                    int    `mapstructure:"techFoulCount"`
+	G424Penalty                      bool   `mapstructure:"g424Penalty"`
+	FoulPoints                       int    `mapstructure:"foulPoints"`
+	TotalPoints                      int    `mapstructure:"totalPoints"`
+	RP                               int    `mapstructure:"rp"`
 }
 
 type TbaLink struct {
@@ -148,17 +159,14 @@ type TbaPublishedAward struct {
 	Awardee string `json:"awardee"`
 }
 
-var mobilityMapping = map[bool]string{false: "No", true: "Yes"}
-var autoChargeStationMapping = map[bool]string{false: "None", true: "Docked"}
-var endGameChargeStationMapping = map[game.EndgameStatus]string{
+var leaveMapping = map[bool]string{false: "No", true: "Yes"}
+var endGameStatusMapping = map[game.EndgameStatus]string{
 	game.EndgameNone:        "None",
 	game.EndgameParked:      "Parked",
 	game.EndgameStageLeft:   "StageLeft",
 	game.EndgameCenterStage: "CenterStage",
 	game.EndgameStageRight:  "StageRight",
 }
-var chargeStationLevelMapping = map[bool]string{false: "NotLevel", true: "Level"}
-var gridRowMapping = map[int]string{0: "Bottom", 1: "Mid", 2: "Top"}
 
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
 	return &TbaClient{BaseUrl: tbaBaseUrl, eventCode: eventCode, secretId: secretId, secret: secret,
@@ -459,6 +467,26 @@ func (client *TbaClient) PublishAlliances(database *model.Database) error {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
 	}
+
+	// Also set the playoff type so that TBA renders the correct bracket.
+	eventSettings, err := database.GetEventSettings()
+	if err != nil {
+		return err
+	}
+	playoffType := 0
+	if eventSettings.PlayoffType == model.DoubleEliminationPlayoff {
+		playoffType = 10
+	}
+	resp, err = client.postRequest("info", "update", []byte(fmt.Sprintf("{\"playoff_type\":%d}", playoffType)))
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != 200 {
+		defer resp.Body.Close()
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
+	}
+
 	return nil
 }
 
@@ -604,58 +632,51 @@ func createTbaScoringBreakdown(
 		opponentScoreSummary = matchResult.RedScoreSummary()
 	}
 
-	breakdown.MobilityRobot1 = mobilityMapping[score.LeaveStatuses[0]]
-	breakdown.MobilityRobot2 = mobilityMapping[score.LeaveStatuses[1]]
-	breakdown.MobilityRobot3 = mobilityMapping[score.LeaveStatuses[2]]
-	breakdown.AutoMobilityPoints = scoreSummary.LeavePoints
-	// TODO(pat): Update for 2024.
-	//breakdown.AutoChargeStationRobot1 = autoChargeStationMapping[score.AutoDockStatuses[0]]
-	//breakdown.AutoChargeStationRobot2 = autoChargeStationMapping[score.AutoDockStatuses[1]]
-	//breakdown.AutoChargeStationRobot3 = autoChargeStationMapping[score.AutoDockStatuses[2]]
-	//breakdown.AutoBridgeState = chargeStationLevelMapping[score.AutoChargeStationLevel]
-	//breakdown.AutoCommunity = make(map[string][9]string)
-	//breakdown.TeleopCommunity = make(map[string][9]string)
-	//for rowIndex, rowName := range gridRowMapping {
-	//	shortRowName := string([]rune(rowName)[0])
-	//	breakdown.AutoCommunity[shortRowName] = createTbaGridRow(&score.Grid, rowIndex, true)
-	//	breakdown.TeleopCommunity[shortRowName] = createTbaGridRow(&score.Grid, rowIndex, false)
-	//}
-	//for i := 0; i < 3; i++ {
-	//	for j := 0; j < 9; j++ {
-	//		if score.Grid.Nodes[i][j] != game.Empty {
-	//			if score.Grid.AutoScoring[i][j] {
-	//				breakdown.AutoGamePieceCount++
-	//			}
-	//			breakdown.TeleopGamePieceCount++
-	//		}
-	//	}
-	//}
-	//breakdown.Links = make([]TbaLink, 0)
-	//for _, link := range score.Grid.Links() {
-	//	tbaLink := TbaLink{
-	//		Nodes: [3]int{link.StartColumn, link.StartColumn + 1, link.StartColumn + 2},
-	//		Row:   gridRowMapping[int(link.Row)],
-	//	}
-	//	breakdown.Links = append(breakdown.Links, tbaLink)
-	//}
-	//breakdown.LinkPoints = score.Grid.LinkPoints()
-	//breakdown.AutoGamePiecePoints = score.Grid.AutoGamePiecePoints()
-	//breakdown.TeleopGamePiecePoints = score.Grid.TeleopGamePiecePoints() + score.Grid.SuperchargedPoints()
-	//breakdown.AutoPoints = scoreSummary.AutoPoints
-	//breakdown.ExtraGamePieceCount = score.Grid.NumSuperchargedNodes()
-	//breakdown.EndGameChargeStationRobot1 = endGameChargeStationMapping[score.EndgameStatuses[0]]
-	//breakdown.EndGameChargeStationRobot2 = endGameChargeStationMapping[score.EndgameStatuses[1]]
-	//breakdown.EndGameChargeStationRobot3 = endGameChargeStationMapping[score.EndgameStatuses[2]]
-	//breakdown.EndGameBridgeState = chargeStationLevelMapping[score.EndgameChargeStationLevel]
-	//breakdown.TeleopPoints = breakdown.TeleopGamePiecePoints + scoreSummary.StagePoints
-	//breakdown.CoopertitionCriteriaMet = score.Grid.IsCoopertitionThresholdAchieved()
-	breakdown.SustainabilityBonusAchieved = scoreSummary.MelodyBonusRankingPoint
-	breakdown.ActivationBonusAchieved = scoreSummary.EnsembleBonusRankingPoint
+	breakdown.AutoLineRobot1 = leaveMapping[score.LeaveStatuses[0]]
+	breakdown.AutoLineRobot2 = leaveMapping[score.LeaveStatuses[1]]
+	breakdown.AutoLineRobot3 = leaveMapping[score.LeaveStatuses[2]]
+	breakdown.AutoLeavePoints = scoreSummary.LeavePoints
+	breakdown.AutoAmpNoteCount = score.AmpSpeaker.AutoAmpNotes
+	breakdown.AutoAmpNotePoints = 2 * breakdown.AutoAmpNoteCount
+	breakdown.AutoSpeakerNoteCount = score.AmpSpeaker.AutoSpeakerNotes
+	breakdown.AutoSpeakerNotePoints = 5 * breakdown.AutoSpeakerNoteCount
+	breakdown.AutoTotalNotePoints = breakdown.AutoAmpNotePoints + breakdown.AutoSpeakerNotePoints
+	breakdown.AutoPoints = scoreSummary.AutoPoints
+	breakdown.TeleopAmpNoteCount = score.AmpSpeaker.TeleopAmpNotes
+	breakdown.TeleopAmpNotePoints = 1 * breakdown.TeleopAmpNoteCount
+	breakdown.TeleopSpeakerNoteCount = score.AmpSpeaker.TeleopUnamplifiedSpeakerNotes
+	breakdown.TeleopSpeakerNotePoints = 2 * breakdown.TeleopSpeakerNoteCount
+	breakdown.TeleopSpeakerNoteAmplifiedCount = score.AmpSpeaker.TeleopAmplifiedSpeakerNotes
+	breakdown.TeleopSpeakerNoteAmplifiedPoints = 5 * breakdown.TeleopSpeakerNoteAmplifiedCount
+	breakdown.TeleopTotalNotePoints = breakdown.TeleopAmpNotePoints + breakdown.TeleopSpeakerNotePoints +
+		breakdown.TeleopSpeakerNoteAmplifiedPoints
+	breakdown.EndGameRobot1 = endGameStatusMapping[score.EndgameStatuses[0]]
+	breakdown.EndGameRobot2 = endGameStatusMapping[score.EndgameStatuses[1]]
+	breakdown.EndGameRobot3 = endGameStatusMapping[score.EndgameStatuses[2]]
+	breakdown.EndGameParkPoints = scoreSummary.ParkPoints
+	breakdown.EndGameOnStagePoints = scoreSummary.OnStagePoints
+	breakdown.EndGameHarmonyPoints = scoreSummary.HarmonyPoints
+	breakdown.MicStageLeft = score.MicrophoneStatuses[0]
+	breakdown.MicCenterStage = score.MicrophoneStatuses[1]
+	breakdown.MicStageRight = score.MicrophoneStatuses[2]
+	breakdown.EndGameSpotLightBonusPoints = scoreSummary.SpotlightPoints
+	breakdown.TrapStageLeft = score.TrapStatuses[0]
+	breakdown.TrapCenterStage = score.TrapStatuses[1]
+	breakdown.TrapStageRight = score.TrapStatuses[2]
+	breakdown.EndGameNoteInTrapPoints = scoreSummary.TrapPoints
+	breakdown.EndGameTotalStagePoints = scoreSummary.StagePoints
+	breakdown.TeleopPoints = breakdown.TeleopTotalNotePoints + breakdown.EndGameTotalStagePoints
+	breakdown.CoopertitionCriteriaMet = scoreSummary.CoopertitionCriteriaMet
+	breakdown.MelodyBonusAchieved = scoreSummary.MelodyBonusRankingPoint
+	breakdown.EnsembleBonusAchieved = scoreSummary.EnsembleBonusRankingPoint
 	for _, foul := range score.Fouls {
 		if foul.IsTechnical {
 			breakdown.TechFoulCount++
 		} else {
 			breakdown.FoulCount++
+		}
+		if foul.Rule() != nil && foul.Rule().IsRankingPoint {
+			breakdown.G424Penalty = true
 		}
 	}
 	breakdown.FoulPoints = scoreSummary.FoulPoints

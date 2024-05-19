@@ -22,6 +22,13 @@ type ScoreSummary struct {
 	EnsembleBonusRankingPoint bool
 	BonusRankingPoints        int
 	NumOpponentTechFouls      int
+
+	// Fields only needed for TBA.
+	ParkPoints      int
+	OnStagePoints   int
+	HarmonyPoints   int
+	SpotlightPoints int
+	TrapPoints      int
 }
 
 type MatchStatus int

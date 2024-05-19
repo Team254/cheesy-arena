@@ -19,6 +19,7 @@ type Score struct {
 const (
 	bankedAmpNoteLimit          = 2
 	ensembleBonusPointThreshold = 10
+	ensembleBonusRobotThreshold = 2
 )
 
 // Game-specific settings that can be changed by the user.
@@ -74,15 +75,15 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	for _, status := range score.EndgameStatuses {
 		switch status {
 		case EndgameParked:
-			summary.StagePoints += 1
+			summary.ParkPoints += 1
 		case EndgameStageLeft:
-			summary.StagePoints += 3
+			summary.OnStagePoints += 3
 			robotsByPosition[StageLeft]++
 		case EndgameCenterStage:
-			summary.StagePoints += 3
+			summary.OnStagePoints += 3
 			robotsByPosition[CenterStage]++
 		case EndgameStageRight:
-			summary.StagePoints += 3
+			summary.OnStagePoints += 3
 			robotsByPosition[StageRight]++
 		default:
 		}
@@ -95,19 +96,21 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 
 		// Handle Harmony (multiple robots climbing on the same chain).
 		if onstageRobots > 1 {
-			summary.StagePoints += 2 * (onstageRobots - 1)
+			summary.HarmonyPoints += 2 * (onstageRobots - 1)
 		}
 
 		// Handle microphones.
 		if score.MicrophoneStatuses[i] && onstageRobots > 0 {
-			summary.StagePoints += onstageRobots
+			summary.SpotlightPoints += onstageRobots
 		}
 
 		// Handle traps.
 		if score.TrapStatuses[i] {
-			summary.StagePoints += 5
+			summary.TrapPoints += 5
 		}
 	}
+	summary.StagePoints = summary.ParkPoints + summary.OnStagePoints + summary.HarmonyPoints + summary.SpotlightPoints +
+		summary.TrapPoints
 
 	summary.MatchPoints = summary.LeavePoints + summary.AmpPoints + summary.SpeakerPoints + summary.StagePoints
 
@@ -144,7 +147,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	if summary.NumNotes >= summary.NumNotesGoal {
 		summary.MelodyBonusRankingPoint = true
 	}
-	if summary.StagePoints >= ensembleBonusPointThreshold && totalOnstageRobots >= 2 {
+	if summary.StagePoints >= ensembleBonusPointThreshold && totalOnstageRobots >= ensembleBonusRobotThreshold {
 		summary.EnsembleBonusRankingPoint = true
 	}
 
