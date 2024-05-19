@@ -194,7 +194,7 @@ func TestAmpSpeaker_MatchSequence(t *testing.T) {
 	// Test with no amplification note limit and long duration.
 	AmplificationNoteLimit = 0
 	AmplificationDurationSec = 23
-	ampSpeaker.lastAmplifiedTime = time.Time{}
+	ampSpeaker.LastAmplifiedTime = time.Time{}
 	ampSpeaker.UpdateState(4, 4, true, false, matchStartTime, timeAfterStart(73))
 	assertAmpSpeaker(0, 4, 0, 1, 3)
 	assert.Equal(t, 0, ampSpeaker.BankedAmpNotes)

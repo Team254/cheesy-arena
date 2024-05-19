@@ -338,7 +338,7 @@ func (plc *ModbusPlc) SetSubwooferCountdown(redState, blueState bool) {
 	plc.coils[blueSubwooferCountdown] = blueState
 }
 
-// Sets the state of the red and blue amplifier lights.
+// Sets the state of the red and blue amp lights.
 func (plc *ModbusPlc) SetAmpLights(redLow, redHigh, redCoop, blueLow, blueHigh, blueCoop bool) {
 	plc.coils[redAmpLightLow] = redLow
 	plc.coils[redAmpLightHigh] = redHigh

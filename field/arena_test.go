@@ -831,7 +831,7 @@ func TestPlcEStopAStop(t *testing.T) {
 	assert.Equal(t, false, arena.AllianceStations["B3"].EStop)
 }
 
-func TestPlcAstopWithPlcDisabled(t *testing.T) {
+func TestPlcEStopAStopWithPlcDisabled(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc
 	plc.isEnabled = false
@@ -840,11 +840,11 @@ func TestPlcAstopWithPlcDisabled(t *testing.T) {
 	arena.Database.CreateTeam(&model.Team{Id: 254})
 	err := arena.assignTeam(254, "R1")
 	assert.Nil(t, err)
-	dummyDs := &DriverStationConnection{TeamId: 254}
-	arena.AllianceStations["R1"].DsConn = dummyDs
+	arena.AllianceStations["R1"].DsConn = &DriverStationConnection{TeamId: 254}
+	arena.AllianceStations["R2"].DsConn = &DriverStationConnection{TeamId: 1323}
 
 	arena.AllianceStations["R1"].DsConn.RobotLinked = true
-	arena.AllianceStations["R2"].Bypass = true
+	arena.AllianceStations["R2"].DsConn.RobotLinked = true
 	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
@@ -857,10 +857,14 @@ func TestPlcAstopWithPlcDisabled(t *testing.T) {
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
 
 	plc.redEStops[0] = true
+	plc.redAStops[1] = true
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].AStop)
 	assert.Equal(t, false, arena.AllianceStations["R1"].EStop)
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R2"].AStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].EStop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn.Enabled)
 }
 
 func TestPlcFieldEStop(t *testing.T) {
@@ -983,95 +987,199 @@ func TestPlcMatchCycleEvergreen(t *testing.T) {
 	assert.Equal(t, true, plc.fieldResetLight)
 }
 
-// TODO(pat): Update for 2024.
-//func TestPlcMatchCycleGameSpecific(t *testing.T) {
-//	arena := setupTestArena(t)
-//	var plc FakePlc
-//	plc.isEnabled = true
-//	arena.Plc = &plc
-//
-//	plc.chargeStationsLevel[0] = true
-//	plc.chargeStationsLevel[1] = true
-//	arena.Update()
-//	assert.Equal(t, [2]bool{false, false}, plc.chargeStationLights)
-//
-//	arena.AllianceStations["R1"].Bypass = true
-//	arena.AllianceStations["R2"].Bypass = true
-//	arena.AllianceStations["R3"].Bypass = true
-//	arena.AllianceStations["B1"].Bypass = true
-//	arena.AllianceStations["B2"].Bypass = true
-//	arena.AllianceStations["B3"].Bypass = true
-//	arena.Update()
-//	assert.Nil(t, arena.StartMatch())
-//	arena.Update()
-//	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
-//	arena.Update()
-//	assert.Equal(t, AutoPeriod, arena.MatchState)
-//	assert.Equal(t, [2]bool{true, true}, plc.chargeStationLights)
-//	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	assert.Equal(t, false, arena.BlueRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//
-//	// Move the charge stations around during auto and the pause.
-//	plc.chargeStationsLevel[0] = false
-//	arena.Update()
-//	assert.Equal(t, [2]bool{false, true}, plc.chargeStationLights)
-//	plc.chargeStationsLevel[1] = false
-//	arena.Update()
-//	assert.Equal(t, [2]bool{false, false}, plc.chargeStationLights)
-//	plc.chargeStationsLevel[0] = true
-//	arena.Update()
-//	assert.Equal(t, [2]bool{true, false}, plc.chargeStationLights)
-//	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
-//		game.MatchTiming.AutoDurationSec) * time.Second)
-//	arena.Update()
-//	assert.Equal(t, PausePeriod, arena.MatchState)
-//	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	assert.Equal(t, false, arena.BlueRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	plc.chargeStationsLevel[0] = false
-//	plc.chargeStationsLevel[1] = true
-//	arena.Update()
-//	assert.Equal(t, [2]bool{false, true}, plc.chargeStationLights)
-//	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	assert.Equal(t, false, arena.BlueRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//
-//	// Check that the charge station state is captured at the start of teleop.
-//	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
-//		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec) * time.Second)
-//	arena.Update()
-//	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	assert.Equal(t, true, arena.BlueRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//
-//	// Move the charge stations around during teleop.
-//	plc.chargeStationsLevel[0] = true
-//	arena.Update()
-//	assert.Equal(t, [2]bool{true, true}, plc.chargeStationLights)
-//	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	assert.Equal(t, true, arena.BlueRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	plc.chargeStationsLevel[0] = false
-//	plc.chargeStationsLevel[1] = false
-//	arena.Update()
-//	assert.Equal(t, [2]bool{false, false}, plc.chargeStationLights)
-//
-//	// End the match.
-//	plc.chargeStationsLevel[0] = true
-//	plc.chargeStationsLevel[1] = false
-//	game.ChargeStationTeleopGracePeriod = 10 * time.Millisecond
-//	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
-//		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.MatchTiming.TeleopDurationSec) *
-//		time.Second)
-//	arena.Update()
-//	assert.Equal(t, [2]bool{true, false}, plc.chargeStationLights)
-//	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	assert.Equal(t, true, arena.BlueRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.EndgameChargeStationLevel)
-//	assert.Equal(t, false, arena.BlueRealtimeScore.CurrentScore.EndgameChargeStationLevel)
-//
-//	// Allow the grace period to expire.
-//	time.Sleep(20 * time.Millisecond)
-//	arena.Update()
-//	assert.Equal(t, [2]bool{false, false}, plc.chargeStationLights)
-//	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	assert.Equal(t, true, arena.BlueRealtimeScore.CurrentScore.AutoChargeStationLevel)
-//	assert.Equal(t, true, arena.RedRealtimeScore.CurrentScore.EndgameChargeStationLevel)
-//	assert.Equal(t, false, arena.BlueRealtimeScore.CurrentScore.EndgameChargeStationLevel)
-//}
+func TestPlcMatchCycleGameSpecific(t *testing.T) {
+	arena := setupTestArena(t)
+	var plc FakePlc
+	plc.isEnabled = true
+	arena.Plc = &plc
+
+	// Check that no inputs or outputs are active before the match starts.
+	assert.Equal(t, PreMatch, arena.MatchState)
+	plc.redNoteCounts = [2]int{1, 2}
+	plc.blueNoteCounts = [2]int{3, 4}
+	plc.redAmpButtons = [2]bool{true, true}
+	plc.blueAmpButtons = [2]bool{true, true}
+	arena.Update()
+	redAmpSpeaker := &arena.RedRealtimeScore.CurrentScore.AmpSpeaker
+	blueAmpSpeaker := &arena.BlueRealtimeScore.CurrentScore.AmpSpeaker
+	assert.Equal(t, game.AmpSpeaker{}, *redAmpSpeaker)
+	assert.Equal(t, game.AmpSpeaker{}, *blueAmpSpeaker)
+	assert.Equal(t, [3]bool{false, false, false}, plc.redAmpLights)
+	assert.Equal(t, [3]bool{false, false, false}, plc.blueAmpLights)
+	assert.Equal(t, false, plc.redSubwooferCountdown)
+	assert.Equal(t, false, plc.blueSubwooferCountdown)
+	assert.Equal(t, false, plc.speakerMotors)
+	assert.Equal(t, false, plc.postMatchSubwooferLights)
+	plc.redNoteCounts = [2]int{0, 0}
+	plc.blueNoteCounts = [2]int{0, 0}
+	plc.redAmpButtons = [2]bool{false, false}
+	plc.blueAmpButtons = [2]bool{false, false}
+
+	// Start the match.
+	arena.AllianceStations["R1"].Bypass = true
+	arena.AllianceStations["R2"].Bypass = true
+	arena.AllianceStations["R3"].Bypass = true
+	arena.AllianceStations["B1"].Bypass = true
+	arena.AllianceStations["B2"].Bypass = true
+	arena.AllianceStations["B3"].Bypass = true
+	arena.Update()
+	assert.Nil(t, arena.StartMatch())
+	arena.Update()
+	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
+	arena.Update()
+	assert.Equal(t, AutoPeriod, arena.MatchState)
+	assert.Equal(t, true, plc.speakerMotors)
+
+	// Check the autonomous period.
+	plc.redNoteCounts = [2]int{1, 2}
+	plc.blueNoteCounts = [2]int{3, 4}
+	plc.redAmpButtons = [2]bool{true, true}
+	plc.blueAmpButtons = [2]bool{true, true}
+	arena.Update()
+	assert.Equal(t, 1, redAmpSpeaker.AutoAmpNotes)
+	assert.Equal(t, 2, redAmpSpeaker.AutoSpeakerNotes)
+	assert.Equal(t, 3, blueAmpSpeaker.AutoAmpNotes)
+	assert.Equal(t, 4, blueAmpSpeaker.AutoSpeakerNotes)
+	assert.Equal(t, [3]bool{true, false, false}, plc.redAmpLights)
+	assert.Equal(t, [3]bool{true, true, false}, plc.blueAmpLights)
+
+	// Check the pause period.
+	arena.MatchStartTime = time.Now().Add(
+		-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
+	)
+	arena.Update()
+	assert.Equal(t, PausePeriod, arena.MatchState)
+	assert.Equal(t, true, plc.speakerMotors)
+	assert.Equal(t, [3]bool{true, false, false}, plc.redAmpLights)
+	assert.Equal(t, [3]bool{true, true, false}, plc.blueAmpLights)
+	plc.redAmpButtons = [2]bool{false, false}
+	plc.blueAmpButtons = [2]bool{false, false}
+
+	// Check the teleop period.
+	durationToTeleopStart := time.Duration(
+		game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
+	) * time.Second
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 5000*time.Millisecond)
+	arena.Update()
+	assert.Equal(t, TeleopPeriod, arena.MatchState)
+	assert.Equal(t, true, plc.speakerMotors)
+
+	// Trigger coop for the red alliance.
+	plc.redAmpButtons = [2]bool{false, true}
+	arena.Update()
+	assert.Equal(t, true, redAmpSpeaker.CoopActivated)
+	assert.Equal(t, [3]bool{false, false, true}, plc.redAmpLights)
+	assert.Equal(t, false, blueAmpSpeaker.CoopActivated)
+	assert.Equal(t, [3]bool{true, true, false}, plc.blueAmpLights)
+
+	// Trigger coop for the blue alliance.
+	plc.blueAmpButtons = [2]bool{false, true}
+	arena.Update()
+	assert.Equal(t, true, blueAmpSpeaker.CoopActivated)
+	assert.Equal(t, [3]bool{true, false, true}, plc.blueAmpLights)
+
+	// Do some scoring and trigger an amplified cycle.
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 10000*time.Millisecond)
+	plc.redAmpButtons = [2]bool{false, false}
+	plc.blueAmpButtons = [2]bool{false, false}
+	plc.blueNoteCounts = [2]int{4, 6}
+	arena.Update()
+	assert.Equal(t, 3, blueAmpSpeaker.AutoAmpNotes)
+	assert.Equal(t, 4, blueAmpSpeaker.AutoSpeakerNotes)
+	assert.Equal(t, 1, blueAmpSpeaker.TeleopAmpNotes)
+	assert.Equal(t, 2, blueAmpSpeaker.TeleopUnamplifiedSpeakerNotes)
+	assert.Equal(t, 0, blueAmpSpeaker.TeleopAmplifiedSpeakerNotes)
+	assert.Equal(t, false, plc.blueSpeakerLight)
+	assert.Equal(t, false, plc.blueSubwooferCountdown)
+	plc.blueAmpButtons = [2]bool{true, false}
+	arena.Update()
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 10200*time.Millisecond)
+	arena.Update()
+	assert.Equal(t, false, plc.redSpeakerLight)
+	assert.Equal(t, false, plc.redSubwooferCountdown)
+	assert.Equal(t, true, plc.blueSpeakerLight)
+	assert.Equal(t, true, plc.blueSubwooferCountdown)
+	plc.blueAmpButtons = [2]bool{false, false}
+	plc.blueNoteCounts = [2]int{4, 9}
+	arena.Update()
+	assert.Equal(t, 2, blueAmpSpeaker.TeleopUnamplifiedSpeakerNotes)
+	assert.Equal(t, 3, blueAmpSpeaker.TeleopAmplifiedSpeakerNotes)
+	blueAmpSpeaker.LastAmplifiedTime = time.Now().Add(-11 * time.Second)
+	arena.Update()
+	assert.Equal(t, false, plc.blueSpeakerLight)
+	assert.Equal(t, false, plc.blueSubwooferCountdown)
+	plc.blueNoteCounts = [2]int{4, 11}
+	arena.Update()
+	assert.Equal(t, 3, blueAmpSpeaker.TeleopUnamplifiedSpeakerNotes)
+	assert.Equal(t, 4, blueAmpSpeaker.TeleopAmplifiedSpeakerNotes)
+
+	// Trigger an amplified cycle that ends early.
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 20000*time.Millisecond)
+	plc.redNoteCounts = [2]int{3, 2}
+	plc.redAmpButtons = [2]bool{true, false}
+	arena.Update()
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 20001*time.Millisecond)
+	arena.Update()
+	assert.Equal(t, true, plc.redSpeakerLight)
+	assert.Equal(t, true, plc.redSubwooferCountdown)
+	assert.Equal(t, false, plc.blueSpeakerLight)
+	assert.Equal(t, false, plc.blueSubwooferCountdown)
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 23000*time.Millisecond)
+	plc.redNoteCounts = [2]int{3, 6}
+	plc.redAmpButtons = [2]bool{false, false}
+	arena.Update()
+	assert.Equal(t, 4, redAmpSpeaker.TeleopAmplifiedSpeakerNotes)
+	assert.Equal(t, false, plc.redSpeakerLight)
+	assert.Equal(t, false, plc.redSubwooferCountdown)
+	assert.Equal(t, false, plc.blueSpeakerLight)
+	assert.Equal(t, false, plc.blueSubwooferCountdown)
+
+	// Trigger an amplified cycle that ends after the match is over.
+	durationToTeleopEnd := time.Duration(
+		game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
+			game.MatchTiming.TeleopDurationSec,
+	) * time.Second
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd + 1000*time.Millisecond)
+	plc.blueNoteCounts = [2]int{6, 11}
+	plc.blueAmpButtons = [2]bool{true, false}
+	arena.Update()
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd + 999*time.Millisecond)
+	arena.Update()
+	assert.Equal(t, true, plc.blueSpeakerLight)
+	assert.Equal(t, true, plc.blueSubwooferCountdown)
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd + 1*time.Millisecond)
+	plc.redNoteCounts = [2]int{5, 6}
+	plc.blueNoteCounts = [2]int{6, 12}
+	arena.Update()
+	assert.Equal(t, TeleopPeriod, arena.MatchState)
+	assert.Equal(t, 5, blueAmpSpeaker.TeleopAmplifiedSpeakerNotes)
+	assert.Equal(t, [3]bool{true, true, true}, plc.redAmpLights)
+	assert.Equal(t, [3]bool{false, true, true}, plc.blueAmpLights)
+	assert.Equal(t, true, plc.blueSpeakerLight)
+	assert.Equal(t, true, plc.blueSubwooferCountdown)
+	assert.Equal(t, false, plc.postMatchSubwooferLights)
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 1*time.Millisecond)
+	arena.Update()
+	assert.Equal(t, PostMatch, arena.MatchState)
+	assert.Equal(t, [3]bool{false, false, false}, plc.redAmpLights)
+	assert.Equal(t, [3]bool{false, false, false}, plc.blueAmpLights)
+	assert.Equal(t, false, plc.blueSpeakerLight)
+	assert.Equal(t, false, plc.blueSubwooferCountdown)
+	assert.Equal(t, true, plc.speakerMotors)
+	assert.Equal(t, true, plc.postMatchSubwooferLights)
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 4999*time.Millisecond)
+	plc.blueNoteCounts = [2]int{6, 13}
+	arena.Update()
+	assert.Equal(t, 6, blueAmpSpeaker.TeleopAmplifiedSpeakerNotes)
+	assert.Equal(t, true, plc.speakerMotors)
+	assert.Equal(t, true, plc.postMatchSubwooferLights)
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 5001*time.Millisecond)
+	plc.blueNoteCounts = [2]int{6, 20}
+	arena.Update()
+	assert.Equal(t, 3, blueAmpSpeaker.TeleopUnamplifiedSpeakerNotes)
+	assert.Equal(t, 6, blueAmpSpeaker.TeleopAmplifiedSpeakerNotes)
+	assert.Equal(t, [3]bool{false, false, false}, plc.redAmpLights)
+	assert.Equal(t, [3]bool{false, false, false}, plc.blueAmpLights)
+	assert.Equal(t, false, plc.speakerMotors)
+	assert.Equal(t, false, plc.postMatchSubwooferLights)
+}

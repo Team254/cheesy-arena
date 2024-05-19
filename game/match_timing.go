@@ -9,7 +9,7 @@ import "time"
 
 const (
 	speakerAutoGracePeriodSec      = 3
-	speakerTeleopGracePeriodSec    = 5
+	SpeakerTeleopGracePeriodSec    = 5
 	speakerAmplifiedGracePeriodSec = 3
 	coopTeleopWindowSec            = 45
 )

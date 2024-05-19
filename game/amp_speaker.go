@@ -17,7 +17,7 @@ type AmpSpeaker struct {
 	AutoSpeakerNotes              int
 	TeleopUnamplifiedSpeakerNotes int
 	TeleopAmplifiedSpeakerNotes   int
-	lastAmplifiedTime             time.Time
+	LastAmplifiedTime             time.Time
 	lastAmplifiedSpeakerNotes     int
 }
 
@@ -57,7 +57,7 @@ func (ampSpeaker *AmpSpeaker) UpdateState(
 
 		// Handle the amplify button.
 		if amplifyButton && !ampSpeaker.isAmplified(currentTime, false) && ampSpeaker.BankedAmpNotes >= 2 {
-			ampSpeaker.lastAmplifiedTime = currentTime
+			ampSpeaker.LastAmplifiedTime = currentTime
 			ampSpeaker.lastAmplifiedSpeakerNotes = 0
 			ampSpeaker.BankedAmpNotes -= 2
 		}
@@ -65,7 +65,7 @@ func (ampSpeaker *AmpSpeaker) UpdateState(
 
 	// Handle the Speaker.
 	teleopSpeakerValidityCutoff := matchStartTime.Add(
-		GetDurationToTeleopEnd() + speakerTeleopGracePeriodSec*time.Second,
+		GetDurationToTeleopEnd() + SpeakerTeleopGracePeriodSec*time.Second,
 	)
 	if currentTime.Before(teleopSpeakerValidityCutoff) {
 		for newSpeakerNotes > 0 && ampSpeaker.isAmplified(currentTime, true) {
@@ -82,7 +82,7 @@ func (ampSpeaker *AmpSpeaker) AmplifiedTimeRemaining(currentTime time.Time) floa
 	if !ampSpeaker.isAmplified(currentTime, false) {
 		return 0
 	}
-	return float64(AmplificationDurationSec) - currentTime.Sub(ampSpeaker.lastAmplifiedTime).Seconds()
+	return float64(AmplificationDurationSec) - currentTime.Sub(ampSpeaker.LastAmplifiedTime).Seconds()
 }
 
 // Returns true if the co-op window during the match is currently open.
@@ -127,13 +127,13 @@ func (ampSpeaker *AmpSpeaker) speakerNotesScored() int {
 
 // Returns whether the Speaker should be counting new incoming notes as amplified.
 func (ampSpeaker *AmpSpeaker) isAmplified(currentTime time.Time, includeGracePeriod bool) bool {
-	amplifiedValidityCutoff := ampSpeaker.lastAmplifiedTime.Add(time.Duration(AmplificationDurationSec) * time.Second)
+	amplifiedValidityCutoff := ampSpeaker.LastAmplifiedTime.Add(time.Duration(AmplificationDurationSec) * time.Second)
 	if includeGracePeriod {
 		amplifiedValidityCutoff = amplifiedValidityCutoff.Add(
 			time.Duration(speakerAmplifiedGracePeriodSec) * time.Second,
 		)
 	}
-	meetsTimeCriterion := currentTime.After(ampSpeaker.lastAmplifiedTime) && currentTime.Before(amplifiedValidityCutoff)
+	meetsTimeCriterion := currentTime.After(ampSpeaker.LastAmplifiedTime) && currentTime.Before(amplifiedValidityCutoff)
 	meetsNoteCriterion := AmplificationNoteLimit == 0 || ampSpeaker.lastAmplifiedSpeakerNotes < AmplificationNoteLimit
 	return meetsTimeCriterion && meetsNoteCriterion
 }
