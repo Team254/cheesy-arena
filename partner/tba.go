@@ -97,11 +97,6 @@ type TbaScoreBreakdown struct {
 	RP                               int    `mapstructure:"rp"`
 }
 
-type TbaLink struct {
-	Nodes [3]int `json:"nodes"`
-	Row   string `json:"row"`
-}
-
 type TbaRanking struct {
 	TeamKey string `json:"team_key"`
 	Rank    int    `json:"rank"`

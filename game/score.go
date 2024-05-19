@@ -58,8 +58,8 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	}
 
 	// Calculate autonomous period points.
-	for _, mobility := range score.LeaveStatuses {
-		if mobility {
+	for _, status := range score.LeaveStatuses {
+		if status {
 			summary.LeavePoints += 2
 		}
 	}
