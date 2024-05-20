@@ -46,35 +46,43 @@
       </div>
     </div>
     <div class="row justify-content-center mt-1">
+      <button type="button" id="showOverlay" class="btn btn-info btn-match-play ms-1"
+        onclick="showOverlay();" disabled>
+        Show Overlay
+      </button>
       <button type="button" id="startMatch" class="btn btn-success btn-match-play ms-1"
-          onclick="startMatch();" disabled>
+        onclick="startMatch();" disabled>
         Start Match
       </button>
-      <button type="button" id="abortMatch" class="btn btn-danger btn-match-play ms-1"
-          onclick="abortMatch();" disabled>
-        Abort Match
+      <button type="button" id="commitResults" class="btn btn-primary btn-match-play ms-1"
+        onclick="confirmCommit();" disabled>
+        Commit Results
       </button>
-      <button type="button" id="substituteTeams" class="btn btn-info btn-match-play ms-1"
-        onclick="substituteTeams();" disabled>
-        Substitute Teams
-      </button>
-      <button type="button" id="signalReset" class="btn btn-success btn-match-play ms-1"
-          onclick="signalReset();" disabled>
-        Signal Reset
+      <button type="button" id="showFinalScore" class="btn btn-info btn-match-play ms-1"
+        onclick="showFinalScore();" disabled>
+        Show Final Score
       </button>
     </div>
     <div class="row justify-content-center mt-1">
-      <button type="button" id="commitResults" class="btn btn-primary btn-match-play ms-1"
-          onclick="confirmCommit();" disabled>
-        Commit Results
+      <button type="button" id="substituteTeams" class="btn btn-primary btn-match-play ms-1"
+        onclick="substituteTeams();" disabled>
+        Substitute Teams
+      </button>
+      <button type="button" id="abortMatch" class="btn btn-danger btn-match-play ms-1"
+        onclick="abortMatch();" disabled>
+        Abort Match
       </button>
       <button type="button" id="discardResults" class="btn btn-warning btn-match-play ms-1"
-          onclick="$('#confirmDiscardResults').modal('show');" disabled>
+        onclick="$('#confirmDiscardResults').modal('show');" disabled>
         Discard Results
       </button>
       <button type="button" id="editResults" class="btn btn-secondary btn-match-play ms-1"
-          onclick="window.location = '/match_review/current/edit';" disabled>
+        onclick="window.location = '/match_review/current/edit';" disabled>
         Edit Results
+      </button>
+      <button type="button" id="signalReset" class="btn btn-success btn-match-play ms-1"
+        onclick="signalReset();" disabled>
+        Signal Reset
       </button>
     </div>
     <div class="card card-body bg-body-tertiary mt-3">

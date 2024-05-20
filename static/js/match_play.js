@@ -63,6 +63,20 @@ const discardResults = function() {
   websocket.send("discardResults");
 };
 
+// Switches the audience display to the match intro screen.
+const showOverlay = function() {
+  $("input[name=audienceDisplay][value=intro]").prop("checked", true);
+  setAudienceDisplay();
+  $("#showOverlay").prop("disabled", true);
+}
+
+// Switches the audience display to the final score screen.
+const showFinalScore = function() {
+  $("input[name=audienceDisplay][value=score]").prop("checked", true);
+  setAudienceDisplay();
+  $("#showFinalScore").prop("disabled", true);
+}
+
 // Sends a websocket message to change what the audience display is showing.
 const setAudienceDisplay = function() {
   websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
@@ -181,6 +195,8 @@ const handleArenaStatus = function(data) {
     case "AUTO_PERIOD":
     case "PAUSE_PERIOD":
     case "TELEOP_PERIOD":
+      $("#showOverlay").prop("disabled", true);
+      $("#showFinalScore").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
       $("#signalReset").prop("disabled", true);
@@ -191,6 +207,8 @@ const handleArenaStatus = function(data) {
       $("#startTimeout").prop("disabled", true);
       break;
     case "POST_MATCH":
+      $("#showOverlay").prop("disabled", true);
+      $("#showFinalScore").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
       $("#signalReset").prop("disabled", false);
@@ -201,6 +219,8 @@ const handleArenaStatus = function(data) {
       $("#startTimeout").prop("disabled", true);
       break;
     case "TIMEOUT_ACTIVE":
+      $("#showOverlay").prop("disabled", true);
+      $("#showFinalScore").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
       $("#signalReset").prop("disabled", true);
@@ -211,6 +231,8 @@ const handleArenaStatus = function(data) {
       $("#startTimeout").prop("disabled", true);
       break;
     case "POST_TIMEOUT":
+      $("#showOverlay").prop("disabled", true);
+      $("#showFinalScore").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
@@ -255,6 +277,7 @@ const handleMatchLoad = function(data) {
   $("#playoffBlueAllianceInfo").html(formatPlayoffAllianceInfo(data.Match.PlayoffBlueAlliance, data.BlueOffFieldTeams));
 
   $("#substituteTeams").prop("disabled", true);
+  $("#showOverlay").prop("disabled", false);
 }
 
 // Handles a websocket message to update the match time countdown.
@@ -274,7 +297,9 @@ const handleRealtimeScore = function(data) {
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function(data) {
   let matchName = data.Match.LongName;
-  if (!matchName) {
+  if (matchName) {
+    $("#showFinalScore").prop("disabled", false);
+  } else {
     matchName = "None"
   }
   $("#savedMatchName").html(matchName);
