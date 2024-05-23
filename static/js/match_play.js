@@ -225,8 +225,8 @@ const handleArenaStatus = function(data) {
     case "TIMEOUT_ACTIVE":
       $("#showOverlay").prop("disabled", true);
       $("#introRadio").prop("disabled", true);
-      $("#showFinalScore").prop("disabled", true);
-      $("#scoreRadio").prop("disabled", true);
+      $("#showFinalScore").prop("disabled", false);
+      $("#scoreRadio").prop("disabled", false);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
       $("#signalReset").prop("disabled", true);
@@ -237,10 +237,10 @@ const handleArenaStatus = function(data) {
       $("#startTimeout").prop("disabled", true);
       break;
     case "POST_TIMEOUT":
-      $("#showOverlay").prop("disabled", true);
-      $("#introRadio").prop("disabled", true);
-      $("#showFinalScore").prop("disabled", true);
-      $("#scoreRadio").prop("disabled", true);
+      $("#showOverlay").prop("disabled", false);
+      $("#introRadio").prop("disabled", false);
+      $("#showFinalScore").prop("disabled", false);
+      $("#scoreRadio").prop("disabled", false);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
