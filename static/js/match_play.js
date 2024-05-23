@@ -196,7 +196,9 @@ const handleArenaStatus = function(data) {
     case "PAUSE_PERIOD":
     case "TELEOP_PERIOD":
       $("#showOverlay").prop("disabled", true);
+      $("#introRadio").prop("disabled", true);
       $("#showFinalScore").prop("disabled", true);
+      $("#scoreRadio").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
       $("#signalReset").prop("disabled", true);
@@ -208,7 +210,9 @@ const handleArenaStatus = function(data) {
       break;
     case "POST_MATCH":
       $("#showOverlay").prop("disabled", true);
+      $("#introRadio").prop("disabled", true);
       $("#showFinalScore").prop("disabled", true);
+      $("#scoreRadio").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
       $("#signalReset").prop("disabled", false);
@@ -220,7 +224,9 @@ const handleArenaStatus = function(data) {
       break;
     case "TIMEOUT_ACTIVE":
       $("#showOverlay").prop("disabled", true);
+      $("#introRadio").prop("disabled", true);
       $("#showFinalScore").prop("disabled", true);
+      $("#scoreRadio").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
       $("#signalReset").prop("disabled", true);
@@ -232,7 +238,9 @@ const handleArenaStatus = function(data) {
       break;
     case "POST_TIMEOUT":
       $("#showOverlay").prop("disabled", true);
+      $("#introRadio").prop("disabled", true);
       $("#showFinalScore").prop("disabled", true);
+      $("#scoreRadio").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
@@ -278,6 +286,7 @@ const handleMatchLoad = function(data) {
 
   $("#substituteTeams").prop("disabled", true);
   $("#showOverlay").prop("disabled", false);
+  $("#introRadio").prop("disabled", false);
 }
 
 // Handles a websocket message to update the match time countdown.
@@ -299,6 +308,7 @@ const handleScorePosted = function(data) {
   let matchName = data.Match.LongName;
   if (matchName) {
     $("#showFinalScore").prop("disabled", false);
+    $("#scoreRadio").prop("disabled", false);
   } else {
     matchName = "None"
   }
