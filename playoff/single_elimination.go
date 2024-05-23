@@ -191,11 +191,13 @@ func newSingleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 	}
 
 	// Define scheduled breaks.
-	breakSpecs := []breakSpec{
-		{43, 480, "Field Break"},
-		{44, 480, "Field Break"},
-		{45, 480, "Field Break"},
+	var breakSpecs []breakSpec
+	if numAlliances > 2 {
+		// Only create a break before the first finals match if there were preceding matches.
+		breakSpecs = append(breakSpecs, breakSpec{43, 480, "Field Break"})
 	}
+	breakSpecs = append(breakSpecs, breakSpec{44, 480, "Field Break"})
+	breakSpecs = append(breakSpecs, breakSpec{45, 480, "Field Break"})
 
 	return &final, breakSpecs, nil
 }
