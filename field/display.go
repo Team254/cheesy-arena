@@ -36,6 +36,7 @@ const (
 	RankingsDisplay
 	TwitchStreamDisplay
 	WallDisplay
+	WebpageDisplay
 )
 
 var DisplayTypeNames = map[DisplayType]string{
@@ -49,6 +50,7 @@ var DisplayTypeNames = map[DisplayType]string{
 	RankingsDisplay:        "Rankings",
 	TwitchStreamDisplay:    "Twitch Stream",
 	WallDisplay:            "Wall",
+	WebpageDisplay:         "Web Page",
 }
 
 var displayTypePaths = map[DisplayType]string{
@@ -62,6 +64,7 @@ var displayTypePaths = map[DisplayType]string{
 	RankingsDisplay:        "/displays/rankings",
 	TwitchStreamDisplay:    "/displays/twitch",
 	WallDisplay:            "/displays/wall",
+	WebpageDisplay:         "/displays/webpage",
 }
 
 var displayRegistryMutex sync.Mutex
