@@ -44,8 +44,7 @@ var handleMatchLoad = function(data) {
 
       var ranking = data.Rankings[team.Id];
       if (ranking && data.Match.Type === matchTypeQualification) {
-        var rankingText = ranking.Rank;
-        $("#teamRank").attr("data-alliance-bg", station[0]).text(rankingText);
+        $("#teamRank").attr("data-alliance-bg", station[0]).text(ranking);
       } else {
         $("#teamRank").attr("data-alliance-bg", station[0]).text("");
       }

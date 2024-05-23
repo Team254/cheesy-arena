@@ -124,11 +124,13 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		teams[station] = allianceStation.Team
 	}
 
-	rankings := make(map[string]*game.Ranking)
+	rankings := make(map[string]int)
 	for _, allianceStation := range arena.AllianceStations {
 		if allianceStation.Team != nil {
-			rankings[strconv.Itoa(allianceStation.Team.Id)], _ =
-				arena.Database.GetRankingForTeam(allianceStation.Team.Id)
+			ranking, _ := arena.Database.GetRankingForTeam(allianceStation.Team.Id)
+			if ranking != nil {
+				rankings[strconv.Itoa(allianceStation.Team.Id)] = ranking.Rank
+			}
 		}
 	}
 
@@ -157,7 +159,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		AllowSubstitution bool
 		IsReplay          bool
 		Teams             map[string]*model.Team
-		Rankings          map[string]*game.Ranking
+		Rankings          map[string]int
 		Matchup           *playoff.Matchup
 		RedOffFieldTeams  []*model.Team
 		BlueOffFieldTeams []*model.Team

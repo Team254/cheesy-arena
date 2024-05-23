@@ -3,9 +3,9 @@
   {{if eq .Match.Type playoffMatch}}
     <h4><b>Alliance {{.Match.PlayoffRedAlliance}}</b></h4>
   {{end}}
-  {{template "team" dict "alliance" "red" "team" (index .Teams "R1")}}
-  {{template "team" dict "alliance" "red" "team" (index .Teams "R2")}}
-  {{template "team" dict "alliance" "red" "team" (index .Teams "R3")}}
+  {{template "team" dict "alliance" "red" "team" (index .Teams "R1") "rankings" .Rankings}}
+  {{template "team" dict "alliance" "red" "team" (index .Teams "R2") "rankings" .Rankings}}
+  {{template "team" dict "alliance" "red" "team" (index .Teams "R3") "rankings" .Rankings}}
   {{range $team := .RedOffFieldTeams}}
     {{template "team" dict "alliance" "red" "team" $team "isOffField" true}}
   {{end}}
@@ -14,9 +14,9 @@
   {{if eq .Match.Type playoffMatch}}
     <h4><b>Alliance {{.Match.PlayoffBlueAlliance}}</b></h4>
   {{end}}
-  {{template "team" dict "alliance" "blue" "team" (index .Teams "B1")}}
-  {{template "team" dict "alliance" "blue" "team" (index .Teams "B2")}}
-  {{template "team" dict "alliance" "blue" "team" (index .Teams "B3")}}
+  {{template "team" dict "alliance" "blue" "team" (index .Teams "B1") "rankings" .Rankings}}
+  {{template "team" dict "alliance" "blue" "team" (index .Teams "B2") "rankings" .Rankings}}
+  {{template "team" dict "alliance" "blue" "team" (index .Teams "B3") "rankings" .Rankings}}
   {{range $team := .BlueOffFieldTeams}}
     {{template "team" dict "alliance" "blue" "team" $team "isOffField" true}}
   {{end}}
@@ -28,13 +28,16 @@
     <div class="col-sm-2"><h2><b>{{.team.Id}}</b>{{if .isOffField}} (not on field){{end}}</h2></div>
     <div class="col-sm-4"><h2>{{.team.Nickname}}</h2></div>
     <div class="col-sm-2"><h5>{{.team.SchoolName}}</h5></div>
-    <div class="col-sm-3">
-      <div><h5>{{.team.City}}, {{.team.StateProv}}, {{.team.Country}}</h5></div>
-    </div>
+    <div class="col-sm-3"><div><h5>{{.team.City}}, {{.team.StateProv}}, {{.team.Country}}</h5></div></div>
     <div class="col-sm-1">
-      <button type="button" class="btn btn-secondary btn-sm" onclick="$('#team{{.team.Id}}Details').modal('show');">
-        More
-      </button>
+      <div class="row">
+        <div class="col-sm-6">{{if index .rankings (itoa .team.Id)}}{{index .rankings (itoa .team.Id)}}{{end}}</div>
+        <div class="col-sm-6">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="$('#team{{.team.Id}}Details').modal('show');">
+            More
+          </button>
+        </div>
+      </div>
     </div>
     <div id="team{{.team.Id}}Details" class="modal">
       <div class="modal-dialog">
