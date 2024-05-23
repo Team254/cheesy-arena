@@ -11,6 +11,7 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/dchest/uniuri"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -307,6 +308,11 @@ func (web *Web) populateOfficialTeamInfo(team *model.Team) error {
 	team.City = tbaTeam.City
 	team.StateProv = tbaTeam.StateProv
 	team.Country = tbaTeam.Country
+	schoolNameRe := regexp.MustCompile("^.*\\S&(\\S.*?$)")
+	matches := schoolNameRe.FindStringSubmatch(tbaTeam.Name)
+	if len(matches) > 0 {
+		team.SchoolName = matches[1]
+	}
 	team.RookieYear = tbaTeam.RookieYear
 	team.RobotName, err = web.arena.TbaClient.GetRobotName(team.Id, time.Now().Year())
 	if err != nil {

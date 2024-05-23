@@ -26,9 +26,10 @@
 <div class="row">
   {{if .team}}
     <div class="col-sm-2"><h2><b>{{.team.Id}}</b>{{if .isOffField}} (not on field){{end}}</h2></div>
-    <div class="col-sm-5"><h2>{{.team.Nickname}}</h2></div>
-    <div class="col-sm-4">
-      <div><h4>{{.team.City}}, {{.team.StateProv}}, {{.team.Country}}</h4></div>
+    <div class="col-sm-4"><h2>{{.team.Nickname}}</h2></div>
+    <div class="col-sm-2"><h5>{{.team.SchoolName}}</h5></div>
+    <div class="col-sm-3">
+      <div><h5>{{.team.City}}, {{.team.StateProv}}, {{.team.Country}}</h5></div>
     </div>
     <div class="col-sm-1">
       <button type="button" class="btn btn-secondary btn-sm" onclick="$('#team{{.team.Id}}Details').modal('show');">
