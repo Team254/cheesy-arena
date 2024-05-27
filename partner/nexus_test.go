@@ -15,12 +15,12 @@ import (
 func TestGetLineup(t *testing.T) {
 	// Mock the Nexus server.
 	nexusServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Contains(t, r.URL.String(), "/v1/my_event_code/")
-		if strings.Contains(r.URL.String(), "/v1/my_event_code/p1/lineup") {
+		assert.Contains(t, r.URL.String(), "/api/v1/event/my_event_code/")
+		if strings.Contains(r.URL.String(), "/api/v1/event/my_event_code/match/p1/lineups") {
 			w.Write([]byte("{\"red\":[\"101\",\"102\",\"103\"],\"blue\":[\"104\",\"105\",\"106\"]}"))
-		} else if strings.Contains(r.URL.String(), "/v1/my_event_code/p2/lineup") {
+		} else if strings.Contains(r.URL.String(), "/api/v1/event/my_event_code/match/p2/lineups") {
 			w.Write([]byte("{\"blue\":[\"104\",\"105\",\"106\"]}"))
-		} else if strings.Contains(r.URL.String(), "/v1/my_event_code/p3/lineup") {
+		} else if strings.Contains(r.URL.String(), "/api/v1/event/my_event_code/match/p3/lineups") {
 			w.Write([]byte("{}"))
 		} else {
 			http.Error(w, "Match not found", 404)
