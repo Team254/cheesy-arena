@@ -20,6 +20,21 @@ func TestScheduledBreakCrud(t *testing.T) {
 	scheduledBreak3 := ScheduledBreak{0, Playoff, 4, time.Unix(500, 0).UTC(), 900, "Awards"}
 	assert.Nil(t, db.CreateScheduledBreak(&scheduledBreak3))
 
+	// Test retrieval by ID.
+	scheduledBreak, err := db.GetScheduledBreakById(1)
+	assert.Nil(t, err)
+	assert.Equal(t, scheduledBreak1, *scheduledBreak)
+	scheduledBreak, err = db.GetScheduledBreakById(2)
+	assert.Nil(t, err)
+	assert.Equal(t, scheduledBreak2, *scheduledBreak)
+
+	// Test update.
+	scheduledBreak2.Description = "Brunch"
+	assert.Nil(t, db.UpdateScheduledBreak(&scheduledBreak2))
+	scheduledBreak, err = db.GetScheduledBreakById(2)
+	assert.Nil(t, err)
+	assert.Equal(t, scheduledBreak2, *scheduledBreak)
+
 	// Test retrieval of all blocks by match type.
 	scheduledBreaks, err := db.GetScheduledBreaksByMatchType(Practice)
 	assert.Nil(t, err)
@@ -37,7 +52,7 @@ func TestScheduledBreakCrud(t *testing.T) {
 	}
 
 	// Test individual retrieval by match type and order.
-	scheduledBreak, err := db.GetScheduledBreakByMatchTypeOrder(Qualification, 25)
+	scheduledBreak, err = db.GetScheduledBreakByMatchTypeOrder(Qualification, 25)
 	assert.Nil(t, err)
 	assert.Equal(t, scheduledBreak2, *scheduledBreak)
 	scheduledBreak, err = db.GetScheduledBreakByMatchTypeOrder(Playoff, 4)
