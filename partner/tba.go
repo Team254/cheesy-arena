@@ -584,7 +584,15 @@ func (client *TbaClient) postRequest(resource string, action string, body []byte
 	}
 	request.Header.Add("X-TBA-Auth-Id", client.secretId)
 	request.Header.Add("X-TBA-Auth-Sig", signature)
-	return httpClient.Do(request)
+	response, err := httpClient.Do(request)
+	if client.BaseUrl == tbaBaseUrl && err == nil && response.StatusCode == 200 {
+		// Send a non-blocking ping to track usage.
+		pingRequest, _ := http.NewRequest(
+			"POST", fmt.Sprintf("https://cheesyarena.com/events/%s/%s", client.eventCode, resource), nil,
+		)
+		_, _ = httpClient.Do(pingRequest)
+	}
+	return response, err
 }
 
 func createTbaAlliance(teamIds [3]int, surrogates [3]bool, score *int, cards map[string]string) *TbaAlliance {
