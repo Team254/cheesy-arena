@@ -203,46 +203,53 @@ func (web *Web) restoreDbHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/setup/settings", 303)
 }
 
-// Deletes all data except for the team list.
+// Deletes all match data including and beyond the given tournament stage.
 func (web *Web) clearDbHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
 
+	matchType, err := model.MatchTypeFromString(r.PathValue("type"))
+	if err != nil || matchType == model.Test {
+		web.renderSettings(w, r, "Invalid tournament stage to clear.")
+		return
+
+	}
+
 	// Back up the database.
-	err := web.arena.Database.Backup(web.arena.EventSettings.Name, "pre_clear")
+	err = web.arena.Database.Backup(web.arena.EventSettings.Name, "pre_clear")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	err = web.arena.Database.TruncateMatches()
-	if err != nil {
-		handleWebErr(w, err)
-		return
+	switch matchType {
+	case model.Practice:
+		if err = web.deleteMatchDataForType(model.Practice); err != nil {
+			handleWebErr(w, err)
+			return
+		}
+	case model.Qualification:
+		if err = web.deleteMatchDataForType(model.Qualification); err != nil {
+			handleWebErr(w, err)
+			return
+		}
+		if err = web.arena.Database.TruncateRankings(); err != nil {
+			handleWebErr(w, err)
+			return
+		}
+	case model.Playoff:
+		if err = web.deleteMatchDataForType(model.Playoff); err != nil {
+			handleWebErr(w, err)
+			return
+		}
+		if err = web.arena.Database.TruncateAlliances(); err != nil {
+			handleWebErr(w, err)
+			return
+		}
+		web.arena.AllianceSelectionAlliances = []model.Alliance{}
+		cachedRankedTeams = []*RankedTeam{}
 	}
-	err = web.arena.Database.TruncateMatchResults()
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	err = web.arena.Database.TruncateRankings()
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	err = web.arena.Database.TruncateAlliances()
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	err = web.arena.Database.TruncateScheduledBreaks()
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
 
 	http.Redirect(w, r, "/setup/settings", 303)
 }
@@ -367,4 +374,36 @@ func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMess
 		handleWebErr(w, err)
 		return
 	}
+}
+
+// Deletes all match data (matches, results, and scheduled breaks) for the given match type.
+func (web *Web) deleteMatchDataForType(matchType model.MatchType) error {
+	matches, err := web.arena.Database.GetMatchesByType(matchType, true)
+	if err != nil {
+		return err
+	}
+	for _, match := range matches {
+		// Loop to delete all match results for the match before deleting the match itself.
+		matchResult, err := web.arena.Database.GetMatchResultForMatch(match.Id)
+		if err != nil {
+			return err
+		}
+		for matchResult != nil {
+			if err = web.arena.Database.DeleteMatchResult(matchResult.Id); err != nil {
+				return err
+			}
+			matchResult, err = web.arena.Database.GetMatchResultForMatch(match.Id)
+			if err != nil {
+				return err
+			}
+		}
+
+		if err = web.arena.Database.DeleteMatch(match.Id); err != nil {
+			return err
+		}
+	}
+	if err = web.arena.Database.DeleteScheduledBreaksByMatchType(matchType); err != nil {
+		return err
+	}
+	return nil
 }

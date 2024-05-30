@@ -301,13 +301,23 @@
         <a href="/setup/db/save"><button class="btn btn-primary">Save Copy of Database</button></a>
       </p>
       <p>
-        <button type="button" class="btn btn-danger" onclick="$('#uploadDatabase').modal('show');">
+        <button type="button" class="btn btn-warning" onclick="$('#uploadDatabase').modal('show');">
           Load Database from Backup
         </button>
       </p>
       <p>
-        <button type="button" class="btn btn-danger" onclick="$('#confirmClearData').modal('show');">
-          Clear All Match Data
+        <button type="button" class="btn btn-danger" onclick="$('#confirmClearDataPlayoff').modal('show');">
+          Clear Playoff/Alliance Data
+        </button>
+      </p>
+      <p>
+        <button type="button" class="btn btn-danger" onclick="$('#confirmClearDataQualification').modal('show');">
+          Clear Qualification Data
+        </button>
+      </p>
+      <p>
+        <button type="button" class="btn btn-danger" onclick="$('#confirmClearDataPractice').modal('show');">
+          Clear Practice Data
         </button>
       </p>
     </div>
@@ -353,7 +363,7 @@
     </div>
   </div>
 </div>
-<div id="confirmClearData" class="modal" style="top: 20%;">
+<div id="confirmClearDataPlayoff" class="modal" style="top: 20%;">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -361,12 +371,53 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
       </div>
       <div class="modal-body">
-        <p>Are you sure you want to clear all match, ranking, and alliance selection data?</p>
+        <p>Are you sure you want to clear all playoff match and alliance selection data?</p>
+        <p>The database will automatically be backed up.</p>
       </div>
       <div class="modal-footer">
-        <form class="form-horizontal" action="/setup/db/clear" method="POST">
+        <form class="form-horizontal" action="/setup/db/clear/playoff" method="POST">
           <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-danger">Clear All Match Data</button>
+          <button type="submit" class="btn btn-danger">Clear Playoff/Alliance Data</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="confirmClearDataQualification" class="modal" style="top: 20%;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Confirm</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to clear all qualification match and ranking data?</p>
+        <p>The database will automatically be backed up.</p>
+      </div>
+      <div class="modal-footer">
+        <form class="form-horizontal" action="/setup/db/clear/qualification" method="POST">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Clear Qualification Data</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="confirmClearDataPractice" class="modal" style="top: 20%;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Confirm</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to clear all practice match data?</p>
+        <p>The database will automatically be backed up.</p>
+      </div>
+      <div class="modal-footer">
+        <form class="form-horizontal" action="/setup/db/clear/practice" method="POST">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Clear Practice Data</button>
         </form>
       </div>
     </div>

@@ -198,7 +198,7 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("POST /setup/awards", web.awardsPostHandler)
 	mux.HandleFunc("GET /setup/breaks", web.breaksGetHandler)
 	mux.HandleFunc("POST /setup/breaks", web.breaksPostHandler)
-	mux.HandleFunc("POST /setup/db/clear", web.clearDbHandler)
+	mux.HandleFunc("POST /setup/db/clear/{type}", web.clearDbHandler)
 	mux.HandleFunc("POST /setup/db/restore", web.restoreDbHandler)
 	mux.HandleFunc("GET /setup/db/save", web.saveDbHandler)
 	mux.HandleFunc("GET /setup/displays", web.displaysGetHandler)

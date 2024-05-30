@@ -147,18 +147,8 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// Delete any playoff matches that were already created (but not played since they would fail the above check).
-	matches, err := web.arena.Database.GetMatchesByType(model.Playoff, true)
+	err := web.deleteMatchDataForType(model.Playoff)
 	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	for _, match := range matches {
-		if err = web.arena.Database.DeleteMatch(match.Id); err != nil {
-			handleWebErr(w, err)
-			return
-		}
-	}
-	if err = web.arena.Database.DeleteScheduledBreaksByMatchType(model.Playoff); err != nil {
 		handleWebErr(w, err)
 		return
 	}
