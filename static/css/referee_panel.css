@@ -74,6 +74,17 @@ h3 {
 .team-card[data-old-yellow-card="true"] {
   border: 0.3vw solid #ff0;
 }
+.scoring-status {
+  margin-top: 1vw;
+  padding: 0.5vw 1vw;
+  border-radius: 0.5vw;
+  background-color: #e66;
+  font-size: 1.5vw;
+  color: #000;
+}
+.scoring-status[data-ready=true] {
+  background-color: #0c6;
+}
 #fouls {
   display: flex;
   flex-direction: column;

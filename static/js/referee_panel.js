@@ -96,6 +96,10 @@ const handleScoringStatus = function(data) {
   if (data.RefereeScoreReady) {
     $("#commitButton").attr("data-enabled", false);
   }
+  $("#redScoreStatus").text("Red Scoring " + data.NumRedScoringPanelsReady + "/" + data.NumRedScoringPanels);
+  $("#redScoreStatus").attr("data-ready", data.RedScoreReady);
+  $("#blueScoreStatus").text("Blue Scoring " + data.NumBlueScoringPanelsReady + "/" + data.NumBlueScoringPanels);
+  $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
 }
 
 // Populates the red/yellow card button for a given team.
