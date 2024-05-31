@@ -62,7 +62,7 @@ html {
   border-left: none;
 }
 .teams {
-  width: 55px;
+  width: 60px;
   height: 100%;
   display: none;
   flex-direction: column;
@@ -72,6 +72,15 @@ html {
   font-family: "FuturaLT";
   font-size: 20px;
   line-height: 25px;
+}
+.teams div[data-yellow-card=true] {
+  width: 90%;
+  height: 32%;
+  border-radius: 0.2vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fc0;
 }
 #leftTeams {
   border-right: 1px solid #222;

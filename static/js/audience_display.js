@@ -94,14 +94,20 @@ const executeTransitionQueue = function() {
 const handleMatchLoad = function(data) {
   currentMatch = data.Match;
   $(`#${redSide}Team1`).text(currentMatch.Red1);
+  $(`#${redSide}Team1`).attr("data-yellow-card", data.Teams["R1"]?.YellowCard);
   $(`#${redSide}Team2`).text(currentMatch.Red2);
+  $(`#${redSide}Team2`).attr("data-yellow-card", data.Teams["R2"]?.YellowCard);
   $(`#${redSide}Team3`).text(currentMatch.Red3);
+  $(`#${redSide}Team3`).attr("data-yellow-card", data.Teams["R3"]?.YellowCard);
   $(`#${redSide}Team1Avatar`).attr("src", getAvatarUrl(currentMatch.Red1));
   $(`#${redSide}Team2Avatar`).attr("src", getAvatarUrl(currentMatch.Red2));
   $(`#${redSide}Team3Avatar`).attr("src", getAvatarUrl(currentMatch.Red3));
   $(`#${blueSide}Team1`).text(currentMatch.Blue1);
+  $(`#${blueSide}Team1`).attr("data-yellow-card", data.Teams["B1"]?.YellowCard);
   $(`#${blueSide}Team2`).text(currentMatch.Blue2);
+  $(`#${blueSide}Team2`).attr("data-yellow-card", data.Teams["B2"]?.YellowCard);
   $(`#${blueSide}Team3`).text(currentMatch.Blue3);
+  $(`#${blueSide}Team3`).attr("data-yellow-card", data.Teams["B3"]?.YellowCard);
   $(`#${blueSide}Team1Avatar`).attr("src", getAvatarUrl(currentMatch.Blue1));
   $(`#${blueSide}Team2Avatar`).attr("src", getAvatarUrl(currentMatch.Blue2));
   $(`#${blueSide}Team3Avatar`).attr("src", getAvatarUrl(currentMatch.Blue3));
