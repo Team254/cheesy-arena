@@ -59,30 +59,32 @@ type Arena struct {
 	ScoringPanelRegistry
 	ArenaNotifiers
 	MatchState
-	lastMatchState             MatchState
-	CurrentMatch               *model.Match
-	MatchStartTime             time.Time
-	LastMatchTimeSec           float64
-	RedRealtimeScore           *RealtimeScore
-	BlueRealtimeScore          *RealtimeScore
-	lastDsPacketTime           time.Time
-	lastPeriodicTaskTime       time.Time
-	EventStatus                EventStatus
-	FieldReset                 bool
-	AudienceDisplayMode        string
-	SavedMatch                 *model.Match
-	SavedMatchResult           *model.MatchResult
-	SavedRankings              game.Rankings
-	AllianceStationDisplayMode string
-	AllianceSelectionAlliances []model.Alliance
-	PlayoffTournament          *playoff.PlayoffTournament
-	LowerThird                 *model.LowerThird
-	ShowLowerThird             bool
-	MuteMatchSounds            bool
-	matchAborted               bool
-	soundsPlayed               map[*game.MatchSound]struct{}
-	breakDescription           string
-	preloadedTeams             *[6]*model.Team
+	lastMatchState                    MatchState
+	CurrentMatch                      *model.Match
+	MatchStartTime                    time.Time
+	LastMatchTimeSec                  float64
+	RedRealtimeScore                  *RealtimeScore
+	BlueRealtimeScore                 *RealtimeScore
+	lastDsPacketTime                  time.Time
+	lastPeriodicTaskTime              time.Time
+	EventStatus                       EventStatus
+	FieldReset                        bool
+	AudienceDisplayMode               string
+	SavedMatch                        *model.Match
+	SavedMatchResult                  *model.MatchResult
+	SavedRankings                     game.Rankings
+	AllianceStationDisplayMode        string
+	AllianceSelectionAlliances        []model.Alliance
+	AllianceSelectionShowTimer        bool
+	AllianceSelectionTimeRemainingSec int
+	PlayoffTournament                 *playoff.PlayoffTournament
+	LowerThird                        *model.LowerThird
+	ShowLowerThird                    bool
+	MuteMatchSounds                   bool
+	matchAborted                      bool
+	soundsPlayed                      map[*game.MatchSound]struct{}
+	breakDescription                  string
+	preloadedTeams                    *[6]*model.Team
 }
 
 type AllianceStation struct {

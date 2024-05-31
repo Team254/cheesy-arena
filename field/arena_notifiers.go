@@ -65,7 +65,15 @@ func (arena *Arena) configureNotifiers() {
 }
 
 func (arena *Arena) generateAllianceSelectionMessage() any {
-	return &arena.AllianceSelectionAlliances
+	return &struct {
+		Alliances        []model.Alliance
+		ShowTimer        bool
+		TimeRemainingSec int
+	}{
+		arena.AllianceSelectionAlliances,
+		arena.AllianceSelectionShowTimer,
+		arena.AllianceSelectionTimeRemainingSec,
+	}
 }
 
 func (arena *Arena) generateAllianceStationDisplayModeMessage() any {

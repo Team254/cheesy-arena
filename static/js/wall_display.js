@@ -130,12 +130,7 @@ const handleMatchLoad = function(data) {
 // Handles a websocket message to update the match time countdown.
 const handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
-    let countdownString = String(countdownSec % 60);
-    if (countdownString.length === 1) {
-      countdownString = "0" + countdownString;
-    }
-    countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
-    $("#matchTime").text(countdownString);
+    $("#matchTime").text(getCountdownString(countdownSec));
   });
 };
 

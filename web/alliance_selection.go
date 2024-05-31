@@ -9,6 +9,9 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
+	"github.com/Team254/cheesy-arena/websocket"
+	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,6 +25,12 @@ type RankedTeam struct {
 
 // Global var to hold the team rankings during the alliance selection.
 var cachedRankedTeams []*RankedTeam
+
+// Global var to hold configurable time limit for selections. A value of zero disables the timer.
+var allianceSelectionTimeLimitSec = 0
+
+// Global var to hold a ticker used for the alliance selection timer.
+var allianceSelectionTicker *time.Ticker
 
 // Shows the alliance selection page.
 func (web *Web) allianceSelectionGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +51,9 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 		web.renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
 		return
 	}
+
+	// Update time limit value.
+	allianceSelectionTimeLimitSec, _ = strconv.Atoi(r.PostFormValue("timeLimitSec"))
 
 	// Reset picked state for each team in preparation for reconstructing it.
 	newRankedTeams := make([]*RankedTeam, len(cachedRankedTeams))
@@ -89,6 +101,25 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 		}
 	}
 	cachedRankedTeams = newRankedTeams
+
+	if allianceSelectionTicker != nil {
+		allianceSelectionTicker.Stop()
+		web.arena.AllianceSelectionShowTimer = false
+		web.arena.AllianceSelectionTimeRemainingSec = 0
+	}
+	if _, nextCol := web.determineNextCell(); nextCol > 0 && allianceSelectionTimeLimitSec > 0 {
+		web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
+		allianceSelectionTicker = time.NewTicker(time.Second)
+		go func() {
+			for range allianceSelectionTicker.C {
+				web.arena.AllianceSelectionTimeRemainingSec--
+				web.arena.AllianceSelectionNotifier.Notify()
+				if web.arena.AllianceSelectionTimeRemainingSec == 0 {
+					allianceSelectionTicker.Stop()
+				}
+			}
+		}()
+	}
 
 	web.arena.AllianceSelectionNotifier.Notify()
 	http.Redirect(w, r, "/alliance_selection", 303)
@@ -254,6 +285,47 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 	http.Redirect(w, r, "/match_play", 303)
 }
 
+// The websocket endpoint for the alliance selection client to send control commands and receive status updates.
+func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	ws, err := websocket.NewWebsocket(w, r)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	defer ws.Close()
+
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
+	go ws.HandleNotifiers(web.arena.AllianceSelectionNotifier)
+
+	// Loop, waiting for commands and responding to them, until the client closes the connection.
+	for {
+		messageType, _, err := ws.Read()
+		if err != nil {
+			if err == io.EOF {
+				// Client has closed the connection; nothing to do here.
+				return
+			}
+			log.Println(err)
+			return
+		}
+
+		switch messageType {
+		case "showTimer":
+			web.arena.AllianceSelectionShowTimer = true
+			web.arena.AllianceSelectionNotifier.Notify()
+		case "hideTimer":
+			web.arena.AllianceSelectionShowTimer = false
+			web.arena.AllianceSelectionNotifier.Notify()
+		default:
+			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+		}
+	}
+}
+
 func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, errorMessage string) {
 	if len(web.arena.AllianceSelectionAlliances) == 0 {
 		// The application may have been restarted since the alliance selection was conducted; try reloading the
@@ -279,7 +351,16 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 		NextRow      int
 		NextCol      int
 		ErrorMessage string
-	}{web.arena.EventSettings, web.arena.AllianceSelectionAlliances, cachedRankedTeams, nextRow, nextCol, errorMessage}
+		TimeLimitSec int
+	}{
+		web.arena.EventSettings,
+		web.arena.AllianceSelectionAlliances,
+		cachedRankedTeams,
+		nextRow,
+		nextCol,
+		errorMessage,
+		allianceSelectionTimeLimitSec,
+	}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
