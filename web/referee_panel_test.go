@@ -5,6 +5,7 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
@@ -126,6 +127,34 @@ func TestRefereePanelWebsocket(t *testing.T) {
 	}
 	if assert.Equal(t, 1, len(web.arena.BlueRealtimeScore.Cards)) {
 		assert.Equal(t, "red", web.arena.BlueRealtimeScore.Cards["1680"])
+	}
+
+	// Test card setting in a playoff match.
+	web.arena.CurrentMatch.Type = model.Playoff
+	web.arena.CurrentMatch.Red1 = 256
+	web.arena.CurrentMatch.Red2 = 257
+	web.arena.CurrentMatch.Red3 = 258
+	web.arena.CurrentMatch.Blue1 = 1679
+	web.arena.CurrentMatch.Blue2 = 1680
+	web.arena.CurrentMatch.Blue3 = 1681
+	cardData.Card = "yellow"
+	ws.Write("card", cardData)
+	readWebsocketType(t, ws, "realtimeScore")
+	cardData.Alliance = "red"
+	cardData.TeamId = 258
+	cardData.Card = "red"
+	ws.Write("card", cardData)
+	readWebsocketType(t, ws, "realtimeScore")
+	time.Sleep(time.Millisecond * 10) // Allow some time for the command to be processed.
+	if assert.Equal(t, 3, len(web.arena.RedRealtimeScore.Cards)) {
+		assert.Equal(t, "red", web.arena.RedRealtimeScore.Cards["256"])
+		assert.Equal(t, "red", web.arena.RedRealtimeScore.Cards["257"])
+		assert.Equal(t, "red", web.arena.RedRealtimeScore.Cards["258"])
+	}
+	if assert.Equal(t, 3, len(web.arena.BlueRealtimeScore.Cards)) {
+		assert.Equal(t, "yellow", web.arena.BlueRealtimeScore.Cards["1679"])
+		assert.Equal(t, "yellow", web.arena.BlueRealtimeScore.Cards["1680"])
+		assert.Equal(t, "yellow", web.arena.BlueRealtimeScore.Cards["1681"])
 	}
 
 	// Test field reset and match committing.
