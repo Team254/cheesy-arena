@@ -382,7 +382,7 @@ html {
   align-items: center;
 }
 .final-teams {
-  width: 240px;
+  width: 250px;
   padding: 20px;
   border-radius: 20px;
 }
@@ -406,17 +406,40 @@ html {
   height: 35px;
 }
 .final-team-number {
+  width: 85px;
   color: #fff;
   font-family: "FuturaLT";
   font-size: 32px;
   line-height: 43px;
+  text-align: center;
+}
+.final-team-card {
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.final-team-card div {
+  display: none;
+}
+.final-team-card div[data-card=yellow], .final-team-card div[data-card=red] {
+  display: inline-block;
+  width: 15px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid #333;
+}
+.final-team-card div[data-card=yellow] {
+  background-color: #da1;
+}
+.final-team-card div[data-card=red] {
+  background-color: #e00;
 }
 .final-team-rank {
-  width: 20px;
+  width: 45px;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  text-align: right;
 }
 .final-team-rank img {
   width: 15px;
