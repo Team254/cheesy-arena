@@ -104,6 +104,25 @@ func TestCalculateRankings(t *testing.T) {
 
 }
 
+func TestAddMatchResultToRankingsHandleCards(t *testing.T) {
+	rankings := map[int]*game.Ranking{}
+	matchResult := model.BuildTestMatchResult(1, 1)
+	matchResult.RedCards = map[string]string{"1": "yellow", "2": "red", "3": "dq"}
+	matchResult.BlueCards = map[string]string{"4": "red", "5": "dq", "6": "yellow"}
+	addMatchResultToRankings(rankings, 1, matchResult, true)
+	addMatchResultToRankings(rankings, 2, matchResult, true)
+	addMatchResultToRankings(rankings, 3, matchResult, true)
+	addMatchResultToRankings(rankings, 4, matchResult, false)
+	addMatchResultToRankings(rankings, 5, matchResult, false)
+	addMatchResultToRankings(rankings, 6, matchResult, false)
+	assert.Equal(t, 0, rankings[1].Disqualifications)
+	assert.Equal(t, 1, rankings[2].Disqualifications)
+	assert.Equal(t, 1, rankings[3].Disqualifications)
+	assert.Equal(t, 1, rankings[4].Disqualifications)
+	assert.Equal(t, 1, rankings[5].Disqualifications)
+	assert.Equal(t, 0, rankings[6].Disqualifications)
+}
+
 // Sets up a schedule and results that touches on all possible variables.
 func setupMatchResultsForRankings(database *model.Database) {
 	match1 := model.Match{Type: model.Qualification, TypeOrder: 1, Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5,
