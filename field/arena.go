@@ -56,6 +56,7 @@ type Arena struct {
 	NexusClient      *partner.NexusClient
 	AllianceStations map[string]*AllianceStation
 	Displays         map[string]*Display
+	TeamSigns        *TeamSigns
 	ScoringPanelRegistry
 	ArenaNotifiers
 	MatchState
@@ -114,6 +115,8 @@ func NewArena(dbPath string) (*Arena, error) {
 
 	arena.Displays = make(map[string]*Display)
 
+	arena.TeamSigns = NewTeamSigns()
+
 	var err error
 	arena.Database, err = model.OpenDatabase(dbPath)
 	if err != nil {
@@ -150,6 +153,14 @@ func (arena *Arena) LoadSettings() error {
 	arena.EventSettings = settings
 
 	// Initialize the components that depend on settings.
+	arena.TeamSigns.Red1.SetAddress(settings.TeamSignRed1Address)
+	arena.TeamSigns.Red2.SetAddress(settings.TeamSignRed2Address)
+	arena.TeamSigns.Red3.SetAddress(settings.TeamSignRed3Address)
+	arena.TeamSigns.RedTimer.SetAddress(settings.TeamSignRedTimerAddress)
+	arena.TeamSigns.Blue1.SetAddress(settings.TeamSignBlue1Address)
+	arena.TeamSigns.Blue2.SetAddress(settings.TeamSignBlue2Address)
+	arena.TeamSigns.Blue3.SetAddress(settings.TeamSignBlue3Address)
+	arena.TeamSigns.BlueTimer.SetAddress(settings.TeamSignBlueTimerAddress)
 	accessPointWifiStatuses := [6]*network.TeamWifiStatus{
 		&arena.AllianceStations["R1"].WifiStatus,
 		&arena.AllianceStations["R2"].WifiStatus,
@@ -290,7 +301,6 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.soundsPlayed = make(map[*game.MatchSound]struct{})
 	arena.RedRealtimeScore = NewRealtimeScore()
 	arena.BlueRealtimeScore = NewRealtimeScore()
-	arena.FieldReset = false
 	arena.ScoringPanelRegistry.resetScoreCommitted()
 	arena.Plc.ResetMatch()
 
@@ -546,6 +556,7 @@ func (arena *Arena) Update() {
 			sendDsPacket = true
 		}
 		arena.Plc.ResetMatch()
+		arena.FieldReset = false
 	case WarmupPeriod:
 		auto = true
 		enabled = false
@@ -569,7 +580,6 @@ func (arena *Arena) Update() {
 				enabled = true
 			}
 		}
-		arena.FieldReset = false
 	case PausePeriod:
 		auto = false
 		enabled = false
@@ -601,7 +611,6 @@ func (arena *Arena) Update() {
 				arena.preLoadNextMatch()
 			}()
 		}
-		arena.FieldReset = false
 	case TimeoutActive:
 		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
 			arena.MatchState = PostTimeout
@@ -635,6 +644,9 @@ func (arena *Arena) Update() {
 
 	// Handle field sensors/lights/actuators.
 	arena.handlePlcInputOutput()
+
+	// Handle the team number / timer displays.
+	arena.TeamSigns.Update(arena)
 
 	arena.LastMatchTimeSec = matchTimeSec
 	arena.lastMatchState = arena.MatchState
@@ -934,6 +946,7 @@ func (arena *Arena) handlePlcInputOutput() {
 
 		// Turn off lights if all teams become ready.
 		if redAllianceReady && blueAllianceReady {
+			arena.FieldReset = false
 			arena.Plc.SetFieldResetLight(false)
 			if arena.CurrentMatch.FieldReadyAt.IsZero() {
 				arena.CurrentMatch.FieldReadyAt = time.Now()

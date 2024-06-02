@@ -35,6 +35,14 @@ type EventSettings struct {
 	SwitchPassword                  string
 	PlcAddress                      string
 	AdminPassword                   string
+	TeamSignRed1Address             string
+	TeamSignRed2Address             string
+	TeamSignRed3Address             string
+	TeamSignRedTimerAddress         string
+	TeamSignBlue1Address            string
+	TeamSignBlue2Address            string
+	TeamSignBlue3Address            string
+	TeamSignBlueTimerAddress        string
 	WarmupDurationSec               int
 	AutoDurationSec                 int
 	PauseDurationSec                int
