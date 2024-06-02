@@ -96,8 +96,8 @@ func (signs *TeamSigns) Update(arena *Arena) {
 	countdown := fmt.Sprintf("%02d:%02d", countdownSec/60, countdownSec%60)
 
 	// Generate the in-match rear text which is common to a whole alliance.
-	redInMatchRearText := generateInMatchRearText(countdown, arena.RedRealtimeScore, arena.BlueRealtimeScore)
-	blueInMatchRearText := generateInMatchRearText(countdown, arena.BlueRealtimeScore, arena.RedRealtimeScore)
+	redInMatchRearText := generateInMatchRearText(true, countdown, arena.RedRealtimeScore, arena.BlueRealtimeScore)
+	blueInMatchRearText := generateInMatchRearText(false, countdown, arena.BlueRealtimeScore, arena.RedRealtimeScore)
 
 	signs.Red1.update(arena, arena.AllianceStations["R1"], true, countdown, redInMatchRearText)
 	signs.Red2.update(arena, arena.AllianceStations["R2"], true, countdown, redInMatchRearText)
@@ -172,14 +172,22 @@ func (sign *TeamSign) update(
 }
 
 // Returns the in-match rear text that is common to a whole alliance.
-func generateInMatchRearText(countdown string, realtimeScore, opponentRealtimeScore *RealtimeScore) string {
-	var amplifiedCountdown string
-	if realtimeScore.AmplifiedTimeRemainingSec > 0 {
-		amplifiedCountdown = fmt.Sprintf("Amp:%2d", realtimeScore.AmplifiedTimeRemainingSec)
-	}
+func generateInMatchRearText(isRed bool, countdown string, realtimeScore, opponentRealtimeScore *RealtimeScore) string {
 	scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
+	scoreTotal := scoreSummary.Score
+	opponentScoreTotal := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore).Score
+	var allianceScores string
+	if isRed {
+		allianceScores = fmt.Sprintf("R%03d-B%03d", scoreTotal, opponentScoreTotal)
+	} else {
+		allianceScores = fmt.Sprintf("B%03d-R%03d", scoreTotal, opponentScoreTotal)
+	}
+	if realtimeScore.AmplifiedTimeRemainingSec > 0 {
+		// Replace the total score with the amplified countdown while it's active.
+		allianceScores = fmt.Sprintf("Amp:%2d", realtimeScore.AmplifiedTimeRemainingSec)
+	}
 	return fmt.Sprintf(
-		"%s  %02d/%02d  %6s", countdown, scoreSummary.NumNotes, scoreSummary.NumNotesGoal, amplifiedCountdown,
+		"%s %02d/%02d %9s", countdown[1:], scoreSummary.NumNotes, scoreSummary.NumNotesGoal, allianceScores,
 	)
 }
 
