@@ -68,7 +68,7 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assert.Equal(t, 46, sign.packetIndex)
 
 	assertSign := func(isRed bool, expectedFrontText string, expectedFrontColor color.RGBA, expectedRearText string) {
-		frontText, frontColor, rearText := generateTeamNumberTexts(arena, allianceStation, isRed, "Rear Text")
+		frontText, frontColor, rearText := sign.generateTeamNumberTexts(arena, allianceStation, isRed, "Rear Text")
 		assert.Equal(t, expectedFrontText, frontText)
 		assert.Equal(t, expectedFrontColor, frontColor)
 		assert.Equal(t, expectedRearText, rearText)
@@ -114,4 +114,14 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assertSign(false, "  254", orangeColor, "254           E-STOP")
 	arena.MatchState = PostMatch
 	assertSign(false, "  254", orangeColor, "254           E-STOP")
+
+	// Test preloading the team for the next match.
+	sign.nextMatchTeamId = 1503
+	assertSign(false, "  254", orangeColor, "Next Team Up: 1503")
+	allianceStation.Bypass = false
+	allianceStation.EStop = false
+	allianceStation.Ethernet = false
+	arena.MatchState = PreMatch
+	arena.assignTeam(1503, "R1")
+	assertSign(false, " 1503", blueColor, "1503      Connect PC")
 }
