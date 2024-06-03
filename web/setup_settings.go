@@ -93,6 +93,8 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TeamSignBlue2Address = r.PostFormValue("teamSignBlue2Address")
 	eventSettings.TeamSignBlue3Address = r.PostFormValue("teamSignBlue3Address")
 	eventSettings.TeamSignBlueTimerAddress = r.PostFormValue("teamSignBlueTimerAddress")
+	eventSettings.RecorderAddress = r.PostFormValue("recorderAddress")
+	eventSettings.RecorderPort, _ = strconv.Atoi(r.PostFormValue("recorderPort"))
 	eventSettings.WarmupDurationSec, _ = strconv.Atoi(r.PostFormValue("warmupDurationSec"))
 	eventSettings.AutoDurationSec, _ = strconv.Atoi(r.PostFormValue("autoDurationSec"))
 	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))

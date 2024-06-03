@@ -1077,3 +1077,8 @@ func (arena *Arena) runPeriodicTasks() {
 	arena.updateEarlyLateMessage()
 	arena.purgeDisconnectedDisplays()
 }
+
+// Starts recording using configured, on-network Blackmagic Device
+func (arena *Arena) startRecording() {
+	//code
+}
