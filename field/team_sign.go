@@ -127,6 +127,7 @@ func (sign *TeamSign) SetAddress(ipAddress string) {
 	if ipAddress == "" {
 		// The sign is not configured.
 		sign.address = 0
+		return
 	}
 
 	var err error
