@@ -9,11 +9,13 @@ package network
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/Team254/cheesy-arena/model"
@@ -126,6 +128,7 @@ func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
 	var httpClient http.Client
 	httpResponse, err := httpClient.Do(httpRequest)
 	if err != nil {
+		ap.checkAndLogApiError(err)
 		return err
 	}
 	defer httpResponse.Body.Close()
@@ -156,6 +159,7 @@ func (ap *AccessPoint) updateMonitoring() error {
 	var httpClient http.Client
 	httpResponse, err := httpClient.Do(httpRequest)
 	if err != nil {
+		ap.checkAndLogApiError(err)
 		ap.Status = "ERROR"
 		return fmt.Errorf("failed to fetch access point status: %v", err)
 	}
@@ -187,6 +191,18 @@ func (ap *AccessPoint) updateMonitoring() error {
 	updateTeamWifiStatus(ap.TeamWifiStatuses[5], apStatus.StationStatuses["blue3"])
 
 	return nil
+}
+
+func (ap *AccessPoint) checkAndLogApiError(err error) {
+	if errors.Is(err, syscall.ECONNREFUSED) {
+		log.Printf(
+			"\x1b[31mThe access point appears to be present at %s but is refusing API connection requests. Note that "+
+				"from 2024 onwards, you must manually install the API server on the Linksys API before it can be used "+
+				"with Cheesy Arena. See https://github.com/patfair/frc-radio-api for installation instructions."+
+				"\u001B[0m",
+			ap.apiUrl,
+		)
+	}
 }
 
 // Generates the configuration for the given team's station and adds it to the map. If the team is nil, no entry is
