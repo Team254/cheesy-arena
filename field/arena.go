@@ -773,8 +773,9 @@ func (arena *Arena) preLoadNextMatch() {
 	}
 
 	var teams [6]*model.Team
-	for i, teamId := range []int{nextMatch.Red1, nextMatch.Red2, nextMatch.Red3, nextMatch.Blue1, nextMatch.Blue2,
-		nextMatch.Blue3} {
+	for i, teamId := range []int{
+		nextMatch.Red1, nextMatch.Red2, nextMatch.Red3, nextMatch.Blue1, nextMatch.Blue2, nextMatch.Blue3,
+	} {
 		if teamId == 0 {
 			continue
 		}
@@ -783,6 +784,7 @@ func (arena *Arena) preLoadNextMatch() {
 		}
 	}
 	arena.setupNetwork(teams, true)
+	arena.TeamSigns.SetNextMatchTeams(nextMatch)
 }
 
 // Asynchronously reconfigures the networking hardware for the new set of teams.

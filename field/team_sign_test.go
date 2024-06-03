@@ -13,11 +13,15 @@ import (
 
 func TestTeamSign_GenerateInMatchRearText(t *testing.T) {
 	realtimeScore1 := &RealtimeScore{AmplifiedTimeRemainingSec: 9}
-	realtimeScore2 := &RealtimeScore{CurrentScore: game.Score{AmpSpeaker: game.AmpSpeaker{AutoSpeakerNotes: 12}}}
+	realtimeScore2 := &RealtimeScore{AmplifiedTimeRemainingSec: 15}
+	realtimeScore3 := &RealtimeScore{CurrentScore: game.Score{AmpSpeaker: game.AmpSpeaker{AutoSpeakerNotes: 12}}}
+	realtimeScore4 := &RealtimeScore{CurrentScore: game.Score{AmpSpeaker: game.AmpSpeaker{TeleopAmpNotes: 1}}}
 
-	assert.Equal(t, "01:23  00/18  Amp: 9", generateInMatchRearText("01:23", realtimeScore1, realtimeScore2))
+	assert.Equal(t, "1:23 00/18    Amp: 9", generateInMatchRearText(true, "01:23", realtimeScore1, realtimeScore2))
+	assert.Equal(t, "1:23 00/18    Amp:15", generateInMatchRearText(false, "01:23", realtimeScore2, realtimeScore1))
 	game.MelodyBonusThresholdWithoutCoop = 23
-	assert.Equal(t, "34:56  12/23        ", generateInMatchRearText("34:56", realtimeScore2, realtimeScore1))
+	assert.Equal(t, "4:56 12/23 R060-B001", generateInMatchRearText(true, "34:56", realtimeScore3, realtimeScore4))
+	assert.Equal(t, "4:56 01/23 B001-R060", generateInMatchRearText(false, "34:56", realtimeScore4, realtimeScore3))
 }
 
 func TestTeamSign_Timer(t *testing.T) {
@@ -68,7 +72,7 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assert.Equal(t, 46, sign.packetIndex)
 
 	assertSign := func(isRed bool, expectedFrontText string, expectedFrontColor color.RGBA, expectedRearText string) {
-		frontText, frontColor, rearText := generateTeamNumberTexts(arena, allianceStation, isRed, "Rear Text")
+		frontText, frontColor, rearText := sign.generateTeamNumberTexts(arena, allianceStation, isRed, "Rear Text")
 		assert.Equal(t, expectedFrontText, frontText)
 		assert.Equal(t, expectedFrontColor, frontColor)
 		assert.Equal(t, expectedRearText, rearText)
@@ -114,4 +118,14 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assertSign(false, "  254", orangeColor, "254           E-STOP")
 	arena.MatchState = PostMatch
 	assertSign(false, "  254", orangeColor, "254           E-STOP")
+
+	// Test preloading the team for the next match.
+	sign.nextMatchTeamId = 1503
+	assertSign(false, "  254", orangeColor, "Next Team Up: 1503")
+	allianceStation.Bypass = false
+	allianceStation.EStop = false
+	allianceStation.Ethernet = false
+	arena.MatchState = PreMatch
+	arena.assignTeam(1503, "R1")
+	assertSign(false, " 1503", blueColor, "1503      Connect PC")
 }

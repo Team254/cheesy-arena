@@ -8,6 +8,7 @@ package field
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"image/color"
 	"log"
 	"net"
@@ -29,17 +30,18 @@ type TeamSigns struct {
 
 // Represents a team number or timer sign.
 type TeamSign struct {
-	isTimer        bool
-	address        byte
-	frontText      string
-	frontColor     color.RGBA
-	rearText       string
-	lastFrontText  string
-	lastFrontColor color.RGBA
-	lastRearText   string
-	udpConn        net.Conn
-	packetData     [128]byte
-	packetIndex    int
+	isTimer         bool
+	address         byte
+	nextMatchTeamId int
+	frontText       string
+	frontColor      color.RGBA
+	rearText        string
+	lastFrontText   string
+	lastFrontColor  color.RGBA
+	lastRearText    string
+	udpConn         net.Conn
+	packetData      [128]byte
+	packetIndex     int
 }
 
 const (
@@ -94,8 +96,8 @@ func (signs *TeamSigns) Update(arena *Arena) {
 	countdown := fmt.Sprintf("%02d:%02d", countdownSec/60, countdownSec%60)
 
 	// Generate the in-match rear text which is common to a whole alliance.
-	redInMatchRearText := generateInMatchRearText(countdown, arena.RedRealtimeScore, arena.BlueRealtimeScore)
-	blueInMatchRearText := generateInMatchRearText(countdown, arena.BlueRealtimeScore, arena.RedRealtimeScore)
+	redInMatchRearText := generateInMatchRearText(true, countdown, arena.RedRealtimeScore, arena.BlueRealtimeScore)
+	blueInMatchRearText := generateInMatchRearText(false, countdown, arena.BlueRealtimeScore, arena.RedRealtimeScore)
 
 	signs.Red1.update(arena, arena.AllianceStations["R1"], true, countdown, redInMatchRearText)
 	signs.Red2.update(arena, arena.AllianceStations["R2"], true, countdown, redInMatchRearText)
@@ -107,6 +109,16 @@ func (signs *TeamSigns) Update(arena *Arena) {
 	signs.BlueTimer.update(arena, nil, false, countdown, blueInMatchRearText)
 }
 
+// Sets the team numbers for the next match on all signs.
+func (signs *TeamSigns) SetNextMatchTeams(match *model.Match) {
+	signs.Red1.nextMatchTeamId = match.Red1
+	signs.Red2.nextMatchTeamId = match.Red2
+	signs.Red3.nextMatchTeamId = match.Red3
+	signs.Blue1.nextMatchTeamId = match.Blue1
+	signs.Blue2.nextMatchTeamId = match.Blue2
+	signs.Blue3.nextMatchTeamId = match.Blue3
+}
+
 // Sets the IP address of the sign.
 func (sign *TeamSign) SetAddress(ipAddress string) {
 	if sign.udpConn != nil {
@@ -115,6 +127,7 @@ func (sign *TeamSign) SetAddress(ipAddress string) {
 	if ipAddress == "" {
 		// The sign is not configured.
 		sign.address = 0
+		return
 	}
 
 	var err error
@@ -149,7 +162,7 @@ func (sign *TeamSign) update(
 		sign.frontText, sign.frontColor = generateTimerText(arena.FieldReset, countdown)
 		sign.rearText = inMatchRearText
 	} else {
-		sign.frontText, sign.frontColor, sign.rearText = generateTeamNumberTexts(
+		sign.frontText, sign.frontColor, sign.rearText = sign.generateTeamNumberTexts(
 			arena, allianceStation, isRed, inMatchRearText,
 		)
 	}
@@ -160,14 +173,22 @@ func (sign *TeamSign) update(
 }
 
 // Returns the in-match rear text that is common to a whole alliance.
-func generateInMatchRearText(countdown string, realtimeScore, opponentRealtimeScore *RealtimeScore) string {
-	var amplifiedCountdown string
-	if realtimeScore.AmplifiedTimeRemainingSec > 0 {
-		amplifiedCountdown = fmt.Sprintf("Amp:%2d", realtimeScore.AmplifiedTimeRemainingSec)
-	}
+func generateInMatchRearText(isRed bool, countdown string, realtimeScore, opponentRealtimeScore *RealtimeScore) string {
 	scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
+	scoreTotal := scoreSummary.Score
+	opponentScoreTotal := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore).Score
+	var allianceScores string
+	if isRed {
+		allianceScores = fmt.Sprintf("R%03d-B%03d", scoreTotal, opponentScoreTotal)
+	} else {
+		allianceScores = fmt.Sprintf("B%03d-R%03d", scoreTotal, opponentScoreTotal)
+	}
+	if realtimeScore.AmplifiedTimeRemainingSec > 0 {
+		// Replace the total score with the amplified countdown while it's active.
+		allianceScores = fmt.Sprintf("Amp:%2d", realtimeScore.AmplifiedTimeRemainingSec)
+	}
 	return fmt.Sprintf(
-		"%s  %02d/%02d  %6s", countdown, scoreSummary.NumNotes, scoreSummary.NumNotesGoal, amplifiedCountdown,
+		"%s %02d/%02d %9s", countdown[1:], scoreSummary.NumNotes, scoreSummary.NumNotesGoal, allianceScores,
 	)
 }
 
@@ -186,7 +207,7 @@ func generateTimerText(fieldReset bool, countdown string) (string, color.RGBA) {
 }
 
 // Returns the front text, front color, and rear text to display on the sign for the given alliance station.
-func generateTeamNumberTexts(
+func (sign *TeamSign) generateTeamNumberTexts(
 	arena *Arena, allianceStation *AllianceStation, isRed bool, inMatchRearText string,
 ) (string, color.RGBA, string) {
 	if allianceStation.Team == nil {
@@ -232,7 +253,11 @@ func generateTeamNumberTexts(
 	}
 
 	var rearText string
-	if len(message) > 0 {
+	if arena.MatchState == PostMatch && sign.nextMatchTeamId > 0 && sign.nextMatchTeamId != allianceStation.Team.Id {
+		// Show the next match team number on the rear display before the score is committed so that queueing teams know
+		// where to go.
+		rearText = fmt.Sprintf("Next Team Up: %d", sign.nextMatchTeamId)
+	} else if len(message) > 0 {
 		rearText = fmt.Sprintf("%-5d %14s", allianceStation.Team.Id, message)
 	} else {
 		rearText = inMatchRearText
