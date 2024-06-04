@@ -22,7 +22,6 @@ import (
 )
 
 const (
-	accessPointApiPort       = 8081
 	accessPointPollPeriodSec = 1
 )
 
@@ -77,7 +76,7 @@ func (ap *AccessPoint) SetSettings(
 	networkSecurityEnabled bool,
 	wifiStatuses [6]*TeamWifiStatus,
 ) {
-	ap.apiUrl = fmt.Sprintf("http://%s:%d", address, accessPointApiPort)
+	ap.apiUrl = fmt.Sprintf("http://%s", address)
 	ap.password = password
 	ap.channel = channel
 	ap.networkSecurityEnabled = networkSecurityEnabled
