@@ -14,10 +14,12 @@ import (
 	"strconv"
 )
 
-const nexusBaseUrl = "https://api.frc.nexus"
+const nexusBaseUrl = "https://frc.nexus"
+const nexusApiKey = "Vn6D9y80kQcNijDItKOJHg8yYEk"
 
 type NexusClient struct {
 	BaseUrl   string
+	apiKey    string
 	eventCode string
 }
 
@@ -27,12 +29,12 @@ type nexusLineup struct {
 }
 
 func NewNexusClient(eventCode string) *NexusClient {
-	return &NexusClient{BaseUrl: nexusBaseUrl, eventCode: eventCode}
+	return &NexusClient{BaseUrl: nexusBaseUrl, apiKey: nexusApiKey, eventCode: eventCode}
 }
 
 // Gets the team lineup for a given match from the Nexus API. Returns nil and an error if the lineup is not available.
 func (client *NexusClient) GetLineup(tbaMatchKey model.TbaMatchKey) (*[6]int, error) {
-	path := fmt.Sprintf("/v1/%s/%s/lineup", client.eventCode, tbaMatchKey.String())
+	path := fmt.Sprintf("/api/v1/event/%s/match/%s/lineups?key=%s", client.eventCode, tbaMatchKey.String(), client.apiKey)
 	resp, err := client.getRequest(path)
 	if err != nil {
 		return nil, err

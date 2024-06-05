@@ -532,7 +532,7 @@ func TestLoadTeamsFromNexus(t *testing.T) {
 
 	// Mock the Nexus server.
 	nexusServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.URL.String(), "/v1/my_event_code/p1/lineup") {
+		if strings.Contains(r.URL.String(), "/api/v1/event/my_event_code/match/p1/lineup") {
 			w.Write([]byte("{\"red\":[\"112\",\"111\",\"110\"],\"blue\":[\"109\",\"108\",\"107\"]}"))
 		} else {
 			http.Error(w, "Match not found", 404)
