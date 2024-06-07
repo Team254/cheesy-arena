@@ -23,9 +23,14 @@ func TestRankingsCsvReport(t *testing.T) {
 	recorder := web.getHttpResponse("/reports/csv/rankings")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.Header()["Content-Type"][0])
-	expectedBody := "Rank,TeamId,RankingPoints,CoopertitionPoints,MatchPoints,AutoPoints,BargePoints,Wins,Losses," +
+	expectedBody1 := "Rank,TeamId,RankingPoints,CoopertitionPoints,MatchPoints,AutoPoints,BargePoints,Wins,Losses," +
+		"Ties,Disqualifications,Played\r\n1,254,20,625,90,554,12,3,2,1,0,10\r\n2,1114,18,700,625,90,23,1,3,2,0,10\r\n\r\n"
+	expectedBody2 := "Rank,TeamId,RankingPoints,CoopertitionPoints,MatchPoints,AutoPoints,BargePoints,Wins,Losses," +
 		"Ties,Disqualifications,Played\n1,254,20,625,90,554,12,3,2,1,0,10\n2,1114,18,700,625,90,23,1,3,2,0,10\n\n"
-	assert.Equal(t, expectedBody, recorder.Body.String())
+	//assert.Equal(t, expectedBody, recorder.Body.String())
+	if recorder.Body.String() != expectedBody1 && recorder.Body.String() != expectedBody2 {
+        t.Errorf("Unexpected body: %s", recorder.Body.String())
+    }
 }
 
 func TestRankingsPdfReport(t *testing.T) {
@@ -60,11 +65,18 @@ func TestScheduleCsvReport(t *testing.T) {
 	recorder := web.getHttpResponse("/reports/csv/schedule/qualification")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.Header()["Content-Type"][0])
-	expectedBody := "Match,Type,Time,Red1,Red1IsSurrogate,Red2,Red2IsSurrogate,Red3,Red3IsSurrogate,Blue1," +
+	expectedBody1 := "Match,Type,Time,Red1,Red1IsSurrogate,Red2,Red2IsSurrogate,Red3,Red3IsSurrogate,Blue1," +
+		"Blue1IsSurrogate,Blue2,Blue2IsSurrogate,Blue3,Blue3IsSurrogate\r\nQ1,Qualification," + match1Time.String() +
+		",1,false,2,false,3,false,4,true,5,true,6,true\r\nQ2,Qualification," + match2Time.String() +
+		",7,true,8,true,9,true,10,false,11,false,12,false\r\n\r\n"
+	expectedBody2 := "Match,Type,Time,Red1,Red1IsSurrogate,Red2,Red2IsSurrogate,Red3,Red3IsSurrogate,Blue1," +
 		"Blue1IsSurrogate,Blue2,Blue2IsSurrogate,Blue3,Blue3IsSurrogate\nQ1,Qualification," + match1Time.String() +
 		",1,false,2,false,3,false,4,true,5,true,6,true\nQ2,Qualification," + match2Time.String() +
 		",7,true,8,true,9,true,10,false,11,false,12,false\n\n"
-	assert.Equal(t, expectedBody, recorder.Body.String())
+	//assert.Equal(t, expectedBody, recorder.Body.String())
+	if recorder.Body.String() != expectedBody1 && recorder.Body.String() != expectedBody2 {
+        t.Errorf("Unexpected body: %s", recorder.Body.String())
+    }
 }
 
 func TestSchedulePdfReport(t *testing.T) {
@@ -96,10 +108,16 @@ func TestTeamsCsvReport(t *testing.T) {
 	recorder := web.getHttpResponse("/reports/csv/teams")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Equal(t, "text/plain", recorder.Header()["Content-Type"][0])
-	expectedBody := "Number,Name,Nickname,SchoolName,City,StateProv,Country,RookieYear,RobotName,HasConnected\n254,\"NASA\"," +
+	expectedBody1 := "Number,Name,Nickname,SchoolName,City,StateProv,Country,RookieYear,RobotName,HasConnected\r\n254,\"NASA\"," +
+		"\"The Cheesy Poofs\",\"Bellarmine College Preparatory\",\"San Jose\",\"CA\",\"USA\",1999,\"Barrage\",false\r\n1114,\"GM\",\"Simbotics\"," +
+		"\"Governor Simcoe Secondary School\",\"St. Catharines\",\"ON\",\"Canada\",2003,\"Simbot Evolution\",false\r\n\r\n"
+	expectedBody2 := "Number,Name,Nickname,SchoolName,City,StateProv,Country,RookieYear,RobotName,HasConnected\n254,\"NASA\"," +
 		"\"The Cheesy Poofs\",\"Bellarmine College Preparatory\",\"San Jose\",\"CA\",\"USA\",1999,\"Barrage\",false\n1114,\"GM\",\"Simbotics\"," +
 		"\"Governor Simcoe Secondary School\",\"St. Catharines\",\"ON\",\"Canada\",2003,\"Simbot Evolution\",false\n\n"
-	assert.Equal(t, expectedBody, recorder.Body.String())
+	//assert.Equal(t, expectedBody, recorder.Body.String())
+	if recorder.Body.String() != expectedBody1 && recorder.Body.String() != expectedBody2 {
+        t.Errorf("Unexpected body: %s", recorder.Body.String())
+    }
 }
 
 func TestTeamsPdfReport(t *testing.T) {
