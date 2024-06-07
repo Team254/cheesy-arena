@@ -64,7 +64,7 @@ UI for configuring event settings.
                       <input type="radio" name="playoffType" value="DoubleEliminationPlayoff"
                         onclick="updateNumPlayoffAlliances(true);"
                         {{if eq .PlayoffType 0}}checked{{end}}>
-                      Double-Elimination (8 alliances)
+                      Double-Elimination (3-8 alliances)
                     </label>
                   </div>
                   <div class="radio">
@@ -80,8 +80,7 @@ UI for configuring event settings.
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Number of Alliances</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" name="numPlayoffAlliances" value="{{.NumPlayoffAlliances}}"
-                    {{if eq .PlayoffType 0}}disabled{{end}}>
+                  <input type="text" class="form-control" name="numPlayoffAlliances" value="{{.NumPlayoffAlliances}}">
                 </div>
               </div>
               <div class="row mb-3">
@@ -548,10 +547,7 @@ UI for configuring event settings.
 <script>
   updateNumPlayoffAlliances = function (isDoubleElimination) {
     const numPlayoffAlliances = $("input[name=numPlayoffAlliances]");
-    numPlayoffAlliances.prop("disabled", isDoubleElimination);
-    if (isDoubleElimination) {
-      numPlayoffAlliances.val(8);
-    }
+ 
   };
 
   // Handle initial tab selection based on URL fragment.
