@@ -62,7 +62,7 @@ html {
   border-left: none;
 }
 .teams {
-  width: 60px;
+  width: 70px;
   height: 100%;
   display: none;
   flex-direction: column;
