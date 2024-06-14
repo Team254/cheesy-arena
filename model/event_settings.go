@@ -21,6 +21,7 @@ type EventSettings struct {
 	NumPlayoffAlliances             int
 	SelectionRound2Order            string
 	SelectionRound3Order            string
+	SelectionShowUnpickedTeams      bool
 	TbaDownloadEnabled              bool
 	TbaPublishingEnabled            bool
 	TbaEventCode                    string
@@ -70,6 +71,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		NumPlayoffAlliances:             8,
 		SelectionRound2Order:            "L",
 		SelectionRound3Order:            "",
+		SelectionShowUnpickedTeams:      false,
 		TbaDownloadEnabled:              true,
 		ApChannel:                       36,
 		WarmupDurationSec:               game.MatchTiming.WarmupDurationSec,

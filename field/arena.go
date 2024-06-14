@@ -47,6 +47,12 @@ const (
 	PostTimeout
 )
 
+type RankedTeam struct {
+	Rank   int
+	TeamId int
+	Picked bool
+}
+
 type Arena struct {
 	Database         *model.Database
 	EventSettings    *model.EventSettings
@@ -77,6 +83,7 @@ type Arena struct {
 	SavedRankings                     game.Rankings
 	AllianceStationDisplayMode        string
 	AllianceSelectionAlliances        []model.Alliance
+	AllianceSelectionRankedTeams      []*RankedTeam
 	AllianceSelectionShowTimer        bool
 	AllianceSelectionTimeRemainingSec int
 	PlayoffTournament                 *playoff.PlayoffTournament

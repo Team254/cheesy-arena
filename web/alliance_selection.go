@@ -7,6 +7,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
@@ -16,15 +17,6 @@ import (
 	"strconv"
 	"time"
 )
-
-type RankedTeam struct {
-	Rank   int
-	TeamId int
-	Picked bool
-}
-
-// Global var to hold the team rankings during the alliance selection.
-var cachedRankedTeams []*RankedTeam
 
 // Global var to hold configurable time limit for selections. A value of zero disables the timer.
 var allianceSelectionTimeLimitSec = 0
@@ -56,9 +48,9 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 	allianceSelectionTimeLimitSec, _ = strconv.Atoi(r.PostFormValue("timeLimitSec"))
 
 	// Reset picked state for each team in preparation for reconstructing it.
-	newRankedTeams := make([]*RankedTeam, len(cachedRankedTeams))
-	for i, team := range cachedRankedTeams {
-		newRankedTeams[i] = &RankedTeam{team.Rank, team.TeamId, false}
+	newRankedTeams := make([]*field.RankedTeam, len(web.arena.AllianceSelectionRankedTeams))
+	for i, team := range web.arena.AllianceSelectionRankedTeams {
+		newRankedTeams[i] = &field.RankedTeam{team.Rank, team.TeamId, false}
 	}
 
 	// Iterate through all selections and update the alliances.
@@ -100,7 +92,7 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 			}
 		}
 	}
-	cachedRankedTeams = newRankedTeams
+	web.arena.AllianceSelectionRankedTeams = newRankedTeams
 
 	if allianceSelectionTicker != nil {
 		allianceSelectionTicker.Stop()
@@ -157,9 +149,9 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 		handleWebErr(w, err)
 		return
 	}
-	cachedRankedTeams = make([]*RankedTeam, len(rankings))
+	web.arena.AllianceSelectionRankedTeams = make([]*field.RankedTeam, len(rankings))
 	for i, ranking := range rankings {
-		cachedRankedTeams[i] = &RankedTeam{i + 1, ranking.TeamId, false}
+		web.arena.AllianceSelectionRankedTeams[i] = &field.RankedTeam{i + 1, ranking.TeamId, false}
 	}
 
 	web.arena.AllianceSelectionNotifier.Notify()
@@ -191,7 +183,7 @@ func (web *Web) allianceSelectionResetHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
+	web.arena.AllianceSelectionRankedTeams = []*field.RankedTeam{}
 	web.arena.AllianceSelectionNotifier.Notify()
 	http.Redirect(w, r, "/alliance_selection", 303)
 }
@@ -347,7 +339,7 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 	data := struct {
 		*model.EventSettings
 		Alliances    []model.Alliance
-		RankedTeams  []*RankedTeam
+		RankedTeams  []*field.RankedTeam
 		NextRow      int
 		NextCol      int
 		ErrorMessage string
@@ -355,7 +347,7 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 	}{
 		web.arena.EventSettings,
 		web.arena.AllianceSelectionAlliances,
-		cachedRankedTeams,
+		web.arena.AllianceSelectionRankedTeams,
 		nextRow,
 		nextCol,
 		errorMessage,
