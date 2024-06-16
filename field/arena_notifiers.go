@@ -69,10 +69,12 @@ func (arena *Arena) generateAllianceSelectionMessage() any {
 		Alliances        []model.Alliance
 		ShowTimer        bool
 		TimeRemainingSec int
+		RankedTeams      []model.AllianceSelectionRankedTeam
 	}{
 		arena.AllianceSelectionAlliances,
 		arena.AllianceSelectionShowTimer,
 		arena.AllianceSelectionTimeRemainingSec,
+		arena.AllianceSelectionRankedTeams,
 	}
 }
 

@@ -77,6 +77,7 @@ type Arena struct {
 	SavedRankings                     game.Rankings
 	AllianceStationDisplayMode        string
 	AllianceSelectionAlliances        []model.Alliance
+	AllianceSelectionRankedTeams      []model.AllianceSelectionRankedTeam
 	AllianceSelectionShowTimer        bool
 	AllianceSelectionTimeRemainingSec int
 	PlayoffTournament                 *playoff.PlayoffTournament
