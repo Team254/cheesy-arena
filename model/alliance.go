@@ -13,6 +13,12 @@ type Alliance struct {
 	Lineup  [3]int
 }
 
+type AllianceSelectionRankedTeam struct {
+	Rank   int
+	TeamId int
+	Picked bool
+}
+
 func (database *Database) CreateAlliance(alliance *Alliance) error {
 	return database.allianceTable.create(alliance)
 }

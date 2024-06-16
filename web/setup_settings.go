@@ -7,7 +7,6 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/field"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -258,7 +257,7 @@ func (web *Web) clearDbHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		web.arena.AllianceSelectionAlliances = []model.Alliance{}
-		web.arena.AllianceSelectionRankedTeams = []*field.RankedTeam{}
+		web.arena.AllianceSelectionRankedTeams = []model.AllianceSelectionRankedTeam{}
 	}
 
 	http.Redirect(w, r, "/setup/settings", 303)

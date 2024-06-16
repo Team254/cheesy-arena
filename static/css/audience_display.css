@@ -560,18 +560,29 @@ html {
   top: 3em;
 }
 #allianceRankings {
+  max-width: 11em;
+  max-height: 92%;
+  display: flex;
+  flex-flow: column wrap;
+  overflow: hidden;
   background-color: #fff;
-  padding: .5em 1em;
   border: 2px solid #222;
   font-size: 2em;
-  color: #222;
   font-family: "FuturaLT";
-  -webkit-column-count: 3;
-  -moz-column-count: 3;
-  column-count: 3;
-  -webkit-column-gap: 1em;
-  -moz-column-gap: 1em;
-  column-gap: 1em;
+}
+.unpicked {
+  width: 5.5em;
+  display: flex;
+  justify-content: start;
+}
+.unpicked-rank {
+  width: 1.8em;
+  text-align: right;
+  color: #999;
+}
+.unpicked-team {
+  margin-left: 0.3em;
+  color: #222;
 }
 #allianceSelectionCentering {
   position: absolute;

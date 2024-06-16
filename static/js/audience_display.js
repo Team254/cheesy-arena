@@ -337,10 +337,11 @@ const handleAllianceSelection = function(data) {
     $("#allianceSelection").html(allianceSelectionTemplate({alliances: alliances, numColumns: numColumns}));
   }
   if (rankedTeams) {
-      var text = '';
+      let text = "";
       $.each(rankedTeams, function(i, v) {
         if (!v.Picked) {
-          text += v.Rank + '. ' + v.TeamId + '<br />';
+          text += `<div class="unpicked"><div class="unpicked-rank">${v.Rank}.</div>` +
+            `<div class="unpicked-team">${v.TeamId}</div></div>`;
         }
       });
       $("#allianceRankings").html(text);
@@ -389,7 +390,7 @@ const transitionAllianceSelectionToBlank = function(callback) {
 const transitionBlankToAllianceSelection = function(callback) {
   $('#allianceSelectionCentering').css("right","-60em").show();
   $('#allianceSelectionCentering').transition({queue: false, right: "3em"}, 500, "ease", callback);
-  $('#allianceRankingsCentering.enabled').css('left', '-60em').show();
+  $('#allianceRankingsCentering.enabled').css("left", "-60em").show();
   $('#allianceRankingsCentering.enabled').transition({queue: false, left: "3em"}, 500, "ease");
 };
 

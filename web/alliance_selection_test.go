@@ -16,8 +16,6 @@ import (
 func TestAllianceSelection(t *testing.T) {
 	web := setupTestWeb(t)
 
-	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 15
 	web.arena.EventSettings.SelectionRound3Order = "L"
@@ -104,8 +102,6 @@ func TestAllianceSelection(t *testing.T) {
 func TestAllianceSelectionErrors(t *testing.T) {
 	web := setupTestWeb(t)
 
-	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 	for i := 1; i <= 6; i++ {
@@ -157,7 +153,7 @@ func TestAllianceSelectionErrors(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
 	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
+	web.arena.AllianceSelectionRankedTeams = []model.AllianceSelectionRankedTeam{}
 	recorder = web.postHttpResponse("/alliance_selection/start", "")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
@@ -166,8 +162,6 @@ func TestAllianceSelectionErrors(t *testing.T) {
 func TestAllianceSelectionReset(t *testing.T) {
 	web := setupTestWeb(t)
 
-	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 	for i := 1; i <= 6; i++ {
@@ -223,8 +217,6 @@ func TestAllianceSelectionReset(t *testing.T) {
 func TestAllianceSelectionAutofocus(t *testing.T) {
 	web := setupTestWeb(t)
 
-	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 
