@@ -60,14 +60,14 @@ type accessPointStatus struct {
 }
 
 type stationStatus struct {
-	Ssid               string  `json:"ssid"`
-	HashedWpaKey       string  `json:"hashedWpaKey"`
-	WpaKeySalt         string  `json:"wpaKeySalt"`
-	IsRobotRadioLinked bool    `json:"isRobotRadioLinked"`
-	RxRateMbps         float64 `json:"rxRateMbps"`
-	TxRateMbps         float64 `json:"txRateMbps"`
-	SignalNoiseRatio   int     `json:"signalNoiseRatio"`
-	BandwidthUsedMbps  float64 `json:"bandwidthUsedMbps"`
+	Ssid              string  `json:"ssid"`
+	HashedWpaKey      string  `json:"hashedWpaKey"`
+	WpaKeySalt        string  `json:"wpaKeySalt"`
+	IsLinked          bool    `json:"isLinked"`
+	RxRateMbps        float64 `json:"rxRateMbps"`
+	TxRateMbps        float64 `json:"txRateMbps"`
+	SignalNoiseRatio  int     `json:"signalNoiseRatio"`
+	BandwidthUsedMbps float64 `json:"bandwidthUsedMbps"`
 }
 
 func (ap *AccessPoint) SetSettings(
@@ -227,7 +227,7 @@ func updateTeamWifiStatus(teamWifiStatus *TeamWifiStatus, stationStatus *station
 		teamWifiStatus.SignalNoiseRatio = 0
 	} else {
 		teamWifiStatus.TeamId, _ = strconv.Atoi(stationStatus.Ssid)
-		teamWifiStatus.RadioLinked = stationStatus.IsRobotRadioLinked
+		teamWifiStatus.RadioLinked = stationStatus.IsLinked
 		teamWifiStatus.MBits = stationStatus.BandwidthUsedMbps
 		teamWifiStatus.RxRate = stationStatus.RxRateMbps
 		teamWifiStatus.TxRate = stationStatus.TxRateMbps
