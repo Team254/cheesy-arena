@@ -128,6 +128,10 @@ const hashObject = function(object) {
 }
 
 $(function() {
+  // Read the configuration for this display from the URL query string.
+  var urlParams = new URLSearchParams(window.location.search);
+  $(".headRef-dependent").attr("data-hr", urlParams.get("hr"));
+
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/panels/referee/websocket", {
     matchLoad: function(event) { handleMatchLoad(event.data); },
