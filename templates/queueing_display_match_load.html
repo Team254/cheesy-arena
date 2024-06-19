@@ -42,15 +42,15 @@
         <div class="col-lg-2 red-teams">
           {{if $match.Red1}}
           <div class="row">
-            <div class="col-lg-7">
+            <div class="col-lg-8">
               {{$match.Red1}}<br />{{$match.Red2}}<br />{{$match.Red3}}
               {{range $team := (index $.RedOffFieldTeams $i) }}
               <br />{{$team}}
               {{end}}
             </div>
-            <div class="col-lg-5">
+            <div class="col-lg-4">
               {{if $match.PlayoffRedAlliance}}
-                <div class="alliance-container">
+                <div class="alliance-container{{if (index $.RedOffFieldTeams $i)}} alliance-tall{{end}}">
                   <div class="alliance-number">{{$match.PlayoffRedAlliance}}</div>
                 </div>
               {{end}}
@@ -61,15 +61,15 @@
         <div class="col-lg-2 blue-teams text-end">
           {{if $match.Blue1}}
           <div class="row">
-            <div class="col-lg-5">
+            <div class="col-lg-4">
               {{if $match.PlayoffBlueAlliance}}
-                <div class="alliance-container">
+                <div class="alliance-container{{if (index $.BlueOffFieldTeams $i)}} alliance-tall{{end}}">
                   <div></div>
                   <div class="alliance-number">{{$match.PlayoffBlueAlliance}}</div>
                 </div>
               {{end}}
             </div>
-            <div class="col-lg-7">
+            <div class="col-lg-8">
               {{$match.Blue1}}<br />{{$match.Blue2}}<br />{{$match.Blue3}}
               {{range $team := (index $.BlueOffFieldTeams $i) }}
               <br />{{$team}}

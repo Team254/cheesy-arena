@@ -69,10 +69,12 @@ func (arena *Arena) generateAllianceSelectionMessage() any {
 		Alliances        []model.Alliance
 		ShowTimer        bool
 		TimeRemainingSec int
+		RankedTeams      []model.AllianceSelectionRankedTeam
 	}{
 		arena.AllianceSelectionAlliances,
 		arena.AllianceSelectionShowTimer,
 		arena.AllianceSelectionTimeRemainingSec,
+		arena.AllianceSelectionRankedTeams,
 	}
 }
 
@@ -86,6 +88,8 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		AllianceStations map[string]*AllianceStation
 		MatchState
 		CanStartMatch         bool
+		AccessPointStatus     string
+		SwitchStatus          string
 		PlcIsHealthy          bool
 		FieldEStop            bool
 		PlcArmorBlockStatuses map[string]bool
@@ -94,6 +98,8 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		arena.AllianceStations,
 		arena.MatchState,
 		arena.checkCanStartMatch() == nil,
+		arena.accessPoint.Status,
+		arena.networkSwitch.Status,
 		arena.Plc.IsHealthy(),
 		arena.Plc.GetFieldEStop(),
 		arena.Plc.GetArmorBlockStatuses(),

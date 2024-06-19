@@ -328,12 +328,23 @@ const handlePlaySound = function(sound) {
 // Handles a websocket message to update the alliance selection screen.
 const handleAllianceSelection = function(data) {
   const alliances = data.Alliances;
+  const rankedTeams = data.RankedTeams;
   if (alliances && alliances.length > 0) {
     const numColumns = alliances[0].TeamIds.length + 1;
     $.each(alliances, function(k, v) {
       v.Index = k + 1;
     });
     $("#allianceSelection").html(allianceSelectionTemplate({alliances: alliances, numColumns: numColumns}));
+  }
+  if (rankedTeams) {
+      let text = "";
+      $.each(rankedTeams, function(i, v) {
+        if (!v.Picked) {
+          text += `<div class="unpicked"><div class="unpicked-rank">${v.Rank}.</div>` +
+            `<div class="unpicked-team">${v.TeamId}</div></div>`;
+        }
+      });
+      $("#allianceRankings").html(text);
   }
 
   if (data.ShowTimer) {
@@ -373,11 +384,14 @@ const handleLowerThird = function(data) {
 
 const transitionAllianceSelectionToBlank = function(callback) {
   $('#allianceSelectionCentering').transition({queue: false, right: "-60em"}, 500, "ease", callback);
+  $('#allianceRankingsCentering.enabled').transition({queue:false, left: "-60em"}, 500, "ease");
 };
 
 const transitionBlankToAllianceSelection = function(callback) {
   $('#allianceSelectionCentering').css("right","-60em").show();
   $('#allianceSelectionCentering').transition({queue: false, right: "3em"}, 500, "ease", callback);
+  $('#allianceRankingsCentering.enabled').css("left", "-60em").show();
+  $('#allianceRankingsCentering.enabled').transition({queue: false, left: "3em"}, 500, "ease");
 };
 
 const transitionBlankToBracket = function(callback) {

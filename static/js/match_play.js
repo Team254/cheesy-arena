@@ -252,6 +252,9 @@ const handleArenaStatus = function(data) {
       break;
   }
 
+  $("#accessPointStatus").attr("data-status", data.AccessPointStatus);
+  $("#switchStatus").attr("data-status", data.SwitchStatus);
+
   if (data.PlcIsHealthy) {
     $("#plcStatus").text("Connected");
     $("#plcStatus").attr("data-ready", true);

@@ -15,6 +15,7 @@ import (
 
 func TestConfigureSwitch(t *testing.T) {
 	sw := NewSwitch("127.0.0.1", "password")
+	assert.Equal(t, "UNKNOWN", sw.Status)
 	sw.port = 9050
 	sw.configBackoffDuration = time.Millisecond
 	sw.configPauseDuration = time.Millisecond
@@ -33,6 +34,7 @@ func TestConfigureSwitch(t *testing.T) {
 	assert.Nil(t, sw.ConfigureTeamEthernet([6]*model.Team{nil, nil, nil, nil, nil, nil}))
 	assert.Equal(t, expectedResetCommand, command1)
 	assert.Equal(t, "", command2)
+	assert.Equal(t, "ACTIVE", sw.Status)
 
 	// Should configure one team if only one is present.
 	sw.port += 1

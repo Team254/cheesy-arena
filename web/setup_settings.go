@@ -71,6 +71,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.NumPlayoffAlliances = numAlliances
 	eventSettings.SelectionRound2Order = r.PostFormValue("selectionRound2Order")
 	eventSettings.SelectionRound3Order = r.PostFormValue("selectionRound3Order")
+	eventSettings.SelectionShowUnpickedTeams = r.PostFormValue("selectionShowUnpickedTeams") == "on"
 	eventSettings.TbaDownloadEnabled = r.PostFormValue("tbaDownloadEnabled") == "on"
 	eventSettings.TbaPublishingEnabled = r.PostFormValue("tbaPublishingEnabled") == "on"
 	eventSettings.TbaEventCode = r.PostFormValue("tbaEventCode")
@@ -258,7 +259,7 @@ func (web *Web) clearDbHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		web.arena.AllianceSelectionAlliances = []model.Alliance{}
-		cachedRankedTeams = []*RankedTeam{}
+		web.arena.AllianceSelectionRankedTeams = []model.AllianceSelectionRankedTeam{}
 	}
 
 	http.Redirect(w, r, "/setup/settings", 303)

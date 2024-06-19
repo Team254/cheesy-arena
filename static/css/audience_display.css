@@ -62,7 +62,7 @@ html {
   border-left: none;
 }
 .teams {
-  width: 60px;
+  width: 70px;
   height: 100%;
   display: none;
   flex-direction: column;
@@ -552,6 +552,37 @@ html {
 #sponsor img {
   max-width: 800px;
   max-height: 400px;
+}
+#allianceRankingsCentering {
+  position: absolute;
+  height: 100%;
+  left: 3em;
+  top: 3em;
+}
+#allianceRankings {
+  max-width: 11em;
+  max-height: 92%;
+  display: flex;
+  flex-flow: column wrap;
+  overflow: hidden;
+  background-color: #fff;
+  border: 2px solid #222;
+  font-size: 2em;
+  font-family: "FuturaLT";
+}
+.unpicked {
+  width: 5.5em;
+  display: flex;
+  justify-content: start;
+}
+.unpicked-rank {
+  width: 1.8em;
+  text-align: right;
+  color: #999;
+}
+.unpicked-team {
+  margin-left: 0.3em;
+  color: #222;
 }
 #allianceSelectionCentering {
   position: absolute;

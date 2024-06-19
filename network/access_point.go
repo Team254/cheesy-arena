@@ -22,7 +22,6 @@ import (
 )
 
 const (
-	accessPointApiPort       = 8081
 	accessPointPollPeriodSec = 1
 )
 
@@ -61,14 +60,14 @@ type accessPointStatus struct {
 }
 
 type stationStatus struct {
-	Ssid               string  `json:"ssid"`
-	HashedWpaKey       string  `json:"hashedWpaKey"`
-	WpaKeySalt         string  `json:"wpaKeySalt"`
-	IsRobotRadioLinked bool    `json:"isRobotRadioLinked"`
-	RxRateMbps         float64 `json:"rxRateMbps"`
-	TxRateMbps         float64 `json:"txRateMbps"`
-	SignalNoiseRatio   int     `json:"signalNoiseRatio"`
-	BandwidthUsedMbps  float64 `json:"bandwidthUsedMbps"`
+	Ssid              string  `json:"ssid"`
+	HashedWpaKey      string  `json:"hashedWpaKey"`
+	WpaKeySalt        string  `json:"wpaKeySalt"`
+	IsLinked          bool    `json:"isLinked"`
+	RxRateMbps        float64 `json:"rxRateMbps"`
+	TxRateMbps        float64 `json:"txRateMbps"`
+	SignalNoiseRatio  int     `json:"signalNoiseRatio"`
+	BandwidthUsedMbps float64 `json:"bandwidthUsedMbps"`
 }
 
 func (ap *AccessPoint) SetSettings(
@@ -77,7 +76,7 @@ func (ap *AccessPoint) SetSettings(
 	networkSecurityEnabled bool,
 	wifiStatuses [6]*TeamWifiStatus,
 ) {
-	ap.apiUrl = fmt.Sprintf("http://%s:%d", address, accessPointApiPort)
+	ap.apiUrl = fmt.Sprintf("http://%s", address)
 	ap.password = password
 	ap.channel = channel
 	ap.networkSecurityEnabled = networkSecurityEnabled
@@ -228,7 +227,7 @@ func updateTeamWifiStatus(teamWifiStatus *TeamWifiStatus, stationStatus *station
 		teamWifiStatus.SignalNoiseRatio = 0
 	} else {
 		teamWifiStatus.TeamId, _ = strconv.Atoi(stationStatus.Ssid)
-		teamWifiStatus.RadioLinked = stationStatus.IsRobotRadioLinked
+		teamWifiStatus.RadioLinked = stationStatus.IsLinked
 		teamWifiStatus.MBits = stationStatus.BandwidthUsedMbps
 		teamWifiStatus.RxRate = stationStatus.RxRateMbps
 		teamWifiStatus.TxRate = stationStatus.TxRateMbps

@@ -62,9 +62,12 @@ body {
 }
 .alliance-container {
   display: flex;
-  height: 192px;
+  height: 144px;
   justify-content: space-between;
   align-items: center;
+}
+.alliance-tall {
+  height: 192px;
 }
 .alliance-number {
   width: 40px;
