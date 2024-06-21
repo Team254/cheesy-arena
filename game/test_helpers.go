@@ -25,11 +25,11 @@ func TestScore1() *Score {
 			TeleopUnamplifiedSpeakerNotes: 1,
 			TeleopAmplifiedSpeakerNotes:   5,
 		},
-		EndgameStatuses:    [3]EndgameStatus{EndgameParked, EndgameNone, EndgameStageLeft},
-		MicrophoneStatuses: [3]bool{false, true, true},
-		TrapStatuses:       [3]bool{true, true, false},
-		Fouls:              fouls,
-		PlayoffDq:          false,
+		EndgameStatuses:  [3]EndgameStatus{EndgameParked, EndgameNone, EndgameStageLeft},
+		MicrophoneCounts: [3]int{1, 3, 2},
+		TrapStatuses:     [3]bool{true, true, false},
+		Fouls:            fouls,
+		PlayoffDq:        false,
 	}
 }
 
@@ -44,11 +44,11 @@ func TestScore2() *Score {
 			TeleopUnamplifiedSpeakerNotes: 3,
 			TeleopAmplifiedSpeakerNotes:   23,
 		},
-		EndgameStatuses:    [3]EndgameStatus{EndgameStageLeft, EndgameCenterStage, EndgameCenterStage},
-		MicrophoneStatuses: [3]bool{false, true, true},
-		TrapStatuses:       [3]bool{false, false, false},
-		Fouls:              []Foul{},
-		PlayoffDq:          false,
+		EndgameStatuses:  [3]EndgameStatus{EndgameStageLeft, EndgameCenterStage, EndgameCenterStage},
+		MicrophoneCounts: [3]int{0, 2, 1},
+		TrapStatuses:     [3]bool{false, false, false},
+		Fouls:            []Foul{},
+		PlayoffDq:        false,
 	}
 }
 

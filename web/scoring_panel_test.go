@@ -86,7 +86,7 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	scoringData.TeamPosition = 3
 	scoringData.StageIndex = 2
 	redWs.Write("onStage", scoringData)
-	redWs.Write("microphone", scoringData)
+	redWs.Write("microphoneIncrement", scoringData)
 	scoringData.StageIndex = 0
 	redWs.Write("trap", scoringData)
 	for i := 0; i < 5; i++ {
@@ -98,21 +98,21 @@ func TestScoringPanelWebsocket(t *testing.T) {
 		[3]game.EndgameStatus{game.EndgameStageLeft, game.EndgameCenterStage, game.EndgameNone},
 		web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses,
 	)
-	assert.Equal(t, [3]bool{false, false, false}, web.arena.BlueRealtimeScore.CurrentScore.MicrophoneStatuses)
+	assert.Equal(t, [3]int{0, 0, 0}, web.arena.BlueRealtimeScore.CurrentScore.MicrophoneCounts)
 	assert.Equal(t, [3]bool{false, false, false}, web.arena.BlueRealtimeScore.CurrentScore.TrapStatuses)
 	assert.Equal(
 		t,
 		[3]game.EndgameStatus{game.EndgameNone, game.EndgameNone, game.EndgameStageRight},
 		web.arena.RedRealtimeScore.CurrentScore.EndgameStatuses,
 	)
-	assert.Equal(t, [3]bool{false, false, true}, web.arena.RedRealtimeScore.CurrentScore.MicrophoneStatuses)
+	assert.Equal(t, [3]int{0, 0, 1}, web.arena.RedRealtimeScore.CurrentScore.MicrophoneCounts)
 	assert.Equal(t, [3]bool{true, false, false}, web.arena.RedRealtimeScore.CurrentScore.TrapStatuses)
 	scoringData.StageIndex = 1
 	redWs.Write("trap", scoringData)
 	scoringData.StageIndex = 0
 	redWs.Write("trap", scoringData)
 	scoringData.StageIndex = 2
-	redWs.Write("microphone", scoringData)
+	redWs.Write("microphoneIncrement", scoringData)
 	scoringData.TeamPosition = 1
 	blueWs.Write("park", scoringData)
 	scoringData.TeamPosition = 2
@@ -127,7 +127,7 @@ func TestScoringPanelWebsocket(t *testing.T) {
 		[3]game.EndgameStatus{game.EndgameParked, game.EndgameNone, game.EndgameNone},
 		web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses,
 	)
-	assert.Equal(t, [3]bool{false, false, false}, web.arena.RedRealtimeScore.CurrentScore.MicrophoneStatuses)
+	assert.Equal(t, [3]int{0, 0, 2}, web.arena.RedRealtimeScore.CurrentScore.MicrophoneCounts)
 	assert.Equal(t, [3]bool{false, true, false}, web.arena.RedRealtimeScore.CurrentScore.TrapStatuses)
 
 	// Test that some invalid commands do nothing and don't result in score change notifications.

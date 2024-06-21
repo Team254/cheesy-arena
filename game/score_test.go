@@ -19,10 +19,10 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 36, redSummary.AutoPoints)
 	assert.Equal(t, 6, redSummary.AmpPoints)
 	assert.Equal(t, 57, redSummary.SpeakerPoints)
-	assert.Equal(t, 14, redSummary.StagePoints)
-	assert.Equal(t, 81, redSummary.MatchPoints)
+	assert.Equal(t, 20, redSummary.StagePoints)
+	assert.Equal(t, 87, redSummary.MatchPoints)
 	assert.Equal(t, 0, redSummary.FoulPoints)
-	assert.Equal(t, 81, redSummary.Score)
+	assert.Equal(t, 87, redSummary.Score)
 	assert.Equal(t, true, redSummary.CoopertitionCriteriaMet)
 	assert.Equal(t, false, redSummary.CoopertitionBonus)
 	assert.Equal(t, 17, redSummary.NumNotes)
@@ -37,10 +37,10 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 42, blueSummary.AutoPoints)
 	assert.Equal(t, 51, blueSummary.AmpPoints)
 	assert.Equal(t, 161, blueSummary.SpeakerPoints)
-	assert.Equal(t, 13, blueSummary.StagePoints)
-	assert.Equal(t, 227, blueSummary.MatchPoints) // 187
+	assert.Equal(t, 14, blueSummary.StagePoints)
+	assert.Equal(t, 228, blueSummary.MatchPoints)
 	assert.Equal(t, 29, blueSummary.FoulPoints)
-	assert.Equal(t, 256, blueSummary.Score)
+	assert.Equal(t, 257, blueSummary.Score)
 	assert.Equal(t, false, blueSummary.CoopertitionCriteriaMet)
 	assert.Equal(t, false, blueSummary.CoopertitionBonus)
 	assert.Equal(t, 85, blueSummary.NumNotes)
@@ -163,7 +163,7 @@ func TestScoreEnsembleBonusRankingPoint(t *testing.T) {
 	var score Score
 
 	score.EndgameStatuses = [3]EndgameStatus{EndgameNone, EndgameNone, EndgameNone}
-	score.MicrophoneStatuses = [3]bool{false, false, false}
+	score.MicrophoneCounts = [3]int{0, 0, 0}
 	score.TrapStatuses = [3]bool{false, false, false}
 	assert.Equal(t, false, score.Summarize(&Score{}).EnsembleBonusRankingPoint)
 
@@ -186,24 +186,24 @@ func TestScoreEnsembleBonusRankingPoint(t *testing.T) {
 
 	// Try various combinations with microphones.
 	score.EndgameStatuses = [3]EndgameStatus{EndgameStageLeft, EndgameCenterStage, EndgameStageRight}
-	score.MicrophoneStatuses = [3]bool{true, false, false}
+	score.MicrophoneCounts = [3]int{1, 0, 0}
 	assert.Equal(t, 10, score.Summarize(&Score{}).StagePoints)
 	assert.Equal(t, true, score.Summarize(&Score{}).EnsembleBonusRankingPoint)
-	score.MicrophoneStatuses = [3]bool{true, true, true}
+	score.MicrophoneCounts = [3]int{1, 1, 1}
 	assert.Equal(t, 12, score.Summarize(&Score{}).StagePoints)
 	assert.Equal(t, true, score.Summarize(&Score{}).EnsembleBonusRankingPoint)
 	score.EndgameStatuses = [3]EndgameStatus{EndgameNone, EndgameStageRight, EndgameStageRight}
-	score.MicrophoneStatuses = [3]bool{false, false, true}
+	score.MicrophoneCounts = [3]int{0, 0, 2}
 	assert.Equal(t, 10, score.Summarize(&Score{}).StagePoints)
 	assert.Equal(t, true, score.Summarize(&Score{}).EnsembleBonusRankingPoint)
 	score.EndgameStatuses = [3]EndgameStatus{EndgameParked, EndgameStageRight, EndgameCenterStage}
-	score.MicrophoneStatuses = [3]bool{false, true, false}
+	score.MicrophoneCounts = [3]int{0, 1, 0}
 	assert.Equal(t, 8, score.Summarize(&Score{}).StagePoints)
 	assert.Equal(t, false, score.Summarize(&Score{}).EnsembleBonusRankingPoint)
 
 	// Try various combinations with traps.
 	score.EndgameStatuses = [3]EndgameStatus{EndgameStageLeft, EndgameCenterStage, EndgameParked}
-	score.MicrophoneStatuses = [3]bool{false, false, false}
+	score.MicrophoneCounts = [3]int{0, 0, 0}
 	score.TrapStatuses = [3]bool{false, false, true}
 	assert.Equal(t, 12, score.Summarize(&Score{}).StagePoints)
 	assert.Equal(t, true, score.Summarize(&Score{}).EnsembleBonusRankingPoint)
@@ -261,7 +261,7 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.MicrophoneStatuses[0] = true
+	score2.MicrophoneCounts[0] = 7
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 

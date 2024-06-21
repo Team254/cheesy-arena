@@ -43,7 +43,7 @@ const renderResults = function(alliance) {
 
     getInputElement(alliance, "LeaveStatuses" + i1).prop("checked", result.score.LeaveStatuses[i]);
     getInputElement(alliance, "EndgameStatuses" + i1, result.score.EndgameStatuses[i]).prop("checked", true);
-    getInputElement(alliance, "MicrophoneStatuses" + i1).prop("checked", result.score.MicrophoneStatuses[i]);
+    getInputElement(alliance, "MicrophoneCounts" + i1).val(result.score.MicrophoneCounts[i]);
     getInputElement(alliance, "TrapStatuses" + i1).prop("checked", result.score.TrapStatuses[i]);
   }
 
@@ -80,14 +80,14 @@ const updateResults = function(alliance) {
     TeleopAmplifiedSpeakerNotes: parseInt(formData[alliance + "TeleopAmplifiedSpeakerNotes"]),
   };
   result.score.EndgameStatuses = [];
-  result.score.MicrophoneStatuses = [];
+  result.score.MicrophoneCounts = [];
   result.score.TrapStatuses = [];
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
 
     result.score.LeaveStatuses[i] = formData[alliance + "LeaveStatuses" + i1] === "on";
     result.score.EndgameStatuses[i] = parseInt(formData[alliance + "EndgameStatuses" + i1]);
-    result.score.MicrophoneStatuses[i] = formData[alliance + "MicrophoneStatuses" + i1] === "on";
+    result.score.MicrophoneCounts[i] = parseInt(formData[alliance + "MicrophoneCounts" + i1]);
     result.score.TrapStatuses[i] = formData[alliance + "TrapStatuses" + i1] === "on";
   }
 

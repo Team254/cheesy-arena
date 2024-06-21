@@ -56,7 +56,8 @@ const handleRealtimeScore = function(data) {
     $(`#stageSide0Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 2);
     $(`#stageSide1Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 3);
     $(`#stageSide2Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 4);
-    $(`#stageSide${i}Microphone`).attr("data-value", score.MicrophoneStatuses[i]);
+    $(`#stageSide${i}Microphone`).attr("data-value", score.MicrophoneCounts[i]);
+    $(`#stageSide${i}Microphone`).html(`Mic<br />${score.MicrophoneCounts[i]}`);
     $(`#stageSide${i}Trap`).attr("data-value", score.TrapStatuses[i]);
   }
 };

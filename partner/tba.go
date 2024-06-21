@@ -659,9 +659,9 @@ func createTbaScoringBreakdown(
 	breakdown.EndGameParkPoints = scoreSummary.ParkPoints
 	breakdown.EndGameOnStagePoints = scoreSummary.OnStagePoints
 	breakdown.EndGameHarmonyPoints = scoreSummary.HarmonyPoints
-	breakdown.MicStageLeft = score.MicrophoneStatuses[0]
-	breakdown.MicCenterStage = score.MicrophoneStatuses[1]
-	breakdown.MicStageRight = score.MicrophoneStatuses[2]
+	breakdown.MicStageLeft = score.MicrophoneCounts[0] > 0
+	breakdown.MicCenterStage = score.MicrophoneCounts[1] > 0
+	breakdown.MicStageRight = score.MicrophoneCounts[2] > 0
 	breakdown.EndGameSpotLightBonusPoints = scoreSummary.SpotlightPoints
 	breakdown.TrapStageLeft = score.TrapStatuses[0]
 	breakdown.TrapCenterStage = score.TrapStatuses[1]
