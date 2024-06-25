@@ -981,6 +981,10 @@ func (arena *Arena) handlePlcInputOutput() {
 	blueAmpSpeaker.UpdateState(
 		blueAmpNoteCount, blueSpeakerNoteCount, blueAmplifyButton, blueCoopButton, matchStartTime, currentTime,
 	)
+	redAmplifiedTimeRemaining := redAmpSpeaker.AmplifiedTimeRemaining(currentTime)
+	arena.RedRealtimeScore.AmplifiedTimeRemainingSec = int(math.Ceil(redAmplifiedTimeRemaining))
+	blueAmplifiedTimeRemaining := blueAmpSpeaker.AmplifiedTimeRemaining(currentTime)
+	arena.BlueRealtimeScore.AmplifiedTimeRemainingSec = int(math.Ceil(blueAmplifiedTimeRemaining))
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) ||
 		oldRedAmplifiedTimeRemainingSec != arena.RedRealtimeScore.AmplifiedTimeRemainingSec ||
 		oldBlueAmplifiedTimeRemainingSec != arena.BlueRealtimeScore.AmplifiedTimeRemainingSec {
@@ -988,10 +992,6 @@ func (arena *Arena) handlePlcInputOutput() {
 	}
 
 	// Handle the amp outputs.
-	redAmplifiedTimeRemaining := redAmpSpeaker.AmplifiedTimeRemaining(currentTime)
-	arena.RedRealtimeScore.AmplifiedTimeRemainingSec = int(math.Ceil(redAmplifiedTimeRemaining))
-	blueAmplifiedTimeRemaining := blueAmpSpeaker.AmplifiedTimeRemaining(currentTime)
-	arena.BlueRealtimeScore.AmplifiedTimeRemainingSec = int(math.Ceil(blueAmplifiedTimeRemaining))
 	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
 		redLowAmpLight := redAmpSpeaker.BankedAmpNotes >= 1
 		redHighAmpLight := redAmpSpeaker.BankedAmpNotes >= 2
