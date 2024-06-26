@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"net"
 	"reflect"
 	"time"
 
@@ -459,6 +460,7 @@ func (arena *Arena) AbortMatch() error {
 	arena.AudienceDisplayModeNotifier.Notify()
 	arena.AllianceStationDisplayMode = "logo"
 	arena.AllianceStationDisplayModeNotifier.Notify()
+	arena.stopRecording()
 	return nil
 }
 
@@ -548,6 +550,7 @@ func (arena *Arena) Update() {
 		arena.AudienceDisplayModeNotifier.Notify()
 		arena.AllianceStationDisplayMode = "match"
 		arena.AllianceStationDisplayModeNotifier.Notify()
+		arena.startRecording()
 		if game.MatchTiming.WarmupDurationSec > 0 {
 			arena.MatchState = WarmupPeriod
 			enabled = false
@@ -599,6 +602,7 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = false
 			sendDsPacket = true
+			arena.stopRecording()
 			go func() {
 				// Leave the scores on the screen briefly at the end of the match.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
@@ -1090,5 +1094,22 @@ func (arena *Arena) runPeriodicTasks() {
 
 // Starts recording using configured, on-network Blackmagic Device
 func (arena *Arena) startRecording() {
-	//code
+	conn, err := net.Dial("tcp", fmt.Sprintln("%s:%d", arena.EventSettings.RecorderAddress, arena.EventSettings.RecorderPort))
+	if err != nil {
+		//todo: actually error on screen in some way? Ask pat for advice here.
+		fmt.Println("error: ", err)
+	}
+
+	fmt.Fprint(conn, "record\n")
+}
+
+// Stops recording using configured, on-network Blackmagic Device
+func (arena *Arena) stopRecording() {
+	conn, err := net.Dial("tcp", fmt.Sprintln("%s:%d", arena.EventSettings.RecorderAddress, arena.EventSettings.RecorderPort))
+	if err != nil {
+		//todo: actually error on screen in some way? Ask pat for advice here.
+		fmt.Println("error: ", err)
+	}
+
+	fmt.Fprint(conn, "stop\n")
 }
