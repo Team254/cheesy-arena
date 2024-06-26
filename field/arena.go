@@ -1094,7 +1094,7 @@ func (arena *Arena) runPeriodicTasks() {
 
 // Starts recording using configured, on-network Blackmagic Device
 func (arena *Arena) startRecording() {
-	conn, err := net.Dial("tcp", fmt.Sprintln("%s:%d", arena.EventSettings.RecorderAddress, arena.EventSettings.RecorderPort))
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", arena.EventSettings.RecorderAddress, arena.EventSettings.RecorderPort))
 	if err != nil {
 		//todo: actually error on screen in some way? Ask pat for advice here.
 		fmt.Println("error: ", err)
@@ -1105,7 +1105,7 @@ func (arena *Arena) startRecording() {
 
 // Stops recording using configured, on-network Blackmagic Device
 func (arena *Arena) stopRecording() {
-	conn, err := net.Dial("tcp", fmt.Sprintln("%s:%d", arena.EventSettings.RecorderAddress, arena.EventSettings.RecorderPort))
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", arena.EventSettings.RecorderAddress, arena.EventSettings.RecorderPort))
 	if err != nil {
 		//todo: actually error on screen in some way? Ask pat for advice here.
 		fmt.Println("error: ", err)
