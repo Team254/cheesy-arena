@@ -116,7 +116,7 @@ body {
   flex-grow: 1;
   height: 100%;
 }
-.stage-side-col div {
+.stage-side-col>div {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -141,4 +141,17 @@ body {
   top: 13vw;
   left: 12.2vw;
   width: 9vw;
+}
+.microphone {
+  width: 50%;
+  background-color: #263;
+}
+.microphone[data-value="0"] {
+  background-color: #333;
+}
+.microphone-counter>div {
+  width: 33.3%;
+  height: 100%;
+  border: none;
+  text-align: center;
 }

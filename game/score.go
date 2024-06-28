@@ -6,13 +6,13 @@
 package game
 
 type Score struct {
-	LeaveStatuses      [3]bool
-	AmpSpeaker         AmpSpeaker
-	EndgameStatuses    [3]EndgameStatus
-	MicrophoneStatuses [3]bool
-	TrapStatuses       [3]bool
-	Fouls              []Foul
-	PlayoffDq          bool
+	LeaveStatuses    [3]bool
+	AmpSpeaker       AmpSpeaker
+	EndgameStatuses  [3]EndgameStatus
+	MicrophoneCounts [3]int
+	TrapStatuses     [3]bool
+	Fouls            []Foul
+	PlayoffDq        bool
 }
 
 // Game-specific constants that cannot be changed by the user.
@@ -99,10 +99,9 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 			summary.HarmonyPoints += 2 * (onstageRobots - 1)
 		}
 
-		// Handle microphones.
-		if score.MicrophoneStatuses[i] && onstageRobots > 0 {
-			summary.SpotlightPoints += onstageRobots
-		}
+		// Handle microphones. Special logic for Sunset Showdown: multiple notes are counted for one point each and
+		// there's no ONSTAGE requirement.
+		summary.SpotlightPoints += score.MicrophoneCounts[i]
 
 		// Handle traps.
 		if score.TrapStatuses[i] {
@@ -166,7 +165,7 @@ func (score *Score) Equals(other *Score) bool {
 	if score.LeaveStatuses != other.LeaveStatuses ||
 		score.AmpSpeaker != other.AmpSpeaker ||
 		score.EndgameStatuses != other.EndgameStatuses ||
-		score.MicrophoneStatuses != other.MicrophoneStatuses ||
+		score.MicrophoneCounts != other.MicrophoneCounts ||
 		score.TrapStatuses != other.TrapStatuses ||
 		score.PlayoffDq != other.PlayoffDq ||
 		len(score.Fouls) != len(other.Fouls) {

@@ -70,7 +70,11 @@
   <div id="stageSide{{.index}}Team3" class="team-3 boolean" onclick="handleClick('onStage', 3, {{.index}});"></div>
 </div>
 <div class="stage-side-col">
-  <div id="stageSide{{.index}}Microphone" class="boolean" onclick="handleClick('microphone', 0, {{.index}});">Mic</div>
+  <div class="microphone-counter">
+    <div class="counter-minus" onclick="handleClick('microphoneDecrement', 0, {{.index}});">&ndash;</div>
+    <div class="microphone" id="stageSide{{.index}}Microphone"></div>
+    <div class="counter-plus" onclick="handleClick('microphoneIncrement', 0, {{.index}});">+</div>
+  </div>
   <div id="stageSide{{.index}}Trap" class="boolean" onclick="handleClick('trap', 0, {{.index}});">Trap</div>
 </div>
 {{end}}
