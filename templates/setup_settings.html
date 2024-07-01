@@ -295,17 +295,12 @@
           <legend>Instant Replay Match Recording</legend>
           <p>
             If you are using a Blackmagic HyperDeck device to record matches, enter device information here.
+            Format entries as ip_address:port (e.g. 192.168.0.123:9993). One entry per line.
           </p>
           <div class="row mb-3">
             <label class="col-lg-6 control-label">IP Address</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" name="recorderAddress" value="{{.RecorderAddress}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Port</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="recorderPort" value="{{.RecorderPort}}">
+              <textarea class="form-control" name="recorderAddresses">{{.RecorderAddressesRaw}}</textarea>
             </div>
           </div>
         </fieldset>

@@ -1092,24 +1092,61 @@ func (arena *Arena) runPeriodicTasks() {
 	arena.purgeDisconnectedDisplays()
 }
 
-// Starts recording using configured, on-network Blackmagic Device
-func (arena *Arena) startRecording() {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", arena.EventSettings.RecorderAddress, arena.EventSettings.RecorderPort))
-	if err != nil {
-		//todo: actually error on screen in some way? Ask pat for advice here.
-		fmt.Println("error: ", err)
+// Connect to Blackmagic device. Returns connection object.
+func connectToRecorder(connString string) (net.Conn, error) {
+	const MAX_CONN_ATTEMPTS = 3
+	const CONN_TIMEOUT = time.Millisecond * 100
+
+	var err error
+	var conn net.Conn
+
+	for i := 0; i < MAX_CONN_ATTEMPTS; i++ {
+		conn, err = net.DialTimeout("tcp", connString, CONN_TIMEOUT)
+		if err != nil {
+			log.Println("CONNECTION ERROR*******", "connString:***", connString, "***error: ", err)
+		} else {
+			return conn, nil
+		}
 	}
 
-	fmt.Fprint(conn, "record\n")
+	return nil, err
+}
+
+// Starts recording using configured, on-network Blackmagic Device
+func (arena *Arena) startRecording() {
+	var connections []net.Conn
+
+	println("heyoooo")
+	fmt.Printf("%q\n", arena.EventSettings.RecorderAddresses)
+
+	for i := 0; i < len(arena.EventSettings.RecorderAddresses); i++ {
+		recCon, err := connectToRecorder(arena.EventSettings.RecorderAddresses[i])
+		if recCon == nil {
+			log.Println("recorder connection error: ", err)
+		} else {
+			connections = append(connections, recCon)
+		}
+	}
+
+	for i := 0; i < len(connections); i++ {
+		fmt.Fprint(connections[i], "record\n")
+	}
 }
 
 // Stops recording using configured, on-network Blackmagic Device
 func (arena *Arena) stopRecording() {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", arena.EventSettings.RecorderAddress, arena.EventSettings.RecorderPort))
-	if err != nil {
-		//todo: actually error on screen in some way? Ask pat for advice here.
-		fmt.Println("error: ", err)
+	var connections []net.Conn
+
+	for i := 0; i < len(arena.EventSettings.RecorderAddresses); i++ {
+		recCon, err := connectToRecorder(arena.EventSettings.RecorderAddresses[i])
+		if recCon == nil {
+			log.Println("recorder connection error: ", err)
+		} else {
+			connections = append(connections, recCon)
+		}
 	}
 
-	fmt.Fprint(conn, "stop\n")
+	for i := 0; i < len(connections); i++ {
+		fmt.Fprint(connections[i], "stop\n")
+	}
 }

@@ -44,8 +44,8 @@ type EventSettings struct {
 	TeamSignBlue2Address            string
 	TeamSignBlue3Address            string
 	TeamSignBlueTimerAddress        string
-	RecorderAddress                 string
-	RecorderPort                    int
+	RecorderAddressesRaw            string
+	RecorderAddresses               []string
 	WarmupDurationSec               int
 	AutoDurationSec                 int
 	PauseDurationSec                int

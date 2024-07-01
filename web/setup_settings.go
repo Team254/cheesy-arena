@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -94,8 +95,17 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TeamSignBlue2Address = r.PostFormValue("teamSignBlue2Address")
 	eventSettings.TeamSignBlue3Address = r.PostFormValue("teamSignBlue3Address")
 	eventSettings.TeamSignBlueTimerAddress = r.PostFormValue("teamSignBlueTimerAddress")
-	eventSettings.RecorderAddress = r.PostFormValue("recorderAddress")
-	eventSettings.RecorderPort, _ = strconv.Atoi(r.PostFormValue("recorderPort"))
+
+	eventSettings.RecorderAddressesRaw = r.PostFormValue("recorderAddresses")
+	const recAddrEntryPattern = "^(?:\\b(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):(?:6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[1-9][0-9]{0,3}|[0-9])\\b(?:\r?\n|$))+$"
+	match, _ := regexp.MatchString(recAddrEntryPattern, eventSettings.RecorderAddressesRaw)
+	if match {
+		eventSettings.RecorderAddresses = strings.Split(strings.ReplaceAll(eventSettings.RecorderAddressesRaw, "\r", ""), "\n")
+	} else {
+		web.renderSettings(w, r, "Recorder address entry error. Please ensure all addresses entered correctly.")
+		return
+	}
+
 	eventSettings.WarmupDurationSec, _ = strconv.Atoi(r.PostFormValue("warmupDurationSec"))
 	eventSettings.AutoDurationSec, _ = strconv.Atoi(r.PostFormValue("autoDurationSec"))
 	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))
