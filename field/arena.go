@@ -1116,9 +1116,6 @@ func connectToRecorder(connString string) (net.Conn, error) {
 func (arena *Arena) startRecording() {
 	var connections []net.Conn
 
-	println("heyoooo")
-	fmt.Printf("%q\n", arena.EventSettings.RecorderAddresses)
-
 	for i := 0; i < len(arena.EventSettings.RecorderAddresses); i++ {
 		recCon, err := connectToRecorder(arena.EventSettings.RecorderAddresses[i])
 		if recCon == nil {
