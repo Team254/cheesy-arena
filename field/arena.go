@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"net"
 	"reflect"
 	"time"
 
@@ -459,6 +460,7 @@ func (arena *Arena) AbortMatch() error {
 	arena.AudienceDisplayModeNotifier.Notify()
 	arena.AllianceStationDisplayMode = "logo"
 	arena.AllianceStationDisplayModeNotifier.Notify()
+	arena.stopRecording()
 	return nil
 }
 
@@ -548,6 +550,7 @@ func (arena *Arena) Update() {
 		arena.AudienceDisplayModeNotifier.Notify()
 		arena.AllianceStationDisplayMode = "match"
 		arena.AllianceStationDisplayModeNotifier.Notify()
+		arena.startRecording()
 		if game.MatchTiming.WarmupDurationSec > 0 {
 			arena.MatchState = WarmupPeriod
 			enabled = false
@@ -599,6 +602,7 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = false
 			sendDsPacket = true
+			arena.stopRecording()
 			go func() {
 				// Leave the scores on the screen briefly at the end of the match.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
@@ -1086,4 +1090,60 @@ func (arena *Arena) alliancePostMatchScoreReady(alliance string) bool {
 func (arena *Arena) runPeriodicTasks() {
 	arena.updateEarlyLateMessage()
 	arena.purgeDisconnectedDisplays()
+}
+
+// Connect to Blackmagic device. Returns connection object.
+func connectToRecorder(connString string) (net.Conn, error) {
+	const MAX_CONN_ATTEMPTS = 3
+	const CONN_TIMEOUT = time.Millisecond * 100
+
+	var err error
+	var conn net.Conn
+
+	for i := 0; i < MAX_CONN_ATTEMPTS; i++ {
+		conn, err = net.DialTimeout("tcp", connString, CONN_TIMEOUT)
+		if err != nil {
+			log.Println("CONNECTION ERROR*******", "connString:***", connString, "***error: ", err)
+		} else {
+			return conn, nil
+		}
+	}
+
+	return nil, err
+}
+
+// Starts recording using configured, on-network Blackmagic Device
+func (arena *Arena) startRecording() {
+	var connections []net.Conn
+
+	for i := 0; i < len(arena.EventSettings.RecorderAddresses); i++ {
+		recCon, err := connectToRecorder(arena.EventSettings.RecorderAddresses[i])
+		if recCon == nil {
+			log.Println("recorder connection error: ", err)
+		} else {
+			connections = append(connections, recCon)
+		}
+	}
+
+	for i := 0; i < len(connections); i++ {
+		fmt.Fprint(connections[i], "record\n")
+	}
+}
+
+// Stops recording using configured, on-network Blackmagic Device
+func (arena *Arena) stopRecording() {
+	var connections []net.Conn
+
+	for i := 0; i < len(arena.EventSettings.RecorderAddresses); i++ {
+		recCon, err := connectToRecorder(arena.EventSettings.RecorderAddresses[i])
+		if recCon == nil {
+			log.Println("recorder connection error: ", err)
+		} else {
+			connections = append(connections, recCon)
+		}
+	}
+
+	for i := 0; i < len(connections); i++ {
+		fmt.Fprint(connections[i], "stop\n")
+	}
 }
