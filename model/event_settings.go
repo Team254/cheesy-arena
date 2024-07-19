@@ -94,5 +94,9 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 }
 
 func (database *Database) UpdateEventSettings(eventSettings *EventSettings) error {
-	return database.eventSettingsTable.update(eventSettings)
+	err := database.eventSettingsTable.update(eventSettings)
+	if err != nil {
+		return err
+	}
+	return database.bolt.Sync()
 }
