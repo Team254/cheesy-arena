@@ -103,10 +103,11 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	match, _ := regexp.MatchString(recAddrEntryPattern, eventSettings.RecorderAddressesRaw)
 	if match {
 		eventSettings.RecorderAddresses = strings.Split(strings.ReplaceAll(eventSettings.RecorderAddressesRaw, "\r", ""), "\n")
-	} else {
-		web.renderSettings(w, r, "Recorder address entry error. Please ensure all addresses entered correctly.")
-		return
 	}
+	//else {
+	//	web.renderSettings(w, r, "Recorder address entry error. Please ensure all addresses entered correctly.")
+	//	return
+	//}
 
 	eventSettings.WarmupDurationSec, _ = strconv.Atoi(r.PostFormValue("warmupDurationSec"))
 	eventSettings.AutoDurationSec, _ = strconv.Atoi(r.PostFormValue("autoDurationSec"))
