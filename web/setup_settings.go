@@ -56,14 +56,16 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		playoffType = model.DoubleEliminationPlayoff
 		numAlliances = 8
 	}
-	if eventSettings.PlayoffType != playoffType {
+	if eventSettings.PlayoffType != playoffType || eventSettings.NumPlayoffAlliances != numAlliances {
 		alliances, err := web.arena.Database.GetAllAlliances()
 		if err != nil {
 			handleWebErr(w, err)
 			return
 		}
 		if len(alliances) > 0 {
-			web.renderSettings(w, r, "Cannot change playoff type after alliance selection has been finalized.")
+			web.renderSettings(
+				w, r, "Cannot change playoff type or size after alliance selection has been finalized.",
+			)
 			return
 		}
 	}
