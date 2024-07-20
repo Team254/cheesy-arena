@@ -234,7 +234,7 @@
       <div id="bracket">
         <img id="bracketSvg" src="" />
       </div>
-      <div id="sponsor" class="carousel slide">
+      <div id="sponsor" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner" id="sponsorContainer">
         </div>
       </div>
@@ -272,7 +272,7 @@
       </table>
     </script>
     <script id="sponsorImageTemplate" type="text/x-handlebars-template">
-      <div class="item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-interval="{{"{{DisplayTimeMs}}"}}">
+      <div class="carousel-item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-bs-interval="{{"{{DisplayTimeMs}}"}}">
         <div class="sponsor-image-container">
           <img src="/static/img/sponsors/{{"{{Image}}"}}" />
         </div>
@@ -280,7 +280,7 @@
       </div>
     </script>
     <script id="sponsorTextTemplate" type="text/x-handlebars-template">
-      <div class="item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-interval="{{"{{DisplayTimeMs}}"}}">
+      <div class="carousel-item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-bs-interval="{{"{{DisplayTimeMs}}"}}">
         <h2>{{"{{Line1}}"}}<br />{{"{{Line2}}"}}</h2>
         <h1>{{"{{Subtitle}}"}}</h1>
       </div>
