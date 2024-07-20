@@ -39,20 +39,20 @@ body {
   background-color: #223;
 }
 #matchName {
-  margin-bottom: 0.5vw;
-  font-size: 2vw;
+  margin-bottom: 0.5em;
+  font-size: 2em;
 }
 .scoring-section {
-  margin-bottom: 0.5vw;
+  margin-bottom: 0.5em;
   display: flex;
-  font-size: 1.5vw;
+  font-size: 1.5em;
   color: #ccc;
 }
 .scoring-header>div{
-  height: 3.3vw;
+  height: 3.3em;
   display: flex;
   align-items: center;
-  margin: 0.4vw 1vw 0.4vw 0.2vw;
+  margin: 0.4em 1em 0.4em 0.2em;
   color: #ccc;
 }
 .robot-field {
@@ -61,34 +61,35 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0.4vw 0.2vw;
+  margin: 0.4em 0.2em;
 }
 .team {
   display: flex;
   justify-content: center;
-  font-size: 3vw;
+  font-size: 3em;
   font-weight: bold;
 }
 .boolean[data-value="false"] {
-  background-color: #333;
+  background-color: #fff;
+  color: #000;
 }
 .boolean[data-value="true"] {
   background-color: #263;
 }
 #postMatchMessage {
-  height: 5vw;
+  height: 5em;
   display: none;
   align-items: center;
-  font-size: 1.5vw;
+  font-size: 1.5em;
   color: #c90;
 }
 #commitMatchScore {
-  height: 5vw;
+  height: 5em;
   display: none;
   align-items: center;
 }
 #commitMatchScore>button {
-  font-size: 1vw;
+  font-size: 1em;
 }
 #stage {
   position: relative;
@@ -97,17 +98,17 @@ body {
   align-items: center;
 }
 #stageGraphic {
-  margin-top: 9vw;
-  height: 30vw;
-  color: #999;
+  margin-top: 9em;
+  height: 30em;
+  color: #fff;
 }
 .stage-side {
   position: absolute;
   top: 0;
   left: 0;
   display: flex;
-  width: 16vw;
-  height: 8vw;
+  width: 16em;
+  height: 8em;
   border: 0.5px solid #111;
 }
 .stage-side-col {
@@ -121,37 +122,40 @@ body {
   justify-content: center;
   align-items: center;
   flex-grow: 1;
-  font-size: 1.5vw;
-  background-color: #333;
+  font-size: 1.5em;
+  background-color: #fff;
   border: 0.5px solid #111;
 }
 #stageLeft {
-  top: 20vw;
-  left: -8.5vw;
+  top: 20em;
+  left: -8.5em;
 }
 #centerStage {
-  top: 0.5vw;
-  left: 9.3vw;
+  top: 0.5em;
+  left: 9.3em;
 }
 #stageRight {
-  top: 20vw;
-  left: 25.9vw;
+  top: 20em;
+  left: 25.9em;
 }
 #park {
-  top: 13vw;
-  left: 12.2vw;
-  width: 9vw;
+  top: 13em;
+  left: 12.2em;
+  width: 9em;
 }
 .microphone {
   width: 50%;
   background-color: #263;
+  color: #fff;
 }
 .microphone[data-value="0"] {
-  background-color: #333;
+  background-color: #fff;
+  color: #000;
 }
 .microphone-counter>div {
   width: 33.3%;
   height: 100%;
   border: none;
   text-align: center;
+  color: #000;
 }
