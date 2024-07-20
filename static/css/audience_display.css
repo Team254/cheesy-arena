@@ -520,7 +520,7 @@ html {
   background-color: #fff;
   text-align: center;
 }
-#sponsor .carousel-inner, #sponsor .item {
+#sponsor .carousel-inner, #sponsor .carousel-item {
   height: 100%;
 }
 .sponsor-image-container {
