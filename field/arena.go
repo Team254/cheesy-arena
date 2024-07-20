@@ -1132,18 +1132,21 @@ func (arena *Arena) startRecording() {
 
 // Stops recording using configured, on-network Blackmagic Device
 func (arena *Arena) stopRecording() {
-	var connections []net.Conn
+	go func() {
+		time.Sleep(10 * time.Second)
+		var connections []net.Conn
 
-	for i := 0; i < len(arena.EventSettings.RecorderAddresses); i++ {
-		recCon, err := connectToRecorder(arena.EventSettings.RecorderAddresses[i])
-		if recCon == nil {
-			log.Println("recorder connection error: ", err)
-		} else {
-			connections = append(connections, recCon)
+		for i := 0; i < len(arena.EventSettings.RecorderAddresses); i++ {
+			recCon, err := connectToRecorder(arena.EventSettings.RecorderAddresses[i])
+			if recCon == nil {
+				log.Println("recorder connection error: ", err)
+			} else {
+				connections = append(connections, recCon)
+			}
 		}
-	}
 
-	for i := 0; i < len(connections); i++ {
-		fmt.Fprint(connections[i], "stop\n")
-	}
+		for i := 0; i < len(connections); i++ {
+			fmt.Fprint(connections[i], "stop\n")
+		}
+	}()
 }
