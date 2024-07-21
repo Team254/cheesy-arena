@@ -14,6 +14,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Represents a collection of team number and timer signs.
@@ -42,6 +43,7 @@ type TeamSign struct {
 	udpConn         net.Conn
 	packetData      [128]byte
 	packetIndex     int
+	lastPacketTime  time.Time
 }
 
 const (
@@ -277,14 +279,16 @@ func (sign *TeamSign) sendPacket() error {
 		sign.packetIndex = teamSignPacketHeaderLength
 	}
 
-	if sign.frontText != sign.lastFrontText {
+	isStale := time.Now().Sub(sign.lastPacketTime).Seconds() >= 1
+
+	if sign.frontText != sign.lastFrontText || isStale {
 		sign.writePacketData([]byte{teamSignAddressSingle, sign.address, teamSignPacketTypeFrontText})
 		sign.writePacketData([]byte(sign.frontText))
 		sign.writePacketData([]byte{0, 0}) // Second byte is "show decimal point".
 		sign.lastFrontText = sign.frontText
 	}
 
-	if sign.frontColor != sign.lastFrontColor {
+	if sign.frontColor != sign.lastFrontColor || isStale {
 		sign.writePacketData([]byte{teamSignAddressSingle, sign.address, teamSignPacketTypeColor})
 		sign.writePacketData([]byte{sign.frontColor.R, sign.frontColor.G, sign.frontColor.B})
 		sign.writePacketData([]byte{teamSignAddressSingle, sign.address, teamSignPacketTypeFrontIntensity})
@@ -292,7 +296,7 @@ func (sign *TeamSign) sendPacket() error {
 		sign.lastFrontColor = sign.frontColor
 	}
 
-	if sign.rearText != sign.lastRearText {
+	if sign.rearText != sign.lastRearText || isStale {
 		sign.writePacketData([]byte{teamSignAddressSingle, sign.address, teamSignPacketTypeRearText})
 		sign.writePacketData([]byte(sign.rearText))
 		sign.writePacketData([]byte{0})
@@ -300,6 +304,7 @@ func (sign *TeamSign) sendPacket() error {
 	}
 
 	if sign.packetIndex > teamSignPacketHeaderLength {
+		sign.lastPacketTime = time.Now()
 		if _, err := sign.udpConn.Write(sign.packetData[:sign.packetIndex]); err != nil {
 			return err
 		}
