@@ -776,7 +776,7 @@ const setTeamInfo = function(side, position, teamId, cards, rankings) {
   avatarElement.toggle(teamId > 0);
 
   const cardElement = $(`#${side}FinalTeam${position}Card`);
-  cardElement.attr("data-card", cards[teamId.toString()]);
+  cardElement.attr("data-card", cards[teamId.toString()] || "");
 
   const ranking = rankings[teamId];
   let rankIndicator = "";
