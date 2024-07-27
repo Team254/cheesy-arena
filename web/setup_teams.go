@@ -176,6 +176,7 @@ func (web *Web) teamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	team.Name = r.PostFormValue("name")
 	team.Nickname = r.PostFormValue("nickname")
 	team.City = r.PostFormValue("city")
+	team.SchoolName = r.PostFormValue("schoolName")
 	team.StateProv = r.PostFormValue("stateProv")
 	team.Country = r.PostFormValue("country")
 	team.RookieYear, _ = strconv.Atoi(r.PostFormValue("rookieYear"))
