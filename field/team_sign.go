@@ -82,7 +82,11 @@ func (signs *TeamSigns) Update(arena *Arena) {
 	var countdownSec int
 	switch arena.MatchState {
 	case PreMatch:
-		fallthrough
+		if arena.AudienceDisplayMode == "allianceSelection" {
+			countdownSec = arena.AllianceSelectionTimeRemainingSec
+		} else {
+			countdownSec = game.MatchTiming.AutoDurationSec
+		}
 	case StartMatch:
 		fallthrough
 	case WarmupPeriod:
@@ -166,7 +170,7 @@ func (sign *TeamSign) update(
 		sign.frontText, sign.frontColor, sign.rearText = generateTimerTexts(arena, countdown, inMatchRearText)
 	} else {
 		sign.frontText, sign.frontColor, sign.rearText = sign.generateTeamNumberTexts(
-			arena, allianceStation, isRed, inMatchRearText,
+			arena, allianceStation, isRed, countdown, inMatchRearText,
 		)
 	}
 
@@ -200,6 +204,13 @@ func generateTimerTexts(arena *Arena, countdown, inMatchRearText string) (string
 	if arena.AllianceStationDisplayMode == "blank" {
 		return "     ", whiteColor, ""
 	}
+	if arena.AudienceDisplayMode == "allianceSelection" {
+		if arena.AllianceSelectionShowTimer {
+			return countdown, whiteColor, ""
+		} else {
+			return "     ", whiteColor, ""
+		}
+	}
 
 	var frontText string
 	var frontColor color.RGBA
@@ -220,10 +231,17 @@ func generateTimerTexts(arena *Arena, countdown, inMatchRearText string) (string
 
 // Returns the front text, front color, and rear text to display on the sign for the given alliance station.
 func (sign *TeamSign) generateTeamNumberTexts(
-	arena *Arena, allianceStation *AllianceStation, isRed bool, inMatchRearText string,
+	arena *Arena, allianceStation *AllianceStation, isRed bool, countdown, inMatchRearText string,
 ) (string, color.RGBA, string) {
 	if arena.AllianceStationDisplayMode == "blank" {
 		return "     ", whiteColor, ""
+	}
+	if arena.AudienceDisplayMode == "allianceSelection" {
+		if arena.AllianceSelectionShowTimer {
+			return countdown, whiteColor, ""
+		} else {
+			return "     ", whiteColor, ""
+		}
 	}
 
 	if allianceStation.Team == nil {

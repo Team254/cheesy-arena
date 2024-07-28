@@ -64,6 +64,16 @@ func TestTeamSign_Timer(t *testing.T) {
 	// Check blank mode.
 	arena.AllianceStationDisplayMode = "blank"
 	assertSign("     ", whiteColor, "")
+
+	// Check alliance selection.
+	arena.AllianceStationDisplayMode = "logo"
+	arena.AudienceDisplayMode = "allianceSelection"
+	arena.AllianceSelectionShowTimer = false
+	assertSign("     ", whiteColor, "")
+	arena.AllianceSelectionShowTimer = true
+	assertSign("23:45", whiteColor, "")
+	arena.AllianceStationDisplayMode = "blank"
+	assertSign("     ", whiteColor, "")
 }
 
 func TestTeamSign_TeamNumber(t *testing.T) {
@@ -89,7 +99,9 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assert.Equal(t, 51, sign.packetIndex)
 
 	assertSign := func(isRed bool, expectedFrontText string, expectedFrontColor color.RGBA, expectedRearText string) {
-		frontText, frontColor, rearText := sign.generateTeamNumberTexts(arena, allianceStation, isRed, "Rear Text")
+		frontText, frontColor, rearText := sign.generateTeamNumberTexts(
+			arena, allianceStation, isRed, "12:34", "Rear Text",
+		)
 		assert.Equal(t, expectedFrontText, frontText)
 		assert.Equal(t, expectedRearText, rearText)
 
@@ -154,6 +166,16 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assertSign(false, " 1503", blueColor, "1503      Connect PC")
 
 	// Check blank mode.
+	arena.AllianceStationDisplayMode = "blank"
+	assertSign(true, "     ", whiteColor, "")
+
+	// Check alliance selection.
+	arena.AllianceStationDisplayMode = "logo"
+	arena.AudienceDisplayMode = "allianceSelection"
+	arena.AllianceSelectionShowTimer = false
+	assertSign(true, "     ", whiteColor, "")
+	arena.AllianceSelectionShowTimer = true
+	assertSign(true, "12:34", whiteColor, "")
 	arena.AllianceStationDisplayMode = "blank"
 	assertSign(true, "     ", whiteColor, "")
 }
