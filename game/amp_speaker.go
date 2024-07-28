@@ -23,7 +23,13 @@ type AmpSpeaker struct {
 
 // Updates the internal state of the AmpSpeaker based on the PLC inputs.
 func (ampSpeaker *AmpSpeaker) UpdateState(
-	ampNoteCount, speakerNoteCount int, amplifyButton, coopButton bool, matchStartTime, currentTime time.Time,
+	ampNoteCount,
+	speakerNoteCount int,
+	amplifyButton,
+	coopButton bool,
+	matchStartTime,
+	currentTime time.Time,
+	isPlayoffMatch bool,
 ) {
 	newAmpNotes := ampNoteCount - ampSpeaker.ampNotesScored()
 	newSpeakerNotes := speakerNoteCount - ampSpeaker.speakerNotesScored()
@@ -50,7 +56,7 @@ func (ampSpeaker *AmpSpeaker) UpdateState(
 
 		// Handle the co-op button.
 		if coopButton && !ampSpeaker.CoopActivated && ampSpeaker.BankedAmpNotes >= 1 &&
-			ampSpeaker.IsCoopWindowOpen(matchStartTime, currentTime) {
+			ampSpeaker.IsCoopWindowOpen(matchStartTime, currentTime) && !isPlayoffMatch {
 			ampSpeaker.CoopActivated = true
 			ampSpeaker.BankedAmpNotes--
 		}
