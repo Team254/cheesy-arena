@@ -929,7 +929,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	teleopGracePeriod := matchStartTime.Add(
 		game.GetDurationToTeleopEnd() + game.SpeakerTeleopGracePeriodSec*time.Second,
 	)
-	inGracePeriod := arena.MatchState == PostMatch && currentTime.Before(teleopGracePeriod)
+	inGracePeriod := arena.MatchState == PostMatch && currentTime.Before(teleopGracePeriod) && !arena.matchAborted
 
 	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
