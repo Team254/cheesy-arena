@@ -657,7 +657,7 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 			return nil
 		}
 		if matchup.IsComplete() {
-			if _, ok := allianceStatuses[matchup.LosingAllianceId()]; !ok {
+			if _, ok := allianceStatuses[matchup.LosingAllianceId()]; !ok && matchup.IsLosingAllianceEliminated() {
 				allianceStatuses[matchup.LosingAllianceId()] = fmt.Sprintf("Eliminated in\n%s", matchup.Id())
 			}
 		} else {
