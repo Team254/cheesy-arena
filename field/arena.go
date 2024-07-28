@@ -55,6 +55,7 @@ type Arena struct {
 	Plc              plc.Plc
 	TbaClient        *partner.TbaClient
 	NexusClient      *partner.NexusClient
+	BlackmagicClient *partner.BlackmagicClient
 	AllianceStations map[string]*AllianceStation
 	Displays         map[string]*Display
 	TeamSigns        *TeamSigns
@@ -182,6 +183,7 @@ func (arena *Arena) LoadSettings() error {
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
+	arena.BlackmagicClient = partner.NewBlackmagicClient(settings.BlackmagicAddresses)
 
 	game.MatchTiming.WarmupDurationSec = settings.WarmupDurationSec
 	game.MatchTiming.AutoDurationSec = settings.AutoDurationSec
@@ -459,6 +461,7 @@ func (arena *Arena) AbortMatch() error {
 	arena.AudienceDisplayModeNotifier.Notify()
 	arena.AllianceStationDisplayMode = "logo"
 	arena.AllianceStationDisplayModeNotifier.Notify()
+	go arena.BlackmagicClient.StopRecording()
 	return nil
 }
 
@@ -550,6 +553,7 @@ func (arena *Arena) Update() {
 		arena.AudienceDisplayModeNotifier.Notify()
 		arena.AllianceStationDisplayMode = "match"
 		arena.AllianceStationDisplayModeNotifier.Notify()
+		go arena.BlackmagicClient.StartRecording()
 		if game.MatchTiming.WarmupDurationSec > 0 {
 			arena.MatchState = WarmupPeriod
 			enabled = false
@@ -601,6 +605,7 @@ func (arena *Arena) Update() {
 			auto = false
 			enabled = false
 			sendDsPacket = true
+			go arena.BlackmagicClient.StopRecording()
 			go func() {
 				// Leave the scores on the screen briefly at the end of the match.
 				time.Sleep(time.Second * matchEndScoreDwellSec)

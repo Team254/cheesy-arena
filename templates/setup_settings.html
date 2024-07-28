@@ -292,6 +292,20 @@
           </div>
         </fieldset>
         <fieldset class="mb-4">
+          <legend>Match Video Recording</legend>
+          <p>
+            If you are using a Blackmagic HyperDeck device to record match video, enter the device IP address(es) here
+            to have Cheesy Arena automatically start and stop recording for each match. Separate multiple addresses with
+            a comma.
+          </p>
+          <div class="row mb-3">
+            <label class="col-lg-6 control-label">Blackmagic Addresses</label>
+            <div class="col-lg-6">
+              <input type="text" class="form-control" name="blackmagicAddresses" value="{{.BlackmagicAddresses}}">
+            </div>
+          </div>
+        </fieldset>
+        <fieldset class="mb-4">
           <legend>Game-Specific</legend>
           <div class="row mb-3">
             <label class="col-lg-6 control-label">Autonomous Period Duration<br />(seconds)</label>

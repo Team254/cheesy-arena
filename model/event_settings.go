@@ -44,6 +44,7 @@ type EventSettings struct {
 	TeamSignBlue2Address            string
 	TeamSignBlue3Address            string
 	TeamSignBlueTimerAddress        string
+	BlackmagicAddresses             string
 	WarmupDurationSec               int
 	AutoDurationSec                 int
 	PauseDurationSec                int
