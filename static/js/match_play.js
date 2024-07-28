@@ -155,7 +155,7 @@ const handleArenaStatus = function(data) {
     const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
     let radioStatus = 0;
     if (expectedTeamId === wifiStatus.TeamId) {
-      if (wifiStatus.RadioLinked) {
+      if (wifiStatus.RadioLinked || stationStatus.DsConn?.RobotLinked) {
         radioStatus = 2;
       } else {
         radioStatus = 1;
