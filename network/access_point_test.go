@@ -17,7 +17,6 @@ func TestAccessPoint_ConfigureTeamWifi(t *testing.T) {
 	var request configurationRequest
 	wifiStatuses := [6]*TeamWifiStatus{{}, {}, {}, {}, {}, {}}
 	ap.SetSettings("dummy", "password1", 123, true, wifiStatuses)
-	ap.Status = "INITIAL"
 
 	// Mock the radio API server.
 	radioServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +76,7 @@ func TestAccessPoint_ConfigureTeamWifi(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "returned status 507: oh noes")
 	}
-	assert.Equal(t, "INITIAL", ap.Status)
+	assert.Equal(t, "CONFIGURING", ap.Status)
 }
 
 func TestAccessPoint_updateMonitoring(t *testing.T) {
@@ -147,4 +146,24 @@ func TestAccessPoint_updateMonitoring(t *testing.T) {
 		assert.Contains(t, err.Error(), "returned status 404: gosh darn")
 	}
 	assert.Equal(t, "ERROR", ap.Status)
+}
+
+func TestAccessPoint_statusMatchesLastConfiguration(t *testing.T) {
+	var ap AccessPoint
+	wifiStatuses := [6]*TeamWifiStatus{{}, {}, {}, {}, {}, {}}
+	ap.SetSettings("dummy", "", 123, true, wifiStatuses)
+
+	assert.True(t, ap.statusMatchesLastConfiguration())
+	team1 := &model.Team{Id: 254, WpaKey: "11111111"}
+	team2 := &model.Team{Id: 1678, WpaKey: "22222222"}
+	ap.ConfigureTeamWifi([6]*model.Team{nil, team1, nil, team2, nil, nil})
+	assert.False(t, ap.statusMatchesLastConfiguration())
+	ap.TeamWifiStatuses[1].TeamId = 254
+	assert.False(t, ap.statusMatchesLastConfiguration())
+	ap.TeamWifiStatuses[3].TeamId = 1677
+	assert.False(t, ap.statusMatchesLastConfiguration())
+	ap.TeamWifiStatuses[3].TeamId = 1678
+	assert.True(t, ap.statusMatchesLastConfiguration())
+	ap.TeamWifiStatuses[4].TeamId = 111
+	assert.False(t, ap.statusMatchesLastConfiguration())
 }

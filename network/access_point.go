@@ -32,6 +32,7 @@ type AccessPoint struct {
 	networkSecurityEnabled bool
 	Status                 string
 	TeamWifiStatuses       [6]*TeamWifiStatus
+	lastConfiguredTeams    [6]*model.Team
 }
 
 type TeamWifiStatus struct {
@@ -90,6 +91,15 @@ func (ap *AccessPoint) Run() {
 		time.Sleep(time.Second * accessPointPollPeriodSec)
 		if err := ap.updateMonitoring(); err != nil {
 			log.Printf("Failed to update access point monitoring: %v", err)
+			continue
+		}
+
+		// If the access point is in a good state but doesn't match the expected configuration, try again.
+		if ap.Status == "ACTIVE" && !ap.statusMatchesLastConfiguration() {
+			log.Println("Access point is ACTIVE but does not match expected configuration; retrying configuration.")
+			if err := ap.ConfigureTeamWifi(ap.lastConfiguredTeams); err != nil {
+				log.Printf("Failed to reconfigure access point: %v", err)
+			}
 		}
 	}
 }
@@ -100,6 +110,8 @@ func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
 		return nil
 	}
 
+	ap.Status = "CONFIGURING"
+	ap.lastConfiguredTeams = teams
 	request := configurationRequest{
 		Channel:               ap.channel,
 		StationConfigurations: make(map[string]stationConfiguration),
@@ -202,6 +214,23 @@ func (ap *AccessPoint) checkAndLogApiError(err error) {
 			ap.apiUrl,
 		)
 	}
+}
+
+// Returns true if the access point's current status matches the last configuration that was sent to it.
+func (ap *AccessPoint) statusMatchesLastConfiguration() bool {
+	for i := 0; i < 6; i++ {
+		var expectedTeamId, actualTeamId int
+		if ap.lastConfiguredTeams[i] != nil {
+			expectedTeamId = ap.lastConfiguredTeams[i].Id
+		}
+		if ap.TeamWifiStatuses[i] != nil {
+			actualTeamId = ap.TeamWifiStatuses[i].TeamId
+		}
+		if expectedTeamId != actualTeamId {
+			return false
+		}
+	}
+	return true
 }
 
 // Generates the configuration for the given team's station and adds it to the map. If the team is nil, no entry is
