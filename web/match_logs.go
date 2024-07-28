@@ -49,6 +49,7 @@ type MatchLogRow struct {
 }
 
 type MatchLog struct {
+	Filename  string
 	StartTime string
 	Rows      []MatchLogRow
 }
@@ -133,7 +134,7 @@ func (web *Web) matchLogsViewGetHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// Load the match result for the match referenced in the HTTP query string.
+// Load the match logs for the match referenced in the HTTP query string.
 func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLogs, bool, error) {
 	matchId, _ := strconv.Atoi(r.PathValue("matchId"))
 	stationId := r.PathValue("stationId")
@@ -175,8 +176,8 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 		return match, &logs, false, nil
 	}
 
-	for _, v := range files {
-		f, _ := os.Open(v)
+	for _, filename := range files {
+		f, _ := os.Open(filename)
 		defer f.Close()
 		// Create a new reader.
 		reader := csv.NewReader(f)
@@ -191,7 +192,8 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 		records, _ := reader.ReadAll()
 
 		var curlog = MatchLog{
-			StartTime: v[12:26],
+			Filename:  filename,
+			StartTime: filename[12:26],
 			Rows:      make([]MatchLogRow, len(records)),
 		}
 		for i, record := range records {
