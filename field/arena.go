@@ -235,7 +235,7 @@ func (arena *Arena) UpdatePlayoffTournament() error {
 
 // Sets up the arena for the given match.
 func (arena *Arena) LoadMatch(match *model.Match) error {
-	if arena.MatchState != PreMatch {
+	if arena.MatchState != PreMatch && arena.MatchState != TimeoutActive {
 		return fmt.Errorf("cannot load match while there is a match still in progress or with results pending")
 	}
 
@@ -464,10 +464,12 @@ func (arena *Arena) AbortMatch() error {
 
 // Clears out the match and resets the arena state unless there is a match underway.
 func (arena *Arena) ResetMatch() error {
-	if arena.MatchState != PostMatch && arena.MatchState != PreMatch {
+	if arena.MatchState != PostMatch && arena.MatchState != PreMatch && arena.MatchState != TimeoutActive {
 		return fmt.Errorf("cannot reset match while it is in progress")
 	}
-	arena.MatchState = PreMatch
+	if arena.MatchState != TimeoutActive {
+		arena.MatchState = PreMatch
+	}
 	arena.matchAborted = false
 	arena.AllianceStations["R1"].Bypass = false
 	arena.AllianceStations["R2"].Bypass = false

@@ -611,6 +611,19 @@ func TestArenaTimeout(t *testing.T) {
 		arena.Update()
 		assert.NotNil(t, arena.StartTimeout("Timeout", 1))
 	}
+
+	// Test that a match can be loaded during a timeout.
+	assert.Nil(t, arena.ResetMatch())
+	assert.Nil(t, arena.LoadTestMatch())
+	assert.Nil(t, arena.StartTimeout("Break 2", 10))
+	assert.Equal(t, TimeoutActive, arena.MatchState)
+	match := model.Match{
+		Type: model.Playoff, ShortName: "F1", Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6,
+	}
+	assert.Nil(t, arena.Database.CreateMatch(&match))
+	assert.Nil(t, arena.LoadMatch(&match))
+	assert.Equal(t, TimeoutActive, arena.MatchState)
+	assert.Equal(t, match, *arena.CurrentMatch)
 }
 
 func TestSaveTeamHasConnected(t *testing.T) {
