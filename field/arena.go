@@ -22,7 +22,7 @@ import (
 
 const (
 	arenaLoopPeriodMs        = 10
-	dsPacketPeriodMs         = 250
+	dsPacketPeriodMs         = 500
 	periodicTaskPeriodSec    = 30
 	matchEndScoreDwellSec    = 3
 	postTimeoutSec           = 4

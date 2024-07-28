@@ -108,7 +108,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-10 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, lastPacketCount, arena.AllianceStations["B3"].DsConn.packetCount)
-	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
+	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, lastPacketCount+1, arena.AllianceStations["B3"].DsConn.packetCount)
 
@@ -161,25 +161,25 @@ func TestArenaMatchFlow(t *testing.T) {
 
 	// Check E-stop and bypass.
 	arena.AllianceStations["B3"].EStop = true
-	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
+	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
 	arena.AllianceStations["B3"].Bypass = true
-	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
+	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
 	arena.AllianceStations["B3"].EStop = false
-	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
+	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
 	arena.AllianceStations["B3"].Bypass = false
-	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
+	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
@@ -200,7 +200,7 @@ func TestArenaMatchFlow(t *testing.T) {
 
 	arena.AllianceStations["R1"].Bypass = true
 	arena.ResetMatch()
-	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
+	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, PreMatch, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
