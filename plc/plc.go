@@ -259,6 +259,12 @@ func (plc *ModbusPlc) GetEthernetConnected() ([3]bool, [3]bool) {
 func (plc *ModbusPlc) ResetMatch() {
 	plc.coils[matchReset] = true
 	plc.matchResetCycles = 0
+
+	// Clear register variables (other than fieldIoConnection) so that any values from pre-match testing don't carry
+	// over.
+	for i := 1; i < int(registerCount); i++ {
+		plc.registers[i] = 0
+	}
 }
 
 // Sets the on/off state of the stack lights on the scoring table.

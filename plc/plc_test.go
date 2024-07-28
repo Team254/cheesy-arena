@@ -446,9 +446,22 @@ func TestPlcCoils(t *testing.T) {
 	assert.Equal(t, true, client.coils[0])
 
 	assert.Equal(t, false, client.coils[1])
+	client.registers[fieldIoConnection] = 31
+	plc.registers[fieldIoConnection] = 31
+	plc.registers[redSpeaker] = 1
+	plc.registers[blueSpeaker] = 2
+	plc.registers[redAmp] = 3
+	plc.registers[blueAmp] = 4
+	plc.registers[miscounts] = 5
 	plc.ResetMatch()
 	plc.update()
 	assert.Equal(t, true, client.coils[1])
+	assert.Equal(t, 31, int(plc.registers[fieldIoConnection]))
+	assert.Equal(t, 0, int(plc.registers[redSpeaker]))
+	assert.Equal(t, 0, int(plc.registers[blueSpeaker]))
+	assert.Equal(t, 0, int(plc.registers[redAmp]))
+	assert.Equal(t, 0, int(plc.registers[blueAmp]))
+	assert.Equal(t, 0, int(plc.registers[miscounts]))
 
 	plc.SetStackLights(false, false, false, false)
 	plc.update()

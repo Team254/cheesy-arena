@@ -972,7 +972,12 @@ func (arena *Arena) handlePlcInputOutput() {
 
 	// Get all the game-specific inputs and update the score.
 	redAmplifyButton, redCoopButton, blueAmplifyButton, blueCoopButton := arena.Plc.GetAmpButtons()
-	redAmpNoteCount, redSpeakerNoteCount, blueAmpNoteCount, blueSpeakerNoteCount := arena.Plc.GetAmpSpeakerNoteCounts()
+	var redAmpNoteCount, redSpeakerNoteCount, blueAmpNoteCount, blueSpeakerNoteCount int
+	if arena.MatchState != PreMatch {
+		// Don't read the registers pre-match to avoid messing up the amp/speaker state from any manual testing.
+		redAmpNoteCount, redSpeakerNoteCount, blueAmpNoteCount, blueSpeakerNoteCount =
+			arena.Plc.GetAmpSpeakerNoteCounts()
+	}
 	redAmpSpeaker := &arena.RedRealtimeScore.CurrentScore.AmpSpeaker
 	blueAmpSpeaker := &arena.BlueRealtimeScore.CurrentScore.AmpSpeaker
 	redAmpSpeaker.UpdateState(
