@@ -7,7 +7,7 @@
   {{template "team" dict "alliance" "red" "team" (index .Teams "R2") "rankings" .Rankings}}
   {{template "team" dict "alliance" "red" "team" (index .Teams "R3") "rankings" .Rankings}}
   {{range $team := .RedOffFieldTeams}}
-    {{template "team" dict "alliance" "red" "team" $team "isOffField" true}}
+    {{template "team" dict "alliance" "red" "team" $team "rankings" $.Rankings "isOffField" true}}
   {{end}}
 </div>
 <div class="row card card-body bg-blue">
@@ -18,14 +18,16 @@
   {{template "team" dict "alliance" "blue" "team" (index .Teams "B2") "rankings" .Rankings}}
   {{template "team" dict "alliance" "blue" "team" (index .Teams "B3") "rankings" .Rankings}}
   {{range $team := .BlueOffFieldTeams}}
-    {{template "team" dict "alliance" "blue" "team" $team "isOffField" true}}
+    {{template "team" dict "alliance" "blue" "team" $team "rankings" $.Rankings "isOffField" true}}
   {{end}}
 </div>
 {{end}}
 {{define "team"}}
 <div class="row">
   {{if .team}}
-    <div class="col-sm-2"><h2><b>{{.team.Id}}</b>{{if .isOffField}} (not on field){{end}}</h2></div>
+    <div class="col-sm-2">
+      <h2><b>{{.team.Id}}</b>{{if .isOffField}}<span style="font-size: 0.5em;"> (not on field)</span>{{end}}</h2>
+    </div>
     <div class="col-sm-4"><h2>{{.team.Nickname}}</h2></div>
     <div class="col-sm-2"><h5>{{.team.SchoolName}}</h5></div>
     <div class="col-sm-3"><div><h5>{{.team.City}}, {{.team.StateProv}}, {{.team.Country}}</h5></div></div>

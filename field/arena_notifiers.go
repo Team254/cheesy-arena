@@ -134,17 +134,11 @@ func (arena *Arena) generateLowerThirdMessage() any {
 
 func (arena *Arena) GenerateMatchLoadMessage() any {
 	teams := make(map[string]*model.Team)
+	var allTeamIds []int
 	for station, allianceStation := range arena.AllianceStations {
 		teams[station] = allianceStation.Team
-	}
-
-	rankings := make(map[string]int)
-	for _, allianceStation := range arena.AllianceStations {
 		if allianceStation.Team != nil {
-			ranking, _ := arena.Database.GetRankingForTeam(allianceStation.Team.Id)
-			if ranking != nil {
-				rankings[strconv.Itoa(allianceStation.Team.Id)] = ranking.Rank
-			}
+			allTeamIds = append(allTeamIds, allianceStation.Team.Id)
 		}
 	}
 
@@ -161,10 +155,20 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		for _, teamId := range redOffFieldTeamIds {
 			team, _ := arena.Database.GetTeamById(teamId)
 			redOffFieldTeams = append(redOffFieldTeams, team)
+			allTeamIds = append(allTeamIds, teamId)
 		}
 		for _, teamId := range blueOffFieldTeamIds {
 			team, _ := arena.Database.GetTeamById(teamId)
 			blueOffFieldTeams = append(blueOffFieldTeams, team)
+			allTeamIds = append(allTeamIds, teamId)
+		}
+	}
+
+	rankings := make(map[string]int)
+	for _, teamId := range allTeamIds {
+		ranking, _ := arena.Database.GetRankingForTeam(teamId)
+		if ranking != nil {
+			rankings[strconv.Itoa(teamId)] = ranking.Rank
 		}
 	}
 
