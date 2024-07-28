@@ -398,12 +398,13 @@ html {
 .final-team-row {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 }
 .final-team-avatar {
   width: 35px;
   height: 35px;
+  margin-right: 5px;
 }
 .final-team-number {
   width: 85px;
@@ -415,6 +416,7 @@ html {
 }
 .final-team-card {
   width: 20px;
+  margin-left: 5px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -436,7 +438,7 @@ html {
   background-color: #e00;
 }
 .final-team-rank {
-  width: 45px;
+  width: 50px;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
