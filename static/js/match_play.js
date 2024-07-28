@@ -290,6 +290,7 @@ const handleMatchLoad = function(data) {
   $("#substituteTeams").prop("disabled", true);
   $("#showOverlay").prop("disabled", false);
   $("#introRadio").prop("disabled", false);
+  $("#muteMatchSounds").prop("checked", false);
 }
 
 // Handles a websocket message to update the match time countdown.
