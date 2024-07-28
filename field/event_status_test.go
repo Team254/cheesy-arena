@@ -13,6 +13,7 @@ import (
 
 func TestCycleTime(t *testing.T) {
 	arena := setupTestArena(t)
+	arena.CurrentMatch.Type = model.Practice
 
 	assert.Equal(t, "", arena.EventStatus.CycleTime)
 	arena.updateCycleTime(time.Time{})
@@ -27,10 +28,16 @@ func TestCycleTime(t *testing.T) {
 	assert.Regexp(t, "4:02:24.*", arena.EventStatus.CycleTime)
 	arena.updateCycleTime(time.Now().Add(123*time.Hour + 1256*time.Second))
 	assert.Regexp(t, "118:20:56.*", arena.EventStatus.CycleTime)
+
+	// Cycle time should be suppressed for test matches.
+	arena.CurrentMatch.Type = model.Test
+	arena.updateCycleTime(time.Now().Add(123*time.Hour + 1256*time.Second))
+	assert.Regexp(t, "", arena.EventStatus.CycleTime)
 }
 
 func TestCycleTimeDelta(t *testing.T) {
 	arena := setupTestArena(t)
+	arena.CurrentMatch.Type = model.Practice
 
 	// Check perfect cycle time.
 	arena.CurrentMatch.Time = time.Unix(1000, 0)

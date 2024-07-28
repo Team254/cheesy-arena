@@ -24,7 +24,8 @@ type EventStatus struct {
 // Calculates the last cycle time and publishes an update to the displays that show it.
 func (arena *Arena) updateCycleTime(matchStartTime time.Time) {
 	expectedCycleTimeSec := arena.CurrentMatch.Time.Sub(arena.EventStatus.lastMatchScheduledStartTime).Seconds()
-	if arena.EventStatus.lastMatchStartTime.IsZero() || expectedCycleTimeSec > maxExpectedCycleTimeSec {
+	if arena.EventStatus.lastMatchStartTime.IsZero() || expectedCycleTimeSec > maxExpectedCycleTimeSec ||
+		arena.CurrentMatch.Type == model.Test {
 		// We don't know when the previous match was started or there was a big gap that we shouldn't count.
 		arena.EventStatus.CycleTime = ""
 	} else {
