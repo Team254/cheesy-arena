@@ -27,6 +27,7 @@ const newDateTimePicker = function(id, defaultTime) {
       },
       localization: {
         format: "yyyy-MM-dd hh:mm:ss T",
+        locale: "en",
       },
     }
   );
