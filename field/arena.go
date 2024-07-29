@@ -649,7 +649,7 @@ func (arena *Arena) Update() {
 	msSinceLastDsPacket := int(time.Since(arena.lastDsPacketTime).Seconds() * 1000)
 	if sendDsPacket || msSinceLastDsPacket >= dsPacketPeriodMs {
 		if msSinceLastDsPacket >= dsPacketWarningMs && arena.lastDsPacketTime.After(time.Time{}) {
-			log.Printf("Too long since last driver station packet: %dms", msSinceLastDsPacket)
+			log.Printf("Warning: Long time since last driver station packet: %dms", msSinceLastDsPacket)
 		}
 		arena.sendDsPacket(auto, enabled)
 		arena.ArenaStatusNotifier.Notify()
@@ -683,7 +683,7 @@ func (arena *Arena) Run() {
 			go arena.runPeriodicTasks()
 		}
 		if time.Since(loopStartTime).Microseconds() > arenaLoopWarningUs {
-			log.Printf("Arena loop iteration took too long: %dus", time.Since(loopStartTime).Microseconds())
+			log.Printf("Warning: Arena loop iteration took a long time: %dus", time.Since(loopStartTime).Microseconds())
 		}
 
 		time.Sleep(time.Millisecond * arenaLoopPeriodMs)
