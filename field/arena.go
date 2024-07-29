@@ -22,7 +22,9 @@ import (
 
 const (
 	arenaLoopPeriodMs        = 10
+	arenaLoopWarningUs       = 3000
 	dsPacketPeriodMs         = 500
+	dsPacketWarningMs        = 550
 	periodicTaskPeriodSec    = 30
 	matchEndScoreDwellSec    = 3
 	postTimeoutSec           = 4
@@ -644,7 +646,11 @@ func (arena *Arena) Update() {
 	}
 
 	// Send a packet if at a period transition point or if it's been long enough since the last one.
-	if sendDsPacket || time.Since(arena.lastDsPacketTime).Seconds()*1000 >= dsPacketPeriodMs {
+	msSinceLastDsPacket := int(time.Since(arena.lastDsPacketTime).Seconds() * 1000)
+	if sendDsPacket || msSinceLastDsPacket >= dsPacketPeriodMs {
+		if msSinceLastDsPacket >= dsPacketWarningMs && arena.lastDsPacketTime.After(time.Time{}) {
+			log.Printf("Too long since last driver station packet: %dms", msSinceLastDsPacket)
+		}
 		arena.sendDsPacket(auto, enabled)
 		arena.ArenaStatusNotifier.Notify()
 	}
@@ -670,11 +676,16 @@ func (arena *Arena) Run() {
 	go arena.Plc.Run()
 
 	for {
+		loopStartTime := time.Now()
 		arena.Update()
 		if time.Since(arena.lastPeriodicTaskTime).Seconds() >= periodicTaskPeriodSec {
 			arena.lastPeriodicTaskTime = time.Now()
 			go arena.runPeriodicTasks()
 		}
+		if time.Since(loopStartTime).Microseconds() > arenaLoopWarningUs {
+			log.Printf("Arena loop iteration took too long: %dus", time.Since(loopStartTime).Microseconds())
+		}
+
 		time.Sleep(time.Millisecond * arenaLoopPeriodMs)
 	}
 }
