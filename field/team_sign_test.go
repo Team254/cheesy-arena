@@ -33,7 +33,7 @@ func TestTeamSign_Timer(t *testing.T) {
 	assert.Equal(t, [128]byte{}, sign.packetData)
 
 	// Check some basics about the data but don't unit-test the whole packet.
-	sign.SetAddress("10.0.100.56")
+	sign.SetId(56)
 	sign.update(arena, nil, true, "12:34", "Rear Text")
 	assert.Equal(t, "CYPRX", string(sign.packetData[0:5]))
 	assert.Equal(t, 56, int(sign.packetData[5]))
@@ -87,7 +87,7 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assert.Equal(t, [128]byte{}, sign.packetData)
 
 	// Check some basics about the data but don't unit-test the whole packet.
-	sign.SetAddress("10.0.100.53")
+	sign.SetId(53)
 	sign.update(arena, allianceStation, true, "12:34", "Rear Text")
 	assert.Equal(t, "CYPRX", string(sign.packetData[0:5]))
 	assert.Equal(t, 53, int(sign.packetData[5]))

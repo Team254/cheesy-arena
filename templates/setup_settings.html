@@ -238,56 +238,63 @@
         <fieldset class="mb-4">
           <legend>Team Signs</legend>
           <p>
-            If you are using a set of the (2024+) official team number / timer signs, enter their IP addresses here.
+            If you are using a set of the (2024+) official team number / timer signs, enter their two-digit IDs (e.g.
+            51, 52, etc.) here.
           </p>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Red 1 Sign Address</label>
+            <label class="col-lg-6 control-label">Red 1 Sign ID</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignRed1Address" value="{{.TeamSignRed1Address}}">
+              <input type="text" class="form-control" name="teamSignRed1Id"
+                value="{{if gt .TeamSignRed1Id 0}}{{.TeamSignRed1Id}}{{end}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Red 2 Sign Address</label>
+            <label class="col-lg-6 control-label">Red 2 Sign ID</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignRed2Address" value="{{.TeamSignRed2Address}}">
+              <input type="text" class="form-control" name="teamSignRed2Id"
+                value="{{if gt .TeamSignRed2Id 0}}{{.TeamSignRed2Id}}{{end}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Red 3 Sign Address</label>
+            <label class="col-lg-6 control-label">Red 3 Sign ID</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignRed3Address" value="{{.TeamSignRed3Address}}">
+              <input type="text" class="form-control" name="teamSignRed3Id"
+                value="{{if gt .TeamSignRed3Id 0}}{{.TeamSignRed3Id}}{{end}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Red Timer Sign Address</label>
+            <label class="col-lg-6 control-label">Red Timer Sign ID</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignRedTimerAddress"
-                value="{{.TeamSignRedTimerAddress}}">
+              <input type="text" class="form-control" name="teamSignRedTimerId"
+                value="{{if gt .TeamSignRedTimerId 0}}{{.TeamSignRedTimerId}}{{end}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Blue 1 Sign Address</label>
+            <label class="col-lg-6 control-label">Blue 1 Sign ID</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignBlue1Address" value="{{.TeamSignBlue1Address}}">
+              <input type="text" class="form-control" name="teamSignBlue1Id"
+                value="{{if gt .TeamSignBlue1Id 0}}{{.TeamSignBlue1Id}}{{end}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Blue 2 Sign Address</label>
+            <label class="col-lg-6 control-label">Blue 2 Sign ID</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignBlue2Address" value="{{.TeamSignBlue2Address}}">
+              <input type="text" class="form-control" name="teamSignBlue2Id"
+                value="{{if gt .TeamSignBlue2Id 0}}{{.TeamSignBlue2Id}}{{end}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Blue 3 Sign Address</label>
+            <label class="col-lg-6 control-label">Blue 3 Sign ID</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignBlue3Address" value="{{.TeamSignBlue3Address}}">
+              <input type="text" class="form-control" name="teamSignBlue3Id"
+                value="{{if gt .TeamSignBlue3Id 0}}{{.TeamSignBlue3Id}}{{end}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Blue Timer Sign Address</label>
+            <label class="col-lg-6 control-label">Blue Timer Sign ID</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignBlueTimerAddress"
-                value="{{.TeamSignBlueTimerAddress}}">
+              <input type="text" class="form-control" name="teamSignBlueTimerId"
+                value="{{if gt .TeamSignBlueTimerId 0}}{{.TeamSignBlueTimerId}}{{end}}">
             </div>
           </div>
         </fieldset>

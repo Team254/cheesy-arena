@@ -158,14 +158,14 @@ func (arena *Arena) LoadSettings() error {
 	arena.EventSettings = settings
 
 	// Initialize the components that depend on settings.
-	arena.TeamSigns.Red1.SetAddress(settings.TeamSignRed1Address)
-	arena.TeamSigns.Red2.SetAddress(settings.TeamSignRed2Address)
-	arena.TeamSigns.Red3.SetAddress(settings.TeamSignRed3Address)
-	arena.TeamSigns.RedTimer.SetAddress(settings.TeamSignRedTimerAddress)
-	arena.TeamSigns.Blue1.SetAddress(settings.TeamSignBlue1Address)
-	arena.TeamSigns.Blue2.SetAddress(settings.TeamSignBlue2Address)
-	arena.TeamSigns.Blue3.SetAddress(settings.TeamSignBlue3Address)
-	arena.TeamSigns.BlueTimer.SetAddress(settings.TeamSignBlueTimerAddress)
+	arena.TeamSigns.Red1.SetId(settings.TeamSignRed1Id)
+	arena.TeamSigns.Red2.SetId(settings.TeamSignRed2Id)
+	arena.TeamSigns.Red3.SetId(settings.TeamSignRed3Id)
+	arena.TeamSigns.RedTimer.SetId(settings.TeamSignRedTimerId)
+	arena.TeamSigns.Blue1.SetId(settings.TeamSignBlue1Id)
+	arena.TeamSigns.Blue2.SetId(settings.TeamSignBlue2Id)
+	arena.TeamSigns.Blue3.SetId(settings.TeamSignBlue3Id)
+	arena.TeamSigns.BlueTimer.SetId(settings.TeamSignBlueTimerId)
 	accessPointWifiStatuses := [6]*network.TeamWifiStatus{
 		&arena.AllianceStations["R1"].WifiStatus,
 		&arena.AllianceStations["R2"].WifiStatus,

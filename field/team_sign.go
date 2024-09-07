@@ -47,6 +47,7 @@ type TeamSign struct {
 }
 
 const (
+	teamSignAddressPrefix            = "10.0.100."
 	teamSignPort                     = 10011
 	teamSignPacketMagicString        = "CYPRX"
 	teamSignPacketHeaderLength       = 7
@@ -128,15 +129,16 @@ func (signs *TeamSigns) SetNextMatchTeams(match *model.Match) {
 }
 
 // Sets the IP address of the sign.
-func (sign *TeamSign) SetAddress(ipAddress string) {
+func (sign *TeamSign) SetId(id int) {
 	if sign.udpConn != nil {
 		_ = sign.udpConn.Close()
 	}
-	if ipAddress == "" {
+	sign.address = byte(id)
+	if id == 0 {
 		// The sign is not configured.
-		sign.address = 0
 		return
 	}
+	ipAddress := fmt.Sprintf("%s%d", teamSignAddressPrefix, id)
 
 	var err error
 	sign.udpConn, err = net.Dial("udp4", fmt.Sprintf("%s:%d", ipAddress, teamSignPort))
