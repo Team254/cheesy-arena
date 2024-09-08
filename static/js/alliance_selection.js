@@ -5,14 +5,19 @@
 
 var websocket;
 
-// Sends a websocket message to show the timer.
-const showTimer = function() {
-  websocket.send("showTimer");
+// Sends a websocket message to set the timer to the given time limit.
+const setTimer = function(timeLimitInput) {
+  websocket.send("setTimer", parseInt(timeLimitInput.value));
+}
+
+// Sends a websocket message to start and show the timer.
+const startTimer = function() {
+  websocket.send("startTimer");
 };
 
-// Sends a websocket message to hide the timer.
-const hideTimer = function() {
-  websocket.send("hideTimer");
+// Sends a websocket message to stop and hide the timer.
+const stopTimer = function() {
+  websocket.send("stopTimer");
 }
 
 // Handles a websocket message to update the alliance selection status.

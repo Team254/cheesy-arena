@@ -18,7 +18,7 @@ import (
 )
 
 // Global var to hold configurable time limit for selections. A value of zero disables the timer.
-var allianceSelectionTimeLimitSec = 0
+var allianceSelectionTimeLimitSec = 45
 
 // Global var to hold a ticker used for the alliance selection timer.
 var allianceSelectionTicker *time.Ticker
@@ -42,9 +42,6 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 		web.renderAllianceSelection(w, r, "Alliance selection has already been finalized.")
 		return
 	}
-
-	// Update time limit value.
-	allianceSelectionTimeLimitSec, _ = strconv.Atoi(r.PostFormValue("timeLimitSec"))
 
 	// Reset picked state for each team in preparation for reconstructing it.
 	for i := range web.arena.AllianceSelectionRankedTeams {
@@ -95,19 +92,6 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 		allianceSelectionTicker.Stop()
 		web.arena.AllianceSelectionShowTimer = false
 		web.arena.AllianceSelectionTimeRemainingSec = 0
-	}
-	if _, nextCol := web.determineNextCell(); nextCol > 0 && allianceSelectionTimeLimitSec > 0 {
-		web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
-		allianceSelectionTicker = time.NewTicker(time.Second)
-		go func() {
-			for range allianceSelectionTicker.C {
-				web.arena.AllianceSelectionTimeRemainingSec--
-				web.arena.AllianceSelectionNotifier.Notify()
-				if web.arena.AllianceSelectionTimeRemainingSec == 0 {
-					allianceSelectionTicker.Stop()
-				}
-			}
-		}()
 	}
 
 	web.arena.AllianceSelectionNotifier.Notify()
@@ -296,7 +280,7 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		messageType, _, err := ws.Read()
+		messageType, data, err := ws.Read()
 		if err != nil {
 			if err == io.EOF {
 				// Client has closed the connection; nothing to do here.
@@ -307,11 +291,32 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 		}
 
 		switch messageType {
-		case "showTimer":
-			web.arena.AllianceSelectionShowTimer = true
-			web.arena.AllianceSelectionNotifier.Notify()
-		case "hideTimer":
+		case "setTimer":
+			if timeLimitSec, ok := data.(float64); ok {
+				allianceSelectionTimeLimitSec = int(timeLimitSec)
+			} else {
+				ws.WriteError("Invalid time limit value.")
+			}
+		case "startTimer":
+			if !web.arena.AllianceSelectionShowTimer {
+				web.arena.AllianceSelectionShowTimer = true
+				web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
+				web.arena.AllianceSelectionNotifier.Notify()
+				allianceSelectionTicker = time.NewTicker(time.Second)
+				go func() {
+					for range allianceSelectionTicker.C {
+						web.arena.AllianceSelectionTimeRemainingSec--
+						web.arena.AllianceSelectionNotifier.Notify()
+						if web.arena.AllianceSelectionTimeRemainingSec == 0 {
+							allianceSelectionTicker.Stop()
+						}
+					}
+				}()
+			}
+		case "stopTimer":
+			allianceSelectionTicker.Stop()
 			web.arena.AllianceSelectionShowTimer = false
+			web.arena.AllianceSelectionTimeRemainingSec = 0
 			web.arena.AllianceSelectionNotifier.Notify()
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))

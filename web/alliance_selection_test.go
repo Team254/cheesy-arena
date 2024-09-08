@@ -318,17 +318,17 @@ func TestAllianceSelectionWebsocket(t *testing.T) {
 	// Should get a status update right after connection.
 	readWebsocketType(t, ws, "allianceSelection")
 
-	// Test showing and hiding the timer.
+	// Test starting and stopping the timer.
 	allianceSelectionMessage := struct {
 		ShowTimer bool
 	}{}
-	ws.Write("showTimer", nil)
+	ws.Write("startTimer", nil)
 	assert.Nil(t, mapstructure.Decode(readWebsocketType(t, ws, "allianceSelection"), &allianceSelectionMessage))
 	assert.Equal(t, true, allianceSelectionMessage.ShowTimer)
-	ws.Write("hideTimer", nil)
+	ws.Write("stopTimer", nil)
 	assert.Nil(t, mapstructure.Decode(readWebsocketType(t, ws, "allianceSelection"), &allianceSelectionMessage))
 	assert.Equal(t, false, allianceSelectionMessage.ShowTimer)
-	ws.Write("showTimer", nil)
+	ws.Write("startTimer", nil)
 	assert.Nil(t, mapstructure.Decode(readWebsocketType(t, ws, "allianceSelection"), &allianceSelectionMessage))
 	assert.Equal(t, true, allianceSelectionMessage.ShowTimer)
 }

@@ -23,6 +23,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			NumPlayoffAlliances:             8,
 			SelectionRound2Order:            "L",
 			SelectionRound3Order:            "",
+			SelectionShowUnpickedTeams:      true,
 			TbaDownloadEnabled:              true,
 			ApChannel:                       36,
 			WarmupDurationSec:               0,

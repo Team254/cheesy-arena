@@ -72,7 +72,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		NumPlayoffAlliances:             8,
 		SelectionRound2Order:            "L",
 		SelectionRound3Order:            "",
-		SelectionShowUnpickedTeams:      false,
+		SelectionShowUnpickedTeams:      true,
 		TbaDownloadEnabled:              true,
 		ApChannel:                       36,
 		WarmupDurationSec:               game.MatchTiming.WarmupDurationSec,
