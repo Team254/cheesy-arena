@@ -15,10 +15,9 @@
   </head>
   <body>
     <div id="column">
-      <div id="titlebar">
-        <div class="pull-left">Playoff Bracket</div>
-        <div class="pull-right">{{.EventSettings.Name}}</div>
-        <div>&nbsp;</div>
+      <div id="titlebar" class="row justify-content-between">
+        <div class="col-lg-4 text-start">Playoff Bracket</div>
+        <div class="col-lg-4 text-end">{{.EventSettings.Name}}</div>
       </div>
       <div id="bracket"></div>
     </div>
