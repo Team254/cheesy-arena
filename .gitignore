@@ -28,4 +28,3 @@ _testmain.go
 *.out
 .DS_Store
 static/logs
-static/img/avatars
