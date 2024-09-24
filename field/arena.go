@@ -1040,7 +1040,7 @@ func (arena *Arena) handlePlcInputOutput() {
 		blueHighAmpLight := blueAmpSpeaker.BankedAmpNotes >= 2
 		blueCoopAmpLight := blueAmpSpeaker.CoopActivated
 		if blueAmplifiedTimeRemaining > 0 {
-			blueLowAmpLight = int(blueAmplifiedTimeRemaining*4)%2 == 0
+			blueLowAmpLight = int(blueAmplifiedTimeRemaining*2)%2 == 0
 			blueHighAmpLight = !blueLowAmpLight
 		}
 
