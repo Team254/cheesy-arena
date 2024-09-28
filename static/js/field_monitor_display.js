@@ -139,7 +139,7 @@ var handleArenaStatus = function(data) {
       teamBypassElement.text("BYP");
     } else {
       teamBypassElement.attr("data-status-ok", true);
-      teamBypassElement.text("");
+      teamBypassElement.text("ES");
     }
   });
 };
