@@ -18,7 +18,6 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/tournament"
-	"github.com/gorilla/mux"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -53,8 +52,8 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
-	colWidths := map[string]float64{"Rank": 13, "Team": 22, "RP": 23, "Match": 22, "Charge Stn.": 22, "Auto": 25,
-		"W-L-T": 23, "DQ": 23, "Played": 23}
+	colWidths := map[string]float64{"Rank": 13, "Team": 20, "RP": 20, "Coop": 20, "Match": 20, "Auto": 20, "Stage": 20,
+		"W-L-T": 22, "DQ": 20, "Played": 20}
 	rowHeight := 6.5
 
 	pdf := gofpdf.New("P", "mm", "Letter", "font")
@@ -67,9 +66,10 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	pdf.CellFormat(colWidths["Rank"], rowHeight, "Rank", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["RP"], rowHeight, "RP", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Coop"], rowHeight, "Coop", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Charge Stn."], rowHeight, "Charge Stn.", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Auto"], rowHeight, "Auto", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Stage"], rowHeight, "Stage", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["W-L-T"], rowHeight, "W-L-T", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["DQ"], rowHeight, "DQ", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Played"], rowHeight, "Played", "1", 1, "C", true, 0, "")
@@ -80,11 +80,10 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 		pdf.SetFont("Arial", "", 10)
 		pdf.CellFormat(colWidths["Team"], rowHeight, strconv.Itoa(ranking.TeamId), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["RP"], rowHeight, strconv.Itoa(ranking.RankingPoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Coop"], rowHeight, strconv.Itoa(ranking.CoopertitionPoints), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["Match"], rowHeight, strconv.Itoa(ranking.MatchPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(
-			colWidths["Charge Stn."], rowHeight, strconv.Itoa(ranking.ChargeStationPoints), "1", 0, "C", false, 0, "",
-		)
 		pdf.CellFormat(colWidths["Auto"], rowHeight, strconv.Itoa(ranking.AutoPoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidths["Stage"], rowHeight, strconv.Itoa(ranking.StagePoints), "1", 0, "C", false, 0, "")
 		record := fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties)
 		pdf.CellFormat(colWidths["W-L-T"], rowHeight, record, "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["DQ"], rowHeight, strconv.Itoa(ranking.Disqualifications), "1", 0, "C", false, 0, "")
@@ -361,8 +360,7 @@ func drawPdfLogo(pdf gofpdf.Pdf, x float64, y float64, width float64) {
 
 // Generates a CSV-formatted report of the match schedule.
 func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchType, err := model.MatchTypeFromString(vars["type"])
+	matchType, err := model.MatchTypeFromString(r.PathValue("type"))
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -390,8 +388,7 @@ func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request)
 
 // Generates a PDF-formatted report of the match schedule.
 func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchType, err := model.MatchTypeFromString(vars["type"])
+	matchType, err := model.MatchTypeFromString(r.PathValue("type"))
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -660,7 +657,7 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 			return nil
 		}
 		if matchup.IsComplete() {
-			if _, ok := allianceStatuses[matchup.LosingAllianceId()]; !ok {
+			if _, ok := allianceStatuses[matchup.LosingAllianceId()]; !ok && matchup.IsLosingAllianceEliminated() {
 				allianceStatuses[matchup.LosingAllianceId()] = fmt.Sprintf("Eliminated in\n%s", matchup.Id())
 			}
 		} else {
@@ -792,8 +789,7 @@ func surrogateText(isSurrogate bool) string {
 
 // Generates a PDF-formatted report of the match cycle times.
 func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchType, err := model.MatchTypeFromString(vars["type"])
+	matchType, err := model.MatchTypeFromString(r.PathValue("type"))
 	if err != nil {
 		handleWebErr(w, err)
 		return

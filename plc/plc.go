@@ -21,8 +21,9 @@ type Plc interface {
 	IoChangeNotifier() *websocket.Notifier
 	Run()
 	GetArmorBlockStatuses() map[string]bool
-	GetFieldEstop() bool
-	GetTeamEstops() ([3]bool, [3]bool)
+	GetFieldEStop() bool
+	GetTeamEStops() ([3]bool, [3]bool)
+	GetTeamAStops() ([3]bool, [3]bool)
 	GetEthernetConnected() ([3]bool, [3]bool)
 	ResetMatch()
 	SetStackLights(red, blue, orange, green bool)
@@ -32,8 +33,13 @@ type Plc interface {
 	GetInputNames() []string
 	GetRegisterNames() []string
 	GetCoilNames() []string
-	GetChargeStationsLevel() (bool, bool)
-	SetChargeStationLights(redState, blueState bool)
+	GetAmpButtons() (bool, bool, bool, bool)
+	GetAmpSpeakerNoteCounts() (int, int, int, int)
+	SetSpeakerMotors(state bool)
+	SetSpeakerLights(redState, blueState bool)
+	SetSubwooferCountdown(redState, blueState bool)
+	SetAmpLights(redLow, redHigh, redCoop, blueLow, blueHigh, blueCoop bool)
+	SetPostMatchSubwooferLights(state bool)
 }
 
 type ModbusPlc struct {
@@ -65,21 +71,29 @@ const (
 type input int
 
 const (
-	fieldEstop input = iota
-	redEstop1
-	redEstop2
-	redEstop3
-	blueEstop1
-	blueEstop2
-	blueEstop3
+	fieldEStop input = iota
+	red1EStop
+	red1AStop
+	red2EStop
+	red2AStop
+	red3EStop
+	red3AStop
+	blue1EStop
+	blue1AStop
+	blue2EStop
+	blue2AStop
+	blue3EStop
+	blue3AStop
 	redConnected1
 	redConnected2
 	redConnected3
 	blueConnected1
 	blueConnected2
 	blueConnected3
-	redChargeStationLevel
-	blueChargeStationLevel
+	redAmplify
+	redCoop
+	blueAmplify
+	blueCoop
 	inputCount
 )
 
@@ -90,6 +104,11 @@ type register int
 
 const (
 	fieldIoConnection register = iota
+	redSpeaker
+	blueSpeaker
+	redAmp
+	blueAmp
+	miscounts
 	registerCount
 )
 
@@ -107,8 +126,18 @@ const (
 	stackLightBlue
 	stackLightBuzzer
 	fieldResetLight
-	redChargeStationLight
-	blueChargeStationLight
+	speakerMotors
+	redSpeakerLight
+	blueSpeakerLight
+	redSubwooferCountdown
+	blueSubwooferCountdown
+	redAmpLightLow
+	redAmpLightHigh
+	redAmpLightCoop
+	blueAmpLightLow
+	blueAmpLightHigh
+	blueAmpLightCoop
+	postMatchSubwooferLights
 	coilCount
 )
 
@@ -120,6 +149,8 @@ type armorBlock int
 const (
 	redDs armorBlock = iota
 	blueDs
+	redIoLink
+	blueIoLink
 	armorBlockCount
 )
 
@@ -182,20 +213,32 @@ func (plc *ModbusPlc) GetArmorBlockStatuses() map[string]bool {
 }
 
 // Returns the state of the field emergency stop button (true if e-stop is active).
-func (plc *ModbusPlc) GetFieldEstop() bool {
-	return !plc.inputs[fieldEstop]
+func (plc *ModbusPlc) GetFieldEStop() bool {
+	return !plc.inputs[fieldEStop]
 }
 
-// Returns the state of the red and blue driver station emergency stop buttons (true if e-stop is active).
-func (plc *ModbusPlc) GetTeamEstops() ([3]bool, [3]bool) {
-	var redEstops, blueEstops [3]bool
-	redEstops[0] = !plc.inputs[redEstop1]
-	redEstops[1] = !plc.inputs[redEstop2]
-	redEstops[2] = !plc.inputs[redEstop3]
-	blueEstops[0] = !plc.inputs[blueEstop1]
-	blueEstops[1] = !plc.inputs[blueEstop2]
-	blueEstops[2] = !plc.inputs[blueEstop3]
-	return redEstops, blueEstops
+// Returns the state of the red and blue driver station emergency stop buttons (true if E-stop is active).
+func (plc *ModbusPlc) GetTeamEStops() ([3]bool, [3]bool) {
+	var redEStops, blueEStops [3]bool
+	redEStops[0] = !plc.inputs[red1EStop]
+	redEStops[1] = !plc.inputs[red2EStop]
+	redEStops[2] = !plc.inputs[red3EStop]
+	blueEStops[0] = !plc.inputs[blue1EStop]
+	blueEStops[1] = !plc.inputs[blue2EStop]
+	blueEStops[2] = !plc.inputs[blue3EStop]
+	return redEStops, blueEStops
+}
+
+// Returns the state of the red and blue driver station autonomous stop buttons (true if A-stop is active).
+func (plc *ModbusPlc) GetTeamAStops() ([3]bool, [3]bool) {
+	var redAStops, blueAStops [3]bool
+	redAStops[0] = !plc.inputs[red1AStop]
+	redAStops[1] = !plc.inputs[red2AStop]
+	redAStops[2] = !plc.inputs[red3AStop]
+	blueAStops[0] = !plc.inputs[blue1AStop]
+	blueAStops[1] = !plc.inputs[blue2AStop]
+	blueAStops[2] = !plc.inputs[blue3AStop]
+	return redAStops, blueAStops
 }
 
 // Returns whether anything is connected to each station's designated Ethernet port on the SCC.
@@ -216,6 +259,12 @@ func (plc *ModbusPlc) GetEthernetConnected() ([3]bool, [3]bool) {
 func (plc *ModbusPlc) ResetMatch() {
 	plc.coils[matchReset] = true
 	plc.matchResetCycles = 0
+
+	// Clear register variables (other than fieldIoConnection) so that any values from pre-match testing don't carry
+	// over.
+	for i := 1; i < int(registerCount); i++ {
+		plc.registers[i] = 0
+	}
 }
 
 // Sets the on/off state of the stack lights on the scoring table.
@@ -264,15 +313,50 @@ func (plc *ModbusPlc) GetCoilNames() []string {
 	return coilNames
 }
 
-// Returns the levelness states of the red and blue charge stations, respectively.
-func (plc *ModbusPlc) GetChargeStationsLevel() (bool, bool) {
-	return plc.inputs[redChargeStationLevel], plc.inputs[blueChargeStationLevel]
+// Returns the state of the red amplify, red co-op, blue amplify, and blue co-op buttons, respectively.
+func (plc *ModbusPlc) GetAmpButtons() (bool, bool, bool, bool) {
+	return plc.inputs[redAmplify], plc.inputs[redCoop], plc.inputs[blueAmplify], plc.inputs[blueCoop]
 }
 
-// Sets the on/off state of the charge station lights.
-func (plc *ModbusPlc) SetChargeStationLights(redState, blueState bool) {
-	plc.coils[redChargeStationLight] = redState
-	plc.coils[blueChargeStationLight] = blueState
+// Returns the red amp, red speaker, blue amp, and blue speaker note counts, respectively.
+func (plc *ModbusPlc) GetAmpSpeakerNoteCounts() (int, int, int, int) {
+	return int(plc.registers[redAmp]),
+		int(plc.registers[redSpeaker]),
+		int(plc.registers[blueAmp]),
+		int(plc.registers[blueSpeaker])
+}
+
+// Sets the on/off state of the serializer motors within each speaker.
+func (plc *ModbusPlc) SetSpeakerMotors(state bool) {
+	plc.coils[speakerMotors] = state
+}
+
+// Sets the state of the amplification lights on the red and blue speakers.
+func (plc *ModbusPlc) SetSpeakerLights(redState, blueState bool) {
+	plc.coils[redSpeakerLight] = redState
+	plc.coils[blueSpeakerLight] = blueState
+}
+
+// Sets the state of the red and blue subwoofer countdown lights. When the state is set to true, the lights light up and
+// begin the ten-second coundown sequence. When set to false before the countdown is complete, the lights will turn off.
+func (plc *ModbusPlc) SetSubwooferCountdown(redState, blueState bool) {
+	plc.coils[redSubwooferCountdown] = redState
+	plc.coils[blueSubwooferCountdown] = blueState
+}
+
+// Sets the state of the red and blue amp lights.
+func (plc *ModbusPlc) SetAmpLights(redLow, redHigh, redCoop, blueLow, blueHigh, blueCoop bool) {
+	plc.coils[redAmpLightLow] = redLow
+	plc.coils[redAmpLightHigh] = redHigh
+	plc.coils[redAmpLightCoop] = redCoop
+	plc.coils[blueAmpLightLow] = blueLow
+	plc.coils[blueAmpLightHigh] = blueHigh
+	plc.coils[blueAmpLightCoop] = blueCoop
+}
+
+// Sets the state of the post-match subwoofer lights.
+func (plc *ModbusPlc) SetPostMatchSubwooferLights(state bool) {
+	plc.coils[postMatchSubwooferLights] = state
 }
 
 func (plc *ModbusPlc) connect() error {

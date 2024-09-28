@@ -1,22 +1,25 @@
 {{define "title"}}Announcer Display{{end}}
 {{define "body"}}
-<h3 id="matchName"></h3>
-<div class="row">
-  <div class="col-sm-3"><h4>Team #</h4></div>
-  <div class="col-sm-5"><h4>Nickname</h4></div>
-  <div class="col-sm-4"><h4>Location</h4></div>
+<h3 id="matchName" class="mt-4"></h3>
+<div class="row card card-body border-0">
+  <div class="row">
+    <div class="col-sm-2"><h4>Team #</h4></div>
+    <div class="col-sm-4"><h4>Nickname</h4></div>
+    <div class="col-sm-2"><h4>School</h4></div>
+    <div class="col-sm-3"><h4>Location</h4></div>
+    <div class="col-sm-1"><h4>Rank</h4></div>
+  </div>
 </div>
-<div id="teams" class="row"></div>
-<br />
-<div class="row">
-  <div id="matchState" class="col-sm-2 col-sm-offset-2 well well-sm text-center">&nbsp;</div>
-  <div id="matchTime" class="col-sm-2 well well-sm text-center">&nbsp;</div>
-  <div id="redScore" class="col-sm-2 well well-sm well-red text-center">&nbsp;</div>
-  <div id="blueScore" class="col-sm-2 well well-sm well-blue text-center">&nbsp;</div>
+<div id="teams"></div>
+<div class="row justify-content-center mt-3 mb-3">
+  <div id="matchState" class="col-sm-2 card card-body bg-body-tertiary text-center">&nbsp;</div>
+  <div id="matchTime" class="col-sm-2 card card-body bg-body-tertiary text-center">&nbsp;</div>
+  <div id="redScore" class="col-sm-2 card card-body bg-red text-center">&nbsp;</div>
+  <div id="blueScore" class="col-sm-2 card card-body bg-blue text-center">&nbsp;</div>
 </div>
-<div class="row">
-  <div id="cycleTimeMessage" class="col-lg-4 col-lg-offset-2"></div>
-  <div id="earlyLateMessage" class="col-lg-4 text-right"></div>
+<div class="row justify-content-center">
+  <div id="cycleTimeMessage" class="col-lg-4"></div>
+  <div id="earlyLateMessage" class="col-lg-4 text-end"></div>
 </div>
 <div id="matchResult" class="modal" style="top: 5%;"></div>
 {{end}}

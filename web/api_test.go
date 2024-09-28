@@ -156,20 +156,3 @@ func TestBracketSvgApiDoubleElimination(t *testing.T) {
 	assert.Equal(t, "image/svg+xml", recorder.Header()["Content-Type"][0])
 	assert.Contains(t, recorder.Body.String(), "Best-of-3")
 }
-
-func TestGridSvgApi(t *testing.T) {
-	web := setupTestWeb(t)
-
-	recorder := web.getHttpResponse("/api/grid/red/svg")
-	assert.Equal(t, 200, recorder.Code)
-	assert.Equal(t, "image/svg+xml", recorder.Header()["Content-Type"][0])
-	assert.Contains(t, recorder.Body.String(), "circle")
-
-	recorder = web.getHttpResponse("/api/grid/blue/svg")
-	assert.Equal(t, 200, recorder.Code)
-	assert.Equal(t, "image/svg+xml", recorder.Header()["Content-Type"][0])
-	assert.Contains(t, recorder.Body.String(), "circle")
-
-	recorder = web.getHttpResponse("/api/grid/yellow/svg")
-	assert.Equal(t, 500, recorder.Code)
-}

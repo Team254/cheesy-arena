@@ -46,8 +46,8 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints);
-  $("#blueScore").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints);
+  $("#redScore").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.StagePoints);
+  $("#blueScore").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.StagePoints);
 };
 
 // Handles a websocket message to populate the final score data.
@@ -61,11 +61,14 @@ var handleScorePosted = function(data) {
   const matchResult = $("#matchResult");
   fetch("/displays/announcer/score_posted")
     .then(response => response.text())
-    .then(html => matchResult.html(html));
-  matchResult.modal("show");
+    .then(html => {
+      matchResult.html(html);
+      matchResult.modal("show");
 
-  // Activate tooltips above the foul listings.
-  $("[data-toggle=tooltip]").tooltip({"placement": "top"});
+      // Activate tooltips above the foul listings.
+      const tooltipTriggerList = document.querySelectorAll("[data-bs-toggle=tooltip]");
+      const tooltipList = [...tooltipTriggerList].map(element => new bootstrap.Tooltip(element));
+    });
 };
 
 $(function() {

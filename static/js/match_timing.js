@@ -9,7 +9,7 @@ const matchTypePractice = 1;
 const matchTypeQualification = 2;
 const matchTypePlayoff = 3;
 
-var matchStates = {
+const matchStates = {
   0: "PRE_MATCH",
   1: "START_MATCH",
   2: "WARMUP_PERIOD",
@@ -20,16 +20,16 @@ var matchStates = {
   7: "TIMEOUT_ACTIVE",
   8: "POST_TIMEOUT"
 };
-var matchTiming;
+let matchTiming;
 
 // Handles a websocket message containing the length of each period in the match.
-var handleMatchTiming = function(data) {
+const handleMatchTiming = function(data) {
   matchTiming = data;
 };
 
 // Converts the raw match state and time into a human-readable state and per-period time. Calls the provided
 // callback with the result.
-var translateMatchTime = function(data, callback) {
+const translateMatchTime = function(data, callback) {
   var matchStateText;
   switch (matchStates[data.MatchState]) {
     case "PRE_MATCH":
@@ -60,7 +60,7 @@ var translateMatchTime = function(data, callback) {
 };
 
 // Returns the per-period countdown for the given match state and overall time into the match.
-var getCountdown = function(matchState, matchTimeSec) {
+const getCountdown = function(matchState, matchTimeSec) {
   switch (matchStates[matchState]) {
     case "PRE_MATCH":
     case "START_MATCH":
@@ -76,4 +76,13 @@ var getCountdown = function(matchState, matchTimeSec) {
     default:
       return 0;
   }
+};
+
+// Converts the given countdown in seconds to a string with a colon separator and leading zero padding.
+const getCountdownString = function(countdownSec) {
+  let countdownString = String(countdownSec % 60);
+  if (countdownString.length === 1) {
+    countdownString = "0" + countdownString;
+  }
+  return Math.floor(countdownSec / 60) + ":" + countdownString;
 };

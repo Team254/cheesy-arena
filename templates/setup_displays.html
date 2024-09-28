@@ -23,7 +23,7 @@
       </thead>
       <tbody id="displayContainer"></tbody>
     </table>
-    <button type="button" class="btn btn-primary pull-right" onclick="reloadAllDisplays();">
+    <button type="button" class="btn btn-danger float-end" onclick="reloadAllDisplays();">
       Force Reload of All Displays
     </button>
   </div>
@@ -50,16 +50,16 @@
           oninput="markChanged(this);" />
     </td>
     <td>
-      <button type="button" class="btn btn-info btn-xs" title="Save Changes"
+      <button type="button" class="btn btn-primary btn-sm" title="Save Changes"
           onclick="configureDisplay('{{"{{DisplayConfiguration.Id}}"}}');">
-        <i class="glyphicon glyphicon-ok"></i>
+        <i class="bi-check-lg"></i>
       </button>
-      <button type="button" class="btn btn-primary btn-xs" title="Undo Changes" onclick="undoChanges();">
-        <i class="glyphicon glyphicon-arrow-left"></i>
+      <button type="button" class="btn btn-danger btn-sm" title="Undo Changes" onclick="undoChanges();">
+        <i class="bi-arrow-left"></i>
       </button>
-      <button type="button" class="btn btn-success btn-xs" title="Reload Display"
+      <button type="button" class="btn btn-success btn-sm" title="Reload Display"
           onclick="reloadDisplay('{{"{{DisplayConfiguration.Id}}"}}');">
-        <i class="glyphicon glyphicon-refresh"></i>
+        <i class="bi-arrow-clockwise"></i>
       </button>
     </td>
   </tr>

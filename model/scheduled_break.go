@@ -23,6 +23,14 @@ func (database *Database) CreateScheduledBreak(scheduledBreak *ScheduledBreak) e
 	return database.scheduledBreakTable.create(scheduledBreak)
 }
 
+func (database *Database) GetScheduledBreakById(id int) (*ScheduledBreak, error) {
+	return database.scheduledBreakTable.getById(id)
+}
+
+func (database *Database) UpdateScheduledBreak(scheduledBreak *ScheduledBreak) error {
+	return database.scheduledBreakTable.update(scheduledBreak)
+}
+
 func (database *Database) GetScheduledBreaksByMatchType(matchType MatchType) ([]ScheduledBreak, error) {
 	scheduledBreaks, err := database.scheduledBreakTable.getAll()
 	if err != nil {

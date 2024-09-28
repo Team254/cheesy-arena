@@ -14,6 +14,7 @@ type Team struct {
 	City            string
 	StateProv       string
 	Country         string
+	SchoolName      string
 	RookieYear      int
 	RobotName       string
 	Accomplishments string

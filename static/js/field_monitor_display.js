@@ -87,7 +87,8 @@ var handleArenaStatus = function(data) {
       teamDsElement.text(dsConn.MissedPacketCount);
 
       // Format the radio status box according to the connection status of the robot radio.
-      var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
+      var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId &&
+        (wifiStatus.RadioLinked || dsConn.RobotLinked);
       teamRadioElement.attr("data-status-ok", radioOkay);
 
       // Format the robot status box.
@@ -127,15 +128,18 @@ var handleArenaStatus = function(data) {
       }
     }
 
-    if (stationStatus.Estop) {
+    if (stationStatus.EStop) {
       teamBypassElement.attr("data-status-ok", false);
       teamBypassElement.text("ES");
+    } else if (stationStatus.AStop) {
+      teamBypassElement.attr("data-status-ok", true);
+      teamBypassElement.text("AS");
     } else if (stationStatus.Bypass) {
       teamBypassElement.attr("data-status-ok", false);
       teamBypassElement.text("BYP");
     } else {
       teamBypassElement.attr("data-status-ok", true);
-      teamBypassElement.text("ES");
+      teamBypassElement.text("");
     }
   });
 };

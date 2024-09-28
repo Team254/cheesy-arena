@@ -6,23 +6,23 @@
 */}}
 {{define "title"}}Awards Configuration{{end}}
 {{define "body"}}
-<div class="row">
-  <div class="col-lg-8 col-lg-offset-2">
-    <div class="well">
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card card-body bg-body-tertiary">
       <legend>Awards Configuration</legend>
       {{range $award := .Awards}}
-        <form class="form-horizontal existing" method="POST">
-          <div class="form-group">
+        <form class="mt-2" method="POST">
+          <div class="row mb-3">
             <div class="col-lg-8">
               <input type="hidden" name="id" value="{{$award.Id}}" />
-              <div class="form-group">
+              <div class="row mb-2">
                 <label class="col-sm-5 control-label">Award Name</label>
                 <div class="col-sm-7">
                   <input type="text" class="form-control" name="awardName" value="{{$award.AwardName}}"
                       placeholder="Safety Award">
                 </div>
               </div>
-              <div class="form-group">
+              <div class="row mb-2">
                 <label class="col-sm-5 control-label">Team Awarded</label>
                 <div class="col-sm-7">
                   <select class="form-control" name="teamId">
@@ -35,7 +35,7 @@
                   </select>
                 </div>
               </div>
-              <div class="form-group">
+              <div class="row mb-2">
                 <label class="col-sm-5 control-label">Person Awarded</label>
                 <div class="col-sm-7">
                   <input type="text" class="form-control" name="personName" value="{{$award.PersonName}}">
@@ -43,9 +43,9 @@
               </div>
             </div>
             <div class="col-lg-4">
-              <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
+              <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="save">Save</button>
               {{if gt $award.Id 0}}
-                <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="delete">
+                <button type="submit" class="btn btn-danger btn-lower-third" name="action" value="delete">
                   Delete
                 </button>
               {{end}}

@@ -32,10 +32,12 @@ const (
 	AudienceDisplay
 	BracketDisplay
 	FieldMonitorDisplay
+	LogoDisplay
 	QueueingDisplay
 	RankingsDisplay
 	TwitchStreamDisplay
 	WallDisplay
+	WebpageDisplay
 )
 
 var DisplayTypeNames = map[DisplayType]string{
@@ -45,10 +47,12 @@ var DisplayTypeNames = map[DisplayType]string{
 	AudienceDisplay:        "Audience",
 	BracketDisplay:         "Bracket",
 	FieldMonitorDisplay:    "Field Monitor",
+	LogoDisplay:            "Logo",
 	QueueingDisplay:        "Queueing",
 	RankingsDisplay:        "Rankings",
 	TwitchStreamDisplay:    "Twitch Stream",
 	WallDisplay:            "Wall",
+	WebpageDisplay:         "Web Page",
 }
 
 var displayTypePaths = map[DisplayType]string{
@@ -58,10 +62,12 @@ var displayTypePaths = map[DisplayType]string{
 	AudienceDisplay:        "/displays/audience",
 	BracketDisplay:         "/displays/bracket",
 	FieldMonitorDisplay:    "/displays/field_monitor",
+	LogoDisplay:            "/displays/logo",
 	QueueingDisplay:        "/displays/queueing",
 	RankingsDisplay:        "/displays/rankings",
 	TwitchStreamDisplay:    "/displays/twitch",
 	WallDisplay:            "/displays/wall",
+	WebpageDisplay:         "/displays/webpage",
 }
 
 var displayRegistryMutex sync.Mutex

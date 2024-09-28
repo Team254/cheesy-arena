@@ -1,0 +1,42 @@
+{{/*
+  Copyright 2024 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  UI for configuring scheduled breaks.
+*/}}
+{{define "title"}}Breaks Configuration{{end}}
+{{define "body"}}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card card-body bg-body-tertiary">
+      <legend>Scheduled Break Configuration</legend>
+      {{if not .ScheduledBreaks}}
+        <p>
+          Playoff breaks won't appear here until alliance selection is complete and the playoff tournament is created.
+        </p>
+      {{end}}
+      {{range $i, $scheduledBreak := .ScheduledBreaks}}
+        <form method="POST">
+          <h5>Break #{{add $i 1}}</h5>
+          <input type="hidden" name="id" value="{{$scheduledBreak.Id}}" />
+          <div class="row mb-3">
+            <div class="col-lg-3">
+              <label class="control-label">Description</label>
+            </div>
+            <div class="col-lg-6">
+              <input type="text" class="form-control" name="description" value="{{$scheduledBreak.Description}}">
+            </div>
+            <div class="col-lg-3">
+              <button type="submit" class="btn btn-primary btn-lower-third mb-1" name="action" value="save">
+                Save
+              </button>
+            </div>
+          </div>
+        </form>
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+{{end}}

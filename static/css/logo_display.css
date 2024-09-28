@@ -1,0 +1,31 @@
+/*
+  Copyright 2024 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+*/
+
+html {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  overflow: hidden;
+  height: 100%;
+}
+body {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  font-family: "FuturaLTBold";
+  color: #fff;
+}
+#logo #logoImg {
+  height: 35vw;
+}
+#message {
+  margin-top: 5vw;
+  font-size: 3.5vw;
+  line-height: 4.5vw;
+  text-align: center;
+}

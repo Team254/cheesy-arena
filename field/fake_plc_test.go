@@ -10,18 +10,30 @@ import (
 )
 
 type FakePlc struct {
-	isEnabled             bool
-	fieldEstop            bool
-	redEstops             [3]bool
-	blueEstops            [3]bool
-	redEthernetConnected  [3]bool
-	blueEthernetConnected [3]bool
-	stackLights           [4]bool
-	stackLightBuzzer      bool
-	fieldResetLight       bool
-	cycleState            bool
-	chargeStationsLevel   [2]bool
-	chargeStationLights   [2]bool
+	isEnabled                bool
+	fieldEStop               bool
+	redEStops                [3]bool
+	blueEStops               [3]bool
+	redAStops                [3]bool
+	blueAStops               [3]bool
+	redEthernetConnected     [3]bool
+	blueEthernetConnected    [3]bool
+	stackLights              [4]bool
+	stackLightBuzzer         bool
+	fieldResetLight          bool
+	cycleState               bool
+	redAmpButtons            [2]bool
+	blueAmpButtons           [2]bool
+	redNoteCounts            [2]int
+	blueNoteCounts           [2]int
+	speakerMotors            bool
+	redSpeakerLight          bool
+	blueSpeakerLight         bool
+	redSubwooferCountdown    bool
+	blueSubwooferCountdown   bool
+	redAmpLights             [3]bool
+	blueAmpLights            [3]bool
+	postMatchSubwooferLights bool
 }
 
 func (plc *FakePlc) SetAddress(address string) {
@@ -46,12 +58,16 @@ func (plc *FakePlc) GetArmorBlockStatuses() map[string]bool {
 	return map[string]bool{}
 }
 
-func (plc *FakePlc) GetFieldEstop() bool {
-	return plc.fieldEstop
+func (plc *FakePlc) GetFieldEStop() bool {
+	return plc.fieldEStop
 }
 
-func (plc *FakePlc) GetTeamEstops() ([3]bool, [3]bool) {
-	return plc.redEstops, plc.blueEstops
+func (plc *FakePlc) GetTeamEStops() ([3]bool, [3]bool) {
+	return plc.redEStops, plc.blueEStops
+}
+
+func (plc *FakePlc) GetTeamAStops() ([3]bool, [3]bool) {
+	return plc.redAStops, plc.blueAStops
 }
 
 func (plc *FakePlc) GetEthernetConnected() ([3]bool, [3]bool) {
@@ -92,11 +108,37 @@ func (plc *FakePlc) GetCoilNames() []string {
 	return []string{}
 }
 
-func (plc *FakePlc) GetChargeStationsLevel() (bool, bool) {
-	return plc.chargeStationsLevel[0], plc.chargeStationsLevel[1]
+func (plc *FakePlc) GetAmpButtons() (bool, bool, bool, bool) {
+	return plc.redAmpButtons[0], plc.redAmpButtons[1], plc.blueAmpButtons[0], plc.blueAmpButtons[1]
 }
 
-func (plc *FakePlc) SetChargeStationLights(redState, blueState bool) {
-	plc.chargeStationLights[0] = redState
-	plc.chargeStationLights[1] = blueState
+func (plc *FakePlc) GetAmpSpeakerNoteCounts() (int, int, int, int) {
+	return plc.redNoteCounts[0], plc.redNoteCounts[1], plc.blueNoteCounts[0], plc.blueNoteCounts[1]
+}
+
+func (plc *FakePlc) SetSpeakerMotors(state bool) {
+	plc.speakerMotors = state
+}
+
+func (plc *FakePlc) SetSpeakerLights(redState, blueState bool) {
+	plc.redSpeakerLight = redState
+	plc.blueSpeakerLight = blueState
+}
+
+func (plc *FakePlc) SetSubwooferCountdown(redState, blueState bool) {
+	plc.redSubwooferCountdown = redState
+	plc.blueSubwooferCountdown = blueState
+}
+
+func (plc *FakePlc) SetAmpLights(redLow, redHigh, redCoop, blueLow, blueHigh, blueCoop bool) {
+	plc.redAmpLights[0] = redLow
+	plc.redAmpLights[1] = redHigh
+	plc.redAmpLights[2] = redCoop
+	plc.blueAmpLights[0] = blueLow
+	plc.blueAmpLights[1] = blueHigh
+	plc.blueAmpLights[2] = blueCoop
+}
+
+func (plc *FakePlc) SetPostMatchSubwooferLights(state bool) {
+	plc.postMatchSubwooferLights = state
 }

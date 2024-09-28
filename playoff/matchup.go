@@ -179,6 +179,11 @@ func (matchup *Matchup) IsComplete() bool {
 	return matchup.WinningAllianceId() > 0
 }
 
+// IsLosingAllianceEliminated returns true if the losing alliance is eliminated from the tournament.
+func (matchup *Matchup) IsLosingAllianceEliminated() bool {
+	return matchup.losingAllianceDestination == nil
+}
+
 // isFinal returns true if the matchup represents the final matchup in the playoff tournament.
 func (matchup *Matchup) isFinal() bool {
 	return matchup.id == "F"

@@ -10,6 +10,7 @@
     <title>Audience Display - {{.EventSettings.Name}} - Cheesy Arena </title>
     <link rel="shortcut icon" href="/static/img/favicon.ico">
     <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/lib/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
     <link rel="stylesheet" href="/static/css/audience_display.css" />
   </head>
@@ -31,29 +32,55 @@
                 <img class="avatar" id="leftTeam3Avatar" src="" />
               </div>
               <div class="score-fields">
-                <div class="score-links">
+                <div class="score-notes">
                   <div>
-                    <span id="leftLinkNumerator"></span>
-                    <span class="link-splitter">/</span>
-                    <span id="leftLinkDenominator"></span>
+                    <span id="leftNoteNumerator"></span>
+                    <span class="note-splitter">/</span>
+                    <span id="leftNoteDenominator"></span>
                   </div>
-                  <img class="link-icon" src="/static/img/link.svg" />
+                  <i class="bi-music-note-beamed"></i>
                 </div>
-                <div class="score-grid" id="leftGrid"></div>
+                <div class="score-lights" id="leftLights">
+                  <svg width="45" height="100">
+                    <rect class="amp-light amp-high" x="17" y="30" width="28" height="18" fill="white" />
+                    <rect class="amp-light amp-low" x="17" y="55" width="28" height="18" fill="white" />
+                    <rect class="amp-light amp-coop" x="0" y="30" width="10" height="43" fill="white" />
+                  </svg>
+                </div>
+                <div class="score-amplified" id="leftAmplified">
+                  <svg width="70" height="100" id="progress">
+                    <circle cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
+                      stroke-dasharray="158 158" stroke-dashoffset="5" transform="rotate(90, 35, 50)"/>
+                    <text class="progress-time" x="35.5" y="61" font-size="30" text-anchor="middle" fill="white"></text>
+                  </svg>
+                </div>
               </div>
               <div class="score-number" id="leftScoreNumber"></div>
             </div>
             <div class="score score-right reversible-right">
               <div class="score-number" id="rightScoreNumber"></div>
               <div class="score-fields">
-                <div class="score-grid" id="rightGrid"></div>
-                <div class="score-links">
+                <div class="score-amplified" id="rightAmplified">
+                  <svg width="70" height="100" id="progress">
+                    <circle cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
+                      stroke-dasharray="158 158" stroke-dashoffset="-5" transform="rotate(90, 35, 50)"/>
+                    <text class="progress-time" x="35.5" y="61" font-size="30" text-anchor="middle" fill="white"></text>
+                  </svg>
+                </div>
+                <div class="score-lights" id="rightLights">
+                  <svg width="45" height="100">
+                    <rect class="amp-light amp-high" x="0" y="30" width="28" height="18" fill="white" />
+                    <rect class="amp-light amp-low" x="0" y="55" width="28" height="18" fill="white" />
+                    <rect class="amp-light amp-coop" x="35" y="30" width="10" height="43" fill="white" />
+                  </svg>
+                </div>
+                <div class="score-notes">
                   <div>
-                    <span id="rightLinkNumerator"></span>
-                    <span class="link-splitter">/</span>
-                    <span id="rightLinkDenominator"></span>
+                    <span id="rightNoteNumerator"></span>
+                    <span class="note-splitter">/</span>
+                    <span id="rightNoteDenominator"></span>
                   </div>
-                  <img class="link-icon" src="/static/img/link.svg" />
+                  <i class="bi-music-note-beamed"></i>
                 </div>
               </div>
               <div class="avatars">
@@ -114,7 +141,10 @@
                   <div class="final-team-row">
                     <img class="final-team-avatar" id="leftFinalTeam{{$i}}Avatar" src="" />
                     <div class="final-team-number" id="leftFinalTeam{{$i}}"></div>
-                    <div class="final-team-rank">
+                    <div class="final-team-card">
+                      <div id="leftFinalTeam{{$i}}Card"></div>
+                    </div>
+                    <div class="final-team-rank playoff-hidden-field">
                       <img id="leftFinalTeam{{$i}}RankIndicator" src="" />
                       <div id="leftFinalTeam{{$i}}RankNumber"></div>
                     </div>
@@ -126,14 +156,14 @@
               </div>
             </div>
             <div class="final-breakdown" id="leftFinalBreakdown">
-              <div id="leftFinalMobilityPoints"></div>
-              <div id="leftFinalGridPoints"></div>
-              <div id="leftFinalChargeStationPoints"></div>
-              <div id="leftFinalParkPoints"></div>
+              <div id="leftFinalLeavePoints"></div>
+              <div id="leftFinalSpeakerPoints"></div>
+              <div id="leftFinalAmpPoints"></div>
+              <div id="leftFinalStagePoints"></div>
               <div id="leftFinalFoulPoints"></div>
               <div class="playoff-hidden-field">
-                <div id="leftFinalSustainabilityBonusRankingPoint"></div>
-                <div id="leftFinalActivationBonusRankingPoint"></div>
+                <div id="leftFinalMelodyBonusRankingPoint"></div>
+                <div id="leftFinalEnsembleBonusRankingPoint"></div>
                 <div id="leftFinalRankingPoints"></div>
               </div>
               <div class="playoff-only-field">
@@ -142,14 +172,14 @@
               </div>
             </div>
             <div class="final-breakdown" id="centerFinalBreakdown">
-              <div>Mobility</div>
-              <div>Grid</div>
-              <div>Charge Station</div>
-              <div>Park</div>
+              <div>Leave</div>
+              <div>Speaker</div>
+              <div>Amp</div>
+              <div>Stage</div>
               <div>Foul</div>
               <div class="playoff-hidden-field">
-                <div>Sustainability Bonus</div>
-                <div>Activation Bonus</div>
+                <div>Melody Bonus</div>
+                <div>Ensemble Bonus</div>
                 <div>Ranking Points</div>
               </div>
               <div class="playoff-only-field">
@@ -158,14 +188,14 @@
               </div>
             </div>
             <div class="final-breakdown" id="rightFinalBreakdown">
-              <div id="rightFinalMobilityPoints"></div>
-              <div id="rightFinalGridPoints"></div>
-              <div id="rightFinalChargeStationPoints"></div>
-              <div id="rightFinalParkPoints"></div>
+              <div id="rightFinalLeavePoints"></div>
+              <div id="rightFinalSpeakerPoints"></div>
+              <div id="rightFinalAmpPoints"></div>
+              <div id="rightFinalStagePoints"></div>
               <div id="rightFinalFoulPoints"></div>
               <div class="playoff-hidden-field">
-                <div id="rightFinalSustainabilityBonusRankingPoint"></div>
-                <div id="rightFinalActivationBonusRankingPoint"></div>
+                <div id="rightFinalMelodyBonusRankingPoint"></div>
+                <div id="rightFinalEnsembleBonusRankingPoint"></div>
                 <div id="rightFinalRankingPoints"></div>
               </div>
               <div class="playoff-only-field">
@@ -180,7 +210,10 @@
                   <div class="final-team-row">
                     <img class="final-team-avatar" id="rightFinalTeam{{$i}}Avatar" src="" />
                     <div class="final-team-number" id="rightFinalTeam{{$i}}"></div>
-                    <div class="final-team-rank">
+                    <div class="final-team-card">
+                      <div id="rightFinalTeam{{$i}}Card"></div>
+                    </div>
+                    <div class="final-team-rank playoff-hidden-field">
                       <img id="rightFinalTeam{{$i}}RankIndicator" src="" />
                       <div id="rightFinalTeam{{$i}}RankNumber"></div>
                     </div>
@@ -201,13 +234,16 @@
       <div id="bracket">
         <img id="bracketSvg" src="" />
       </div>
-      <div id="sponsor" class="carousel slide">
+      <div id="sponsor" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner" id="sponsorContainer">
         </div>
       </div>
     </div>
     <div id="allianceSelectionCentering" style="display: none;">
       <div id="allianceSelection"></div>
+    </div>
+    <div id="allianceRankingsCentering" {{if .SelectionShowUnpickedTeams}}class="enabled"{{end}} style="display: none;">
+      <div id="allianceRankings"></div>
     </div>
     <div id="lowerThird">
       <img id="lowerThirdLogo" src="/static/img/lower-third-logo.png" alt="logo" />
@@ -230,10 +266,13 @@
             {{"{{/each}}"}}
           </tr>
         {{"{{/each}}"}}
+        <tr>
+          <td id="allianceSelectionTimer" colspan="{{"{{numColumns}}"}}"></td>
+        </tr>
       </table>
     </script>
     <script id="sponsorImageTemplate" type="text/x-handlebars-template">
-      <div class="item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-interval="{{"{{DisplayTimeMs}}"}}">
+      <div class="carousel-item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-bs-interval="{{"{{DisplayTimeMs}}"}}">
         <div class="sponsor-image-container">
           <img src="/static/img/sponsors/{{"{{Image}}"}}" />
         </div>
@@ -241,7 +280,7 @@
       </div>
     </script>
     <script id="sponsorTextTemplate" type="text/x-handlebars-template">
-      <div class="item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-interval="{{"{{DisplayTimeMs}}"}}">
+      <div class="carousel-item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-bs-interval="{{"{{DisplayTimeMs}}"}}">
         <h2>{{"{{Line1}}"}}<br />{{"{{Line2}}"}}</h2>
         <h1>{{"{{Subtitle}}"}}</h1>
       </div>
@@ -255,7 +294,7 @@
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
     <script src="/static/js/lib/jquery.transit.min.js"></script>
     <script src="/static/js/lib/handlebars-1.3.0.js"></script>
-    <script src="/static/js/lib/bootstrap.min.js"></script>
+    <script src="/static/js/lib/bootstrap.bundle.min.js"></script>
     <script src="/static/js/cheesy-websocket.js"></script>
     <script src="/static/js/match_timing.js"></script>
     <script src="/static/js/audience_display.js"></script>

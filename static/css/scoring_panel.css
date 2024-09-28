@@ -16,6 +16,7 @@ body {
 .container {
   padding-top: 1vw;
   width: 100%;
+  max-width: none;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -38,6 +39,7 @@ body {
   background-color: #223;
 }
 #matchName {
+  margin-bottom: 0.5vw;
   font-size: 2vw;
 }
 .scoring-section {
@@ -73,86 +75,6 @@ body {
 .boolean[data-value="true"] {
   background-color: #263;
 }
-.endgame-status[data-value="0"] {
-  background-color: #333;
-}
-.endgame-status[data-value="1"] {
-  background-color: #652;
-}
-.endgame-status[data-value="2"] {
-  background-color: #263;
-}
-.charge-station-level[data-value="false"] {
-  background-color: #622;
-}
-.charge-station-level[data-value="true"] {
-  background-color: #263;
-}
-#grid {
-  width: 100%;
-  margin-top: 1.5vw;
-  margin-bottom: 1.5vw;
-  display: flex;
-  flex-direction: column;
-}
-.grid-row {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-.grid-node {
-  width: 10vw;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border: 1px solid #ccc;
-  padding: 0.5vw;
-  margin-top: -1px;
-  margin-left: -1px;
-}
-.grid-node[data-node="2"], .grid-node[data-node="5"] {
-  margin-right: 1vw;
-}
-.grid-node-auto {
-  width: 4vw;
-  height: 2vw;
-  margin-bottom: 0.5vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 0.5vw;
-  background-color: #333;
-  color: #ccc;
-}
-.grid-node-auto[data-value="true"] {
-  background-color: #263;
-}
-.grid-node-states {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-}
-.grid-node-button {
-  width: 4vw;
-  height: 4vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0.4;
-}
-.grid-node-button[data-value="true"] {
-  border: 2px solid #aaa;
-  border-radius: 0.5vw;
-  opacity: 1;
-}
-.grid-node-button img {
-  width: 90%;
-}
-#chargeStation {
-  width: 70vw;
-  justify-content: space-between;
-  align-items: center;
-}
 #postMatchMessage {
   height: 5vw;
   display: none;
@@ -167,4 +89,56 @@ body {
 }
 #commitMatchScore>button {
   font-size: 1vw;
+}
+#stage {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#stageGraphic {
+  margin-top: 9vw;
+  height: 30vw;
+  color: #999;
+}
+.stage-side {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 16vw;
+  height: 8vw;
+  border: 0.5px solid #111;
+}
+.stage-side-col {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100%;
+}
+.stage-side-col div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  font-size: 1.5vw;
+  background-color: #333;
+  border: 0.5px solid #111;
+}
+#stageLeft {
+  top: 20vw;
+  left: -8.5vw;
+}
+#centerStage {
+  top: 0.5vw;
+  left: 9.3vw;
+}
+#stageRight {
+  top: 20vw;
+  left: 25.9vw;
+}
+#park {
+  top: 13vw;
+  left: 12.2vw;
+  width: 9vw;
 }

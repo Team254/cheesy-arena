@@ -76,12 +76,12 @@ func (matchResult *MatchResult) BlueScoreSummary() *game.ScoreSummary {
 func (matchResult *MatchResult) CorrectPlayoffScore() {
 	matchResult.RedScore.PlayoffDq = false
 	for _, card := range matchResult.RedCards {
-		if card == "red" {
+		if card == "red" || card == "dq" {
 			matchResult.RedScore.PlayoffDq = true
 		}
 	}
 	for _, card := range matchResult.BlueCards {
-		if card == "red" {
+		if card == "red" || card == "dq" {
 			matchResult.BlueScore.PlayoffDq = true
 		}
 	}

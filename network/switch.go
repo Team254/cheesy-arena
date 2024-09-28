@@ -38,6 +38,7 @@ type Switch struct {
 	mutex                 sync.Mutex
 	configBackoffDuration time.Duration
 	configPauseDuration   time.Duration
+	Status                string
 }
 
 var ServerIpAddress = "10.0.100.5" // The DS will try to connect to this address only.
@@ -49,6 +50,7 @@ func NewSwitch(address, password string) *Switch {
 		password:              password,
 		configBackoffDuration: switchConfigBackoffDurationSec * time.Second,
 		configPauseDuration:   switchConfigPauseDurationSec * time.Second,
+		Status:                "UNKNOWN",
 	}
 }
 
@@ -57,6 +59,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	// Make sure multiple configurations aren't being set at the same time.
 	sw.mutex.Lock()
 	defer sw.mutex.Unlock()
+	sw.Status = "CONFIGURING"
 
 	// Remove old team VLANs to reset the switch state.
 	removeTeamVlansCommand := ""
@@ -67,6 +70,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	}
 	_, err := sw.runConfigCommand(removeTeamVlansCommand)
 	if err != nil {
+		sw.Status = "ERROR"
 		return err
 	}
 	time.Sleep(sw.configPauseDuration)
@@ -79,7 +83,8 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 		}
 		teamPartialIp := fmt.Sprintf("%d.%d", team.Id/100, team.Id%100)
 		addTeamVlansCommand += fmt.Sprintf(
-			"ip dhcp excluded-address 10.%s.1 10.%s.100\n"+
+			"ip dhcp excluded-address 10.%s.1 10.%s.19\n"+
+				"ip dhcp excluded-address 10.%s.200 10.%s.254\n"+
 				"ip dhcp pool dhcp%d\n"+
 				"network 10.%s.0 255.255.255.0\n"+
 				"default-router 10.%s.%d\n"+
@@ -87,6 +92,8 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 				"access-list 1%d permit ip 10.%s.0 0.0.0.255 host %s\n"+
 				"access-list 1%d permit udp any eq bootpc any eq bootps\n"+
 				"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
+			teamPartialIp,
+			teamPartialIp,
 			teamPartialIp,
 			teamPartialIp,
 			vlan,
@@ -111,6 +118,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	if len(addTeamVlansCommand) > 0 {
 		_, err = sw.runConfigCommand(addTeamVlansCommand)
 		if err != nil {
+			sw.Status = "ERROR"
 			return err
 		}
 	}
@@ -118,6 +126,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	// Give some time for the configuration to take before another one can be attempted.
 	time.Sleep(sw.configBackoffDuration)
 
+	sw.Status = "ACTIVE"
 	return nil
 }
 

@@ -44,8 +44,7 @@ var handleMatchLoad = function(data) {
 
       var ranking = data.Rankings[team.Id];
       if (ranking && data.Match.Type === matchTypeQualification) {
-        var rankingText = ranking.Rank;
-        $("#teamRank").attr("data-alliance-bg", station[0]).text(rankingText);
+        $("#teamRank").attr("data-alliance-bg", station[0]).text(ranking);
       } else {
         $("#teamRank").attr("data-alliance-bg", station[0]).text("");
       }
@@ -122,10 +121,10 @@ var handleMatchTime = function(data) {
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
   $("#redScore").text(
-    data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints
+    data.Red.ScoreSummary.Score - data.Red.ScoreSummary.StagePoints
   );
   $("#blueScore").text(
-    data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints
+    data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.StagePoints
   );
 };
 

@@ -15,7 +15,6 @@ import (
 
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/gorilla/mux"
 )
 
 type MatchLogsListItem struct {
@@ -40,6 +39,7 @@ type MatchLogRow struct {
 	Auto              bool
 	Enabled           bool
 	EmergencyStop     bool
+	AutonomousStop    bool
 	BatteryVoltage    float64
 	MissedPacketCount int
 	DsRobotTripTimeMs int
@@ -49,6 +49,7 @@ type MatchLogRow struct {
 }
 
 type MatchLog struct {
+	Filename  string
 	StartTime string
 	Rows      []MatchLogRow
 }
@@ -112,7 +113,7 @@ func (web *Web) matchLogsViewGetHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	template, err := web.parseFiles("templates/view_match_log.html")
+	template, err := web.parseFiles("templates/view_match_log.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -126,18 +127,17 @@ func (web *Web) matchLogsViewGetHandler(w http.ResponseWriter, r *http.Request) 
 		MatchLogs  *MatchLogs
 		FirstMatch string
 	}{web.arena.EventSettings, match, matchLogs, firstMatch}
-	err = template.ExecuteTemplate(w, "view_match_log.html", data)
+	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 }
 
-// Load the match result for the match referenced in the HTTP query string.
+// Load the match logs for the match referenced in the HTTP query string.
 func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLogs, bool, error) {
-	vars := mux.Vars(r)
-	matchId, _ := strconv.Atoi(vars["matchId"])
-	stationId := vars["stationId"]
+	matchId, _ := strconv.Atoi(r.PathValue("matchId"))
+	stationId := r.PathValue("stationId")
 	match, err := web.arena.Database.GetMatchById(matchId)
 
 	logs := MatchLogs{
@@ -176,8 +176,8 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 		return match, &logs, false, nil
 	}
 
-	for _, v := range files {
-		f, _ := os.Open(v)
+	for _, filename := range files {
+		f, _ := os.Open(filename)
 		defer f.Close()
 		// Create a new reader.
 		reader := csv.NewReader(f)
@@ -192,7 +192,8 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 		records, _ := reader.ReadAll()
 
 		var curlog = MatchLog{
-			StartTime: v[12:26],
+			Filename:  filename,
+			StartTime: filename[12:26],
 			Rows:      make([]MatchLogRow, len(records)),
 		}
 		for i, record := range records {
@@ -208,6 +209,7 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 			curRow.Auto, _ = strconv.ParseBool(record[headerMap["auto"]])
 			curRow.Enabled, _ = strconv.ParseBool(record[headerMap["enabled"]])
 			curRow.EmergencyStop, _ = strconv.ParseBool(record[headerMap["emergencyStop"]])
+			curRow.AutonomousStop, _ = strconv.ParseBool(record[headerMap["autonomousStop"]])
 			curRow.BatteryVoltage, _ = strconv.ParseFloat(record[headerMap["batteryVoltage"]], 64)
 			curRow.MissedPacketCount, _ = strconv.Atoi(record[headerMap["missedPacketCount"]])
 			curRow.DsRobotTripTimeMs, _ = strconv.Atoi(record[headerMap["dsRobotTripTimeMs"]])
@@ -251,13 +253,13 @@ func (web *Web) buildMatchLogsList(matchType model.MatchType) ([]MatchLogsListIt
 		}
 		switch match.Status {
 		case game.RedWonMatch:
-			matchLogsList[i].ColorClass = "danger"
+			matchLogsList[i].ColorClass = "red"
 			matchLogsList[i].IsComplete = true
 		case game.BlueWonMatch:
-			matchLogsList[i].ColorClass = "info"
+			matchLogsList[i].ColorClass = "blue"
 			matchLogsList[i].IsComplete = true
 		case game.TieMatch:
-			matchLogsList[i].ColorClass = "warning"
+			matchLogsList[i].ColorClass = "yellow"
 			matchLogsList[i].IsComplete = true
 		default:
 			matchLogsList[i].ColorClass = ""

@@ -6,46 +6,46 @@
 */}}
 {{define "title"}}Sponsor Slides Configuration{{end}}
 {{define "body"}}
-<div class="row">
-  <div class="col-lg-8 col-lg-offset-2">
-    <div class="well">
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card card-body bg-body-tertiary">
       <legend>Sponsor Slides Configuration</legend>
       <p>Place images in /static/img/sponsors/</p>
       {{range $i, $sponsorSlide := .SponsorSlides}}
         <form class="form-horizontal existing" action="/setup/sponsor_slides" method="POST">
-          <div class="form-group">
+          <div class="row mb-3">
             <div class="col-lg-7">
               <input type="hidden" name="id" value="{{$sponsorSlide.Id}}" />
-                <div class="form-group imagetoggle">
-                  <label for="image" class="col-sm-5 control-label">Image File Name</label>
+                <div class="row mb-1 imagetoggle">
+                  <label class="col-sm-5 control-label">Image File Name</label>
                   <div class="col-sm-7">
                     <input type="text" class="form-control" name="image" placeholder="image.svg"
                         value="{{$sponsorSlide.Image}}">
                   </div>
                 </div>
-                <div class="form-group hidden imagetoggle">
-                  <label for="line1" class="col-sm-5 control-label">Line 1 Text</label>
+                <div class="row mb-1 d-none imagetoggle">
+                  <label class="col-sm-5 control-label">Line 1 Text</label>
                   <div class="col-sm-7">
                     <input type="text" class="form-control" value="{{$sponsorSlide.Line1}}" name="line1"
                         placeholder="Chezy">
                   </div>
                 </div>
-                <div class="form-group hidden imagetoggle">
-                  <label for="line2" class="col-sm-5 control-label">Line 2 Text</label>
+                <div class="row mb-1 d-none imagetoggle">
+                  <label class="col-sm-5 control-label">Line 2 Text</label>
                   <div class="col-sm-7">
                     <input type="text" class="form-control" value="{{$sponsorSlide.Line2}}" name="line2"
                         placeholder="Industries">
                   </div>
                 </div>
-              <div class="form-group">
-                <label for="subtitle" class="col-sm-5 control-label">Subtitle Text</label>
+              <div class="row mb-1">
+                <label class="col-sm-5 control-label">Subtitle Text</label>
                 <div class="col-sm-7">
                   <input type="text" class="form-control" name="subtitle" value="{{$sponsorSlide.Subtitle}}"
                       placeholder="Gold Sponsor">
                 </div>
               </div>
-              <div class="form-group">
-                <label for="displayTimeSec" class="col-sm-5 control-label">Display Time (s)</label>
+              <div class="row mb-1">
+                <label class="col-sm-5 control-label">Display Time (s)</label>
                 <div class="col-sm-7">
                   <input type="number" class="form-control" name="displayTimeSec"
                       value="{{$sponsorSlide.DisplayTimeSec}}" placeholder="10">
@@ -53,21 +53,21 @@
               </div>
             </div>
             <div class="col-lg-5">
-              <button type="submit" class="btn btn-info btn-lower-third" name="action" value="save">Save</button>
+              <button type="submit" class="btn btn-primary btn-lower-third mb-1" name="action" value="save">Save</button>
               {{if lt $i (add (len $.SponsorSlides) -1) }}
-                <button type="submit" class="btn btn-info" name="action" value="reorderUp">
-                  <i class="glyphicon glyphicon-arrow-up"></i>
+                <button type="submit" class="btn btn-primary mb-1" name="action" value="reorderUp">
+                  <i class="bi-arrow-up"></i>
                 </button>
                 <br />
-                <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="delete">
+                <button type="submit" class="btn btn-danger btn-lower-third mb-1" name="action" value="delete">
                   Delete
                 </button>
-                <button type="submit" class="btn btn-info" name="action" value="reorderDown">
-                  <i class="glyphicon glyphicon-arrow-down"></i>
+                <button type="submit" class="btn btn-primary mb-1" name="action" value="reorderDown">
+                  <i class="bi-arrow-down"></i>
                 </button>
               {{end}}
               <br />
-              <button class="btn btn-warning" name="toggleImage">Toggle Image/Text</button>
+              <button class="btn btn-secondary" name="toggleImage">Toggle Image/Text</button>
             </div>
           </div>
         </form>
@@ -83,12 +83,12 @@
     $("form.existing").each(function(index) {
       if (!$(this).find("input[name=image]").val().length && ($(this).find("input[name=line2]").val().length
           || $(this).find("input[name=line1]").val().length)) {
-        $(this).find(".imagetoggle").toggleClass("hidden");
+        $(this).find(".imagetoggle").toggleClass("d-none");
       }
     });
     $("button[name=toggleImage]").click(function(event) {
       event.preventDefault();
-      $(this).parents("form").find(".imagetoggle").toggleClass("hidden");
+      $(this).parents("form").find(".imagetoggle").toggleClass("d-none");
       $(this).parents("form").find(".imagetoggle input").val("");
     });
   });

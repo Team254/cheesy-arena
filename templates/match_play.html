@@ -9,34 +9,35 @@
 <div class="row">
   <div class="col-lg-4" id="matchListColumn"></div>
   <div class="col-lg-8">
-    <div class="row text-center">
-      <div id="matchName" class="col-lg-3 well well-sm text-center" style="text-transform: uppercase;">&nbsp;</div>
-      <div id="matchState" class="col-lg-3 well well-sm text-center">&nbsp;</div>
-      <div id="matchTime" class="col-lg-2 well well-sm text-center">&nbsp;</div>
-      <div id="redScore" class="col-lg-2 well well-sm well-red text-center">&nbsp;</div>
-      <div id="blueScore" class="col-lg-2 well well-sm well-blue text-center">&nbsp;</div>
+    <div class="row text-center mb-2">
+      <div id="matchName" class="col-lg-3 card card-body bg-body-tertiary"
+        style="text-transform: uppercase;">&nbsp;</div>
+      <div id="matchState" class="col-lg-3 card card-body bg-body-tertiary">&nbsp;</div>
+      <div id="matchTime" class="col-lg-2 card card-body bg-body-tertiary">&nbsp;</div>
+      <div id="redScore" class="col-lg-2 card card-body bg-red">&nbsp;</div>
+      <div id="blueScore" class="col-lg-2 card card-body bg-blue">&nbsp;</div>
     </div>
     <div class="row text-center">
-      <div class="col-lg-6 well well-darkblue status-well">
-        <div class="row form-group">
+      <div class="col-lg-6 card card-body bg-blue mb-2">
+        <div class="row mb-3">
           <div class="col-lg-4">Blue Teams</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station Status">DS</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Radio Status">Rad</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Robot Status">Rbt</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
+          <div class="col-lg-2" data-bs-toggle="tooltip" title="Driver Station Status">DS</div>
+          <div class="col-lg-2" data-bs-toggle="tooltip" title="Radio Status">Rad</div>
+          <div class="col-lg-2" data-bs-toggle="tooltip" title="Robot Status">Rbt</div>
+          <div class="col-lg-2" data-bs-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
         {{template "matchPlayTeam" dict "color" "B" "position" 1}}
         {{template "matchPlayTeam" dict "color" "B" "position" 2}}
         {{template "matchPlayTeam" dict "color" "B" "position" 3}}
         <div id="playoffBlueAllianceInfo"></div>
       </div>
-      <div class="col-lg-6 well well-darkred status-well">
-        <div class="row form-group">
+      <div class="col-lg-6 card card-body bg-red mb-2">
+        <div class="row mb-3">
           <div class="col-lg-4">Red Teams</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Driver Station Status">DS</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Radio Status">Rad</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Robot Status">Rbt</div>
-          <div class="col-lg-2" data-toggle="tooltip" title="Bypass/Disable">Byp</div>
+          <div class="col-lg-2" data-bs-toggle="tooltip" title="Driver Station Status">DS</div>
+          <div class="col-lg-2" data-bs-toggle="tooltip" title="Radio Status">Rad</div>
+          <div class="col-lg-2" data-bs-toggle="tooltip" title="Robot Status">Rbt</div>
+          <div class="col-lg-2" data-bs-toggle="tooltip" title="Bypass/Disable">Byp</div>
         </div>
         {{template "matchPlayTeam" dict "color" "R" "position" 3}}
         {{template "matchPlayTeam" dict "color" "R" "position" 2}}
@@ -44,164 +45,180 @@
         <div id="playoffRedAllianceInfo"></div>
       </div>
     </div>
-    <div class="row text-center">
-      <button type="button" id="startMatch" class="btn btn-success btn-lg btn-match-play"
-          onclick="startMatch();" disabled>
+    <div class="row justify-content-center mt-1">
+      <button type="button" id="showOverlay" class="btn btn-info btn-match-play ms-1"
+        onclick="showOverlay();" disabled>
+        Show Overlay
+      </button>
+      <button type="button" id="startMatch" class="btn btn-success btn-match-play ms-1"
+        onclick="startMatch();" disabled>
         Start Match
       </button>
-      <button type="button" id="abortMatch" class="btn btn-primary btn-lg btn-match-play"
-          onclick="abortMatch();" disabled>
-        Abort Match
+      <button type="button" id="commitResults" class="btn btn-primary btn-match-play ms-1"
+        onclick="confirmCommit();" disabled>
+        Commit Results
       </button>
-      <button type="button" id="substituteTeams" class="btn btn-warning btn-lg btn-match-play"
+      <button type="button" id="showFinalScore" class="btn btn-info btn-match-play ms-1"
+        onclick="showFinalScore();" disabled>
+        Show Final Score
+      </button>
+    </div>
+    <div class="row justify-content-center mt-1">
+      <button type="button" id="substituteTeams" class="btn btn-primary btn-match-play ms-1"
         onclick="substituteTeams();" disabled>
         Substitute Teams
       </button>
-      <button type="button" id="signalReset" class="btn btn-success btn-lg btn-match-play"
-          onclick="signalReset();" disabled>
+      <button type="button" id="abortMatch" class="btn btn-danger btn-match-play ms-1"
+        onclick="abortMatch();" disabled>
+        Abort Match
+      </button>
+      <button type="button" id="discardResults" class="btn btn-warning btn-match-play ms-1"
+        onclick="$('#confirmDiscardResults').modal('show');" disabled>
+        Discard Results
+      </button>
+      <button type="button" id="editResults" class="btn btn-secondary btn-match-play ms-1"
+        onclick="window.location = '/match_review/current/edit';" disabled>
+        Edit Results
+      </button>
+      <button type="button" id="signalReset" class="btn btn-success btn-match-play ms-1"
+        onclick="signalReset();" disabled>
         Signal Reset
       </button>
     </div>
-    <div id="buttonBottomRow" class="row text-center">
-      <button type="button" id="commitResults" class="btn btn-info btn-lg btn-match-play"
-          onclick="confirmCommit();" disabled>
-        Commit Results
-      </button>
-      <button type="button" id="discardResults" class="btn btn-danger btn-lg btn-match-play"
-          onclick="$('#confirmDiscardResults').modal('show');" disabled>
-        Discard Results
-      </button>
-      <a href="/match_review/current/edit">
-        <button type="button" id="editResults" class="btn btn-default btn-lg btn-match-play" disabled>
-          Edit Results
-        </button>
-      </a>
-    </div>
-    <div class="row">
-      <div class="col-lg-12 well">
+    <div class="card card-body bg-body-tertiary mt-3">
+      <div class="row">
         <div class="col-lg-3">
-          <p>Scoring</p>
-          <p><span class="label label-scoring" id="refereeScoreStatus">Referee</span><br />
-            <span class="label label-scoring" id="redScoreStatus"></span><br />
-            <span class="label label-scoring" id="blueScoreStatus"></span></p>
-        {{if .PlcIsEnabled}}
-          <p>PLC Status</p>
+          <h6>Scoring</h6>
+          <p><span class="badge badge-scoring" id="refereeScoreStatus">Referee</span><br />
+            <span class="badge badge-scoring" id="redScoreStatus"></span><br />
+            <span class="badge badge-scoring" id="blueScoreStatus"></span></p>
+        {{if .EventSettings.NetworkSecurityEnabled}}
+          <h6>Network Status</h6>
           <p>
-            <span class="label label-scoring" id="plcStatus"></span><br />
-            <span class="label label-scoring" id="fieldEstop">E-Stop</span>
+            <span class="badge badge-status" id="accessPointStatus">Access Point</span><br />
+            <span class="badge badge-status" id="switchStatus">Switch</span>
+          </p>
+        {{end}}
+        {{if .PlcIsEnabled}}
+          <h6>PLC Status</h6>
+          <p>
+            <span class="badge badge-scoring" id="plcStatus"></span>
+            <span class="badge badge-scoring" id="fieldEStop">E-Stop</span><br />
             {{range $name, $status := .PlcArmorBlockStatuses}}
-              <br /><span class="label label-scoring" id="plc{{$name}}Status">{{$name}}</span>
+              <span class="badge badge-scoring" id="plc{{$name}}Status">{{$name}}</span>
             {{end}}
           </p>
         {{end}}
         </div>
         <div class="col-lg-3">
-          Audience Display
-          <div class="form-group">
-            <div class="radio">
+          <h6>Audience Display</h6>
+          <div class="row">
+            <div>
               <label>
-                <input type="radio" name="audienceDisplay" value="blank" onclick="setAudienceDisplay();">Blank
+                <input type="radio" name="audienceDisplay" value="blank" onclick="setAudienceDisplay();"> Blank
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
-                <input type="radio" name="audienceDisplay" value="intro" onclick="setAudienceDisplay();">Match Intro
+                <input type="radio" name="audienceDisplay" value="intro"
+                    onclick="setAudienceDisplay();" id="introRadio"> Match Intro
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
-                <input type="radio" name="audienceDisplay" value="match" onclick="setAudienceDisplay();">Match Play
+                <input type="radio" name="audienceDisplay" value="match" onclick="setAudienceDisplay();"> Match Play
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
-                <input type="radio" name="audienceDisplay" value="score" onclick="setAudienceDisplay();">Final Score
+                <input type="radio" name="audienceDisplay" value="score"
+                    onclick="setAudienceDisplay();" id="scoreRadio"> Final Score
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
-                <input type="radio" name="audienceDisplay" value="bracket" onclick="setAudienceDisplay();">Bracket
+                <input type="radio" name="audienceDisplay" value="bracket" onclick="setAudienceDisplay();"> Bracket
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
-                <input type="radio" name="audienceDisplay" value="logo" onclick="setAudienceDisplay();">Logo With BG
+                <input type="radio" name="audienceDisplay" value="logo" onclick="setAudienceDisplay();"> Logo With BG
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
                 <input type="radio" name="audienceDisplay" value="logoLuma" onclick="setAudienceDisplay();">
                 Logo Without BG
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
-                <input type="radio" name="audienceDisplay" value="sponsor" onclick="setAudienceDisplay();">Sponsor Reel
+                <input type="radio" name="audienceDisplay" value="sponsor" onclick="setAudienceDisplay();"> Sponsor Reel
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
                 <input type="radio" name="audienceDisplay" value="allianceSelection"
-                    onclick="setAudienceDisplay();">Alliance Selection
+                    onclick="setAudienceDisplay();"> Alliance Selection
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
-                <input type="radio" name="audienceDisplay" value="timeout" onclick="setAudienceDisplay();">Timeout
+                <input type="radio" name="audienceDisplay" value="timeout" onclick="setAudienceDisplay();"> Timeout
               </label>
             </div>
           </div>
         </div>
         <div class="col-lg-3">
-          <p>Alliance Station Display</p>
-          <div class="form-group">
-            <div class="radio">
+          <h6>Alliance Station Display</h6>
+          <div>
+            <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="blank"
-                       onclick="setAllianceStationDisplay();">Blank
+                       onclick="setAllianceStationDisplay();"> Blank
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="match"
-                       onclick="setAllianceStationDisplay();">Match
+                       onclick="setAllianceStationDisplay();"> Match
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="logo"
-                       onclick="setAllianceStationDisplay();">Logo
+                       onclick="setAllianceStationDisplay();"> Logo
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="timeout"
-                       onclick="setAllianceStationDisplay();">Timeout
+                       onclick="setAllianceStationDisplay();"> Timeout
               </label>
             </div>
-            <div class="radio">
+            <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="fieldReset"
-                       onclick="setAllianceStationDisplay();"  id="fieldResetRadio">Field Reset
+                       onclick="setAllianceStationDisplay();" id="fieldResetRadio"> Field Reset
               </label>
             </div>
           </div>
-          <p>Shown Match Result</p>
-          <span class="label label-saved-match" id="savedMatchName">None</span>
+          <h6 class="mt-4">Shown Match Result</h6>
+          <span class="badge badge-saved-match" id="savedMatchName">None</span>
           &nbsp;
-          <b class="btn btn-info btn-xs" onclick="showResult(0);">Clear</b>
+          <b class="btn btn-primary btn-sm" onclick="showResult(0);">Clear</b>
         </div>
         <div class="col-lg-3">
-          <p>Match Sounds</p>
+          <h6>Match Sounds</h6>
           <div class="checkbox">
             <label>
               <input type="checkbox" id="muteMatchSounds">
               Mute
             </label>
           </div>
-          <p>Timeout</p>
+          <h6 class="mt-4">Timeout</h6>
           <input type="text" id="timeoutDuration" size="4" value="8:00" />
-          <button type="button" id="startTimeout" class="btn btn-info btn-xs" onclick="startTimeout();">
+          <button type="button" id="startTimeout" class="btn btn-primary btn-sm" onclick="startTimeout();">
             Start
           </button>
           <div id="testMatchSettings">
@@ -211,11 +228,10 @@
           </div>
         </div>
       </div>
-      <div class="row">
-        <div id="cycleTimeMessage" class="col-lg-5 col-lg-offset-1"></div>
-        <div id="earlyLateMessage" class="col-lg-5 text-right"></div>
-        <div class="col-lg-1"></div>
-      </div>
+    </div>
+    <div class="row justify-content-center mt-3">
+      <div id="cycleTimeMessage" class="col-lg-6"></div>
+      <div id="earlyLateMessage" class="col-lg-4 text-end"></div>
     </div>
   </div>
 </div>
@@ -223,8 +239,8 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h4 class="modal-title">Confirm</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <p id="confirmCommitReplay">This is a replay. Are you sure you want to overwrite the previous results?</p>
@@ -233,8 +249,8 @@
       </div>
       <div class="modal-footer">
         <form class="form-horizontal" action="/setup/teams/clear" method="POST">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" onclick="commitResults();" data-dismiss="modal">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="commitResults();" data-bs-dismiss="modal">
             Commit Results
           </button>
         </form>
@@ -246,16 +262,16 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h4 class="modal-title">Confirm</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <p>Are you sure you want to discard the results for this match?</p>
       </div>
       <div class="modal-footer">
         <form class="form-horizontal" action="/setup/teams/clear" method="POST">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" onclick="discardResults();" data-dismiss="modal">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="discardResults();" data-bs-dismiss="modal">
             Discard Results
           </button>
         </form>
@@ -269,20 +285,20 @@
 <script src="/static/js/match_play.js"></script>
 {{end}}
 {{define "matchPlayTeam"}}
-<div class="row form-group" id="status{{.color}}{{.position}}">
+<div class="row mb-2" id="status{{.color}}{{.position}}">
   <div class="col-lg-1">{{.position}} </div>
   <div class="col-lg-3">
-    <input type="number" class="team-number form-control input-sm"
+    <input type="number" class="team-number form-control"
       onchange="$('#substituteTeams').prop('disabled', false);">
   </div>
   <div class="col-lg-2 col-no-padding">
-    <div class="ds-status" data-toggle="tooltip" title="Bandwidth Consumed"></div>
+    <div class="ds-status" data-bs-toggle="tooltip" title="Bandwidth Consumed"></div>
   </div>
   <div class="col-lg-2 col-no-padding">
-    <div class="radio-status" data-toggle="tooltip" title="AP SSID"></div>
+    <div class="radio-status" data-bs-toggle="tooltip" title="AP SSID"></div>
   </div>
   <div class="col-lg-2 col-no-padding">
-    <div class="robot-status" data-toggle="tooltip" title="Battery / Time Since Link Lost"></div>
+    <div class="robot-status" data-bs-toggle="tooltip" title="Battery / Time Since Link Lost"></div>
   </div>
   <div class="col-lg-2 col-no-padding">
     <div class="bypass-status" onclick="toggleBypass('{{.color}}{{.position}}');"></div>

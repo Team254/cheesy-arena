@@ -6,32 +6,32 @@
 */}}
 {{define "title"}}Field Testing{{end}}
 {{define "body"}}
-<div class="row">
+<div class="row justify-content-center">
   <div class="col-lg-3">
-    <div class="well">
+    <div class="card card-body bg-body-tertiary">
       <legend>Game Sounds</legend>
       {{range $sound := .MatchSounds}}
         <p>
-          <button type="button" class="btn btn-sm btn-info btn-game-sound" onclick="playSound('{{$sound.Name}}');">
-            <i class="glyphicon glyphicon-play"></i>&nbsp;&nbsp;{{toUpper $sound.Name}}
+          <button type="button" class="btn btn-sm btn-primary btn-game-sound" onclick="playSound('{{$sound.Name}}');">
+            <i class="bi-play-fill"></i>&nbsp;&nbsp;{{toUpper $sound.Name}}
           </button>
         </p>
       {{end}}
     </div>
   </div>
-  <div class="col-lg-7">
-    <div class="well">
+  <div class="col-lg-8">
+    <div class="card card-body bg-body-tertiary">
       <legend>PLC</legend>
       <div class="row">
         <div class="col-lg-4">
           <table class="table">
             <tr>
-              <th colspan="2">Inputs</th>
+              <th class="bg-body-tertiary" colspan="2">Inputs</th>
             </tr>
             {{range $i, $name := .InputNames}}
             <tr>
-              <td>{{$name}}</td>
-              <td id="input{{$i}}" data-plc-value="false"></td>
+              <td class="bg-body-tertiary">{{$name}}</td>
+              <td class="bg-body-tertiary" id="input{{$i}}" data-plc-value="false"></td>
             </tr>
             {{end}}
           </table>
@@ -39,12 +39,12 @@
         <div class="col-lg-4">
           <table class="table">
             <tr>
-              <th colspan="2">Registers</th>
+              <th class="bg-body-tertiary" colspan="2">Registers</th>
             </tr>
             {{range $i, $name := .RegisterNames}}
             <tr>
-              <td>{{$name}}</td>
-              <td id="register{{$i}}"></td>
+              <td class="bg-body-tertiary">{{$name}}</td>
+              <td class="bg-body-tertiary" id="register{{$i}}"></td>
             </tr>
             {{end}}
           </table>
@@ -52,12 +52,12 @@
         <div class="col-lg-4">
           <table class="table">
             <tr>
-              <th colspan="2">Coils</th>
+              <th class="bg-body-tertiary" colspan="2">Coils</th>
             </tr>
             {{range $i, $name := .CoilNames}}
             <tr>
-              <td>{{$name}}</td>
-              <td id="coil{{$i}}" data-plc-value="false"></td>
+              <td class="bg-body-tertiary">{{$name}}</td>
+              <td class="bg-body-tertiary" id="coil{{$i}}" data-plc-value="false"></td>
             </tr>
             {{end}}
           </table>

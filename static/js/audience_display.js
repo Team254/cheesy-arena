@@ -30,13 +30,20 @@ const logoUp = "30px";
 const logoDown = $("#logo").css("top");
 const scoreIn = $(".score").css("width");
 const scoreMid = "185px";
-const scoreOut = "425px";
-const scoreFieldsOut = "210px";
-const scoreLogoTop = "-450px";
+const scoreOut = "400px";
+const scoreFieldsOut = "180px";
+const scoreLogoTop = "-470px";
 const bracketLogoTop = "-780px";
 const bracketLogoScale = 0.75;
 const timeoutDetailsIn = $("#timeoutDetails").css("width");
 const timeoutDetailsOut = "570px";
+
+// Game-specific constants and variables.
+const amplifyProgressStartOffset = $("#leftAmplified svg circle").css("stroke-dashoffset");
+const amplifyFadeTimeMs = 300;
+const amplifyDwellTimeMs = 500;
+let redAmplified = false;
+let blueAmplified = false;
 
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function(targetScreen) {
@@ -86,36 +93,42 @@ const executeTransitionQueue = function() {
 // Handles a websocket message to update the teams for the current match.
 const handleMatchLoad = function(data) {
   currentMatch = data.Match;
-  $("#" + redSide + "Team1").text(currentMatch.Red1);
-  $("#" + redSide + "Team2").text(currentMatch.Red2);
-  $("#" + redSide + "Team3").text(currentMatch.Red3);
-  $("#" + redSide + "Team1Avatar").attr("src", getAvatarUrl(currentMatch.Red1));
-  $("#" + redSide + "Team2Avatar").attr("src", getAvatarUrl(currentMatch.Red2));
-  $("#" + redSide + "Team3Avatar").attr("src", getAvatarUrl(currentMatch.Red3));
-  $("#" + blueSide + "Team1").text(currentMatch.Blue1);
-  $("#" + blueSide + "Team2").text(currentMatch.Blue2);
-  $("#" + blueSide + "Team3").text(currentMatch.Blue3);
-  $("#" + blueSide + "Team1Avatar").attr("src", getAvatarUrl(currentMatch.Blue1));
-  $("#" + blueSide + "Team2Avatar").attr("src", getAvatarUrl(currentMatch.Blue2));
-  $("#" + blueSide + "Team3Avatar").attr("src", getAvatarUrl(currentMatch.Blue3));
+  $(`#${redSide}Team1`).text(currentMatch.Red1);
+  $(`#${redSide}Team1`).attr("data-yellow-card", data.Teams["R1"]?.YellowCard);
+  $(`#${redSide}Team2`).text(currentMatch.Red2);
+  $(`#${redSide}Team2`).attr("data-yellow-card", data.Teams["R2"]?.YellowCard);
+  $(`#${redSide}Team3`).text(currentMatch.Red3);
+  $(`#${redSide}Team3`).attr("data-yellow-card", data.Teams["R3"]?.YellowCard);
+  $(`#${redSide}Team1Avatar`).attr("src", getAvatarUrl(currentMatch.Red1));
+  $(`#${redSide}Team2Avatar`).attr("src", getAvatarUrl(currentMatch.Red2));
+  $(`#${redSide}Team3Avatar`).attr("src", getAvatarUrl(currentMatch.Red3));
+  $(`#${blueSide}Team1`).text(currentMatch.Blue1);
+  $(`#${blueSide}Team1`).attr("data-yellow-card", data.Teams["B1"]?.YellowCard);
+  $(`#${blueSide}Team2`).text(currentMatch.Blue2);
+  $(`#${blueSide}Team2`).attr("data-yellow-card", data.Teams["B2"]?.YellowCard);
+  $(`#${blueSide}Team3`).text(currentMatch.Blue3);
+  $(`#${blueSide}Team3`).attr("data-yellow-card", data.Teams["B3"]?.YellowCard);
+  $(`#${blueSide}Team1Avatar`).attr("src", getAvatarUrl(currentMatch.Blue1));
+  $(`#${blueSide}Team2Avatar`).attr("src", getAvatarUrl(currentMatch.Blue2));
+  $(`#${blueSide}Team3Avatar`).attr("src", getAvatarUrl(currentMatch.Blue3));
 
   // Show alliance numbers if this is a playoff match.
   if (currentMatch.Type === matchTypePlayoff) {
-    $("#" + redSide + "PlayoffAlliance").text(currentMatch.PlayoffRedAlliance);
-    $("#" + blueSide + "PlayoffAlliance").text(currentMatch.PlayoffBlueAlliance);
+    $(`#${redSide}PlayoffAlliance`).text(currentMatch.PlayoffRedAlliance);
+    $(`#${blueSide}PlayoffAlliance`).text(currentMatch.PlayoffBlueAlliance);
     $(".playoff-alliance").show();
 
     // Show the series status if this playoff round isn't just a single match.
     if (data.Matchup.NumWinsToAdvance > 1) {
-      $("#" + redSide + "PlayoffAllianceWins").text(data.Matchup.RedAllianceWins);
-      $("#" + blueSide + "PlayoffAllianceWins").text(data.Matchup.BlueAllianceWins);
+      $(`#${redSide}PlayoffAllianceWins`).text(data.Matchup.RedAllianceWins);
+      $(`#${blueSide}PlayoffAllianceWins`).text(data.Matchup.BlueAllianceWins);
       $("#playoffSeriesStatus").css("display", "flex");
     } else {
       $("#playoffSeriesStatus").hide();
     }
   } else {
-    $("#" + redSide + "PlayoffAlliance").text("");
-    $("#" + blueSide + "PlayoffAlliance").text("");
+    $(`#${redSide}PlayoffAlliance`).text("");
+    $(`#${blueSide}PlayoffAlliance`).text("");
     $(".playoff-alliance").hide();
     $("#playoffSeriesStatus").hide();
   }
@@ -132,108 +145,153 @@ const handleMatchLoad = function(data) {
 // Handles a websocket message to update the match time countdown.
 const handleMatchTime = function(data) {
   translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
-    let countdownString = String(countdownSec % 60);
-    if (countdownString.length === 1) {
-      countdownString = "0" + countdownString;
-    }
-    countdownString = Math.floor(countdownSec / 60) + ":" + countdownString;
-    $("#matchTime").text(countdownString);
+    $("#matchTime").text(getCountdownString(countdownSec));
   });
 };
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function(data) {
-  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints);
-  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints);
+  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.StagePoints);
+  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.StagePoints);
 
-  $("#" + redSide + "LinkNumerator").text(data.Red.ScoreSummary.NumLinks);
-  $("#" + redSide + "LinkDenominator").text(data.Red.ScoreSummary.NumLinksGoal);
-  $("#" + blueSide + "LinkNumerator").text(data.Blue.ScoreSummary.NumLinks);
-  $("#" + blueSide + "LinkDenominator").text(data.Blue.ScoreSummary.NumLinksGoal);
+  $(`#${redSide}NoteNumerator`).text(data.Red.ScoreSummary.NumNotes);
+  $(`#${redSide}NoteDenominator`).text(data.Red.ScoreSummary.NumNotesGoal);
+  $(`#${blueSide}NoteNumerator`).text(data.Blue.ScoreSummary.NumNotes);
+  $(`#${blueSide}NoteDenominator`).text(data.Blue.ScoreSummary.NumNotesGoal);
   if (currentMatch.Type === matchTypePlayoff) {
-    $("#" + redSide + "LinkDenominator").hide();
-    $("#" + blueSide + "LinkDenominator").hide();
-    $(".link-splitter").hide();
+    $(`#${redSide}NoteDenominator`).hide();
+    $(`#${blueSide}NoteDenominator`).hide();
+    $(".note-splitter").hide();
   } else {
-    $("#" + redSide + "LinkDenominator").show();
-    $("#" + blueSide + "LinkDenominator").show();
-    $(".link-splitter").show();
+    $(`#${redSide}NoteDenominator`).show();
+    $(`#${blueSide}NoteDenominator`).show();
+    $(".note-splitter").show();
   }
 
-  fetch("/api/grid/red/svg")
-    .then(response => response.text())
-    .then(svg => $(`#${redSide}Grid`).html(svg));
-  fetch("/api/grid/blue/svg")
-    .then(response => response.text())
-    .then(svg => $(`#${blueSide}Grid`).html(svg));
+  const redLightsDiv = $(`#${redSide}Lights`);
+  const redAmplifiedDiv = $(`#${redSide}Amplified`);
+  if (data.Red.AmplifiedTimeRemainingSec > 0 && !redAmplified) {
+    redAmplified = true;
+    redLightsDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function() {
+      redLightsDiv.hide();
+      redAmplifiedDiv.show();
+      redAmplifiedDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
+      $(`#${redSide}Amplified svg circle`).transition(
+        {queue: false, strokeDashoffset: 158}, data.Red.AmplifiedTimeRemainingSec * 1000 - amplifyFadeTimeMs, "linear"
+      );
+    });
+  } else if (data.Red.AmplifiedTimeRemainingSec === 0 && redAmplified) {
+    redAmplified = false;
+    setTimeout(function() {
+      redAmplifiedDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function () {
+        $(`#${redSide}Amplified svg circle`).css("stroke-dashoffset", amplifyProgressStartOffset);
+        redAmplifiedDiv.hide();
+        redLightsDiv.show();
+        redLightsDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
+      });
+    }, amplifyDwellTimeMs);
+  }
+
+  const blueLightsDiv = $(`#${blueSide}Lights`);
+  const blueAmplifiedDiv = $(`#${blueSide}Amplified`);
+  if (data.Blue.AmplifiedTimeRemainingSec > 0 && !blueAmplified) {
+    blueAmplified = true;
+    blueLightsDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function() {
+      blueLightsDiv.hide();
+      blueAmplifiedDiv.show();
+      blueAmplifiedDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
+      $(`#${blueSide}Amplified svg circle`).transition(
+        {queue: false, strokeDashoffset: -158}, data.Blue.AmplifiedTimeRemainingSec * 1000 - amplifyFadeTimeMs, "linear"
+      );
+    });
+  } else if (data.Blue.AmplifiedTimeRemainingSec === 0 && blueAmplified) {
+    blueAmplified = false;
+    setTimeout(function() {
+      blueAmplifiedDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function () {
+        $(`#${blueSide}Amplified svg circle`).css("stroke-dashoffset", "-" + amplifyProgressStartOffset);
+        blueAmplifiedDiv.hide();
+        blueLightsDiv.show();
+        blueLightsDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
+      });
+    }, amplifyDwellTimeMs);
+  }
+
+  $(`#${redSide}Lights .amp-low`).attr("data-lit", data.Red.Score.AmpSpeaker.BankedAmpNotes >= 1);
+  $(`#${redSide}Lights .amp-high`).attr("data-lit", data.Red.Score.AmpSpeaker.BankedAmpNotes >= 2);
+  $(`#${redSide}Lights .amp-coop`).attr("data-lit", data.Red.Score.AmpSpeaker.CoopActivated);
+  $(`#${redSide}Amplified svg text`).text(data.Red.AmplifiedTimeRemainingSec);
+  $(`#${blueSide}Lights .amp-low`).attr("data-lit", data.Blue.Score.AmpSpeaker.BankedAmpNotes >= 1);
+  $(`#${blueSide}Lights .amp-high`).attr("data-lit", data.Blue.Score.AmpSpeaker.BankedAmpNotes >= 2);
+  $(`#${blueSide}Lights .amp-coop`).attr("data-lit", data.Blue.Score.AmpSpeaker.CoopActivated);
+  $(`#${blueSide}Amplified svg text`).text(data.Blue.AmplifiedTimeRemainingSec);
 };
 
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function(data) {
-  $("#" + redSide + "FinalScore").text(data.RedScoreSummary.Score);
-  $("#" + redSide + "FinalAlliance").text("Alliance " + data.Match.PlayoffRedAlliance);
-  setTeamInfo(redSide, 1, data.Match.Red1, data.RedRankings);
-  setTeamInfo(redSide, 2, data.Match.Red2, data.RedRankings);
-  setTeamInfo(redSide, 3, data.Match.Red3, data.RedRankings);
+  $(`#${redSide}FinalScore`).text(data.RedScoreSummary.Score);
+  $(`#${redSide}FinalAlliance`).text("Alliance " + data.Match.PlayoffRedAlliance);
+  setTeamInfo(redSide, 1, data.Match.Red1, data.RedCards, data.RedRankings);
+  setTeamInfo(redSide, 2, data.Match.Red2, data.RedCards, data.RedRankings);
+  setTeamInfo(redSide, 3, data.Match.Red3, data.RedCards, data.RedRankings);
   if (data.RedOffFieldTeamIds.length > 0) {
-    setTeamInfo(redSide, 4, data.RedOffFieldTeamIds[0], data.RedRankings);
+    setTeamInfo(redSide, 4, data.RedOffFieldTeamIds[0], data.RedCards, data.RedRankings);
   } else {
-    setTeamInfo(redSide, 4, 0, data.RedRankings);
+    setTeamInfo(redSide, 4, 0, data.RedCards, data.RedRankings);
   }
-  $("#" + redSide + "FinalMobilityPoints").text(data.RedScoreSummary.MobilityPoints);
-  $("#" + redSide + "FinalGridPoints").text(data.RedScoreSummary.GridPoints);
-  $("#" + redSide + "FinalChargeStationPoints").text(data.RedScoreSummary.ChargeStationPoints);
-  $("#" + redSide + "FinalParkPoints").text(data.RedScoreSummary.ParkPoints);
-  $("#" + redSide + "FinalFoulPoints").text(data.RedScoreSummary.FoulPoints);
-  $("#" + redSide + "FinalSustainabilityBonusRankingPoint").html(
-    data.RedScoreSummary.SustainabilityBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${redSide}FinalLeavePoints`).text(data.RedScoreSummary.LeavePoints);
+  $(`#${redSide}FinalSpeakerPoints`).text(data.RedScoreSummary.SpeakerPoints);
+  $(`#${redSide}FinalAmpPoints`).text(data.RedScoreSummary.AmpPoints);
+  $(`#${redSide}FinalStagePoints`).text(data.RedScoreSummary.StagePoints);
+  $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
+  $(`#${redSide}FinalMelodyBonusRankingPoint`).html(
+    data.RedScoreSummary.MelodyBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $("#" + redSide + "FinalSustainabilityBonusRankingPoint").attr(
-    "data-checked", data.RedScoreSummary.SustainabilityBonusRankingPoint
+  $(`#${redSide}FinalMelodyBonusRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.MelodyBonusRankingPoint
   );
-  $("#" + redSide + "FinalActivationBonusRankingPoint").html(
-    data.RedScoreSummary.ActivationBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${redSide}FinalEnsembleBonusRankingPoint`).html(
+    data.RedScoreSummary.EnsembleBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $("#" + redSide + "FinalActivationBonusRankingPoint").attr(
-    "data-checked", data.RedScoreSummary.ActivationBonusRankingPoint
+  $(`#${redSide}FinalEnsembleBonusRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.EnsembleBonusRankingPoint
   );
-  $("#" + redSide + "FinalRankingPoints").html(data.RedRankingPoints);
-  $("#" + redSide + "FinalWins").text(data.RedWins);
-  const redFinalDestination = $("#" + redSide + "FinalDestination");
+  $(`#${redSide}FinalRankingPoints`).html(data.RedRankingPoints);
+  $(`#${redSide}FinalWins`).text(data.RedWins);
+  const redFinalDestination = $(`#${redSide}FinalDestination`);
   redFinalDestination.html(data.RedDestination.replace("Advances to ", "Advances to<br>"));
   redFinalDestination.toggle(data.RedDestination !== "");
   redFinalDestination.attr("data-won", data.RedWon);
 
-  $("#" + blueSide + "FinalScore").text(data.BlueScoreSummary.Score);
-  $("#" + blueSide + "FinalAlliance").text("Alliance " + data.Match.PlayoffBlueAlliance);
-  setTeamInfo(blueSide, 1, data.Match.Blue1, data.BlueRankings);
-  setTeamInfo(blueSide, 2, data.Match.Blue2, data.BlueRankings);
-  setTeamInfo(blueSide, 3, data.Match.Blue3, data.BlueRankings);
+  $(`#${blueSide}FinalScore`).text(data.BlueScoreSummary.Score);
+  $(`#${blueSide}FinalAlliance`).text("Alliance " + data.Match.PlayoffBlueAlliance);
+  setTeamInfo(blueSide, 1, data.Match.Blue1, data.BlueCards, data.BlueRankings);
+  setTeamInfo(blueSide, 2, data.Match.Blue2, data.BlueCards, data.BlueRankings);
+  setTeamInfo(blueSide, 3, data.Match.Blue3, data.BlueCards, data.BlueRankings);
   if (data.BlueOffFieldTeamIds.length > 0) {
-    setTeamInfo(blueSide, 4, data.BlueOffFieldTeamIds[0], data.BlueRankings);
+    setTeamInfo(blueSide, 4, data.BlueOffFieldTeamIds[0], data.BlueCards, data.BlueRankings);
   } else {
-    setTeamInfo(blueSide, 4, 0, data.BlueRankings);
+    setTeamInfo(blueSide, 4, 0, data.BlueCards, data.BlueRankings);
   }
-  $("#" + blueSide + "FinalMobilityPoints").text(data.BlueScoreSummary.MobilityPoints);
-  $("#" + blueSide + "FinalGridPoints").text(data.BlueScoreSummary.GridPoints);
-  $("#" + blueSide + "FinalChargeStationPoints").text(data.BlueScoreSummary.ChargeStationPoints);
-  $("#" + blueSide + "FinalParkPoints").text(data.BlueScoreSummary.ParkPoints);
-  $("#" + blueSide + "FinalFoulPoints").text(data.BlueScoreSummary.FoulPoints);
-  $("#" + blueSide + "FinalSustainabilityBonusRankingPoint").html(
-    data.BlueScoreSummary.SustainabilityBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${blueSide}FinalLeavePoints`).text(data.BlueScoreSummary.LeavePoints);
+  $(`#${blueSide}FinalSpeakerPoints`).text(data.BlueScoreSummary.SpeakerPoints);
+  $(`#${blueSide}FinalAmpPoints`).text(data.BlueScoreSummary.AmpPoints);
+  $(`#${blueSide}FinalStagePoints`).text(data.BlueScoreSummary.StagePoints);
+  $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
+  $(`#${blueSide}FinalMelodyBonusRankingPoint`).html(
+    data.BlueScoreSummary.MelodyBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $("#" + blueSide + "FinalSustainabilityBonusRankingPoint").attr(
-    "data-checked", data.BlueScoreSummary.SustainabilityBonusRankingPoint
+  $(`#${blueSide}FinalMelodyBonusRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.MelodyBonusRankingPoint
   );
-  $("#" + blueSide + "FinalActivationBonusRankingPoint").html(
-    data.BlueScoreSummary.ActivationBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${blueSide}FinalEnsembleBonusRankingPoint`).html(
+    data.BlueScoreSummary.EnsembleBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $("#" + blueSide + "FinalActivationBonusRankingPoint").attr(
-    "data-checked", data.BlueScoreSummary.ActivationBonusRankingPoint
+  $(`#${blueSide}FinalEnsembleBonusRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.EnsembleBonusRankingPoint
   );
-  $("#" + blueSide + "FinalRankingPoints").html(data.BlueRankingPoints);
-  $("#" + blueSide + "FinalWins").text(data.BlueWins);
-  const blueFinalDestination = $("#" + blueSide + "FinalDestination");
+  $(`#${blueSide}FinalRankingPoints`).html(data.BlueRankingPoints);
+  $(`#${blueSide}FinalWins`).text(data.BlueWins);
+  const blueFinalDestination = $(`#${blueSide}FinalDestination`);
   blueFinalDestination.html(data.BlueDestination.replace("Advances to ", "Advances to<br>"));
   blueFinalDestination.toggle(data.BlueDestination !== "");
   blueFinalDestination.attr("data-won", data.BlueWon);
@@ -268,13 +326,31 @@ const handlePlaySound = function(sound) {
 };
 
 // Handles a websocket message to update the alliance selection screen.
-const handleAllianceSelection = function(alliances) {
+const handleAllianceSelection = function(data) {
+  const alliances = data.Alliances;
+  const rankedTeams = data.RankedTeams;
   if (alliances && alliances.length > 0) {
     const numColumns = alliances[0].TeamIds.length + 1;
     $.each(alliances, function(k, v) {
       v.Index = k + 1;
     });
     $("#allianceSelection").html(allianceSelectionTemplate({alliances: alliances, numColumns: numColumns}));
+  }
+  if (rankedTeams) {
+      let text = "";
+      $.each(rankedTeams, function(i, v) {
+        if (!v.Picked) {
+          text += `<div class="unpicked"><div class="unpicked-rank">${v.Rank}.</div>` +
+            `<div class="unpicked-team">${v.TeamId}</div></div>`;
+        }
+      });
+      $("#allianceRankings").html(text);
+  }
+
+  if (data.ShowTimer) {
+    $("#allianceSelectionTimer").text(getCountdownString(data.TimeRemainingSec));
+  } else {
+    $("#allianceSelectionTimer").html("&nbsp;");
   }
 };
 
@@ -308,11 +384,14 @@ const handleLowerThird = function(data) {
 
 const transitionAllianceSelectionToBlank = function(callback) {
   $('#allianceSelectionCentering').transition({queue: false, right: "-60em"}, 500, "ease", callback);
+  $('#allianceRankingsCentering.enabled').transition({queue:false, left: "-60em"}, 500, "ease");
 };
 
 const transitionBlankToAllianceSelection = function(callback) {
   $('#allianceSelectionCentering').css("right","-60em").show();
   $('#allianceSelectionCentering').transition({queue: false, right: "3em"}, 500, "ease", callback);
+  $('#allianceRankingsCentering.enabled').css("left", "-60em").show();
+  $('#allianceRankingsCentering.enabled').transition({queue: false, left: "3em"}, 500, "ease");
 };
 
 const transitionBlankToBracket = function(callback) {
@@ -681,28 +760,6 @@ const initializeSponsorDisplay = function() {
       }
       $("#sponsorContainer").append(slideHtml);
     });
-
-    // Start Carousel
-    let t;
-    const start = $('.carousel#sponsor').find('.active').attr('data-interval');
-    t = setTimeout("$('.carousel#sponsor').carousel({interval: 1000});", start-1000);
-
-    $('.carousel#sponsor').on('slid.bs.carousel', function () {   
-         clearTimeout(t);  
-         const duration = $(this).find('.active').attr('data-interval');
-
-         $('.carousel#sponsor').carousel('pause');
-         t = setTimeout("$('.carousel#sponsor').carousel();", duration-1000);
-    });
-
-    $('.carousel-control.right').on('click', function(){
-        clearTimeout(t);   
-    });
-
-    $('.carousel-control.left').on('click', function(){
-        clearTimeout(t);   
-    });
-
   });
 };
 
@@ -710,13 +767,16 @@ const getAvatarUrl = function(teamId) {
   return "/api/teams/" + teamId + "/avatar";
 };
 
-const setTeamInfo = function(side, position, teamId, rankings) {
+const setTeamInfo = function(side, position, teamId, cards, rankings) {
   const teamNumberElement = $(`#${side}FinalTeam${position}`);
   teamNumberElement.html(teamId);
   teamNumberElement.toggle(teamId > 0);
   const avatarElement = $(`#${side}FinalTeam${position}Avatar`);
   avatarElement.attr("src", getAvatarUrl(teamId));
   avatarElement.toggle(teamId > 0);
+
+  const cardElement = $(`#${side}FinalTeam${position}Card`);
+  cardElement.attr("data-card", cards[teamId.toString()] || "");
 
   const ranking = rankings[teamId];
   let rankIndicator = "";
@@ -731,7 +791,7 @@ const setTeamInfo = function(side, position, teamId, rankings) {
   }
 
   const rankIndicatorElement = $(`#${side}FinalTeam${position}RankIndicator`);
-  rankIndicatorElement.attr("src", `/static/img/${rankIndicator}.svg`);
+  rankIndicatorElement.attr("src", rankIndicator === "" ? "" : `/static/img/${rankIndicator}.svg`);
   rankIndicatorElement.toggle(rankIndicator !== "" && teamId > 0);
 
   const rankNumberElement = $(`#${side}FinalTeam${position}RankNumber`);
