@@ -184,8 +184,9 @@ func (sign *TeamSign) update(
 // Returns the in-match rear text that is common to a whole alliance.
 func generateInMatchRearText(isRed bool, countdown string, realtimeScore, opponentRealtimeScore *RealtimeScore) string {
 	scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
-	scoreTotal := scoreSummary.Score
-	opponentScoreTotal := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore).Score
+	scoreTotal := scoreSummary.Score - scoreSummary.StagePoints
+	opponentScoreSummary := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore)
+	opponentScoreTotal := opponentScoreSummary.Score - opponentScoreSummary.StagePoints
 	var allianceScores string
 	if isRed {
 		allianceScores = fmt.Sprintf("R%03d-B%03d", scoreTotal, opponentScoreTotal)
