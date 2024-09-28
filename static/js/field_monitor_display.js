@@ -8,7 +8,7 @@ var currentMatchId;
 var redSide;
 var blueSide;
 var lowBatteryThreshold = 8;
-var highBtuThreshold = 4.0;
+var highBtuThreshold = 7.0;
 
 
 var handleArenaStatus = function(data) {
