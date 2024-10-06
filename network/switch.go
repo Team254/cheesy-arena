@@ -91,6 +91,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 				"lease 7\n"+
 				"access-list 1%d permit ip 10.%s.0 0.0.0.255 host %s\n"+
 				"access-list 1%d permit udp any eq bootpc any eq bootps\n"+
+				"access-list 1%d permit icmp any any\n"+
 				"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
 			teamPartialIp,
 			teamPartialIp,
@@ -103,6 +104,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 			vlan,
 			teamPartialIp,
 			ServerIpAddress,
+			vlan,
 			vlan,
 			vlan,
 			teamPartialIp,
