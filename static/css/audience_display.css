@@ -601,7 +601,7 @@ html {
   border: 2px solid #222;
   text-align: center;
   font-family: "FuturaLT";
-  font-size: 3.5em;
+  font-size: 2.6em;
 }
 #allianceSelectionTable img {
   width: 3em;
@@ -611,12 +611,12 @@ html {
   background-color: #ccc;
 }
 .alliance-cell {
-  padding: 0px 40px;
+  padding: 0px 20px;
   font-family: "FuturaLT";
   color: #999;
 }
 .selection-cell {
-  width: 3.4em;
+  width: 3.1em;
   color: #222;
 }
 #lowerThird {
