@@ -301,7 +301,7 @@ interface Vlan60
  ip access-group 160 in
 !
 interface Vlan100
- ip address 10.0.100.2 255.255.255.0
+ ip address 10.0.100.3 255.255.255.0
 !
 ip classless
 ip http server
