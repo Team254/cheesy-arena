@@ -792,10 +792,19 @@ func (arena *Arena) preLoadNextMatch() {
 		return
 	}
 
+	teamIds := [6]int{nextMatch.Red1, nextMatch.Red2, nextMatch.Red3, nextMatch.Blue1, nextMatch.Blue2, nextMatch.Blue3}
+	if nextMatch.ShouldAllowNexusSubstitution() && arena.EventSettings.NexusEnabled {
+		// Attempt to get the match lineup from Nexus for FRC.
+		lineup, err := arena.NexusClient.GetLineup(nextMatch.TbaMatchKey)
+		if err != nil {
+			log.Printf("Failed to load lineup from Nexus: %s", err.Error())
+		} else {
+			teamIds = *lineup
+		}
+	}
+
 	var teams [6]*model.Team
-	for i, teamId := range []int{
-		nextMatch.Red1, nextMatch.Red2, nextMatch.Red3, nextMatch.Blue1, nextMatch.Blue2, nextMatch.Blue3,
-	} {
+	for i, teamId := range teamIds {
 		if teamId == 0 {
 			continue
 		}
