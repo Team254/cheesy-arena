@@ -165,7 +165,7 @@
     }
 
     .matchblock .teamnum {
-      font-size:27px;
+      font-size:25px;
       text-anchor:middle;
       fill:#444444;
     }
@@ -413,12 +413,12 @@
   {{if .RedAlliance}}
     <text x="22" y="70" class="alliancenum r">{{.RedAlliance.Id}}</text>
     {{if ge (len .RedAlliance.TeamIds) 3}}
-      <text x="86.7247" y="54.0281" class="teamnum r">{{index .RedAlliance.TeamIds 0}}</text>
-      <text x="162.8365" y="54.0281" class="teamnum r">{{index .RedAlliance.TeamIds 1}}</text>
-      <text x="86.7247" y="81.2683" class="teamnum r">{{index .RedAlliance.TeamIds 2}}</text>
+      <text x="85" y="51" class="teamnum r">{{index .RedAlliance.TeamIds 0}}</text>
+      <text x="165" y="51" class="teamnum r">{{index .RedAlliance.TeamIds 1}}</text>
+      <text x="85" y="81" class="teamnum r">{{index .RedAlliance.TeamIds 2}}</text>
     {{end}}
     {{if ge (len .RedAlliance.TeamIds) 4}}
-      <text x="162.8365" y="81.2683" class="teamnum r">{{index .RedAlliance.TeamIds 3}}</text>
+      <text x="165" y="81" class="teamnum r">{{index .RedAlliance.TeamIds 3}}</text>
     {{end}}
   {{else}}
     <text class="placeholder" x="101.1501" y="66.5769">{{.RedAllianceSource}}</text>
@@ -426,12 +426,12 @@
   {{if .BlueAlliance}}
     <text x="22" y="135" class="alliancenum b">{{.BlueAlliance.Id}}</text>
     {{if ge (len .BlueAlliance.TeamIds) 3}}
-      <text x="86.7247" y="119.1797" class="teamnum b">{{index .BlueAlliance.TeamIds 0}}</text>
-      <text x="162.8365" y="119.1797" class="teamnum b">{{index .BlueAlliance.TeamIds 1}}</text>
-      <text x="86.7247" y="146.4199" class="teamnum b">{{index .BlueAlliance.TeamIds 2}}</text>
+      <text x="85" y="116" class="teamnum b">{{index .BlueAlliance.TeamIds 0}}</text>
+      <text x="165" y="116" class="teamnum b">{{index .BlueAlliance.TeamIds 1}}</text>
+      <text x="85" y="146" class="teamnum b">{{index .BlueAlliance.TeamIds 2}}</text>
     {{end}}
     {{if ge (len .BlueAlliance.TeamIds) 4}}
-      <text x="162.8365" y="146.4199" class="teamnum b">{{index .BlueAlliance.TeamIds 3}}</text>
+      <text x="165" y="146" class="teamnum b">{{index .BlueAlliance.TeamIds 3}}</text>
     {{end}}
   {{else}}
     <text class="placeholder" x="101.1501" y="130.4177">{{.BlueAllianceSource}}</text>

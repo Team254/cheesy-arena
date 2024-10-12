@@ -8,7 +8,6 @@ package field
 import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
 	"strconv"
@@ -38,8 +37,9 @@ type MatchTimeMessage struct {
 }
 
 type audienceAllianceScoreFields struct {
-	Score        *game.Score
-	ScoreSummary *game.ScoreSummary
+	Score                     *game.Score
+	ScoreSummary              *game.ScoreSummary
+	AmplifiedTimeRemainingSec int
 }
 
 // Instantiates notifiers and configures their message producing methods.
@@ -65,7 +65,17 @@ func (arena *Arena) configureNotifiers() {
 }
 
 func (arena *Arena) generateAllianceSelectionMessage() any {
-	return &arena.AllianceSelectionAlliances
+	return &struct {
+		Alliances        []model.Alliance
+		ShowTimer        bool
+		TimeRemainingSec int
+		RankedTeams      []model.AllianceSelectionRankedTeam
+	}{
+		arena.AllianceSelectionAlliances,
+		arena.AllianceSelectionShowTimer,
+		arena.AllianceSelectionTimeRemainingSec,
+		arena.AllianceSelectionRankedTeams,
+	}
 }
 
 func (arena *Arena) generateAllianceStationDisplayModeMessage() any {
@@ -73,28 +83,27 @@ func (arena *Arena) generateAllianceStationDisplayModeMessage() any {
 }
 
 func (arena *Arena) generateArenaStatusMessage() any {
-	// Convert AP team wifi network status array to a map by station for ease of client use.
-	teamWifiStatuses := make(map[string]network.TeamWifiStatus)
-	for i, station := range []string{"R1", "R2", "R3", "B1", "B2", "B3"} {
-		if arena.EventSettings.Ap2TeamChannel == 0 || i < 3 {
-			teamWifiStatuses[station] = arena.accessPoint.TeamWifiStatuses[i]
-		} else {
-			teamWifiStatuses[station] = arena.accessPoint2.TeamWifiStatuses[i]
-		}
-	}
-
 	return &struct {
 		MatchId          int
 		AllianceStations map[string]*AllianceStation
-		TeamWifiStatuses map[string]network.TeamWifiStatus
 		MatchState
 		CanStartMatch         bool
+		AccessPointStatus     string
+		SwitchStatus          string
 		PlcIsHealthy          bool
-		FieldEstop            bool
+		FieldEStop            bool
 		PlcArmorBlockStatuses map[string]bool
-	}{arena.CurrentMatch.Id, arena.AllianceStations, teamWifiStatuses, arena.MatchState,
-		arena.checkCanStartMatch() == nil, arena.Plc.IsHealthy(), arena.Plc.GetFieldEstop(),
-		arena.Plc.GetArmorBlockStatuses()}
+	}{
+		arena.CurrentMatch.Id,
+		arena.AllianceStations,
+		arena.MatchState,
+		arena.checkCanStartMatch() == nil,
+		arena.accessPoint.Status,
+		arena.networkSwitch.Status,
+		arena.Plc.IsHealthy(),
+		arena.Plc.GetFieldEStop(),
+		arena.Plc.GetArmorBlockStatuses(),
+	}
 }
 
 func (arena *Arena) generateAudienceDisplayModeMessage() any {
@@ -125,15 +134,11 @@ func (arena *Arena) generateLowerThirdMessage() any {
 
 func (arena *Arena) GenerateMatchLoadMessage() any {
 	teams := make(map[string]*model.Team)
+	var allTeamIds []int
 	for station, allianceStation := range arena.AllianceStations {
 		teams[station] = allianceStation.Team
-	}
-
-	rankings := make(map[string]*game.Ranking)
-	for _, allianceStation := range arena.AllianceStations {
 		if allianceStation.Team != nil {
-			rankings[strconv.Itoa(allianceStation.Team.Id)], _ =
-				arena.Database.GetRankingForTeam(allianceStation.Team.Id)
+			allTeamIds = append(allTeamIds, allianceStation.Team.Id)
 		}
 	}
 
@@ -150,10 +155,20 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		for _, teamId := range redOffFieldTeamIds {
 			team, _ := arena.Database.GetTeamById(teamId)
 			redOffFieldTeams = append(redOffFieldTeams, team)
+			allTeamIds = append(allTeamIds, teamId)
 		}
 		for _, teamId := range blueOffFieldTeamIds {
 			team, _ := arena.Database.GetTeamById(teamId)
 			blueOffFieldTeams = append(blueOffFieldTeams, team)
+			allTeamIds = append(allTeamIds, teamId)
+		}
+	}
+
+	rankings := make(map[string]int)
+	for _, teamId := range allTeamIds {
+		ranking, _ := arena.Database.GetRankingForTeam(teamId)
+		if ranking != nil {
+			rankings[strconv.Itoa(teamId)] = ranking.Rank
 		}
 	}
 
@@ -162,7 +177,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		AllowSubstitution bool
 		IsReplay          bool
 		Teams             map[string]*model.Team
-		Rankings          map[string]*game.Ranking
+		Rankings          map[string]int
 		Matchup           *playoff.Matchup
 		RedOffFieldTeams  []*model.Team
 		BlueOffFieldTeams []*model.Team
@@ -317,6 +332,7 @@ func getAudienceAllianceScoreFields(allianceScore *RealtimeScore,
 	fields := new(audienceAllianceScoreFields)
 	fields.Score = &allianceScore.CurrentScore
 	fields.ScoreSummary = allianceScoreSummary
+	fields.AmplifiedTimeRemainingSec = allianceScore.AmplifiedTimeRemainingSec
 	return fields
 }
 

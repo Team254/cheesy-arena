@@ -6,6 +6,9 @@ package web
 import (
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/websocket"
+	gorillawebsocket "github.com/gorilla/websocket"
+	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -13,8 +16,6 @@ import (
 func TestAllianceSelection(t *testing.T) {
 	web := setupTestWeb(t)
 
-	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 15
 	web.arena.EventSettings.SelectionRound3Order = "L"
@@ -101,8 +102,6 @@ func TestAllianceSelection(t *testing.T) {
 func TestAllianceSelectionErrors(t *testing.T) {
 	web := setupTestWeb(t)
 
-	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 	for i := 1; i <= 6; i++ {
@@ -154,7 +153,7 @@ func TestAllianceSelectionErrors(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
 	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
+	web.arena.AllianceSelectionRankedTeams = []model.AllianceSelectionRankedTeam{}
 	recorder = web.postHttpResponse("/alliance_selection/start", "")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "already been finalized")
@@ -163,8 +162,6 @@ func TestAllianceSelectionErrors(t *testing.T) {
 func TestAllianceSelectionReset(t *testing.T) {
 	web := setupTestWeb(t)
 
-	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 	for i := 1; i <= 6; i++ {
@@ -220,8 +217,6 @@ func TestAllianceSelectionReset(t *testing.T) {
 func TestAllianceSelectionAutofocus(t *testing.T) {
 	web := setupTestWeb(t)
 
-	web.arena.AllianceSelectionAlliances = []model.Alliance{}
-	cachedRankedTeams = []*RankedTeam{}
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 
@@ -308,4 +303,32 @@ func TestAllianceSelectionAutofocus(t *testing.T) {
 	i, j = web.determineNextCell()
 	assert.Equal(t, -1, i)
 	assert.Equal(t, -1, j)
+}
+
+func TestAllianceSelectionWebsocket(t *testing.T) {
+	web := setupTestWeb(t)
+
+	server, wsUrl := web.startTestServer()
+	defer server.Close()
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/alliance_selection/websocket", nil)
+	assert.Nil(t, err)
+	defer conn.Close()
+	ws := websocket.NewTestWebsocket(conn)
+
+	// Should get a status update right after connection.
+	readWebsocketType(t, ws, "allianceSelection")
+
+	// Test starting and stopping the timer.
+	allianceSelectionMessage := struct {
+		ShowTimer bool
+	}{}
+	ws.Write("startTimer", nil)
+	assert.Nil(t, mapstructure.Decode(readWebsocketType(t, ws, "allianceSelection"), &allianceSelectionMessage))
+	assert.Equal(t, true, allianceSelectionMessage.ShowTimer)
+	ws.Write("stopTimer", nil)
+	assert.Nil(t, mapstructure.Decode(readWebsocketType(t, ws, "allianceSelection"), &allianceSelectionMessage))
+	assert.Equal(t, false, allianceSelectionMessage.ShowTimer)
+	ws.Write("startTimer", nil)
+	assert.Nil(t, mapstructure.Decode(readWebsocketType(t, ws, "allianceSelection"), &allianceSelectionMessage))
+	assert.Equal(t, true, allianceSelectionMessage.ShowTimer)
 }

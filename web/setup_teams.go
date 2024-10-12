@@ -10,14 +10,17 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/dchest/uniuri"
-	"github.com/gorilla/mux"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
 const wpaKeyLength = 8
+
+// Global var to hold the team download progress percentage.
+var progressPercentage float64 = 5
 
 // Shows the team list.
 func (web *Web) teamsGetHandler(w http.ResponseWriter, r *http.Request) {
@@ -47,6 +50,8 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	progressPercentage = 5
+	progressIncrement := 95.0 / float64(len(teamNumbers))
 	for _, teamNumber := range teamNumbers {
 		team := model.Team{Id: teamNumber}
 		if web.arena.EventSettings.TbaDownloadEnabled {
@@ -59,7 +64,11 @@ func (web *Web) teamsPostHandler(w http.ResponseWriter, r *http.Request) {
 			handleWebErr(w, err)
 			return
 		}
+
+		progressPercentage += progressIncrement
 	}
+	progressPercentage = 100
+
 	http.Redirect(w, r, "/setup/teams", 303)
 }
 
@@ -75,6 +84,8 @@ func (web *Web) teamsRefreshHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	progInc := 95.00 / float64(len(teams))
+
 	for _, team := range teams {
 		if err = web.populateOfficialTeamInfo(&team); err != nil {
 			handleWebErr(w, err)
@@ -84,9 +95,13 @@ func (web *Web) teamsRefreshHandler(w http.ResponseWriter, r *http.Request) {
 			handleWebErr(w, err)
 			return
 		}
+
+		progressPercentage += progInc
 	}
 
+	progressPercentage = 100
 	http.Redirect(w, r, "/setup/teams", 303)
+	progressPercentage = 5
 }
 
 // Clears the team list.
@@ -114,8 +129,7 @@ func (web *Web) teamEditGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	teamId, _ := strconv.Atoi(vars["id"])
+	teamId, _ := strconv.Atoi(r.PathValue("id"))
 	team, err := web.arena.Database.GetTeamById(teamId)
 	if err != nil {
 		handleWebErr(w, err)
@@ -148,8 +162,7 @@ func (web *Web) teamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	teamId, _ := strconv.Atoi(vars["id"])
+	teamId, _ := strconv.Atoi(r.PathValue("id"))
 	team, err := web.arena.Database.GetTeamById(teamId)
 	if err != nil {
 		handleWebErr(w, err)
@@ -163,6 +176,7 @@ func (web *Web) teamEditPostHandler(w http.ResponseWriter, r *http.Request) {
 	team.Name = r.PostFormValue("name")
 	team.Nickname = r.PostFormValue("nickname")
 	team.City = r.PostFormValue("city")
+	team.SchoolName = r.PostFormValue("schoolName")
 	team.StateProv = r.PostFormValue("stateProv")
 	team.Country = r.PostFormValue("country")
 	team.RookieYear, _ = strconv.Atoi(r.PostFormValue("rookieYear"))
@@ -195,8 +209,7 @@ func (web *Web) teamDeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	teamId, _ := strconv.Atoi(vars["id"])
+	teamId, _ := strconv.Atoi(r.PathValue("id"))
 	team, err := web.arena.Database.GetTeamById(teamId)
 	if err != nil {
 		handleWebErr(w, err)
@@ -238,6 +251,12 @@ func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	http.Redirect(w, r, "/setup/teams", 303)
+}
+
+// Returns the current TBA team data download progress.
+func (web *Web) teamsUpdateProgressBarHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	_, _ = w.Write([]byte(fmt.Sprintf("%.0f", progressPercentage)))
 }
 
 func (web *Web) renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) {
@@ -290,6 +309,11 @@ func (web *Web) populateOfficialTeamInfo(team *model.Team) error {
 	team.City = tbaTeam.City
 	team.StateProv = tbaTeam.StateProv
 	team.Country = tbaTeam.Country
+	schoolNameRe := regexp.MustCompile("^.*\\S&(\\S.*?$)")
+	matches := schoolNameRe.FindStringSubmatch(tbaTeam.Name)
+	if len(matches) > 0 {
+		team.SchoolName = matches[1]
+	}
 	team.RookieYear = tbaTeam.RookieYear
 	team.RobotName, err = web.arena.TbaClient.GetRobotName(team.Id, time.Now().Year())
 	if err != nil {

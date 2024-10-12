@@ -1,0 +1,22 @@
+{{/*
+  Copyright 2024 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  Display to show an arbitrary web page.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Web Page Display - {{.EventSettings.Name}} - Cheesy Arena </title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/webpage_display.css" />
+  </head>
+  <body>
+    <iframe id="webpageFrame"></iframe>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/webpage_display.js"></script>
+  </body>
+</html>

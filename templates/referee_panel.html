@@ -8,7 +8,7 @@
 {{define "body"}}
 <div id="matchName"></div>
 <div id="refereePanel">
-  <div id="cards">
+  <div id="cards" class="headRef-dependent">
     <h3>Red/Yellow Cards</h3>
     <div class="alliance-cards" id="redCards">
       {{range $i := seq 3}}
@@ -20,6 +20,8 @@
         {{template "teamCard" dict "alliance" "blue" "position" $i}}
       {{end}}
     </div>
+    <div class="scoring-status" id="redScoreStatus"></div>
+    <div class="scoring-status" id="blueScoreStatus"></div>
   </div>
   <div id="fouls">
     <h3>Fouls</h3>
@@ -33,8 +35,7 @@
   </div>
 </div>
 <p>Note: Team and rule assignment are optional.</p>
-<div id="controlButtons">
-  <div class="control-button" id="volunteerButton" onclick="signalVolunteers();">Signal Volunteers</div>
+<div id="controlButtons" class="headRef-dependent">
   <div class="control-button" id="resetButton" onclick="signalReset();">Signal Reset</div>
   <div class="control-button" id="commitButton" onclick="commitMatch();">Commit Match</div>
 </div>

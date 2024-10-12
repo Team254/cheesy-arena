@@ -8,13 +8,10 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
-	"time"
 )
 
-var dummyStartTime = time.Unix(0, 0)
-
 func TestSingleEliminationInitialWith2Alliances(t *testing.T) {
-	finalMatchup, _, err := newSingleEliminationBracket(2)
+	finalMatchup, breakSpecs, err := newSingleEliminationBracket(2)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -29,9 +26,15 @@ func TestSingleEliminationInitialWith2Alliances(t *testing.T) {
 	matchGroups, err := collectMatchGroups(finalMatchup)
 	assert.Nil(t, err)
 	assertMatchGroups(t, matchGroups, "F")
+
+	if assert.Equal(t, 2, len(breakSpecs)) {
+		assert.Equal(t, breakSpec{44, 480, "Field Break"}, breakSpecs[0])
+		assert.Equal(t, breakSpec{45, 480, "Field Break"}, breakSpecs[1])
+	}
 }
+
 func TestSingleEliminationInitialWith3Alliances(t *testing.T) {
-	finalMatchup, _, err := newSingleEliminationBracket(3)
+	finalMatchup, breakSpecs, err := newSingleEliminationBracket(3)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -66,6 +69,12 @@ func TestSingleEliminationInitialWith3Alliances(t *testing.T) {
 	matchGroups, err := collectMatchGroups(finalMatchup)
 	assert.Nil(t, err)
 	assertMatchGroups(t, matchGroups, "SF2", "F")
+
+	if assert.Equal(t, 3, len(breakSpecs)) {
+		assert.Equal(t, breakSpec{43, 480, "Field Break"}, breakSpecs[0])
+		assert.Equal(t, breakSpec{44, 480, "Field Break"}, breakSpecs[1])
+		assert.Equal(t, breakSpec{45, 480, "Field Break"}, breakSpecs[2])
+	}
 }
 
 func TestSingleEliminationInitialWith4Alliances(t *testing.T) {
@@ -249,7 +258,7 @@ func TestSingleEliminationInitialWith7Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith8Alliances(t *testing.T) {
-	finalMatchup, _, err := newSingleEliminationBracket(8)
+	finalMatchup, breakSpecs, err := newSingleEliminationBracket(8)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -282,6 +291,12 @@ func TestSingleEliminationInitialWith8Alliances(t *testing.T) {
 	matchGroups, err := collectMatchGroups(finalMatchup)
 	assert.Nil(t, err)
 	assertMatchGroups(t, matchGroups, "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F")
+
+	if assert.Equal(t, 3, len(breakSpecs)) {
+		assert.Equal(t, breakSpec{43, 480, "Field Break"}, breakSpecs[0])
+		assert.Equal(t, breakSpec{44, 480, "Field Break"}, breakSpecs[1])
+		assert.Equal(t, breakSpec{45, 480, "Field Break"}, breakSpecs[2])
+	}
 }
 
 func TestSingleEliminationInitialWith9Alliances(t *testing.T) {
@@ -765,7 +780,7 @@ func TestSingleEliminationInitialWith15Alliances(t *testing.T) {
 }
 
 func TestSingleEliminationInitialWith16Alliances(t *testing.T) {
-	finalMatchup, _, err := newSingleEliminationBracket(16)
+	finalMatchup, breakSpecs, err := newSingleEliminationBracket(16)
 	assert.Nil(t, err)
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
@@ -846,6 +861,12 @@ func TestSingleEliminationInitialWith16Alliances(t *testing.T) {
 		matchGroups,
 		"EF1", "EF2", "EF3", "EF4", "EF5", "EF6", "EF7", "EF8", "QF1", "QF2", "QF3", "QF4", "SF1", "SF2", "F",
 	)
+
+	if assert.Equal(t, 3, len(breakSpecs)) {
+		assert.Equal(t, breakSpec{43, 480, "Field Break"}, breakSpecs[0])
+		assert.Equal(t, breakSpec{44, 480, "Field Break"}, breakSpecs[1])
+		assert.Equal(t, breakSpec{45, 480, "Field Break"}, breakSpecs[2])
+	}
 }
 
 func TestSingleEliminationErrors(t *testing.T) {

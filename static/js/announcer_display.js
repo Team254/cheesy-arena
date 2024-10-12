@@ -14,6 +14,16 @@ var handleAudienceDisplayMode = function(targetScreen) {
   }
 };
 
+// Handles a websocket message to update the event status message.
+const handleEventStatus = function(data) {
+  if (data.CycleTime === "") {
+    $("#cycleTimeMessage").text("Last cycle time: Unknown");
+  } else {
+    $("#cycleTimeMessage").text("Last cycle time: " + data.CycleTime);
+  }
+  $("#earlyLateMessage").text(data.EarlyLateMessage);
+};
+
 // Handles a websocket message to update the teams for the current match.
 var handleMatchLoad = function(data) {
   $("#matchName").text(data.Match.LongName);
@@ -36,8 +46,8 @@ var handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function(data) {
-  $("#redScore").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.EndgamePoints);
-  $("#blueScore").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.EndgamePoints);
+  $("#redScore").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.StagePoints);
+  $("#blueScore").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.StagePoints);
 };
 
 // Handles a websocket message to populate the final score data.
@@ -51,17 +61,21 @@ var handleScorePosted = function(data) {
   const matchResult = $("#matchResult");
   fetch("/displays/announcer/score_posted")
     .then(response => response.text())
-    .then(html => matchResult.html(html));
-  matchResult.modal("show");
+    .then(html => {
+      matchResult.html(html);
+      matchResult.modal("show");
 
-  // Activate tooltips above the foul listings.
-  $("[data-toggle=tooltip]").tooltip({"placement": "top"});
+      // Activate tooltips above the foul listings.
+      const tooltipTriggerList = document.querySelectorAll("[data-bs-toggle=tooltip]");
+      const tooltipList = [...tooltipTriggerList].map(element => new bootstrap.Tooltip(element));
+    });
 };
 
 $(function() {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/announcer/websocket", {
     audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
+    eventStatus: function(event) { handleEventStatus(event.data); },
     matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     matchTiming: function(event) { handleMatchTiming(event.data); },

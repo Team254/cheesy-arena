@@ -27,17 +27,23 @@
 .blue-text {
   color: #00f;
 }
-.well-red {
-  background-color: #f2dede;
+.bg-red {
+  background-color: #422 !important;
 }
-.well-darkred {
-  background-color: #ebcccc;
+.bg-dark-red {
+  background-color: #311 !important;
 }
-.well-blue {
-  background-color: #d9edf7;
+.bg-blue {
+  background-color: #192945 !important;
 }
-.well-darkblue {
-  background-color: #c4e3f3;
+.bg-dark-blue {
+  background-color: #113 !important;
+}
+.bg-yellow {
+  background-color: #442 !important;
+}
+.bg-green {
+  background-color: #132 !important;
 }
 .col-no-padding {
   padding-left: 0;
@@ -45,6 +51,9 @@
 }
 .modal-large {
   width: 60%;
+}
+.team-number {
+  height: 27px;
 }
 .ds-status, .radio-status, .robot-status, .bypass-status {
   background-color: #aaa;
@@ -61,27 +70,44 @@
 .bypass-status {
   cursor: pointer;
 }
-[data-status-ok="true"] {
+[data-status-ok="true"], [data-status-ternary="2"] {
   background-color: #0e8;
 }
-[data-status-ok="false"] {
+[data-status-ok="false"], [data-status-ternary="0"] {
   background-color: #e66;
+}
+[data-status-ternary="1"] {
+  background-color: #fc3;
 }
 [data-blink="true"] {
-  background-color: #fc0;
+  background-color: #960;
 }
 .btn-match-play {
-  width: 150px;
+  width: 170px;
+  height: 50px;
+  line-height: 36px;
   font-size: 16px;
 }
-.label-scoring {
+.badge-scoring {
   background-color: #e66;
 }
-.label-scoring[data-ready=true] {
+.badge-scoring[data-ready=true] {
   background-color: #0c6;
 }
-.label-saved-match {
-  background-color: #999;
+.badge-status {
+  background-color: #e66;
+}
+.badge-status[data-status=BOOTING] {
+  background-color: #f92;
+}
+.badge-status[data-status=CONFIGURING] {
+  background-color: #08f;
+}
+.badge-status[data-status=ACTIVE] {
+  background-color: #0c6;
+}
+.badge-saved-match {
+  background-color: #666;
 }
 .nowrap {
   white-space: nowrap;
@@ -90,6 +116,9 @@
   margin: 8px 0px;
   padding-left: 20px;
   text-indent: -20px;
+}
+.btn-logs {
+  width: 60px;
 }
 .btn-lower-third {
   width: 80px;
@@ -105,30 +134,19 @@ td[data-plc-value="true"] {
   color: #090;
 }
 .btn-game-sound {
-  width: 160px;
+  width: 190px;
   text-align: left;
 }
 input[data-changed="true"], select[data-changed="true"] {
   border: 2px solid #f00;
 }
-.status-well {
-  margin-bottom: 10px;
-}
-#buttonBottomRow {
-  margin-top: 5px;
-  margin-bottom: 10px;
-}
 .match-list {
   height: 610px;
   overflow-y: auto;
 }
-.match-list table {
-  border-collapse: separate;
-}
 .match-list th {
   position: sticky;
   top: 0;
-  background-color: #fff;
 }
 #testMatchSettings {
   display: none;

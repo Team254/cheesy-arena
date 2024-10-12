@@ -32,7 +32,9 @@ func (web *Web) enforceDisplayConfiguration(w http.ResponseWriter, r *http.Reque
 	// Get display-specific fields from the query parameters.
 	if defaults != nil {
 		for key, defaultValue := range defaults {
-			if configuration[key] = r.URL.Query().Get(key); configuration[key] == "" {
+			if r.URL.Query().Has(key) {
+				configuration[key] = r.URL.Query().Get(key)
+			} else {
 				configuration[key] = defaultValue
 				allPresent = false
 			}

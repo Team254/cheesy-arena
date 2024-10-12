@@ -33,7 +33,7 @@ var reorderLowerThird = function(button, moveUp) {
 // Gathers the lower third info and constructs a JSON object.
 var constructLowerThird = function(button) {
   return { Id: parseInt(button.form.id.value), TopText: button.form.topText.value,
-      BottomText: button.form.bottomText.value, DisplayOrder: parseInt(button.form.displayOrder.value) }
+      BottomText: button.form.bottomText.value }
 };
 
 $(function() {

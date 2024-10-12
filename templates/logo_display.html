@@ -1,0 +1,28 @@
+{{/*
+  Copyright 2024 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  Display to show a static logo and configurable message.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Logo Display - {{.EventSettings.Name}} - Cheesy Arena </title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/logo_display.css" />
+  </head>
+  <body>
+    <div id="logo">
+      <img id="logoImg" src="/static/img/alliance-station-logo.png" alt="logo" />
+    </div>
+    <div id="message"></div>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/match_timing.js"></script>
+    <script src="/static/js/logo_display.js"></script>
+  </body>
+</html>

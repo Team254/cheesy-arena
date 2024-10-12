@@ -126,6 +126,11 @@ func (match *Match) ShouldAllowSubstitution() bool {
 	return match.Type != Qualification
 }
 
+// Returns true if the match is of a type that allows loading lineup information from Nexus.
+func (match *Match) ShouldAllowNexusSubstitution() bool {
+	return match.Type == Practice || match.Type == Playoff
+}
+
 // Returns true if the red and yellow cards should be updated as a result of the match.
 func (match *Match) ShouldUpdateCards() bool {
 	return match.Type == Qualification || match.Type == Playoff
@@ -154,4 +159,12 @@ func MatchTypeFromString(matchTypeString string) (MatchType, error) {
 		return Playoff, nil
 	}
 	return 0, fmt.Errorf("invalid match type %q", matchTypeString)
+}
+
+// Returns the string equivalent of the given compound match key.
+func (key TbaMatchKey) String() string {
+	if key.SetNumber == 0 {
+		return fmt.Sprintf("%s%d", key.CompLevel, key.MatchNumber)
+	}
+	return fmt.Sprintf("%s%dm%d", key.CompLevel, key.SetNumber, key.MatchNumber)
 }

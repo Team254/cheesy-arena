@@ -107,13 +107,13 @@ func CalculateTeamCards(database *model.Database, matchType model.MatchType) err
 
 		// Mark the team as having a yellow card if they got either a yellow or red in a previous match.
 		for teamId, card := range matchResult.RedCards {
-			if team, ok := teamsMap[teamId]; ok && card != "" {
+			if team, ok := teamsMap[teamId]; ok && (card == "red" || card == "yellow") {
 				team.YellowCard = true
 				teamsMap[teamId] = team
 			}
 		}
 		for teamId, card := range matchResult.BlueCards {
-			if team, ok := teamsMap[teamId]; ok && card != "" {
+			if team, ok := teamsMap[teamId]; ok && (card == "red" || card == "yellow") {
 				team.YellowCard = true
 				teamsMap[teamId] = team
 			}
@@ -149,7 +149,7 @@ func addMatchResultToRankings(
 		cards = matchResult.BlueCards
 	}
 	disqualified := false
-	if card, ok := cards[strconv.Itoa(teamId)]; ok && card == "red" {
+	if card, ok := cards[strconv.Itoa(teamId)]; ok && (card == "red" || card == "dq") {
 		disqualified = true
 	}
 

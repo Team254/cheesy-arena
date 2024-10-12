@@ -1,300 +1,280 @@
 // Copyright 2017 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Methods for configuring a Linksys WRT1900ACS access point running OpenWRT for team SSIDs and VLANs.
+// Methods for configuring a Linksys WRT1900ACS or Vivid-Hosting VH-109 access point running OpenWRT for team SSIDs and
+// VLANs.
 
 package network
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log"
-	"regexp"
+	"net/http"
 	"strconv"
-	"strings"
+	"syscall"
 	"time"
 
 	"github.com/Team254/cheesy-arena/model"
-	"golang.org/x/crypto/ssh"
 )
 
 const (
-	accessPointSshPort                = 22
-	accessPointConnectTimeoutSec      = 1
-	accessPointCommandTimeoutSec      = 5
-	accessPointPollPeriodSec          = 3
-	accessPointRequestBufferSize      = 10
-	accessPointConfigRetryIntervalSec = 5
+	accessPointPollPeriodSec = 1
 )
 
 type AccessPoint struct {
-	address                string
-	username               string
+	apiUrl                 string
 	password               string
-	teamChannel            int
+	channel                int
 	networkSecurityEnabled bool
-	configRequestChan      chan [6]*model.Team
-	TeamWifiStatuses       [6]TeamWifiStatus
-	initialStatusesFetched bool
+	Status                 string
+	TeamWifiStatuses       [6]*TeamWifiStatus
+	lastConfiguredTeams    [6]*model.Team
 }
 
 type TeamWifiStatus struct {
-	TeamId      int
-	RadioLinked bool
-	MBits       float64
+	TeamId           int
+	RadioLinked      bool
+	MBits            float64
+	RxRate           float64
+	TxRate           float64
+	SignalNoiseRatio int
 }
 
-type sshOutput struct {
-	output string
-	err    error
+type configurationRequest struct {
+	Channel               int                             `json:"channel"`
+	StationConfigurations map[string]stationConfiguration `json:"stationConfigurations"`
 }
 
-func (ap *AccessPoint) SetSettings(address, username, password string, teamChannel int, networkSecurityEnabled bool) {
-	ap.address = address
-	ap.username = username
+type stationConfiguration struct {
+	Ssid   string `json:"ssid"`
+	WpaKey string `json:"wpaKey"`
+}
+
+type accessPointStatus struct {
+	Channel         int                       `json:"channel"`
+	Status          string                    `json:"status"`
+	StationStatuses map[string]*stationStatus `json:"stationStatuses"`
+}
+
+type stationStatus struct {
+	Ssid              string  `json:"ssid"`
+	HashedWpaKey      string  `json:"hashedWpaKey"`
+	WpaKeySalt        string  `json:"wpaKeySalt"`
+	IsLinked          bool    `json:"isLinked"`
+	RxRateMbps        float64 `json:"rxRateMbps"`
+	TxRateMbps        float64 `json:"txRateMbps"`
+	SignalNoiseRatio  int     `json:"signalNoiseRatio"`
+	BandwidthUsedMbps float64 `json:"bandwidthUsedMbps"`
+}
+
+func (ap *AccessPoint) SetSettings(
+	address, password string,
+	channel int,
+	networkSecurityEnabled bool,
+	wifiStatuses [6]*TeamWifiStatus,
+) {
+	ap.apiUrl = fmt.Sprintf("http://%s", address)
 	ap.password = password
-	ap.teamChannel = teamChannel
+	ap.channel = channel
 	ap.networkSecurityEnabled = networkSecurityEnabled
-
-	// Create config channel the first time this method is called.
-	if ap.configRequestChan == nil {
-		ap.configRequestChan = make(chan [6]*model.Team, accessPointRequestBufferSize)
-	}
+	ap.Status = "UNKNOWN"
+	ap.TeamWifiStatuses = wifiStatuses
 }
 
-// Loops indefinitely to read status from and write configurations to the access point.
+// Loops indefinitely to read status from the access point.
 func (ap *AccessPoint) Run() {
 	for {
-		// Check if there are any pending configuration requests; if not, periodically poll wifi status.
-		select {
-		case request := <-ap.configRequestChan:
-			// If there are multiple requests queued up, only consider the latest one.
-			numExtraRequests := len(ap.configRequestChan)
-			for i := 0; i < numExtraRequests; i++ {
-				request = <-ap.configRequestChan
-			}
+		time.Sleep(time.Second * accessPointPollPeriodSec)
+		if err := ap.updateMonitoring(); err != nil {
+			log.Printf("Failed to update access point monitoring: %v", err)
+			continue
+		}
 
-			ap.handleTeamWifiConfiguration(request)
-		case <-time.After(time.Second * accessPointPollPeriodSec):
-			ap.updateTeamWifiStatuses()
-			ap.updateTeamWifiBTU()
+		// If the access point is in a good state but doesn't match the expected configuration, try again.
+		if ap.Status == "ACTIVE" && !ap.statusMatchesLastConfiguration() {
+			log.Println("Access point is ACTIVE but does not match expected configuration; retrying configuration.")
+			if err := ap.ConfigureTeamWifi(ap.lastConfiguredTeams); err != nil {
+				log.Printf("Failed to reconfigure access point: %v", err)
+			}
 		}
 	}
 }
 
-// Adds a request to set up wireless networks for the given set of teams to the asynchronous queue.
+// Calls the access point's API to configure the team SSIDs and WPA keys.
 func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
-	// Use a channel to serialize configuration requests; the monitoring goroutine will service them.
-	select {
-	case ap.configRequestChan <- teams:
-		return nil
-	default:
-		return fmt.Errorf("WiFi config request buffer full")
-	}
-}
-
-func (ap *AccessPoint) handleTeamWifiConfiguration(teams [6]*model.Team) {
 	if !ap.networkSecurityEnabled {
-		return
+		return nil
 	}
 
-	if ap.configIsCorrectForTeams(teams) {
-		return
+	ap.Status = "CONFIGURING"
+	ap.lastConfiguredTeams = teams
+	request := configurationRequest{
+		Channel:               ap.channel,
+		StationConfigurations: make(map[string]stationConfiguration),
+	}
+	addStation(request.StationConfigurations, "red1", teams[0])
+	addStation(request.StationConfigurations, "red2", teams[1])
+	addStation(request.StationConfigurations, "red3", teams[2])
+	addStation(request.StationConfigurations, "blue1", teams[3])
+	addStation(request.StationConfigurations, "blue2", teams[4])
+	addStation(request.StationConfigurations, "blue3", teams[5])
+	jsonBody, err := json.Marshal(request)
+	if err != nil {
+		return err
 	}
 
-	// Clear the state of the radio before loading teams.
-	ap.configureTeams([6]*model.Team{nil, nil, nil, nil, nil, nil})
-	ap.configureTeams(teams)
+	// Send the configuration to the access point API.
+	url := ap.apiUrl + "/configuration"
+	httpRequest, err := http.NewRequest("POST", url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return err
+	}
+	if ap.password != "" {
+		httpRequest.Header.Add("Authorization", fmt.Sprintf("Bearer %s", ap.password))
+	}
+	httpClient := http.Client{Timeout: time.Second * 3}
+	httpResponse, err := httpClient.Do(httpRequest)
+	if err != nil {
+		ap.checkAndLogApiError(err)
+		return err
+	}
+	defer httpResponse.Body.Close()
+	if httpResponse.StatusCode/100 != 2 {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return fmt.Errorf("access point returned status %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	log.Println("Access point accepted the new configuration and will apply it asynchronously.")
+	return nil
 }
 
-func (ap *AccessPoint) configureTeams(teams [6]*model.Team) {
-	retryCount := 1
+// Fetches the current access point status from the API and updates the status structure.
+func (ap *AccessPoint) updateMonitoring() error {
+	if !ap.networkSecurityEnabled {
+		return nil
+	}
 
-	for {
-		teamIndex := 0
-		for teamIndex < 6 {
-			config, err := generateTeamAccessPointConfig(teams[teamIndex], teamIndex+1)
-			if err != nil {
-				log.Printf("Failed to generate WiFi configuration: %v", err)
-			}
+	// Fetch the status from the access point API.
+	url := ap.apiUrl + "/status"
+	httpRequest, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	if ap.password != "" {
+		httpRequest.Header.Add("Authorization", fmt.Sprintf("Bearer %s", ap.password))
+	}
+	var httpClient http.Client
+	httpResponse, err := httpClient.Do(httpRequest)
+	if err != nil {
+		ap.checkAndLogApiError(err)
+		ap.Status = "ERROR"
+		return fmt.Errorf("failed to fetch access point status: %v", err)
+	}
+	if httpResponse.StatusCode/100 != 2 {
+		ap.Status = "ERROR"
+		body, _ := io.ReadAll(httpResponse.Body)
+		return fmt.Errorf("access point returned status %d: %s", httpResponse.StatusCode, string(body))
+	}
 
-			command := addConfigurationHeader(config)
-
-			_, err = ap.runCommand(command)
-			if err != nil {
-				log.Printf("Error writing team configuration to AP: %v", err)
-				retryCount++
-				time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
-				continue
-			}
-
-			teamIndex++
+	// Parse the response and populate the status structure.
+	var apStatus accessPointStatus
+	err = json.NewDecoder(httpResponse.Body).Decode(&apStatus)
+	if err != nil {
+		ap.Status = "ERROR"
+		return fmt.Errorf("failed to parse access point status: %v", err)
+	}
+	if ap.Status != apStatus.Status {
+		log.Printf("Access point status changed from %s to %s.", ap.Status, apStatus.Status)
+		ap.Status = apStatus.Status
+		if ap.Status == "ACTIVE" {
+			log.Printf("Access point detailed status:\n%s", apStatus.toLogString())
 		}
-		time.Sleep(time.Second * accessPointConfigRetryIntervalSec)
-		err := ap.updateTeamWifiStatuses()
-		if err == nil && ap.configIsCorrectForTeams(teams) {
-			log.Printf("Successfully configured WiFi after %d attempts.", retryCount)
-			break
-		}
-		log.Printf("WiFi configuration still incorrect after %d attempts; trying again.", retryCount)
+	}
+	updateTeamWifiStatus(ap.TeamWifiStatuses[0], apStatus.StationStatuses["red1"])
+	updateTeamWifiStatus(ap.TeamWifiStatuses[1], apStatus.StationStatuses["red2"])
+	updateTeamWifiStatus(ap.TeamWifiStatuses[2], apStatus.StationStatuses["red3"])
+	updateTeamWifiStatus(ap.TeamWifiStatuses[3], apStatus.StationStatuses["blue1"])
+	updateTeamWifiStatus(ap.TeamWifiStatuses[4], apStatus.StationStatuses["blue2"])
+	updateTeamWifiStatus(ap.TeamWifiStatuses[5], apStatus.StationStatuses["blue3"])
+
+	return nil
+}
+
+func (ap *AccessPoint) checkAndLogApiError(err error) {
+	if errors.Is(err, syscall.ECONNREFUSED) {
+		log.Printf(
+			"\x1b[31mThe access point appears to be present at %s but is refusing API connection requests. Note that "+
+				"from 2024 onwards, you must manually install the API server on the Linksys API before it can be used "+
+				"with Cheesy Arena. See https://github.com/patfair/frc-radio-api for installation instructions."+
+				"\u001B[0m",
+			ap.apiUrl,
+		)
 	}
 }
 
-// Returns true if the configured networks as read from the access point match the given teams.
-func (ap *AccessPoint) configIsCorrectForTeams(teams [6]*model.Team) bool {
-	if !ap.initialStatusesFetched {
-		return false
-	}
-
-	for i, team := range teams {
-		expectedTeamId := 0
-		if team != nil {
-			expectedTeamId = team.Id
+// Returns true if the access point's current status matches the last configuration that was sent to it.
+func (ap *AccessPoint) statusMatchesLastConfiguration() bool {
+	for i := 0; i < 6; i++ {
+		var expectedTeamId, actualTeamId int
+		if ap.lastConfiguredTeams[i] != nil {
+			expectedTeamId = ap.lastConfiguredTeams[i].Id
 		}
-		if ap.TeamWifiStatuses[i].TeamId != expectedTeamId {
+		if ap.TeamWifiStatuses[i] != nil {
+			actualTeamId = ap.TeamWifiStatuses[i].TeamId
+		}
+		if expectedTeamId != actualTeamId {
 			return false
 		}
 	}
-
 	return true
 }
 
-// Fetches the current wifi network status from the access point and updates the status structure.
-func (ap *AccessPoint) updateTeamWifiStatuses() error {
-	if !ap.networkSecurityEnabled {
-		return nil
-	}
-
-	output, err := ap.runCommand("iwinfo")
-	if err == nil {
-		err = decodeWifiInfo(output, ap.TeamWifiStatuses[:])
-	}
-
-	if err != nil {
-		return fmt.Errorf("Error getting wifi info from AP: %v", err)
-	} else {
-		if !ap.initialStatusesFetched {
-			ap.initialStatusesFetched = true
-		}
-	}
-	return nil
-}
-
-// Logs into the access point via SSH and runs the given shell command.
-func (ap *AccessPoint) runCommand(command string) (string, error) {
-	// Open an SSH connection to the AP.
-	config := &ssh.ClientConfig{User: ap.username,
-		Auth:            []ssh.AuthMethod{ssh.Password(ap.password)},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         accessPointConnectTimeoutSec * time.Second}
-
-	conn, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", ap.address, accessPointSshPort), config)
-	if err != nil {
-		return "", err
-	}
-	session, err := conn.NewSession()
-	if err != nil {
-		return "", err
-	}
-	defer session.Close()
-	defer conn.Close()
-
-	// Run the command with a timeout.
-	commandChan := make(chan sshOutput, 1)
-	go func() {
-		outputBytes, err := session.Output(command)
-		commandChan <- sshOutput{string(outputBytes), err}
-	}()
-	select {
-	case output := <-commandChan:
-		return output.output, output.err
-	case <-time.After(accessPointCommandTimeoutSec * time.Second):
-		return "", fmt.Errorf("WiFi SSH command timed out after %d seconds", accessPointCommandTimeoutSec)
-	}
-}
-
-func addConfigurationHeader(commandList string) string {
-	return fmt.Sprintf("uci batch <<ENDCONFIG && wifi radio0\n%s\ncommit wireless\nENDCONFIG\n", commandList)
-}
-
-// Verifies WPA key validity and produces the configuration command for the given team.
-func generateTeamAccessPointConfig(team *model.Team, position int) (string, error) {
-	if position < 1 || position > 6 {
-		return "", fmt.Errorf("invalid team position %d", position)
-	}
-
-	commands := &[]string{}
+// Generates the configuration for the given team's station and adds it to the map. If the team is nil, no entry is
+// added for the station.
+func addStation(stationsConfigurations map[string]stationConfiguration, station string, team *model.Team) {
 	if team == nil {
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='no-team-%d'", position, position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='no-team-%d'", position, position))
+		return
+	}
+	stationsConfigurations[station] = stationConfiguration{
+		Ssid:   strconv.Itoa(team.Id),
+		WpaKey: team.WpaKey,
+	}
+}
+
+// Updates the given team's wifi status structure with the given station status.
+func updateTeamWifiStatus(teamWifiStatus *TeamWifiStatus, stationStatus *stationStatus) {
+	if stationStatus == nil {
+		teamWifiStatus.TeamId = 0
+		teamWifiStatus.RadioLinked = false
+		teamWifiStatus.MBits = 0
+		teamWifiStatus.RxRate = 0
+		teamWifiStatus.TxRate = 0
+		teamWifiStatus.SignalNoiseRatio = 0
 	} else {
-		if len(team.WpaKey) < 8 || len(team.WpaKey) > 63 {
-			return "", fmt.Errorf("invalid WPA key '%s' configured for team %d", team.WpaKey, team.Id)
-		}
-
-		*commands = append(*commands, fmt.Sprintf("set wireless.@wifi-iface[%d].disabled='0'", position),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].ssid='%d'", position, team.Id),
-			fmt.Sprintf("set wireless.@wifi-iface[%d].key='%s'", position, team.WpaKey))
+		teamWifiStatus.TeamId, _ = strconv.Atoi(stationStatus.Ssid)
+		teamWifiStatus.RadioLinked = stationStatus.IsLinked
+		teamWifiStatus.MBits = stationStatus.BandwidthUsedMbps
+		teamWifiStatus.RxRate = stationStatus.RxRateMbps
+		teamWifiStatus.TxRate = stationStatus.TxRateMbps
+		teamWifiStatus.SignalNoiseRatio = stationStatus.SignalNoiseRatio
 	}
-
-	return strings.Join(*commands, "\n"), nil
 }
 
-// Parses the given output from the "iwinfo" command on the AP and updates the given status structure with the result.
-func decodeWifiInfo(wifiInfo string, statuses []TeamWifiStatus) error {
-	ssidRe := regexp.MustCompile("ESSID: \"([-\\w ]*)\"")
-	ssids := ssidRe.FindAllStringSubmatch(wifiInfo, -1)
-	linkQualityRe := regexp.MustCompile("Link Quality: ([-\\w ]+)/([-\\w ]+)")
-	linkQualities := linkQualityRe.FindAllStringSubmatch(wifiInfo, -1)
-
-	// There should be six networks present -- one for each team on the 5GHz radio.
-	if len(ssids) < 6 || len(linkQualities) < 6 {
-		return fmt.Errorf("Could not parse wifi info; expected 6 team networks, got %d.", len(ssids))
-	}
-
-	for i := range statuses {
-		ssid := ssids[i][1]
-		statuses[i].TeamId, _ = strconv.Atoi(ssid) // Any non-numeric SSIDs will be represented by a zero.
-		linkQualityNumerator := linkQualities[i][1]
-		statuses[i].RadioLinked = linkQualityNumerator != "unknown"
-	}
-
-	return nil
-}
-
-// Polls the 6 wlans on the ap for bandwith use and updates data structure.
-func (ap *AccessPoint) updateTeamWifiBTU() error {
-	if !ap.networkSecurityEnabled {
-		return nil
-	}
-
-	infWifi := []string{"0", "0-1", "0-2", "0-3", "0-4", "0-5"}
-	for i := range ap.TeamWifiStatuses {
-
-		output, err := ap.runCommand(fmt.Sprintf("luci-bwc -i wlan%s", infWifi[i]))
-		if err == nil {
-			btu := parseBtu(output)
-			ap.TeamWifiStatuses[i].MBits = btu
+// Returns an abbreviated string representation of the access point status for inclusion in the log.
+func (apStatus *accessPointStatus) toLogString() string {
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf("Channel: %d\n", apStatus.Channel))
+	for _, station := range []string{"red1", "red2", "red3", "blue1", "blue2", "blue3"} {
+		stationStatus := apStatus.StationStatuses[station]
+		ssid := "[empty]"
+		if stationStatus != nil {
+			ssid = stationStatus.Ssid
 		}
-		if err != nil {
-			return fmt.Errorf("Error getting BTU info from AP: %v", err)
-		}
+		buffer.WriteString(fmt.Sprintf("%-6s %s\n", station+":", ssid))
 	}
-	return nil
-}
-
-// Parses Bytes from ap's onboard bandwith monitor returns 5 sec average bandwidth in Megabits per second for the given data.
-func parseBtu(response string) float64 {
-	mBits := 0.0
-	lines := strings.Split(response, "],")
-	if len(lines) > 6 {
-		fiveCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-6]), "["), "]"), ",")
-		lastCnt := strings.Split(strings.TrimRight(strings.TrimLeft(strings.TrimSpace(lines[len(lines)-1]), "["), "]"), ",")
-		rXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[1]))
-		tXBytes, _ := strconv.Atoi(strings.TrimSpace(lastCnt[3]))
-		rXBytesOld, _ := strconv.Atoi(strings.TrimSpace(fiveCnt[1]))
-		tXBytesOld, _ := strconv.Atoi(strings.TrimSpace(fiveCnt[3]))
-		mBits = float64(rXBytes-rXBytesOld+tXBytes-tXBytesOld) * 0.000008 / 5.0
-	}
-	return mBits
+	return buffer.String()
 }

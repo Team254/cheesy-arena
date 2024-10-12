@@ -63,17 +63,29 @@ func TestScheduleTeams(t *testing.T) {
 	scheduleBlocks := []model.ScheduleBlock{{0, model.Practice, time.Unix(0, 0).UTC(), 6, 60}}
 	matches, err := BuildRandomSchedule(teams, scheduleBlocks, model.Practice)
 	assert.Nil(t, err)
-	assertMatch(t, matches[0], model.Practice, 1, 0, "P1", "Practice 1", 115, 111, 108, 109, 116, 117)
-	assertMatch(t, matches[1], model.Practice, 2, 60, "P2", "Practice 2", 114, 112, 103, 101, 104, 118)
-	assertMatch(t, matches[2], model.Practice, 3, 120, "P3", "Practice 3", 110, 107, 105, 106, 113, 102)
-	assertMatch(t, matches[3], model.Practice, 4, 180, "P4", "Practice 4", 112, 108, 109, 101, 111, 103)
-	assertMatch(t, matches[4], model.Practice, 5, 240, "P5", "Practice 5", 113, 117, 115, 110, 114, 102)
-	assertMatch(t, matches[5], model.Practice, 6, 300, "P6", "Practice 6", 118, 105, 106, 107, 104, 116)
+	assertMatch(t, matches[0], model.Practice, 1, 0, "P1", "Practice 1", "p", 115, 111, 108, 109, 116, 117)
+	assertMatch(t, matches[1], model.Practice, 2, 60, "P2", "Practice 2", "p", 114, 112, 103, 101, 104, 118)
+	assertMatch(t, matches[2], model.Practice, 3, 120, "P3", "Practice 3", "p", 110, 107, 105, 106, 113, 102)
+	assertMatch(t, matches[3], model.Practice, 4, 180, "P4", "Practice 4", "p", 112, 108, 109, 101, 111, 103)
+	assertMatch(t, matches[4], model.Practice, 5, 240, "P5", "Practice 5", "p", 113, 117, 115, 110, 114, 102)
+	assertMatch(t, matches[5], model.Practice, 6, 300, "P6", "Practice 6", "p", 118, 105, 106, 107, 104, 116)
 
 	// Check with excess room for matches in the schedule.
 	scheduleBlocks = []model.ScheduleBlock{{0, model.Practice, time.Unix(0, 0).UTC(), 7, 60}}
 	matches, err = BuildRandomSchedule(teams, scheduleBlocks, model.Practice)
 	assert.Nil(t, err)
+
+	// Check with qualification matches.
+	rand.Seed(0)
+	scheduleBlocks = []model.ScheduleBlock{{0, model.Qualification, time.Unix(0, 0).UTC(), 6, 60}}
+	matches, err = BuildRandomSchedule(teams, scheduleBlocks, model.Qualification)
+	assert.Nil(t, err)
+	assertMatch(t, matches[0], model.Qualification, 1, 0, "Q1", "Qualification 1", "qm", 115, 111, 108, 109, 116, 117)
+	assertMatch(t, matches[1], model.Qualification, 2, 60, "Q2", "Qualification 2", "qm", 114, 112, 103, 101, 104, 118)
+	assertMatch(t, matches[2], model.Qualification, 3, 120, "Q3", "Qualification 3", "qm", 110, 107, 105, 106, 113, 102)
+	assertMatch(t, matches[3], model.Qualification, 4, 180, "Q4", "Qualification 4", "qm", 112, 108, 109, 101, 111, 103)
+	assertMatch(t, matches[4], model.Qualification, 5, 240, "Q5", "Qualification 5", "qm", 113, 117, 115, 110, 114, 102)
+	assertMatch(t, matches[5], model.Qualification, 6, 300, "Q6", "Qualification 6", "qm", 118, 105, 106, 107, 104, 116)
 }
 
 func TestScheduleTiming(t *testing.T) {
@@ -124,7 +136,7 @@ func assertMatch(
 	matchType model.MatchType,
 	typeOrder int,
 	timeInSec int64,
-	shortName, longName string,
+	shortName, longName, tbaCompLevel string,
 	red1, red2, red3, blue1, blue2, blue3 int,
 ) {
 	assert.Equal(t, matchType, match.Type)
@@ -141,7 +153,7 @@ func assertMatch(
 	assert.Equal(t, blue1, match.Blue1)
 	assert.Equal(t, blue2, match.Blue2)
 	assert.Equal(t, blue3, match.Blue3)
-	assert.Equal(t, "qm", match.TbaMatchKey.CompLevel)
+	assert.Equal(t, tbaCompLevel, match.TbaMatchKey.CompLevel)
 	assert.Equal(t, 0, match.TbaMatchKey.SetNumber)
 	assert.Equal(t, typeOrder, match.TbaMatchKey.MatchNumber)
 }

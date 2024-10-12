@@ -8,7 +8,7 @@ var currentMatchId;
 var redSide;
 var blueSide;
 var lowBatteryThreshold = 8;
-var highBtuThreshold = 4.0;
+var highBtuThreshold = 7.0;
 
 
 var handleArenaStatus = function(data) {
@@ -18,7 +18,7 @@ var handleArenaStatus = function(data) {
   } else if (currentMatchId !== data.MatchId) {
     location.reload();
   }
-	
+
   $.each(data.AllianceStations, function(station, stationStatus) {
     // Select the DOM elements corresponding to the team station.
     var teamElementPrefix;
@@ -51,6 +51,8 @@ var handleArenaStatus = function(data) {
           status = "wrong-station";
         } else if (stationStatus.DsConn.RobotLinked) {
           status = "robot-linked";
+        } else if (stationStatus.DsConn.RioLinked) {
+          status = "rio-linked";
         } else if (stationStatus.DsConn.RadioLinked) {
           status = "radio-linked";
         } else if (stationStatus.DsConn.DsLinked) {
@@ -75,7 +77,7 @@ var handleArenaStatus = function(data) {
       teamEthernetElement.text("ETH");
     }
 
-    var wifiStatus = data.TeamWifiStatuses[station];
+    const wifiStatus = stationStatus.WifiStatus;
     teamRadioTextElement.text(wifiStatus.TeamId);
 
     if (stationStatus.DsConn) {
@@ -85,7 +87,8 @@ var handleArenaStatus = function(data) {
       teamDsElement.text(dsConn.MissedPacketCount);
 
       // Format the radio status box according to the connection status of the robot radio.
-      var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
+      var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId &&
+        (wifiStatus.RadioLinked || dsConn.RobotLinked);
       teamRadioElement.attr("data-status-ok", radioOkay);
 
       // Format the robot status box.
@@ -125,9 +128,12 @@ var handleArenaStatus = function(data) {
       }
     }
 
-    if (stationStatus.Estop) {
+    if (stationStatus.EStop) {
       teamBypassElement.attr("data-status-ok", false);
       teamBypassElement.text("ES");
+    } else if (stationStatus.AStop) {
+      teamBypassElement.attr("data-status-ok", true);
+      teamBypassElement.text("AS");
     } else if (stationStatus.Bypass) {
       teamBypassElement.attr("data-status-ok", false);
       teamBypassElement.text("BYP");
@@ -205,7 +211,7 @@ $(function() {
     redSide = "left";
     blueSide = "right";
   }
-  
+
   //Read if display to be used in a Driver Station, ignore FTA flag if so.
   var driverStation = urlParams.get("ds");
   if (driverStation === "true") {
@@ -215,7 +221,7 @@ $(function() {
   $(".fta-dependent").attr("data-fta", urlParams.get("fta"));
   $(".ds-dependent").attr("data-ds", driverStation);
   }
-  
+
   $(".reversible-left").attr("data-reversed", reversed);
   $(".reversible-right").attr("data-reversed", reversed);
 

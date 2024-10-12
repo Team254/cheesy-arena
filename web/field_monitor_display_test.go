@@ -22,7 +22,8 @@ func TestFieldMonitorDisplay(t *testing.T) {
 
 func TestFieldMonitorDisplayWebsocket(t *testing.T) {
 	web := setupTestWeb(t)
-	assert.Nil(t, web.arena.SubstituteTeam(254, "B1"))
+	web.arena.Database.CreateTeam(&model.Team{Id: 254})
+	assert.Nil(t, web.arena.SubstituteTeams(0, 0, 0, 254, 0, 0))
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
@@ -50,7 +51,7 @@ func TestFieldMonitorDisplayWebsocket(t *testing.T) {
 func TestFieldMonitorFtaDisplayWebsocket(t *testing.T) {
 	web := setupTestWeb(t)
 	web.arena.Database.CreateTeam(&model.Team{Id: 254})
-	assert.Nil(t, web.arena.SubstituteTeam(254, "B1"))
+	assert.Nil(t, web.arena.SubstituteTeams(0, 0, 0, 254, 0, 0))
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()

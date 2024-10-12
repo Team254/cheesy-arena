@@ -6,22 +6,29 @@
 package game
 
 type ScoreSummary struct {
-	MobilityPoints                  int
-	AutoPoints                      int
-	GridPoints                      int
-	ChargeStationPoints             int
-	ParkPoints                      int
-	EndgamePoints                   int
-	MatchPoints                     int
-	FoulPoints                      int
-	Score                           int
-	CoopertitionBonus               bool
-	NumLinks                        int
-	NumLinksGoal                    int
-	SustainabilityBonusRankingPoint bool
-	ActivationBonusRankingPoint     bool
-	BonusRankingPoints              int
-	NumOpponentTechFouls            int
+	LeavePoints               int
+	AutoPoints                int
+	AmpPoints                 int
+	SpeakerPoints             int
+	StagePoints               int
+	MatchPoints               int
+	FoulPoints                int
+	Score                     int
+	CoopertitionCriteriaMet   bool
+	CoopertitionBonus         bool
+	NumNotes                  int
+	NumNotesGoal              int
+	MelodyBonusRankingPoint   bool
+	EnsembleBonusRankingPoint bool
+	BonusRankingPoints        int
+	NumOpponentTechFouls      int
+
+	// Fields only needed for TBA.
+	ParkPoints      int
+	OnStagePoints   int
+	HarmonyPoints   int
+	SpotlightPoints int
+	TrapPoints      int
 }
 
 type MatchStatus int
@@ -51,12 +58,10 @@ func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, apply
 		); status != TieMatch {
 			return status
 		}
-		if status := comparePoints(
-			redScoreSummary.ChargeStationPoints, blueScoreSummary.ChargeStationPoints,
-		); status != TieMatch {
+		if status := comparePoints(redScoreSummary.AutoPoints, blueScoreSummary.AutoPoints); status != TieMatch {
 			return status
 		}
-		if status := comparePoints(redScoreSummary.AutoPoints, blueScoreSummary.AutoPoints); status != TieMatch {
+		if status := comparePoints(redScoreSummary.StagePoints, blueScoreSummary.StagePoints); status != TieMatch {
 			return status
 		}
 	}

@@ -34,9 +34,11 @@ type DriverStationConnection struct {
 	AllianceStation           string
 	Auto                      bool
 	Enabled                   bool
-	Estop                     bool
+	EStop                     bool
+	AStop                     bool
 	DsLinked                  bool
 	RadioLinked               bool
+	RioLinked                 bool
 	RobotLinked               bool
 	BatteryVoltage            float64
 	DsRobotTripTimeMs         int
@@ -100,6 +102,7 @@ func (arena *Arena) listenForDsUdpPackets() {
 			dsConn.DsLinked = true
 			dsConn.lastPacketTime = time.Now()
 
+			dsConn.RioLinked = data[3]&0x08 != 0
 			dsConn.RadioLinked = data[3]&0x10 != 0
 			dsConn.RobotLinked = data[3]&0x20 != 0
 			if dsConn.RobotLinked {
@@ -122,6 +125,7 @@ func (dsConn *DriverStationConnection) update(arena *Arena) error {
 	if time.Since(dsConn.lastPacketTime).Seconds() > driverStationUdpLinkTimeoutSec {
 		dsConn.DsLinked = false
 		dsConn.RadioLinked = false
+		dsConn.RioLinked = false
 		dsConn.RobotLinked = false
 		dsConn.BatteryVoltage = 0
 	}
@@ -143,11 +147,11 @@ func (dsConn *DriverStationConnection) close() {
 }
 
 // Called at the start of the match to allow for driver station initialization.
-func (dsConn *DriverStationConnection) signalMatchStart(match *model.Match) error {
+func (dsConn *DriverStationConnection) signalMatchStart(match *model.Match, wifiStatus *network.TeamWifiStatus) error {
 	// Zero out missed packet count and begin logging.
 	dsConn.missedPacketOffset = dsConn.MissedPacketCount
 	var err error
-	dsConn.log, err = NewTeamMatchLog(dsConn.TeamId, match)
+	dsConn.log, err = NewTeamMatchLog(dsConn.TeamId, match, wifiStatus)
 	return err
 }
 
@@ -170,8 +174,11 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 	if dsConn.Enabled {
 		packet[3] |= 0x04
 	}
-	if dsConn.Estop {
+	if dsConn.EStop {
 		packet[3] |= 0x80
+	}
+	if dsConn.AStop {
+		packet[3] |= 0x40
 	}
 
 	// Unknown or unused.
@@ -255,7 +262,6 @@ func (dsConn *DriverStationConnection) decodeStatusPacket(data [36]byte) {
 
 	// Number of missed packets sent from the DS to the robot.
 	dsConn.MissedPacketCount = int(data[2]) - dsConn.missedPacketOffset
-
 }
 
 // Listens for TCP connection requests to Cheesy Arena from driver stations.
@@ -365,19 +371,22 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 
 		packetType := int(buffer[2])
 		switch packetType {
-		case 28:
+		case 29:
 			// DS keepalive packet; do nothing.
+			continue
 		case 22:
 			// Robot status packet.
 			var statusPacket [36]byte
 			copy(statusPacket[:], buffer[2:38])
 			dsConn.decodeStatusPacket(statusPacket)
-		}
 
-		// Log the packet if the match is in progress.
-		matchTimeSec := arena.MatchTimeSec()
-		if matchTimeSec > 0 && dsConn.log != nil {
-			dsConn.log.LogDsPacket(matchTimeSec, packetType, dsConn)
+			// Create a log entry if the match is in progress.
+			matchTimeSec := arena.MatchTimeSec()
+			if matchTimeSec > 0 && dsConn.log != nil {
+				dsConn.log.LogDsPacket(matchTimeSec, packetType, dsConn)
+			}
+		default:
+			log.Printf("Received unknown packet type %d from Team %d", packetType, dsConn.TeamId)
 		}
 	}
 }

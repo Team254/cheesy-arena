@@ -18,9 +18,18 @@ const showResult = function(matchId) {
   websocket.send("showResult", { matchId: matchId });
 }
 
-// Sends a websocket message to load a team into an alliance station.
-const substituteTeam = function(team, position) {
-  websocket.send("substituteTeam", { team: parseInt(team), position: position })
+// Sends a websocket message to load all teams into their respective alliance stations.
+const substituteTeams = function(team, position) {
+  const teams = {
+    Red1: getTeamNumber("R1"),
+    Red2: getTeamNumber("R2"),
+    Red3: getTeamNumber("R3"),
+    Blue1: getTeamNumber("B1"),
+    Blue2: getTeamNumber("B2"),
+    Blue3: getTeamNumber("B3"),
+  };
+
+  websocket.send("substituteTeams", teams);
 };
 
 // Sends a websocket message to toggle the bypass status for an alliance station.
@@ -39,11 +48,6 @@ const abortMatch = function() {
   websocket.send("abortMatch");
 };
 
-// Sends a websocket message to signal to the volunteers that they may enter the field.
-const signalVolunteers = function() {
-  websocket.send("signalVolunteers");
-};
-
 // Sends a websocket message to signal to the teams that they may enter the field.
 const signalReset = function() {
   websocket.send("signalReset");
@@ -58,6 +62,20 @@ const commitResults = function() {
 const discardResults = function() {
   websocket.send("discardResults");
 };
+
+// Switches the audience display to the match intro screen.
+const showOverlay = function() {
+  $("input[name=audienceDisplay][value=intro]").prop("checked", true);
+  setAudienceDisplay();
+  $("#showOverlay").prop("disabled", true);
+}
+
+// Switches the audience display to the final score screen.
+const showFinalScore = function() {
+  $("input[name=audienceDisplay][value=score]").prop("checked", true);
+  setAudienceDisplay();
+  $("#showFinalScore").prop("disabled", true);
+}
 
 // Sends a websocket message to change what the audience display is showing.
 const setAudienceDisplay = function() {
@@ -95,11 +113,17 @@ const setTestMatchName = function() {
   websocket.send("setTestMatchName", $("#testMatchName").val());
 };
 
+// Returns the integer team number entered into the team number input box for the given station, or 0 if it is empty.
+const getTeamNumber = function(station) {
+  const teamId = $(`#status${station} .team-number`).val().trim();
+  return teamId ? parseInt(teamId) : 0;
+}
+
 // Handles a websocket message to update the team connection status.
 const handleArenaStatus = function(data) {
   // Update the team status view.
   $.each(data.AllianceStations, function(station, stationStatus) {
-    const wifiStatus = data.TeamWifiStatuses[station];
+    const wifiStatus = stationStatus.WifiStatus;
     $("#status" + station + " .radio-status").text(wifiStatus.TeamId);
 
     if (stationStatus.DsConn) {
@@ -111,9 +135,6 @@ const handleArenaStatus = function(data) {
       } else {
         $("#status" + station + " .ds-status").text("");
       }
-      // Format the radio status box according to the connection status of the robot radio.
-      const radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId && wifiStatus.RadioLinked;
-      $("#status" + station + " .radio-status").attr("data-status-ok", radioOkay);
 
       // Format the robot status box.
       const robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
@@ -127,23 +148,27 @@ const handleArenaStatus = function(data) {
       $("#status" + station + " .ds-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").attr("data-status-ok", "");
       $("#status" + station + " .robot-status").text("");
-
-      // Format the robot status box according to whether the AP is configured with the correct SSID.
-      const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
-      if (wifiStatus.TeamId === expectedTeamId) {
-        if (wifiStatus.RadioLinked) {
-          $("#status" + station + " .radio-status").attr("data-status-ok", true);
-        } else {
-          $("#status" + station + " .radio-status").attr("data-status-ok", "");
-        }
-      } else {
-        $("#status" + station + " .radio-status").attr("data-status-ok", false);
-      }
     }
 
-    if (stationStatus.Estop) {
+    // Format the radio status box according to whether the AP is configured with the correct SSID and the connection
+    // status of the robot radio.
+    const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+    let radioStatus = 0;
+    if (expectedTeamId === wifiStatus.TeamId) {
+      if (wifiStatus.RadioLinked || stationStatus.DsConn?.RobotLinked) {
+        radioStatus = 2;
+      } else {
+        radioStatus = 1;
+      }
+    }
+    $(`#status${station} .radio-status`).attr("data-status-ternary", radioStatus);
+
+    if (stationStatus.EStop) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);
       $("#status" + station + " .bypass-status").text("ES");
+    } else if (stationStatus.AStop) {
+      $("#status" + station + " .bypass-status").attr("data-status-ok", true);
+      $("#status" + station + " .bypass-status").text("AS");
     } else if (stationStatus.Bypass) {
       $("#status" + station + " .bypass-status").attr("data-status-ok", false);
       $("#status" + station + " .bypass-status").text("B");
@@ -158,7 +183,6 @@ const handleArenaStatus = function(data) {
     case "PRE_MATCH":
       $("#startMatch").prop("disabled", !data.CanStartMatch);
       $("#abortMatch").prop("disabled", true);
-      $("#signalVolunteers").prop("disabled", false);
       $("#signalReset").prop("disabled", false);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
@@ -171,9 +195,12 @@ const handleArenaStatus = function(data) {
     case "AUTO_PERIOD":
     case "PAUSE_PERIOD":
     case "TELEOP_PERIOD":
+      $("#showOverlay").prop("disabled", true);
+      $("#introRadio").prop("disabled", true);
+      $("#showFinalScore").prop("disabled", true);
+      $("#scoreRadio").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
-      $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
       $("#fieldResetRadio").prop("disabled", true);
       $("#commitResults").prop("disabled", true);
@@ -182,9 +209,12 @@ const handleArenaStatus = function(data) {
       $("#startTimeout").prop("disabled", true);
       break;
     case "POST_MATCH":
+      $("#showOverlay").prop("disabled", true);
+      $("#introRadio").prop("disabled", true);
+      $("#showFinalScore").prop("disabled", true);
+      $("#scoreRadio").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
-      $("#signalVolunteers").prop("disabled", false);
       $("#signalReset").prop("disabled", false);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", false);
@@ -193,9 +223,12 @@ const handleArenaStatus = function(data) {
       $("#startTimeout").prop("disabled", true);
       break;
     case "TIMEOUT_ACTIVE":
+      $("#showOverlay").prop("disabled", true);
+      $("#introRadio").prop("disabled", true);
+      $("#showFinalScore").prop("disabled", false);
+      $("#scoreRadio").prop("disabled", false);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
-      $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
@@ -204,9 +237,12 @@ const handleArenaStatus = function(data) {
       $("#startTimeout").prop("disabled", true);
       break;
     case "POST_TIMEOUT":
+      $("#showOverlay").prop("disabled", false);
+      $("#introRadio").prop("disabled", false);
+      $("#showFinalScore").prop("disabled", false);
+      $("#scoreRadio").prop("disabled", false);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
-      $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
@@ -216,6 +252,9 @@ const handleArenaStatus = function(data) {
       break;
   }
 
+  $("#accessPointStatus").attr("data-status", data.AccessPointStatus);
+  $("#switchStatus").attr("data-status", data.SwitchStatus);
+
   if (data.PlcIsHealthy) {
     $("#plcStatus").text("Connected");
     $("#plcStatus").attr("data-ready", true);
@@ -223,7 +262,7 @@ const handleArenaStatus = function(data) {
     $("#plcStatus").text("Not Connected");
     $("#plcStatus").attr("data-ready", false);
   }
-  $("#fieldEstop").attr("data-ready", !data.FieldEstop);
+  $("#fieldEStop").attr("data-ready", !data.FieldEStop);
   $.each(data.PlcArmorBlockStatuses, function(name, status) {
     $("#plc" + name + "Status").attr("data-ready", status);
   });
@@ -247,6 +286,11 @@ const handleMatchLoad = function(data) {
   });
   $("#playoffRedAllianceInfo").html(formatPlayoffAllianceInfo(data.Match.PlayoffRedAlliance, data.RedOffFieldTeams));
   $("#playoffBlueAllianceInfo").html(formatPlayoffAllianceInfo(data.Match.PlayoffBlueAlliance, data.BlueOffFieldTeams));
+
+  $("#substituteTeams").prop("disabled", true);
+  $("#showOverlay").prop("disabled", false);
+  $("#introRadio").prop("disabled", false);
+  $("#muteMatchSounds").prop("checked", false);
 }
 
 // Handles a websocket message to update the match time countdown.
@@ -266,7 +310,10 @@ const handleRealtimeScore = function(data) {
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function(data) {
   let matchName = data.Match.LongName;
-  if (!matchName) {
+  if (matchName) {
+    $("#showFinalScore").prop("disabled", false);
+    $("#scoreRadio").prop("disabled", false);
+  } else {
     matchName = "None"
   }
   $("#savedMatchName").html(matchName);
@@ -317,7 +364,8 @@ const formatPlayoffAllianceInfo = function(allianceNumber, offFieldTeams) {
 
 $(function() {
   // Activate tooltips above the status headers.
-  $("[data-toggle=tooltip]").tooltip({"placement": "top"});
+  const tooltipTriggerList = document.querySelectorAll("[data-bs-toggle=tooltip]");
+  const tooltipList = [...tooltipTriggerList].map(element => new bootstrap.Tooltip(element));
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/match_play/websocket", {

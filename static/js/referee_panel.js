@@ -47,11 +47,6 @@ var cycleCard = function(cardButton) {
   $(cardButton).attr("data-card", newCard);
 };
 
-// Sends a websocket message to signal to the volunteers that they may enter the field.
-var signalVolunteers = function() {
-  websocket.send("signalVolunteers");
-};
-
 // Sends a websocket message to signal to the teams that they may enter the field.
 var signalReset = function() {
   websocket.send("signalReset");
@@ -101,6 +96,10 @@ const handleScoringStatus = function(data) {
   if (data.RefereeScoreReady) {
     $("#commitButton").attr("data-enabled", false);
   }
+  $("#redScoreStatus").text("Red Scoring " + data.NumRedScoringPanelsReady + "/" + data.NumRedScoringPanels);
+  $("#redScoreStatus").attr("data-ready", data.RedScoreReady);
+  $("#blueScoreStatus").text("Blue Scoring " + data.NumBlueScoringPanelsReady + "/" + data.NumBlueScoringPanels);
+  $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
 }
 
 // Populates the red/yellow card button for a given team.
@@ -129,6 +128,10 @@ const hashObject = function(object) {
 }
 
 $(function() {
+  // Read the configuration for this display from the URL query string.
+  var urlParams = new URLSearchParams(window.location.search);
+  $(".headRef-dependent").attr("data-hr", urlParams.get("hr"));
+
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/panels/referee/websocket", {
     matchLoad: function(event) { handleMatchLoad(event.data); },

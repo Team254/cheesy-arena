@@ -13,7 +13,6 @@ import (
 	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
-	"github.com/gorilla/mux"
 	"io"
 	"net/http"
 	"os"
@@ -50,8 +49,7 @@ type allianceMatchup struct {
 
 // Generates a JSON dump of the matches and results.
 func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	matchType, err := model.MatchTypeFromString(vars["type"])
+	matchType, err := model.MatchTypeFromString(r.PathValue("type"))
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -217,8 +215,7 @@ func (web *Web) arenaWebsocketApiHandler(w http.ResponseWriter, r *http.Request)
 
 // Serves the avatar for a given team, or a default if none exists.
 func (web *Web) teamAvatarsApiHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	teamId, err := strconv.Atoi(vars["teamId"])
+	teamId, err := strconv.Atoi(r.PathValue("teamId"))
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -244,36 +241,6 @@ func (web *Web) bracketSvgApiHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "image/svg+xml")
 	if err := web.generateBracketSvg(w, activeMatch); err != nil {
-		handleWebErr(w, err)
-		return
-	}
-}
-
-func (web *Web) gridSvgApiHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	alliance := vars["alliance"]
-	var grid game.Grid
-	if alliance == "red" {
-		grid = web.arena.RedRealtimeScore.CurrentScore.Grid
-	} else if alliance == "blue" {
-		grid = web.arena.BlueRealtimeScore.CurrentScore.Grid
-	} else {
-		handleWebErr(w, fmt.Errorf("invalid alliance %q", alliance))
-		return
-	}
-
-	w.Header().Set("Content-Type", "image/svg+xml")
-	template, err := web.parseFiles("templates/grid.svg")
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	data := struct {
-		Nodes [3][9]game.NodeState
-		Links []game.Link
-	}{grid.Nodes, grid.Links()}
-	err = template.ExecuteTemplate(w, "grid", data)
-	if err != nil {
 		handleWebErr(w, err)
 		return
 	}

@@ -8,18 +8,17 @@
 {{define "body"}}
 <div class="row">
   {{if .ErrorMessage}}
-    <div class="alert alert-dismissable alert-danger">
+    <div class="alert alert-dismissible alert-danger">
       <button type="button" class="close" data-dismiss="alert">×</button>
       {{.ErrorMessage}}
     </div>
   {{end}}
   <div class="col-lg-5">
-    <div class="well">
-      <form id="scheduleForm" class="form-horizontal" action="/setup/schedule/save?matchType={{.MatchType}}"
-          method="POST">
+    <div class="card card-body bg-body-tertiary">
+      <form id="scheduleForm" action="/setup/schedule/save?matchType={{.MatchType}}" method="POST">
         <fieldset>
           <legend>Schedule Parameters</legend>
-          <div class="form-group">
+          <div class="row mb-3">
             <label class="col-lg-5 control-label">Match Type</label>
             <div class="col-lg-7">
               <div class="radio">
@@ -47,13 +46,13 @@
             <b>Excess matches: <span id="numExcessMatches">0</span></b><br />
             <b>Matches needed for +1 per team: <span id="nextLevelMatches">0</span></b>
           </p>
-          <div class="form-group">
+          <div class="row">
             <div class="col-lg-12">
-              <p><button type="button" class="btn btn-default" onclick="addBlock();">Add Block</button>
-              <button type="button" class="btn btn-info" onclick="generateSchedule();">
+              <p><button type="button" class="btn btn-secondary" onclick="addBlock();">Add Block</button>
+              <button type="button" class="btn btn-primary" onclick="generateSchedule();">
                 Generate Schedule/Save Blocks
               </button></p>
-              <p><button type="submit" class="btn btn-primary">Save Schedule</button></p>
+              <p><button type="submit" class="btn btn-danger">Save Schedule</button></p>
             </div>
           </div>
           {{if .EventSettings.TbaPublishingEnabled}}
@@ -102,61 +101,43 @@
   </div>
 </div>
 <div id="blockTemplate" style="display: none;">
-  <div class="well well-sm" id="block{{"{{blockNumber}}"}}">
-    <b>Block {{"{{blockNumber}}"}}</b>
-    <button type="button" class="close" onclick="deleteBlock({{"{{blockNumber}}"}});">×</button><br /><br />
-    <div class="form-group">
+  <div class="card card-body bg-body-tertiary mb-3" id="block{{"{{blockNumber}}"}}">
+    <div class="row justify-content-between mb-3">
+      <div class="col-lg-6"><b>Block {{"{{blockNumber}}"}}</b></div>
+      <div class="col-lg-1"><button class="btn-close" onclick="deleteBlock({{"{{blockNumber}}"}});"></button></div>
+    </div>
+    <div class="row mb-3">
       <label class="col-lg-4 control-label">Start Time</label>
       <div class="col-lg-8">
-        <div class="input-group date" id="startTimePicker{{"{{blockNumber}}"}}"
-            data-date-format="YYYY-MM-DD hh:mm:ss A" onchange="updateBlock({{"{{blockNumber}}"}});">
-          <input type="text" class="form-control input-sm" id="startTime{{"{{blockNumber}}"}}"
+        <div class="input-group" id="startTimePicker{{"{{blockNumber}}"}}"
+          onchange="updateBlock({{"{{blockNumber}}"}});">
+          <input type="text" class="form-control" id="startTime{{"{{blockNumber}}"}}"
               onchange="updateBlock({{"{{blockNumber}}"}});">
-          <span class="input-group-addon input-sm"><span class="glyphicon glyphicon-calendar"></span></span>
+          <span class="input-group-text"><i class="bi-calendar-week"></i></span>
         </div>
       </div>
     </div>
-    <div class="form-group">
+    <div class="row mb-3">
       <label class="col-lg-4 control-label">End Time</label>
       <div class="col-lg-8">
-        <div class="input-group date" id="endTimePicker{{"{{blockNumber}}"}}"
-            data-date-format="YYYY-MM-DD hh:mm:ss A" onchange="updateBlock({{"{{blockNumber}}"}});">
-          <input type="text" class="form-control input-sm" id="endTime{{"{{blockNumber}}"}}"
+        <div class="input-group" id="endTimePicker{{"{{blockNumber}}"}}"
+            onchange="updateBlock({{"{{blockNumber}}"}});">
+          <input type="text" class="form-control" id="endTime{{"{{blockNumber}}"}}"
               onchange="updateBlock({{"{{blockNumber}}"}});">
-          <span class="input-group-addon input-sm"><span class="glyphicon glyphicon-calendar"></span></span>
+          <span class="input-group-text"><i class="bi-calendar-week"></i></span>
         </div>
       </div>
     </div>
-    <div class="form-group">
+    <div class="row mb-3">
       <label class="col-lg-4 control-label">Cycle Time (m:s)</label>
       <div class="col-lg-8">
         <input type="text" class="form-control input-sm" id="matchSpacingMinSec{{"{{blockNumber}}"}}"
             value="{{"{{matchSpacingMinSec}}"}}" placeholder="6:00" onchange="updateBlock({{"{{blockNumber}}"}});">
       </div>
     </div>
-    <div class="form-group">
-      <div class="col-lg-5">Match count: <span id="numMatches{{"{{blockNumber}}"}}"></span></div>
-      <div class="col-lg-7">Actual end time: <span id="actualEndTime{{"{{blockNumber}}"}}"></span></div>
-    </div>
-  </div>
-</div>
-<div id="confirmPublishSchedule" class="modal" style="top: 20%;">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h4 class="modal-title">Confirm</h4>
-      </div>
-      <div class="modal-body">
-        <p>Are you sure you want to publish the schedule to The Blue Alliance? This will overwrite any
-          existing matches and their data.</p>
-      </div>
-      <div class="modal-footer">
-        <form class="form-horizontal" action="/setup/schedule/republish?matchType={{.MatchType}}" method="POST">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Publish Schedule</button>
-        </form>
-      </div>
+    <div class="row mb-3">
+      <div class="col-lg-4">Match count: <span id="numMatches{{"{{blockNumber}}"}}"></span></div>
+      <div class="col-lg-8">Actual end time: <span id="actualEndTime{{"{{blockNumber}}"}}"></span></div>
     </div>
   </div>
 </div>

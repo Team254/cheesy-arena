@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -111,11 +112,15 @@ func TestPublishAlliances(t *testing.T) {
 	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var reader bytes.Buffer
 		reader.ReadFrom(r.Body)
-		assert.Equal(
-			t,
-			"[[\"frc254\",\"frc469\",\"frc2848\",\"frc74\",\"frc3175\"],[\"frc1718\",\"frc2451\",\"frc1619\"]]",
-			reader.String(),
-		)
+		if strings.Contains(r.URL.String(), "alliance_selections") {
+			assert.Equal(
+				t,
+				"[[\"frc254\",\"frc469\",\"frc2848\",\"frc74\",\"frc3175\"],[\"frc1718\",\"frc2451\",\"frc1619\"]]",
+				reader.String(),
+			)
+		} else {
+			assert.Equal(t, "{\"playoff_type\":10}", reader.String())
+		}
 	}))
 	defer tbaServer.Close()
 	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")

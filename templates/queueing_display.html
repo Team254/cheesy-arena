@@ -14,18 +14,20 @@
     <link rel="stylesheet" href="/static/css/queueing_display.css" />
   </head>
   <body>
-    <div id="header" class="col-lg-10 col-lg-offset-1">
-      <div class="pull-left">Match Queue</div>
-      <div class="pull-right">{{.EventSettings.Name}}</div>
+    <div id="header" class="row justify-content-center">
+      <div class="col-lg-5">Match Queue</div>
+      <div class="col-lg-5 text-end">{{.EventSettings.Name}}</div>
     </div>
     <div id="matches"></div>
-    <div id="earlyLateMessage" class="col-lg-10 col-lg-offset-1"></div>
+    <div class="row justify-content-center">
+      <div id="earlyLateMessage" class="col-lg-10"></div>
+    </div>
   </body>
   <script src="/static/js/lib/jquery.min.js"></script>
   <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
   <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
   <script src="/static/js/lib/jquery.transit.min.js"></script>
-  <script src="/static/js/lib/bootstrap.min.js"></script>
+  <script src="/static/js/lib/bootstrap.bundle.min.js"></script>
   <script src="/static/js/cheesy-websocket.js"></script>
   <script src="/static/js/match_timing.js"></script>
   <script src="/static/js/queueing_display.js"></script>

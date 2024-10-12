@@ -179,14 +179,21 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			} else {
 				cards = web.arena.BlueRealtimeScore.Cards
 			}
-			cards[strconv.Itoa(args.TeamId)] = args.Card
-			web.arena.RealtimeScoreNotifier.Notify()
-		case "signalVolunteers":
-			if web.arena.MatchState != field.PostMatch {
-				// Don't allow clearing the field until the match is over.
-				continue
+			if web.arena.CurrentMatch.Type == model.Playoff {
+				// Cards apply to the whole alliance in playoffs.
+				if args.Alliance == "red" {
+					cards[strconv.Itoa(web.arena.CurrentMatch.Red1)] = args.Card
+					cards[strconv.Itoa(web.arena.CurrentMatch.Red2)] = args.Card
+					cards[strconv.Itoa(web.arena.CurrentMatch.Red3)] = args.Card
+				} else {
+					cards[strconv.Itoa(web.arena.CurrentMatch.Blue1)] = args.Card
+					cards[strconv.Itoa(web.arena.CurrentMatch.Blue2)] = args.Card
+					cards[strconv.Itoa(web.arena.CurrentMatch.Blue3)] = args.Card
+				}
+			} else {
+				cards[strconv.Itoa(args.TeamId)] = args.Card
 			}
-			web.arena.FieldVolunteers = true
+			web.arena.RealtimeScoreNotifier.Notify()
 		case "signalReset":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow clearing the field until the match is over.

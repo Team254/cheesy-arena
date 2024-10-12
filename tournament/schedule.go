@@ -69,9 +69,11 @@ func BuildRandomSchedule(
 		if matchType == model.Practice {
 			matches[i].ShortName = fmt.Sprintf("P%d", i+1)
 			matches[i].LongName = fmt.Sprintf("Practice %d", i+1)
+			matches[i].TbaMatchKey.CompLevel = "p"
 		} else if matchType == model.Qualification {
 			matches[i].ShortName = fmt.Sprintf("Q%d", i+1)
 			matches[i].LongName = fmt.Sprintf("Qualification %d", i+1)
+			matches[i].TbaMatchKey.CompLevel = "qm"
 		} else {
 			return nil, fmt.Errorf("invalid match type %q", matchType)
 		}
@@ -87,7 +89,7 @@ func BuildRandomSchedule(
 		matches[i].Blue2IsSurrogate = anonMatch[9] == 1
 		matches[i].Blue3 = teams[teamShuffle[anonMatch[10]-1]].Id
 		matches[i].Blue3IsSurrogate = anonMatch[11] == 1
-		matches[i].TbaMatchKey = model.TbaMatchKey{CompLevel: "qm", SetNumber: 0, MatchNumber: i + 1}
+		matches[i].TbaMatchKey.MatchNumber = i + 1
 	}
 
 	// Fill in the match times.

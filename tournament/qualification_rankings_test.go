@@ -85,15 +85,15 @@ func TestCalculateRankings(t *testing.T) {
 	if assert.Equal(t, 6, len(rankings)) {
 		assert.Equal(t, 4, rankings[0].TeamId)
 		assert.Equal(t, previousRankings[rankings[0].TeamId], rankings[0].PreviousRank)
-		assert.Equal(t, 3, rankings[1].TeamId)
+		assert.Equal(t, 5, rankings[1].TeamId)
 		assert.Equal(t, previousRankings[rankings[1].TeamId], rankings[1].PreviousRank)
-		assert.Equal(t, 6, rankings[2].TeamId)
+		assert.Equal(t, 1, rankings[2].TeamId)
 		assert.Equal(t, previousRankings[rankings[2].TeamId], rankings[2].PreviousRank)
-		assert.Equal(t, 5, rankings[3].TeamId)
+		assert.Equal(t, 2, rankings[3].TeamId)
 		assert.Equal(t, previousRankings[rankings[3].TeamId], rankings[3].PreviousRank)
-		assert.Equal(t, 1, rankings[4].TeamId)
+		assert.Equal(t, 3, rankings[4].TeamId)
 		assert.Equal(t, previousRankings[rankings[4].TeamId], rankings[4].PreviousRank)
-		assert.Equal(t, 2, rankings[5].TeamId)
+		assert.Equal(t, 6, rankings[5].TeamId)
 		assert.Equal(t, previousRankings[rankings[5].TeamId], rankings[5].PreviousRank)
 	}
 
@@ -102,6 +102,25 @@ func TestCalculateRankings(t *testing.T) {
 	}
 	fmt.Println()
 
+}
+
+func TestAddMatchResultToRankingsHandleCards(t *testing.T) {
+	rankings := map[int]*game.Ranking{}
+	matchResult := model.BuildTestMatchResult(1, 1)
+	matchResult.RedCards = map[string]string{"1": "yellow", "2": "red", "3": "dq"}
+	matchResult.BlueCards = map[string]string{"4": "red", "5": "dq", "6": "yellow"}
+	addMatchResultToRankings(rankings, 1, matchResult, true)
+	addMatchResultToRankings(rankings, 2, matchResult, true)
+	addMatchResultToRankings(rankings, 3, matchResult, true)
+	addMatchResultToRankings(rankings, 4, matchResult, false)
+	addMatchResultToRankings(rankings, 5, matchResult, false)
+	addMatchResultToRankings(rankings, 6, matchResult, false)
+	assert.Equal(t, 0, rankings[1].Disqualifications)
+	assert.Equal(t, 1, rankings[2].Disqualifications)
+	assert.Equal(t, 1, rankings[3].Disqualifications)
+	assert.Equal(t, 1, rankings[4].Disqualifications)
+	assert.Equal(t, 1, rankings[5].Disqualifications)
+	assert.Equal(t, 0, rankings[6].Disqualifications)
 }
 
 // Sets up a schedule and results that touches on all possible variables.

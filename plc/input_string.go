@@ -8,27 +8,35 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[fieldEstop-0]
-	_ = x[redEstop1-1]
-	_ = x[redEstop2-2]
-	_ = x[redEstop3-3]
-	_ = x[blueEstop1-4]
-	_ = x[blueEstop2-5]
-	_ = x[blueEstop3-6]
-	_ = x[redConnected1-7]
-	_ = x[redConnected2-8]
-	_ = x[redConnected3-9]
-	_ = x[blueConnected1-10]
-	_ = x[blueConnected2-11]
-	_ = x[blueConnected3-12]
-	_ = x[redChargeStationLevel-13]
-	_ = x[blueChargeStationLevel-14]
-	_ = x[inputCount-15]
+	_ = x[fieldEStop-0]
+	_ = x[red1EStop-1]
+	_ = x[red1AStop-2]
+	_ = x[red2EStop-3]
+	_ = x[red2AStop-4]
+	_ = x[red3EStop-5]
+	_ = x[red3AStop-6]
+	_ = x[blue1EStop-7]
+	_ = x[blue1AStop-8]
+	_ = x[blue2EStop-9]
+	_ = x[blue2AStop-10]
+	_ = x[blue3EStop-11]
+	_ = x[blue3AStop-12]
+	_ = x[redConnected1-13]
+	_ = x[redConnected2-14]
+	_ = x[redConnected3-15]
+	_ = x[blueConnected1-16]
+	_ = x[blueConnected2-17]
+	_ = x[blueConnected3-18]
+	_ = x[redAmplify-19]
+	_ = x[redCoop-20]
+	_ = x[blueAmplify-21]
+	_ = x[blueCoop-22]
+	_ = x[inputCount-23]
 }
 
-const _input_name = "fieldEstopredEstop1redEstop2redEstop3blueEstop1blueEstop2blueEstop3redConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3redChargeStationLevelblueChargeStationLevelinputCount"
+const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3redAmplifyredCoopblueAmplifyblueCoopinputCount"
 
-var _input_index = [...]uint8{0, 10, 19, 28, 37, 47, 57, 67, 80, 93, 106, 120, 134, 148, 169, 191, 201}
+var _input_index = [...]uint8{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 215, 222, 233, 241, 251}
 
 func (i input) String() string {
 	if i < 0 || i >= input(len(_input_index)-1) {
