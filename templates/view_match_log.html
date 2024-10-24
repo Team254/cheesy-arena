@@ -6,6 +6,7 @@
 */}}
 {{define "title"}}Match Log - {{.Match.ShortName}} - {{ .MatchLogs.TeamId}} ({{.MatchLogs.AllianceStation}}){{end}}
 {{define "body"}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <h3>Match Log: {{.Match.ShortName}} - {{ .MatchLogs.TeamId}} ({{.MatchLogs.AllianceStation}})</h3>
 <ul id="matchTabs" class="nav nav-tabs mt-4">
   {{range $logs := .MatchLogs.Logs}}
@@ -18,9 +19,223 @@
 <div class="tab-content">
   {{range $logs := .MatchLogs.Logs}}
     <div class="tab-pane {{if eq $.FirstMatch $logs.StartTime}} active{{end}}" id="{{$logs.StartTime}}">
+
       <div class="mt-3 mb-2 ms-2">
         <a href="/{{$logs.Filename}}">Download CSV</a>
       </div>
+
+      <div style="position: relative; height:40vh;">
+        <canvas id="link_chart_{{$logs.StartTime}}"></canvas>
+      </div>
+
+      <div style="position: relative; height:30vh;">
+        <canvas id="voltage_chart_{{$logs.StartTime}}"></canvas>
+      </div>
+
+      <div style="position: relative; height:30vh;">
+        <canvas id="latency_chart_{{$logs.StartTime}}"></canvas>
+      </div>
+
+      <div style="position: relative; height:30vh;">
+        <canvas id="missed_packets_chart_{{$logs.StartTime}}"></canvas>
+      </div>
+
+      <div style="position: relative; height:30vh;">
+        <canvas id="snr_chart_{{$logs.StartTime}}"></canvas>
+      </div>
+
+      <script>
+        const ctx_link_{{$logs.StartTime}} = document.getElementById("link_chart_{{$logs.StartTime}}");
+        const ctx_voltage_{{$logs.StartTime}} = document.getElementById("voltage_chart_{{$logs.StartTime}}");
+        const ctx_latency_{{$logs.StartTime}} = document.getElementById("latency_chart_{{$logs.StartTime}}");
+        const ctx_missed_packets_{{$logs.StartTime}} = document.getElementById("missed_packets_chart_{{$logs.StartTime}}");
+        const ctx_snr_{{$logs.StartTime}} = document.getElementById("snr_chart_{{$logs.StartTime}}");
+
+        new Chart(ctx_link_{{$logs.StartTime}}, {
+          type: 'line',
+          options: {
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: "Link"
+              }
+            },
+            scales: {
+              y: {
+                type: 'category',
+                labels: [true, false],
+                stack: 'demo',
+                stackWeight: 0.75,
+                border: {
+                  color: 'rgb(192, 75, 75)'
+                }
+              },
+              y2: {
+                type: 'category',
+                labels: [true, false],
+                offset: true,
+                position: 'left',
+                stack: 'demo',
+                stackWeight: 1,
+                border: {
+                  color: 'rgb(75, 75, 192)'
+                }
+              },
+              y3: {
+                type: 'category',
+                labels: [true, false],
+                offset: true,
+                position: 'left',
+                stack: 'demo',
+                stackWeight: 1,
+                border: {
+                  color: 'rgb(192, 192, 75)'
+                }
+              },
+              y4: {
+                type: 'category',
+                labels: [true, false],
+                offset: true,
+                position: 'left',
+                stack: 'demo',
+                stackWeight: 1,
+                border: {
+                  color: 'rgb(75, 192, 192)'
+                }
+              },
+            }
+          },
+          data: {
+            labels: [{{range $row := $logs.Rows}}{{printf "%.2f" $row.MatchTimeSec}},{{end}}],
+            datasets:[
+              {
+                label: 'DS Linked',
+                data: [{{range $row := $logs.Rows}}{{$row.DsLinked}},{{end}}],
+                fill: false,
+                borderColor: 'rgb(192, 75, 75)',
+                tension: 0.1
+              },
+              {
+                label: 'Radio Linked',
+                data: [{{range $row := $logs.Rows}}{{if $row.DsLinked}}{{$row.RadioLinked}}{{else}}false{{end}},{{end}}],
+                fill: false,
+                borderColor: 'rgb(75, 75, 192)',
+                tension: 0.1,
+                yAxisID: 'y2',
+              },
+              {
+                label: 'Rio Linked',
+                data: [{{range $row := $logs.Rows}}{{if and $row.DsLinked $row.RadioLinked}}{{$row.RioLinked}}{{else}}false{{end}},{{end}}],
+                fill: false,
+                borderColor: 'rgb(192, 192, 75)',
+                tension: 0.1,
+                yAxisID: 'y3',
+              },
+              {
+                label: 'Robot Linked',
+                data: [{{range $row := $logs.Rows}}{{if and $row.DsLinked $row.RadioLinked $row.RioLinked}}{{$row.RobotLinked}}{{else}}false{{end}},{{end}}],
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                yAxisID: 'y4',
+              }
+            ]
+          }
+        });
+
+        new Chart(ctx_voltage_{{$logs.StartTime}}, {
+          type: 'line',
+          options: {
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: "Voltage"
+              }
+            }
+          },
+          data: {
+            labels: [{{range $row := $logs.Rows}}{{printf "%.2f" $row.MatchTimeSec}},{{end}}],
+            datasets:[{
+              label: '{{$.MatchLogs.TeamId}}',
+              data: [{{range $row := $logs.Rows}}{{printf "%.3f" $row.BatteryVoltage}},{{end}}],
+              fill: false,
+              borderColor: 'rgb(192, 75, 75)',
+              tension: 0.1
+            }]
+          }
+        });
+
+        new Chart(ctx_latency_{{$logs.StartTime}}, {
+          type: 'line',
+          options: {
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: "Latency"
+              }
+            }
+          },
+          data: {
+            labels: [{{range $row := $logs.Rows}}{{printf "%.2f" $row.MatchTimeSec}},{{end}}],
+            datasets:[{
+              label: '{{$.MatchLogs.TeamId}}',
+              data: [{{range $row := $logs.Rows}}{{$row.DsRobotTripTimeMs}},{{end}}],
+              fill: false,
+              tension: 0.1
+            }]
+          }
+        });
+
+        new Chart(missed_packets_chart_{{$logs.StartTime}}, {
+          type: 'line',
+          options: {
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: "Missed Packets"
+              }
+            }
+          },
+          data: {
+            labels: [{{range $row := $logs.Rows}}{{printf "%.2f" $row.MatchTimeSec}},{{end}}],
+            datasets:[{
+              label: '{{$.MatchLogs.TeamId}}',
+              data: [{{range $row := $logs.Rows}}{{$row.MissedPacketCount}},{{end}}],
+              fill: false,
+              borderColor: 'rgb(192, 192, 75)',
+              tension: 0.1
+            }]
+          }
+        });
+
+        new Chart(snr_chart_{{$logs.StartTime}}, {
+          type: 'line',
+          options: {
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: "SNR"
+              }
+            }
+          },
+          data: {
+            labels: [{{range $row := $logs.Rows}}{{printf "%.2f" $row.MatchTimeSec}},{{end}}],
+            datasets:[{
+              label: '{{$.MatchLogs.TeamId}}',
+              data: [{{range $row := $logs.Rows}}{{$row.SignalNoiseRatio}},{{end}}],
+              fill: false,
+              borderColor: 'rgb(75, 192, 192)',
+              tension: 0.1
+            }]
+          }
+        });
+      </script>
+
       <table class="table">
         <thead class="thead-dark" style="position: sticky; top: 0px;">
           <tr>
