@@ -86,10 +86,10 @@ UI for controlling the alliance selection process.
         <div class="row">
           <label class="col-lg-5 control-label">Time limit in seconds<br />(0 = disabled)</label>
           <div class="col-lg-6">
-            <input type="radio" name="timeLimitSec" value="45" onclick="setTimer(this);"> 45 Seconds( 1st Round Picks )
-            <input type="radio" name="timeLimitSec" value="90" onclick="setTimer(this);"> 90 Seconds( 2st and 3rd Round Picks )
+            <input type="radio" name="timeLimitSec" value="45" onclick="setTimer(this);"> 45 Seconds( 1st Round Picks ) </br>
+            <input type="radio" name="timeLimitSec" value="90" onclick="setTimer(this);"> 90 Seconds( 2+ Round Picks ) </br>
             <input type="radio" name="timeLimitSec" value="120" onclick="setTimer(this);"> 120 Seconds( Break Time
-            between Rounds )
+            between Rounds ) </br>
             <input type="text" class="form-control" name="timeLimitSec" value="{{.TimeLimitSec}}"
               onblur="setTimer(this);">
           </div>
