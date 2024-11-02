@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Red LEDS - Cheesy Arena</title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
+    <link rel="stylesheet" href="/static/css/logo_display.css" />
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #821a1a;
+            margin: 0;
+            flex-direction: column; /* Center the content vertically */
+        }
+        #logo {
+            display: flex;
+            height: 55vh;
+            flex-direction: column; /* Stack items vertically */
+            align-items: left; /* Align items in the center */
+        }
+        h1 {
+            margin: 0 10px; /* Add some margin around the heading */
+            color: white; /* Change text color to white for better contrast */
+        }
+        .icon {
+            width: 100px; /* Reduced size for better alignment */
+            height: 100px; /* Reduced size for better alignment */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px; /* Adjusted font size */
+            border-radius: 10px;
+            margin: 0 5px; /* Smaller margin for inline layout */
+        }
+        .checkmark {
+            color: green;
+            background-color: #444; /* Darker grey for the checkmark */
+        }
+        .cross {
+            color: red;
+            background-color: #444; /* Darker grey for the cross */
+        }
+    </style>
+</head>
+<body>
+    <div id="logo">
+        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin-right: 345px;">Amplified?</h1>
+            {{ if .Amplified }}
+                <div id="amplified" class="icon checkmark">&#10003;</div> <!-- Green checkmark -->
+            {{ else }}
+                <div id="amplified" class="icon cross">&#10006;</div> 
+            {{ end }}
+        </div>
+
+        <div style="display: flex; align-items: center; margin-bottom: 40px;">
+            <h1 style="margin-right: 300px;">Coopertition?</h1>
+            {{ if .CoopertitionActive }}
+                <div id="coop" class="icon checkmark">&#10003;</div> <!-- Green checkmark -->
+            {{ else }}
+                <div id="coop" class="icon cross">&#10006;</div> 
+            {{ end }}
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 60px;">
+            <h1>Amplified Time Remaining: </h1>
+            <h1 id="time">{{ .AmplifiedTimeRemaining }}s</h1>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <h1>Banked Notes: </h1>
+            <h1 id="banked">{{ .BankedNotes }}</h1>
+        </div>
+    </div>
+    <div id="logo1">
+        <img src="/static/img/Roboticon_2024_Blue_Logo_No_Bg-04.webp" height="250px" />
+    </div>
+    <div id="message"></div>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/match_timing.js"></script>
+    <script src="/static/js/led_display_red.js"></script>
+</body>
+</html>

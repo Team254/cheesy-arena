@@ -7,7 +7,6 @@ package field
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/websocket"
 	"net/url"
 	"reflect"
 	"sort"
@@ -15,6 +14,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Team254/cheesy-arena/websocket"
 )
 
 const (
@@ -38,6 +39,8 @@ const (
 	TwitchStreamDisplay
 	WallDisplay
 	WebpageDisplay
+	RedLedDisplay
+	BlueLedDisplay
 )
 
 var DisplayTypeNames = map[DisplayType]string{
@@ -53,6 +56,8 @@ var DisplayTypeNames = map[DisplayType]string{
 	TwitchStreamDisplay:    "Twitch Stream",
 	WallDisplay:            "Wall",
 	WebpageDisplay:         "Web Page",
+	RedLedDisplay:          "Red Led Display",
+	BlueLedDisplay:         "Blue Led Display",
 }
 
 var displayTypePaths = map[DisplayType]string{
@@ -68,6 +73,8 @@ var displayTypePaths = map[DisplayType]string{
 	TwitchStreamDisplay:    "/displays/twitch",
 	WallDisplay:            "/displays/wall",
 	WebpageDisplay:         "/displays/webpage",
+	RedLedDisplay:          "/displays/leds/red",
+	BlueLedDisplay:         "/displays/leds/blue",
 }
 
 var displayRegistryMutex sync.Mutex

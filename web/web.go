@@ -7,13 +7,14 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/Team254/cheesy-arena/game"
 
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
@@ -165,6 +166,10 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /displays/wall/websocket", web.wallDisplayWebsocketHandler)
 	mux.HandleFunc("GET /displays/webpage", web.webpageDisplayHandler)
 	mux.HandleFunc("GET /displays/webpage/websocket", web.webpageDisplayWebsocketHandler)
+	mux.HandleFunc("GET /displays/leds/red", web.redLedDisplayHandler)
+	mux.HandleFunc("GET /displays/leds/blue", web.blueLedDisplayHandler)
+	mux.HandleFunc("GET /displays/leds/red/websocket", web.ledDisplayWebsocketHandler)
+	mux.HandleFunc("GET /displays/leds/blue/websocket", web.ledDisplayWebsocketHandler)
 	mux.HandleFunc("GET /login", web.loginHandler)
 	mux.HandleFunc("POST /login", web.loginPostHandler)
 	mux.HandleFunc("GET /match_play", web.matchPlayHandler)
