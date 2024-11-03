@@ -59,7 +59,7 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	go ws.HandleNotifiers(
 		web.arena.AudienceDisplayModeNotifier,
 	)
-	
+
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
 		messageType, data, err := ws.Read()
