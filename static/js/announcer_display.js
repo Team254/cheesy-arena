@@ -58,7 +58,6 @@ var handleScorePosted = function(data) {
     return;
   }
 
-  //const matchResult = $("#matchResult");
   const matchResult = document.getElementById("matchResult"); 
   fetch("/displays/announcer/score_posted")
     .then(response => response.text())
