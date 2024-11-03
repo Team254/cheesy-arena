@@ -20,6 +20,13 @@ var showLowerThird = function(button) {
   websocket.send("showLowerThird", constructLowerThird(button));
 };
 
+// Sends a websocket message to show the given lower third and clear the audence display.
+var showLowerThirdOnly = function(button) {
+  websocket.send("showLowerThird", constructLowerThird(button));
+  $("input[name=audienceDisplay][value=blank]").prop("checked", true);
+  setAudienceDisplay();
+};
+
 // Sends a websocket message to hide the lower third.
 var hideLowerThird = function(button) {
   websocket.send("hideLowerThird", constructLowerThird(button));
@@ -36,7 +43,19 @@ var constructLowerThird = function(button) {
       BottomText: button.form.bottomText.value }
 };
 
+// Handles a websocket message to update the audience display screen selector.
+const handleAudienceDisplayMode = function(data) {
+  $("input[name=audienceDisplay]:checked").prop("checked", false);
+  $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
+};
+
+// Sends a websocket message to change what the audience display is showing.
+const setAudienceDisplay = function() {
+  websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
+};
 $(function() {
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/setup/lower_thirds/websocket", {});
+  websocket = new CheesyWebsocket("/setup/lower_thirds/websocket", {
+    audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
+  });
 });
