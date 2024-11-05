@@ -58,12 +58,13 @@ var handleScorePosted = function(data) {
     return;
   }
 
-  const matchResult = $("#matchResult");
+  const matchResult = document.getElementById("matchResult"); 
   fetch("/displays/announcer/score_posted")
     .then(response => response.text())
     .then(html => {
-      matchResult.html(html);
-      matchResult.modal("show");
+      matchResult.innerHTML = html; 
+      const modal = new bootstrap.Modal(matchResult); 
+      modal.show(); 
 
       // Activate tooltips above the foul listings.
       const tooltipTriggerList = document.querySelectorAll("[data-bs-toggle=tooltip]");

@@ -80,6 +80,9 @@ var handleArenaStatus = function(data) {
     const wifiStatus = stationStatus.WifiStatus;
     teamRadioTextElement.text(wifiStatus.TeamId);
 
+    $("#accessPointStatus").attr("data-status", data.AccessPointStatus);
+    $("#switchStatus").attr("data-status", data.SwitchStatus);
+
     if (stationStatus.DsConn) {
       // Format the driver station status box.
       var dsConn = stationStatus.DsConn;
