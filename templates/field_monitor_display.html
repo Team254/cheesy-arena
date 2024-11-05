@@ -29,7 +29,7 @@ Display showing robot connection status.
         <span class="badge badge-status" id="switchStatus"> <i class="bi bi-hdd-network"></i> Switch</span>
       </div>
     {{end}}
-    {{if !.EventSettings.NetworkSecurityEnabled}}
+    {{if not .EventSettings.NetworkSecurityEnabled}}
       <div id="matchName" class="text-start" style="width: 45%; padding-left: 1%;"></div>
     {{end}}
     <div id="matchTime" class="text-center" style="width: 10%;"></div>
