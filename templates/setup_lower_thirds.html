@@ -7,6 +7,67 @@
 {{define "title"}}Lower Thirds{{end}}
 {{define "body"}}
 <div class="row justify-content-center">
+  <div class="col-lg-3">
+    <div class="card card-body bg-body-tertiary">
+     <legend>Audience Display</legend>
+      <div class="row">
+        <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="blank" onclick="setAudienceDisplay();"> Blank
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="intro"
+                onclick="setAudienceDisplay();" id="introRadio"> Match Intro
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="match" onclick="setAudienceDisplay();"> Match Play
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="score"
+                onclick="setAudienceDisplay();" id="scoreRadio"> Final Score
+          </label>
+          </div>
+          <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="bracket" width="200px" onclick="setAudienceDisplay();"> Bracket
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="logo" onclick="setAudienceDisplay();"> Logo With BG
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="logoLuma" onclick="setAudienceDisplay();">
+            Logo Without BG
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="sponsor" onclick="setAudienceDisplay();"> Sponsor Reel
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="allianceSelection"
+                onclick="setAudienceDisplay();"> Alliance Selection
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" name="audienceDisplay" value="timeout" onclick="setAudienceDisplay();"> Timeout
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="col-lg-6">
     <div class="card card-body bg-body-tertiary">
       <legend>Lower Thirds</legend>
@@ -29,6 +90,9 @@
               </button>
               <button type="button" class="btn btn-primary mb-1" onclick="reorderLowerThird(this, true);">
                 <i class="bi-arrow-up"></i>
+              </button>
+              <button type="button" class="btn btn-success mb-1" onclick="showLowerThirdOnly(this);">
+                Show Only Thirds
               </button>
               <br />
               <button type="button" class="btn btn-danger btn-lower-third" onclick="deleteLowerThird(this);">
