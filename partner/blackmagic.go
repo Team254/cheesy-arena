@@ -25,9 +25,12 @@ type BlackmagicClient struct {
 
 // Creates a new Blackmagic client with the given device addresses as a comma-separated string.
 func NewBlackmagicClient(addresses string) *BlackmagicClient {
-	deviceAddresses := strings.Split(addresses, ",")
-	for i, address := range deviceAddresses {
-		deviceAddresses[i] = strings.TrimSpace(address)
+	var deviceAddresses []string
+	for _, address := range strings.Split(addresses, ",") {
+		trimmedAddress := strings.TrimSpace(address)
+		if trimmedAddress != "" {
+			deviceAddresses = append(deviceAddresses, trimmedAddress)
+		}
 	}
 	return &BlackmagicClient{deviceAddresses: deviceAddresses}
 }
