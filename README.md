@@ -74,7 +74,7 @@ See the [Advanced Networking wiki page](https://github.com/Team254/cheesy-arena/
 ## Contributing
 Cheesy Arena is far from finished! You can help by:
 
-* Checking out the [TODO list](TODO.md), writing a missing feature, and sending a pull request
+* Writing a missing feature, and sending a pull request
 * Filing any bugs or feature requests using the [issue tracker](https://github.com/Team254/cheesy-arena/issues)
 * Contributing documentation to the [wiki](https://github.com/Team254/cheesy-arena/wiki)
 * Sending baked goods to [Pat](https://github.com/patfair)
