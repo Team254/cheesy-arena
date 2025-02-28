@@ -171,8 +171,8 @@
         </fieldset>
         <fieldset class="mb-4">
           <legend>Networking</legend>
-          <p>Enable this setting if you have a Linksys WRT1900ACS or Vivid-Hosting VH-109 access point and Cisco
-            Catalyst 3500-series switch available, for isolating each team to its own SSID and VLAN.</p>
+          <p>Enable this setting if you have a Vivid-Hosting VH-113 access point and Cisco Catalyst 3500-series switch
+            available, for isolating each team to its own SSID and VLAN.</p>
           <div class="row mb-3">
             <label class="col-lg-8 control-label" for="networkSecurityEnabled">Enable advanced network security</label>
             <div class="col-lg-1 checkbox">
@@ -181,7 +181,7 @@
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">AP Address (specify port 8081 for Linksys APs)</label>
+            <label class="col-lg-6 control-label">AP Address</label>
             <div class="col-lg-6">
               <input type="text" class="form-control" name="apAddress" value="{{.ApAddress}}">
             </div>
@@ -193,21 +193,13 @@
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">AP Channel</label>
+            <label class="col-lg-6 control-label">AP Channel (6 GHz)</label>
             <div class="col-lg-6">
               <select class="form-select" name="apChannel" value="{{.ApChannel}}">
-                <option value="36"{{if eq .ApChannel 36}} selected{{end}}>36 (5 GHz)</option>
-                <option value="40"{{if eq .ApChannel 40}} selected{{end}}>40 (5 GHz)</option>
-                <option value="44"{{if eq .ApChannel 44}} selected{{end}}>44 (5 GHz)</option>
-                <option value="48"{{if eq .ApChannel 48}} selected{{end}}>48 (5 GHz)</option>
-                <option value="149"{{if eq .ApChannel 149}} selected{{end}}>149 (5 GHz)</option>
-                <option value="153"{{if eq .ApChannel 153}} selected{{end}}>153 (5 GHz)</option>
-                <option value="157"{{if eq .ApChannel 157}} selected{{end}}>157 (5 GHz)</option>
-                <option value="161"{{if eq .ApChannel 161}} selected{{end}}>161 (5 GHz)</option>
                 {{range $i, $j := seq 29}}
                   <option value="{{(add 5 (multiply $i 8))}}"
                     {{if eq $.ApChannel (add 5 (multiply $i 8))}} selected{{end}}>
-                    {{(add 5 (multiply $i 8))}} (6 GHz)
+                    {{(add 5 (multiply $i 8))}}
                   </option>
                 {{end}}
               </select>
