@@ -10,13 +10,13 @@ let alliance;
 const handleMatchLoad = function(data) {
   $("#matchName").text(data.Match.LongName);
   if (alliance === "red") {
-    $(".team-1").text(data.Match.Red1);
-    $(".team-2").text(data.Match.Red2);
-    $(".team-3").text(data.Match.Red3);
+    $(".team-1 .team-num").text(data.Match.Red1);
+    $(".team-2 .team-num").text(data.Match.Red2);
+    $(".team-3 .team-num").text(data.Match.Red3);
   } else {
-    $(".team-1").text(data.Match.Blue1);
-    $(".team-2").text(data.Match.Blue2);
-    $(".team-3").text(data.Match.Blue3);
+    $(".team-1 .team-num").text(data.Match.Blue1);
+    $(".team-2 .team-num").text(data.Match.Blue2);
+    $(".team-3 .team-num").text(data.Match.Blue3);
   }
 };
 
@@ -75,7 +75,7 @@ const commitMatchScore = function() {
 
 $(function() {
   alliance = window.location.href.split("/").slice(-1)[0];
-  $("#alliance").attr("data-alliance", alliance);
+  $(".container").attr("data-alliance", alliance);
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/panels/scoring/" + alliance + "/websocket", {

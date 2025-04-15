@@ -2,6 +2,122 @@
   Copyright 2019 Team 254. All Rights Reserved.
   Author: pat@patfairbank.com (Patrick Fairbank)
 */
+:root {
+  /* Evergreen baseline color scheme */
+  --red-100: #fee7e7;
+  --red-200: #fcb1b2;
+  --red-300: #fa7375;
+  --red-400: #ed1c24;
+  --red-500: #ac1117;
+  --red-600: #6f070b;
+  --red-700: #370203;
+
+  --blue-100: #ebf1ff;
+  --blue-200: #c1d6ff;
+  --blue-300: #7aafff;
+  --blue-400: #008bf0;
+  --blue-500: #0066b3;
+  --blue-600: #00447a;
+  --blue-700: #002445;
+
+  --green-100: #cafec5;
+  --green-200: #8cd27c;
+  --green-300: #42c425;
+  --green-400: #32991b;
+  --green-500: #227111;
+  --green-600: #144b08;
+  --green-700: #072802;
+
+  --purple-100: #f8eef7;
+  --purple-200: #e6c3e4;
+  --purple-300: #d391cf;
+  --purple-400: #b366af;
+  --purple-500: #834980;
+  --purple-600: #452e54;
+  --purple-700: #2d152c;
+
+  --gray-100: #f0f1f1;
+  --gray-200: #d4d5d7;
+  --gray-300: #abaeb2;
+  --gray-400: #85888d;
+  --gray-500: #626468;
+  --gray-700: #222325;
+}
+
+:root {
+  /* Evergreen semantic color scheme */
+  --red-action: var(--red-400);
+  --red-highlight: var(--red-500);
+  --red-inactive: var(--red-200);
+  --red-banner: var(--red-300);
+  --red-overlay-background: var(--red-600);
+  --red-background: var(--red-700);
+
+  --blue-action: var(--blue-400);
+  --blue-highlight: var(--blue-500);
+  --blue-inactive: var(--blue-200);
+  --blue-banner: var(--blue-300);
+  --blue-overlay-background: var(--blue-600);
+  --blue-background: var(--blue-700);
+
+  --green-action: var(--green-400);
+  --green-highlight: var(--green-500);
+  --green-inactive: var(--green-200);
+
+  --neutral-action: var(--gray-600);
+  --neutral-highlight: var(--gray-700);
+  --neutral-inactive: var(--gray-400);
+
+  --text-active: #fff;
+  --text-active-dark: #000;
+  --text-inactive: var(--gray-100);
+  --interaction-highlight: var(--gray-300);
+}
+
+:root {
+  /* Game-specific color scheme */
+  --coral: var(--gray-100);
+  --reef-pole: var(--purple-400);
+}
+
+/* Specialize color scheme for the current alliance */
+:root [data-alliance="red"] {
+  --alliance-action: var(--red-action);
+  --alliance-highlight: var(--red-highlight);
+  --alliance-inactive: var(--red-inactive);
+  --alliance-banner: var(--red-banner);
+  --alliance-overlay-background: var(--red-overlay-background);
+  --alliance-background: var(--red-background);
+
+  --opponent-action: var(--blue-action);
+  --opponent-highlight: var(--blue-highlight);
+  --opponent-inactive: var(--blue-inactive);
+  --opponent-banner: var(--blue-banner);
+  --opponent-overlay-background: var(--blue-overlay-background);
+  --opponent-background: var(--blue-background);
+}
+
+:root [data-alliance="blue"] {
+  --alliance-action: var(--blue-action);
+  --alliance-highlight: var(--blue-highlight);
+  --alliance-inactive: var(--blue-inactive);
+  --alliance-banner: var(--blue-banner);
+  --alliance-overlay-background: var(--blue-overlay-background);
+  --alliance-background: var(--blue-background);
+
+  --opponent-action: var(--red-action);
+  --opponent-highlight: var(--red-highlight);
+  --opponent-inactive: var(--red-inactive);
+  --opponent-banner: var(--red-banner);
+  --opponent-overlay-background: var(--red-overlay-background);
+  --opponent-background: var(--red-background);
+}
+
+/* Game-specific layout parameters */
+:root {
+  --banner-title-angle: 30deg;
+}
+
 html {
   height: 100%;
   -webkit-user-select: none;
@@ -14,7 +130,7 @@ body {
   overscroll-behavior: none;
 }
 .container {
-  padding-top: 1vw;
+  padding: 0;
   width: 100%;
   max-width: none;
   height: 100%;
@@ -22,6 +138,51 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  background-color: var(--alliance-background);
+}
+header {
+  width: 100%;
+  color: var(--text-active-dark);
+  background-color: var(--alliance-banner);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18pt;
+}
+.banner-title {
+  width: 100%;
+  text-align: center;
+}
+.screen-title {
+  position: relative;
+  background-color: #000;
+  width: fit-content;
+  color: var(--text-active);
+  white-space: nowrap;
+  font-weight: normal;
+  z-index: 0;
+  padding: 0 1em;
+}
+.screen-title::before,
+.screen-title::after {
+  content: '';
+  position: absolute;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  z-index: -1;
+}
+.screen-title::before {
+  left: 0;
+  transform: skewX(var(--banner-title-angle));
+  transform-origin: left bottom;
+}
+.screen-title::after {
+  right: 0;
+  transform: skewX(calc(var(--banner-title-angle) * -1));
+  transform-origin: right bottom;
 }
 #alliance {
   width: 98%;
@@ -32,15 +193,8 @@ body {
   border-radius: 25px;
   border: 1px solid #333;
 }
-#alliance[data-alliance="red"] {
-  background-color: #322;
-}
-#alliance[data-alliance="blue"] {
-  background-color: #223;
-}
-#matchName {
-  margin-bottom: 0.5vw;
-  font-size: 2vw;
+#alliance {
+  background-color: var(--alliance-background);
 }
 .scoring-section {
   margin-bottom: 0.5vw;

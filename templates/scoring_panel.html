@@ -6,7 +6,28 @@
 */}}
 {{define "title"}}Scoring Panel{{end}}
 {{define "body"}}
-<div id="matchName">&nbsp;</div>
+<header id="banner">
+  <div class="banner-title">Auto</div>
+  <div class="screen-title">Screen Title - <span id="matchName">&nbsp;</span></div>
+  <div class="banner-title">Endgame</div>
+</header>
+<main>
+  <div id="top-controls">
+    <div id="auto-controls">
+      {{template "teamButton" (dict "id" "auto-status-1" "index" 1 "onclick" "")}}
+      {{template "teamButton" (dict "id" "auto-status-2" "index" 2 "onclick" "")}}
+      {{template "teamButton" (dict "id" "auto-status-3" "index" 3 "onclick" "")}}
+    </div>
+    <div id="commit-controls"></div>
+    <div id="endgame-controls">
+      {{template "teamButton" (dict "id" "endgame-status-1" "index" 1 "onclick" "")}}
+      {{template "teamButton" (dict "id" "endgame-status-2" "index" 2 "onclick" "")}}
+      {{template "teamButton" (dict "id" "endgame-status-3" "index" 3 "onclick" "")}}
+    </div>
+  </div>
+  <div id="reef-controls"></div>
+  <div id="bottom-controls"></div>
+</main>
 <div id="alliance">
   <div class="scoring-section">
     <div class="scoring-header">
@@ -73,4 +94,7 @@
   <div id="stageSide{{.index}}Microphone" class="boolean" onclick="handleClick('microphone', 0, {{.index}});">Mic</div>
   <div id="stageSide{{.index}}Trap" class="boolean" onclick="handleClick('trap', 0, {{.index}});">Trap</div>
 </div>
+{{end}}
+{{define "teamButton"}}
+<div id="{{.id}}" class="team-button team-{{.index}}" onclick="{{.onclick}}"><div class="team-num"></div><div class="team-text">Status</div></div>
 {{end}}
