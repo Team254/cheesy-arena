@@ -38,6 +38,13 @@ const handleMatchTime = function(data) {
   }
 };
 
+const endgameStatusNames = {
+  0: "None",
+  1: "Park",
+  2: "Shallow",
+  3: "Deep",
+};
+
 // Handles a websocket message to update the realtime scoring fields.
 const handleRealtimeScore = function(data) {
   let realtimeScore;
@@ -50,8 +57,9 @@ const handleRealtimeScore = function(data) {
 
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
-    $(`#leaveStatus${i1}>.value`).text(score.LeaveStatuses[i] ? "Yes" : "No");
-    $(`#leaveStatus${i1}`).attr("data-value", score.LeaveStatuses[i]);
+    $(`#auto-status-${i1}>.team-text`).text(score.LeaveStatuses[i] ? "Leave" : "None");
+    $(`#auto-status-${i1}`).attr("data-selected", score.LeaveStatuses[i]);
+    $(`#endgame-status-${i1}>.team-text`).text(endgameStatusNames[score.EndgameStatuses[i]]);
     $(`#parkTeam${i1}`).attr("data-value", score.EndgameStatuses[i] === 1);
     $(`#stageSide0Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 2);
     $(`#stageSide1Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 3);

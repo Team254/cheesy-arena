@@ -41,6 +41,7 @@
   --gray-300: #abaeb2;
   --gray-400: #85888d;
   --gray-500: #626468;
+  --gray-600: #414245;
   --gray-700: #222325;
 }
 
@@ -116,6 +117,7 @@
 /* Game-specific layout parameters */
 :root {
   --banner-title-angle: 30deg;
+  --button-border-radius: 8px;
 }
 
 html {
@@ -128,6 +130,7 @@ body {
   height: 100%;
   background-color: #222;
   overscroll-behavior: none;
+  touch-action: manipulation;
 }
 .container {
   padding: 0;
@@ -162,13 +165,12 @@ header {
   white-space: nowrap;
   font-weight: normal;
   z-index: 0;
-  padding: 0 1em;
+  padding: 0 0.5em;
 }
 .screen-title::before,
 .screen-title::after {
   content: '';
   position: absolute;
-  padding: 0;
   width: 100%;
   height: 100%;
   background-color: black;
@@ -184,6 +186,86 @@ header {
   transform: skewX(calc(var(--banner-title-angle) * -1));
   transform-origin: right bottom;
 }
+
+main {
+  width: 100%;
+}
+
+#top-controls {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5vw 1vw;
+}
+
+#auto-controls, #endgame-controls {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 1em;
+  padding: 0em 1em;
+}
+
+#bottom-controls {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5vw 1vw;
+}
+
+.team-button {
+  border: none;
+  border-radius: var(--button-border-radius);
+  color: var(--text-active);
+  overflow: clip;
+  padding: 0;
+  text-align: center;
+  /*flex: fit-content;*/
+  width: 100%;
+  height: 2lh;
+
+  --button-top-color: var(--alliance-action);
+  --button-bottom-default-color: var(--neutral-action);
+  --button-bottom-selected-color: var(--green-action);
+}
+.team-button:enabled:not(:active) {
+  cursor: auto;
+  box-shadow: black 0px 4px 4px;
+}
+.team-button:hover:enabled {
+  cursor: auto;
+  /*
+  --button-top-color: var(--alliance-highlight);
+  --button-bottom-default-color: var(--neutral-highlight);
+  --button-bottom-selected-color: var(--green-highlight);
+  */
+}
+.team-button:disabled {
+  --button-top-color: var(--alliance-inactive);
+  --button-bottom-default-color: var(--neutral-inactive);
+  --button-bottom-selected-color: var(--green-inactive);
+}
+
+.team-button .team-num {
+  height: 50%;
+  background-color: var(--button-top-color);
+}
+
+.team-button .team-text {
+  height: 50%;
+  background-color: var(--button-bottom-default-color);
+}
+
+.team-button[data-selected="true"] .team-text {
+  background-color: var(--button-bottom-selected-color);
+}
+
 #alliance {
   width: 98%;
   display: flex;

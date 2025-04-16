@@ -14,9 +14,9 @@
 <main>
   <div id="top-controls">
     <div id="auto-controls">
-      {{template "teamButton" (dict "id" "auto-status-1" "index" 1 "onclick" "")}}
-      {{template "teamButton" (dict "id" "auto-status-2" "index" 2 "onclick" "")}}
-      {{template "teamButton" (dict "id" "auto-status-3" "index" 3 "onclick" "")}}
+      {{range $i := seq 3}}
+        {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "onclick" (printf "handleClick('leave', %d);" $i))}}
+      {{end}}
     </div>
     <div id="commit-controls"></div>
     <div id="endgame-controls">
@@ -29,20 +29,6 @@
   <div id="bottom-controls"></div>
 </main>
 <div id="alliance">
-  <div class="scoring-section">
-    <div class="scoring-header">
-      <div>&nbsp;</div>
-      <div>Leave</div>
-    </div>
-    {{range $i := seq 3}}
-      <div>
-        <div class="team team-{{$i}} robot-field"></div>
-        <div id="leaveStatus{{$i}}" class="boolean robot-field" onclick="handleClick('leave', {{$i}});">
-          <div class="value"></div>
-        </div>
-      </div>
-    {{end}}
-  </div>
   <div id="stage">
     <svg id="stageGraphic" viewBox="0 4 100 90">
       <polygon points="5,5 95,5 50,78" fill="none" stroke="currentColor" stroke-width="0.2" />
@@ -96,5 +82,5 @@
 </div>
 {{end}}
 {{define "teamButton"}}
-<div id="{{.id}}" class="team-button team-{{.index}}" onclick="{{.onclick}}"><div class="team-num"></div><div class="team-text">Status</div></div>
+<button id="{{.id}}" class="team-button team-{{.index}}" onclick="{{.onclick}}" ontouchstart><div class="team-num"></div><div class="team-text">None</div></button>
 {{end}}
