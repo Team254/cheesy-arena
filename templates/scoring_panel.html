@@ -20,13 +20,16 @@
     </div>
     <div id="commit-controls"></div>
     <div id="endgame-controls">
-      {{template "teamButton" (dict "id" "endgame-status-1" "index" 1 "onclick" "")}}
-      {{template "teamButton" (dict "id" "endgame-status-2" "index" 2 "onclick" "")}}
-      {{template "teamButton" (dict "id" "endgame-status-3" "index" 3 "onclick" "")}}
+      {{range $i := seq 3}}
+        {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "onclick" "")}}
+      {{end}}
     </div>
   </div>
   <div id="reef-controls"></div>
-  <div id="bottom-controls"></div>
+  <div id="bottom-controls">
+    {{template "counter" (dict "id" "coral-l1" "label" "L1 Coral")}}
+    {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
+  </div>
 </main>
 <div id="alliance">
   <div id="stage">
@@ -83,4 +86,14 @@
 {{end}}
 {{define "teamButton"}}
 <button id="{{.id}}" class="team-button team-{{.index}}" onclick="{{.onclick}}" ontouchstart><div class="team-num"></div><div class="team-text">None</div></button>
+{{end}}
+{{define "counter"}}
+<div id="{{.id}}" class="counter">
+  <button class="counter-decrement" onclick="handleCounter('{{.id}}', -1);" ontouchstart>-1</button>
+  <div class="counter-status">
+    <div class="counter-value">0</div>
+    <div class="counter-label">{{.label}}</div>
+  </div>
+  <button class="counter-increment" onclick="handleCounter('{{.id}}', 1);" ontouchstart>+1</button>
+</div>
 {{end}}

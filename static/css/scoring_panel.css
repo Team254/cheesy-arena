@@ -142,6 +142,7 @@ body {
   justify-content: flex-start;
   align-items: center;
   background-color: var(--alliance-background);
+  line-height: 1.2;
 }
 header {
   width: 100%;
@@ -214,7 +215,7 @@ main {
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   padding: 0.5vw 1vw;
 }
@@ -228,7 +229,7 @@ main {
   text-align: center;
   /*flex: fit-content;*/
   width: 100%;
-  height: 2lh;
+  height: 68px;
 
   --button-top-color: var(--alliance-action);
   --button-bottom-default-color: var(--neutral-action);
@@ -238,7 +239,7 @@ main {
   cursor: auto;
   box-shadow: black 0px 4px 4px;
 }
-.team-button:hover:enabled {
+button:hover:enabled {
   cursor: auto;
   /*
   --button-top-color: var(--alliance-highlight);
@@ -264,6 +265,64 @@ main {
 
 .team-button[data-selected="true"] .team-text {
   background-color: var(--button-bottom-selected-color);
+}
+
+.counter {
+  border: none;
+  border-radius: var(--button-border-radius);
+  overflow: clip;
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+  min-height: 74px;
+  width: 300px;
+}
+
+.counter:has(button:enabled) {
+  color: var(--text-active-dark);
+  box-shadow: black 0px 4px 4px;
+}
+.counter:not(:has(button:enabled)) {
+  color: var(--text-inactive);
+}
+
+.counter button {
+  border: none;
+  padding: 0;
+  color: var(--text-active);
+  background-color: var(--alliance-action);
+  font-size: 24pt;
+  font-weight: bold;
+  display: grid;
+  place-items: center;
+  width: 74px;
+  z-index: 1;
+}
+
+.counter button:enabled:not(:active) {
+  box-shadow: black 0px 0px 4px;
+}
+
+.counter button:disabled {
+  background-color: var(--alliance-inactive);
+  color: var(--text-inactive);
+}
+
+.counter-status {
+  background-color: #fff;
+  width: 12em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.counter-label {
+  font-size: 12pt;
+}
+
+.counter-value {
+  font-size: 28pt;
+  font-weight: bold;
 }
 
 #alliance {
