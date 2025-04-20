@@ -72,6 +72,7 @@
   --text-active: #fff;
   --text-active-dark: #000;
   --text-inactive: var(--gray-100);
+  --text-inactive-dark: var(--gray-100);
   --interaction-highlight: var(--gray-300);
 }
 
@@ -233,7 +234,7 @@ main {
 
   --button-top-color: var(--alliance-action);
   --button-bottom-default-color: var(--neutral-action);
-  --button-bottom-selected-color: var(--green-action);
+  --button-bottom-selected-color: var(--alliance-highlight);
 }
 .team-button:enabled:not(:active) {
   cursor: auto;
@@ -250,16 +251,18 @@ button:hover:enabled {
 .team-button:disabled {
   --button-top-color: var(--alliance-inactive);
   --button-bottom-default-color: var(--neutral-inactive);
-  --button-bottom-selected-color: var(--green-inactive);
+  --button-bottom-selected-color: var(--alliance-highlight);
 }
 
 .team-button .team-num {
   height: 50%;
+  align-content: center;
   background-color: var(--button-top-color);
 }
 
 .team-button .team-text {
   height: 50%;
+  align-content: center;
   background-color: var(--button-bottom-default-color);
 }
 
@@ -283,7 +286,7 @@ button:hover:enabled {
   box-shadow: black 0px 4px 4px;
 }
 .counter:not(:has(button:enabled)) {
-  color: var(--text-inactive);
+  color: var(--text-inactive-dark);
 }
 
 .counter button {
@@ -323,6 +326,88 @@ button:hover:enabled {
 .counter-value {
   font-size: 28pt;
   font-weight: bold;
+}
+
+#endgame-dialog {
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  overflow: clip;
+  font-size: 18pt;
+  font-weight: bold;
+  background-color: var(--alliance-overlay-background);
+}
+
+#endgame-dialog-container {
+  width: 667px;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;
+}
+
+#endgame-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.75);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+#endgame-banner {
+  width: 100%;
+  font-size: 24pt;
+  font-weight: bold;
+  background-color: var(--alliance-banner);
+  color: var(--text-active-dark);
+  text-align: center;
+}
+
+#endgame-scoring {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.endgame-input {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  background-color: var(--alliance-action);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.endgame-input .team-num {
+  width: 100%;
+  background-color: var(--alliance-action);
+  border-radius: 8px;
+  align-content: center;
+  text-align: center;
+}
+
+#endgame-dialog button {
+  cursor: auto;
+  height: 68px;
+  border: none;
+  border-radius: var(--button-border-radius);
+  background-color: var(--neutral-action);
+  color: var(--text-active);
+}
+#endgame-dialog button:enabled:not([data-selected="true"]) {
+  box-shadow: black 0px 4px 4px;
+}
+
+#endgame-dialog button[data-selected="true"] {
+  background-color: var(--alliance-highlight);
+}
+
+#endgame-close {
+  padding: 20px;
+  width: 29%;
+  align-self: center;
 }
 
 #alliance {

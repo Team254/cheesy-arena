@@ -6,6 +6,22 @@
 var websocket;
 let alliance;
 
+const endgameDialog = $("#endgame-dialog")[0];
+
+const showEndgameDialog = function() {
+  endgameDialog.showModal();
+}
+
+const closeEndgameDialog = function() {
+  endgameDialog.close();
+}
+
+const closeEndgameDialogIfOutside = function(event) {
+  if (event.target === endgameDialog) {
+    closeEndgameDialog();
+  }
+}
+
 // Handles a websocket message to update the teams for the current match.
 const handleMatchLoad = function(data) {
   $("#matchName").text(data.Match.LongName);
@@ -38,12 +54,12 @@ const handleMatchTime = function(data) {
   }
 };
 
-const endgameStatusNames = {
-  0: "None",
-  1: "Park",
-  2: "Shallow",
-  3: "Deep",
-};
+const endgameStatusNames = [
+  "None",
+  "Park",
+  "Shallow",
+  "Deep",
+];
 
 // Handles a websocket message to update the realtime scoring fields.
 const handleRealtimeScore = function(data) {
@@ -60,6 +76,9 @@ const handleRealtimeScore = function(data) {
     $(`#auto-status-${i1}>.team-text`).text(score.LeaveStatuses[i] ? "Leave" : "None");
     $(`#auto-status-${i1}`).attr("data-selected", score.LeaveStatuses[i]);
     $(`#endgame-status-${i1}>.team-text`).text(endgameStatusNames[score.EndgameStatuses[i]]);
+    for (let j = 0; j < endgameStatusNames.length; j++) {
+      $(`#endgame-input-${i1} .endgame-${j}`).attr("data-selected", j == score.EndgameStatuses[i]);
+    }
     $(`#parkTeam${i1}`).attr("data-value", score.EndgameStatuses[i] === 1);
     $(`#stageSide0Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 2);
     $(`#stageSide1Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 3);

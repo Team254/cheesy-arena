@@ -119,6 +119,12 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					score.LeaveStatuses[args.TeamPosition-1] = !score.LeaveStatuses[args.TeamPosition-1]
 					scoreChanged = true
 				}
+			case "endgame":
+				if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.StageIndex >= 0 && args.StageIndex <= 3 {
+					endgameStatus := game.EndgameStatus(args.StageIndex)
+					score.EndgameStatuses[args.TeamPosition-1] = endgameStatus
+					scoreChanged = true
+				}
 			case "onStage":
 				if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.StageIndex >= 0 && args.StageIndex <= 2 {
 					endgameStatus := game.EndgameStatus(args.StageIndex + 2)

@@ -21,7 +21,7 @@
     <div id="commit-controls"></div>
     <div id="endgame-controls">
       {{range $i := seq 3}}
-        {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "onclick" "")}}
+        {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "onclick" "showEndgameDialog();")}}
       {{end}}
     </div>
   </div>
@@ -31,6 +31,17 @@
     {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
   </div>
 </main>
+<dialog id="endgame-dialog" onclick="closeEndgameDialogIfOutside(event);">
+  <div id="endgame-dialog-container">
+    <div id="endgame-banner">Endgame Scoring</div>
+    <div id="endgame-scoring">
+      {{range $i := seq 3}}
+        {{template "endgame-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i)}}
+      {{end}}
+    </div>
+    <button id="endgame-close" autofocus onclick="closeEndgameDialog();" ontouchstart>Close</button>
+  </div>
+</dialog>
 <div id="alliance">
   <div id="stage">
     <svg id="stageGraphic" viewBox="0 4 100 90">
@@ -96,4 +107,16 @@
   </div>
   <button class="counter-increment" onclick="handleCounter('{{.id}}', 1);" ontouchstart>+1</button>
 </div>
+{{end}}
+{{define "endgame-input"}}
+<div id="{{.id}}" class="endgame-input team-{{.index}}">
+  <div class="team-num"></div>
+  {{template "endgame-input-button" (dict "label" "Deep" "endgameState" 3 "index" .index)}}
+  {{template "endgame-input-button" (dict "label" "Shallow" "endgameState" 2 "index" .index)}}
+  {{template "endgame-input-button" (dict "label" "Park" "endgameState" 1 "index" .index)}}
+  {{template "endgame-input-button" (dict "label" "None" "endgameState" 0 "index" .index)}}
+</div>
+{{end}}
+{{define "endgame-input-button"}}
+<button class="endgame-input-button endgame-{{.endgameState}}" onclick="handleClick('endgame', {{.index}}, {{.endgameState}});" ontouchstart>{{.label}}</button>
 {{end}}
