@@ -31,6 +31,69 @@
     {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
   </div>
 </main>
+
+<svg>
+
+  <symbol id="coral-indicator" width="30" height="125" viewBox="0 0 30 125">
+    <rect width="30" height="80" fill="var(--coral)" display="var(--current-display)" />
+    <g display="var(--auto-display)">
+      <rect width="30" height="20" y="85" fill="var(--coral-auto)" />
+      <text
+         style="font-size:16pt;font-family:'Segoe UI';font-weight:bold;text-align:middle;text-anchor:middle;fill:#000000"
+         x="15" y="103" >A</text>
+    </g>
+  </symbol>
+
+  <symbol id="reef-column" width="120" height="600" viewBox="0 0 120 600">
+    <style>
+      .l4-coral {
+        --current-display: var(--l4-coral-display);
+        --auto-display: var(--l4-coral-auto-display);
+      }
+      .l3-coral {
+        --current-display: var(--l3-coral-display);
+        --auto-display: var(--l3-coral-auto-display);
+      }
+      .l2-coral {
+        --current-display: var(--l2-coral-display);
+        --auto-display: var(--l2-coral-auto-display);
+      }
+    </style>
+    <g stroke="var(--reef-pole)" stroke-width="10px" fill="none">
+      <path d="m 60,0 v 125 a 24.142136,24.142136 112.5 0 1 -7.071068,17.07107 L 12.071068,182.92893 A 24.142136,24.142136 112.5 0 0 5,200 v 400" />
+      <line x1="5" y1="355" x2="115" y2="245" />
+      <line x1="5" y1="555" x2="115" y2="445" />
+    </g>
+    <use xlink:href="#coral-indicator" class="l4-coral" x="45" y="20" />
+    <use xlink:href="#coral-indicator" class="l3-coral" x="45" y="240" transform="rotate(45, 60, 300)" />
+    <use xlink:href="#coral-indicator" class="l2-coral" x="45" y="440" transform="rotate(45, 60, 500)" />
+  </symbol>
+
+</svg>
+
+<div style="display:flex;flex-direction:row">
+  <svg
+     data-l4-scored="true"
+     data-l4-auto-scored="false"
+     data-l3-scored="false"
+     data-l3-auto-scored="true"
+     data-l2-scored="true"
+     data-l2-auto-scored="true"
+     class="reef-column"
+     width="120"
+     height="600"
+     viewBox="0 0 120 600">
+    <use xlink:href="#reef-column" />
+  </svg>
+  <svg
+     class="reef-column"
+     width="120"
+     height="600"
+     viewBox="0 0 120 600">
+    <use xlink:href="#reef-column" />
+  </svg>
+</div>
+
 <dialog id="endgame-dialog" onclick="closeEndgameDialogIfOutside(event);">
   <div id="endgame-dialog-container">
     <div id="endgame-banner">Endgame Scoring</div>
@@ -42,32 +105,6 @@
     <button id="endgame-close" autofocus onclick="closeEndgameDialog();" ontouchstart>Close</button>
   </div>
 </dialog>
-<div id="alliance">
-  <div id="stage">
-    <svg id="stageGraphic" viewBox="0 4 100 90">
-      <polygon points="5,5 95,5 50,78" fill="none" stroke="currentColor" stroke-width="0.2" />
-      <text x="50" y="7.5" text-anchor="middle" font-size="2" fill="currentColor">Center</text>
-      <text x="50" y="9.5" text-anchor="middle" font-size="2" fill="currentColor">Stage</text>
-      <text x="30" y="38" text-anchor="middle" font-size="2" fill="currentColor">Stage</text>
-      <text x="30" y="40" text-anchor="middle" font-size="2" fill="currentColor">Left</text>
-      <text x="69" y="38" text-anchor="middle" font-size="2" fill="currentColor">Stage</text>
-      <text x="69" y="40" text-anchor="middle" font-size="2" fill="currentColor">Right</text>
-      <text x="50" y="15" text-anchor="middle" font-size="2" fill="currentColor">Park</text>
-      <line x1="5" y1="85" x2="95" y2="85" stroke="currentColor" stroke-width="0.2" />
-      <text x="50" y="87.5" text-anchor="middle" font-size="2" fill="currentColor">Alliance Wall</text>
-    </svg>
-    <div id="stageLeft" class="stage-side">{{template "stageSide" dict "index" 0}}</div>
-    <div id="centerStage" class="stage-side">{{template "stageSide" dict "index" 1}}</div>
-    <div id="stageRight" class="stage-side">{{template "stageSide" dict "index" 2}}</div>
-    <div id="park" class="stage-side">
-      <div class="stage-side-col">
-        <div id="parkTeam1" class="team-1 boolean" onclick="handleClick('park', 1);"></div>
-        <div id="parkTeam2" class="team-2 boolean" onclick="handleClick('park', 2);"></div>
-        <div id="parkTeam3" class="team-3 boolean" onclick="handleClick('park', 3);"></div>
-      </div>
-    </div>
-  </div>
-</div>
 <div id="commitMatchScore">
   <button type="button" class="btn btn-primary" onclick="commitMatchScore();">
     Commit Final Match Score

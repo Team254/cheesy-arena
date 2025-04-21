@@ -79,6 +79,7 @@
 :root {
   /* Game-specific color scheme */
   --coral: var(--gray-100);
+  --coral-auto: #fbde0d;
   --reef-pole: var(--purple-400);
 }
 
@@ -408,6 +409,33 @@ button:hover:enabled {
   padding: 20px;
   width: 29%;
   align-self: center;
+}
+
+.reef-column {
+  --l4-coral-display: none;
+  --l4-coral-auto-display: none;
+  --l3-coral-display: none;
+  --l3-coral-auto-display: none;
+  --l2-coral-display: none;
+  --l2-coral-auto-display: none;
+}
+.reef-column[data-l4-scored="true"] {
+  --l4-coral-display: auto;
+}
+.reef-column[data-l4-auto-scored="true"] {
+  --l4-coral-auto-display: auto;
+}
+.reef-column[data-l3-scored="true"] {
+  --l3-coral-display: auto;
+}
+.reef-column[data-l3-auto-scored="true"] {
+  --l3-coral-auto-display: auto;
+}
+.reef-column[data-l2-scored="true"] {
+  --l2-coral-display: auto;
+}
+.reef-column[data-l2-auto-scored="true"] {
+  --l2-coral-auto-display: auto;
 }
 
 #alliance {
