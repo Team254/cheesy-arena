@@ -73,7 +73,7 @@
   --text-active-dark: #000;
   --text-inactive: var(--gray-100);
   --text-inactive-dark: var(--gray-100);
-  --interaction-highlight: var(--gray-300);
+  --interaction-highlight: #abaeb21a;
 }
 
 :root {
@@ -192,6 +192,9 @@ header {
 
 main {
   width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 #top-controls {
@@ -238,7 +241,6 @@ main {
   --button-bottom-selected-color: var(--alliance-highlight);
 }
 .team-button:enabled:not(:active) {
-  cursor: auto;
   box-shadow: black 0px 4px 4px;
 }
 button:hover:enabled {
@@ -411,7 +413,7 @@ button:hover:enabled {
   align-self: center;
 }
 
-.reef-column {
+.reef-image {
   --l4-coral-display: none;
   --l4-coral-auto-display: none;
   --l3-coral-display: none;
@@ -419,23 +421,83 @@ button:hover:enabled {
   --l2-coral-display: none;
   --l2-coral-auto-display: none;
 }
-.reef-column[data-l4-scored="true"] {
+[data-l4-scored="true"] .reef-image {
   --l4-coral-display: auto;
 }
-.reef-column[data-l4-auto-scored="true"] {
+[data-l4-auto-scored="true"] .reef-image {
   --l4-coral-auto-display: auto;
 }
-.reef-column[data-l3-scored="true"] {
+[data-l3-scored="true"] .reef-image {
   --l3-coral-display: auto;
 }
-.reef-column[data-l3-auto-scored="true"] {
+[data-l3-auto-scored="true"] .reef-image {
   --l3-coral-auto-display: auto;
 }
-.reef-column[data-l2-scored="true"] {
+[data-l2-scored="true"] .reef-image {
   --l2-coral-display: auto;
 }
-.reef-column[data-l2-auto-scored="true"] {
+[data-l2-auto-scored="true"] .reef-image {
   --l2-coral-auto-display: auto;
+}
+
+#reef-controls {
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 10px;
+}
+
+.reef-column {
+  height: 100%;
+  flex-grow: 1;
+  max-width: 200px;
+  container-type: size;
+}
+
+.reef-column-contents {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+@container (aspect-ratio < 0.25) {
+  .reef-column-contents {
+    aspect-ratio: 1 / 4;
+  }
+}
+@container (aspect-ratio >= 0.25) {
+  .reef-column-contents {
+    height: 100%;
+  }
+}
+
+.reef-column .reef-image {
+  position: absolute;
+  height: 100%;
+}
+
+.reef-column button {
+  width: 100%;
+  display: block;
+  flex-grow: 1;
+  z-index: 1;
+  border: none;
+  background-color: var(--interaction-highlight);
+}
+
+.reef-column button:enabled:not(:active) {
+  box-shadow: black 0px 4px 4px;
+}
+
+.reef-column button:disabled {
+  background: none;
 }
 
 #alliance {

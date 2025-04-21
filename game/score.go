@@ -11,6 +11,8 @@ type Score struct {
 	EndgameStatuses    [3]EndgameStatus
 	MicrophoneStatuses [3]bool
 	TrapStatuses       [3]bool
+	ReefStatuses       [12][3]bool
+	ReefAutoStatuses   [12][3]bool
 	Fouls              []Foul
 	PlayoffDq          bool
 }

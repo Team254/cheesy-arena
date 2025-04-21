@@ -25,14 +25,18 @@
       {{end}}
     </div>
   </div>
-  <div id="reef-controls"></div>
+  <div id="reef-controls">
+    {{range $i := seq 6}}
+      {{template "reefColumn" (dict "index" $i)}}
+    {{end}}
+  </div>
   <div id="bottom-controls">
     {{template "counter" (dict "id" "coral-l1" "label" "L1 Coral")}}
     {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
   </div>
 </main>
 
-<svg>
+<svg style="display:none">
 
   <symbol id="coral-indicator" width="30" height="125" viewBox="0 0 30 125">
     <rect width="30" height="80" fill="var(--coral)" display="var(--current-display)" />
@@ -71,6 +75,7 @@
 
 </svg>
 
+<!--
 <div style="display:flex;flex-direction:row">
   <svg
      data-l4-scored="true"
@@ -93,7 +98,7 @@
     <use xlink:href="#reef-column" />
   </svg>
 </div>
-
+-->
 <dialog id="endgame-dialog" onclick="closeEndgameDialogIfOutside(event);">
   <div id="endgame-dialog-container">
     <div id="endgame-banner">Endgame Scoring</div>
@@ -143,6 +148,21 @@
     <div class="counter-label">{{.label}}</div>
   </div>
   <button class="counter-increment" onclick="handleCounter('{{.id}}', 1);" ontouchstart>+1</button>
+</div>
+{{end}}
+{{define "reefColumn"}}
+<div id="reef-column-{{.index}}" class="reef-column">
+  <div class="reef-column-contents">
+    {{ $index := .index }}
+    {{range $i := seq 3}}
+      <button class="reef-button" onclick="handleReef({{$index}}, 5 - {{$i}})" ontouchstart></button>
+    {{end}}
+    <svg
+       class="reef-image"
+       viewBox="0 0 120 600">
+      <use xlink:href="#reef-column" />
+    </svg>
+  </div>
 </div>
 {{end}}
 {{define "endgame-input"}}

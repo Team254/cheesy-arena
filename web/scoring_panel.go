@@ -102,6 +102,26 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(alliance, ws)
 			web.arena.ScoringStatusNotifier.Notify()
+		} else if command == "reef" {
+			args := struct {
+				ReefPosition int
+				ReefLevel    int
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
+
+			if args.ReefPosition >= 1 && args.ReefPosition <= 12 && args.ReefLevel >= 2 && args.ReefLevel <= 4 {
+				score.ReefStatuses[args.ReefPosition-1][args.ReefLevel-2] = !score.ReefStatuses[args.ReefPosition-1][args.ReefLevel-2]
+				score.ReefAutoStatuses[args.ReefPosition-1][args.ReefLevel-2] = !score.ReefAutoStatuses[args.ReefPosition-1][args.ReefLevel-2]
+				scoreChanged = true
+			}
+
+			if scoreChanged {
+				web.arena.RealtimeScoreNotifier.Notify()
+			}
 		} else {
 			args := struct {
 				TeamPosition int

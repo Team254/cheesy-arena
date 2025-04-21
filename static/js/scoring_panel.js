@@ -79,12 +79,15 @@ const handleRealtimeScore = function(data) {
     for (let j = 0; j < endgameStatusNames.length; j++) {
       $(`#endgame-input-${i1} .endgame-${j}`).attr("data-selected", j == score.EndgameStatuses[i]);
     }
-    $(`#parkTeam${i1}`).attr("data-value", score.EndgameStatuses[i] === 1);
-    $(`#stageSide0Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 2);
-    $(`#stageSide1Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 3);
-    $(`#stageSide2Team${i1}`).attr("data-value", score.EndgameStatuses[i] === 4);
-    $(`#stageSide${i}Microphone`).attr("data-value", score.MicrophoneStatuses[i]);
-    $(`#stageSide${i}Trap`).attr("data-value", score.TrapStatuses[i]);
+  }
+
+  for (let i = 0; i < 12; i++) {
+    const i1 = i + 1;
+    for (let j = 0; j < 3; j++) {
+      const j2 = j + 2;
+      $(`#reef-column-${i1}`).attr(`data-l${j2}-scored`, score.ReefStatuses[i][j]);
+      $(`#reef-column-${i1}`).attr(`data-l${j2}-auto-scored`, score.ReefAutoStatuses[i][j]);
+    }
   }
 };
 
@@ -92,6 +95,10 @@ const handleRealtimeScore = function(data) {
 const handleClick = function(command, teamPosition = 0, stageIndex = 0) {
   websocket.send(command, {TeamPosition: teamPosition, StageIndex: stageIndex});
 };
+
+const handleReef = function(reefPosition, reefLevel) {
+  websocket.send("reef", {ReefPosition: reefPosition, ReefLevel: reefLevel});
+}
 
 // Sends a websocket message to indicate that the score for this alliance is ready.
 const commitMatchScore = function() {
