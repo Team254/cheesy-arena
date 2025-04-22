@@ -11,7 +11,6 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
-	"os"
 	"path/filepath"
 	"testing"
 )
@@ -19,10 +18,13 @@ import (
 func SetupTestArena(t *testing.T, uniqueName string) *Arena {
 	rand.Seed(0)
 	model.BaseDir = ".."
-	dbPath := filepath.Join(model.BaseDir, fmt.Sprintf("%s_test.db", uniqueName))
-	os.Remove(dbPath)
+	dbDir := t.TempDir()
+	dbPath := filepath.Join(dbDir, fmt.Sprintf("%s_test.db", uniqueName))
 	arena, err := NewArena(dbPath)
 	assert.Nil(t, err)
+	t.Cleanup(func() {
+		arena.Database.Close()
+	})
 	return arena
 }
 
