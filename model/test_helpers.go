@@ -9,17 +9,19 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"path/filepath"
 	"testing"
 )
 
 func SetupTestDb(t *testing.T, uniqueName string) *Database {
 	BaseDir = ".."
-	dbPath := filepath.Join(BaseDir, fmt.Sprintf("%s_test.db", uniqueName))
-	os.Remove(dbPath)
+	dbDir := t.TempDir()
+	dbPath := filepath.Join(dbDir, fmt.Sprintf("%s_test.db", uniqueName))
 	database, err := OpenDatabase(dbPath)
 	assert.Nil(t, err)
+	t.Cleanup(func() {
+		database.Close()
+	})
 	return database
 }
 
