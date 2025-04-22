@@ -42,9 +42,7 @@
     <rect width="30" height="80" fill="var(--coral)" display="var(--current-display)" />
     <g display="var(--auto-display)">
       <rect width="30" height="20" y="85" fill="var(--coral-auto)" />
-      <text
-         style="font-size:16pt;font-family:'Segoe UI';font-weight:bold;text-align:middle;text-anchor:middle;fill:#000000"
-         x="15" y="103" >A</text>
+      <text font-size="16pt" font-weight="bold" text-anchor="middle" fill="black" x="15" y="103">A</text>
     </g>
   </symbol>
 
@@ -63,7 +61,7 @@
         --auto-display: var(--l2-coral-auto-display);
       }
     </style>
-    <g stroke="var(--reef-pole)" stroke-width="10px" fill="none">
+    <g stroke="var(--reef-pole)" stroke-width="12px" fill="none">
       <path d="m 60,0 v 125 a 24.142136,24.142136 112.5 0 1 -7.071068,17.07107 L 12.071068,182.92893 A 24.142136,24.142136 112.5 0 0 5,200 v 400" />
       <line x1="5" y1="355" x2="115" y2="245" />
       <line x1="5" y1="555" x2="115" y2="445" />
@@ -75,30 +73,6 @@
 
 </svg>
 
-<!--
-<div style="display:flex;flex-direction:row">
-  <svg
-     data-l4-scored="true"
-     data-l4-auto-scored="false"
-     data-l3-scored="false"
-     data-l3-auto-scored="true"
-     data-l2-scored="true"
-     data-l2-auto-scored="true"
-     class="reef-column"
-     width="120"
-     height="600"
-     viewBox="0 0 120 600">
-    <use xlink:href="#reef-column" />
-  </svg>
-  <svg
-     class="reef-column"
-     width="120"
-     height="600"
-     viewBox="0 0 120 600">
-    <use xlink:href="#reef-column" />
-  </svg>
-</div>
--->
 <dialog id="endgame-dialog" onclick="closeEndgameDialogIfOutside(event);">
   <div id="endgame-dialog-container">
     <div id="endgame-banner">Endgame Scoring</div>
@@ -157,9 +131,7 @@
     {{range $i := seq 3}}
       <button class="reef-button" onclick="handleReef({{$index}}, 5 - {{$i}})" ontouchstart></button>
     {{end}}
-    <svg
-       class="reef-image"
-       viewBox="0 0 120 600">
+    <svg class="reef-image" viewBox="0 0 120 600">
       <use xlink:href="#reef-column" />
     </svg>
   </div>
@@ -175,5 +147,5 @@
 </div>
 {{end}}
 {{define "endgame-input-button"}}
-<button class="endgame-input-button endgame-{{.endgameState}}" onclick="handleClick('endgame', {{.index}}, {{.endgameState}});" ontouchstart>{{.label}}</button>
+<button class="endgame-input-button endgame-{{.endgameState}}" onclick="handleClick('endgame', {{.index}}, {{.endgameState}});" >{{.label}}</button>
 {{end}}

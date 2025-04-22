@@ -144,6 +144,7 @@ body {
   justify-content: flex-start;
   align-items: center;
   background-color: var(--alliance-background);
+  font-family: Helvetica, Arial, sans-serif;
   line-height: 1.2;
 }
 header {
@@ -455,10 +456,13 @@ button:hover:enabled {
   flex-grow: 1;
   max-width: 200px;
   container-type: size;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .reef-column-contents {
-  position: relative;
+  contain: layout;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -481,6 +485,10 @@ button:hover:enabled {
 .reef-column .reef-image {
   position: absolute;
   height: 100%;
+}
+
+.reef-column:nth-of-type(-n + 3) .reef-image {
+  transform: scale(-1, 1);
 }
 
 .reef-column button {
