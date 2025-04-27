@@ -82,7 +82,14 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 		if rule != nil {
 			// Check for the opponent fouls that automatically trigger a ranking point.
 			if rule.IsRankingPoint {
-				// TODO(patfair): Update for 2025.
+				switch rule.RuleNumber {
+				case "G410":
+					summary.CoralBonusRankingPoint = true
+				case "G418":
+					summary.BargeBonusRankingPoint = true
+				case "G428":
+					summary.BargeBonusRankingPoint = true
+				}
 			}
 		}
 	}
@@ -100,7 +107,6 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	}
 	if allRobotsLeft && score.Reef.isAutoBonusCoralThresholdMet() {
 		summary.AutoBonusRankingPoint = true
-		summary.BonusRankingPoints++
 	}
 
 	// Coral bonus ranking point.
@@ -115,12 +121,30 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	}
 	if summary.NumCoralLevels >= summary.NumCoralLevelsGoal {
 		summary.CoralBonusRankingPoint = true
-		summary.BonusRankingPoints++
 	}
 
 	// Barge bonus ranking point.
 	if summary.BargePoints >= BargeBonusPointThreshold {
 		summary.BargeBonusRankingPoint = true
+	}
+
+	// Check for G206 violation.
+	for _, foul := range score.Fouls {
+		if foul.Rule() != nil && foul.Rule().RuleNumber == "G206" {
+			summary.CoralBonusRankingPoint = false
+			summary.BargeBonusRankingPoint = false
+			break
+		}
+	}
+
+	// Add up the bonus ranking points.
+	if summary.AutoBonusRankingPoint {
+		summary.BonusRankingPoints++
+	}
+	if summary.CoralBonusRankingPoint {
+		summary.BonusRankingPoints++
+	}
+	if summary.BargeBonusRankingPoint {
 		summary.BonusRankingPoints++
 	}
 

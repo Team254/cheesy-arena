@@ -71,7 +71,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	// Update the score to something else.
 	postBody := fmt.Sprintf(
 		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"EndgameStatuses\":[0,2,1]},\"BlueScore\":{"+
-			"\"Reef\":{\"TroughFar\":21},\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},"+
+			"\"Reef\":{\"TroughFar\":21},\"Fouls\":[{\"TeamId\":973,\"RuleId\":4}]},"+
 			"\"RedCards\":{\"105\":\"yellow\"},\"BlueCards\":{}}",
 		match.Id,
 	)
@@ -112,7 +112,7 @@ func TestMatchReviewCreateNewResult(t *testing.T) {
 	// Update the score to something else.
 	postBody := fmt.Sprintf(
 		"matchResultJson={\"MatchId\":%d,\"RedScore\":{\"EndgameStatuses\":[0,2,1]},\"BlueScore\":{"+
-			"\"Reef\":{\"TroughFar\":21},\"Fouls\":[{\"TeamId\":973,\"RuleId\":1}]},"+
+			"\"Reef\":{\"TroughFar\":21},\"Fouls\":[{\"TeamId\":973,\"RuleId\":4}]},"+
 			"\"RedCards\":{\"105\":\"yellow\"},\"BlueCards\":{}}",
 		match.Id,
 	)

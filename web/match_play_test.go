@@ -127,10 +127,10 @@ func TestCommitTiebreak(t *testing.T) {
 		// These should all be fields that aren't part of the tiebreaker.
 		RedScore: &game.Score{
 			Reef:  game.Reef{TroughFar: 1},
-			Fouls: []game.Foul{{RuleId: 1}, {RuleId: 2}},
+			Fouls: []game.Foul{{IsMajor: false}, {IsMajor: false}},
 		},
 		BlueScore: &game.Score{
-			Fouls: []game.Foul{{RuleId: 1}},
+			Fouls: []game.Foul{{IsMajor: false}},
 		},
 	}
 

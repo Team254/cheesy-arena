@@ -7,9 +7,9 @@ package game
 
 func TestScore1() *Score {
 	fouls := []Foul{
-		{true, 25, 13},
-		{false, 1868, 14},
-		{false, 1868, 14},
+		{true, 25, 16},
+		{false, 1868, 13},
+		{false, 1868, 13},
 		{true, 25, 15},
 		{true, 25, 15},
 		{true, 25, 15},

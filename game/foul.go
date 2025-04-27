@@ -21,6 +21,11 @@ func (foul *Foul) PointValue() int {
 	if foul.IsMajor {
 		return 6
 	} else {
+		if foul.Rule() != nil && foul.Rule().RuleNumber == "G206" {
+			// Special case in 2025 for G206, which is not actually a foul but does make the alliance ineligible for
+			// some bonus RPs.
+			return 0
+		}
 		return 2
 	}
 }

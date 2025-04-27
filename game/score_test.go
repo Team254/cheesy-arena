@@ -177,6 +177,14 @@ func TestScoreCoralBonusRankingPoint(t *testing.T) {
 	assert.Equal(t, 4, blueScoreSummary.NumCoralLevels)
 	assert.Equal(t, 4, blueScoreSummary.NumCoralLevelsGoal)
 	assert.Equal(t, true, blueScoreSummary.CoralBonusRankingPoint)
+
+	// Check that G206 disqualifies the alliance from the Coral bonus.
+	blueScore.Fouls = []Foul{{RuleId: 1}}
+	redScoreSummary = redScore.Summarize(blueScore)
+	blueScoreSummary = blueScore.Summarize(redScore)
+	assert.Equal(t, 0, redScoreSummary.FoulPoints)
+	assert.Equal(t, false, blueScoreSummary.CoralBonusRankingPoint)
+	assert.Equal(t, 0, blueScoreSummary.BonusRankingPoints)
 }
 
 func TestScoreBargeBonusRankingPoint(t *testing.T) {
@@ -188,12 +196,14 @@ func TestScoreBargeBonusRankingPoint(t *testing.T) {
 
 	testCases := []struct {
 		endgameStatuses      [3]EndgameStatus
+		fouls                []Foul
 		threshold            int
 		expectedBonusAwarded bool
 	}{
 		// 0. No endgame points.
 		{
 			endgameStatuses:      [3]EndgameStatus{EndgameNone, EndgameNone, EndgameNone},
+			fouls:                []Foul{},
 			threshold:            14,
 			expectedBonusAwarded: false,
 		},
@@ -201,6 +211,7 @@ func TestScoreBargeBonusRankingPoint(t *testing.T) {
 		// 1. All robots parked.
 		{
 			endgameStatuses:      [3]EndgameStatus{EndgameParked, EndgameParked, EndgameParked},
+			fouls:                []Foul{},
 			threshold:            14,
 			expectedBonusAwarded: false,
 		},
@@ -208,6 +219,7 @@ func TestScoreBargeBonusRankingPoint(t *testing.T) {
 		// 2. Meeting the minimum threshold.
 		{
 			endgameStatuses:      [3]EndgameStatus{EndgameParked, EndgameNone, EndgameDeepCage},
+			fouls:                []Foul{},
 			threshold:            14,
 			expectedBonusAwarded: true,
 		},
@@ -215,6 +227,7 @@ func TestScoreBargeBonusRankingPoint(t *testing.T) {
 		// 3. Same endgame statuses not meeting a higher threshold.
 		{
 			endgameStatuses:      [3]EndgameStatus{EndgameParked, EndgameNone, EndgameDeepCage},
+			fouls:                []Foul{},
 			threshold:            16,
 			expectedBonusAwarded: false,
 		},
@@ -222,6 +235,7 @@ func TestScoreBargeBonusRankingPoint(t *testing.T) {
 		// 4. Meeting the new minimum threshold with a different combination.
 		{
 			endgameStatuses:      [3]EndgameStatus{EndgameDeepCage, EndgameParked, EndgameParked},
+			fouls:                []Foul{},
 			threshold:            16,
 			expectedBonusAwarded: true,
 		},
@@ -229,6 +243,7 @@ func TestScoreBargeBonusRankingPoint(t *testing.T) {
 		// 5. One of each endgame status with higher threshold.
 		{
 			endgameStatuses:      [3]EndgameStatus{EndgameShallowCage, EndgameDeepCage, EndgameParked},
+			fouls:                []Foul{},
 			threshold:            21,
 			expectedBonusAwarded: false,
 		},
@@ -236,17 +251,103 @@ func TestScoreBargeBonusRankingPoint(t *testing.T) {
 		// 6. All deep climbs.
 		{
 			endgameStatuses:      [3]EndgameStatus{EndgameDeepCage, EndgameDeepCage, EndgameDeepCage},
+			fouls:                []Foul{},
 			threshold:            36,
 			expectedBonusAwarded: true,
+		},
+
+		// 7. G206 foul disqualifies the alliance from the Barge bonus.
+		{
+			endgameStatuses:      [3]EndgameStatus{EndgameDeepCage, EndgameDeepCage, EndgameDeepCage},
+			fouls:                []Foul{{RuleId: 1}},
+			threshold:            14,
+			expectedBonusAwarded: false,
 		},
 	}
 
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			BargeBonusPointThreshold = tc.threshold
-			score := Score{EndgameStatuses: tc.endgameStatuses}
+			score := Score{EndgameStatuses: tc.endgameStatuses, Fouls: tc.fouls}
 			summary := score.Summarize(&Score{})
 			assert.Equal(t, tc.expectedBonusAwarded, summary.BargeBonusRankingPoint)
+		})
+	}
+}
+
+func TestScoreAutoRankingPointFromFouls(t *testing.T) {
+	testCases := []struct {
+		ownFouls           []Foul
+		opponentFouls      []Foul
+		expectedCoralBonus bool
+		expectedBargeBonus bool
+	}{
+		// 0. No fouls - no automatic ranking points.
+		{
+			ownFouls:           []Foul{},
+			opponentFouls:      []Foul{},
+			expectedCoralBonus: false,
+			expectedBargeBonus: false,
+		},
+
+		// 1. G410 foul automatically awards coral bonus.
+		{
+			ownFouls:           []Foul{},
+			opponentFouls:      []Foul{{RuleId: 14}},
+			expectedCoralBonus: true,
+			expectedBargeBonus: false,
+		},
+
+		// 2. G418 foul automatically awards barge bonus.
+		{
+			ownFouls:           []Foul{},
+			opponentFouls:      []Foul{{RuleId: 21}},
+			expectedCoralBonus: false,
+			expectedBargeBonus: true,
+		},
+
+		// 3. G428 foul automatically awards barge bonus.
+		{
+			ownFouls:           []Foul{},
+			opponentFouls:      []Foul{{RuleId: 33}},
+			expectedCoralBonus: false,
+			expectedBargeBonus: true,
+		},
+
+		// 4. All fouls together still automatically award both bonuses.
+		{
+			ownFouls:           []Foul{},
+			opponentFouls:      []Foul{{RuleId: 14}, {RuleId: 21}, {RuleId: 33}},
+			expectedCoralBonus: true,
+			expectedBargeBonus: true,
+		},
+
+		// 5. G206 makes the alliance ineligible for both bonuses.
+		{
+			ownFouls:           []Foul{{RuleId: 1}},
+			opponentFouls:      []Foul{{RuleId: 14}, {RuleId: 21}, {RuleId: 33}},
+			expectedCoralBonus: false,
+			expectedBargeBonus: false,
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			redScore := Score{Fouls: tc.ownFouls}
+			blueScore := Score{Fouls: tc.opponentFouls}
+			redSummary := redScore.Summarize(&blueScore)
+			assert.Equal(t, tc.expectedCoralBonus, redSummary.CoralBonusRankingPoint)
+			assert.Equal(t, tc.expectedBargeBonus, redSummary.BargeBonusRankingPoint)
+
+			// Count expected total bonus ranking points.
+			expectedBonusRankingPoints := 0
+			if tc.expectedCoralBonus {
+				expectedBonusRankingPoints++
+			}
+			if tc.expectedBargeBonus {
+				expectedBonusRankingPoints++
+			}
+			assert.Equal(t, expectedBonusRankingPoints, redSummary.BonusRankingPoints)
 		})
 	}
 }
