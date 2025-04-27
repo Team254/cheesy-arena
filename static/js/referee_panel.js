@@ -8,11 +8,11 @@ let redFoulsHashCode = 0;
 let blueFoulsHashCode = 0;
 
 // Sends the foul to the server to add it to the list.
-const addFoul = function(alliance, isTechnical) {
-  websocket.send("addFoul", {Alliance: alliance, IsTechnical: isTechnical});
+const addFoul = function(alliance, isMajor) {
+  websocket.send("addFoul", {Alliance: alliance, IsMajor: isMajor});
 }
 
-// Toggles the foul type between technical and non-technical.
+// Toggles the foul type between minor and major.
 const toggleFoulType = function(alliance, index) {
   websocket.send("toggleFoulType", {Alliance: alliance, Index: index});
 }

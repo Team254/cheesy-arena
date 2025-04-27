@@ -8,7 +8,7 @@ package game
 type Rule struct {
 	Id             int
 	RuleNumber     string
-	IsTechnical    bool
+	IsMajor        bool
 	IsRankingPoint bool
 	Description    string
 }

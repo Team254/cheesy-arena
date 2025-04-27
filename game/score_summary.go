@@ -24,7 +24,7 @@ type ScoreSummary struct {
 	CoralBonusRankingPoint  bool
 	BargeBonusRankingPoint  bool
 	BonusRankingPoints      int
-	NumOpponentTechFouls    int
+	NumOpponentMajorFouls   int
 }
 
 type MatchStatus int
@@ -50,7 +50,7 @@ func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, apply
 	if applyPlayoffTiebreakers {
 		// Check scoring breakdowns to resolve playoff ties.
 		if status := comparePoints(
-			redScoreSummary.NumOpponentTechFouls, blueScoreSummary.NumOpponentTechFouls,
+			redScoreSummary.NumOpponentMajorFouls, blueScoreSummary.NumOpponentMajorFouls,
 		); status != TieMatch {
 			return status
 		}

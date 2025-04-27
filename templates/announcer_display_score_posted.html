@@ -74,9 +74,9 @@
   <div class="row justify-content-center">
     <div class="col-sm-4">
       {{if and (index $.rulesViolated $foul.RuleId) (index $.rulesViolated $foul.RuleId).IsRankingPoint}}
-        {{if $foul.IsTechnical}}Tech {{end}}Foul + Free RP
+        {{if $foul.IsMajor}}Major{{else}}Minor{{end}} Foul + RP Implications
       {{else}}
-        {{if $foul.IsTechnical}}Tech {{end}}Foul
+        {{if $foul.IsMajor}}Major{{else}}Minor{{end}} Foul
       {{end}}
     </div>
     <div class="col-sm-3">Team {{$foul.TeamId}}</div>

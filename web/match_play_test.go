@@ -156,7 +156,7 @@ func TestCommitTiebreak(t *testing.T) {
 
 	// Change the score to still be equal nominally but trigger the tiebreaker criteria.
 	matchResult.BlueScore.ProcessorAlgae = 1
-	matchResult.BlueScore.Fouls = []game.Foul{{IsTechnical: false}, {IsTechnical: true}}
+	matchResult.BlueScore.Fouls = []game.Foul{{IsMajor: false}, {IsMajor: true}}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
 	assert.Equal(

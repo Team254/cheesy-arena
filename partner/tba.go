@@ -673,7 +673,7 @@ func createTbaScoringBreakdown(
 	//breakdown.MelodyBonusAchieved = scoreSummary.MelodyBonusRankingPoint
 	//breakdown.EnsembleBonusAchieved = scoreSummary.EnsembleBonusRankingPoint
 	for _, foul := range score.Fouls {
-		if foul.IsTechnical {
+		if foul.IsMajor {
 			breakdown.TechFoulCount++
 		} else {
 			breakdown.FoulCount++

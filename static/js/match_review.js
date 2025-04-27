@@ -49,7 +49,7 @@ const renderResults = function(alliance) {
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
-      getInputElement(alliance, "Foul" + k + "IsTechnical").prop("checked", v.IsTechnical);
+      getInputElement(alliance, "Foul" + k + "IsMajor").prop("checked", v.IsMajor);
       getInputElement(alliance, "Foul" + k + "Team", v.TeamId).prop("checked", true);
       getSelectElement(alliance, "Foul" + k + "RuleId").val(v.RuleId);
     });
@@ -96,7 +96,7 @@ const updateResults = function(alliance) {
   for (let i = 0; formData[alliance + "Foul" + i + "Index"]; i++) {
     const prefix = alliance + "Foul" + i;
     const foul = {
-      IsTechnical: formData[prefix + "IsTechnical"] === "on",
+      IsMajor: formData[prefix + "IsMajor"] === "on",
       TeamId: parseInt(formData[prefix + "Team"]),
       RuleId: parseInt(formData[prefix + "RuleId"]),
     };
@@ -113,7 +113,7 @@ const updateResults = function(alliance) {
 const addFoul = function(alliance) {
   updateResults(alliance);
   const result = allianceResults[alliance];
-  result.score.Fouls.push({IsTechnical: false, TeamId: 0, Rule: 0});
+  result.score.Fouls.push({IsMajor: false, TeamId: 0, Rule: 0});
   renderResults(alliance);
 };
 
