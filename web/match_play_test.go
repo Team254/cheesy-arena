@@ -126,8 +126,8 @@ func TestCommitTiebreak(t *testing.T) {
 		MatchId: match.Id,
 		// These should all be fields that aren't part of the tiebreaker.
 		RedScore: &game.Score{
-			AmpSpeaker: game.AmpSpeaker{TeleopUnamplifiedSpeakerNotes: 1},
-			Fouls:      []game.Foul{{RuleId: 1}, {RuleId: 2}},
+			Reef:  game.Reef{TroughFar: 1},
+			Fouls: []game.Foul{{RuleId: 1}, {RuleId: 2}},
 		},
 		BlueScore: &game.Score{
 			Fouls: []game.Foul{{RuleId: 1}},
@@ -155,7 +155,7 @@ func TestCommitTiebreak(t *testing.T) {
 	assert.Equal(t, game.TieMatch, match.Status)
 
 	// Change the score to still be equal nominally but trigger the tiebreaker criteria.
-	matchResult.BlueScore.TrapStatuses = [3]bool{true, false, false}
+	matchResult.BlueScore.ProcessorAlgae = 1
 	matchResult.BlueScore.Fouls = []game.Foul{{IsTechnical: false}, {IsTechnical: true}}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
@@ -335,11 +335,11 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
-	web.arena.RedRealtimeScore.CurrentScore.AmpSpeaker.TeleopAmplifiedSpeakerNotes = 6
+	web.arena.RedRealtimeScore.CurrentScore.BargeAlgae = 6
 	web.arena.BlueRealtimeScore.CurrentScore.LeaveStatuses = [3]bool{true, false, true}
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 5) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
-	assert.Equal(t, 6, web.arena.SavedMatchResult.RedScore.AmpSpeaker.TeleopAmplifiedSpeakerNotes)
+	assert.Equal(t, 6, web.arena.SavedMatchResult.RedScore.BargeAlgae)
 	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.LeaveStatuses)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)

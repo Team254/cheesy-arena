@@ -15,45 +15,45 @@ const (
 )
 
 type EventSettings struct {
-	Id                              int `db:"id"`
-	Name                            string
-	PlayoffType                     PlayoffType
-	NumPlayoffAlliances             int
-	SelectionRound2Order            string
-	SelectionRound3Order            string
-	SelectionShowUnpickedTeams      bool
-	TbaDownloadEnabled              bool
-	TbaPublishingEnabled            bool
-	TbaEventCode                    string
-	TbaSecretId                     string
-	TbaSecret                       string
-	NexusEnabled                    bool
-	NetworkSecurityEnabled          bool
-	ApAddress                       string
-	ApPassword                      string
-	ApChannel                       int
-	SwitchAddress                   string
-	SwitchPassword                  string
-	PlcAddress                      string
-	AdminPassword                   string
-	TeamSignRed1Id                  int
-	TeamSignRed2Id                  int
-	TeamSignRed3Id                  int
-	TeamSignRedTimerId              int
-	TeamSignBlue1Id                 int
-	TeamSignBlue2Id                 int
-	TeamSignBlue3Id                 int
-	TeamSignBlueTimerId             int
-	BlackmagicAddresses             string
-	WarmupDurationSec               int
-	AutoDurationSec                 int
-	PauseDurationSec                int
-	TeleopDurationSec               int
-	WarningRemainingDurationSec     int
-	MelodyBonusThresholdWithoutCoop int
-	MelodyBonusThresholdWithCoop    int
-	AmplificationNoteLimit          int
-	AmplificationDurationSec        int
+	Id                          int `db:"id"`
+	Name                        string
+	PlayoffType                 PlayoffType
+	NumPlayoffAlliances         int
+	SelectionRound2Order        string
+	SelectionRound3Order        string
+	SelectionShowUnpickedTeams  bool
+	TbaDownloadEnabled          bool
+	TbaPublishingEnabled        bool
+	TbaEventCode                string
+	TbaSecretId                 string
+	TbaSecret                   string
+	NexusEnabled                bool
+	NetworkSecurityEnabled      bool
+	ApAddress                   string
+	ApPassword                  string
+	ApChannel                   int
+	SwitchAddress               string
+	SwitchPassword              string
+	PlcAddress                  string
+	AdminPassword               string
+	TeamSignRed1Id              int
+	TeamSignRed2Id              int
+	TeamSignRed3Id              int
+	TeamSignRedTimerId          int
+	TeamSignBlue1Id             int
+	TeamSignBlue2Id             int
+	TeamSignBlue3Id             int
+	TeamSignBlueTimerId         int
+	BlackmagicAddresses         string
+	WarmupDurationSec           int
+	AutoDurationSec             int
+	PauseDurationSec            int
+	TeleopDurationSec           int
+	WarningRemainingDurationSec int
+	AutoBonusCoralThreshold     int
+	CoralBonusPerLevelThreshold int
+	CoralBonusCoopEnabled       bool
+	BargeBonusPointThreshold    int
 }
 
 func (database *Database) GetEventSettings() (*EventSettings, error) {
@@ -67,23 +67,23 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 
 	// Database record doesn't exist yet; create it now.
 	eventSettings := EventSettings{
-		Name:                            "Untitled Event",
-		PlayoffType:                     DoubleEliminationPlayoff,
-		NumPlayoffAlliances:             8,
-		SelectionRound2Order:            "L",
-		SelectionRound3Order:            "",
-		SelectionShowUnpickedTeams:      true,
-		TbaDownloadEnabled:              true,
-		ApChannel:                       36,
-		WarmupDurationSec:               game.MatchTiming.WarmupDurationSec,
-		AutoDurationSec:                 game.MatchTiming.AutoDurationSec,
-		PauseDurationSec:                game.MatchTiming.PauseDurationSec,
-		TeleopDurationSec:               game.MatchTiming.TeleopDurationSec,
-		WarningRemainingDurationSec:     game.MatchTiming.WarningRemainingDurationSec,
-		MelodyBonusThresholdWithoutCoop: game.MelodyBonusThresholdWithoutCoop,
-		MelodyBonusThresholdWithCoop:    game.MelodyBonusThresholdWithCoop,
-		AmplificationNoteLimit:          game.AmplificationNoteLimit,
-		AmplificationDurationSec:        game.AmplificationDurationSec,
+		Name:                        "Untitled Event",
+		PlayoffType:                 DoubleEliminationPlayoff,
+		NumPlayoffAlliances:         8,
+		SelectionRound2Order:        "L",
+		SelectionRound3Order:        "",
+		SelectionShowUnpickedTeams:  true,
+		TbaDownloadEnabled:          true,
+		ApChannel:                   36,
+		WarmupDurationSec:           game.MatchTiming.WarmupDurationSec,
+		AutoDurationSec:             game.MatchTiming.AutoDurationSec,
+		PauseDurationSec:            game.MatchTiming.PauseDurationSec,
+		TeleopDurationSec:           game.MatchTiming.TeleopDurationSec,
+		WarningRemainingDurationSec: game.MatchTiming.WarningRemainingDurationSec,
+		AutoBonusCoralThreshold:     game.AutoBonusCoralThreshold,
+		CoralBonusPerLevelThreshold: game.CoralBonusPerLevelThreshold,
+		CoralBonusCoopEnabled:       game.CoralBonusCoopEnabled,
+		BargeBonusPointThreshold:    game.BargeBonusPointThreshold,
 	}
 
 	if err := database.eventSettingsTable.create(&eventSettings); err != nil {

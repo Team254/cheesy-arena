@@ -332,35 +332,31 @@
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">
-              Melody Bonus RP Note Threshold<br />(Without Coopertition)
-            </label>
+            <label class="col-lg-6 control-label">Auto Bonus RP Coral Threshold</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" id="melodyBonusThresholdWithoutCoop"
-                name="melodyBonusThresholdWithoutCoop" value="{{.MelodyBonusThresholdWithoutCoop}}">
+              <input type="text" class="form-control" id="autoBonusCoralThreshold" name="autoBonusCoralThreshold"
+                value="{{.AutoBonusCoralThreshold}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">
-              Melody Bonus RP Note Threshold<br />(With Coopertition; 0 = Coopertition Disabled)
-            </label>
+            <label class="col-lg-6 control-label">Coopertition Bonus Enabled</label>
+            <div class="col-lg-1 checkbox">
+              <input type="checkbox" id="coralBonusCoopEnabled"
+                name="coralBonusCoopEnabled"{{if .CoralBonusCoopEnabled}} checked{{end}}>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <label class="col-lg-6 control-label">Coral Bonus RP Per-Level Threshold</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" id="melodyBonusThresholdWithCoop"
-                name="melodyBonusThresholdWithCoop" value="{{.MelodyBonusThresholdWithCoop}}">
+              <input type="text" class="form-control" id="coralBonusPerLevelThreshold"
+                name="coralBonusPerLevelThreshold" value="{{.CoralBonusPerLevelThreshold}}">
             </div>
           </div>
           <div class="row">
-            <label class="col-lg-6 control-label">Amplification Note Limit (0 = No Limit)</label>
+            <label class="col-lg-6 control-label">Barge Bonus RP Point Threshold</label>
             <div class="col-lg-6">
-              <input type="text" class="form-control" id="amplificationNoteLimit" name="amplificationNoteLimit"
-                value="{{.AmplificationNoteLimit}}">
-            </div>
-          </div>
-          <div class="row">
-            <label class="col-lg-6 control-label">Amplification Duration (seconds)</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" id="amplificationDurationSec" name="amplificationDurationSec"
-                value="{{.AmplificationDurationSec}}">
+              <input type="text" class="form-control" id="bargeBonusPointThreshold" name="bargeBonusPointThreshold"
+                value="{{.BargeBonusPointThreshold}}">
             </div>
           </div>
         </fieldset>

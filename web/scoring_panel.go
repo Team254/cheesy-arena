@@ -138,16 +138,6 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					}
 					scoreChanged = true
 				}
-			case "microphone":
-				if args.StageIndex >= 0 && args.StageIndex <= 2 {
-					score.MicrophoneStatuses[args.StageIndex] = !score.MicrophoneStatuses[args.StageIndex]
-					scoreChanged = true
-				}
-			case "trap":
-				if args.StageIndex >= 0 && args.StageIndex <= 2 {
-					score.TrapStatuses[args.StageIndex] = !score.TrapStatuses[args.StageIndex]
-					scoreChanged = true
-				}
 			}
 
 			if scoreChanged {

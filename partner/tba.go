@@ -104,7 +104,7 @@ type TbaRanking struct {
 	Coop    float32
 	Match   float32
 	Auto    float32
-	Stage   float32
+	Barge   float32
 	Wins    int `json:"wins"`
 	Losses  int `json:"losses"`
 	Ties    int `json:"ties"`
@@ -158,9 +158,8 @@ var leaveMapping = map[bool]string{false: "No", true: "Yes"}
 var endGameStatusMapping = map[game.EndgameStatus]string{
 	game.EndgameNone:        "None",
 	game.EndgameParked:      "Parked",
-	game.EndgameStageLeft:   "StageLeft",
-	game.EndgameCenterStage: "CenterStage",
-	game.EndgameStageRight:  "StageRight",
+	game.EndgameShallowCage: "ShallowCage",
+	game.EndgameDeepCage:    "DeepCage",
 }
 
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
@@ -399,7 +398,7 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	}
 
 	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "Coop", "Match", "Auto", "Stage"}
+	breakdowns := []string{"RP", "Coop", "Match", "Auto", "Barge"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{
@@ -409,7 +408,7 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 			Coop:    float32(ranking.CoopertitionPoints) / float32(ranking.Played),
 			Match:   float32(ranking.MatchPoints) / float32(ranking.Played),
 			Auto:    float32(ranking.AutoPoints) / float32(ranking.Played),
-			Stage:   float32(ranking.StagePoints) / float32(ranking.Played),
+			Barge:   float32(ranking.BargePoints) / float32(ranking.Played),
 			Wins:    ranking.Wins,
 			Losses:  ranking.Losses,
 			Ties:    ranking.Ties,
@@ -635,43 +634,44 @@ func createTbaScoringBreakdown(
 		opponentScoreSummary = matchResult.RedScoreSummary()
 	}
 
-	breakdown.AutoLineRobot1 = leaveMapping[score.LeaveStatuses[0]]
-	breakdown.AutoLineRobot2 = leaveMapping[score.LeaveStatuses[1]]
-	breakdown.AutoLineRobot3 = leaveMapping[score.LeaveStatuses[2]]
-	breakdown.AutoLeavePoints = scoreSummary.LeavePoints
-	breakdown.AutoAmpNoteCount = score.AmpSpeaker.AutoAmpNotes
-	breakdown.AutoAmpNotePoints = 2 * breakdown.AutoAmpNoteCount
-	breakdown.AutoSpeakerNoteCount = score.AmpSpeaker.AutoSpeakerNotes
-	breakdown.AutoSpeakerNotePoints = 5 * breakdown.AutoSpeakerNoteCount
-	breakdown.AutoTotalNotePoints = breakdown.AutoAmpNotePoints + breakdown.AutoSpeakerNotePoints
-	breakdown.AutoPoints = scoreSummary.AutoPoints
-	breakdown.TeleopAmpNoteCount = score.AmpSpeaker.TeleopAmpNotes
-	breakdown.TeleopAmpNotePoints = 1 * breakdown.TeleopAmpNoteCount
-	breakdown.TeleopSpeakerNoteCount = score.AmpSpeaker.TeleopUnamplifiedSpeakerNotes
-	breakdown.TeleopSpeakerNotePoints = 2 * breakdown.TeleopSpeakerNoteCount
-	breakdown.TeleopSpeakerNoteAmplifiedCount = score.AmpSpeaker.TeleopAmplifiedSpeakerNotes
-	breakdown.TeleopSpeakerNoteAmplifiedPoints = 5 * breakdown.TeleopSpeakerNoteAmplifiedCount
-	breakdown.TeleopTotalNotePoints = breakdown.TeleopAmpNotePoints + breakdown.TeleopSpeakerNotePoints +
-		breakdown.TeleopSpeakerNoteAmplifiedPoints
-	breakdown.EndGameRobot1 = endGameStatusMapping[score.EndgameStatuses[0]]
-	breakdown.EndGameRobot2 = endGameStatusMapping[score.EndgameStatuses[1]]
-	breakdown.EndGameRobot3 = endGameStatusMapping[score.EndgameStatuses[2]]
-	breakdown.EndGameParkPoints = scoreSummary.ParkPoints
-	breakdown.EndGameOnStagePoints = scoreSummary.OnStagePoints
-	breakdown.EndGameHarmonyPoints = scoreSummary.HarmonyPoints
-	breakdown.MicStageLeft = score.MicrophoneStatuses[0]
-	breakdown.MicCenterStage = score.MicrophoneStatuses[1]
-	breakdown.MicStageRight = score.MicrophoneStatuses[2]
-	breakdown.EndGameSpotLightBonusPoints = scoreSummary.SpotlightPoints
-	breakdown.TrapStageLeft = score.TrapStatuses[0]
-	breakdown.TrapCenterStage = score.TrapStatuses[1]
-	breakdown.TrapStageRight = score.TrapStatuses[2]
-	breakdown.EndGameNoteInTrapPoints = scoreSummary.TrapPoints
-	breakdown.EndGameTotalStagePoints = scoreSummary.StagePoints
-	breakdown.TeleopPoints = breakdown.TeleopTotalNotePoints + breakdown.EndGameTotalStagePoints
-	breakdown.CoopertitionCriteriaMet = scoreSummary.CoopertitionCriteriaMet
-	breakdown.MelodyBonusAchieved = scoreSummary.MelodyBonusRankingPoint
-	breakdown.EnsembleBonusAchieved = scoreSummary.EnsembleBonusRankingPoint
+	// TODO(patfair): Update for 2025.
+	//breakdown.AutoLineRobot1 = leaveMapping[score.LeaveStatuses[0]]
+	//breakdown.AutoLineRobot2 = leaveMapping[score.LeaveStatuses[1]]
+	//breakdown.AutoLineRobot3 = leaveMapping[score.LeaveStatuses[2]]
+	//breakdown.AutoLeavePoints = scoreSummary.LeavePoints
+	//breakdown.AutoAmpNoteCount = score.AmpSpeaker.AutoAmpNotes
+	//breakdown.AutoAmpNotePoints = 2 * breakdown.AutoAmpNoteCount
+	//breakdown.AutoSpeakerNoteCount = score.AmpSpeaker.AutoSpeakerNotes
+	//breakdown.AutoSpeakerNotePoints = 5 * breakdown.AutoSpeakerNoteCount
+	//breakdown.AutoTotalNotePoints = breakdown.AutoAmpNotePoints + breakdown.AutoSpeakerNotePoints
+	//breakdown.AutoPoints = scoreSummary.AutoPoints
+	//breakdown.TeleopAmpNoteCount = score.AmpSpeaker.TeleopAmpNotes
+	//breakdown.TeleopAmpNotePoints = 1 * breakdown.TeleopAmpNoteCount
+	//breakdown.TeleopSpeakerNoteCount = score.AmpSpeaker.TeleopUnamplifiedSpeakerNotes
+	//breakdown.TeleopSpeakerNotePoints = 2 * breakdown.TeleopSpeakerNoteCount
+	//breakdown.TeleopSpeakerNoteAmplifiedCount = score.AmpSpeaker.TeleopAmplifiedSpeakerNotes
+	//breakdown.TeleopSpeakerNoteAmplifiedPoints = 5 * breakdown.TeleopSpeakerNoteAmplifiedCount
+	//breakdown.TeleopTotalNotePoints = breakdown.TeleopAmpNotePoints + breakdown.TeleopSpeakerNotePoints +
+	//	breakdown.TeleopSpeakerNoteAmplifiedPoints
+	//breakdown.EndGameRobot1 = endGameStatusMapping[score.EndgameStatuses[0]]
+	//breakdown.EndGameRobot2 = endGameStatusMapping[score.EndgameStatuses[1]]
+	//breakdown.EndGameRobot3 = endGameStatusMapping[score.EndgameStatuses[2]]
+	//breakdown.EndGameParkPoints = scoreSummary.ParkPoints
+	//breakdown.EndGameOnStagePoints = scoreSummary.OnStagePoints
+	//breakdown.EndGameHarmonyPoints = scoreSummary.HarmonyPoints
+	//breakdown.MicStageLeft = score.MicrophoneStatuses[0]
+	//breakdown.MicCenterStage = score.MicrophoneStatuses[1]
+	//breakdown.MicStageRight = score.MicrophoneStatuses[2]
+	//breakdown.EndGameSpotLightBonusPoints = scoreSummary.SpotlightPoints
+	//breakdown.TrapStageLeft = score.TrapStatuses[0]
+	//breakdown.TrapCenterStage = score.TrapStatuses[1]
+	//breakdown.TrapStageRight = score.TrapStatuses[2]
+	//breakdown.EndGameNoteInTrapPoints = scoreSummary.TrapPoints
+	//breakdown.EndGameTotalStagePoints = scoreSummary.StagePoints
+	//breakdown.TeleopPoints = breakdown.TeleopTotalNotePoints + breakdown.EndGameTotalStagePoints
+	//breakdown.CoopertitionCriteriaMet = scoreSummary.CoopertitionCriteriaMet
+	//breakdown.MelodyBonusAchieved = scoreSummary.MelodyBonusRankingPoint
+	//breakdown.EnsembleBonusAchieved = scoreSummary.EnsembleBonusRankingPoint
 	for _, foul := range score.Fouls {
 		if foul.IsTechnical {
 			breakdown.TechFoulCount++
@@ -696,7 +696,7 @@ func createTbaScoringBreakdown(
 	// event settings.
 	breakdownMap := make(map[string]any)
 	_ = mapstructure.Decode(breakdown, &breakdownMap)
-	if eventSettings.MelodyBonusThresholdWithCoop == 0 {
+	if !eventSettings.CoralBonusCoopEnabled {
 		delete(breakdownMap, "coopertitionCriteriaMet")
 	}
 

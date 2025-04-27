@@ -25,10 +25,10 @@ func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
 	redScoreSummary.Score = 12
 	redScoreSummary.NumOpponentTechFouls = 11
 	redScoreSummary.AutoPoints = 11
-	redScoreSummary.StagePoints = 11
+	redScoreSummary.BargePoints = 11
 	blueScoreSummary.NumOpponentTechFouls = 10
 	blueScoreSummary.AutoPoints = 10
-	blueScoreSummary.StagePoints = 10
+	blueScoreSummary.BargePoints = 10
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
@@ -48,11 +48,11 @@ func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	blueScoreSummary.StagePoints = 12
+	blueScoreSummary.BargePoints = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	redScoreSummary.StagePoints = 12
+	redScoreSummary.BargePoints = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 }
