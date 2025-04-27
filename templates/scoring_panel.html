@@ -26,6 +26,11 @@
     </div>
   </div>
   <div id="reef-controls">
+    <svg id="reef-controls-warning" viewBox="0 0 80 70">
+      <path stroke-width="6" stroke-linejoin="round" stroke="#000000" fill="none" d="M 40,3 3,67 h 74 z" />
+      <line x1="40" y1="25" x2="40" y2="47" stroke-width="8" stroke-linecap="round" stroke="#000000" />
+      <circle fill="#000000" cx="40" cy="57" r="4" />
+    </svg>
     {{range $i := seq 6}}
       {{template "reefColumn" (dict "index" $i)}}
     {{end}}

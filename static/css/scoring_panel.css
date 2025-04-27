@@ -449,6 +449,12 @@ button:hover:enabled {
   justify-content: space-evenly;
   align-items: center;
   gap: 10px;
+  contain: layout;
+}
+
+#reef-controls-warning {
+  position: absolute;
+  height: 100%;
 }
 
 .reef-column {
