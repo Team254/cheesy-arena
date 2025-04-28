@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/Team254/cheesy-arena/game"
@@ -434,6 +435,13 @@ func (arena *Arena) StartMatch() error {
 				allianceStation.Team.HasConnected = true
 				arena.Database.UpdateTeam(allianceStation.Team)
 			}
+		}
+
+		// Propagate which teams were bypassed to the tracked score.
+		for i := 0; i < 3; i++ {
+			stationNumber := strconv.Itoa(i + 1)
+			arena.RedRealtimeScore.CurrentScore.RobotsBypassed[i] = arena.AllianceStations["R"+stationNumber].Bypass
+			arena.BlueRealtimeScore.CurrentScore.RobotsBypassed[i] = arena.AllianceStations["B"+stationNumber].Bypass
 		}
 
 		arena.MatchState = StartMatch

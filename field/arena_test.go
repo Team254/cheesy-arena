@@ -93,10 +93,13 @@ func TestArenaMatchFlow(t *testing.T) {
 	arena := setupTestArena(t)
 
 	arena.Database.CreateTeam(&model.Team{Id: 254})
-	err := arena.assignTeam(254, "B3")
-	assert.Nil(t, err)
+	assert.Nil(t, arena.assignTeam(254, "B3"))
 	dummyDs := &DriverStationConnection{TeamId: 254}
 	arena.AllianceStations["B3"].DsConn = dummyDs
+	arena.Database.CreateTeam(&model.Team{Id: 1678})
+	assert.Nil(t, arena.assignTeam(254, "R2"))
+	dummyDs = &DriverStationConnection{TeamId: 1678}
+	arena.AllianceStations["R2"].DsConn = dummyDs
 
 	// Check pre-match state and packet timing.
 	assert.Equal(t, PreMatch, arena.MatchState)
@@ -114,17 +117,22 @@ func TestArenaMatchFlow(t *testing.T) {
 
 	// Check match start, autonomous and transition to teleop.
 	arena.AllianceStations["R1"].Bypass = true
-	arena.AllianceStations["R2"].Bypass = true
+	arena.AllianceStations["R2"].DsConn.RobotLinked = true
 	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].DsConn.RobotLinked = true
-	err = arena.StartMatch()
-	assert.Nil(t, err)
+	assert.Nil(t, arena.StartMatch())
 	arena.Update()
 	assert.Equal(t, WarmupPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, true, arena.RedRealtimeScore.CurrentScore.RobotsBypassed[0])
+	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.RobotsBypassed[1])
+	assert.Equal(t, true, arena.RedRealtimeScore.CurrentScore.RobotsBypassed[2])
+	assert.Equal(t, true, arena.BlueRealtimeScore.CurrentScore.RobotsBypassed[0])
+	assert.Equal(t, true, arena.BlueRealtimeScore.CurrentScore.RobotsBypassed[1])
+	assert.Equal(t, false, arena.BlueRealtimeScore.CurrentScore.RobotsBypassed[2])
 	arena.Update()
 	assert.Equal(t, WarmupPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
