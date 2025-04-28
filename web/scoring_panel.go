@@ -114,8 +114,8 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 
 			if args.ReefPosition >= 1 && args.ReefPosition <= 12 && args.ReefLevel >= 2 && args.ReefLevel <= 4 {
-				score.ReefStatuses[args.ReefPosition-1][args.ReefLevel-2] = !score.ReefStatuses[args.ReefPosition-1][args.ReefLevel-2]
-				score.ReefAutoStatuses[args.ReefPosition-1][args.ReefLevel-2] = !score.ReefAutoStatuses[args.ReefPosition-1][args.ReefLevel-2]
+				score.Reef.Branches[args.ReefLevel-2][args.ReefPosition-1] = !score.Reef.Branches[args.ReefLevel-2][args.ReefPosition-1]
+				score.Reef.AutoBranches[args.ReefLevel-2][args.ReefPosition-1] = !score.Reef.AutoBranches[args.ReefLevel-2][args.ReefPosition-1]
 				scoreChanged = true
 			}
 

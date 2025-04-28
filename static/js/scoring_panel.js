@@ -85,8 +85,8 @@ const handleRealtimeScore = function(data) {
     const i1 = i + 1;
     for (let j = 0; j < 3; j++) {
       const j2 = j + 2;
-      $(`#reef-column-${i1}`).attr(`data-l${j2}-scored`, score.ReefStatuses[i][j]);
-      $(`#reef-column-${i1}`).attr(`data-l${j2}-auto-scored`, score.ReefAutoStatuses[i][j]);
+      $(`#reef-column-${i1}`).attr(`data-l${j2}-scored`, score.Reef.Branches[j][i]);
+      $(`#reef-column-${i1}`).attr(`data-l${j2}-auto-scored`, score.Reef.AutoBranches[j][i]);
     }
   }
 };
