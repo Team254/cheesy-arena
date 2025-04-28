@@ -6,9 +6,9 @@
 package game
 
 type Foul struct {
-	IsTechnical bool
-	TeamId      int
-	RuleId      int
+	IsMajor bool
+	TeamId  int
+	RuleId  int
 }
 
 // Returns the rule for which the foul was assigned.
@@ -18,9 +18,14 @@ func (foul *Foul) Rule() *Rule {
 
 // Returns the number of points that the foul adds to the opposing alliance's score.
 func (foul *Foul) PointValue() int {
-	if foul.IsTechnical {
-		return 5
+	if foul.IsMajor {
+		return 6
 	} else {
+		if foul.Rule() != nil && foul.Rule().RuleNumber == "G206" {
+			// Special case in 2025 for G206, which is not actually a foul but does make the alliance ineligible for
+			// some bonus RPs.
+			return 0
+		}
 		return 2
 	}
 }

@@ -28,6 +28,15 @@
   <div class="card card-body bg-{{"{{alliance}}"}} mb-3">
     <fieldset>
       <legend>Autonomous</legend>
+      <h6 class="fw-bold mb-2">Bypassed</h6>
+      <div class="row mb-3">
+        {{range $i := seq 3}}
+          <div class="col-lg-2">
+            <label class="control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+            <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}RobotsBypassed{{$i}}">
+          </div>
+        {{end}}
+      </div>
       <h6 class="fw-bold mb-2">Leave</h6>
       <div class="row mb-3">
         {{range $i := seq 3}}
@@ -37,50 +46,67 @@
           </div>
         {{end}}
       </div>
-      <h6 class="fw-bold mb-2">Notes Scored</h6>
-      <div class="row">
-        <label class="col-lg-1 text-end">Amp:</label>
-        <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoAmpNotes">
+    </fieldset>
+    <fieldset>
+      <legend>Reef</legend>
+      <div class="row mb-2">
+        <div class="col-lg-1"></div>
+        <div class="row col-lg-11">
+          <label class="col-lg-1 control-label">A</label>
+          <label class="col-lg-1 control-label">B</label>
+          <label class="col-lg-1 control-label">C</label>
+          <label class="col-lg-1 control-label">D</label>
+          <label class="col-lg-1 control-label">E</label>
+          <label class="col-lg-1 control-label">F</label>
+          <label class="col-lg-1 control-label">G</label>
+          <label class="col-lg-1 control-label">H</label>
+          <label class="col-lg-1 control-label">I</label>
+          <label class="col-lg-1 control-label">J</label>
+          <label class="col-lg-1 control-label">K</label>
+          <label class="col-lg-1 control-label">L</label>
         </div>
-        <label class="col-lg-1 text-end">Speaker:</label>
+      </div>
+      {{template "reefPipe" dict "pipe" 2 "pipeName" "Level 4"}}
+      {{template "reefPipe" dict "pipe" 1 "pipeName" "Level 3"}}
+      {{template "reefPipe" dict "pipe" 0 "pipeName" "Level 2"}}
+      <div class="row mb-3">
+        <label class="col-lg-1 control-label">Level 1</label>
+        <label class="col-lg-1 text-end">Auto Near:</label>
         <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoSpeakerNotes">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoTroughNearCoral">
+        </div>
+        <label class="col-lg-1 text-end">Auto Far:</label>
+        <div class="col-lg-1">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoTroughFarCoral">
+        </div>
+        <label class="col-lg-1 text-end"> Near:</label>
+        <div class="col-lg-1">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TroughNearCoral">
+        </div>
+        <label class="col-lg-1 text-end"> Far:</label>
+        <div class="col-lg-1">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TroughFarCoral">
         </div>
       </div>
     </fieldset>
     <fieldset>
-      <legend>Teleoperated</legend>
-      <h6 class="fw-bold mb-2">Coopertition</h6>
-      <div class="row mb-3">
-        <div class="col-lg-2">
-          <label class="control-label">Activated</label>
-          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}CoopActivated">
-        </div>
-      </div>
-      <h6 class="fw-bold mb-2">Notes Scored</h6>
+      <legend>Algae</legend>
       <div class="row">
-        <label class="col-lg-1 text-end">Amp:</label>
+        <label class="col-lg-1 text-end">Barge:</label>
         <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TeleopAmpNotes">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}BargeAlgae">
         </div>
-        <label class="col-lg-2 text-end">Speaker Unamplified:</label>
+        <label class="col-lg-1 text-end">Processor:</label>
         <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TeleopUnamplifiedSpeakerNotes">
-        </div>
-        <label class="col-lg-2 text-end">Speaker Amplified:</label>
-        <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TeleopAmplifiedSpeakerNotes">
+          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}ProcessorAlgae">
         </div>
       </div>
     </fieldset>
     <fieldset>
       <legend>Endgame</legend>
-      <h6 class="fw-bold mb-2">Robots On Stage</h6>
       <div class="mb-3">
         {{range $i := seq 3}}
           <div class="row mb-2">
-            <div class="col-lg-1"></div>
             <label class="col-lg-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
             <div class="col-lg-1">
               <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="0"> None
@@ -89,46 +115,13 @@
               <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1"> Parked
             </div>
             <div class="col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2"> Stage Left
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2"> Shallow Cage
             </div>
             <div class="col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="3"> Center Stage
-            </div>
-            <div class="col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="4"> Stage Right
+              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="3"> Deep Cage
             </div>
           </div>
         {{end}}
-      </div>
-      <h6 class="fw-bold mb-2">High Notes on Microphones</h6>
-      <div class="row mb-3">
-        <div class="col-lg-2">
-          <label class="control-label">Stage Left</label>
-          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}MicrophoneStatuses1">
-        </div>
-        <div class="col-lg-2">
-          <label class="control-label">Center Stage</label>
-          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}MicrophoneStatuses2">
-        </div>
-        <div class="col-lg-2">
-          <label class="control-label">Stage Right</label>
-          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}MicrophoneStatuses3">
-        </div>
-      </div>
-      <h6 class="fw-bold mb-2">Notes in Traps</h6>
-      <div class="row mb-3">
-        <div class="col-lg-2">
-          <label class="control-label">Stage Left</label>
-          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}TrapStatuses1">
-        </div>
-        <div class="col-lg-2">
-          <label class="control-label">Center Stage</label>
-          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}TrapStatuses2">
-        </div>
-        <div class="col-lg-2">
-          <label class="control-label">Stage Right</label>
-          <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}TrapStatuses3">
-        </div>
       </div>
     </fieldset>
     <fieldset>
@@ -141,9 +134,9 @@
           </button>
           <br />
           <div class="row mb-3">
-            <label class="col-lg-2 control-label">Is Technical?</label>
+            <label class="col-lg-2 control-label">Is Major?</label>
             <div class="col-lg-3">
-              <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsTechnical">
+              <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsMajor">
             </div>
           </div>
           <div class="row mb-3">
@@ -177,8 +170,8 @@
               <select class="form-control" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleId">
                 {{range $rule := .Rules}}
                   <option value="{{$rule.Id}}">{{$rule.RuleNumber}}
-                      [{{if $rule.IsRankingPoint}}{{if $rule.IsTechnical}}Tech {{end}}Foul +
-                      Free RP{{else}}{{if $rule.IsTechnical}}Tech {{end}}Foul{{end}}]: {{$rule.Description}}
+                    [{{if $rule.IsRankingPoint}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul + RP
+                    {{else}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul{{end}}]: {{$rule.Description}}
                   </option>
                 {{end}}
               </select>
@@ -242,4 +235,26 @@
   renderResults("red");
   renderResults("blue");
 </script>
+{{end}}
+{{define "reefPipe"}}
+  <div class="row">
+    <label class="col-lg-1">{{.pipeName}}</label>
+    <div class="row col-lg-11">
+      {{range $i := seq 12}}
+        {{template "reefBranch" dict "pipe" $.pipe "level" (add $i -1)}}
+      {{end}}
+    </div>
+  </div>
+  <br />
+{{end}}
+{{define "reefBranch"}}
+  <div class="col-lg-1">
+    <input type="checkbox" class="" name="{{"{{alliance}}"}}ReefAutoBranchesPipe{{.pipe}}Branch{{.level}}"
+      id="{{"{{alliance}}"}}AutoPipe{{.pipe}}Branch{{.level}}">
+    <label for="{{"{{alliance}}"}}AutoPipe{{.pipe}}Branch{{.level}}">Auto</label>
+    <br />
+    <input type="checkbox" class="" name="{{"{{alliance}}"}}ReefBranchesPipe{{.pipe}}Branch{{.level}}"
+      id="{{"{{alliance}}"}}Pipe{{.pipe}}Branch{{.level}}">
+    <label for="{{"{{alliance}}"}}Pipe{{.pipe}}Branch{{.level}}">Overall</label>
+  </div>
 {{end}}

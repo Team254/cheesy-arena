@@ -7,48 +7,50 @@ package game
 
 func TestScore1() *Score {
 	fouls := []Foul{
-		{true, 25, 13},
-		{false, 1868, 14},
-		{false, 1868, 14},
+		{true, 25, 16},
+		{false, 1868, 13},
+		{false, 1868, 13},
 		{true, 25, 15},
 		{true, 25, 15},
 		{true, 25, 15},
 		{true, 25, 15},
 	}
 	return &Score{
-		LeaveStatuses: [3]bool{true, true, false},
-		AmpSpeaker: AmpSpeaker{
-			CoopActivated:                 true,
-			AutoAmpNotes:                  1,
-			TeleopAmpNotes:                4,
-			AutoSpeakerNotes:              6,
-			TeleopUnamplifiedSpeakerNotes: 1,
-			TeleopAmplifiedSpeakerNotes:   5,
+		RobotsBypassed: [3]bool{false, false, true},
+		LeaveStatuses:  [3]bool{true, true, false},
+		Reef: Reef{
+			AutoBranches:   [3][12]bool{{true}},
+			Branches:       [3][12]bool{{true, true}, {true, true, true}},
+			AutoTroughNear: 0,
+			AutoTroughFar:  1,
+			TroughNear:     3,
+			TroughFar:      4,
 		},
-		EndgameStatuses:    [3]EndgameStatus{EndgameParked, EndgameNone, EndgameStageLeft},
-		MicrophoneStatuses: [3]bool{false, true, true},
-		TrapStatuses:       [3]bool{true, true, false},
-		Fouls:              fouls,
-		PlayoffDq:          false,
+		BargeAlgae:      7,
+		ProcessorAlgae:  2,
+		EndgameStatuses: [3]EndgameStatus{EndgameParked, EndgameNone, EndgameDeepCage},
+		Fouls:           fouls,
+		PlayoffDq:       false,
 	}
 }
 
 func TestScore2() *Score {
 	return &Score{
-		LeaveStatuses: [3]bool{false, true, false},
-		AmpSpeaker: AmpSpeaker{
-			CoopActivated:                 false,
-			AutoAmpNotes:                  0,
-			TeleopAmpNotes:                51,
-			AutoSpeakerNotes:              8,
-			TeleopUnamplifiedSpeakerNotes: 3,
-			TeleopAmplifiedSpeakerNotes:   23,
+		RobotsBypassed: [3]bool{false, false, false},
+		LeaveStatuses:  [3]bool{false, true, false},
+		Reef: Reef{
+			AutoBranches:   [3][12]bool{{}, {}, {true, true, true, true}},
+			Branches:       [3][12]bool{{true, true, true}, {true, true, true, true, true}, {true, true, true}},
+			AutoTroughNear: 2,
+			AutoTroughFar:  1,
+			TroughNear:     10,
+			TroughFar:      5,
 		},
-		EndgameStatuses:    [3]EndgameStatus{EndgameStageLeft, EndgameCenterStage, EndgameCenterStage},
-		MicrophoneStatuses: [3]bool{false, true, true},
-		TrapStatuses:       [3]bool{false, false, false},
-		Fouls:              []Foul{},
-		PlayoffDq:          false,
+		BargeAlgae:      9,
+		ProcessorAlgae:  1,
+		EndgameStatuses: [3]EndgameStatus{EndgameDeepCage, EndgameShallowCage, EndgameShallowCage},
+		Fouls:           []Foul{},
+		PlayoffDq:       false,
 	}
 }
 

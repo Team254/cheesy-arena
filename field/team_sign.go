@@ -183,23 +183,25 @@ func (sign *TeamSign) update(
 
 // Returns the in-match rear text that is common to a whole alliance.
 func generateInMatchRearText(isRed bool, countdown string, realtimeScore, opponentRealtimeScore *RealtimeScore) string {
-	scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
-	scoreTotal := scoreSummary.Score - scoreSummary.StagePoints
-	opponentScoreSummary := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore)
-	opponentScoreTotal := opponentScoreSummary.Score - opponentScoreSummary.StagePoints
-	var allianceScores string
-	if isRed {
-		allianceScores = fmt.Sprintf("R%03d-B%03d", scoreTotal, opponentScoreTotal)
-	} else {
-		allianceScores = fmt.Sprintf("B%03d-R%03d", scoreTotal, opponentScoreTotal)
-	}
-	if realtimeScore.AmplifiedTimeRemainingSec > 0 {
-		// Replace the total score with the amplified countdown while it's active.
-		allianceScores = fmt.Sprintf("Amp:%2d", realtimeScore.AmplifiedTimeRemainingSec)
-	}
-	return fmt.Sprintf(
-		"%s %02d/%02d %9s", countdown[1:], scoreSummary.NumNotes, scoreSummary.NumNotesGoal, allianceScores,
-	)
+	// TODO(patfair): Update for 2025.
+	//scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
+	//scoreTotal := scoreSummary.Score - scoreSummary.StagePoints
+	//opponentScoreSummary := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore)
+	//opponentScoreTotal := opponentScoreSummary.Score - opponentScoreSummary.StagePoints
+	//var allianceScores string
+	//if isRed {
+	//	allianceScores = fmt.Sprintf("R%03d-B%03d", scoreTotal, opponentScoreTotal)
+	//} else {
+	//	allianceScores = fmt.Sprintf("B%03d-R%03d", scoreTotal, opponentScoreTotal)
+	//}
+	//if realtimeScore.AmplifiedTimeRemainingSec > 0 {
+	//	// Replace the total score with the amplified countdown while it's active.
+	//	allianceScores = fmt.Sprintf("Amp:%2d", realtimeScore.AmplifiedTimeRemainingSec)
+	//}
+	//return fmt.Sprintf(
+	//	"%s %02d/%02d %9s", countdown[1:], scoreSummary.NumNotes, scoreSummary.NumNotesGoal, allianceScores,
+	//)
+	return ""
 }
 
 // Returns the front text, front color, and rear text to display on the timer display.

@@ -4,25 +4,25 @@
 package field
 
 import (
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"image/color"
 	"testing"
 )
 
-func TestTeamSign_GenerateInMatchRearText(t *testing.T) {
-	realtimeScore1 := &RealtimeScore{AmplifiedTimeRemainingSec: 9}
-	realtimeScore2 := &RealtimeScore{AmplifiedTimeRemainingSec: 15}
-	realtimeScore3 := &RealtimeScore{CurrentScore: game.Score{AmpSpeaker: game.AmpSpeaker{AutoSpeakerNotes: 12}}}
-	realtimeScore4 := &RealtimeScore{CurrentScore: game.Score{AmpSpeaker: game.AmpSpeaker{TeleopAmpNotes: 1}}}
-
-	assert.Equal(t, "1:23 00/18    Amp: 9", generateInMatchRearText(true, "01:23", realtimeScore1, realtimeScore2))
-	assert.Equal(t, "1:23 00/18    Amp:15", generateInMatchRearText(false, "01:23", realtimeScore2, realtimeScore1))
-	game.MelodyBonusThresholdWithoutCoop = 23
-	assert.Equal(t, "4:56 12/23 R060-B001", generateInMatchRearText(true, "34:56", realtimeScore3, realtimeScore4))
-	assert.Equal(t, "4:56 01/23 B001-R060", generateInMatchRearText(false, "34:56", realtimeScore4, realtimeScore3))
-}
+// TODO(patfair): Update for 2025.
+//func TestTeamSign_GenerateInMatchRearText(t *testing.T) {
+//	realtimeScore1 := &RealtimeScore{AmplifiedTimeRemainingSec: 9}
+//	realtimeScore2 := &RealtimeScore{AmplifiedTimeRemainingSec: 15}
+//	realtimeScore3 := &RealtimeScore{CurrentScore: game.Score{AmpSpeaker: game.AmpSpeaker{AutoSpeakerNotes: 12}}}
+//	realtimeScore4 := &RealtimeScore{CurrentScore: game.Score{AmpSpeaker: game.AmpSpeaker{TeleopAmpNotes: 1}}}
+//
+//	assert.Equal(t, "1:23 00/18    Amp: 9", generateInMatchRearText(true, "01:23", realtimeScore1, realtimeScore2))
+//	assert.Equal(t, "1:23 00/18    Amp:15", generateInMatchRearText(false, "01:23", realtimeScore2, realtimeScore1))
+//	game.MelodyBonusThresholdWithoutCoop = 23
+//	assert.Equal(t, "4:56 12/23 R060-B001", generateInMatchRearText(true, "34:56", realtimeScore3, realtimeScore4))
+//	assert.Equal(t, "4:56 01/23 B001-R060", generateInMatchRearText(false, "34:56", realtimeScore4, realtimeScore3))
+//}
 
 func TestTeamSign_Timer(t *testing.T) {
 	arena := setupTestArena(t)
