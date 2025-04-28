@@ -28,36 +28,42 @@ $("form").submit(function() {
 const renderResults = function(alliance) {
   const result = allianceResults[alliance];
   const scoreContent = scoreTemplate(result);
-  $("#" + alliance + "Score").html(scoreContent);
+  $(`#${alliance}Score`).html(scoreContent);
 
   // Set the values of the form fields from the JSON results data.
-  getInputElement(alliance, "CoopActivated").prop("checked", result.score.AmpSpeaker.CoopActivated);
-  getInputElement(alliance, "AutoAmpNotes").val(result.score.AmpSpeaker.AutoAmpNotes);
-  getInputElement(alliance, "AutoSpeakerNotes").val(result.score.AmpSpeaker.AutoSpeakerNotes);
-  getInputElement(alliance, "TeleopAmpNotes").val(result.score.AmpSpeaker.TeleopAmpNotes);
-  getInputElement(alliance, "TeleopUnamplifiedSpeakerNotes").val(result.score.AmpSpeaker.TeleopUnamplifiedSpeakerNotes);
-  getInputElement(alliance, "TeleopAmplifiedSpeakerNotes").val(result.score.AmpSpeaker.TeleopAmplifiedSpeakerNotes);
+  getInputElement(alliance, "AutoTroughNearCoral").val(result.score.Reef.AutoTroughNear);
+  getInputElement(alliance, "AutoTroughFarCoral").val(result.score.Reef.AutoTroughFar);
+  getInputElement(alliance, "TroughNearCoral").val(result.score.Reef.TroughNear);
+  getInputElement(alliance, "TroughFarCoral").val(result.score.Reef.TroughFar);
+  getInputElement(alliance, "BargeAlgae").val(result.score.BargeAlgae);
+  getInputElement(alliance, "ProcessorAlgae").val(result.score.ProcessorAlgae);
 
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
 
-    getInputElement(alliance, "LeaveStatuses" + i1).prop("checked", result.score.LeaveStatuses[i]);
-    getInputElement(alliance, "EndgameStatuses" + i1, result.score.EndgameStatuses[i]).prop("checked", true);
-    getInputElement(alliance, "MicrophoneStatuses" + i1).prop("checked", result.score.MicrophoneStatuses[i]);
-    getInputElement(alliance, "TrapStatuses" + i1).prop("checked", result.score.TrapStatuses[i]);
+    getInputElement(alliance, `RobotsBypassed${i1}`).prop("checked", result.score.RobotsBypassed[i]);
+    getInputElement(alliance, `LeaveStatuses${i1}`).prop("checked", result.score.LeaveStatuses[i]);
+    getInputElement(alliance, `EndgameStatuses${i1}`, result.score.EndgameStatuses[i]).prop("checked", true);
+
+    for (let j = 0; j < 12; j++) {
+      getInputElement(alliance, `ReefAutoBranchesPipe${i}Branch${j}`).prop(
+        "checked", result.score.Reef.AutoBranches[i][j]
+      );
+      getInputElement(alliance, `ReefBranchesPipe${i}Branch${j}`).prop("checked", result.score.Reef.Branches[i][j]);
+    }
   }
 
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function(k, v) {
-      getInputElement(alliance, "Foul" + k + "IsMajor").prop("checked", v.IsMajor);
-      getInputElement(alliance, "Foul" + k + "Team", v.TeamId).prop("checked", true);
-      getSelectElement(alliance, "Foul" + k + "RuleId").val(v.RuleId);
+      getInputElement(alliance, `Foul${k}IsMajor`).prop("checked", v.IsMajor);
+      getInputElement(alliance, `Foul${k}Team`, v.TeamId).prop("checked", true);
+      getSelectElement(alliance, `Foul${k}RuleId`).val(v.RuleId);
     });
   }
 
   if (result.cards != null) {
     $.each(result.cards, function(k, v) {
-      getInputElement(alliance, "Team" + k + "Card", v).prop("checked", true);
+      getInputElement(alliance, `Team${k}Card`, v).prop("checked", true);
     });
   }
 };
@@ -70,42 +76,48 @@ const updateResults = function(alliance) {
     formData[v.name] = v.value;
   });
 
+  result.score.RobotsBypassed = [];
   result.score.LeaveStatuses = [];
-  result.score.AmpSpeaker = {
-    CoopActivated: formData[alliance + "CoopActivated"] === "on",
-    AutoAmpNotes: parseInt(formData[alliance + "AutoAmpNotes"]),
-    AutoSpeakerNotes: parseInt(formData[alliance + "AutoSpeakerNotes"]),
-    TeleopAmpNotes: parseInt(formData[alliance + "TeleopAmpNotes"]),
-    TeleopUnamplifiedSpeakerNotes: parseInt(formData[alliance + "TeleopUnamplifiedSpeakerNotes"]),
-    TeleopAmplifiedSpeakerNotes: parseInt(formData[alliance + "TeleopAmplifiedSpeakerNotes"]),
+  result.score.Reef = {
+    AutoBranches: [],
+    Branches: [],
+    AutoTroughNear: parseInt(formData[`${alliance}AutoTroughNearCoral`]),
+    AutoTroughFar: parseInt(formData[`${alliance}AutoTroughFarCoral`]),
+    TroughNear: parseInt(formData[`${alliance}TroughNearCoral`]),
+    TroughFar: parseInt(formData[`${alliance}TroughFarCoral`]),
   };
+  result.score.BargeAlgae = parseInt(formData[`${alliance}BargeAlgae`]);
+  result.score.ProcessorAlgae = parseInt(formData[`${alliance}ProcessorAlgae`]);
   result.score.EndgameStatuses = [];
-  result.score.MicrophoneStatuses = [];
-  result.score.TrapStatuses = [];
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
 
-    result.score.LeaveStatuses[i] = formData[alliance + "LeaveStatuses" + i1] === "on";
-    result.score.EndgameStatuses[i] = parseInt(formData[alliance + "EndgameStatuses" + i1]);
-    result.score.MicrophoneStatuses[i] = formData[alliance + "MicrophoneStatuses" + i1] === "on";
-    result.score.TrapStatuses[i] = formData[alliance + "TrapStatuses" + i1] === "on";
+    result.score.RobotsBypassed[i] = formData[`${alliance}RobotsBypassed${i1}`] === "on";
+    result.score.LeaveStatuses[i] = formData[`${alliance}LeaveStatuses${i1}`] === "on";
+    result.score.EndgameStatuses[i] = parseInt(formData[`${alliance}EndgameStatuses${i1}`]);
+    result.score.Reef.AutoBranches[i] = [];
+    result.score.Reef.Branches[i] = [];
+    for (let j = 0; j < 12; j++) {
+      result.score.Reef.AutoBranches[i][j] = formData[`${alliance}ReefAutoBranchesPipe${i}Branch${j}`] === "on";
+      result.score.Reef.Branches[i][j] = formData[`${alliance}ReefBranchesPipe${i}Branch${j}`] === "on";
+    }
   }
 
   result.score.Fouls = [];
 
-  for (let i = 0; formData[alliance + "Foul" + i + "Index"]; i++) {
-    const prefix = alliance + "Foul" + i;
+  for (let i = 0; formData[`${alliance}Foul${i}Index`]; i++) {
+    const prefix = `${alliance}Foul${i}`;
     const foul = {
-      IsMajor: formData[prefix + "IsMajor"] === "on",
-      TeamId: parseInt(formData[prefix + "Team"]),
-      RuleId: parseInt(formData[prefix + "RuleId"]),
+      IsMajor: formData[`${prefix}IsMajor`] === "on",
+      TeamId: parseInt(formData[`${prefix}Team`]),
+      RuleId: parseInt(formData[`${prefix}RuleId`]),
     };
     result.score.Fouls.push(foul);
   }
 
   result.cards = {};
   $.each([result.team1, result.team2, result.team3], function(i, team) {
-    result.cards[team] = formData[alliance + "Team" + team + "Card"];
+    result.cards[team] = formData[`${alliance}Team${team}Card`];
   });
 };
 
@@ -127,15 +139,15 @@ const deleteFoul = function(alliance, index) {
 
 // Returns the form input element having the given parameters.
 const getInputElement = function(alliance, name, value) {
-  let selector = "input[name=" + alliance + name + "]";
+  let selector = `input[name=${alliance}${name}]`;
   if (value !== undefined) {
-    selector += "[value=" + value + "]";
+    selector += `[value=${value}]`;
   }
   return $(selector);
 };
 
 // Returns the form select element having the given parameters.
 const getSelectElement = function(alliance, name) {
-  const selector = "select[name=" + alliance + name + "]";
+  const selector = `select[name=${alliance}${name}]`;
   return $(selector);
 };
