@@ -16,12 +16,16 @@ import (
 func TestScoringPanel(t *testing.T) {
 	web := setupTestWeb(t)
 
-	recorder := web.getHttpResponse("/panels/scoring/invalidalliance")
+	recorder := web.getHttpResponse("/panels/scoring/invalidposition")
 	assert.Equal(t, 500, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Invalid alliance")
-	recorder = web.getHttpResponse("/panels/scoring/red")
+	assert.Contains(t, recorder.Body.String(), "Invalid position")
+	recorder = web.getHttpResponse("/panels/scoring/red_near")
 	assert.Equal(t, 200, recorder.Code)
-	recorder = web.getHttpResponse("/panels/scoring/blue")
+	recorder = web.getHttpResponse("/panels/scoring/red_far")
+	assert.Equal(t, 200, recorder.Code)
+	recorder = web.getHttpResponse("/panels/scoring/blue_near")
+	assert.Equal(t, 200, recorder.Code)
+	recorder = web.getHttpResponse("/panels/scoring/blue_far")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Scoring Panel - Untitled Event - Cheesy Arena")
 }

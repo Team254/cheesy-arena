@@ -17,15 +17,65 @@ import (
 	"net/http"
 )
 
+type ScoringPosition struct {
+	Alliance         string
+	NearSide         bool
+	ScoresAuto       bool
+	ScoresEndgame    bool
+	ScoresBarge      bool
+	ScoresProcessor  bool
+	LeftmostReefPole int
+}
+
+var positionParameters = map[string]ScoringPosition{
+	"red_near": {
+		Alliance:         "red",
+		NearSide:         true,
+		ScoresAuto:       true,
+		ScoresEndgame:    true,
+		ScoresBarge:      true,
+		ScoresProcessor:  false,
+		LeftmostReefPole: 6,
+	},
+	"red_far": {
+		Alliance:         "red",
+		NearSide:         false,
+		ScoresAuto:       false,
+		ScoresEndgame:    false,
+		ScoresBarge:      false,
+		ScoresProcessor:  true,
+		LeftmostReefPole: 0,
+	},
+	"blue_near": {
+		Alliance:         "blue",
+		NearSide:         true,
+		ScoresAuto:       false,
+		ScoresEndgame:    false,
+		ScoresBarge:      false,
+		ScoresProcessor:  true,
+		LeftmostReefPole: 0,
+	},
+	"blue_far": {
+		Alliance:         "blue",
+		NearSide:         false,
+		ScoresAuto:       true,
+		ScoresEndgame:    true,
+		ScoresBarge:      true,
+		ScoresProcessor:  false,
+		LeftmostReefPole: 6,
+	},
+}
+
 // Renders the scoring interface which enables input of scores in real-time.
 func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
 
-	alliance := r.PathValue("alliance")
-	if alliance != "red" && alliance != "blue" {
-		handleWebErr(w, fmt.Errorf("Invalid alliance '%s'.", alliance))
+	position := r.PathValue("position")
+	parameters, ok := positionParameters[position]
+	if !ok {
+		handleWebErr(w, fmt.Errorf("Invalid position '%s'.", position))
 		return
 	}
 
@@ -37,8 +87,9 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 		PlcIsEnabled bool
-		Alliance     string
-	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), alliance}
+		PositionName string
+		Position     ScoringPosition
+	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), position, parameters}
 	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)

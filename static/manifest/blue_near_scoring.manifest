@@ -1,0 +1,14 @@
+{
+  "name": "Blue Near Scoring",
+  "icons": [
+    {
+      "src": "/static/img/panel-icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "scope": "/panels/scoring/blue_near",
+  "start_url": "/panels/scoring/blue_near",
+  "display": "standalone",
+  "orientation": "landscape"
+}

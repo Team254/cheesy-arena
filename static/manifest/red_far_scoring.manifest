@@ -1,5 +1,5 @@
 {
-  "name": "Blue Scoring",
+  "name": "Red Far Scoring",
   "icons": [
     {
       "src": "/static/img/panel-icon.png",
@@ -7,8 +7,8 @@
       "sizes": "512x512"
     }
   ],
-  "scope": "/panels/scoring/blue",
-  "start_url": "/panels/scoring/blue",
+  "scope": "/panels/scoring/red_far",
+  "start_url": "/panels/scoring/red_far",
   "display": "standalone",
   "orientation": "landscape"
 }

@@ -7,21 +7,33 @@
 {{define "title"}}Scoring Panel{{end}}
 {{define "body"}}
 <header id="banner">
-  <div class="banner-title">Auto</div>
+  {{if .Position.ScoresAuto }}
+    <div class="banner-title">Auto</div>
+  {{else}}
+    <div class="banner-placeholder"></div>
+  {{end}}
   <div class="screen-title">Screen Title - <span id="matchName">&nbsp;</span></div>
-  <div class="banner-title">Endgame</div>
+  {{if .Position.ScoresEndgame }}
+    <div class="banner-title">Endgame</div>
+  {{else}}
+    <div class="banner-placeholder"></div>
+  {{end}}
 </header>
 <main>
   <div id="top-controls">
     <div id="auto-controls">
-      {{range $i := seq 3}}
-        {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "onclick" (printf "handleLeaveClick(%d);" $i))}}
+      {{if .Position.ScoresAuto}}
+        {{range $i := seq 3}}
+          {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "onclick" (printf "handleLeaveClick(%d);" $i))}}
+        {{end}}
       {{end}}
     </div>
     <div id="commit-controls"></div>
     <div id="endgame-controls">
-      {{range $i := seq 3}}
-        {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "onclick" "showEndgameDialog();")}}
+      {{if .Position.ScoresEndgame}}
+        {{range $i := seq 3}}
+          {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "onclick" "showEndgameDialog();")}}
+        {{end}}
       {{end}}
     </div>
   </div>
@@ -31,13 +43,19 @@
       <line x1="40" y1="25" x2="40" y2="47" stroke-width="8" stroke-linecap="round" stroke="#000000" />
       <circle fill="#000000" cx="40" cy="57" r="4" />
     </svg>
+    {{$baseIndex := .Position.LeftmostReefPole}}
     {{range $i := seq 6}}
-      {{template "reefColumn" (dict "index" $i)}}
+      {{template "reefColumn" (dict "index" (add $baseIndex $i))}}
     {{end}}
   </div>
   <div id="bottom-controls">
     {{template "counter" (dict "id" "trough" "label" "L1 Coral")}}
-    {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
+    {{if .Position.ScoresBarge}}
+      {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
+    {{end}}
+    {{if and .Position.ScoresProcessor (not .PlcIsEnabled)}}
+      {{template "counter" (dict "id" "processor" "label" "Processor Algae")}}
+    {{end}}
   </div>
 </main>
 
@@ -97,7 +115,7 @@
 <div id="postMatchMessage">Waiting for the next match...</div>
 {{end}}
 {{define "head"}}
-<link rel="manifest" href="/static/manifest/{{.Alliance}}_scoring.manifest">
+<link rel="manifest" href="/static/manifest/{{.PositionName}}_scoring.manifest">
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <link href="/static/css/scoring_panel.css" rel="stylesheet">
 {{end}}

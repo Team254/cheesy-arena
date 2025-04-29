@@ -150,14 +150,16 @@ body {
 header {
   width: 100%;
   color: var(--text-active-dark);
-  background-color: var(--alliance-banner);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   font-size: 18pt;
 }
-.banner-title {
+header:has(.banner-title) {
+  background-color: var(--alliance-banner);
+}
+.banner-title, .banner-placeholder {
   width: 100%;
   text-align: center;
 }

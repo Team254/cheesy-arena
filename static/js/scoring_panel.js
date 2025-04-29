@@ -5,6 +5,7 @@
 
 var websocket;
 let alliance;
+let nearSide;
 
 const endgameDialog = $("#endgame-dialog")[0];
 
@@ -92,13 +93,18 @@ const handleRealtimeScore = function(data) {
 
   $(`#barge .counter-value`).text(score.BargeAlgae);
   $(`#processor .counter-value`).text(score.ProcessorAlgae);
-  $(`#trough .counter-value`).text(score.Reef.TroughNear);
-  $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughNear);
+  if (nearSide) {
+    $(`#trough .counter-value`).text(score.Reef.TroughNear);
+    $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughNear);
+  } else {
+    $(`#trough .counter-value`).text(score.Reef.TroughFar);
+    $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughFar);
+  }
 };
 
 // Websocket message senders for various buttons
-const handleCounterClick = function(command, adjustment, position = "near") {
-  websocket.send(command, {Adjustment: adjustment, Current: true, Autonomous: false, NearSide: position === "near"});
+const handleCounterClick = function(command, adjustment) {
+  websocket.send(command, {Adjustment: adjustment, Current: true, Autonomous: false, NearSide: nearSide});
 }
 
 const handleLeaveClick = function(teamPosition) {
@@ -121,8 +127,10 @@ const commitMatchScore = function() {
 };
 
 $(function() {
-  alliance = window.location.href.split("/").slice(-1)[0];
+  position = window.location.href.split("/").slice(-1)[0];
+  [alliance, side] = position.split("_");
   $(".container").attr("data-alliance", alliance);
+  nearSide = side === "near";
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/panels/scoring/" + alliance + "/websocket", {
