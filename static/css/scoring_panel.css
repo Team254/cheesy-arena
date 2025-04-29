@@ -526,39 +526,6 @@ button:hover:enabled {
 #alliance {
   background-color: var(--alliance-background);
 }
-.scoring-section {
-  margin-bottom: 0.5vw;
-  display: flex;
-  font-size: 1.5vw;
-  color: #ccc;
-}
-.scoring-header>div{
-  height: 3.3vw;
-  display: flex;
-  align-items: center;
-  margin: 0.4vw 1vw 0.4vw 0.2vw;
-  color: #ccc;
-}
-.robot-field {
-  width: 17vw;
-  height: 3.3vw;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0.4vw 0.2vw;
-}
-.team {
-  display: flex;
-  justify-content: center;
-  font-size: 3vw;
-  font-weight: bold;
-}
-.boolean[data-value="false"] {
-  background-color: #333;
-}
-.boolean[data-value="true"] {
-  background-color: #263;
-}
 #postMatchMessage {
   height: 5vw;
   display: none;
@@ -573,56 +540,4 @@ button:hover:enabled {
 }
 #commitMatchScore>button {
   font-size: 1vw;
-}
-#stage {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-#stageGraphic {
-  margin-top: 9vw;
-  height: 30vw;
-  color: #999;
-}
-.stage-side {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  width: 16vw;
-  height: 8vw;
-  border: 0.5px solid #111;
-}
-.stage-side-col {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  height: 100%;
-}
-.stage-side-col div {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 1;
-  font-size: 1.5vw;
-  background-color: #333;
-  border: 0.5px solid #111;
-}
-#stageLeft {
-  top: 20vw;
-  left: -8.5vw;
-}
-#centerStage {
-  top: 0.5vw;
-  left: 9.3vw;
-}
-#stageRight {
-  top: 20vw;
-  left: 25.9vw;
-}
-#park {
-  top: 13vw;
-  left: 12.2vw;
-  width: 9vw;
 }

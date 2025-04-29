@@ -89,15 +89,28 @@ const handleRealtimeScore = function(data) {
       $(`#reef-column-${i1}`).attr(`data-l${j2}-auto-scored`, score.Reef.AutoBranches[j][i]);
     }
   }
+
+  $(`#barge .counter-value`).text(score.BargeAlgae);
+  $(`#processor .counter-value`).text(score.ProcessorAlgae);
+  $(`#trough .counter-value`).text(score.Reef.TroughNear);
+  $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughNear);
 };
 
-// Handles an element click and sends the appropriate websocket message.
-const handleClick = function(command, teamPosition = 0, stageIndex = 0) {
-  websocket.send(command, {TeamPosition: teamPosition, StageIndex: stageIndex});
-};
+// Websocket message senders for various buttons
+const handleCounterClick = function(command, adjustment, position = "near") {
+  websocket.send(command, {Adjustment: adjustment, Current: true, Autonomous: false, NearSide: position === "near"});
+}
 
-const handleReef = function(reefPosition, reefLevel) {
-  websocket.send("reef", {ReefPosition: reefPosition, ReefLevel: reefLevel});
+const handleLeaveClick = function(teamPosition) {
+  websocket.send("leave", {TeamPosition: teamPosition});
+}
+
+const handleEndgameClick = function(teamPosition, endgameStatus) {
+  websocket.send("endgame", {TeamPosition: teamPosition, EndgameStatus: endgameStatus});
+}
+
+const handleReefClick = function(reefPosition, reefLevel) {
+  websocket.send("reef", {ReefPosition: reefPosition, ReefLevel: reefLevel, Current: true, Autonomous: true});
 }
 
 // Sends a websocket message to indicate that the score for this alliance is ready.

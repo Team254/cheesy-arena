@@ -15,7 +15,7 @@
   <div id="top-controls">
     <div id="auto-controls">
       {{range $i := seq 3}}
-        {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "onclick" (printf "handleClick('leave', %d);" $i))}}
+        {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "onclick" (printf "handleLeaveClick(%d);" $i))}}
       {{end}}
     </div>
     <div id="commit-controls"></div>
@@ -36,7 +36,7 @@
     {{end}}
   </div>
   <div id="bottom-controls">
-    {{template "counter" (dict "id" "coral-l1" "label" "L1 Coral")}}
+    {{template "counter" (dict "id" "trough" "label" "L1 Coral")}}
     {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
   </div>
 </main>
@@ -105,28 +105,17 @@
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/scoring_panel.js"></script>
 {{end}}
-{{define "stageSide"}}
-<div class="stage-side-col">
-  <div id="stageSide{{.index}}Team1" class="team-1 boolean" onclick="handleClick('onStage', 1, {{.index}});"></div>
-  <div id="stageSide{{.index}}Team2" class="team-2 boolean" onclick="handleClick('onStage', 2, {{.index}});"></div>
-  <div id="stageSide{{.index}}Team3" class="team-3 boolean" onclick="handleClick('onStage', 3, {{.index}});"></div>
-</div>
-<div class="stage-side-col">
-  <div id="stageSide{{.index}}Microphone" class="boolean" onclick="handleClick('microphone', 0, {{.index}});">Mic</div>
-  <div id="stageSide{{.index}}Trap" class="boolean" onclick="handleClick('trap', 0, {{.index}});">Trap</div>
-</div>
-{{end}}
 {{define "teamButton"}}
 <button id="{{.id}}" class="team-button team-{{.index}}" onclick="{{.onclick}}" ontouchstart><div class="team-num"></div><div class="team-text">None</div></button>
 {{end}}
 {{define "counter"}}
 <div id="{{.id}}" class="counter">
-  <button class="counter-decrement" onclick="handleCounter('{{.id}}', -1);" ontouchstart>-1</button>
+  <button class="counter-decrement" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart>-1</button>
   <div class="counter-status">
     <div class="counter-value">0</div>
     <div class="counter-label">{{.label}}</div>
   </div>
-  <button class="counter-increment" onclick="handleCounter('{{.id}}', 1);" ontouchstart>+1</button>
+  <button class="counter-increment" onclick="handleCounterClick('{{.id}}', 1);" ontouchstart>+1</button>
 </div>
 {{end}}
 {{define "reefColumn"}}
@@ -134,7 +123,7 @@
   <div class="reef-column-contents">
     {{ $index := .index }}
     {{range $i := seq 3}}
-      <button class="reef-button" onclick="handleReef({{$index}}, 5 - {{$i}})" ontouchstart></button>
+      <button class="reef-button" onclick="handleReefClick({{$index}}, 5 - {{$i}})" ontouchstart></button>
     {{end}}
     <svg class="reef-image" viewBox="0 0 120 600">
       <use xlink:href="#reef-column" />
@@ -152,5 +141,5 @@
 </div>
 {{end}}
 {{define "endgame-input-button"}}
-<button class="endgame-input-button endgame-{{.endgameState}}" onclick="handleClick('endgame', {{.index}}, {{.endgameState}});" >{{.label}}</button>
+<button class="endgame-input-button endgame-{{.endgameState}}" onclick="handleEndgameClick({{.index}}, {{.endgameState}});" >{{.label}}</button>
 {{end}}
