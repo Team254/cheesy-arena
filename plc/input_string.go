@@ -27,16 +27,12 @@ func _() {
 	_ = x[blueConnected1-16]
 	_ = x[blueConnected2-17]
 	_ = x[blueConnected3-18]
-	_ = x[redAmplify-19]
-	_ = x[redCoop-20]
-	_ = x[blueAmplify-21]
-	_ = x[blueCoop-22]
-	_ = x[inputCount-23]
+	_ = x[inputCount-19]
 }
 
-const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3redAmplifyredCoopblueAmplifyblueCoopinputCount"
+const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3inputCount"
 
-var _input_index = [...]uint8{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 215, 222, 233, 241, 251}
+var _input_index = [...]uint8{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 215}
 
 func (i input) String() string {
 	if i < 0 || i >= input(len(_input_index)-1) {

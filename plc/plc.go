@@ -33,13 +33,8 @@ type Plc interface {
 	GetInputNames() []string
 	GetRegisterNames() []string
 	GetCoilNames() []string
-	GetAmpButtons() (bool, bool, bool, bool)
-	GetAmpSpeakerNoteCounts() (int, int, int, int)
-	SetSpeakerMotors(state bool)
-	SetSpeakerLights(redState, blueState bool)
-	SetSubwooferCountdown(redState, blueState bool)
-	SetAmpLights(redLow, redHigh, redCoop, blueLow, blueHigh, blueCoop bool)
-	SetPostMatchSubwooferLights(state bool)
+	GetProcessorCounts() (int, int)
+	SetTrussLights(redLights, blueLights [3]bool)
 }
 
 type ModbusPlc struct {
@@ -90,10 +85,6 @@ const (
 	blueConnected1
 	blueConnected2
 	blueConnected3
-	redAmplify
-	redCoop
-	blueAmplify
-	blueCoop
 	inputCount
 )
 
@@ -104,11 +95,8 @@ type register int
 
 const (
 	fieldIoConnection register = iota
-	redSpeaker
-	blueSpeaker
-	redAmp
-	blueAmp
-	miscounts
+	redProcessor
+	blueProcessor
 	registerCount
 )
 
@@ -126,18 +114,12 @@ const (
 	stackLightBlue
 	stackLightBuzzer
 	fieldResetLight
-	speakerMotors
-	redSpeakerLight
-	blueSpeakerLight
-	redSubwooferCountdown
-	blueSubwooferCountdown
-	redAmpLightLow
-	redAmpLightHigh
-	redAmpLightCoop
-	blueAmpLightLow
-	blueAmpLightHigh
-	blueAmpLightCoop
-	postMatchSubwooferLights
+	redTrussLightOuter
+	redTrussLightMiddle
+	redTrussLightInner
+	blueTrussLightOuter
+	blueTrussLightMiddle
+	blueTrussLightInner
 	coilCount
 )
 
@@ -313,50 +295,20 @@ func (plc *ModbusPlc) GetCoilNames() []string {
 	return coilNames
 }
 
-// Returns the state of the red amplify, red co-op, blue amplify, and blue co-op buttons, respectively.
-func (plc *ModbusPlc) GetAmpButtons() (bool, bool, bool, bool) {
-	return plc.inputs[redAmplify], plc.inputs[redCoop], plc.inputs[blueAmplify], plc.inputs[blueCoop]
+// Returns the red and blue processor counts, respectively.
+func (plc *ModbusPlc) GetProcessorCounts() (int, int) {
+	return int(plc.registers[redProcessor]), int(plc.registers[blueProcessor])
 }
 
-// Returns the red amp, red speaker, blue amp, and blue speaker note counts, respectively.
-func (plc *ModbusPlc) GetAmpSpeakerNoteCounts() (int, int, int, int) {
-	return int(plc.registers[redAmp]),
-		int(plc.registers[redSpeaker]),
-		int(plc.registers[blueAmp]),
-		int(plc.registers[blueSpeaker])
-}
-
-// Sets the on/off state of the serializer motors within each speaker.
-func (plc *ModbusPlc) SetSpeakerMotors(state bool) {
-	plc.coils[speakerMotors] = state
-}
-
-// Sets the state of the amplification lights on the red and blue speakers.
-func (plc *ModbusPlc) SetSpeakerLights(redState, blueState bool) {
-	plc.coils[redSpeakerLight] = redState
-	plc.coils[blueSpeakerLight] = blueState
-}
-
-// Sets the state of the red and blue subwoofer countdown lights. When the state is set to true, the lights light up and
-// begin the ten-second coundown sequence. When set to false before the countdown is complete, the lights will turn off.
-func (plc *ModbusPlc) SetSubwooferCountdown(redState, blueState bool) {
-	plc.coils[redSubwooferCountdown] = redState
-	plc.coils[blueSubwooferCountdown] = blueState
-}
-
-// Sets the state of the red and blue amp lights.
-func (plc *ModbusPlc) SetAmpLights(redLow, redHigh, redCoop, blueLow, blueHigh, blueCoop bool) {
-	plc.coils[redAmpLightLow] = redLow
-	plc.coils[redAmpLightHigh] = redHigh
-	plc.coils[redAmpLightCoop] = redCoop
-	plc.coils[blueAmpLightLow] = blueLow
-	plc.coils[blueAmpLightHigh] = blueHigh
-	plc.coils[blueAmpLightCoop] = blueCoop
-}
-
-// Sets the state of the post-match subwoofer lights.
-func (plc *ModbusPlc) SetPostMatchSubwooferLights(state bool) {
-	plc.coils[postMatchSubwooferLights] = state
+// Sets the state of the red and blue truss lights. Each array represents the outer, middle, and inner lights,
+// respectively.
+func (plc *ModbusPlc) SetTrussLights(redLights, blueLights [3]bool) {
+	plc.coils[redTrussLightOuter] = redLights[0]
+	plc.coils[redTrussLightMiddle] = redLights[1]
+	plc.coils[redTrussLightInner] = redLights[2]
+	plc.coils[blueTrussLightOuter] = blueLights[0]
+	plc.coils[blueTrussLightMiddle] = blueLights[1]
+	plc.coils[blueTrussLightInner] = blueLights[2]
 }
 
 func (plc *ModbusPlc) connect() error {
