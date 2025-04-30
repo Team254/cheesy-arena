@@ -73,6 +73,7 @@ type Arena struct {
 	lastDsPacketTime                  time.Time
 	lastPeriodicTaskTime              time.Time
 	EventStatus                       EventStatus
+	FieldVolunteers                   bool
 	FieldReset                        bool
 	AudienceDisplayMode               string
 	SavedMatch                        *model.Match
@@ -573,6 +574,7 @@ func (arena *Arena) Update() {
 			sendDsPacket = true
 		}
 		arena.Plc.ResetMatch()
+		arena.FieldVolunteers = false
 		arena.FieldReset = false
 	case WarmupPeriod:
 		auto = true
@@ -982,6 +984,7 @@ func (arena *Arena) handlePlcInputOutput() {
 
 		// Turn off lights if all teams become ready.
 		if redAllianceReady && blueAllianceReady {
+			arena.FieldVolunteers = false
 			arena.FieldReset = false
 			arena.Plc.SetFieldResetLight(false)
 			if arena.CurrentMatch.FieldReadyAt.IsZero() {

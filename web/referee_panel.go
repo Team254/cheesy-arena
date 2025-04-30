@@ -194,11 +194,18 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				cards[strconv.Itoa(args.TeamId)] = args.Card
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
+		case "signalVolunteers":
+			if web.arena.MatchState != field.PostMatch {
+				// Don't allow clearing the field until the match is over.
+				continue
+			}
+			web.arena.FieldVolunteers = true
 		case "signalReset":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow clearing the field until the match is over.
 				continue
 			}
+			web.arena.FieldVolunteers = false
 			web.arena.FieldReset = true
 			web.arena.AllianceStationDisplayMode = "fieldReset"
 			web.arena.AllianceStationDisplayModeNotifier.Notify()
@@ -209,6 +216,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.RedRealtimeScore.FoulsCommitted = true
 			web.arena.BlueRealtimeScore.FoulsCommitted = true
+			web.arena.FieldVolunteers = false
 			web.arena.FieldReset = true
 			web.arena.AllianceStationDisplayMode = "fieldReset"
 			web.arena.AllianceStationDisplayModeNotifier.Notify()

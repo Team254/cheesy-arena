@@ -66,6 +66,7 @@ var redColor = color.RGBA{255, 0, 0, 255}
 var blueColor = color.RGBA{0, 50, 255, 255}
 var greenColor = color.RGBA{0, 255, 0, 255}
 var orangeColor = color.RGBA{255, 50, 0, 255}
+var purpleColor = color.RGBA{255, 0, 255, 255}
 var whiteColor = color.RGBA{255, 200, 180, 255}
 
 // Creates a new collection of team signs.
@@ -251,6 +252,9 @@ func generateTimerTexts(arena *Arena, countdown, inMatchRearText string) (string
 	} else if arena.FieldReset && arena.MatchState != TimeoutActive {
 		frontText = "SAFE "
 		frontColor = greenColor
+	} else if arena.FieldVolunteers && arena.MatchState != TimeoutActive {
+		frontText = "count"
+		frontColor = purpleColor
 	} else {
 		frontText = countdown
 		frontColor = whiteColor
@@ -284,6 +288,8 @@ func (sign *TeamSign) generateTeamNumberTexts(
 		frontColor = blinkColor(orangeColor)
 	} else if arena.FieldReset {
 		frontColor = greenColor
+	} else if arena.FieldVolunteers {
+		frontColor = purpleColor
 	} else if isRed {
 		frontColor = redColor
 	} else {

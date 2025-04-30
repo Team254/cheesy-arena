@@ -48,6 +48,11 @@ const abortMatch = function() {
   websocket.send("abortMatch");
 };
 
+// Sends a websocket message to signal to the volunteers that they may enter the field.
+const signalVolunteers = function() {
+  websocket.send("signalVolunteers");
+};
+
 // Sends a websocket message to signal to the teams that they may enter the field.
 const signalReset = function() {
   websocket.send("signalReset");
@@ -183,6 +188,7 @@ const handleArenaStatus = function(data) {
     case "PRE_MATCH":
       $("#startMatch").prop("disabled", !data.CanStartMatch);
       $("#abortMatch").prop("disabled", true);
+      $("#signalVolunteers").prop("disabled", false);
       $("#signalReset").prop("disabled", false);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
@@ -201,6 +207,7 @@ const handleArenaStatus = function(data) {
       $("#scoreRadio").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
+      $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
       $("#fieldResetRadio").prop("disabled", true);
       $("#commitResults").prop("disabled", true);
@@ -215,6 +222,7 @@ const handleArenaStatus = function(data) {
       $("#scoreRadio").prop("disabled", true);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
+      $("#signalVolunteers").prop("disabled", false);
       $("#signalReset").prop("disabled", false);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", false);
@@ -229,6 +237,7 @@ const handleArenaStatus = function(data) {
       $("#scoreRadio").prop("disabled", false);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", false);
+      $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
@@ -243,6 +252,7 @@ const handleArenaStatus = function(data) {
       $("#scoreRadio").prop("disabled", false);
       $("#startMatch").prop("disabled", true);
       $("#abortMatch").prop("disabled", true);
+      $("#signalVolunteers").prop("disabled", true);
       $("#signalReset").prop("disabled", true);
       $("#fieldResetRadio").prop("disabled", false);
       $("#commitResults").prop("disabled", true);
