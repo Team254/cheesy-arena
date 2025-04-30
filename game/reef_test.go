@@ -11,15 +11,16 @@ import (
 
 func TestReefCoralCountsAndPoints(t *testing.T) {
 	testCases := []struct {
-		reef                 Reef
-		expectedAutoCount    int
-		expectedAutoPoints   int
-		expectedTeleopCount  int
-		expectedTeleopPoints int
+		reef                      Reef
+		expectedTotalCountByLevel [4]int
+		expectedAutoCount         int
+		expectedAutoPoints        int
+		expectedTeleopCount       int
+		expectedTeleopPoints      int
 	}{
 		// 0. Empty Reef.
 		{
-			Reef{}, 0, 0, 0, 0,
+			Reef{}, [4]int{0, 0, 0, 0}, 0, 0, 0, 0,
 		},
 
 		// 1. Only auto branches which have all been de-scored.
@@ -40,6 +41,7 @@ func TestReefCoralCountsAndPoints(t *testing.T) {
 				TroughNear:     0,
 				TroughFar:      0,
 			},
+			[4]int{0, 0, 0, 0},
 			0,
 			0,
 			0,
@@ -64,6 +66,7 @@ func TestReefCoralCountsAndPoints(t *testing.T) {
 				TroughNear:     2,
 				TroughFar:      1,
 			},
+			[4]int{3, 4, 3, 2},
 			12,
 			57,
 			0,
@@ -88,6 +91,7 @@ func TestReefCoralCountsAndPoints(t *testing.T) {
 				TroughNear:     2,
 				TroughFar:      1,
 			},
+			[4]int{3, 4, 3, 2},
 			0,
 			0,
 			12,
@@ -112,6 +116,7 @@ func TestReefCoralCountsAndPoints(t *testing.T) {
 				TroughNear:     12,
 				TroughFar:      12,
 			},
+			[4]int{24, 12, 12, 12},
 			7,
 			45,
 			53,
@@ -121,6 +126,11 @@ func TestReefCoralCountsAndPoints(t *testing.T) {
 
 	for i, testCase := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			for level := Level1; level < LevelCount; level++ {
+				assert.Equal(
+					t, testCase.expectedTotalCountByLevel[level+1], testCase.reef.CountTotalCoralByLevel(level),
+				)
+			}
 			assert.Equal(t, testCase.expectedAutoCount, testCase.reef.autoCoralCount())
 			assert.Equal(t, testCase.expectedAutoPoints, testCase.reef.autoCoralPoints())
 			assert.Equal(t, testCase.expectedTeleopCount, testCase.reef.teleopCoralCount())

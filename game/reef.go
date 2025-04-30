@@ -38,6 +38,11 @@ var teleopPoints = map[Level]int{
 	Level4: 5,
 }
 
+// CountTotalCoralByLevel calculates the total number of Coral scored at a specific level across both auto and teleop.
+func (reef *Reef) CountTotalCoralByLevel(level Level) int {
+	return reef.countCoralByLevelAndPeriod(level, true) + reef.countCoralByLevelAndPeriod(level, false)
+}
+
 // autoCoralCount calculates the total number of Coral scored during the autonomous period across all levels.
 func (reef *Reef) autoCoralCount() int {
 	coral := 0

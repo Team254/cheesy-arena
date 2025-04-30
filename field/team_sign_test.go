@@ -4,25 +4,34 @@
 package field
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
 	"image/color"
 	"testing"
 )
 
-// TODO(patfair): Update for 2025.
-//func TestTeamSign_GenerateInMatchRearText(t *testing.T) {
-//	realtimeScore1 := &RealtimeScore{AmplifiedTimeRemainingSec: 9}
-//	realtimeScore2 := &RealtimeScore{AmplifiedTimeRemainingSec: 15}
-//	realtimeScore3 := &RealtimeScore{CurrentScore: game.Score{AmpSpeaker: game.AmpSpeaker{AutoSpeakerNotes: 12}}}
-//	realtimeScore4 := &RealtimeScore{CurrentScore: game.Score{AmpSpeaker: game.AmpSpeaker{TeleopAmpNotes: 1}}}
-//
-//	assert.Equal(t, "1:23 00/18    Amp: 9", generateInMatchRearText(true, "01:23", realtimeScore1, realtimeScore2))
-//	assert.Equal(t, "1:23 00/18    Amp:15", generateInMatchRearText(false, "01:23", realtimeScore2, realtimeScore1))
-//	game.MelodyBonusThresholdWithoutCoop = 23
-//	assert.Equal(t, "4:56 12/23 R060-B001", generateInMatchRearText(true, "34:56", realtimeScore3, realtimeScore4))
-//	assert.Equal(t, "4:56 01/23 B001-R060", generateInMatchRearText(false, "34:56", realtimeScore4, realtimeScore3))
-//}
+func TestTeamSign_GenerateInMatchRearText(t *testing.T) {
+	arena := setupTestArena(t)
+	arena.RedRealtimeScore.CurrentScore = *game.TestScore1()
+	arena.BlueRealtimeScore.CurrentScore = *game.TestScore2()
+
+	assert.Equal(t, "01:23 R080-B162 1/4", generateInMatchTeamRearText(arena, true, "01:23"))
+	assert.Equal(t, "01:23 B162-R080 1/4", generateInMatchTeamRearText(arena, false, "01:23"))
+	assert.Equal(t, "1-07 2-02 3-03 4-00", generateInMatchTimerRearText(arena, true))
+	assert.Equal(t, "1-15 2-03 3-05 4-03", generateInMatchTimerRearText(arena, false))
+	arena.BlueRealtimeScore.CurrentScore.Reef.Branches[2] = [12]bool{true, true, true, true, true, true, true, true}
+	arena.BlueRealtimeScore.CurrentScore.ProcessorAlgae = 2
+	assert.Equal(t, "00:59 R080-B195 1/3", generateInMatchTeamRearText(arena, true, "00:59"))
+	assert.Equal(t, "00:59 B195-R080 2/3", generateInMatchTeamRearText(arena, false, "00:59"))
+	assert.Equal(t, "1-07 2-02 3-03 4-00", generateInMatchTimerRearText(arena, true))
+	assert.Equal(t, "1-15 2-03 3-05 4-08", generateInMatchTimerRearText(arena, false))
+
+	// Check that RP progress is hidden for playoff matches.
+	arena.CurrentMatch.Type = model.Playoff
+	assert.Equal(t, "00:45 R080-B195 ", generateInMatchTeamRearText(arena, true, "00:45"))
+	assert.Equal(t, "00:45 B195-R080 ", generateInMatchTeamRearText(arena, false, "00:45"))
+}
 
 func TestTeamSign_Timer(t *testing.T) {
 	arena := setupTestArena(t)

@@ -105,17 +105,19 @@ func (signs *TeamSigns) Update(arena *Arena) {
 	countdown := fmt.Sprintf("%02d:%02d", countdownSec/60, countdownSec%60)
 
 	// Generate the in-match rear text which is common to a whole alliance.
-	redInMatchRearText := generateInMatchRearText(true, countdown, arena.RedRealtimeScore, arena.BlueRealtimeScore)
-	blueInMatchRearText := generateInMatchRearText(false, countdown, arena.BlueRealtimeScore, arena.RedRealtimeScore)
+	redInMatchTeamRearText := generateInMatchTeamRearText(arena, true, countdown)
+	redInMatchTimerRearText := generateInMatchTimerRearText(arena, true)
+	blueInMatchTeamRearText := generateInMatchTeamRearText(arena, false, countdown)
+	blueInMatchTimerRearText := generateInMatchTimerRearText(arena, false)
 
-	signs.Red1.update(arena, arena.AllianceStations["R1"], true, countdown, redInMatchRearText)
-	signs.Red2.update(arena, arena.AllianceStations["R2"], true, countdown, redInMatchRearText)
-	signs.Red3.update(arena, arena.AllianceStations["R3"], true, countdown, redInMatchRearText)
-	signs.RedTimer.update(arena, nil, true, countdown, redInMatchRearText)
-	signs.Blue1.update(arena, arena.AllianceStations["B1"], false, countdown, blueInMatchRearText)
-	signs.Blue2.update(arena, arena.AllianceStations["B2"], false, countdown, blueInMatchRearText)
-	signs.Blue3.update(arena, arena.AllianceStations["B3"], false, countdown, blueInMatchRearText)
-	signs.BlueTimer.update(arena, nil, false, countdown, blueInMatchRearText)
+	signs.Red1.update(arena, arena.AllianceStations["R1"], true, countdown, redInMatchTeamRearText)
+	signs.Red2.update(arena, arena.AllianceStations["R2"], true, countdown, redInMatchTeamRearText)
+	signs.Red3.update(arena, arena.AllianceStations["R3"], true, countdown, redInMatchTeamRearText)
+	signs.RedTimer.update(arena, nil, true, countdown, redInMatchTimerRearText)
+	signs.Blue1.update(arena, arena.AllianceStations["B1"], false, countdown, blueInMatchTeamRearText)
+	signs.Blue2.update(arena, arena.AllianceStations["B2"], false, countdown, blueInMatchTeamRearText)
+	signs.Blue3.update(arena, arena.AllianceStations["B3"], false, countdown, blueInMatchTeamRearText)
+	signs.BlueTimer.update(arena, nil, false, countdown, blueInMatchTimerRearText)
 }
 
 // Sets the team numbers for the next match on all signs.
@@ -181,27 +183,49 @@ func (sign *TeamSign) update(
 	}
 }
 
-// Returns the in-match rear text that is common to a whole alliance.
-func generateInMatchRearText(isRed bool, countdown string, realtimeScore, opponentRealtimeScore *RealtimeScore) string {
-	// TODO(patfair): Update for 2025.
-	//scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
-	//scoreTotal := scoreSummary.Score - scoreSummary.StagePoints
-	//opponentScoreSummary := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore)
-	//opponentScoreTotal := opponentScoreSummary.Score - opponentScoreSummary.StagePoints
-	//var allianceScores string
-	//if isRed {
-	//	allianceScores = fmt.Sprintf("R%03d-B%03d", scoreTotal, opponentScoreTotal)
-	//} else {
-	//	allianceScores = fmt.Sprintf("B%03d-R%03d", scoreTotal, opponentScoreTotal)
-	//}
-	//if realtimeScore.AmplifiedTimeRemainingSec > 0 {
-	//	// Replace the total score with the amplified countdown while it's active.
-	//	allianceScores = fmt.Sprintf("Amp:%2d", realtimeScore.AmplifiedTimeRemainingSec)
-	//}
-	//return fmt.Sprintf(
-	//	"%s %02d/%02d %9s", countdown[1:], scoreSummary.NumNotes, scoreSummary.NumNotesGoal, allianceScores,
-	//)
-	return ""
+// Returns the in-match rear text for the team number display that is common to the whole given alliance.
+func generateInMatchTeamRearText(arena *Arena, isRed bool, countdown string) string {
+	var realtimeScore, opponentRealtimeScore *RealtimeScore
+	var formatString string
+	if isRed {
+		realtimeScore = arena.RedRealtimeScore
+		opponentRealtimeScore = arena.BlueRealtimeScore
+		formatString = "R%03d-B%03d"
+	} else {
+		realtimeScore = arena.BlueRealtimeScore
+		opponentRealtimeScore = arena.RedRealtimeScore
+		formatString = "B%03d-R%03d"
+	}
+	scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
+	scoreTotal := scoreSummary.Score - scoreSummary.BargePoints
+	opponentScoreSummary := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore)
+	opponentScoreTotal := opponentScoreSummary.Score - opponentScoreSummary.BargePoints
+	allianceScores := fmt.Sprintf(formatString, scoreTotal, opponentScoreTotal)
+
+	var coralRankingPointProgress string
+	if arena.CurrentMatch.Type != model.Playoff {
+		coralRankingPointProgress = fmt.Sprintf("%d/%d", scoreSummary.NumCoralLevels, scoreSummary.NumCoralLevelsGoal)
+	}
+
+	return fmt.Sprintf("%s %s %s", countdown, allianceScores, coralRankingPointProgress)
+}
+
+// Returns the in-match rear text for the timer display for the given alliance.
+func generateInMatchTimerRearText(arena *Arena, isRed bool) string {
+	var reef *game.Reef
+	if isRed {
+		reef = &arena.RedRealtimeScore.CurrentScore.Reef
+	} else {
+		reef = &arena.BlueRealtimeScore.CurrentScore.Reef
+	}
+
+	return fmt.Sprintf(
+		"1-%02d 2-%02d 3-%02d 4-%02d",
+		reef.CountTotalCoralByLevel(game.Level1),
+		reef.CountTotalCoralByLevel(game.Level2),
+		reef.CountTotalCoralByLevel(game.Level3),
+		reef.CountTotalCoralByLevel(game.Level4),
+	)
 }
 
 // Returns the front text, front color, and rear text to display on the timer display.
