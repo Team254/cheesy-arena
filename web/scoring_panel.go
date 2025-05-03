@@ -18,6 +18,7 @@ import (
 )
 
 type ScoringPosition struct {
+	Title            string
 	Alliance         string
 	NearSide         bool
 	ScoresAuto       bool
@@ -29,6 +30,7 @@ type ScoringPosition struct {
 
 var positionParameters = map[string]ScoringPosition{
 	"red_near": {
+		Title:            "Red Near",
 		Alliance:         "red",
 		NearSide:         true,
 		ScoresAuto:       true,
@@ -38,6 +40,7 @@ var positionParameters = map[string]ScoringPosition{
 		LeftmostReefPole: 6,
 	},
 	"red_far": {
+		Title:            "Red Far",
 		Alliance:         "red",
 		NearSide:         false,
 		ScoresAuto:       false,
@@ -47,6 +50,7 @@ var positionParameters = map[string]ScoringPosition{
 		LeftmostReefPole: 0,
 	},
 	"blue_near": {
+		Title:            "Blue Near",
 		Alliance:         "blue",
 		NearSide:         true,
 		ScoresAuto:       false,
@@ -56,6 +60,7 @@ var positionParameters = map[string]ScoringPosition{
 		LeftmostReefPole: 0,
 	},
 	"blue_far": {
+		Title:            "Blue Far",
 		Alliance:         "blue",
 		NearSide:         false,
 		ScoresAuto:       true,

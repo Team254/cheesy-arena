@@ -12,7 +12,7 @@
   {{else}}
     <div class="banner-placeholder"></div>
   {{end}}
-  <div class="screen-title">Screen Title - <span id="matchName">&nbsp;</span></div>
+  <div class="screen-title">{{.Position.Title}} - <span id="matchName">&nbsp;</span></div>
   {{if .Position.ScoresEndgame }}
     <div class="banner-title">Endgame</div>
   {{else}}
@@ -28,7 +28,9 @@
         {{end}}
       {{end}}
     </div>
-    <div id="commit-controls"></div>
+    <div id="commit-controls">
+      <button id="commit" onclick="commitMatchScore();" ontouchstart>Commit</button>
+    </div>
     <div id="endgame-controls">
       {{if .Position.ScoresEndgame}}
         {{range $i := seq 3}}
@@ -40,7 +42,7 @@
   <div id="reef-controls">
     <svg id="reef-controls-warning" viewBox="0 0 80 70">
       <path stroke-width="6" stroke-linejoin="round" stroke="#000000" fill="none" d="M 40,3 3,67 h 74 z" />
-      <line x1="40" y1="25" x2="40" y2="47" stroke-width="8" stroke-linecap="round" stroke="#000000" />
+      <line x1="40" y1="23" x2="40" y2="45" stroke-width="8" stroke-linecap="round" stroke="#000000" />
       <circle fill="#000000" cx="40" cy="57" r="4" />
     </svg>
     {{$baseIndex := .Position.LeftmostReefPole}}
@@ -49,13 +51,17 @@
     {{end}}
   </div>
   <div id="bottom-controls">
-    {{template "counter" (dict "id" "trough" "label" "L1 Coral")}}
-    {{if .Position.ScoresBarge}}
-      {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
-    {{end}}
-    {{if and .Position.ScoresProcessor (not .PlcIsEnabled)}}
-      {{template "counter" (dict "id" "processor" "label" "Processor Algae")}}
-    {{end}}
+    <div class="counter-wrapper">
+      {{template "counter" (dict "id" "trough" "label" "L1 Coral" "auto_label" "Auto")}}
+    </div>
+    <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart>Edit Auto</button>
+    <div class="counter-wrapper">
+      {{if .Position.ScoresBarge}}
+        {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
+      {{else if and .Position.ScoresProcessor (not .PlcIsEnabled)}}
+        {{template "counter" (dict "id" "processor" "label" "Processor Algae")}}
+      {{end}}
+    </div>
   </div>
 </main>
 
@@ -107,13 +113,8 @@
     <button id="endgame-close" autofocus onclick="closeEndgameDialog();" ontouchstart>Close</button>
   </div>
 </dialog>
-<div id="commitMatchScore">
-  <button type="button" class="btn btn-primary" onclick="commitMatchScore();">
-    Commit Final Match Score
-  </button>
-</div>
-<div id="postMatchMessage">Waiting for the next match...</div>
 {{end}}
+
 {{define "head"}}
 <link rel="manifest" href="/static/manifest/{{.PositionName}}_scoring.manifest">
 <meta name="viewport" content="width=device-width, user-scalable=no">
@@ -123,6 +124,7 @@
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/scoring_panel.js"></script>
 {{end}}
+
 {{define "teamButton"}}
 <button id="{{.id}}" class="team-button team-{{.index}}" onclick="{{.onclick}}" ontouchstart><div class="team-num"></div><div class="team-text">None</div></button>
 {{end}}
@@ -130,6 +132,9 @@
 <div id="{{.id}}" class="counter">
   <button class="counter-decrement" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart>-1</button>
   <div class="counter-status">
+    {{if .auto_label}}
+      <div class="counter-auto-row">{{.auto_label}}: <span class="counter-auto-value">0</span></div>
+    {{end}}
     <div class="counter-value">0</div>
     <div class="counter-label">{{.label}}</div>
   </div>

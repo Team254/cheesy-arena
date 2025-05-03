@@ -198,19 +198,23 @@ main {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  padding-bottom: 10px;
 }
 
 #top-controls {
   width: 100%;
+  height: 90px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5vw 1vw;
+  padding: 10px 0;
 }
 
 #auto-controls, #endgame-controls {
   width: 100%;
+  height: 100%;
+  flex: 3 3 0%;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
@@ -225,7 +229,29 @@ main {
   flex-direction: row;
   justify-content: space-around;
   align-items: center;
-  padding: 0.5vw 1vw;
+  padding: 10px 0;
+}
+
+#commit-controls {
+  height: 100%;
+  flex: 1 1 0%;
+}
+
+#commit {
+  border: none;
+  border-radius: var(--button-border-radius);
+  color: var(--text-active);
+  padding: 0;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  background-color: var(--green-action);
+  font-size: 18pt;
+  font-weight: bold;
+}
+
+#commit:enabled:not(:active) {
+  box-shadow: black 0px 4px 4px;
 }
 
 .team-button {
@@ -237,7 +263,7 @@ main {
   text-align: center;
   /*flex: fit-content;*/
   width: 100%;
-  height: 68px;
+  height: 100%;
 
   --button-top-color: var(--alliance-action);
   --button-bottom-default-color: var(--neutral-action);
@@ -248,11 +274,6 @@ main {
 }
 button:hover:enabled {
   cursor: auto;
-  /*
-  --button-top-color: var(--alliance-highlight);
-  --button-bottom-default-color: var(--neutral-highlight);
-  --button-bottom-selected-color: var(--green-highlight);
-  */
 }
 .team-button:disabled {
   --button-top-color: var(--alliance-inactive);
@@ -276,6 +297,29 @@ button:hover:enabled {
   background-color: var(--button-bottom-selected-color);
 }
 
+#edit-auto {
+  flex: 1 1 0%;
+  border: none;
+  border-radius: var(--button-border-radius);
+  color: var(--text-active-dark);
+  padding: 0;
+  text-align: center;
+  height: 100%;
+  background-color: var(--coral-auto);
+  font-size: 18pt;
+  font-weight: bold;
+}
+
+#edit-auto:enabled:not(:active) {
+  box-shadow: black 0px 4px 4px;
+}
+
+.counter-wrapper {
+  flex: 3 3 0%;
+  display: flex;
+  justify-content: center;
+}
+
 .counter {
   border: none;
   border-radius: var(--button-border-radius);
@@ -283,8 +327,11 @@ button:hover:enabled {
   display: flex;
   flex-direction: row;
   text-align: center;
-  min-height: 74px;
-  width: 300px;
+  min-height: 90px;
+  min-width: 200px;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 10px;
 }
 
 .counter:has(button:enabled) {
@@ -304,7 +351,7 @@ button:hover:enabled {
   font-weight: bold;
   display: grid;
   place-items: center;
-  width: 74px;
+  flex: 1 1 0%;
   z-index: 1;
 }
 
@@ -319,10 +366,11 @@ button:hover:enabled {
 
 .counter-status {
   background-color: #fff;
-  width: 12em;
+  flex: 2 2 0%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding-bottom: 5px;
 }
 
 .counter-label {
@@ -331,6 +379,20 @@ button:hover:enabled {
 
 .counter-value {
   font-size: 28pt;
+  font-weight: bold;
+}
+
+.counter-auto-row {
+  background-color: var(--coral-auto);
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.1em;
+  box-shadow: black 0px 0px 2px;
+}
+
+.counter-auto-value {
   font-weight: bold;
 }
 
@@ -514,32 +576,4 @@ button:hover:enabled {
 
 .reef-column button:disabled {
   background: none;
-}
-
-#alliance {
-  width: 98%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  border-radius: 25px;
-  border: 1px solid #333;
-}
-#alliance {
-  background-color: var(--alliance-background);
-}
-#postMatchMessage {
-  height: 5vw;
-  display: none;
-  align-items: center;
-  font-size: 1.5vw;
-  color: #c90;
-}
-#commitMatchScore {
-  height: 5vw;
-  display: none;
-  align-items: center;
-}
-#commitMatchScore>button {
-  font-size: 1vw;
 }
