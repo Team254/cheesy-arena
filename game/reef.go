@@ -40,49 +40,49 @@ var teleopPoints = map[Level]int{
 
 // CountTotalCoralByLevel calculates the total number of Coral scored at a specific level across both auto and teleop.
 func (reef *Reef) CountTotalCoralByLevel(level Level) int {
-	return reef.countCoralByLevelAndPeriod(level, true) + reef.countCoralByLevelAndPeriod(level, false)
+	return reef.CountCoralByLevelAndPeriod(level, true) + reef.CountCoralByLevelAndPeriod(level, false)
 }
 
-// autoCoralCount calculates the total number of Coral scored during the autonomous period across all levels.
-func (reef *Reef) autoCoralCount() int {
+// AutoCoralCount calculates the total number of Coral scored during the autonomous period across all levels.
+func (reef *Reef) AutoCoralCount() int {
 	coral := 0
 	for level := Level1; level < LevelCount; level++ {
-		coral += reef.countCoralByLevelAndPeriod(level, true)
+		coral += reef.CountCoralByLevelAndPeriod(level, true)
 	}
 	return coral
 }
 
-// autoCoralPoints calculates the total points scored during the autonomous period based on the Coral scored at each
+// AutoCoralPoints calculates the total points scored during the autonomous period based on the Coral scored at each
 // level.
-func (reef *Reef) autoCoralPoints() int {
+func (reef *Reef) AutoCoralPoints() int {
 	points := 0
 	for level := Level1; level < LevelCount; level++ {
-		points += reef.countCoralByLevelAndPeriod(level, true) * autoPoints[level]
+		points += reef.CountCoralByLevelAndPeriod(level, true) * autoPoints[level]
 	}
 	return points
 }
 
-// teleopCoralCount calculates the total number of Coral scored during the teleoperated period across all levels.
-func (reef *Reef) teleopCoralCount() int {
+// TeleopCoralCount calculates the total number of Coral scored during the teleoperated period across all levels.
+func (reef *Reef) TeleopCoralCount() int {
 	coral := 0
 	for level := Level1; level < LevelCount; level++ {
-		coral += reef.countCoralByLevelAndPeriod(level, false)
+		coral += reef.CountCoralByLevelAndPeriod(level, false)
 	}
 	return coral
 }
 
-// teleopCoralPoints calculates the total points scored during the teleoperated period based on the Coral scored at each
+// TeleopCoralPoints calculates the total points scored during the teleoperated period based on the Coral scored at each
 // level.
-func (reef *Reef) teleopCoralPoints() int {
+func (reef *Reef) TeleopCoralPoints() int {
 	points := 0
 	for level := Level1; level < LevelCount; level++ {
-		points += reef.countCoralByLevelAndPeriod(level, false) * teleopPoints[level]
+		points += reef.CountCoralByLevelAndPeriod(level, false) * teleopPoints[level]
 	}
 	return points
 }
 
-// countCoralByLevelAndPeriod calculates the number of Coral scored at a specific level and period (auto or teleop).
-func (reef *Reef) countCoralByLevelAndPeriod(level Level, isAuto bool) int {
+// CountCoralByLevelAndPeriod calculates the number of Coral scored at a specific level and period (auto or teleop).
+func (reef *Reef) CountCoralByLevelAndPeriod(level Level, isAuto bool) int {
 	if level < Level1 || level >= LevelCount {
 		return 0
 	}
@@ -131,8 +131,8 @@ func (reef *Reef) isAutoBonusCoralThresholdMet() bool {
 func (reef *Reef) countCoralBonusSatisfiedLevels() int {
 	satisfiedLevels := 0
 	for level := Level1; level < LevelCount; level++ {
-		autoCoral := reef.countCoralByLevelAndPeriod(level, true)
-		teleopCoral := reef.countCoralByLevelAndPeriod(level, false)
+		autoCoral := reef.CountCoralByLevelAndPeriod(level, true)
+		teleopCoral := reef.CountCoralByLevelAndPeriod(level, false)
 		if autoCoral+teleopCoral >= CoralBonusPerLevelThreshold {
 			satisfiedLevels++
 		}

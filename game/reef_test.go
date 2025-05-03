@@ -131,10 +131,10 @@ func TestReefCoralCountsAndPoints(t *testing.T) {
 					t, testCase.expectedTotalCountByLevel[level+1], testCase.reef.CountTotalCoralByLevel(level),
 				)
 			}
-			assert.Equal(t, testCase.expectedAutoCount, testCase.reef.autoCoralCount())
-			assert.Equal(t, testCase.expectedAutoPoints, testCase.reef.autoCoralPoints())
-			assert.Equal(t, testCase.expectedTeleopCount, testCase.reef.teleopCoralCount())
-			assert.Equal(t, testCase.expectedTeleopPoints, testCase.reef.teleopCoralPoints())
+			assert.Equal(t, testCase.expectedAutoCount, testCase.reef.AutoCoralCount())
+			assert.Equal(t, testCase.expectedAutoPoints, testCase.reef.AutoCoralPoints())
+			assert.Equal(t, testCase.expectedTeleopCount, testCase.reef.TeleopCoralCount())
+			assert.Equal(t, testCase.expectedTeleopPoints, testCase.reef.TeleopCoralPoints())
 		})
 	}
 }
