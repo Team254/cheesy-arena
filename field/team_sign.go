@@ -266,6 +266,11 @@ func generateTimerTexts(arena *Arena, countdown, inMatchRearText string) (string
 func (sign *TeamSign) generateTeamNumberTexts(
 	arena *Arena, allianceStation *AllianceStation, isRed bool, countdown, inMatchRearText string,
 ) (string, color.RGBA, string) {
+	allianceColor := redColor
+	if !isRed {
+		allianceColor = blueColor
+	}
+
 	if arena.AllianceStationDisplayMode == "blank" {
 		return "     ", whiteColor, ""
 	}
@@ -284,16 +289,20 @@ func (sign *TeamSign) generateTeamNumberTexts(
 	frontText := fmt.Sprintf("%5d", allianceStation.Team.Id)
 
 	var frontColor color.RGBA
-	if allianceStation.EStop || allianceStation.AStop && arena.MatchState == AutoPeriod {
+	if allianceStation.EStop {
+		frontColor = orangeColor
+	} else if allianceStation.AStop && arena.MatchState == AutoPeriod {
 		frontColor = blinkColor(orangeColor)
 	} else if arena.FieldReset {
 		frontColor = greenColor
 	} else if arena.FieldVolunteers {
 		frontColor = purpleColor
-	} else if isRed {
-		frontColor = redColor
+	} else if allianceStation.DsConn != nil && !allianceStation.DsConn.RobotLinked &&
+		(arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod) {
+		// Blink the display to indicate that the robot is not linked while the match is in progress.
+		frontColor = blinkColor(allianceColor)
 	} else {
-		frontColor = blueColor
+		frontColor = allianceColor
 	}
 
 	var message string
