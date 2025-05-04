@@ -6,6 +6,7 @@
 var websocket;
 let alliance;
 let nearSide;
+let committed = false;
 
 // True when scoring controls in general should be available
 let scoringAvailable = false;
@@ -15,9 +16,6 @@ let commitAvailable = false;
 let inTeleop = false;
 // True when post-auto and in edit auto mode
 let editingAuto = false;
-
-// Whether the most recent match has been committed
-let committed = false;
 
 const endgameDialog = $("#endgame-dialog")[0];
 
@@ -141,6 +139,10 @@ const handleRealtimeScore = function(data) {
   }
 };
 
+const resetLocalState = function() {
+  committed = false;
+}
+
 // Websocket message senders for various buttons
 const handleCounterClick = function(command, adjustment) {
   websocket.send(command, {Adjustment: adjustment, Current: !editingAuto, Autonomous: !inTeleop || editingAuto, NearSide: nearSide});
@@ -180,11 +182,13 @@ $(function() {
   [alliance, side] = position.split("_");
   $(".container").attr("data-alliance", alliance);
   nearSide = side === "near";
+  resetLocalState();
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/panels/scoring/" + alliance + "/websocket", {
     matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },
+    resetLocalState: function(event) { resetLocalState(); },
   });
 });

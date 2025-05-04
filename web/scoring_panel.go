@@ -132,6 +132,9 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	defer web.arena.ScoringStatusNotifier.Notify()
 	defer web.arena.ScoringPanelRegistry.UnregisterPanel(alliance, ws)
 
+	// Instruct panel to clear any local state in case this is a reconnect
+	ws.Write("resetLocalState", nil)
+
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
 		web.arena.ReloadDisplaysNotifier)

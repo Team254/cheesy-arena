@@ -51,9 +51,11 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("blue"))
 
 	// Should get a few status updates right after connection.
+	readWebsocketType(t, redWs, "resetLocalState")
 	readWebsocketType(t, redWs, "matchLoad")
 	readWebsocketType(t, redWs, "matchTime")
 	readWebsocketType(t, redWs, "realtimeScore")
+	readWebsocketType(t, blueWs, "resetLocalState")
 	readWebsocketType(t, blueWs, "matchLoad")
 	readWebsocketType(t, blueWs, "matchTime")
 	readWebsocketType(t, blueWs, "realtimeScore")
