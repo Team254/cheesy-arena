@@ -271,6 +271,7 @@ main {
   /*flex: fit-content;*/
   width: 100%;
   height: 100%;
+  font-size: 16pt;
 
   --button-top-color: var(--alliance-action);
   --button-bottom-default-color: var(--neutral-action);

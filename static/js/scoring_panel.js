@@ -141,6 +141,8 @@ const handleRealtimeScore = function(data) {
 
 const resetLocalState = function() {
   committed = false;
+  editingAuto = false;
+  updateUIMode();
 }
 
 // Websocket message senders for various buttons

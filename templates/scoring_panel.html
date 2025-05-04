@@ -29,7 +29,7 @@
       {{end}}
     </div>
     <div id="commit-controls">
-      <button id="commit" onclick="commitMatchScore();" ontouchstart>Commit</button>
+      <button id="commit" onclick="commitMatchScore();" ontouchstart disabled>Commit</button>
     </div>
     <div id="endgame-controls">
       {{if .Position.ScoresEndgame}}
@@ -54,7 +54,7 @@
     <div class="counter-wrapper">
       {{template "counter" (dict "id" "trough" "label" "L1 Coral" "auto_label" "Auto")}}
     </div>
-    <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart>Edit Auto</button>
+    <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart disabled>Edit Auto</button>
     <div class="counter-wrapper">
       {{if .Position.ScoresBarge}}
         {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
@@ -126,11 +126,11 @@
 {{end}}
 
 {{define "teamButton"}}
-<button id="{{.id}}" class="team-button team-{{.index}} {{.class}}" onclick="{{.onclick}}" ontouchstart><div class="team-num"></div><div class="team-text">None</div></button>
+<button id="{{.id}}" class="team-button team-{{.index}} {{.class}}" onclick="{{.onclick}}" ontouchstart disabled><div class="team-num"></div><div class="team-text">None</div></button>
 {{end}}
 {{define "counter"}}
 <div id="{{.id}}" class="counter">
-  <button class="counter-decrement scoring-button" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart>-1</button>
+  <button class="counter-decrement scoring-button" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart disabled>-1</button>
   <div class="counter-status">
     {{if .auto_label}}
       <div class="counter-auto-row">{{.auto_label}}: <span class="counter-auto-value">0</span></div>
@@ -138,7 +138,7 @@
     <div class="counter-value">0</div>
     <div class="counter-label">{{.label}}</div>
   </div>
-  <button class="counter-increment scoring-button" onclick="handleCounterClick('{{.id}}', 1);" ontouchstart>+1</button>
+  <button class="counter-increment scoring-button" onclick="handleCounterClick('{{.id}}', 1);" ontouchstart disabled>+1</button>
 </div>
 {{end}}
 {{define "reefColumn"}}
@@ -146,7 +146,7 @@
   <div class="reef-column-contents">
     {{ $index := .index }}
     {{range $i := seq 3}}
-      <button class="reef-button scoring-button" onclick="handleReefClick({{$index}}, 5 - {{$i}})" ontouchstart></button>
+      <button class="reef-button scoring-button" onclick="handleReefClick({{$index}}, 5 - {{$i}})" ontouchstart disabled></button>
     {{end}}
     <svg class="reef-image" viewBox="0 0 120 600">
       <use xlink:href="#reef-column" />
