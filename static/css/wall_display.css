@@ -140,12 +140,12 @@ html {
   bottom: 175px;
 }
 .score-aux {
-  width: 230px;
+  width: 200px;
   height: 100px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-evenly;
-  align-items: center;
+  align-items: flex-start;
   border-radius: 10px;
   opacity: 0;
 }
@@ -155,40 +155,29 @@ html {
 }
 #rightScoreAux {
   padding-left: 35px;
+  align-items: flex-end;
 }
-.score-notes {
-  width: 100px;
+.score-field {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+}
+.coral-icon {
+  width: 35px;
+  margin: 0 25px;
+}
+.algae-icon {
+  width: 31px;
+  margin: 0 27px;
+}
+.score-field>div {
+  display: flex;
   justify-content: center;
   align-items: center;
+  width: 80px;
   font-family: "FuturaLTBold";
-  font-size: 20px;
+  font-size: 27px;
+  line-height: 27px;
   color: #fff;
-}
-.score-notes i {
-  margin-top: -3px;
-  font-size: 25px;
-}
-.note-splitter {
-  margin: 0 -4px;
-}
-.score-lights {
-  width: 70px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.amp-light {
-  fill-opacity: 0.2;
-}
-.amp-light[data-lit=true] {
-  fill-opacity: 1;
-}
-.score-amplified {
-  width: 70px;
-  display: none;
-  opacity: 0;
 }
 #matchCircle {
   position: absolute;
