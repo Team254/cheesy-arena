@@ -125,50 +125,38 @@ html {
   color: #fff;
   opacity: 0;
 }
+.score-right .score-fields {
+  align-items: flex-end;
+}
 .score-fields {
   height: 100%;
   width: 0;
   display: none;
-  flex-direction: row;
-  justify-content: flex-start;
-  opacity: 0;
-}
-.score-right .score-fields {
-  justify-content: flex-end;
-}
-.score-notes {
-  width: 100px;
-  display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-family: "FuturaLTBold";
-  font-size: 20px;
-  color: #fff;
+  justify-content: space-evenly;
+  opacity: 0;
 }
-.score-notes i {
-  margin-top: -3px;
-  font-size: 25px;
+.score-field {
+  display: flex;
+  flex-direction: row;
 }
-.note-splitter {
-  margin: 0 -4px;
+.coral-icon {
+  width: 35px;
+  margin: 0 12px;
 }
-.score-lights {
-  width: 70px;
+.algae-icon {
+  width: 31px;
+  margin: 0 14px;
+}
+.score-field>div {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-.amp-light {
-  fill-opacity: 0.2;
-}
-.amp-light[data-lit=true] {
-  fill-opacity: 1;
-}
-.score-amplified {
   width: 70px;
-  display: none;
-  opacity: 0;
+  font-family: "FuturaLTBold";
+  font-size: 27px;
+  line-height: 27px;
+  color: #fff;
 }
 #matchCircle {
   position: absolute;
@@ -181,12 +169,12 @@ html {
 }
 #logo {
   position: relative;
-  top: 45px;
-  height: 50px;
+  top: 38px;
+  height: 70px;
 }
 #matchTime {
   position: relative;
-  top: 30px;
+  top: 17px;
   height: 60px;
   color: #222;
   font-family: "FuturaLTBold";
@@ -311,8 +299,8 @@ html {
 }
 #blindsLogo {
   position: relative;
-  top: 90px;
-  height: 120px;
+  top: 55px;
+  height: 220px;
 }
 #finalScoreCentering {
   position: fixed;
@@ -351,7 +339,7 @@ html {
   padding-left: 150px;
 }
 .final-breakdown {
-  height: 330px;
+  height: 360px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -361,10 +349,12 @@ html {
   font-size: 24px;
 }
 #leftFinalBreakdown {
+  width: 60px;
   padding-right: 10px;
   align-items: flex-end;
 }
 #rightFinalBreakdown {
+  width: 60px;
   padding-left: 10px;
   align-items: flex-start;
 }
@@ -602,10 +592,6 @@ html {
   text-align: center;
   font-family: "FuturaLT";
   font-size: 2.6em;
-}
-#allianceSelectionTable img {
-  width: 3em;
-  margin: 0.2em;
 }
 #allianceSelectionTable tr:nth-child(even) {
   background-color: #ccc;

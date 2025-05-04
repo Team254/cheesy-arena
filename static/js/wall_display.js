@@ -15,7 +15,7 @@ let currentMatch;
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
 const eventMatchInfoDown = "30px";
 const eventMatchInfoUp = $("#eventMatchInfo").css("height");
-const logoUp = "30px";
+const logoUp = "20px";
 const logoDown = $("#logo").css("top");
 const scoreIn = $(".score").css("width");
 const scoreMid = "185px";
@@ -24,13 +24,6 @@ const scoreFieldsOut = "25px";
 const overlayTopOffset = 110;
 const timeoutDetailsIn = $("#timeoutDetails").css("width");
 const timeoutDetailsOut = "570px";
-
-// Game-specific constants and variables.
-const amplifyProgressStartOffset = $("#leftAmplified svg circle").css("stroke-dashoffset");
-const amplifyFadeTimeMs = 300;
-const amplifyDwellTimeMs = 500;
-let redAmplified = false;
-let blueAmplified = false;
 
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function(targetScreen) {
@@ -142,79 +135,21 @@ const handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function(data) {
-  $("#" + redSide + "ScoreNumber").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.StagePoints);
-  $("#" + blueSide + "ScoreNumber").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.StagePoints);
+  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
+  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
 
-  $(`#${redSide}NoteNumerator`).text(data.Red.ScoreSummary.NumNotes);
-  $(`#${redSide}NoteDenominator`).text(data.Red.ScoreSummary.NumNotesGoal);
-  $(`#${blueSide}NoteNumerator`).text(data.Blue.ScoreSummary.NumNotes);
-  $(`#${blueSide}NoteDenominator`).text(data.Blue.ScoreSummary.NumNotesGoal);
+  let redCoral, blueCoral;
   if (currentMatch.Type === matchTypePlayoff) {
-    $(`#${redSide}NoteDenominator`).hide();
-    $(`#${blueSide}NoteDenominator`).hide();
-    $(".note-splitter").hide();
+    redCoral = data.Red.ScoreSummary.NumCoral;
+    blueCoral = data.Blue.ScoreSummary.NumCoral;
   } else {
-    $(`#${redSide}NoteDenominator`).show();
-    $(`#${blueSide}NoteDenominator`).show();
-    $(".note-splitter").show();
+    redCoral = `${data.Red.ScoreSummary.NumCoralLevels}/${data.Red.ScoreSummary.NumCoralLevelsGoal}`;
+    blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
   }
-
-  const redLightsDiv = $(`#${redSide}Lights`);
-  const redAmplifiedDiv = $(`#${redSide}Amplified`);
-  if (data.Red.AmplifiedTimeRemainingSec > 0 && !redAmplified) {
-    redAmplified = true;
-    redLightsDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function() {
-      redLightsDiv.hide();
-      redAmplifiedDiv.show();
-      redAmplifiedDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
-      $(`#${redSide}Amplified svg circle`).transition(
-        {queue: false, strokeDashoffset: 158}, data.Red.AmplifiedTimeRemainingSec * 1000 - amplifyFadeTimeMs, "linear"
-      );
-    });
-  } else if (data.Red.AmplifiedTimeRemainingSec === 0 && redAmplified) {
-    redAmplified = false;
-    setTimeout(function() {
-      redAmplifiedDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function () {
-        $(`#${redSide}Amplified svg circle`).css("stroke-dashoffset", amplifyProgressStartOffset);
-        redAmplifiedDiv.hide();
-        redLightsDiv.show();
-        redLightsDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
-      });
-    }, amplifyDwellTimeMs);
-  }
-
-  const blueLightsDiv = $(`#${blueSide}Lights`);
-  const blueAmplifiedDiv = $(`#${blueSide}Amplified`);
-  if (data.Blue.AmplifiedTimeRemainingSec > 0 && !blueAmplified) {
-    blueAmplified = true;
-    blueLightsDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function() {
-      blueLightsDiv.hide();
-      blueAmplifiedDiv.show();
-      blueAmplifiedDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
-      $(`#${blueSide}Amplified svg circle`).transition(
-        {queue: false, strokeDashoffset: -158}, data.Blue.AmplifiedTimeRemainingSec * 1000 - amplifyFadeTimeMs, "linear"
-      );
-    });
-  } else if (data.Blue.AmplifiedTimeRemainingSec === 0 && blueAmplified) {
-    blueAmplified = false;
-    setTimeout(function() {
-      blueAmplifiedDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function () {
-        $(`#${blueSide}Amplified svg circle`).css("stroke-dashoffset", "-" + amplifyProgressStartOffset);
-        blueAmplifiedDiv.hide();
-        blueLightsDiv.show();
-        blueLightsDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
-      });
-    }, amplifyDwellTimeMs);
-  }
-
-  $(`#${redSide}Lights .amp-low`).attr("data-lit", data.Red.Score.AmpSpeaker.BankedAmpNotes >= 1);
-  $(`#${redSide}Lights .amp-high`).attr("data-lit", data.Red.Score.AmpSpeaker.BankedAmpNotes >= 2);
-  $(`#${redSide}Lights .amp-coop`).attr("data-lit", data.Red.Score.AmpSpeaker.CoopActivated);
-  $(`#${redSide}Amplified svg text`).text(data.Red.AmplifiedTimeRemainingSec);
-  $(`#${blueSide}Lights .amp-low`).attr("data-lit", data.Blue.Score.AmpSpeaker.BankedAmpNotes >= 1);
-  $(`#${blueSide}Lights .amp-high`).attr("data-lit", data.Blue.Score.AmpSpeaker.BankedAmpNotes >= 2);
-  $(`#${blueSide}Lights .amp-coop`).attr("data-lit", data.Blue.Score.AmpSpeaker.CoopActivated);
-  $(`#${blueSide}Amplified svg text`).text(data.Blue.AmplifiedTimeRemainingSec);
+  $(`#${redSide}Coral`).text(redCoral);
+  $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
+  $(`#${blueSide}Coral`).text(blueCoral);
+  $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
 };
 
 const transitionBlankToIntro = function(callback) {

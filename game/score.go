@@ -47,11 +47,11 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 			summary.LeavePoints += 3
 		}
 	}
-	autoCoralPoints := score.Reef.autoCoralPoints()
+	autoCoralPoints := score.Reef.AutoCoralPoints()
 	summary.AutoPoints = summary.LeavePoints + autoCoralPoints
 
-	summary.NumCoral = score.Reef.autoCoralCount() + score.Reef.teleopCoralCount()
-	summary.CoralPoints = autoCoralPoints + score.Reef.teleopCoralPoints()
+	summary.NumCoral = score.Reef.AutoCoralCount() + score.Reef.TeleopCoralCount()
+	summary.CoralPoints = autoCoralPoints + score.Reef.TeleopCoralPoints()
 	summary.NumAlgae = score.BargeAlgae + score.ProcessorAlgae
 	summary.AlgaePoints = 4*score.BargeAlgae + 6*score.ProcessorAlgae
 

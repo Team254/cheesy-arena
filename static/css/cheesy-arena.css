@@ -88,6 +88,9 @@
   line-height: 36px;
   font-size: 16px;
 }
+.btn-match-play-narrow {
+  width: 139px;
+}
 .badge-scoring {
   background-color: #e66;
 }
@@ -136,6 +139,15 @@ td[data-plc-value="true"] {
 .btn-game-sound {
   width: 190px;
   text-align: left;
+}
+.btn-purple {
+  background-color: #90c;
+}
+.btn-purple:hover {
+  background-color: #80b;
+}
+.btn-purple[disabled] {
+  background-color: #639;
 }
 input[data-changed="true"], select[data-changed="true"] {
   border: 2px solid #f00;

@@ -26,24 +26,17 @@ const overlayCenteringTopHideParams = {queue: false, top: overlayCenteringTopUp}
 const overlayCenteringTopShowParams = {queue: false, top: "50px"};
 const eventMatchInfoDown = "30px";
 const eventMatchInfoUp = $("#eventMatchInfo").css("height");
-const logoUp = "30px";
+const logoUp = "20px";
 const logoDown = $("#logo").css("top");
 const scoreIn = $(".score").css("width");
 const scoreMid = "185px";
-const scoreOut = "400px";
-const scoreFieldsOut = "180px";
-const scoreLogoTop = "-470px";
+const scoreOut = "370px";
+const scoreFieldsOut = "150px";
+const scoreLogoTop = "-500px";
 const bracketLogoTop = "-780px";
 const bracketLogoScale = 0.75;
 const timeoutDetailsIn = $("#timeoutDetails").css("width");
 const timeoutDetailsOut = "570px";
-
-// Game-specific constants and variables.
-const amplifyProgressStartOffset = $("#leftAmplified svg circle").css("stroke-dashoffset");
-const amplifyFadeTimeMs = 300;
-const amplifyDwellTimeMs = 500;
-let redAmplified = false;
-let blueAmplified = false;
 
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function(targetScreen) {
@@ -151,79 +144,21 @@ const handleMatchTime = function(data) {
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function(data) {
-  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.StagePoints);
-  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.StagePoints);
+  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
+  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
 
-  $(`#${redSide}NoteNumerator`).text(data.Red.ScoreSummary.NumNotes);
-  $(`#${redSide}NoteDenominator`).text(data.Red.ScoreSummary.NumNotesGoal);
-  $(`#${blueSide}NoteNumerator`).text(data.Blue.ScoreSummary.NumNotes);
-  $(`#${blueSide}NoteDenominator`).text(data.Blue.ScoreSummary.NumNotesGoal);
+  let redCoral, blueCoral;
   if (currentMatch.Type === matchTypePlayoff) {
-    $(`#${redSide}NoteDenominator`).hide();
-    $(`#${blueSide}NoteDenominator`).hide();
-    $(".note-splitter").hide();
+    redCoral = data.Red.ScoreSummary.NumCoral;
+    blueCoral = data.Blue.ScoreSummary.NumCoral;
   } else {
-    $(`#${redSide}NoteDenominator`).show();
-    $(`#${blueSide}NoteDenominator`).show();
-    $(".note-splitter").show();
+    redCoral = `${data.Red.ScoreSummary.NumCoralLevels}/${data.Red.ScoreSummary.NumCoralLevelsGoal}`;
+    blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
   }
-
-  const redLightsDiv = $(`#${redSide}Lights`);
-  const redAmplifiedDiv = $(`#${redSide}Amplified`);
-  if (data.Red.AmplifiedTimeRemainingSec > 0 && !redAmplified) {
-    redAmplified = true;
-    redLightsDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function() {
-      redLightsDiv.hide();
-      redAmplifiedDiv.show();
-      redAmplifiedDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
-      $(`#${redSide}Amplified svg circle`).transition(
-        {queue: false, strokeDashoffset: 158}, data.Red.AmplifiedTimeRemainingSec * 1000 - amplifyFadeTimeMs, "linear"
-      );
-    });
-  } else if (data.Red.AmplifiedTimeRemainingSec === 0 && redAmplified) {
-    redAmplified = false;
-    setTimeout(function() {
-      redAmplifiedDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function () {
-        $(`#${redSide}Amplified svg circle`).css("stroke-dashoffset", amplifyProgressStartOffset);
-        redAmplifiedDiv.hide();
-        redLightsDiv.show();
-        redLightsDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
-      });
-    }, amplifyDwellTimeMs);
-  }
-
-  const blueLightsDiv = $(`#${blueSide}Lights`);
-  const blueAmplifiedDiv = $(`#${blueSide}Amplified`);
-  if (data.Blue.AmplifiedTimeRemainingSec > 0 && !blueAmplified) {
-    blueAmplified = true;
-    blueLightsDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function() {
-      blueLightsDiv.hide();
-      blueAmplifiedDiv.show();
-      blueAmplifiedDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
-      $(`#${blueSide}Amplified svg circle`).transition(
-        {queue: false, strokeDashoffset: -158}, data.Blue.AmplifiedTimeRemainingSec * 1000 - amplifyFadeTimeMs, "linear"
-      );
-    });
-  } else if (data.Blue.AmplifiedTimeRemainingSec === 0 && blueAmplified) {
-    blueAmplified = false;
-    setTimeout(function() {
-      blueAmplifiedDiv.transition({queue: false, opacity: 0}, amplifyFadeTimeMs, "linear", function () {
-        $(`#${blueSide}Amplified svg circle`).css("stroke-dashoffset", "-" + amplifyProgressStartOffset);
-        blueAmplifiedDiv.hide();
-        blueLightsDiv.show();
-        blueLightsDiv.transition({queue: false, opacity: 1}, amplifyFadeTimeMs, "linear");
-      });
-    }, amplifyDwellTimeMs);
-  }
-
-  $(`#${redSide}Lights .amp-low`).attr("data-lit", data.Red.Score.AmpSpeaker.BankedAmpNotes >= 1);
-  $(`#${redSide}Lights .amp-high`).attr("data-lit", data.Red.Score.AmpSpeaker.BankedAmpNotes >= 2);
-  $(`#${redSide}Lights .amp-coop`).attr("data-lit", data.Red.Score.AmpSpeaker.CoopActivated);
-  $(`#${redSide}Amplified svg text`).text(data.Red.AmplifiedTimeRemainingSec);
-  $(`#${blueSide}Lights .amp-low`).attr("data-lit", data.Blue.Score.AmpSpeaker.BankedAmpNotes >= 1);
-  $(`#${blueSide}Lights .amp-high`).attr("data-lit", data.Blue.Score.AmpSpeaker.BankedAmpNotes >= 2);
-  $(`#${blueSide}Lights .amp-coop`).attr("data-lit", data.Blue.Score.AmpSpeaker.CoopActivated);
-  $(`#${blueSide}Amplified svg text`).text(data.Blue.AmplifiedTimeRemainingSec);
+  $(`#${redSide}Coral`).text(redCoral);
+  $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
+  $(`#${blueSide}Coral`).text(blueCoral);
+  $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
 };
 
 // Handles a websocket message to populate the final score data.
@@ -239,21 +174,27 @@ const handleScorePosted = function(data) {
     setTeamInfo(redSide, 4, 0, data.RedCards, data.RedRankings);
   }
   $(`#${redSide}FinalLeavePoints`).text(data.RedScoreSummary.LeavePoints);
-  $(`#${redSide}FinalSpeakerPoints`).text(data.RedScoreSummary.SpeakerPoints);
-  $(`#${redSide}FinalAmpPoints`).text(data.RedScoreSummary.AmpPoints);
-  $(`#${redSide}FinalStagePoints`).text(data.RedScoreSummary.StagePoints);
+  $(`#${redSide}FinalCoralPoints`).text(data.RedScoreSummary.CoralPoints);
+  $(`#${redSide}FinalAlgaePoints`).text(data.RedScoreSummary.AlgaePoints);
+  $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.BargePoints);
   $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
-  $(`#${redSide}FinalMelodyBonusRankingPoint`).html(
-    data.RedScoreSummary.MelodyBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${redSide}FinalAutoBonusRankingPoint`).html(
+    data.RedScoreSummary.AutoBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${redSide}FinalMelodyBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.MelodyBonusRankingPoint
+  $(`#${redSide}FinalAutoBonusRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.AutoBonusRankingPoint
   );
-  $(`#${redSide}FinalEnsembleBonusRankingPoint`).html(
-    data.RedScoreSummary.EnsembleBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${redSide}FinalCoralBonusRankingPoint`).html(
+    data.RedScoreSummary.CoralBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${redSide}FinalEnsembleBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.EnsembleBonusRankingPoint
+  $(`#${redSide}FinalCoralBonusRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.CoralBonusRankingPoint
+  );
+  $(`#${redSide}FinalBargeBonusRankingPoint`).html(
+    data.RedScoreSummary.BargeBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  );
+  $(`#${redSide}FinalBargeBonusRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.BargeBonusRankingPoint
   );
   $(`#${redSide}FinalRankingPoints`).html(data.RedRankingPoints);
   $(`#${redSide}FinalWins`).text(data.RedWins);
@@ -273,21 +214,27 @@ const handleScorePosted = function(data) {
     setTeamInfo(blueSide, 4, 0, data.BlueCards, data.BlueRankings);
   }
   $(`#${blueSide}FinalLeavePoints`).text(data.BlueScoreSummary.LeavePoints);
-  $(`#${blueSide}FinalSpeakerPoints`).text(data.BlueScoreSummary.SpeakerPoints);
-  $(`#${blueSide}FinalAmpPoints`).text(data.BlueScoreSummary.AmpPoints);
-  $(`#${blueSide}FinalStagePoints`).text(data.BlueScoreSummary.StagePoints);
+  $(`#${blueSide}FinalCoralPoints`).text(data.BlueScoreSummary.CoralPoints);
+  $(`#${blueSide}FinalAlgaePoints`).text(data.BlueScoreSummary.AlgaePoints);
+  $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.BargePoints);
   $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
-  $(`#${blueSide}FinalMelodyBonusRankingPoint`).html(
-    data.BlueScoreSummary.MelodyBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${blueSide}FinalAutoBonusRankingPoint`).html(
+    data.BlueScoreSummary.AutoBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${blueSide}FinalMelodyBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.MelodyBonusRankingPoint
+  $(`#${blueSide}FinalAutoBonusRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.AutoBonusRankingPoint
   );
-  $(`#${blueSide}FinalEnsembleBonusRankingPoint`).html(
-    data.BlueScoreSummary.EnsembleBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${blueSide}FinalCoralBonusRankingPoint`).html(
+    data.BlueScoreSummary.CoralBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${blueSide}FinalEnsembleBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.EnsembleBonusRankingPoint
+  $(`#${blueSide}FinalCoralBonusRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.CoralBonusRankingPoint
+  );
+  $(`#${blueSide}FinalBargeBonusRankingPoint`).html(
+    data.BlueScoreSummary.BargeBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  );
+  $(`#${blueSide}FinalBargeBonusRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.BargeBonusRankingPoint
   );
   $(`#${blueSide}FinalRankingPoints`).html(data.BlueRankingPoints);
   $(`#${blueSide}FinalWins`).text(data.BlueWins);

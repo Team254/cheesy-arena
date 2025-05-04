@@ -10,30 +10,22 @@ import (
 )
 
 type FakePlc struct {
-	isEnabled                bool
-	fieldEStop               bool
-	redEStops                [3]bool
-	blueEStops               [3]bool
-	redAStops                [3]bool
-	blueAStops               [3]bool
-	redEthernetConnected     [3]bool
-	blueEthernetConnected    [3]bool
-	stackLights              [4]bool
-	stackLightBuzzer         bool
-	fieldResetLight          bool
-	cycleState               bool
-	redAmpButtons            [2]bool
-	blueAmpButtons           [2]bool
-	redNoteCounts            [2]int
-	blueNoteCounts           [2]int
-	speakerMotors            bool
-	redSpeakerLight          bool
-	blueSpeakerLight         bool
-	redSubwooferCountdown    bool
-	blueSubwooferCountdown   bool
-	redAmpLights             [3]bool
-	blueAmpLights            [3]bool
-	postMatchSubwooferLights bool
+	isEnabled             bool
+	fieldEStop            bool
+	redEStops             [3]bool
+	blueEStops            [3]bool
+	redAStops             [3]bool
+	blueAStops            [3]bool
+	redEthernetConnected  [3]bool
+	blueEthernetConnected [3]bool
+	stackLights           [4]bool
+	stackLightBuzzer      bool
+	fieldResetLight       bool
+	cycleState            bool
+	redProcessorCount     int
+	blueProcessorCount    int
+	redTrussLights        [3]bool
+	blueTrussLights       [3]bool
 }
 
 func (plc *FakePlc) SetAddress(address string) {
@@ -108,37 +100,11 @@ func (plc *FakePlc) GetCoilNames() []string {
 	return []string{}
 }
 
-func (plc *FakePlc) GetAmpButtons() (bool, bool, bool, bool) {
-	return plc.redAmpButtons[0], plc.redAmpButtons[1], plc.blueAmpButtons[0], plc.blueAmpButtons[1]
+func (plc *FakePlc) GetProcessorCounts() (int, int) {
+	return plc.redProcessorCount, plc.blueProcessorCount
 }
 
-func (plc *FakePlc) GetAmpSpeakerNoteCounts() (int, int, int, int) {
-	return plc.redNoteCounts[0], plc.redNoteCounts[1], plc.blueNoteCounts[0], plc.blueNoteCounts[1]
-}
-
-func (plc *FakePlc) SetSpeakerMotors(state bool) {
-	plc.speakerMotors = state
-}
-
-func (plc *FakePlc) SetSpeakerLights(redState, blueState bool) {
-	plc.redSpeakerLight = redState
-	plc.blueSpeakerLight = blueState
-}
-
-func (plc *FakePlc) SetSubwooferCountdown(redState, blueState bool) {
-	plc.redSubwooferCountdown = redState
-	plc.blueSubwooferCountdown = blueState
-}
-
-func (plc *FakePlc) SetAmpLights(redLow, redHigh, redCoop, blueLow, blueHigh, blueCoop bool) {
-	plc.redAmpLights[0] = redLow
-	plc.redAmpLights[1] = redHigh
-	plc.redAmpLights[2] = redCoop
-	plc.blueAmpLights[0] = blueLow
-	plc.blueAmpLights[1] = blueHigh
-	plc.blueAmpLights[2] = blueCoop
-}
-
-func (plc *FakePlc) SetPostMatchSubwooferLights(state bool) {
-	plc.postMatchSubwooferLights = state
+func (plc *FakePlc) SetTrussLights(redLights, blueLights [3]bool) {
+	plc.redTrussLights = redLights
+	plc.blueTrussLights = blueLights
 }

@@ -64,23 +64,27 @@
       </button>
     </div>
     <div class="row justify-content-center mt-1">
-      <button type="button" id="substituteTeams" class="btn btn-primary btn-match-play ms-1"
+      <button type="button" id="substituteTeams" class="btn btn-primary btn-match-play btn-match-play-narrow ms-1"
         onclick="substituteTeams();" disabled>
         Substitute Teams
       </button>
-      <button type="button" id="abortMatch" class="btn btn-danger btn-match-play ms-1"
+      <button type="button" id="abortMatch" class="btn btn-danger btn-match-play btn-match-play-narrow ms-1"
         onclick="abortMatch();" disabled>
         Abort Match
       </button>
-      <button type="button" id="discardResults" class="btn btn-warning btn-match-play ms-1"
+      <button type="button" id="discardResults" class="btn btn-warning btn-match-play btn-match-play-narrow ms-1"
         onclick="$('#confirmDiscardResults').modal('show');" disabled>
         Discard Results
       </button>
-      <button type="button" id="editResults" class="btn btn-secondary btn-match-play ms-1"
+      <button type="button" id="editResults" class="btn btn-secondary btn-match-play btn-match-play-narrow ms-1"
         onclick="window.location = '/match_review/current/edit';" disabled>
         Edit Results
       </button>
-      <button type="button" id="signalReset" class="btn btn-success btn-match-play ms-1"
+      <button type="button" id="signalVolunteers" class="btn btn-purple btn-match-play btn-match-play-narrow ms-1"
+        onclick="signalVolunteers();" disabled>
+        Signal Count
+      </button>
+      <button type="button" id="signalReset" class="btn btn-success btn-match-play btn-match-play-narrow ms-1"
         onclick="signalReset();" disabled>
         Signal Reset
       </button>

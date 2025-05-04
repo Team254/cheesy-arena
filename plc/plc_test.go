@@ -82,10 +82,6 @@ func TestPlcGetNames(t *testing.T) {
 			"blueConnected1",
 			"blueConnected2",
 			"blueConnected3",
-			"redAmplify",
-			"redCoop",
-			"blueAmplify",
-			"blueCoop",
 		},
 		plc.GetInputNames(),
 	)
@@ -94,11 +90,8 @@ func TestPlcGetNames(t *testing.T) {
 		t,
 		[]string{
 			"fieldIoConnection",
-			"redSpeaker",
-			"blueSpeaker",
-			"redAmp",
-			"blueAmp",
-			"miscounts",
+			"redProcessor",
+			"blueProcessor",
 		},
 		plc.GetRegisterNames(),
 	)
@@ -114,18 +107,12 @@ func TestPlcGetNames(t *testing.T) {
 			"stackLightBlue",
 			"stackLightBuzzer",
 			"fieldResetLight",
-			"speakerMotors",
-			"redSpeakerLight",
-			"blueSpeakerLight",
-			"redSubwooferCountdown",
-			"blueSubwooferCountdown",
-			"redAmpLightLow",
-			"redAmpLightHigh",
-			"redAmpLightCoop",
-			"blueAmpLightLow",
-			"blueAmpLightHigh",
-			"blueAmpLightCoop",
-			"postMatchSubwooferLights",
+			"redTrussLightOuter",
+			"redTrussLightMiddle",
+			"redTrussLightInner",
+			"blueTrussLightOuter",
+			"blueTrussLightMiddle",
+			"blueTrussLightInner",
 		},
 		plc.GetCoilNames(),
 	)
@@ -310,44 +297,7 @@ func TestPlcInputsGameSpecific(t *testing.T) {
 	plc.handler = modbus.NewTCPClientHandler("dummy")
 	plc.ioChangeNotifier = &websocket.Notifier{}
 
-	client.inputs[19] = false
-	client.inputs[20] = false
-	client.inputs[21] = false
-	client.inputs[22] = false
-	plc.update()
-	redAmplify, redCoop, blueAmplify, blueCoop := plc.GetAmpButtons()
-	assert.Equal(t, false, redAmplify)
-	assert.Equal(t, false, redCoop)
-	assert.Equal(t, false, blueAmplify)
-	assert.Equal(t, false, blueCoop)
-	client.inputs[19] = true
-	plc.update()
-	redAmplify, redCoop, blueAmplify, blueCoop = plc.GetAmpButtons()
-	assert.Equal(t, true, redAmplify)
-	assert.Equal(t, false, redCoop)
-	assert.Equal(t, false, blueAmplify)
-	assert.Equal(t, false, blueCoop)
-	client.inputs[20] = true
-	plc.update()
-	redAmplify, redCoop, blueAmplify, blueCoop = plc.GetAmpButtons()
-	assert.Equal(t, true, redAmplify)
-	assert.Equal(t, true, redCoop)
-	assert.Equal(t, false, blueAmplify)
-	assert.Equal(t, false, blueCoop)
-	client.inputs[21] = true
-	plc.update()
-	redAmplify, redCoop, blueAmplify, blueCoop = plc.GetAmpButtons()
-	assert.Equal(t, true, redAmplify)
-	assert.Equal(t, true, redCoop)
-	assert.Equal(t, true, blueAmplify)
-	assert.Equal(t, false, blueCoop)
-	client.inputs[22] = true
-	plc.update()
-	redAmplify, redCoop, blueAmplify, blueCoop = plc.GetAmpButtons()
-	assert.Equal(t, true, redAmplify)
-	assert.Equal(t, true, redCoop)
-	assert.Equal(t, true, blueAmplify)
-	assert.Equal(t, true, blueCoop)
+	// None in 2025.
 }
 
 func TestPlcRegisters(t *testing.T) {
@@ -396,42 +346,20 @@ func TestPlcRegistersGameSpecific(t *testing.T) {
 
 	client.registers[1] = 0
 	client.registers[2] = 0
-	client.registers[3] = 0
-	client.registers[4] = 0
 	plc.update()
-	redAmp, redSpeaker, blueAmp, blueSpeaker := plc.GetAmpSpeakerNoteCounts()
-	assert.Equal(t, 0, redAmp)
-	assert.Equal(t, 0, redSpeaker)
-	assert.Equal(t, 0, blueAmp)
-	assert.Equal(t, 0, blueSpeaker)
+	redProcessor, blueProcessor := plc.GetProcessorCounts()
+	assert.Equal(t, 0, redProcessor)
+	assert.Equal(t, 0, blueProcessor)
 	client.registers[1] = 12
 	plc.update()
-	redAmp, redSpeaker, blueAmp, blueSpeaker = plc.GetAmpSpeakerNoteCounts()
-	assert.Equal(t, 0, redAmp)
-	assert.Equal(t, 12, redSpeaker)
-	assert.Equal(t, 0, blueAmp)
-	assert.Equal(t, 0, blueSpeaker)
+	redProcessor, blueProcessor = plc.GetProcessorCounts()
+	assert.Equal(t, 12, redProcessor)
+	assert.Equal(t, 0, blueProcessor)
 	client.registers[2] = 34
 	plc.update()
-	redAmp, redSpeaker, blueAmp, blueSpeaker = plc.GetAmpSpeakerNoteCounts()
-	assert.Equal(t, 0, redAmp)
-	assert.Equal(t, 12, redSpeaker)
-	assert.Equal(t, 0, blueAmp)
-	assert.Equal(t, 34, blueSpeaker)
-	client.registers[3] = 56
-	plc.update()
-	redAmp, redSpeaker, blueAmp, blueSpeaker = plc.GetAmpSpeakerNoteCounts()
-	assert.Equal(t, 56, redAmp)
-	assert.Equal(t, 12, redSpeaker)
-	assert.Equal(t, 0, blueAmp)
-	assert.Equal(t, 34, blueSpeaker)
-	client.registers[4] = 78
-	plc.update()
-	redAmp, redSpeaker, blueAmp, blueSpeaker = plc.GetAmpSpeakerNoteCounts()
-	assert.Equal(t, 56, redAmp)
-	assert.Equal(t, 12, redSpeaker)
-	assert.Equal(t, 78, blueAmp)
-	assert.Equal(t, 34, blueSpeaker)
+	redProcessor, blueProcessor = plc.GetProcessorCounts()
+	assert.Equal(t, 12, redProcessor)
+	assert.Equal(t, 34, blueProcessor)
 }
 
 func TestPlcCoils(t *testing.T) {
@@ -448,20 +376,14 @@ func TestPlcCoils(t *testing.T) {
 	assert.Equal(t, false, client.coils[1])
 	client.registers[fieldIoConnection] = 31
 	plc.registers[fieldIoConnection] = 31
-	plc.registers[redSpeaker] = 1
-	plc.registers[blueSpeaker] = 2
-	plc.registers[redAmp] = 3
-	plc.registers[blueAmp] = 4
-	plc.registers[miscounts] = 5
+	plc.registers[redProcessor] = 1
+	plc.registers[blueProcessor] = 2
 	plc.ResetMatch()
 	plc.update()
 	assert.Equal(t, true, client.coils[1])
 	assert.Equal(t, 31, int(plc.registers[fieldIoConnection]))
-	assert.Equal(t, 0, int(plc.registers[redSpeaker]))
-	assert.Equal(t, 0, int(plc.registers[blueSpeaker]))
-	assert.Equal(t, 0, int(plc.registers[redAmp]))
-	assert.Equal(t, 0, int(plc.registers[blueAmp]))
-	assert.Equal(t, 0, int(plc.registers[miscounts]))
+	assert.Equal(t, 0, int(plc.registers[redProcessor]))
+	assert.Equal(t, 0, int(plc.registers[blueProcessor]))
 
 	plc.SetStackLights(false, false, false, false)
 	plc.update()
@@ -516,67 +438,27 @@ func TestPlcCoilsGameSpecific(t *testing.T) {
 	plc.handler = modbus.NewTCPClientHandler("dummy")
 	plc.ioChangeNotifier = &websocket.Notifier{}
 
-	plc.SetSpeakerMotors(false)
+	plc.SetTrussLights([3]bool{false, false, false}, [3]bool{false, false, false})
 	plc.update()
-	assert.Equal(t, false, client.coils[8])
-	plc.SetSpeakerMotors(true)
+	assert.Equal(t, []bool{false, false, false, false, false, false}, client.coils[8:14])
+	plc.SetTrussLights([3]bool{true, false, false}, [3]bool{false, false, false})
 	plc.update()
-	assert.Equal(t, true, client.coils[8])
-
-	plc.SetSpeakerLights(false, false)
+	assert.Equal(t, []bool{true, false, false, false, false, false}, client.coils[8:14])
+	plc.SetTrussLights([3]bool{true, true, false}, [3]bool{false, false, false})
 	plc.update()
-	assert.Equal(t, false, client.coils[9])
-	assert.Equal(t, false, client.coils[10])
-	plc.SetSpeakerLights(true, false)
+	assert.Equal(t, []bool{true, true, false, false, false, false}, client.coils[8:14])
+	plc.SetTrussLights([3]bool{true, true, true}, [3]bool{false, false, false})
 	plc.update()
-	assert.Equal(t, true, client.coils[9])
-	assert.Equal(t, false, client.coils[10])
-	plc.SetSpeakerLights(true, true)
+	assert.Equal(t, []bool{true, true, true, false, false, false}, client.coils[8:14])
+	plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, false, false})
 	plc.update()
-	assert.Equal(t, true, client.coils[9])
-	assert.Equal(t, true, client.coils[10])
-
-	plc.SetSubwooferCountdown(false, false)
+	assert.Equal(t, []bool{true, true, true, true, false, false}, client.coils[8:14])
+	plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, false})
 	plc.update()
-	assert.Equal(t, false, client.coils[11])
-	assert.Equal(t, false, client.coils[12])
-	plc.SetSubwooferCountdown(true, false)
+	assert.Equal(t, []bool{true, true, true, true, true, false}, client.coils[8:14])
+	plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
 	plc.update()
-	assert.Equal(t, true, client.coils[11])
-	assert.Equal(t, false, client.coils[12])
-	plc.SetSubwooferCountdown(true, true)
-	plc.update()
-	assert.Equal(t, true, client.coils[11])
-	assert.Equal(t, true, client.coils[12])
-
-	plc.SetAmpLights(false, false, false, false, false, false)
-	plc.update()
-	assert.Equal(t, []bool{false, false, false, false, false, false}, client.coils[13:19])
-	plc.SetAmpLights(true, false, false, false, false, false)
-	plc.update()
-	assert.Equal(t, []bool{true, false, false, false, false, false}, client.coils[13:19])
-	plc.SetAmpLights(true, true, false, false, false, false)
-	plc.update()
-	assert.Equal(t, []bool{true, true, false, false, false, false}, client.coils[13:19])
-	plc.SetAmpLights(true, true, true, false, false, false)
-	plc.update()
-	assert.Equal(t, []bool{true, true, true, false, false, false}, client.coils[13:19])
-	plc.SetAmpLights(true, true, true, true, false, false)
-	plc.update()
-	assert.Equal(t, []bool{true, true, true, true, false, false}, client.coils[13:19])
-	plc.SetAmpLights(true, true, true, true, true, false)
-	plc.update()
-	assert.Equal(t, []bool{true, true, true, true, true, false}, client.coils[13:19])
-	plc.SetAmpLights(true, true, true, true, true, true)
-	plc.update()
-	assert.Equal(t, []bool{true, true, true, true, true, true}, client.coils[13:19])
-
-	plc.SetPostMatchSubwooferLights(false)
-	plc.update()
-	assert.Equal(t, false, client.coils[19])
-	plc.SetPostMatchSubwooferLights(true)
-	plc.update()
-	assert.Equal(t, true, client.coils[19])
+	assert.Equal(t, []bool{true, true, true, true, true, true}, client.coils[8:14])
 }
 
 func TestPlcIsHealthy(t *testing.T) {
