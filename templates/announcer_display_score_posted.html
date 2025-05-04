@@ -34,16 +34,16 @@
   <div class="col-sm-4">{{.summary.LeavePoints}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Speaker Points</div>
-  <div class="col-sm-4">{{.summary.SpeakerPoints}}</div>
+  <div class="col-sm-6">Coral Points</div>
+  <div class="col-sm-4">{{.summary.CoralPoints}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Amp Points</div>
-  <div class="col-sm-4">{{.summary.AmpPoints}}</div>
+  <div class="col-sm-6">Algae Points</div>
+  <div class="col-sm-4">{{.summary.AlgaePoints}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Stage Points</div>
-  <div class="col-sm-4">{{.summary.StagePoints}}</div>
+  <div class="col-sm-6">Barge Points</div>
+  <div class="col-sm-4">{{.summary.BargePoints}}</div>
 </div>
 <div class="row justify-content-center">
   <div class="col-sm-6">Foul Points</div>
@@ -51,12 +51,16 @@
 </div>
 {{if ne .matchType playoffMatch}}
   <div class="row justify-content-center">
-    <div class="col-sm-6">Melody Bonus RP</div>
-    <div class="col-sm-4">{{if .summary.MelodyBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+    <div class="col-sm-6">Auto Bonus RP</div>
+    <div class="col-sm-4">{{if .summary.AutoBonusRankingPoint}}Yes{{else}}No{{end}}</div>
   </div>
   <div class="row justify-content-center">
-    <div class="col-sm-6">Ensemble Bonus RP</div>
-    <div class="col-sm-4">{{if .summary.EnsembleBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+    <div class="col-sm-6">Coral Bonus RP</div>
+    <div class="col-sm-4">{{if .summary.CoralBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-sm-6">Barge Bonus RP</div>
+    <div class="col-sm-4">{{if .summary.BargeBonusRankingPoint}}Yes{{else}}No{{end}}</div>
   </div>
 {{end}}
 <div class="row justify-content-center mt-3">
