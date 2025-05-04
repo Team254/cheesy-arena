@@ -182,9 +182,9 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	arena.AllianceStationDisplayMode = "logo"
 	arena.AudienceDisplayMode = "allianceSelection"
 	arena.AllianceSelectionShowTimer = false
-	assertSign(true, "     ", whiteColor, "")
+	assertSign(true, " 2025", redColor, "1503      Connect PC")
 	arena.AllianceSelectionShowTimer = true
-	assertSign(true, "12:34", whiteColor, "")
+	assertSign(false, " 2025", blueColor, "1503      Connect PC")
 	arena.AllianceStationDisplayMode = "blank"
-	assertSign(true, "     ", whiteColor, "")
+	assertSign(false, "     ", whiteColor, "")
 }

@@ -469,8 +469,6 @@ func (arena *Arena) AbortMatch() error {
 	arena.matchAborted = true
 	arena.AudienceDisplayMode = "blank"
 	arena.AudienceDisplayModeNotifier.Notify()
-	arena.AllianceStationDisplayMode = "logo"
-	arena.AllianceStationDisplayModeNotifier.Notify()
 	go arena.BlackmagicClient.StopRecording()
 	return nil
 }
@@ -622,8 +620,6 @@ func (arena *Arena) Update() {
 				time.Sleep(time.Second * matchEndScoreDwellSec)
 				arena.AudienceDisplayMode = "blank"
 				arena.AudienceDisplayModeNotifier.Notify()
-				arena.AllianceStationDisplayMode = "logo"
-				arena.AllianceStationDisplayModeNotifier.Notify()
 			}()
 			go func() {
 				// Configure the network in advance for the next match after a delay.

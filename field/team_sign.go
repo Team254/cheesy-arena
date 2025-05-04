@@ -245,10 +245,12 @@ func generateTimerTexts(arena *Arena, countdown, inMatchRearText string) (string
 	var frontText string
 	var frontColor color.RGBA
 	rearText := inMatchRearText
-	if arena.MatchState == TimeoutActive {
+	if arena.AllianceStationDisplayMode == "logo" {
+		frontText = fmt.Sprintf("%5d", time.Now().Year())
+		frontColor = whiteColor
+	} else if arena.AllianceStationDisplayMode == "timeout" {
 		frontText = countdown
 		frontColor = whiteColor
-		rearText = fmt.Sprintf("Field Break: %s", countdown)
 	} else if arena.FieldReset && arena.MatchState != TimeoutActive {
 		frontText = "SAFE "
 		frontColor = greenColor
@@ -258,6 +260,9 @@ func generateTimerTexts(arena *Arena, countdown, inMatchRearText string) (string
 	} else {
 		frontText = countdown
 		frontColor = whiteColor
+	}
+	if arena.MatchState == TimeoutActive {
+		rearText = fmt.Sprintf("Field Break: %s", countdown)
 	}
 	return frontText, frontColor, rearText
 }
@@ -274,35 +279,34 @@ func (sign *TeamSign) generateTeamNumberTexts(
 	if arena.AllianceStationDisplayMode == "blank" {
 		return "     ", whiteColor, ""
 	}
-	if arena.AudienceDisplayMode == "allianceSelection" {
-		if arena.AllianceSelectionShowTimer {
-			return countdown, whiteColor, ""
-		} else {
-			return "     ", whiteColor, ""
-		}
-	}
 
-	if allianceStation.Team == nil {
-		return "     ", whiteColor, fmt.Sprintf("%20s", "No Team Assigned")
-	}
-
-	frontText := fmt.Sprintf("%5d", allianceStation.Team.Id)
-
+	var frontText string
 	var frontColor color.RGBA
-	if allianceStation.EStop {
-		frontColor = orangeColor
-	} else if allianceStation.AStop && arena.MatchState == AutoPeriod {
-		frontColor = blinkColor(orangeColor)
-	} else if arena.FieldReset {
-		frontColor = greenColor
-	} else if arena.FieldVolunteers {
-		frontColor = purpleColor
-	} else if allianceStation.DsConn != nil && !allianceStation.DsConn.RobotLinked &&
-		(arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod) {
-		// Blink the display to indicate that the robot is not linked while the match is in progress.
-		frontColor = blinkColor(allianceColor)
-	} else {
+	if arena.AllianceStationDisplayMode == "logo" {
+		frontText = fmt.Sprintf("%5d", time.Now().Year())
 		frontColor = allianceColor
+	} else {
+		if allianceStation.Team == nil {
+			return "     ", whiteColor, fmt.Sprintf("%20s", "No Team Assigned")
+		}
+
+		frontText = fmt.Sprintf("%5d", allianceStation.Team.Id)
+
+		if allianceStation.EStop {
+			frontColor = orangeColor
+		} else if allianceStation.AStop && arena.MatchState == AutoPeriod {
+			frontColor = blinkColor(orangeColor)
+		} else if arena.FieldReset {
+			frontColor = greenColor
+		} else if arena.FieldVolunteers {
+			frontColor = purpleColor
+		} else if allianceStation.DsConn != nil && !allianceStation.DsConn.RobotLinked &&
+			(arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod) {
+			// Blink the display to indicate that the robot is not linked while the match is in progress.
+			frontColor = blinkColor(allianceColor)
+		} else {
+			frontColor = allianceColor
+		}
 	}
 
 	var message string
