@@ -32,27 +32,13 @@
                 <img class="avatar" id="leftTeam3Avatar" src="" />
               </div>
               <div class="score-fields">
-                <div class="score-notes">
-                  <div>
-                    <span id="leftNoteNumerator"></span>
-                    <span class="note-splitter">/</span>
-                    <span id="leftNoteDenominator"></span>
-                  </div>
-                  <i class="bi-music-note-beamed"></i>
+                <div class="score-field">
+                  <img class="coral-icon" src="/static/img/coral.png" />
+                  <div id="leftCoral"></div>
                 </div>
-                <div class="score-lights" id="leftLights">
-                  <svg width="45" height="100">
-                    <rect class="amp-light amp-high" x="17" y="30" width="28" height="18" fill="white" />
-                    <rect class="amp-light amp-low" x="17" y="55" width="28" height="18" fill="white" />
-                    <rect class="amp-light amp-coop" x="0" y="30" width="10" height="43" fill="white" />
-                  </svg>
-                </div>
-                <div class="score-amplified" id="leftAmplified">
-                  <svg width="70" height="100" id="progress">
-                    <circle cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
-                      stroke-dasharray="158 158" stroke-dashoffset="5" transform="rotate(90, 35, 50)"/>
-                    <text class="progress-time" x="35.5" y="61" font-size="30" text-anchor="middle" fill="white"></text>
-                  </svg>
+                <div class="score-field">
+                  <img class="algae-icon" src="/static/img/algae.png" />
+                  <div id="leftAlgae"></div>
                 </div>
               </div>
               <div class="score-number" id="leftScoreNumber"></div>
@@ -60,27 +46,13 @@
             <div class="score score-right reversible-right">
               <div class="score-number" id="rightScoreNumber"></div>
               <div class="score-fields">
-                <div class="score-amplified" id="rightAmplified">
-                  <svg width="70" height="100" id="progress">
-                    <circle cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
-                      stroke-dasharray="158 158" stroke-dashoffset="-5" transform="rotate(90, 35, 50)"/>
-                    <text class="progress-time" x="35.5" y="61" font-size="30" text-anchor="middle" fill="white"></text>
-                  </svg>
+                <div class="score-field">
+                  <div id="rightCoral"></div>
+                  <img class="coral-icon" src="/static/img/coral.png" />
                 </div>
-                <div class="score-lights" id="rightLights">
-                  <svg width="45" height="100">
-                    <rect class="amp-light amp-high" x="0" y="30" width="28" height="18" fill="white" />
-                    <rect class="amp-light amp-low" x="0" y="55" width="28" height="18" fill="white" />
-                    <rect class="amp-light amp-coop" x="35" y="30" width="10" height="43" fill="white" />
-                  </svg>
-                </div>
-                <div class="score-notes">
-                  <div>
-                    <span id="rightNoteNumerator"></span>
-                    <span class="note-splitter">/</span>
-                    <span id="rightNoteDenominator"></span>
-                  </div>
-                  <i class="bi-music-note-beamed"></i>
+                <div class="score-field">
+                  <div id="rightAlgae"></div>
+                  <img class="algae-icon" src="/static/img/algae.png" />
                 </div>
               </div>
               <div class="avatars">
@@ -157,13 +129,14 @@
             </div>
             <div class="final-breakdown" id="leftFinalBreakdown">
               <div id="leftFinalLeavePoints"></div>
-              <div id="leftFinalSpeakerPoints"></div>
-              <div id="leftFinalAmpPoints"></div>
-              <div id="leftFinalStagePoints"></div>
+              <div id="leftFinalCoralPoints"></div>
+              <div id="leftFinalAlgaePoints"></div>
+              <div id="leftFinalBargePoints"></div>
               <div id="leftFinalFoulPoints"></div>
               <div class="playoff-hidden-field">
-                <div id="leftFinalMelodyBonusRankingPoint"></div>
-                <div id="leftFinalEnsembleBonusRankingPoint"></div>
+                <div id="leftFinalAutoBonusRankingPoint"></div>
+                <div id="leftFinalCoralBonusRankingPoint"></div>
+                <div id="leftFinalBargeBonusRankingPoint"></div>
                 <div id="leftFinalRankingPoints"></div>
               </div>
               <div class="playoff-only-field">
@@ -173,13 +146,14 @@
             </div>
             <div class="final-breakdown" id="centerFinalBreakdown">
               <div>Leave</div>
-              <div>Speaker</div>
-              <div>Amp</div>
-              <div>Stage</div>
+              <div>Coral</div>
+              <div>Algae</div>
+              <div>Barge</div>
               <div>Foul</div>
               <div class="playoff-hidden-field">
-                <div>Melody Bonus</div>
-                <div>Ensemble Bonus</div>
+                <div>Auto Bonus</div>
+                <div>Coral Bonus</div>
+                <div>Barge Bonus</div>
                 <div>Ranking Points</div>
               </div>
               <div class="playoff-only-field">
@@ -189,13 +163,14 @@
             </div>
             <div class="final-breakdown" id="rightFinalBreakdown">
               <div id="rightFinalLeavePoints"></div>
-              <div id="rightFinalSpeakerPoints"></div>
-              <div id="rightFinalAmpPoints"></div>
-              <div id="rightFinalStagePoints"></div>
+              <div id="rightFinalCoralPoints"></div>
+              <div id="rightFinalAlgaePoints"></div>
+              <div id="rightFinalBargePoints"></div>
               <div id="rightFinalFoulPoints"></div>
               <div class="playoff-hidden-field">
-                <div id="rightFinalMelodyBonusRankingPoint"></div>
-                <div id="rightFinalEnsembleBonusRankingPoint"></div>
+                <div id="rightFinalAutoBonusRankingPoint"></div>
+                <div id="rightFinalCoralBonusRankingPoint"></div>
+                <div id="rightFinalBargeBonusRankingPoint"></div>
                 <div id="rightFinalRankingPoints"></div>
               </div>
               <div class="playoff-only-field">
