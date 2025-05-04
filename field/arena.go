@@ -22,7 +22,7 @@ import (
 
 const (
 	arenaLoopPeriodMs        = 10
-	arenaLoopWarningUs       = 3000
+	arenaLoopWarningMs       = 5
 	dsPacketPeriodMs         = 500
 	dsPacketWarningMs        = 550
 	periodicTaskPeriodSec    = 30
@@ -687,12 +687,12 @@ func (arena *Arena) Run() {
 	for {
 		loopStartTime := time.Now()
 		arena.Update()
+		if time.Since(loopStartTime).Milliseconds() > arenaLoopWarningMs {
+			log.Printf("Warning: Arena loop iteration took a long time: %dms", time.Since(loopStartTime).Milliseconds())
+		}
 		if time.Since(arena.lastPeriodicTaskTime).Seconds() >= periodicTaskPeriodSec {
 			arena.lastPeriodicTaskTime = time.Now()
 			go arena.runPeriodicTasks()
-		}
-		if time.Since(loopStartTime).Microseconds() > arenaLoopWarningUs {
-			log.Printf("Warning: Arena loop iteration took a long time: %dus", time.Since(loopStartTime).Microseconds())
 		}
 
 		time.Sleep(time.Millisecond * arenaLoopPeriodMs)
