@@ -1,20 +1,164 @@
 /*
   Copyright 2019 Team 254. All Rights Reserved.
   Author: pat@patfairbank.com (Patrick Fairbank)
+  Author: ian@yann.io (Ian Thompson)
+
+  Styles for the scoring interface
 */
+
+/* Color scheme definitions */
+
+:root {
+  /* Evergreen baseline color scheme */
+  --red-100: #fee7e7;
+  --red-200: #fcb1b2;
+  --red-300: #fa7375;
+  --red-400: #ed1c24;
+  --red-500: #ac1117;
+  --red-600: #6f070b;
+  --red-700: #370203;
+
+  --blue-100: #ebf1ff;
+  --blue-200: #c1d6ff;
+  --blue-300: #7aafff;
+  --blue-400: #008bf0;
+  --blue-500: #0066b3;
+  --blue-600: #00447a;
+  --blue-700: #002445;
+
+  --green-100: #cafec5;
+  --green-200: #8cd27c;
+  --green-300: #42c425;
+  --green-400: #32991b;
+  --green-500: #227111;
+  --green-600: #144b08;
+  --green-700: #072802;
+
+  --purple-100: #f8eef7;
+  --purple-200: #e6c3e4;
+  --purple-300: #d391cf;
+  --purple-400: #b366af;
+  --purple-500: #834980;
+  --purple-600: #452e54;
+  --purple-700: #2d152c;
+
+  --gray-100: #f0f1f1;
+  --gray-200: #d4d5d7;
+  --gray-300: #abaeb2;
+  --gray-400: #85888d;
+  --gray-500: #626468;
+  --gray-600: #414245;
+  --gray-700: #222325;
+}
+
+:root {
+  /* Evergreen semantic color scheme */
+  --red-action: var(--red-400);
+  --red-highlight: var(--red-500);
+  --red-inactive: var(--red-200);
+  --red-banner: var(--red-300);
+  --red-overlay-background: var(--red-600);
+  --red-background: var(--red-700);
+
+  --blue-action: var(--blue-400);
+  --blue-highlight: var(--blue-500);
+  --blue-inactive: var(--blue-200);
+  --blue-banner: var(--blue-300);
+  --blue-overlay-background: var(--blue-600);
+  --blue-background: var(--blue-700);
+
+  --green-action: var(--green-400);
+  --green-highlight: var(--green-500);
+  --green-inactive: var(--green-200);
+
+  --auto-action: #fbde0d;
+  --auto-inactive: #fff088;
+
+  --neutral-action: var(--gray-600);
+  --neutral-highlight: var(--gray-700);
+  --neutral-inactive: var(--gray-400);
+
+  --text-active: #fff;
+  --text-active-dark: #000;
+  --text-inactive: var(--gray-100);
+  --text-inactive-dark: var(--gray-300);
+  --interaction-highlight: #abaeb21a;
+}
+
+:root {
+  /* Game-specific color scheme */
+  --coral: var(--gray-100);
+  --coral-auto: var(--auto-action);
+  --reef-pole: var(--purple-400);
+}
+
+/* Specialize color scheme for the current alliance */
+:root [data-alliance="red"] {
+  --alliance-action: var(--red-action);
+  --alliance-highlight: var(--red-highlight);
+  --alliance-inactive: var(--red-inactive);
+  --alliance-banner: var(--red-banner);
+  --alliance-overlay-background: var(--red-overlay-background);
+  --alliance-background: var(--red-background);
+
+  --opponent-action: var(--blue-action);
+  --opponent-highlight: var(--blue-highlight);
+  --opponent-inactive: var(--blue-inactive);
+  --opponent-banner: var(--blue-banner);
+  --opponent-overlay-background: var(--blue-overlay-background);
+  --opponent-background: var(--blue-background);
+}
+
+:root [data-alliance="blue"] {
+  --alliance-action: var(--blue-action);
+  --alliance-highlight: var(--blue-highlight);
+  --alliance-inactive: var(--blue-inactive);
+  --alliance-banner: var(--blue-banner);
+  --alliance-overlay-background: var(--blue-overlay-background);
+  --alliance-background: var(--blue-background);
+
+  --opponent-action: var(--red-action);
+  --opponent-highlight: var(--red-highlight);
+  --opponent-inactive: var(--red-inactive);
+  --opponent-banner: var(--red-banner);
+  --opponent-overlay-background: var(--red-overlay-background);
+  --opponent-background: var(--red-background);
+}
+
+/* Layout Parameters */
+:root {
+  --banner-title-angle: 30deg;
+  --button-border-radius: 8px;
+}
+
+button {
+  padding: 0;
+  border: none;
+}
+
+button:hover:enabled {
+  cursor: auto;
+}
+
+button:enabled:not(:active) {
+  box-shadow: black 0px 4px 4px;
+}
+
 html {
   height: 100%;
   -webkit-user-select: none;
   -moz-user-select: none;
+  user-select: none;
   overscroll-behavior: none;
 }
+
 body {
   height: 100%;
-  background-color: #222;
-  overscroll-behavior: none;
+  touch-action: manipulation;
 }
+
 .container {
-  padding-top: 1vw;
+  padding: 0;
   width: 100%;
   max-width: none;
   height: 100%;
@@ -22,123 +166,422 @@ body {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  background-color: var(--alliance-background);
+  font-family: Helvetica, Arial, sans-serif;
+  line-height: 1.2;
+  text-align: center;
 }
-#alliance {
-  width: 98%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  border-radius: 25px;
-  border: 1px solid #333;
-}
-#alliance[data-alliance="red"] {
-  background-color: #322;
-}
-#alliance[data-alliance="blue"] {
-  background-color: #223;
-}
-#matchName {
-  margin-bottom: 0.5vw;
-  font-size: 2vw;
-}
-.scoring-section {
-  margin-bottom: 0.5vw;
-  display: flex;
-  font-size: 1.5vw;
-  color: #ccc;
-}
-.scoring-header>div{
-  height: 3.3vw;
+
+header {
+  width: 100%;
+  color: var(--text-active-dark);
   display: flex;
   align-items: center;
-  margin: 0.4vw 1vw 0.4vw 0.2vw;
-  color: #ccc;
-}
-.robot-field {
-  width: 17vw;
-  height: 3.3vw;
-  display: flex;
   justify-content: center;
-  align-items: center;
-  margin: 0.4vw 0.2vw;
-}
-.team {
-  display: flex;
-  justify-content: center;
-  font-size: 3vw;
   font-weight: bold;
+  font-size: 18pt;
 }
-.boolean[data-value="false"] {
-  background-color: #333;
+
+header:has(.banner-title) {
+  background-color: var(--alliance-banner);
 }
-.boolean[data-value="true"] {
-  background-color: #263;
+
+.banner-title,
+.banner-placeholder {
+  flex: 1 1 0%;
 }
-#postMatchMessage {
-  height: 5vw;
-  display: none;
-  align-items: center;
-  font-size: 1.5vw;
-  color: #c90;
+
+.screen-title {
+  contain: layout;
+  background-color: #000;
+  width: fit-content;
+  color: var(--text-active);
+  white-space: nowrap;
+  font-weight: normal;
+  z-index: 0;
+  padding: 0 0.5em;
 }
-#commitMatchScore {
-  height: 5vw;
-  display: none;
-  align-items: center;
-}
-#commitMatchScore>button {
-  font-size: 1vw;
-}
-#stage {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-#stageGraphic {
-  margin-top: 9vw;
-  height: 30vw;
-  color: #999;
-}
-.stage-side {
+
+.screen-title::before,
+.screen-title::after {
+  content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  width: 16vw;
-  height: 8vw;
-  border: 0.5px solid #111;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  z-index: -1;
 }
-.stage-side-col {
+
+.screen-title::before {
+  left: 0;
+  transform: skewX(var(--banner-title-angle));
+  transform-origin: left bottom;
+}
+
+.screen-title::after {
+  right: 0;
+  transform: skewX(calc(var(--banner-title-angle) * -1));
+  transform-origin: right bottom;
+}
+
+main {
+  width: 100%;
+  flex: 1;
+  padding-bottom: 10px;
   display: flex;
   flex-direction: column;
+}
+
+#top-controls {
+  height: 90px;
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+#auto-controls,
+#endgame-controls {
+  height: 100%;
+  flex: 3 3 0%;
+  padding: 0em 1em;
+  display: flex;
+  justify-content: space-evenly;
+  gap: 1em;
+}
+
+#bottom-controls {
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-around;
+}
+
+#commit {
+  flex: 1 1 0%;
+  height: 100%;
+  border-radius: var(--button-border-radius);
+  color: var(--text-active);
+  background-color: var(--green-action);
+  font-size: 18pt;
+  font-weight: bold;
+  padding: 0.2em;
+}
+
+#commit:disabled {
+  visibility: hidden;
+}
+
+.team-button {
+  border-radius: var(--button-border-radius);
+  color: var(--text-active);
+  overflow: clip;
+  flex: 1 1 0%;
+  height: 100%;
+  font-size: 16pt;
+
+  --button-top-color: var(--alliance-action);
+  --button-bottom-default-color: var(--neutral-action);
+  --button-bottom-selected-color: var(--alliance-highlight);
+}
+
+.team-button:disabled {
+  --button-top-color: var(--alliance-inactive);
+  --button-bottom-default-color: var(--neutral-inactive);
+  --button-bottom-selected-color: var(--alliance-highlight);
+}
+
+.team-button .team-num {
+  height: 50%;
+  align-content: center;
+  padding: 0 0.2em;
+  background-color: var(--button-top-color);
+}
+
+.team-button .team-text {
+  height: 50%;
+  align-content: center;
+  padding: 0 0.2em;
+  background-color: var(--button-bottom-default-color);
+}
+
+.team-button[data-selected="true"] .team-text {
+  background-color: var(--button-bottom-selected-color);
+}
+
+.reef-image {
+  --l4-coral-display: none;
+  --l4-coral-auto-display: none;
+  --l3-coral-display: none;
+  --l3-coral-auto-display: none;
+  --l2-coral-display: none;
+  --l2-coral-auto-display: none;
+}
+
+[data-l4-scored="true"] .reef-image {
+  --l4-coral-display: auto;
+}
+
+[data-l4-auto-scored="true"] .reef-image {
+  --l4-coral-auto-display: auto;
+}
+
+[data-l3-scored="true"] .reef-image {
+  --l3-coral-display: auto;
+}
+
+[data-l3-auto-scored="true"] .reef-image {
+  --l3-coral-auto-display: auto;
+}
+
+[data-l2-scored="true"] .reef-image {
+  --l2-coral-display: auto;
+}
+
+[data-l2-auto-scored="true"] .reef-image {
+  --l2-coral-auto-display: auto;
+}
+
+#reef-controls {
+  flex: 1 1 0%;
+  contain: layout;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 10px;
+}
+
+#reef-controls-warning {
+  position: absolute;
+  height: 100%;
+  visibility: hidden;
+}
+
+[data-editing-auto="true"] #reef-controls-warning {
+  visibility: visible;
+}
+
+.reef-column {
+  height: 100%;
   flex-grow: 1;
+  max-width: 200px;
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.reef-column-contents {
+  contain: layout;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+@container (aspect-ratio < 0.25) {
+  .reef-column-contents {
+    aspect-ratio: 1 / 4;
+  }
+}
+
+@container (aspect-ratio >=0.25) {
+  .reef-column-contents {
+    height: 100%;
+  }
+}
+
+.reef-column .reef-image {
+  position: absolute;
   height: 100%;
 }
-.stage-side-col div {
+
+.reef-column:nth-of-type(-n + 3) .reef-image {
+  transform: scale(-1, 1);
+}
+
+.reef-column button {
+  width: 100%;
+  flex: 1 1 0%;
+  z-index: 1;
+  background: none;
+}
+
+.reef-column button:enabled {
+  background-color: var(--interaction-highlight);
+}
+
+#edit-auto {
+  flex: 1 1 0%;
+  border-radius: var(--button-border-radius);
+  color: var(--text-active-dark);
+  height: 100%;
+  background-color: var(--auto-action);
+  font-size: 18pt;
+  font-weight: bold;
+  padding: 0.2em;
+}
+
+#edit-auto:disabled {
+  visibility: hidden;
+}
+
+[data-editing-auto="true"] #edit-auto {
+  background-color: var(--green-action);
+  color: var(--text-active);
+}
+
+.counter-wrapper {
+  flex: 3 3 0%;
+  display: flex;
+  justify-content: center;
+}
+
+.counter {
+  height: 90px;
+  max-width: 400px;
+  width: 100%;
+  margin: 0 10px;
+  border-radius: var(--button-border-radius);
+  overflow: clip;
+  display: flex;
+}
+
+.counter:has(button:enabled) {
+  color: var(--text-active-dark);
+  box-shadow: black 0px 4px 4px;
+}
+
+.counter:not(:has(button:enabled)) {
+  color: var(--text-inactive-dark);
+}
+
+.counter button {
+  flex: 1 1 0%;
+  color: var(--text-active);
+  background-color: var(--alliance-action);
+  font-size: 24pt;
+  font-weight: bold;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  padding: 0.2em;
+}
+
+.counter button:enabled:not(:active) {
+  box-shadow: black 0px 0px 4px;
+}
+
+.counter button:disabled {
+  background-color: var(--alliance-inactive);
+  color: var(--text-inactive);
+}
+
+.counter-status {
+  flex: 2 2 0%;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.counter-label {
+  font-size: 12pt;
+  padding: 0 0.2em 5px 0.2em;
+}
+
+.counter-value {
+  font-size: 28pt;
+  font-weight: bold;
+}
+
+.counter-auto-row {
+  background-color: var(--auto-inactive);
+  color: var(--text-inactive-dark);
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-grow: 1;
-  font-size: 1.5vw;
-  background-color: #333;
-  border: 0.5px solid #111;
+  gap: 0.1em;
 }
-#stageLeft {
-  top: 20vw;
-  left: -8.5vw;
+
+.counter:has(button:enabled) .counter-auto-row {
+  background-color: var(--auto-action);
+  color: var(--text-active-dark);
+  box-shadow: black 0px 0px 2px;
 }
-#centerStage {
-  top: 0.5vw;
-  left: 9.3vw;
+
+.counter-auto-value {
+  font-weight: bold;
 }
-#stageRight {
-  top: 20vw;
-  left: 25.9vw;
+
+#endgame-dialog {
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  overflow: clip;
+  font-size: 18pt;
+  font-weight: bold;
+  background-color: var(--alliance-overlay-background);
 }
-#park {
-  top: 13vw;
-  left: 12.2vw;
-  width: 9vw;
+
+#endgame-dialog-container {
+  max-width: 700px;
+  width: 80vw;
+  padding-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+#endgame-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.75);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+#endgame-banner {
+  padding: 5px;
+  font-size: 24pt;
+  font-weight: bold;
+  background-color: var(--alliance-banner);
+  color: var(--text-active-dark);
+}
+
+#endgame-scoring {
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+}
+
+.endgame-input {
+  flex: 1 1 0%;
+  padding: 10px;
+  background-color: var(--alliance-action);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#endgame-dialog button {
+  cursor: auto;
+  height: 68px;
+  border: none;
+  outline: none;
+  border-radius: var(--button-border-radius);
+  background-color: var(--neutral-action);
+  color: var(--text-active);
+  box-shadow: none;
+}
+
+#endgame-dialog button:enabled:not([data-selected="true"]) {
+  box-shadow: black 0px 4px 4px;
+}
+
+#endgame-dialog button[data-selected="true"] {
+  background-color: var(--alliance-highlight);
+}
+
+#endgame-close {
+  padding: 20px;
+  width: 29%;
+  align-self: center;
 }
