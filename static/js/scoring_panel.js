@@ -1,5 +1,6 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+// Author: ian@yann.io (Ian Thompson)
 //
 // Client-side logic for the scoring interface.
 
@@ -17,16 +18,14 @@ let inTeleop = false;
 // True when post-auto and in edit auto mode
 let editingAuto = false;
 
+// Handle controls to open/close the endgame dialog
 const endgameDialog = $("#endgame-dialog")[0];
-
 const showEndgameDialog = function() {
   endgameDialog.showModal();
 }
-
 const closeEndgameDialog = function() {
   endgameDialog.close();
 }
-
 const closeEndgameDialogIfOutside = function(event) {
   if (event.target === endgameDialog) {
     closeEndgameDialog();
@@ -81,13 +80,26 @@ const handleMatchTime = function(data) {
   updateUIMode();
 };
 
+// Switch in and out of autonomous editing mode
+const toggleEditAuto = function() {
+  editingAuto = !editingAuto;
+  updateUIMode();
+}
+
+// Clear any local ephemeral state that is not maintained by the server
+const resetLocalState = function() {
+  committed = false;
+  editingAuto = false;
+  updateUIMode();
+}
+
+// Refresh which UI controls are enabled/disabled
 const updateUIMode = function() {
-  // Push mode changes to the UI
   $(".scoring-button").prop('disabled', !scoringAvailable);
   $(".scoring-teleop-button").prop('disabled', !(inTeleop && scoringAvailable));
   $("#commit").prop('disabled', !commitAvailable);
   $("#edit-auto").prop('disabled', !(inTeleop && scoringAvailable));
-  $("main").attr("data-editing-auto", editingAuto);
+  $(".container").attr("data-editing-auto", editingAuto);
   $("#edit-auto").text(editingAuto ? "Save Auto" : "Edit Auto");
 }
 
@@ -139,25 +151,16 @@ const handleRealtimeScore = function(data) {
   }
 };
 
-const resetLocalState = function() {
-  committed = false;
-  editingAuto = false;
-  updateUIMode();
-}
-
 // Websocket message senders for various buttons
 const handleCounterClick = function(command, adjustment) {
   websocket.send(command, {Adjustment: adjustment, Current: !editingAuto, Autonomous: !inTeleop || editingAuto, NearSide: nearSide});
 }
-
 const handleLeaveClick = function(teamPosition) {
   websocket.send("leave", {TeamPosition: teamPosition});
 }
-
 const handleEndgameClick = function(teamPosition, endgameStatus) {
   websocket.send("endgame", {TeamPosition: teamPosition, EndgameStatus: endgameStatus});
 }
-
 const handleReefClick = function(reefPosition, reefLevel) {
   websocket.send("reef", {ReefPosition: reefPosition, ReefLevel: reefLevel, Current: !editingAuto, Autonomous: !inTeleop || editingAuto, NearSide: nearSide});
 }
@@ -173,11 +176,6 @@ const commitMatchScore = function() {
   editingAuto = false;
   updateUIMode();
 };
-
-const toggleEditAuto = function() {
-  editingAuto = !editingAuto;
-  updateUIMode();
-}
 
 $(function() {
   position = window.location.href.split("/").slice(-1)[0];

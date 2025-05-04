@@ -1,6 +1,7 @@
 {{/*
   Copyright 2014 Team 254. All Rights Reserved.
   Author: pat@patfairbank.com (Patrick Fairbank)
+  Author: ian@yann.io (Ian Thompson)
 
   UI for entering realtime scores.
 */}}
@@ -28,9 +29,7 @@
         {{end}}
       {{end}}
     </div>
-    <div id="commit-controls">
-      <button id="commit" onclick="commitMatchScore();" ontouchstart disabled>Commit</button>
-    </div>
+    <button id="commit" onclick="commitMatchScore();" ontouchstart disabled>Commit</button>
     <div id="endgame-controls">
       {{if .Position.ScoresEndgame}}
         {{range $i := seq 3}}
@@ -54,7 +53,7 @@
     <div class="counter-wrapper">
       {{template "counter" (dict "id" "trough" "label" "L1 Coral" "auto_label" "Auto")}}
     </div>
-    <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart disabled>Edit Auto</button>
+    <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart disabled></button>
     <div class="counter-wrapper">
       {{if .Position.ScoresBarge}}
         {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
@@ -65,8 +64,7 @@
   </div>
 </main>
 
-<svg style="display:none">
-
+<svg id="reef-graphics" style="display:none">
   <symbol id="coral-indicator" width="30" height="125" viewBox="0 0 30 125">
     <rect width="30" height="80" fill="var(--coral)" display="var(--current-display)" />
     <g display="var(--auto-display)">
@@ -99,7 +97,6 @@
     <use xlink:href="#coral-indicator" class="l3-coral" x="45" y="240" transform="rotate(45, 60, 300)" />
     <use xlink:href="#coral-indicator" class="l2-coral" x="45" y="440" transform="rotate(45, 60, 500)" />
   </symbol>
-
 </svg>
 
 <dialog id="endgame-dialog" onclick="closeEndgameDialogIfOutside(event);">
@@ -128,6 +125,7 @@
 {{define "teamButton"}}
 <button id="{{.id}}" class="team-button team-{{.index}} {{.class}}" onclick="{{.onclick}}" ontouchstart disabled><div class="team-num"></div><div class="team-text">None</div></button>
 {{end}}
+
 {{define "counter"}}
 <div id="{{.id}}" class="counter">
   <button class="counter-decrement scoring-button" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart disabled>-1</button>
@@ -141,6 +139,7 @@
   <button class="counter-increment scoring-button" onclick="handleCounterClick('{{.id}}', 1);" ontouchstart disabled>+1</button>
 </div>
 {{end}}
+
 {{define "reefColumn"}}
 <div id="reef-column-{{.index}}" class="reef-column">
   <div class="reef-column-contents">
@@ -154,6 +153,7 @@
   </div>
 </div>
 {{end}}
+
 {{define "endgame-input"}}
 <div id="{{.id}}" class="endgame-input team-{{.index}}">
   <div class="team-num"></div>

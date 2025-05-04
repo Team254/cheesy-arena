@@ -1,7 +1,13 @@
 /*
   Copyright 2019 Team 254. All Rights Reserved.
   Author: pat@patfairbank.com (Patrick Fairbank)
+  Author: ian@yann.io (Ian Thompson)
+
+  Styles for the scoring interface
 */
+
+/* Color scheme definitions */
+
 :root {
   /* Evergreen baseline color scheme */
   --red-100: #fee7e7;
@@ -119,24 +125,38 @@
   --opponent-background: var(--red-background);
 }
 
-/* Game-specific layout parameters */
+/* Layout Parameters */
 :root {
   --banner-title-angle: 30deg;
   --button-border-radius: 8px;
+}
+
+button {
+  padding: 0;
+  border: none;
+}
+
+button:hover:enabled {
+  cursor: auto;
+}
+
+button:enabled:not(:active) {
+  box-shadow: black 0px 4px 4px;
 }
 
 html {
   height: 100%;
   -webkit-user-select: none;
   -moz-user-select: none;
+  user-select: none;
   overscroll-behavior: none;
 }
+
 body {
   height: 100%;
-  background-color: #222;
-  overscroll-behavior: none;
   touch-action: manipulation;
 }
+
 .container {
   padding: 0;
   width: 100%;
@@ -149,7 +169,9 @@ body {
   background-color: var(--alliance-background);
   font-family: Helvetica, Arial, sans-serif;
   line-height: 1.2;
+  text-align: center;
 }
+
 header {
   width: 100%;
   color: var(--text-active-dark);
@@ -159,15 +181,18 @@ header {
   font-weight: bold;
   font-size: 18pt;
 }
+
 header:has(.banner-title) {
   background-color: var(--alliance-banner);
 }
-.banner-title, .banner-placeholder {
-  width: 100%;
-  text-align: center;
+
+.banner-title,
+.banner-placeholder {
+  flex: 1 1 0%;
 }
+
 .screen-title {
-  position: relative;
+  contain: layout;
   background-color: #000;
   width: fit-content;
   color: var(--text-active);
@@ -176,6 +201,7 @@ header:has(.banner-title) {
   z-index: 0;
   padding: 0 0.5em;
 }
+
 .screen-title::before,
 .screen-title::after {
   content: '';
@@ -185,11 +211,13 @@ header:has(.banner-title) {
   background-color: black;
   z-index: -1;
 }
+
 .screen-title::before {
   left: 0;
   transform: skewX(var(--banner-title-angle));
   transform-origin: left bottom;
 }
+
 .screen-title::after {
   right: 0;
   transform: skewX(calc(var(--banner-title-angle) * -1));
@@ -198,78 +226,55 @@ header:has(.banner-title) {
 
 main {
   width: 100%;
-  flex-grow: 1;
+  flex: 1;
+  padding-bottom: 10px;
   display: flex;
   flex-direction: column;
-  padding-bottom: 10px;
 }
 
 #top-controls {
-  width: 100%;
   height: 90px;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
   padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
 }
 
-#auto-controls, #endgame-controls {
-  width: 100%;
+#auto-controls,
+#endgame-controls {
   height: 100%;
   flex: 3 3 0%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  align-items: center;
-  gap: 1em;
   padding: 0em 1em;
+  display: flex;
+  justify-content: space-evenly;
+  gap: 1em;
 }
 
 #bottom-controls {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
   padding: 10px 0;
-}
-
-#commit-controls {
-  height: 100%;
-  flex: 1 1 0%;
+  display: flex;
+  justify-content: space-around;
 }
 
 #commit {
-  border: none;
+  flex: 1 1 0%;
+  height: 100%;
   border-radius: var(--button-border-radius);
   color: var(--text-active);
-  padding: 0;
-  text-align: center;
-  width: 100%;
-  height: 100%;
   background-color: var(--green-action);
   font-size: 18pt;
   font-weight: bold;
+  padding: 0.2em;
 }
 
 #commit:disabled {
   visibility: hidden;
 }
 
-#commit:enabled:not(:active) {
-  box-shadow: black 0px 4px 4px;
-}
-
 .team-button {
-  border: none;
   border-radius: var(--button-border-radius);
   color: var(--text-active);
   overflow: clip;
-  padding: 0;
-  text-align: center;
-  /*flex: fit-content;*/
-  width: 100%;
+  flex: 1 1 0%;
   height: 100%;
   font-size: 16pt;
 
@@ -277,12 +282,7 @@ main {
   --button-bottom-default-color: var(--neutral-action);
   --button-bottom-selected-color: var(--alliance-highlight);
 }
-.team-button:enabled:not(:active) {
-  box-shadow: black 0px 4px 4px;
-}
-button:hover:enabled {
-  cursor: auto;
-}
+
 .team-button:disabled {
   --button-top-color: var(--alliance-inactive);
   --button-bottom-default-color: var(--neutral-inactive);
@@ -292,12 +292,14 @@ button:hover:enabled {
 .team-button .team-num {
   height: 50%;
   align-content: center;
+  padding: 0 0.2em;
   background-color: var(--button-top-color);
 }
 
 .team-button .team-text {
   height: 50%;
   align-content: center;
+  padding: 0 0.2em;
   background-color: var(--button-bottom-default-color);
 }
 
@@ -305,25 +307,121 @@ button:hover:enabled {
   background-color: var(--button-bottom-selected-color);
 }
 
+.reef-image {
+  --l4-coral-display: none;
+  --l4-coral-auto-display: none;
+  --l3-coral-display: none;
+  --l3-coral-auto-display: none;
+  --l2-coral-display: none;
+  --l2-coral-auto-display: none;
+}
+
+[data-l4-scored="true"] .reef-image {
+  --l4-coral-display: auto;
+}
+
+[data-l4-auto-scored="true"] .reef-image {
+  --l4-coral-auto-display: auto;
+}
+
+[data-l3-scored="true"] .reef-image {
+  --l3-coral-display: auto;
+}
+
+[data-l3-auto-scored="true"] .reef-image {
+  --l3-coral-auto-display: auto;
+}
+
+[data-l2-scored="true"] .reef-image {
+  --l2-coral-display: auto;
+}
+
+[data-l2-auto-scored="true"] .reef-image {
+  --l2-coral-auto-display: auto;
+}
+
+#reef-controls {
+  flex: 1 1 0%;
+  contain: layout;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 10px;
+}
+
+#reef-controls-warning {
+  position: absolute;
+  height: 100%;
+  visibility: hidden;
+}
+
+[data-editing-auto="true"] #reef-controls-warning {
+  visibility: visible;
+}
+
+.reef-column {
+  height: 100%;
+  flex-grow: 1;
+  max-width: 200px;
+  container-type: size;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.reef-column-contents {
+  contain: layout;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+@container (aspect-ratio < 0.25) {
+  .reef-column-contents {
+    aspect-ratio: 1 / 4;
+  }
+}
+
+@container (aspect-ratio >=0.25) {
+  .reef-column-contents {
+    height: 100%;
+  }
+}
+
+.reef-column .reef-image {
+  position: absolute;
+  height: 100%;
+}
+
+.reef-column:nth-of-type(-n + 3) .reef-image {
+  transform: scale(-1, 1);
+}
+
+.reef-column button {
+  width: 100%;
+  flex: 1 1 0%;
+  z-index: 1;
+  background: none;
+}
+
+.reef-column button:enabled {
+  background-color: var(--interaction-highlight);
+}
+
 #edit-auto {
   flex: 1 1 0%;
-  border: none;
   border-radius: var(--button-border-radius);
   color: var(--text-active-dark);
-  padding: 0;
-  text-align: center;
   height: 100%;
-  background-color: var(--coral-auto);
+  background-color: var(--auto-action);
   font-size: 18pt;
   font-weight: bold;
+  padding: 0.2em;
 }
 
 #edit-auto:disabled {
   visibility: hidden;
-}
-
-#edit-auto:enabled:not(:active) {
-  box-shadow: black 0px 4px 4px;
 }
 
 [data-editing-auto="true"] #edit-auto {
@@ -338,38 +436,34 @@ button:hover:enabled {
 }
 
 .counter {
-  border: none;
-  border-radius: var(--button-border-radius);
-  overflow: clip;
-  display: flex;
-  flex-direction: row;
-  text-align: center;
-  min-height: 90px;
-  min-width: 200px;
+  height: 90px;
   max-width: 400px;
   width: 100%;
   margin: 0 10px;
+  border-radius: var(--button-border-radius);
+  overflow: clip;
+  display: flex;
 }
 
 .counter:has(button:enabled) {
   color: var(--text-active-dark);
   box-shadow: black 0px 4px 4px;
 }
+
 .counter:not(:has(button:enabled)) {
   color: var(--text-inactive-dark);
 }
 
 .counter button {
-  border: none;
-  padding: 0;
+  flex: 1 1 0%;
   color: var(--text-active);
   background-color: var(--alliance-action);
   font-size: 24pt;
   font-weight: bold;
   display: grid;
   place-items: center;
-  flex: 1 1 0%;
   z-index: 1;
+  padding: 0.2em;
 }
 
 .counter button:enabled:not(:active) {
@@ -382,16 +476,16 @@ button:hover:enabled {
 }
 
 .counter-status {
-  background-color: #fff;
   flex: 2 2 0%;
+  background-color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-bottom: 5px;
 }
 
 .counter-label {
   font-size: 12pt;
+  padding: 0 0.2em 5px 0.2em;
 }
 
 .counter-value {
@@ -430,10 +524,11 @@ button:hover:enabled {
 }
 
 #endgame-dialog-container {
-  width: 667px;
+  max-width: 700px;
+  width: 80vw;
+  padding-bottom: 20px;
   display: flex;
   flex-direction: column;
-  padding-bottom: 20px;
 }
 
 #endgame-dialog::backdrop {
@@ -443,50 +538,40 @@ button:hover:enabled {
 }
 
 #endgame-banner {
-  width: 100%;
+  padding: 5px;
   font-size: 24pt;
   font-weight: bold;
   background-color: var(--alliance-banner);
   color: var(--text-active-dark);
-  text-align: center;
 }
 
 #endgame-scoring {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 20px;
   padding: 20px;
+  display: flex;
+  gap: 20px;
 }
 
 .endgame-input {
+  flex: 1 1 0%;
+  padding: 10px;
+  background-color: var(--alliance-action);
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 100%;
-  background-color: var(--alliance-action);
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.endgame-input .team-num {
-  width: 100%;
-  background-color: var(--alliance-action);
-  border-radius: 8px;
-  align-content: center;
-  text-align: center;
 }
 
 #endgame-dialog button {
   cursor: auto;
   height: 68px;
   border: none;
+  outline: none;
   border-radius: var(--button-border-radius);
   background-color: var(--neutral-action);
   color: var(--text-active);
+  box-shadow: none;
 }
+
 #endgame-dialog button:enabled:not([data-selected="true"]) {
   box-shadow: black 0px 4px 4px;
 }
@@ -499,109 +584,4 @@ button:hover:enabled {
   padding: 20px;
   width: 29%;
   align-self: center;
-}
-
-.reef-image {
-  --l4-coral-display: none;
-  --l4-coral-auto-display: none;
-  --l3-coral-display: none;
-  --l3-coral-auto-display: none;
-  --l2-coral-display: none;
-  --l2-coral-auto-display: none;
-}
-[data-l4-scored="true"] .reef-image {
-  --l4-coral-display: auto;
-}
-[data-l4-auto-scored="true"] .reef-image {
-  --l4-coral-auto-display: auto;
-}
-[data-l3-scored="true"] .reef-image {
-  --l3-coral-display: auto;
-}
-[data-l3-auto-scored="true"] .reef-image {
-  --l3-coral-auto-display: auto;
-}
-[data-l2-scored="true"] .reef-image {
-  --l2-coral-display: auto;
-}
-[data-l2-auto-scored="true"] .reef-image {
-  --l2-coral-auto-display: auto;
-}
-
-#reef-controls {
-  width: 100%;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-evenly;
-  align-items: center;
-  gap: 10px;
-  contain: layout;
-}
-
-#reef-controls-warning {
-  position: absolute;
-  height: 100%;
-  visibility: hidden;
-}
-
-[data-editing-auto="true"] #reef-controls-warning {
-  visibility: visible;
-}
-
-.reef-column {
-  height: 100%;
-  flex-grow: 1;
-  max-width: 200px;
-  container-type: size;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.reef-column-contents {
-  contain: layout;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
-
-@container (aspect-ratio < 0.25) {
-  .reef-column-contents {
-    aspect-ratio: 1 / 4;
-  }
-}
-@container (aspect-ratio >= 0.25) {
-  .reef-column-contents {
-    height: 100%;
-  }
-}
-
-.reef-column .reef-image {
-  position: absolute;
-  height: 100%;
-}
-
-.reef-column:nth-of-type(-n + 3) .reef-image {
-  transform: scale(-1, 1);
-}
-
-.reef-column button {
-  width: 100%;
-  display: block;
-  flex-grow: 1;
-  z-index: 1;
-  border: none;
-  background-color: var(--interaction-highlight);
-}
-
-.reef-column button:enabled:not(:active) {
-  box-shadow: black 0px 4px 4px;
-}
-
-.reef-column button:disabled {
-  background: none;
 }
