@@ -201,12 +201,12 @@ html {
 }
 #logo {
   position: relative;
-  top: 45px;
-  height: 50px;
+  top: 38px;
+  height: 70px;
 }
 #matchTime {
   position: relative;
-  top: 30px;
+  top: 17px;
   height: 60px;
   color: #222;
   font-family: "FuturaLTBold";
