@@ -20,8 +20,12 @@
         {{template "teamCard" dict "alliance" "blue" "position" $i}}
       {{end}}
     </div>
-    <div class="scoring-status" id="redScoreStatus"></div>
-    <div class="scoring-status" id="blueScoreStatus"></div>
+    <div id="scoringStatuses">
+      <div class="scoring-status" id="redNearScoreStatus"></div>
+      <div class="scoring-status" id="redFarScoreStatus"></div>
+      <div class="scoring-status" id="blueNearScoreStatus"></div>
+      <div class="scoring-status" id="blueFarScoreStatus"></div>
+    </div>
   </div>
   <div id="fouls">
     <h3>Fouls</h3>

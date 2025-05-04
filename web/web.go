@@ -176,7 +176,7 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /match_review/{matchId}/edit", web.matchReviewEditGetHandler)
 	mux.HandleFunc("POST /match_review/{matchId}/edit", web.matchReviewEditPostHandler)
 	mux.HandleFunc("GET /panels/scoring/{position}", web.scoringPanelHandler)
-	mux.HandleFunc("GET /panels/scoring/{alliance}/websocket", web.scoringPanelWebsocketHandler)
+	mux.HandleFunc("GET /panels/scoring/{position}/websocket", web.scoringPanelWebsocketHandler)
 	mux.HandleFunc("GET /panels/referee", web.refereePanelHandler)
 	mux.HandleFunc("GET /panels/referee/foul_list", web.refereePanelFoulListHandler)
 	mux.HandleFunc("GET /panels/referee/websocket", web.refereePanelWebsocketHandler)

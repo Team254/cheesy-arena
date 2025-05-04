@@ -996,7 +996,8 @@ func (arena *Arena) handlePlcInputOutput() {
 			arena.Plc.SetFieldResetLight(true)
 		}
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
-			arena.alliancePostMatchScoreReady("red") && arena.alliancePostMatchScoreReady("blue")
+			arena.positionPostMatchScoreReady("red_near") && arena.positionPostMatchScoreReady("red_far") &&
+			arena.positionPostMatchScoreReady("blue_near") && arena.positionPostMatchScoreReady("blue_far")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
 	case AutoPeriod, PausePeriod, TeleopPeriod:
 		arena.Plc.SetStackBuzzer(false)
@@ -1091,9 +1092,9 @@ func (arena *Arena) playSound(name string) {
 	}
 }
 
-func (arena *Arena) alliancePostMatchScoreReady(alliance string) bool {
-	numPanels := arena.ScoringPanelRegistry.GetNumPanels(alliance)
-	return numPanels > 0 && arena.ScoringPanelRegistry.GetNumScoreCommitted(alliance) >= numPanels
+func (arena *Arena) positionPostMatchScoreReady(position string) bool {
+	numPanels := arena.ScoringPanelRegistry.GetNumPanels(position)
+	return numPanels > 0 && arena.ScoringPanelRegistry.GetNumScoreCommitted(position) >= numPanels
 }
 
 // Performs any actions that need to run at the interval specified by periodicTaskPeriodSec.

@@ -37,18 +37,18 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	defer server.Close()
 	_, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/blorpy/websocket", nil)
 	assert.NotNil(t, err)
-	redConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/red/websocket", nil)
+	redConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/red_near/websocket", nil)
 	assert.Nil(t, err)
 	defer redConn.Close()
 	redWs := websocket.NewTestWebsocket(redConn)
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("red"))
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumPanels("blue"))
-	blueConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/blue/websocket", nil)
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("red_near"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumPanels("blue_near"))
+	blueConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/blue_near/websocket", nil)
 	assert.Nil(t, err)
 	defer blueConn.Close()
 	blueWs := websocket.NewTestWebsocket(blueConn)
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("red"))
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("blue"))
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("red_near"))
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("blue_near"))
 
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, redWs, "resetLocalState")
@@ -260,14 +260,14 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, redWs, "error")
 	blueWs.Write("commitMatch", nil)
 	readWebsocketType(t, blueWs, "error")
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red"))
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red_near"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue_near"))
 	web.arena.MatchState = field.PostMatch
 	redWs.Write("commitMatch", nil)
 	blueWs.Write("commitMatch", nil)
 	time.Sleep(time.Millisecond * 10) // Allow some time for the commands to be processed.
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red"))
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue"))
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red_near"))
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue_near"))
 
 	// Load another match to reset the results.
 	web.arena.ResetMatch()
@@ -278,6 +278,6 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "realtimeScore")
 	assert.Equal(t, field.NewRealtimeScore(), web.arena.RedRealtimeScore)
 	assert.Equal(t, field.NewRealtimeScore(), web.arena.BlueRealtimeScore)
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red"))
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red_near"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue_near"))
 }

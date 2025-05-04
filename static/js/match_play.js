@@ -337,12 +337,25 @@ const handleAudienceDisplayMode = function(data) {
 
 // Handles a websocket message to signal whether the referee and scorers have committed after the match.
 const handleScoringStatus = function(data) {
-  scoreIsReady = data.RefereeScoreReady && data.RedScoreReady && data.BlueScoreReady;
+  scoreIsReady = data.RefereeScoreReady;
+  for (const status of Object.values(data.PositionStatuses)) {
+    if (!status.Ready) {
+      scoreIsReady = false;
+      break;
+    }
+  }
   $("#refereeScoreStatus").attr("data-ready", data.RefereeScoreReady);
-  $("#redScoreStatus").text("Red Scoring " + data.NumRedScoringPanelsReady + "/" + data.NumRedScoringPanels);
-  $("#redScoreStatus").attr("data-ready", data.RedScoreReady);
-  $("#blueScoreStatus").text("Blue Scoring " + data.NumBlueScoringPanelsReady + "/" + data.NumBlueScoringPanels);
-  $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
+  updateScoreStatus(data, "red_near", "#redNearScoreStatus", "Red Near");
+  updateScoreStatus(data, "red_far", "#redFarScoreStatus", "Red Far");
+  updateScoreStatus(data, "blue_near", "#blueNearScoreStatus", "Blue Near");
+  updateScoreStatus(data, "blue_far", "#blueFarScoreStatus", "Blue Far");
+};
+
+// Helper function to update a badge that shows scoring panel commit status.
+const updateScoreStatus = function(data, position, element, displayName) {
+  const status = data.PositionStatuses[position];
+  $(element).text(`${displayName} ${status.NumPanelsReady}/${status.NumPanels}`);
+  $(element).attr("data-ready", status.Ready);
 };
 
 // Handles a websocket message to update the alliance station display screen selector.

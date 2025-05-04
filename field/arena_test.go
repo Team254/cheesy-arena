@@ -994,13 +994,21 @@ func TestPlcMatchCycleEvergreen(t *testing.T) {
 	arena.RedRealtimeScore.FoulsCommitted = true
 	arena.BlueRealtimeScore.FoulsCommitted = true
 	redWs := &websocket.Websocket{}
-	arena.ScoringPanelRegistry.RegisterPanel("red", redWs)
-	arena.ScoringPanelRegistry.SetScoreCommitted("red", redWs)
+	arena.ScoringPanelRegistry.RegisterPanel("red_near", redWs)
+	arena.ScoringPanelRegistry.SetScoreCommitted("red_near", redWs)
 	arena.Update()
 	assert.Equal(t, [4]bool{false, false, true, false}, plc.stackLights)
 	blueWs := &websocket.Websocket{}
-	arena.ScoringPanelRegistry.RegisterPanel("blue", blueWs)
-	arena.ScoringPanelRegistry.SetScoreCommitted("blue", blueWs)
+	arena.ScoringPanelRegistry.RegisterPanel("blue_far", blueWs)
+	arena.ScoringPanelRegistry.SetScoreCommitted("blue_far", blueWs)
+	arena.Update()
+	assert.Equal(t, [4]bool{false, false, true, false}, plc.stackLights)
+	arena.ScoringPanelRegistry.RegisterPanel("blue_near", redWs)
+	arena.ScoringPanelRegistry.SetScoreCommitted("blue_near", redWs)
+	arena.Update()
+	assert.Equal(t, [4]bool{false, false, true, false}, plc.stackLights)
+	arena.ScoringPanelRegistry.RegisterPanel("red_far", redWs)
+	arena.ScoringPanelRegistry.SetScoreCommitted("red_far", redWs)
 	arena.Update()
 	assert.Equal(t, [4]bool{false, false, false, false}, plc.stackLights)
 

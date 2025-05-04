@@ -15,6 +15,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type ScoringPosition struct {
@@ -108,11 +109,12 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	alliance := r.PathValue("alliance")
-	if alliance != "red" && alliance != "blue" {
-		handleWebErr(w, fmt.Errorf("Invalid alliance '%s'.", alliance))
+	position := r.PathValue("position")
+	if position != "red_near" && position != "red_far" && position != "blue_near" && position != "blue_far" {
+		handleWebErr(w, fmt.Errorf("Invalid position '%s'.", position))
 		return
 	}
+	alliance := strings.Split(position, "_")[0]
 
 	var realtimeScore **field.RealtimeScore
 	if alliance == "red" {
@@ -127,10 +129,10 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	defer ws.Close()
-	web.arena.ScoringPanelRegistry.RegisterPanel(alliance, ws)
+	web.arena.ScoringPanelRegistry.RegisterPanel(position, ws)
 	web.arena.ScoringStatusNotifier.Notify()
 	defer web.arena.ScoringStatusNotifier.Notify()
-	defer web.arena.ScoringPanelRegistry.UnregisterPanel(alliance, ws)
+	defer web.arena.ScoringPanelRegistry.UnregisterPanel(position, ws)
 
 	// Instruct panel to clear any local state in case this is a reconnect
 	ws.Write("resetLocalState", nil)
@@ -159,7 +161,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				ws.WriteError("Cannot commit score: Match is not over.")
 				continue
 			}
-			web.arena.ScoringPanelRegistry.SetScoreCommitted(alliance, ws)
+			web.arena.ScoringPanelRegistry.SetScoreCommitted(position, ws)
 			web.arena.ScoringStatusNotifier.Notify()
 		} else if command == "reef" {
 			args := struct {

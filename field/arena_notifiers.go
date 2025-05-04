@@ -311,18 +311,31 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 }
 
 func (arena *Arena) generateScoringStatusMessage() any {
+	type positionStatus struct {
+		Ready          bool
+		NumPanels      int
+		NumPanelsReady int
+	}
+	getStatusForPosition := func(position string) positionStatus {
+		return positionStatus{
+			Ready:          arena.positionPostMatchScoreReady(position),
+			NumPanels:      arena.ScoringPanelRegistry.GetNumPanels(position),
+			NumPanelsReady: arena.GetNumScoreCommitted(position),
+		}
+	}
+
 	return &struct {
-		RefereeScoreReady         bool
-		RedScoreReady             bool
-		BlueScoreReady            bool
-		NumRedScoringPanels       int
-		NumRedScoringPanelsReady  int
-		NumBlueScoringPanels      int
-		NumBlueScoringPanelsReady int
-	}{arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted,
-		arena.alliancePostMatchScoreReady("red"), arena.alliancePostMatchScoreReady("blue"),
-		arena.ScoringPanelRegistry.GetNumPanels("red"), arena.ScoringPanelRegistry.GetNumScoreCommitted("red"),
-		arena.ScoringPanelRegistry.GetNumPanels("blue"), arena.ScoringPanelRegistry.GetNumScoreCommitted("blue")}
+		RefereeScoreReady bool
+		PositionStatuses  map[string]positionStatus
+	}{
+		arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted,
+		map[string]positionStatus{
+			"red_near":  getStatusForPosition("red_near"),
+			"red_far":   getStatusForPosition("red_far"),
+			"blue_near": getStatusForPosition("blue_near"),
+			"blue_far":  getStatusForPosition("blue_far"),
+		},
+	}
 }
 
 // Constructs the data object for one alliance sent to the audience display for the realtime scoring overlay.

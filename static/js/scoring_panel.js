@@ -185,7 +185,7 @@ $(function() {
   resetLocalState();
 
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/panels/scoring/" + alliance + "/websocket", {
+  websocket = new CheesyWebsocket("/panels/scoring/" + position + "/websocket", {
     matchLoad: function(event) { handleMatchLoad(event.data); },
     matchTime: function(event) { handleMatchTime(event.data); },
     realtimeScore: function(event) { handleRealtimeScore(event.data); },

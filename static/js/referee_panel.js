@@ -101,11 +101,18 @@ const handleScoringStatus = function(data) {
   if (data.RefereeScoreReady) {
     $("#commitButton").attr("data-enabled", false);
   }
-  $("#redScoreStatus").text("Red Scoring " + data.NumRedScoringPanelsReady + "/" + data.NumRedScoringPanels);
-  $("#redScoreStatus").attr("data-ready", data.RedScoreReady);
-  $("#blueScoreStatus").text("Blue Scoring " + data.NumBlueScoringPanelsReady + "/" + data.NumBlueScoringPanels);
-  $("#blueScoreStatus").attr("data-ready", data.BlueScoreReady);
+  updateScoreStatus(data, "red_near", "#redNearScoreStatus", "Red Near");
+  updateScoreStatus(data, "red_far", "#redFarScoreStatus", "Red Far");
+  updateScoreStatus(data, "blue_near", "#blueNearScoreStatus", "Blue Near");
+  updateScoreStatus(data, "blue_far", "#blueFarScoreStatus", "Blue Far");
 }
+
+// Helper function to update a badge that shows scoring panel commit status.
+const updateScoreStatus = function(data, position, element, displayName) {
+  const status = data.PositionStatuses[position];
+  $(element).text(`${displayName} ${status.NumPanelsReady}/${status.NumPanels}`);
+  $(element).attr("data-ready", status.Ready);
+};
 
 // Populates the red/yellow card button for a given team.
 const setTeamCard = function(alliance, position, team) {
