@@ -24,7 +24,7 @@
     <div id="auto-controls">
       {{if .Position.ScoresAuto}}
         {{range $i := seq 3}}
-          {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "onclick" (printf "handleLeaveClick(%d);" $i))}}
+          {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "class" "scoring-button" "onclick" (printf "handleLeaveClick(%d);" $i))}}
         {{end}}
       {{end}}
     </div>
@@ -34,7 +34,7 @@
     <div id="endgame-controls">
       {{if .Position.ScoresEndgame}}
         {{range $i := seq 3}}
-          {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "onclick" "showEndgameDialog();")}}
+          {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "class" "scoring-teleop-button" "onclick" "showEndgameDialog();")}}
         {{end}}
       {{end}}
     </div>
@@ -126,11 +126,11 @@
 {{end}}
 
 {{define "teamButton"}}
-<button id="{{.id}}" class="team-button team-{{.index}}" onclick="{{.onclick}}" ontouchstart><div class="team-num"></div><div class="team-text">None</div></button>
+<button id="{{.id}}" class="team-button team-{{.index}} {{.class}}" onclick="{{.onclick}}" ontouchstart><div class="team-num"></div><div class="team-text">None</div></button>
 {{end}}
 {{define "counter"}}
 <div id="{{.id}}" class="counter">
-  <button class="counter-decrement" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart>-1</button>
+  <button class="counter-decrement scoring-button" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart>-1</button>
   <div class="counter-status">
     {{if .auto_label}}
       <div class="counter-auto-row">{{.auto_label}}: <span class="counter-auto-value">0</span></div>
@@ -138,7 +138,7 @@
     <div class="counter-value">0</div>
     <div class="counter-label">{{.label}}</div>
   </div>
-  <button class="counter-increment" onclick="handleCounterClick('{{.id}}', 1);" ontouchstart>+1</button>
+  <button class="counter-increment scoring-button" onclick="handleCounterClick('{{.id}}', 1);" ontouchstart>+1</button>
 </div>
 {{end}}
 {{define "reefColumn"}}
@@ -146,7 +146,7 @@
   <div class="reef-column-contents">
     {{ $index := .index }}
     {{range $i := seq 3}}
-      <button class="reef-button" onclick="handleReefClick({{$index}}, 5 - {{$i}})" ontouchstart></button>
+      <button class="reef-button scoring-button" onclick="handleReefClick({{$index}}, 5 - {{$i}})" ontouchstart></button>
     {{end}}
     <svg class="reef-image" viewBox="0 0 120 600">
       <use xlink:href="#reef-column" />

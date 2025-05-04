@@ -65,6 +65,9 @@
   --green-highlight: var(--green-500);
   --green-inactive: var(--green-200);
 
+  --auto-action: #fbde0d;
+  --auto-inactive: #fff088;
+
   --neutral-action: var(--gray-600);
   --neutral-highlight: var(--gray-700);
   --neutral-inactive: var(--gray-400);
@@ -72,14 +75,14 @@
   --text-active: #fff;
   --text-active-dark: #000;
   --text-inactive: var(--gray-100);
-  --text-inactive-dark: var(--gray-100);
+  --text-inactive-dark: var(--gray-300);
   --interaction-highlight: #abaeb21a;
 }
 
 :root {
   /* Game-specific color scheme */
   --coral: var(--gray-100);
-  --coral-auto: #fbde0d;
+  --coral-auto: var(--auto-action);
   --reef-pole: var(--purple-400);
 }
 
@@ -250,6 +253,10 @@ main {
   font-weight: bold;
 }
 
+#commit:disabled {
+  visibility: hidden;
+}
+
 #commit:enabled:not(:active) {
   box-shadow: black 0px 4px 4px;
 }
@@ -310,8 +317,17 @@ button:hover:enabled {
   font-weight: bold;
 }
 
+#edit-auto:disabled {
+  visibility: hidden;
+}
+
 #edit-auto:enabled:not(:active) {
   box-shadow: black 0px 4px 4px;
+}
+
+[data-editing-auto="true"] #edit-auto {
+  background-color: var(--green-action);
+  color: var(--text-active);
 }
 
 .counter-wrapper {
@@ -383,12 +399,18 @@ button:hover:enabled {
 }
 
 .counter-auto-row {
-  background-color: var(--coral-auto);
+  background-color: var(--auto-inactive);
+  color: var(--text-inactive-dark);
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0.1em;
+}
+
+.counter:has(button:enabled) .counter-auto-row {
+  background-color: var(--auto-action);
+  color: var(--text-active-dark);
   box-shadow: black 0px 0px 2px;
 }
 
@@ -519,6 +541,11 @@ button:hover:enabled {
 #reef-controls-warning {
   position: absolute;
   height: 100%;
+  visibility: hidden;
+}
+
+[data-editing-auto="true"] #reef-controls-warning {
+  visibility: visible;
 }
 
 .reef-column {

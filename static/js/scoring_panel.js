@@ -7,6 +7,18 @@ var websocket;
 let alliance;
 let nearSide;
 
+// True when scoring controls in general should be available
+let scoringAvailable = false;
+// True when the commit button should be available
+let commitAvailable = false;
+// True when teleop-only scoring controls should be available
+let inTeleop = false;
+// True when post-auto and in edit auto mode
+let editingAuto = false;
+
+// Whether the most recent match has been committed
+let committed = false;
+
 const endgameDialog = $("#endgame-dialog")[0];
 
 const showEndgameDialog = function() {
@@ -40,20 +52,46 @@ const handleMatchLoad = function(data) {
 // Handles a websocket message to update the match status.
 const handleMatchTime = function(data) {
   switch (matchStates[data.MatchState]) {
-    case "PRE_MATCH":
-      // Pre-match message state is set in handleRealtimeScore().
-      $("#postMatchMessage").hide();
-      $("#commitMatchScore").hide();
+    case "AUTO_PERIOD":
+    case "PAUSE_PERIOD":
+      scoringAvailable = true;
+      commitAvailable = false;
+      inTeleop = false;
+      editingAuto = false;
+      committed = false;
+      break;
+    case "TELEOP_PERIOD":
+      scoringAvailable = true;
+      commitAvailable = false;
+      inTeleop = true;
+      committed = false;
       break;
     case "POST_MATCH":
-      $("#postMatchMessage").hide();
-      $("#commitMatchScore").css("display", "flex");
+      if (!committed) {
+        scoringAvailable = true;
+        commitAvailable = true;
+        inTeleop = true;
+      }
       break;
     default:
-      $("#postMatchMessage").hide();
-      $("#commitMatchScore").hide();
+      scoringAvailable = false;
+      commitAvailable = false;
+      inTeleop = false;
+      editingAuto = false;
+      committed = false;
   }
+  updateUIMode();
 };
+
+const updateUIMode = function() {
+  // Push mode changes to the UI
+  $(".scoring-button").prop('disabled', !scoringAvailable);
+  $(".scoring-teleop-button").prop('disabled', !(inTeleop && scoringAvailable));
+  $("#commit").prop('disabled', !commitAvailable);
+  $("#edit-auto").prop('disabled', !(inTeleop && scoringAvailable));
+  $("main").attr("data-editing-auto", editingAuto);
+  $("#edit-auto").text(editingAuto ? "Save Auto" : "Edit Auto");
+}
 
 const endgameStatusNames = [
   "None",
@@ -77,6 +115,7 @@ const handleRealtimeScore = function(data) {
     $(`#auto-status-${i1}>.team-text`).text(score.LeaveStatuses[i] ? "Leave" : "None");
     $(`#auto-status-${i1}`).attr("data-selected", score.LeaveStatuses[i]);
     $(`#endgame-status-${i1}>.team-text`).text(endgameStatusNames[score.EndgameStatuses[i]]);
+    $(`#endgame-status-${i1}`).attr("data-selected", endgameStatusNames[score.EndgameStatuses[i]] != "None");
     for (let j = 0; j < endgameStatusNames.length; j++) {
       $(`#endgame-input-${i1} .endgame-${j}`).attr("data-selected", j == score.EndgameStatuses[i]);
     }
@@ -104,7 +143,7 @@ const handleRealtimeScore = function(data) {
 
 // Websocket message senders for various buttons
 const handleCounterClick = function(command, adjustment) {
-  websocket.send(command, {Adjustment: adjustment, Current: true, Autonomous: false, NearSide: nearSide});
+  websocket.send(command, {Adjustment: adjustment, Current: !editingAuto, Autonomous: !inTeleop || editingAuto, NearSide: nearSide});
 }
 
 const handleLeaveClick = function(teamPosition) {
@@ -116,15 +155,25 @@ const handleEndgameClick = function(teamPosition, endgameStatus) {
 }
 
 const handleReefClick = function(reefPosition, reefLevel) {
-  websocket.send("reef", {ReefPosition: reefPosition, ReefLevel: reefLevel, Current: true, Autonomous: true});
+  websocket.send("reef", {ReefPosition: reefPosition, ReefLevel: reefLevel, Current: !editingAuto, Autonomous: !inTeleop || editingAuto, NearSide: nearSide});
 }
 
 // Sends a websocket message to indicate that the score for this alliance is ready.
 const commitMatchScore = function() {
   websocket.send("commitMatch");
-  $("#postMatchMessage").css("display", "flex");
-  $("#commitMatchScore").hide();
+
+  committed = true;
+  scoringAvailable = false;
+  commitAvailable = false;
+  inTeleop = false;
+  editingAuto = false;
+  updateUIMode();
 };
+
+const toggleEditAuto = function() {
+  editingAuto = !editingAuto;
+  updateUIMode();
+}
 
 $(function() {
   position = window.location.href.split("/").slice(-1)[0];
