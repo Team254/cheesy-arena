@@ -26,6 +26,7 @@ type Database struct {
 	allianceTable       *table[Alliance]
 	awardTable          *table[Award]
 	eventSettingsTable  *table[EventSettings]
+	judgingSlotTable    *table[JudgingSlot]
 	lowerThirdTable     *table[LowerThird]
 	matchTable          *table[Match]
 	matchResultTable    *table[MatchResult]
@@ -54,6 +55,9 @@ func OpenDatabase(filename string) (*Database, error) {
 		return nil, err
 	}
 	if database.eventSettingsTable, err = newTable[EventSettings](&database); err != nil {
+		return nil, err
+	}
+	if database.judgingSlotTable, err = newTable[JudgingSlot](&database); err != nil {
 		return nil, err
 	}
 	if database.lowerThirdTable, err = newTable[LowerThird](&database); err != nil {

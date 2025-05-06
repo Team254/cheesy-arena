@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -906,6 +907,127 @@ func (web *Web) ftaCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = template.ExecuteTemplate(w, "fta.csv", teams)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
+
+// Generates a PDF-formatted report of the judging schedule.
+func (web *Web) judgingSchedulePdfReportHandler(w http.ResponseWriter, r *http.Request) {
+	slots, err := web.arena.Database.GetAllJudgingSlots()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
+	teamColWidths := map[string]float64{
+		"Team":      25,
+		"Time":      50,
+		"MatchInfo": 60,
+	}
+	rowHeight := 6.5
+
+	pdf := gofpdf.New("P", "mm", "Letter", "font")
+
+	// Table 1: Sorted by team.
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 10)
+	pdf.SetFillColor(220, 220, 220)
+	pdf.CellFormat(195, rowHeight, "Judging Schedule - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "")
+
+	// Render team table header row.
+	pdf.SetFont("Arial", "B", 10)
+	pdf.SetFillColor(220, 220, 220)
+	pdf.CellFormat(teamColWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(teamColWidths["Time"], rowHeight, "Judging Time", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(teamColWidths["MatchInfo"], rowHeight, "Previous Match", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(teamColWidths["MatchInfo"], rowHeight, "Next Match", "1", 1, "C", true, 0, "")
+
+	// Render team table body.
+	pdf.SetFont("Arial", "", 10)
+	for _, slot := range slots {
+		var previousMatchInfo, nextMatchInfo string
+		if slot.PreviousMatchNumber != 0 {
+			previousMatchInfo = fmt.Sprintf(
+				"Q%d at %s", slot.PreviousMatchNumber, slot.PreviousMatchTime.Format("03:04 PM"),
+			)
+		}
+		if slot.NextMatchNumber != 0 {
+			nextMatchInfo = fmt.Sprintf("Q%d at %s", slot.NextMatchNumber, slot.NextMatchTime.Format("03:04 PM"))
+		}
+
+		pdf.CellFormat(teamColWidths["Team"], rowHeight, strconv.Itoa(slot.TeamId), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(
+			teamColWidths["Time"], rowHeight, slot.Time.Local().Format("Mon 1/02 03:04 PM"), "1", 0, "C", false, 0, "",
+		)
+		pdf.CellFormat(teamColWidths["MatchInfo"], rowHeight, previousMatchInfo, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(teamColWidths["MatchInfo"], rowHeight, nextMatchInfo, "1", 1, "C", false, 0, "")
+	}
+
+	addTimeGeneratedFooter(pdf)
+
+	// Table 2: Sorted by judge team number and time.
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 10)
+	pdf.SetFillColor(220, 220, 220)
+	pdf.CellFormat(
+		195, rowHeight, "Judging Schedule (Judges' View) - "+web.arena.EventSettings.Name, "", 1, "C", false, 0, "",
+	)
+
+	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
+	judgeColWidths := map[string]float64{
+		"Judge":     25,
+		"Team":      25,
+		"Time":      45,
+		"MatchInfo": 50,
+	}
+
+	// Render judge table header row.
+	pdf.SetFont("Arial", "B", 10)
+	pdf.SetFillColor(220, 220, 220)
+	pdf.CellFormat(judgeColWidths["Judge"], rowHeight, "Judge Team", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(judgeColWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(judgeColWidths["Time"], rowHeight, "Judging Time", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(judgeColWidths["MatchInfo"], rowHeight, "Previous Match", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(judgeColWidths["MatchInfo"], rowHeight, "Next Match", "1", 1, "C", true, 0, "")
+
+	// Sort slots by judge team number and then by time.
+	sort.Slice(slots, func(i, j int) bool {
+		if slots[i].JudgeNumber == slots[j].JudgeNumber {
+			return slots[i].Time.Before(slots[j].Time)
+		}
+		return slots[i].JudgeNumber < slots[j].JudgeNumber
+	})
+
+	// Render judge table body.
+	pdf.SetFont("Arial", "", 10)
+	for _, slot := range slots {
+		var previousMatchInfo, nextMatchInfo string
+		if slot.PreviousMatchNumber != 0 {
+			previousMatchInfo = fmt.Sprintf(
+				"Q%d at %s", slot.PreviousMatchNumber, slot.PreviousMatchTime.Format("03:04 PM"),
+			)
+		}
+		if slot.NextMatchNumber != 0 {
+			nextMatchInfo = fmt.Sprintf("Q%d at %s", slot.NextMatchNumber, slot.NextMatchTime.Format("03:04 PM"))
+		}
+
+		pdf.CellFormat(judgeColWidths["Judge"], rowHeight, strconv.Itoa(slot.JudgeNumber), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(judgeColWidths["Team"], rowHeight, strconv.Itoa(slot.TeamId), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(
+			judgeColWidths["Time"], rowHeight, slot.Time.Local().Format("Mon 1/02 03:04 PM"), "1", 0, "C", false, 0, "",
+		)
+		pdf.CellFormat(judgeColWidths["MatchInfo"], rowHeight, previousMatchInfo, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(judgeColWidths["MatchInfo"], rowHeight, nextMatchInfo, "1", 1, "C", false, 0, "")
+	}
+
+	addTimeGeneratedFooter(pdf)
+
+	// Write out the PDF file as the HTTP response.
+	w.Header().Set("Content-Type", "application/pdf")
+	err = pdf.Output(w)
 	if err != nil {
 		handleWebErr(w, err)
 		return
