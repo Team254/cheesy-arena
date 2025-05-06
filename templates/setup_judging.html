@@ -1,0 +1,105 @@
+{{/*
+  Copyright 2025 Team 254. All Rights Reserved.
+  Author: pat@patfairbank.com (Patrick Fairbank)
+
+  UI for generating a judging schedule.
+*/}}
+{{define "title"}}Judge Scheduling{{end}}
+{{define "body"}}
+<div class="row">
+  <div class="col-lg-6">
+    <h2>Judge Scheduling</h2>
+    <p>Configure and generate a schedule for pit judging visits. The schedule will automatically avoid conflicts with
+      each team's qualification matches.</p>
+
+    {{if .ErrorMessage}}
+      <div class="alert alert-danger">{{.ErrorMessage}}</div>
+    {{end}}
+
+    <div>
+      <form method="POST" action="/setup/judging/generate">
+        <div class="row mb-3">
+          <label for="numJudges" class="col-lg-9 form-label">Number of parallel judge teams</label>
+          <div class="col-lg-3">
+            <input type="number" class="form-control" id="numJudges" name="numJudges" min="1"
+              value="{{.JudgingScheduleParams.NumJudges}}">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="durationMinutes" class="col-lg-9 form-label">Visit duration (minutes)</label>
+          <div class="col-lg-3">
+            <input type="number" class="form-control" id="durationMinutes" name="durationMinutes" min="1"
+              value="{{.JudgingScheduleParams.DurationMinutes}}">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="previousSpacingMinutes" class="col-lg-9 form-label">
+            Minimum spacing after previous match (minutes)
+          </label>
+          <div class="col-lg-3">
+            <input type="number" class="form-control" id="previousSpacingMinutes" name="previousSpacingMinutes" min="0"
+              value="{{.JudgingScheduleParams.PreviousSpacingMinutes}}">
+          </div>
+        </div>
+        <div class="row mb-3">
+          <label for="nextSpacingMinutes" class="col-lg-9 form-label">Minimum spacing before next match (minutes)</label>
+          <div class="col-lg-3">
+            <input type="number" class="form-control" id="nextSpacingMinutes" name="nextSpacingMinutes" min="0"
+              value="{{.JudgingScheduleParams.NextSpacingMinutes}}">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Generate Schedule</button>
+      </form>
+      {{if .JudgingSlots}}
+        <form method="POST" action="/setup/judging/clear">
+          <button type="submit" class="mt-3 btn btn-danger"
+            onclick="return confirm('Are you sure you want to clear the judging schedule?');">
+            Clear Judging Schedule
+          </button>
+        </form>
+      {{end}}
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    {{if .JudgingSlots}}
+      <div class="card mb-3">
+        <div class="card-body">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Team</th>
+                <th>Judge</th>
+                <th>Previous Match</th>
+                <th>Next Match</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .JudgingSlots}}
+              <tr>
+                <td>{{.Time.Format "01/02 3:04 PM"}}</td>
+                <td>{{.TeamId}}</td>
+                <td>{{.JudgeNumber}}</td>
+                <td>
+                  {{if gt .PreviousMatchNumber 0}}
+                    #{{.PreviousMatchNumber}} at {{.PreviousMatchTime.Format "3:04 PM"}}
+                  {{end}}
+                </td>
+                <td>
+                  {{if gt .NextMatchNumber 0}}
+                    #{{.NextMatchNumber}} at {{.NextMatchTime.Format "3:04 PM"}}
+                  {{end}}
+                </td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {{end}}
+  </div>
+</div>
+{{end}}
+{{define "script"}}
+{{end}}

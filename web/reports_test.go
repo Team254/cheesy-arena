@@ -149,3 +149,12 @@ func TestBracketPdfReport(t *testing.T) {
 	assert.Equal(t, "text/html; charset=utf-8", recorder.Header()["Content-Type"][0])
 	assert.Contains(t, recorder.Body.String(), "Finals")
 }
+
+func TestJudgingSchedulePdfReport(t *testing.T) {
+	web := setupTestWeb(t)
+
+	// Can't really parse the PDF content and check it, so just check that what's sent back is a PDF.
+	recorder := web.getHttpResponse("/reports/pdf/judging_schedule")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "application/pdf", recorder.Header()["Content-Type"][0])
+}
