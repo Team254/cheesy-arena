@@ -13,9 +13,9 @@ func TestJudgingSlotCrud(t *testing.T) {
 	database := setupTestDb(t)
 
 	// Test creation of a judging slot with all fields populated.
-	visitTime := time.Unix(100, 0)
-	prevMatchTime := time.Unix(50, 0)
-	nextMatchTime := time.Unix(150, 0)
+	visitTime := time.Unix(100, 0).UTC()
+	prevMatchTime := time.Unix(50, 0).UTC()
+	nextMatchTime := time.Unix(150, 0).UTC()
 	judgingSlot := JudgingSlot{
 		Time:                visitTime,
 		TeamId:              1503,
