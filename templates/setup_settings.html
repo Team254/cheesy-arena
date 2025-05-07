@@ -16,358 +16,409 @@
   <div class="col-lg-6">
     <div class="card card-body bg-body-tertiary">
       <form action="/setup/settings" method="POST">
-        <fieldset class="mb-4">
-          <legend>Event Settings</legend>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Name</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="name" placeholder="{{.Name}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Playoff Type</label>
-            <div class="col-lg-6">
-              <div class="radio">
-                <label>
-                  <input type="radio" name="playoffType" value="DoubleEliminationPlayoff"
-                    onclick="updateNumPlayoffAlliances(true);"
-                    {{if eq .PlayoffType 0}}checked{{end}}>
-                  Double-Elimination (8 alliances)
-                </label>
+        <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="event-settings-tab" data-bs-toggle="tab" data-bs-target="#event-settings" type="button" role="tab" aria-controls="event-settings" aria-selected="true">Event Settings</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="publishing-tab" data-bs-toggle="tab" data-bs-target="#publishing" type="button" role="tab" aria-controls="publishing" aria-selected="false">Publishing</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="networking-tab" data-bs-toggle="tab" data-bs-target="#networking" type="button" role="tab" aria-controls="networking" aria-selected="false">Networking</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="automation-tab" data-bs-toggle="tab" data-bs-target="#automation" type="button" role="tab" aria-controls="automation" aria-selected="false">Automation</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="game-specific-tab" data-bs-toggle="tab" data-bs-target="#game-specific" type="button" role="tab" aria-controls="game-specific" aria-selected="false">Game-Specific</button>
+          </li>
+        </ul>
+
+        <div class="tab-content" id="settingsTabsContent">
+          <!-- Event Settings-->
+          <div class="tab-pane fade show active" id="event-settings" role="tabpanel" aria-labelledby="event-settings-tab">
+            <fieldset class="mb-4">
+              <legend>Event Settings</legend>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Name</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="name" placeholder="{{.Name}}">
+                </div>
               </div>
-              <div class="radio">
-                <label>
-                  <input type="radio" name="playoffType" value="SingleEliminationPlayoff"
-                    onclick="updateNumPlayoffAlliances(false);"
-                      {{if eq .PlayoffType 1}}checked{{end}}>
-                  Single-Elimination (2-16 alliances)
-                </label>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Playoff Type</label>
+                <div class="col-lg-6">
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="playoffType" value="DoubleEliminationPlayoff"
+                        onclick="updateNumPlayoffAlliances(true);"
+                        {{if eq .PlayoffType 0}}checked{{end}}>
+                      Double-Elimination (8 alliances)
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="playoffType" value="SingleEliminationPlayoff"
+                        onclick="updateNumPlayoffAlliances(false);"
+                          {{if eq .PlayoffType 1}}checked{{end}}>
+                      Single-Elimination (2-16 alliances)
+                    </label>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Number of Alliances</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="numPlayoffAlliances" value="{{.NumPlayoffAlliances}}"
-                  {{if eq .PlayoffType 0}}disabled{{end}}>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Round 2 Selection Order</label>
-            <div class="col-lg-6">
-              <div class="radio">
-                <label>
-                  <input type="radio" name="selectionRound2Order" value="F"
-                      {{if eq .SelectionRound2Order "F"}}checked{{end}}>
-                  First to Last
-                </label>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Number of Alliances</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="numPlayoffAlliances" value="{{.NumPlayoffAlliances}}"
+                      {{if eq .PlayoffType 0}}disabled{{end}}>
+                </div>
               </div>
-              <div class="radio">
-                <label>
-                  <input type="radio" name="selectionRound2Order" value="L"
-                      {{if eq .SelectionRound2Order "L"}}checked{{end}}>
-                  Last to First
-                </label>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Round 2 Selection Order</label>
+                <div class="col-lg-6">
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="selectionRound2Order" value="F"
+                          {{if eq .SelectionRound2Order "F"}}checked{{end}}>
+                      First to Last
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="selectionRound2Order" value="L"
+                          {{if eq .SelectionRound2Order "L"}}checked{{end}}>
+                      Last to First
+                    </label>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Round 3 Selection Order</label>
-            <div class="col-lg-6">
-              <div class="radio">
-                <label>
-                  <input type="radio" name="selectionRound3Order" value="F"
-                      {{if eq .SelectionRound3Order "F"}}checked{{end}}>
-                  First to Last
-                </label>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Round 3 Selection Order</label>
+                <div class="col-lg-6">
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="selectionRound3Order" value="F"
+                          {{if eq .SelectionRound3Order "F"}}checked{{end}}>
+                      First to Last
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="selectionRound3Order" value="L"
+                          {{if eq .SelectionRound3Order "L"}}checked{{end}}>
+                      Last to First
+                    </label>
+                  </div>
+                  <div class="radio">
+                    <label>
+                      <input type="radio" name="selectionRound3Order" value=""
+                          {{if eq .SelectionRound3Order ""}}checked{{end}}>
+                      None
+                    </label>
+                  </div>
+                </div>
               </div>
-              <div class="radio">
-                <label>
-                  <input type="radio" name="selectionRound3Order" value="L"
-                      {{if eq .SelectionRound3Order "L"}}checked{{end}}>
-                  Last to First
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label" for="selectionShowUnpickedTeams">
+                  Show Unpicked Teams On Overlay
                 </label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="selectionShowUnpickedTeams"
+                         name="selectionShowUnpickedTeams"{{if .SelectionShowUnpickedTeams}} checked{{end}}>
+                </div>
               </div>
-              <div class="radio">
-                <label>
-                  <input type="radio" name="selectionRound3Order" value=""
-                      {{if eq .SelectionRound3Order ""}}checked{{end}}>
-                  None
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Automatic Team Info Download</legend>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label" for="tbaDownloadEnabled">
+                  Enable Automatic Team Info Download (From TBA)
                 </label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="tbaDownloadEnabled"
+                    name="tbaDownloadEnabled"{{if .TbaDownloadEnabled}} checked{{end}}>
+                </div>
               </div>
-            </div>
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Authentication</legend>
+              <p>Configure password to enable authentication, or leave blank to disable.</p>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Password for 'admin' user</label>
+                <div class="col-lg-6">
+                  <input type="password" class="form-control" name="adminPassword" value="{{.AdminPassword}}">
+                </div>
+              </div>
+            </fieldset>
           </div>
-          <div class="row mb-3">
-            <label class="col-lg-8 control-label" for="selectionShowUnpickedTeams">
-              Show Unpicked Teams On Overlay
-            </label>
-            <div class="col-lg-1 checkbox">
-              <input type="checkbox" id="selectionShowUnpickedTeams"
-                     name="selectionShowUnpickedTeams"{{if .SelectionShowUnpickedTeams}} checked{{end}}>
-            </div>
+          <!--Event Settings-->
+          <!--Publishing-->
+          <div class="tab-pane fade" id="publishing" role="tabpanel" aria-labelledby="publishing-tab">
+            <fieldset class="mb-4">
+              <legend>Publishing</legend>
+              <p>Contact The Blue Alliance to obtain an event code and credentials.</p>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label" for="tbaPublishingEnabled">Enable The Blue Alliance publishing</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="tbaPublishingEnabled"
+                    name="tbaPublishingEnabled"{{if .TbaPublishingEnabled}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">TBA Event Code</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="tbaEventCode" value="{{.TbaEventCode}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">TBA Auth ID</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="tbaSecretId" value="{{.TbaSecretId}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">TBA Secret</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="tbaSecret" value="{{.TbaSecret}}">
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Nexus</legend>
+              <p>Automatically populates practice and playoff match lineups from Nexus. Uses the same event code as TBA;
+                configure it above if enabling.</p>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label" for="nexusEnabled">Enable pulling lineup from Nexus</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="nexusEnabled" name="nexusEnabled"{{if .NexusEnabled}} checked{{end}}>
+                </div>
+              </div>
+            </fieldset>
           </div>
-        </fieldset>
-        <fieldset class="mb-4">
-          <legend>Automatic Team Info Download</legend>
-          <div class="row mb-3">
-            <label class="col-lg-8 control-label" for="tbaDownloadEnabled">
-              Enable Automatic Team Info Download (From TBA)
-            </label>
-            <div class="col-lg-1 checkbox">
-              <input type="checkbox" id="tbaDownloadEnabled"
-                name="tbaDownloadEnabled"{{if .TbaDownloadEnabled}} checked{{end}}>
-            </div>
+          <!--Publishing-->
+          <!--networking-->
+          <div class="tab-pane fade" id="networking" role="tabpanel" aria-labelledby="networking-tab">
+            <fieldset class="mb-4">
+              <legend>Networking</legend>
+              <p>Enable this setting if you have a Vivid-Hosting VH-113 access point and Cisco Catalyst 3500-series switch 
+                available, for isolating each team to its own SSID and VLAN..</p>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label" for="networkSecurityEnabled">Enable advanced network security</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="networkSecurityEnabled"
+                    name="networkSecurityEnabled"{{if .NetworkSecurityEnabled}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">AP Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="apAddress" value="{{.ApAddress}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">AP API Password</label>
+                <div class="col-lg-6">
+                  <input type="password" class="form-control" name="apPassword" value="{{.ApPassword}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">AP Channel (6 GHz)</label>
+                <div class="col-lg-6">
+                  <select class="form-select" name="apChannel" value="{{.ApChannel}}">
+                    <option value="36"{{if eq .ApChannel 36}} selected{{end}}>36 (5 GHz)</option>
+                    <option value="40"{{if eq .ApChannel 40}} selected{{end}}>40 (5 GHz)</option>
+                    <option value="44"{{if eq .ApChannel 44}} selected{{end}}>44 (5 GHz)</option>
+                    <option value="48"{{if eq .ApChannel 48}} selected{{end}}>48 (5 GHz)</option>
+                    <option value="149"{{if eq .ApChannel 149}} selected{{end}}>149 (5 GHz)</option>
+                    <option value="153"{{if eq .ApChannel 153}} selected{{end}}>153 (5 GHz)</option>
+                    <option value="157"{{if eq .ApChannel 157}} selected{{end}}>157 (5 GHz)</option>
+                    <option value="161"{{if eq .ApChannel 161}} selected{{end}}>161 (5 GHz)</option>
+                    {{range $i, $j := seq 29}}
+                      <option value="{{(add 5 (multiply $i 8))}}"
+                        {{if eq $.ApChannel (add 5 (multiply $i 8))}} selected{{end}}>
+                        {{(add 5 (multiply $i 8))}} (6 GHz)
+                      </option>
+                    {{end}}
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Switch Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="switchAddress" value="{{.SwitchAddress}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Switch Password</label>
+                <div class="col-lg-6">
+                  <input type="password" class="form-control" name="switchPassword" value="{{.SwitchPassword}}">
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Match Video Recording</legend>
+              <p>
+                If you are using a Blackmagic HyperDeck device to record match video, enter the device IP address(es) here
+                to have Cheesy Arena automatically start and stop recording for each match. Separate multiple addresses with
+                a comma.
+              </p>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blackmagic Addresses</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="blackmagicAddresses" value="{{.BlackmagicAddresses}}">
+                </div>
+              </div>
+            </fieldset>
           </div>
-        </fieldset>
-        <fieldset class="mb-4">
-          <legend>Publishing</legend>
-          <p>Contact The Blue Alliance to obtain an event code and credentials.</p>
-          <div class="row mb-3">
-            <label class="col-lg-8 control-label" for="tbaPublishingEnabled">Enable The Blue Alliance publishing</label>
-            <div class="col-lg-1 checkbox">
-              <input type="checkbox" id="tbaPublishingEnabled"
-                name="tbaPublishingEnabled"{{if .TbaPublishingEnabled}} checked{{end}}>
-            </div>
+          <!--networking-->
+          <!--automation-->
+          <div class="tab-pane fade" id="automation" role="tabpanel" aria-labelledby="automation-tab">
+            <fieldset class="mb-4">
+              <legend>PLC</legend>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">PLC Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="plcAddress" value="{{.PlcAddress}}">
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Team Signs</legend>
+              <p>
+                If you are using a set of the (2024+) official team number / timer signs, enter their two-digit IDs (e.g.
+                51, 52, etc.) here.
+              </p>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red 1 Sign ID</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="teamSignRed1Id"
+                    value="{{if gt .TeamSignRed1Id 0}}{{.TeamSignRed1Id}}{{end}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red 2 Sign ID</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="teamSignRed2Id"
+                    value="{{if gt .TeamSignRed2Id 0}}{{.TeamSignRed2Id}}{{end}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red 3 Sign ID</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="teamSignRed3Id"
+                    value="{{if gt .TeamSignRed3Id 0}}{{.TeamSignRed3Id}}{{end}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red Timer Sign ID</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="teamSignRedTimerId"
+                    value="{{if gt .TeamSignRedTimerId 0}}{{.TeamSignRedTimerId}}{{end}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue 1 Sign ID</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="teamSignBlue1Id"
+                    value="{{if gt .TeamSignBlue1Id 0}}{{.TeamSignBlue1Id}}{{end}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue 2 Sign ID</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="teamSignBlue2Id"
+                    value="{{if gt .TeamSignBlue2Id 0}}{{.TeamSignBlue2Id}}{{end}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue 3 Sign ID</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="teamSignBlue3Id"
+                    value="{{if gt .TeamSignBlue3Id 0}}{{.TeamSignBlue3Id}}{{end}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue Timer Sign ID</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="teamSignBlueTimerId"
+                    value="{{if gt .TeamSignBlueTimerId 0}}{{.TeamSignBlueTimerId}}{{end}}">
+                </div>
+              </div>
+            </fieldset>
           </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">TBA Event Code</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="tbaEventCode" value="{{.TbaEventCode}}">
-            </div>
+          <!--automation-->
+          <!--game-specific-->
+          <div class="tab-pane fade" id="game-specific" role="tabpanel" aria-labelledby="game-specific-tab">
+            <fieldset class="mb-4">
+              <legend>Game-Specific</legend>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Autonomous Period Duration<br />(seconds)</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="autoDurationSec" value="{{.AutoDurationSec}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Pause Duration<br />(seconds)</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="pauseDurationSec" value="{{.PauseDurationSec}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Teleoperated Period Duration<br />(seconds)</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="teleopDurationSec" value="{{.TeleopDurationSec}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Warning Remaining Duration<br />(seconds)</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="warningRemainingDurationSec"
+                    value="{{.WarningRemainingDurationSec}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Auto Bonus RP Coral Threshold</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" id="autoBonusCoralThreshold" name="autoBonusCoralThreshold"
+                    value="{{.AutoBonusCoralThreshold}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Coopertition Bonus Enabled</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="coralBonusCoopEnabled"
+                    name="coralBonusCoopEnabled"{{if .CoralBonusCoopEnabled}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Coral Bonus RP Per-Level Threshold</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" id="coralBonusPerLevelThreshold"
+                    name="coralBonusPerLevelThreshold" value="{{.CoralBonusPerLevelThreshold}}">
+                </div>
+              </div>
+              <div class="row">
+                <label class="col-lg-6 control-label">Barge Bonus RP Point Threshold</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" id="bargeBonusPointThreshold" name="bargeBonusPointThreshold"
+                    value="{{.BargeBonusPointThreshold}}">
+                </div>
+              </div>
+            </fieldset>
           </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">TBA Auth ID</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="tbaSecretId" value="{{.TbaSecretId}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">TBA Secret</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="tbaSecret" value="{{.TbaSecret}}">
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="mb-4">
-          <legend>Nexus</legend>
-          <p>Automatically populates practice and playoff match lineups from Nexus. Uses the same event code as TBA;
-            configure it above if enabling.</p>
-          <div class="row mb-3">
-            <label class="col-lg-8 control-label" for="nexusEnabled">Enable pulling lineup from Nexus</label>
-            <div class="col-lg-1 checkbox">
-              <input type="checkbox" id="nexusEnabled" name="nexusEnabled"{{if .NexusEnabled}} checked{{end}}>
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="mb-4">
-          <legend>Authentication</legend>
-          <p>Configure password to enable authentication, or leave blank to disable.</p>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Password for 'admin' user</label>
-            <div class="col-lg-6">
-              <input type="password" class="form-control" name="adminPassword" value="{{.AdminPassword}}">
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="mb-4">
-          <legend>Networking</legend>
-          <p>Enable this setting if you have a Vivid-Hosting VH-113 access point and Cisco Catalyst 3500-series switch
-            available, for isolating each team to its own SSID and VLAN.</p>
-          <div class="row mb-3">
-            <label class="col-lg-8 control-label" for="networkSecurityEnabled">Enable advanced network security</label>
-            <div class="col-lg-1 checkbox">
-              <input type="checkbox" id="networkSecurityEnabled"
-                name="networkSecurityEnabled"{{if .NetworkSecurityEnabled}} checked{{end}}>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">AP Address</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="apAddress" value="{{.ApAddress}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">AP API Password</label>
-            <div class="col-lg-6">
-              <input type="password" class="form-control" name="apPassword" value="{{.ApPassword}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">AP Channel (6 GHz)</label>
-            <div class="col-lg-6">
-              <select class="form-select" name="apChannel" value="{{.ApChannel}}">
-                {{range $i, $j := seq 29}}
-                  <option value="{{(add 5 (multiply $i 8))}}"
-                    {{if eq $.ApChannel (add 5 (multiply $i 8))}} selected{{end}}>
-                    {{(add 5 (multiply $i 8))}}
-                  </option>
-                {{end}}
-              </select>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Switch Address</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="switchAddress" value="{{.SwitchAddress}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Switch Password</label>
-            <div class="col-lg-6">
-              <input type="password" class="form-control" name="switchPassword" value="{{.SwitchPassword}}">
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="mb-4">
-          <legend>PLC</legend>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">PLC Address</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="plcAddress" value="{{.PlcAddress}}">
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="mb-4">
-          <legend>Team Signs</legend>
-          <p>
-            If you are using a set of the (2024+) official team number / timer signs, enter their two-digit IDs (e.g.
-            51, 52, etc.) here.
-          </p>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Red 1 Sign ID</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignRed1Id"
-                value="{{if gt .TeamSignRed1Id 0}}{{.TeamSignRed1Id}}{{end}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Red 2 Sign ID</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignRed2Id"
-                value="{{if gt .TeamSignRed2Id 0}}{{.TeamSignRed2Id}}{{end}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Red 3 Sign ID</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignRed3Id"
-                value="{{if gt .TeamSignRed3Id 0}}{{.TeamSignRed3Id}}{{end}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Red Timer Sign ID</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignRedTimerId"
-                value="{{if gt .TeamSignRedTimerId 0}}{{.TeamSignRedTimerId}}{{end}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Blue 1 Sign ID</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignBlue1Id"
-                value="{{if gt .TeamSignBlue1Id 0}}{{.TeamSignBlue1Id}}{{end}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Blue 2 Sign ID</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignBlue2Id"
-                value="{{if gt .TeamSignBlue2Id 0}}{{.TeamSignBlue2Id}}{{end}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Blue 3 Sign ID</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignBlue3Id"
-                value="{{if gt .TeamSignBlue3Id 0}}{{.TeamSignBlue3Id}}{{end}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Blue Timer Sign ID</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="teamSignBlueTimerId"
-                value="{{if gt .TeamSignBlueTimerId 0}}{{.TeamSignBlueTimerId}}{{end}}">
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="mb-4">
-          <legend>Match Video Recording</legend>
-          <p>
-            If you are using a Blackmagic HyperDeck device to record match video, enter the device IP address(es) here
-            to have Cheesy Arena automatically start and stop recording for each match. Separate multiple addresses with
-            a comma.
-          </p>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Blackmagic Addresses</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="blackmagicAddresses" value="{{.BlackmagicAddresses}}">
-            </div>
-          </div>
-        </fieldset>
-        <fieldset class="mb-4">
-          <legend>Game-Specific</legend>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Autonomous Period Duration<br />(seconds)</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="autoDurationSec" value="{{.AutoDurationSec}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Pause Duration<br />(seconds)</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="pauseDurationSec" value="{{.PauseDurationSec}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Teleoperated Period Duration<br />(seconds)</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="teleopDurationSec" value="{{.TeleopDurationSec}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Warning Remaining Duration<br />(seconds)</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" name="warningRemainingDurationSec"
-                value="{{.WarningRemainingDurationSec}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Auto Bonus RP Coral Threshold</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" id="autoBonusCoralThreshold" name="autoBonusCoralThreshold"
-                value="{{.AutoBonusCoralThreshold}}">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Coopertition Bonus Enabled</label>
-            <div class="col-lg-1 checkbox">
-              <input type="checkbox" id="coralBonusCoopEnabled"
-                name="coralBonusCoopEnabled"{{if .CoralBonusCoopEnabled}} checked{{end}}>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-6 control-label">Coral Bonus RP Per-Level Threshold</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" id="coralBonusPerLevelThreshold"
-                name="coralBonusPerLevelThreshold" value="{{.CoralBonusPerLevelThreshold}}">
-            </div>
-          </div>
-          <div class="row">
-            <label class="col-lg-6 control-label">Barge Bonus RP Point Threshold</label>
-            <div class="col-lg-6">
-              <input type="text" class="form-control" id="bargeBonusPointThreshold" name="bargeBonusPointThreshold"
-                value="{{.BargeBonusPointThreshold}}">
-            </div>
-          </div>
-        </fieldset>
+          <!--game-specific-->
+        </div>
+        <!--Save Data-->
         <div class="row justify-content-center">
           <div class="col-lg-2">
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </div>
+        <!--Save Data-->
       </form>
     </div>
   </div>
+
   <div class="col-lg-4">
     <div class="card card-body bg-body-tertiary mb-4">
       <legend>Database</legend>
