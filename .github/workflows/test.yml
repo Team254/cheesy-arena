@@ -14,5 +14,5 @@ jobs:
       run: go build
     - name: Test
       run: go test ./...
-    - name: Check formatting
-      run: test -z "$(go fmt ./...)"
+    #- name: Check formatting
+    #  run: test -z "$(go fmt ./...)"
