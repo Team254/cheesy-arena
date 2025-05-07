@@ -166,6 +166,10 @@ h3 {
   border: 0;
   border-radius: 0.2vw;
 }
+.rule-select option {
+  background-color: #222;
+  color: #fff;
+}
 .delete-button {
   width: 6vw;
   height: 3vw;
