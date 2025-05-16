@@ -340,7 +340,11 @@ func (sign *TeamSign) generateTeamNumberTexts(
 		// where to go.
 		rearText = fmt.Sprintf("Next Team Up: %d", sign.nextMatchTeamId)
 	} else if len(message) > 0 {
-		rearText = fmt.Sprintf("%-5d %14s", allianceStation.Team.Id, message)
+		teamId := 0
+		if allianceStation.Team != nil {
+			teamId = allianceStation.Team.Id
+		}
+		rearText = fmt.Sprintf("%-5d %14s", teamId, message)
 	} else {
 		rearText = inMatchRearText
 	}
@@ -383,7 +387,7 @@ func (sign *TeamSign) sendPacket() error {
 		sign.lastRearText = sign.rearText
 	}
 
-	if sign.packetIndex > teamSignPacketHeaderLength {
+	if sign.packetIndex > teamSignPacketHeaderLength && sign.udpConn != nil {
 		sign.lastPacketTime = time.Now()
 		if _, err := sign.udpConn.Write(sign.packetData[:sign.packetIndex]); err != nil {
 			return err
