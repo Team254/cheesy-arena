@@ -99,7 +99,8 @@ const updateUIMode = function() {
   $(".scoring-teleop-button").prop('disabled', !(inTeleop && scoringAvailable));
   $("#commit").prop('disabled', !commitAvailable);
   $("#edit-auto").prop('disabled', !(inTeleop && scoringAvailable));
-  $(".container").attr("data-editing-auto", editingAuto);
+  $(".container").attr("data-scoring-auto", (!inTeleop || editingAuto) && scoringAvailable);
+  $(".container").attr("data-in-teleop", inTeleop && scoringAvailable);
   $("#edit-auto").text(editingAuto ? "Save Auto" : "Edit Auto");
 }
 
