@@ -352,11 +352,13 @@ main {
 #reef-controls-warning {
   position: absolute;
   height: 100%;
-  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 
-[data-editing-auto="true"] #reef-controls-warning {
-  visibility: visible;
+[data-scoring-auto="true"][data-in-teleop="true"] #reef-controls-warning {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .reef-column {
@@ -424,7 +426,7 @@ main {
   visibility: hidden;
 }
 
-[data-editing-auto="true"] #edit-auto {
+[data-scoring-auto="true"] #edit-auto {
   background-color: var(--green-action);
   color: var(--text-active);
 }
@@ -489,7 +491,22 @@ main {
 }
 
 .counter-value {
+  font-weight: bold;
+}
+
+.counter-main-value {
   font-size: 28pt;
+  transition: font-size 0.2s ease-in-out;
+}
+
+.counter-main-clone {
+  font-size: 0;
+  transition: font-size 0.2s ease-in-out;
+}
+
+.counter-auto-value {
+  font-size: 12pt;
+  transition: font-size 0.2s ease-in-out;
   font-weight: bold;
 }
 
@@ -501,16 +518,25 @@ main {
   justify-content: center;
   align-items: center;
   gap: 0.1em;
+  font-size: 12pt;
+  transition: font-size 0.2s ease-in-out;
+}
+
+[data-scoring-auto="true"] .counter-auto-row,
+[data-scoring-auto="true"] .counter-status:has(.counter-auto-row) .counter-main-value {
+  font-size: 0pt;
+}
+[data-scoring-auto="true"] .counter-auto-value {
+  font-size: 28pt;
+}
+[data-scoring-auto="true"] .counter-main-clone {
+  font-size: 12pt;
 }
 
 .counter:has(button:enabled) .counter-auto-row {
   background-color: var(--auto-action);
   color: var(--text-active-dark);
   box-shadow: black 0px 0px 2px;
-}
-
-.counter-auto-value {
-  font-weight: bold;
 }
 
 #endgame-dialog {
