@@ -51,16 +51,17 @@
   </div>
   <div id="bottom-controls">
     <div class="counter-wrapper">
-      {{template "counter" (dict "id" "trough" "label" "L1 Coral" "has_auto" true)}}
-    </div>
-    <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart disabled></button>
-    <div class="counter-wrapper">
       {{if .Position.ScoresBarge}}
         {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
       {{else if and .Position.ScoresProcessor (not .PlcIsEnabled)}}
         {{template "counter" (dict "id" "processor" "label" "Processor Algae")}}
       {{end}}
     </div>
+    <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart disabled></button>
+    <div class="counter-wrapper">
+      {{template "counter" (dict "id" "trough" "label" "L1 Coral" "has_auto" true)}}
+    </div>
+    <button id="fouls-button" class="scoring-button" onclick="showFoulsDialog();" ontouchstart disabled>Fouls</button>
   </div>
 </main>
 
@@ -100,14 +101,27 @@
 </svg>
 
 <dialog id="endgame-dialog" onclick="closeEndgameDialogIfOutside(event);">
-  <div id="endgame-dialog-container">
-    <div id="endgame-banner">Endgame Scoring</div>
+  <div class="dialog-container">
+    <div class="dialog-banner">Endgame Scoring</div>
     <div id="endgame-scoring">
       {{range $i := seq 3}}
         {{template "endgame-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i)}}
       {{end}}
     </div>
-    <button id="endgame-close" autofocus onclick="closeEndgameDialog();" ontouchstart>Close</button>
+    <button class="dialog-close" autofocus onclick="closeEndgameDialog();" ontouchstart>Close</button>
+  </div>
+</dialog>
+
+<dialog id="fouls-dialog" onclick="closeFoulsDialogIfOutside(event);">
+  <div class="dialog-container">
+    <div class="dialog-banner">Add Fouls</div>
+    <div id="foul-container">
+      {{template "foulButton" (dict "id" "foul-blue-minor" "color" "blue" "label" "Blue" "isMajor" false)}}
+      {{template "foulButton" (dict "id" "foul-red-minor" "color" "red" "label" "Red" "isMajor" false)}}
+      {{template "foulButton" (dict "id" "foul-blue-major" "color" "blue" "label" "Blue Major" "isMajor" true)}}
+      {{template "foulButton" (dict "id" "foul-red-major" "color" "red" "label" "Red Major" "isMajor" true)}}
+    </div>
+    <button class="dialog-close" autofocus onclick="closeFoulsDialog();" ontouchstart>Close</button>
   </div>
 </dialog>
 {{end}}
@@ -120,6 +134,15 @@
 {{define "script"}}
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/scoring_panel.js"></script>
+{{end}}
+
+{{define "foulButton"}}
+<button id="{{.id}}" class="foul-button {{.color}}" ontouchstart onclick="addFoul('{{.color}}', {{.isMajor}});">
+  <div class="foul-button-label">{{.label}}</div>
+  <div class="foul-button-counters">
+    <span class="fouls-local">0</span> / <span class="fouls-global">0</span>
+  </div>
+</button>
 {{end}}
 
 {{define "teamButton"}}
