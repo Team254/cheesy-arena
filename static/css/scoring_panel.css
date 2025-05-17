@@ -250,7 +250,7 @@ main {
 }
 
 #bottom-controls {
-  padding: 10px 0;
+  padding: 10px 1em;
   display: flex;
   justify-content: space-around;
 }
@@ -539,7 +539,23 @@ main {
   box-shadow: black 0px 0px 2px;
 }
 
-#endgame-dialog {
+#fouls-button {
+  flex: 0.5 0.5 0%;
+  border-radius: var(--button-border-radius);
+  color: var(--text-active-dark);
+  height: 100%;
+  background-color: var(--auto-action);
+  font-size: 18pt;
+  font-weight: bold;
+  padding: 0.2em;
+}
+
+#fouls-button:disabled {
+  color: var(--text-inactive-dark);
+  background-color: var(--auto-inactive);
+}
+
+dialog {
   padding: 0;
   border: none;
   border-radius: 16px;
@@ -549,7 +565,7 @@ main {
   background-color: var(--alliance-overlay-background);
 }
 
-#endgame-dialog-container {
+.dialog-container {
   max-width: 700px;
   width: 80vw;
   padding-bottom: 20px;
@@ -557,13 +573,13 @@ main {
   flex-direction: column;
 }
 
-#endgame-dialog::backdrop {
+dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.75);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
 }
 
-#endgame-banner {
+.dialog-banner {
   padding: 5px;
   font-size: 24pt;
   font-weight: bold;
@@ -606,8 +622,44 @@ main {
   background-color: var(--alliance-highlight);
 }
 
-#endgame-close {
+.dialog-close {
   padding: 20px;
   width: 29%;
   align-self: center;
+  border: none;
+  outline: none;
+  border-radius: var(--button-border-radius);
+  background-color: var(--neutral-action);
+  color: var(--text-active);
+}
+
+#fouls-dialog button {
+  cursor: auto;
+  height: 68px;
+  border-radius: var(--button-border-radius);
+}
+
+#foul-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-self: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+#foul-container .foul-button {
+  height: 120px;
+  width: 300px;
+}
+
+.foul-button.red {
+  background-color: var(--red-action);
+}
+.foul-button.blue {
+  background-color: var(--blue-action);
+}
+
+.foul-button-label {
+  font-size: 24pt;
+  font-weight: bold;
 }

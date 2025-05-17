@@ -18,6 +18,13 @@ let inTeleop = false;
 // True when post-auto and in edit auto mode
 let editingAuto = false;
 
+let localFoulCounts = {
+  "red-minor": 0,
+  "blue-minor": 0,
+  "red-major": 0,
+  "blue-major": 0,
+}
+
 // Handle controls to open/close the endgame dialog
 const endgameDialog = $("#endgame-dialog")[0];
 const showEndgameDialog = function() {
@@ -29,6 +36,19 @@ const closeEndgameDialog = function() {
 const closeEndgameDialogIfOutside = function(event) {
   if (event.target === endgameDialog) {
     closeEndgameDialog();
+  }
+}
+
+const foulsDialog = $("#fouls-dialog")[0];
+const showFoulsDialog = function() {
+  foulsDialog.showModal();
+}
+const closeFoulsDialog = function() {
+  foulsDialog.close();
+}
+const closeFoulsDialogIfOutside = function(event) {
+  if (event.target === foulsDialog) {
+    closeFoulsDialog();
   }
 }
 
@@ -45,6 +65,28 @@ const handleMatchLoad = function(data) {
     $(".team-3 .team-num").text(data.Match.Blue3);
   }
 };
+
+const renderLocalFoulCounts = function() {
+  for (const foulType in localFoulCounts) {
+    const count = localFoulCounts[foulType];
+    $(`#foul-${foulType} .fouls-local`).text(count);
+  }
+}
+
+const resetFoulCounts = function() {
+  localFoulCounts["red-minor"] = 0;
+  localFoulCounts["blue-minor"] = 0;
+  localFoulCounts["red-major"] = 0;
+  localFoulCounts["blue-major"] = 0;
+  renderLocalFoulCounts();
+}
+
+const addFoul = function(alliance, isMajor) {
+  const foulType = `${alliance}-${isMajor ? "major" : "minor"}`;
+  localFoulCounts[foulType] += 1;
+  websocket.send("addFoul", {Alliance: alliance, IsMajor: isMajor});
+  renderLocalFoulCounts();
+}
 
 // Handles a websocket message to update the match status.
 const handleMatchTime = function(data) {
@@ -76,6 +118,7 @@ const handleMatchTime = function(data) {
       inTeleop = false;
       editingAuto = false;
       committed = false;
+      resetFoulCounts();
   }
   updateUIMode();
 };
@@ -150,6 +193,13 @@ const handleRealtimeScore = function(data) {
     $(`#trough .counter-value`).text(score.Reef.TroughFar);
     $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughFar);
   }
+
+  redFouls = data.Red.Score.Fouls || [];
+  blueFouls = data.Blue.Score.Fouls || [];
+  $(`#foul-blue-minor .fouls-global`).text(blueFouls.filter(foul => !foul.IsMajor).length)
+  $(`#foul-blue-major .fouls-global`).text(blueFouls.filter(foul => foul.IsMajor).length)
+  $(`#foul-red-minor .fouls-global`).text(redFouls.filter(foul => !foul.IsMajor).length)
+  $(`#foul-red-major .fouls-global`).text(redFouls.filter(foul => foul.IsMajor).length)
 };
 
 // Websocket message senders for various buttons
