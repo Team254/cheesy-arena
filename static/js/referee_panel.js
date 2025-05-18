@@ -111,6 +111,7 @@ const handleScoringStatus = function(data) {
 const updateScoreStatus = function(data, position, element, displayName) {
   const status = data.PositionStatuses[position];
   $(element).text(`${displayName} ${status.NumPanelsReady}/${status.NumPanels}`);
+  $(element).attr("data-present", status.NumPanels > 0);
   $(element).attr("data-ready", status.Ready);
 };
 

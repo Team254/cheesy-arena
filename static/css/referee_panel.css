@@ -92,6 +92,9 @@ h3 {
 .scoring-status[data-ready=true] {
   background-color: #0c6;
 }
+.scoring-status[data-present=false] {
+  background-color: #666;
+}
 #fouls {
   display: flex;
   flex-direction: column;
