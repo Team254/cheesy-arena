@@ -215,3 +215,33 @@ h3 {
 #commitButton {
   background-color: #26c;
 }
+
+#scoreSummary {
+  width: 100%;
+  display: flex;
+  gap: 2vw;
+  padding: 1vw 7vw;
+  justify-content: space-evenly;
+  text-align: center;
+}
+#scoreSummary[data-hr="false"] {
+  display: none;
+}
+
+#scoreSummary > div {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+#scoreSummary .placeholder {
+  visibility: hidden;
+}
+
+#scoreSummary .wide-row {
+  grid-column: span 3;
+}
+
+#scoreSummary .label {
+  text-align: right;
+  padding: 0 0.2vw;
+}
