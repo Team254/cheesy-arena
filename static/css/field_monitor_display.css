@@ -27,6 +27,29 @@ body {
 .position-row[data-ds="true"][data-preMatch="false"] {
   display: none;
 }
+
+/* In Match */
+#matchData[data-ds="true"][data-preMatch="true"]{
+  display: none;
+}
+#matchData{
+  position: absolute;
+  top: 2%;
+  width: 100%;
+  height: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 4vw;
+}
+#matchStatusRow{
+  display: flex;
+}
+#matchStatusRow[data-ds="true"][data-preMatch="false"]  {
+  display: none;
+}
+
+/*  */
 #matchStatusRow {
   height: 6%;
   display: flex;
@@ -36,9 +59,11 @@ body {
   font-size: 1.5vw;
   text-transform: uppercase;
 }
+
 #matchStatusRow[data-ds="true"][data-preMatch="false"]  {
   display: none;
 }
+
 #eventStatusRow {
   height: 7%;
   display: flex;

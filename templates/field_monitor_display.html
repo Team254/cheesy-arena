@@ -46,6 +46,34 @@ Display showing robot connection status.
     <div id="rightScore" class="right-score ds-dependent text-center fta-dependent reversible-right "
       style="width: 8%;"></div>
   </div>
+  <div id="matchData" class="ds-dependent">
+    <div>Match Time</div>
+    <div id="matchTimeAllianceStation"></div>
+    Score
+    <div id="Score">
+      <span id="rightScoreAllianceDisplay" class="left-score ds-dependent text-center reversible-right"></span>
+      <span class="note-splitter">/</span>
+      <span id="leftScoreAllianceDisplay" class="right-score ds-dependent text-center reversible-right"></span>
+    </div> 
+    <div class="score-fields">
+      <div class="score-field">
+        <img class="coral-icon" src="/static/img/coral.png" />
+        <div id="currentCoral"></div>
+      </div></br>
+      <div class="score-field">
+        <img class="algae-icon" src="/static/img/algae.png" />
+        <div id="currentAlgae"></div>
+      </div>
+      <div class="coralByLevel">
+        <div class="level-row">
+          <div id="level1"></div>
+          <div id="level2"></div>
+          <div id="level3"></div>
+          <div id="level4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 <script src="/static/js/lib/jquery.min.js"></script>
 <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
@@ -55,7 +83,10 @@ Display showing robot connection status.
 <script src="/static/js/lib/bootstrap.bundle.min.js"></script>
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/field_monitor_display.js"></script>
-
+{{range $sound := .MatchSounds}}
+  <audio id="sound-{{$sound.Name}}" src="/static/audio/{{$sound.Name}}.{{$sound.FileExtension}}" preload="auto">
+  </audio>
+{{end}}
 </html>
 
 {{define "row"}}

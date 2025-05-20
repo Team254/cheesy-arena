@@ -31,7 +31,8 @@ func (web *Web) fieldMonitorDisplayHandler(w http.ResponseWriter, r *http.Reques
 	}
 	data := struct {
 		*model.EventSettings
-	}{web.arena.EventSettings}
+		MatchSounds []*game.MatchSound
+	}{web.arena.EventSettings, game.MatchSounds}
 	err = template.ExecuteTemplate(w, "field_monitor_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -62,7 +63,7 @@ func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *ht
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.MatchTimingNotifier, display.Notifier, web.arena.ArenaStatusNotifier,
-		web.arena.EventStatusNotifier, web.arena.RealtimeScoreNotifier, web.arena.MatchTimeNotifier,
+		web.arena.EventStatusNotifier, web.arena.RealtimeScoreNotifier, web.arena.PlaySoundNotifier, web.arena.MatchTimeNotifier,
 		web.arena.MatchLoadNotifier, web.arena.ReloadDisplaysNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
