@@ -6,6 +6,7 @@
 package web
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
@@ -31,7 +32,8 @@ func (web *Web) fieldMonitorDisplayHandler(w http.ResponseWriter, r *http.Reques
 	}
 	data := struct {
 		*model.EventSettings
-	}{web.arena.EventSettings}
+		MatchSounds []*game.MatchSound
+	}{web.arena.EventSettings, game.MatchSounds}
 	err = template.ExecuteTemplate(w, "field_monitor_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -70,6 +72,7 @@ func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *ht
 		web.arena.MatchTimeNotifier,
 		web.arena.MatchLoadNotifier,
 		web.arena.ReloadDisplaysNotifier,
+		web.arena.PlaySoundNotifier,
 	)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
