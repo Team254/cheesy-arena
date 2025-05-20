@@ -31,31 +31,62 @@ Display showing robot connection status.
       {{end}}
       {{if not .EventSettings.NetworkSecurityEnabled}}
       <div id="matchName" class="text-start" style="width: 45%; padding-left: 1%;"></div>
-      {{end}}
-      <div id="matchTime" class="text-center" style="width: 10%;"></div>
-      <div id="matchState" class="text-end" style="width: 45%; padding-right: 1%;"></div>
+    {{end}}
+    <div id="matchTime" class="text-center" style="width: 10%;"></div>
+    <div id="matchState" class="text-end" style="width: 45%; padding-right: 1%;"></div>
+  </div>
+  {{template "row" dict "leftPosition" "1" "rightPosition" "3"}}
+  {{template "row" dict "leftPosition" "2" "rightPosition" "2"}}
+  {{template "row" dict "leftPosition" "3" "rightPosition" "1"}}
+  <div id="eventStatusRow" class="ds-dependent">
+    <div id="leftScore" class="fta-dependent ds-dependent left-score text-center reversible-left"
+      style="width:8%; vertical-align:middle;"></div>
+    <div id="cycleTimeMessage" class="text-center ds-dependent" style="width: 46%;"></div>
+    <div id="earlyLateMessage" class="text-center ds-dependent" style="width: 38%;"></div>
+    <div id="rightScore" class="right-score ds-dependent text-center fta-dependent reversible-right "
+      style="width: 8%;"></div>
+  </div>
+  <div id="matchData" class="ds-dependent">
+    <div>Match Time</div>
+    <div id="matchTimeAllianceStation"></div>
+    Score
+    <div id="Score">
+      <span id="rightScoreAllianceDisplay" class="left-score ds-dependent text-center reversible-right"></span>
+      <span class="note-splitter">/</span>
+      <span id="leftScoreAllianceDisplay" class="right-score ds-dependent text-center reversible-right"></span>
+    </div> 
+    <div class="score-fields">
+      <div class="score-field">
+        <img class="coral-icon" src="/static/img/coral.png" />
+        <div id="currentCoral"></div>
+      </div></br>
+      <div class="score-field">
+        <img class="algae-icon" src="/static/img/algae.png" />
+        <div id="currentAlgae"></div>
+      </div>
+      <div class="coralByLevel">
+        <div class="level-row">
+          <div id="level1"></div>
+          <div id="level2"></div>
+          <div id="level3"></div>
+          <div id="level4"></div>
+        </div>
+      </div>
     </div>
-    {{template "row" dict "leftPosition" "1" "rightPosition" "3"}}
-    {{template "row" dict "leftPosition" "2" "rightPosition" "2"}}
-    {{template "row" dict "leftPosition" "3" "rightPosition" "1"}}
-    <div id="eventStatusRow" class="ds-dependent">
-      <div id="leftScore" class="fta-dependent ds-dependent left-score text-center reversible-left"
-        style="width:8%; vertical-align:middle;"></div>
-      <div id="cycleTimeMessage" class="text-center ds-dependent" style="width: 46%;"></div>
-      <div id="earlyLateMessage" class="text-center ds-dependent" style="width: 38%;"></div>
-      <div id="rightScore" class="right-score ds-dependent text-center fta-dependent reversible-right "
-        style="width: 8%;"></div>
-    </div>
-  </body>
-  <script src="/static/js/lib/jquery.min.js"></script>
-  <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
-  <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
-  <script src="/static/js/cheesy-websocket.js"></script>
-  <script src="/static/js/lib/jquery.transit.min.js"></script>
-  <script src="/static/js/lib/bootstrap.bundle.min.js"></script>
-  <script src="/static/js/match_timing.js"></script>
-  <script src="/static/js/field_monitor_display.js"></script>
-
+  </div>
+</body>
+<script src="/static/js/lib/jquery.min.js"></script>
+<script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+<script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+<script src="/static/js/cheesy-websocket.js"></script>
+<script src="/static/js/lib/jquery.transit.min.js"></script>
+<script src="/static/js/lib/bootstrap.bundle.min.js"></script>
+<script src="/static/js/match_timing.js"></script>
+<script src="/static/js/field_monitor_display.js"></script>
+{{range $sound := .MatchSounds}}
+  <audio id="sound-{{$sound.Name}}" src="/static/audio/{{$sound.Name}}.{{$sound.FileExtension}}" preload="auto">
+  </audio>
+{{end}}
 </html>
 
 {{define "row"}}
