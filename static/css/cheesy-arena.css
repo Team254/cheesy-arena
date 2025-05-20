@@ -97,6 +97,9 @@
 .badge-scoring[data-ready=true] {
   background-color: #0c6;
 }
+.badge-scoring[data-present=false] {
+  background-color: #666;
+}
 .badge-status {
   background-color: #e66;
 }
