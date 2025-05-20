@@ -287,6 +287,8 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				continue
 			}
 			web.arena.FieldVolunteers = true
+			web.arena.AllianceStationDisplayMode = "signalCount"
+			web.arena.AllianceStationDisplayModeNotifier.Notify()
 		case "signalReset":
 			if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
 				// Don't allow clearing the field until the match is over.
