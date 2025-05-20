@@ -28,6 +28,10 @@
     </div>
   </div>
   <div id="fouls">
+    <div id="scoreSummary" class="headRef-dependent">
+      {{template "scoreSummary" dict "id" "blueScoreSummary"}}
+      {{template "scoreSummary" dict "id" "redScoreSummary"}}
+    </div>
     <h3>Fouls</h3>
     <div id="foulButtons">
       <div class="foul-button blue-foul" onclick="addFoul('blue', false);">Blue</div>
@@ -56,5 +60,33 @@
 {{end}}
 {{define "teamCard"}}
 <div class="team-card" id="{{.alliance}}Team{{.position}}Card" data-alliance="{{.alliance}}" onclick="cycleCard(this);">
+</div>
+{{end}}
+{{define "scoreSummary"}}
+<div id="{{.id}}" class="scoreSummary">
+  <div class="placeholder"></div>
+  <div class="team-1">0</div>
+  <div class="team-2">0</div>
+  <div class="team-3">0</div>
+
+  <div class="label">Leave</div>
+  <div class="leave-symbol team-1-leave">❌</div>
+  <div class="leave-symbol team-2-leave">❌</div>
+  <div class="leave-symbol team-3-leave">❌</div>
+
+  <div class="label">Endgame</div>
+  <div class="team-1-endgame">None</div>
+  <div class="team-2-endgame">None</div>
+  <div class="team-3-endgame">None</div>
+
+  <div class="label">Coral</div>
+  <div class="wide-row">
+    <span class="coral-l1">0</span> / <span class="coral-l2">0</span> / <span class="coral-l3">0</span> / <span class="coral-l4">0</span>
+  </div>
+
+  <div class="label">Algae</div>
+  <div class="wide-row">
+    <span class="processor">0</span> / <span class="barge">0</span>
+  </div>
 </div>
 {{end}}
