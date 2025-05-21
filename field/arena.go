@@ -839,9 +839,13 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 			log.Printf("Failed to configure team WiFi: %s", err.Error())
 		}
 		go func() {
+			network.Downredscc()
+			network.Downbluescc()
 			if err := arena.networkSwitch.ConfigureTeamEthernet(teams); err != nil {
 				log.Printf("Failed to configure team Ethernet: %s", err.Error())
 			}
+			network.Upredscc()
+			network.Upbluescc()
 		}()
 	}
 }
