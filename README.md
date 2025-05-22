@@ -1,3 +1,18 @@
+# Freesy Arena **Under Construction**
+
+Freesy Arena is a fork of the open-source **Cheesy Arena**, developed with permission from its original creators. This version includes enhancements and features not available in the upstream repository, tailored to improve usability and flexibility for competition organizers.
+
+## Key Features
+**3-8 Team Double Eliminations**  
+  Supports smaller-scale tournaments with a double-elimination format, accommodating 3 to 8 teams.
+
+- **FTA Monitor (Aliance)**  
+  Provides a color-coded interface for the Field Technical Advisor (FTA) to monitor field status.  
+  Automatically switches to the Game Score display during matches for quick access to match-specific data.
+
+- **Quick Keys for Team and Match Controls**  
+  Introduces streamlined keyboard shortcuts to simplify team and match management, increasing efficiency during competitions.
+
 Cheesy Arena [![Build Status](https://github.com/Team254/cheesy-arena/actions/workflows/test.yml/badge.svg)](https://github.com/Team254/cheesy-arena/actions)
 ============
 A field management system that just works.
