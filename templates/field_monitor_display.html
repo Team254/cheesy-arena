@@ -91,10 +91,10 @@ Display showing robot connection status.
 
 {{define "row"}}
 <div class="position-row center ds-dependent">
-  <div class="left-position center reversible-left">{{.leftPosition}}</div>
+  <div class="left-position center reversible-left" role="button">{{.leftPosition}}</div>
   {{template "team" dict "side" "left" "position" .leftPosition}}
   {{template "team" dict "side" "right" "position" .rightPosition}}
-  <div class="right-position center ds-dependent reversible-right">{{.rightPosition}}</div>
+  <div class="right-position center ds-dependent reversible-right" role="button">{{.rightPosition}}</div>
 </div>
 {{end}}
 

@@ -255,13 +255,40 @@ var editFtaNotes = function(element) {
 $(function() {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
-  var reversed = urlParams.get("reversed");
-  if (reversed === "true") {
-    redSide = "right";
-    blueSide = "left";
-  } else {
-    redSide = "left";
-    blueSide = "right";
+  var reversed = urlParams.get("reversed") === "true"; // Initialize reversed variable
+  var isds = urlParams.get("ds"); 
+  updateSides(reversed);
+
+  // Add event listener to Flip button
+  $(".left-position, .right-position").click(function() {
+    if (isds === "true") {
+      return;
+    }
+    reversed = !reversed; // Toggle reversed state
+    updateSides(reversed);
+
+    // Update the data-reversed attribute for visual updates
+    $(".reversible-left").attr("data-reversed", reversed);
+    $(".reversible-right").attr("data-reversed", reversed);
+
+    // Optional: Persist state to the URL (if needed)
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.set("reversed", reversed);
+    window.history.replaceState({}, "", newUrl);
+  });
+  
+  function updateSides(isReversed) {
+    if (isReversed) {
+      redSide = "right";
+      blueSide = "left";
+    } else {
+      redSide = "left";
+      blueSide = "right";
+    }
+
+    // Update the DOM to reflect the new sides
+    $(".reversible-left").attr("data-reversed", isReversed);
+    $(".reversible-right").attr("data-reversed", isReversed);
   }
 
   //Read if display to be used in a Driver Station, ignore FTA flag if so.
