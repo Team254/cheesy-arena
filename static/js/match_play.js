@@ -272,10 +272,48 @@ const handleArenaStatus = function(data) {
     $("#plcStatus").text("Not Connected");
     $("#plcStatus").attr("data-ready", false);
   }
+
   $("#fieldEStop").attr("data-ready", !data.FieldEStop);
   $.each(data.PlcArmorBlockStatuses, function(name, status) {
     $("#plc" + name + "Status").attr("data-ready", status);
   });
+
+  if (data.ScoreTableIOEnabled) {
+    if (data.ScoreTableIOIsHealthy) {
+      $("#scoreTableIO").text("Score Connected");
+      $("#scoreTableIO").attr("data-ready", 2);
+    } else {
+      $("#scoreTableIO").text("Score Not Connected");
+      $("#scoreTableIO").attr("data-ready", 1);
+    }
+  } else {
+    $("#scoreTableIO").text("Score Disabled");
+    $("#scoreTableIO").attr("data-ready", 0);
+  }
+  if (data.RedEstopsEnabled) {  
+    if (data.RedEstopsIsHealthy) {
+      $("#redEstopsIO").text("Red Estops Connected");
+      $("#redEstopsIO").attr("data-ready", 2);
+    } else {
+      $("#redEstopsIO").text("Red Estops Not Connected");
+      $("#redEstopsIO").attr("data-ready", 1);
+    }
+  } else {
+    $("#redEstopsIO").text("Red Estops Disabled");
+    $("#redEstopsIO").attr("data-ready", 0);
+  }
+  if (data.BlueEstopsEnabled) {
+    if (data.BlueEStopsIsHealthy) {
+      $("#blueEstopsIO").text("Blue Estops Connected");
+      $("#blueEstopsIO").attr("data-ready", 2);
+    } else {
+      $("#blueEstopsIO").text("Blue Estops Not Connected");
+      $("#blueEstopsIO").attr("data-ready", 1);
+    }
+  } else {
+    $("#blueEstopsIO").text("Blue Estops Disabled");
+    $("#blueEstopsIO").attr("data-ready", 0);
+  }
 };
 
 // Handles a websocket message to update the teams for the current match.

@@ -92,6 +92,12 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		PlcIsHealthy          bool
 		FieldEStop            bool
 		PlcArmorBlockStatuses map[string]bool
+		ScoreTableIOEnabled		bool
+		RedEstopsEnabled		bool
+		BlueEstopsEnabled		bool
+		ScoreTableIOIsHealthy		 bool
+		RedEstopsIsHealthy		 bool
+		BlueEStopsIsHealthy		 bool
 	}{
 		arena.CurrentMatch.Id,
 		arena.AllianceStations,
@@ -102,6 +108,12 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		arena.Plc.IsHealthy(),
 		arena.Plc.GetFieldEStop(),
 		arena.Plc.GetArmorBlockStatuses(),
+		arena.Esp32.IsScoreTableIOEnabled(),
+		arena.Esp32.IsRedEstopsEnabled(),
+		arena.Esp32.IsBlueEstopsEnabled(),
+		arena.Esp32.IsScoreTableHealthy(),
+		arena.Esp32.IsRedEstopsHealthy(),
+		arena.Esp32.IsBlueEstopsHealthy(),
 	}
 }
 

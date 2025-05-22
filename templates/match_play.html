@@ -118,6 +118,15 @@
             {{end}}
           </p>
         {{end}}
+        {{if .AlternateIOEnabled}}
+          <h6>Alternate IO Status</h6>
+          <p>
+            <span class="badge badge-alternatIO" id="scoreTableIO"></span>
+            <span class="badge badge-alternatIO" id="redEstopsIO"></span>
+            <span class="badge badge-alternatIO" id="blueEstopsIO"></span>
+            <span class="badge badge-scoring" id="fieldEStop">Field E-Stop</span><br />
+          </p>
+        {{end}}
         </div>
         <div class="col-lg-3">
           <h6>Audience Display</h6>

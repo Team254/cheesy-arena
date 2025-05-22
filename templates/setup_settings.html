@@ -283,6 +283,36 @@
               </div>
             </fieldset>
             <fieldset class="mb-4">
+                <legend>Alternate IO</legend>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label" for="alternateIOEnabled">
+                  Enable Alternate IO (IE: Raspberry Pi)
+                </label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="alternateIOEnabled"
+                    name="alternateIOEnabled"{{if .AlternateIOEnabled}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Score Table IO Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="ScoreTableEstopAddress" value="{{.ScoreTableEstopAddress}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red Alliance IO Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="RedAllianceStationEstopAddress" value="{{.RedAllianceStationEstopAddress}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue Alliance IO Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="BlueAllianceStationEstopAddress" value="{{.BlueAllianceStationEstopAddress}}">
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="mb-4">
               <legend>Team Signs</legend>
               <p>
                 If you are using a set of the (2024+) official team number / timer signs, enter their two-digit IDs (e.g.
@@ -347,6 +377,7 @@
             </fieldset>
           </div>
           <!--automation-->
+          
           <!--game-specific-->
           <div class="tab-pane fade" id="game-specific" role="tabpanel" aria-labelledby="game-specific-tab">
             <fieldset class="mb-4">
