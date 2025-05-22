@@ -268,5 +268,20 @@
     <script src="/static/js/cheesy-websocket.js"></script>
     <script src="/static/js/match_timing.js"></script>
     <script src="/static/js/audience_display.js"></script>
+    <script>
+    document.addEventListener("dblclick", () => {
+      const url = new URL(window.location.href);
+      const reversed = url.searchParams.get("reversed");
+
+      // Flip the value
+      const newValue = reversed === "true" ? "false" : "true";
+
+      // Set the new value in the URL
+      url.searchParams.set("reversed", newValue);
+
+      // Reload the page with updated URL
+      window.location.href = url.toString();
+    });
+  </script>
   </body>
 </html>

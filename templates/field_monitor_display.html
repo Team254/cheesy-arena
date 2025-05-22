@@ -75,6 +75,21 @@ Display showing robot connection status.
     </div>
   </div>
 </body>
+<script>
+    document.addEventListener("dblclick", () => {
+      const url = new URL(window.location.href);
+      const reversed = url.searchParams.get("reversed");
+
+      // Flip the value
+      const newValue = reversed === "true" ? "false" : "true";
+
+      // Set the new value in the URL
+      url.searchParams.set("reversed", newValue);
+
+      // Reload the page with updated URL
+      window.location.href = url.toString();
+    });
+  </script>
 <script src="/static/js/lib/jquery.min.js"></script>
 <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
 <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
