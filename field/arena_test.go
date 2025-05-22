@@ -68,6 +68,12 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "cannot start match until all robots are connected or bypassed")
 	}
+	arena.AllianceStations["R1"].EStop = false
+	arena.AllianceStations["R2"].EStop = false
+	arena.AllianceStations["R3"].EStop = false
+	arena.AllianceStations["B1"].EStop = false
+	arena.AllianceStations["B2"].EStop = false
+	arena.AllianceStations["B3"].EStop = false
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].Bypass = true
 	arena.AllianceStations["R3"].Bypass = true
@@ -102,6 +108,10 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 
 func TestArenaMatchFlow(t *testing.T) {
 	arena := setupTestArena(t)
+	var plc FakePlc
+	plc.isEnabled = false
+	plc.fieldEStop = false
+	arena.Plc = &plc
 
 	arena.Database.CreateTeam(&model.Team{Id: 254})
 	assert.Nil(t, arena.assignTeam(254, "B3"))
@@ -127,13 +137,21 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, lastPacketCount+1, arena.AllianceStations["B3"].DsConn.packetCount)
 
 	// Check match start, autonomous and transition to teleop.
+	arena.AllianceStations["R1"].EStop = false
+	arena.AllianceStations["R2"].EStop = false
+	arena.AllianceStations["R3"].EStop = false
+	arena.AllianceStations["B1"].EStop = false
+	arena.AllianceStations["B2"].EStop = false
+	arena.AllianceStations["B3"].EStop = false
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].DsConn.RobotLinked = true
 	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].DsConn.RobotLinked = true
+	
 	assert.Nil(t, arena.StartMatch())
+	assert.Equal(t, StartMatch, arena.MatchState)
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
@@ -225,6 +243,12 @@ func TestArenaMatchFlow(t *testing.T) {
 func TestArenaStateEnforcement(t *testing.T) {
 	arena := setupTestArena(t)
 
+	arena.AllianceStations["R1"].EStop = false
+	arena.AllianceStations["R2"].EStop = false
+	arena.AllianceStations["R3"].EStop = false
+	arena.AllianceStations["B1"].EStop = false
+	arena.AllianceStations["B2"].EStop = false
+	arena.AllianceStations["B3"].EStop = false
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].Bypass = true
 	arena.AllianceStations["R3"].Bypass = true
@@ -384,6 +408,12 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "until all robots are connected or bypassed")
 	}
+	arena.AllianceStations["R1"].EStop = false
+	arena.AllianceStations["R2"].EStop = false
+	arena.AllianceStations["R3"].EStop = false
+	arena.AllianceStations["B1"].EStop = false
+	arena.AllianceStations["B2"].EStop = false
+	arena.AllianceStations["B3"].EStop = false
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].Bypass = true
 	arena.AllianceStations["R3"].Bypass = true
@@ -612,7 +642,6 @@ func TestArenaTimeout(t *testing.T) {
 	arena.MatchStartTime = time.Now().Add(-time.Duration(timeoutDurationSec+postTimeoutSec) * time.Second)
 	arena.Update()
 	assert.Equal(t, PreMatch, arena.MatchState)
-
 	// Test early cancellation of timeout.
 	timeoutDurationSec = 28
 	assert.Nil(t, arena.StartTimeout("Break 2", timeoutDurationSec))
@@ -625,8 +654,15 @@ func TestArenaTimeout(t *testing.T) {
 	arena.MatchStartTime = time.Now().Add(-time.Duration(timeoutDurationSec+postTimeoutSec) * time.Second)
 	arena.Update()
 	assert.Equal(t, PreMatch, arena.MatchState)
-
+	
 	// Test that timeout can't be started during a match.
+	arena.AllianceStations["R1"].EStop = false
+	arena.AllianceStations["R2"].EStop = false
+	arena.AllianceStations["R3"].EStop = false
+	arena.AllianceStations["B1"].EStop = false
+	arena.AllianceStations["B2"].EStop = false
+	arena.AllianceStations["B3"].EStop = false
+	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].Bypass = true
 	arena.AllianceStations["R3"].Bypass = true
@@ -717,6 +753,12 @@ func TestPlcEStopAStop(t *testing.T) {
 	dummyDs = &DriverStationConnection{TeamId: 148}
 	arena.AllianceStations["R2"].DsConn = dummyDs
 
+	arena.AllianceStations["R1"].EStop = false
+	arena.AllianceStations["R2"].EStop = false
+	arena.AllianceStations["R3"].EStop = false
+	arena.AllianceStations["B1"].EStop = false
+	arena.AllianceStations["B2"].EStop = false
+	arena.AllianceStations["B3"].EStop = false
 	arena.AllianceStations["R1"].DsConn.RobotLinked = true
 	arena.AllianceStations["R1"].aStopReset = true
 	arena.AllianceStations["R2"].DsConn.RobotLinked = true
@@ -896,6 +938,12 @@ func TestPlcEStopAStopWithPlcDisabled(t *testing.T) {
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].Bypass = true
+	arena.AllianceStations["R1"].EStop = false
+	arena.AllianceStations["R2"].EStop = false
+	arena.AllianceStations["R3"].EStop = false
+	arena.AllianceStations["B1"].EStop = false
+	arena.AllianceStations["B2"].EStop = false
+	arena.AllianceStations["B3"].EStop = false
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
@@ -905,10 +953,12 @@ func TestPlcEStopAStopWithPlcDisabled(t *testing.T) {
 	plc.redAStops[1] = true
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].AStop)
-	assert.Equal(t, false, arena.AllianceStations["R1"].EStop)
+	//assert.Equal(t, false, arena.AllianceStations["R1"].EStop) // E-stop are always monitored in Freezy Arena
+	assert.Equal(t, true, arena.AllianceStations["R1"].EStop) // E-stop are always monitored in Freezy Arena
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
-	assert.Equal(t, false, arena.AllianceStations["R2"].AStop)
-	assert.Equal(t, false, arena.AllianceStations["R2"].EStop)
+	//assert.Equal(t, false, arena.AllianceStations["R2"].AStop) // A-stop are always monitored in Freezy Arena
+	assert.Equal(t, true, arena.AllianceStations["R2"].AStop) // A-stop are always monitored in Freezy Arena
+	assert.Equal(t, false, arena.AllianceStations["R2"].EStop) 
 	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn.Enabled)
 }
 
