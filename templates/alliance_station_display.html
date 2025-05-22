@@ -40,5 +40,9 @@
     <script src="/static/js/cheesy-websocket.js"></script>
     <script src="/static/js/match_timing.js"></script>
     <script src="/static/js/alliance_station_display.js"></script>
+    {{range $sound := .MatchSounds}}
+    <audio id="sound-{{$sound.Name}}" src="/static/audio/{{$sound.Name}}.{{$sound.FileExtension}}" preload="auto">
+    </audio>
+    {{end}}
   </body>
 </html>
