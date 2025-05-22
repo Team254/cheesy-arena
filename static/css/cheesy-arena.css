@@ -166,3 +166,12 @@ input[data-changed="true"], select[data-changed="true"] {
 #testMatchSettings {
   display: none;
 }
+.badge-alternatIO[data-ready="0"] {
+  background-color: #666;
+}
+.badge-alternatIO[data-ready="1"] {
+  background-color: #e66;
+}
+.badge-alternatIO[data-ready="2"] {
+  background-color: #0c6;
+}

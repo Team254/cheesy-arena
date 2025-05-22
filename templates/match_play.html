@@ -118,7 +118,16 @@ UI for controlling match play and viewing team connection and field status.
             <span class="badge badge-scoring" id="plc{{$name}}Status">{{$name}}</span>
             {{end}}
           </p>
-          {{end}}
+        {{end}}
+        {{if .AlternateIOEnabled}}
+          <h6>Alternate IO Status</h6>
+          <p>
+            <span class="badge badge-alternatIO" id="scoreTableIO"></span>
+            <span class="badge badge-alternatIO" id="redEstopsIO"></span>
+            <span class="badge badge-alternatIO" id="blueEstopsIO"></span>
+            <span class="badge badge-scoring" id="fieldEStop">Field E-Stop</span><br />
+          </p>
+        {{end}}
         </div>
         <div class="col-lg-3">
           <h6>Audience Display</h6>

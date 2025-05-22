@@ -117,6 +117,11 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.CoralBonusCoopEnabled = r.PostFormValue("coralBonusCoopEnabled") == "on"
 	eventSettings.BargeBonusPointThreshold, _ = strconv.Atoi(r.PostFormValue("bargeBonusPointThreshold"))
 
+	eventSettings.AlternateIOEnabled = r.PostFormValue("alternateIOEnabled") == "on"
+	eventSettings.ScoreTableEstopAddress = r.PostFormValue("ScoreTableEstopAddress")
+	eventSettings.RedAllianceStationEstopAddress = r.PostFormValue("RedAllianceStationEstopAddress")
+	eventSettings.BlueAllianceStationEstopAddress = r.PostFormValue("BlueAllianceStationEstopAddress")
+
 	err := web.arena.Database.UpdateEventSettings(eventSettings)
 	if err != nil {
 		handleWebErr(w, err)

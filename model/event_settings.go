@@ -35,6 +35,10 @@ type EventSettings struct {
 	SwitchAddress               string
 	SwitchPassword              string
 	PlcAddress                  string
+	AlternateIOEnabled          bool
+	ScoreTableEstopAddress  		string
+	RedAllianceStationEstopAddress  string
+	BlueAllianceStationEstopAddress string
 	AdminPassword               string
 	TeamSignRed1Id              int
 	TeamSignRed2Id              int
@@ -75,6 +79,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		SelectionShowUnpickedTeams:  true,
 		TbaDownloadEnabled:          true,
 		ApChannel:                   36,
+		AlternateIOEnabled:          false,
 		WarmupDurationSec:           game.MatchTiming.WarmupDurationSec,
 		AutoDurationSec:             game.MatchTiming.AutoDurationSec,
 		PauseDurationSec:            game.MatchTiming.PauseDurationSec,
