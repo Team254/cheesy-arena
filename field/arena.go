@@ -105,6 +105,7 @@ type Arena struct {
 	NextFoulId                        int
 	DriverStationUdpSocket            *net.UDPConn
 	redWonAuto                        bool
+	Esp32					 		  plc.Esp32
 }
 
 type AllianceStation struct {
@@ -125,6 +126,7 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena := new(Arena)
 	arena.configureNotifiers()
 	arena.Plc = new(plc.ModbusPlc)
+	arena.Esp32 = new(plc.Esp32IO)
 
 	arena.AllianceStations = make(map[string]*AllianceStation)
 	arena.AllianceStations["R1"] = new(AllianceStation)
@@ -219,6 +221,9 @@ func (arena *Arena) LoadSettings() error {
 	if err = arena.Leds.SetAddress(settings.LedControllerAddress); err != nil {
 		return err
 	}
+	arena.Esp32.SetScoreTableAddress(settings.ScoreTableEstopAddress)
+	arena.Esp32.SetRedAllianceStationEstopAddress(settings.RedAllianceStationEstopAddress)
+	arena.Esp32.SetBlueAllianceStationEstopAddress(settings.BlueAllianceStationEstopAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
 	arena.BlackmagicClient = partner.NewBlackmagicClient(settings.BlackmagicAddresses)
@@ -860,6 +865,7 @@ func (arena *Arena) Run() {
 	go arena.listenForDsUdpPackets()
 	go arena.accessPoint.Run()
 	go arena.Plc.Run()
+	go arena.Esp32.Run()
 
 	for {
 		loopStartTime := time.Now()
@@ -1188,8 +1194,8 @@ func (arena *Arena) handleAutoWinner() {
 
 // Updates the score given new input information from the field PLC, and actuates PLC outputs accordingly.
 func (arena *Arena) handlePlcInputOutput() {
-	if !arena.Plc.IsEnabled() {
-		return
+	if (!arena.Plc.IsEnabled() && !arena.EventSettings.AlternateIOEnabled) {  // && not alternateIO Enabled
+		return 
 	}
 
 	// Handle PLC functions that are always active.
@@ -1216,6 +1222,11 @@ func (arena *Arena) handlePlcInputOutput() {
 	// Handle in-match PLC functions.
 	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
+
+	redScore := &arena.RedRealtimeScore.CurrentScore
+	oldRedScore := *redScore
+	blueScore := &arena.BlueRealtimeScore.CurrentScore
+	oldBlueScore := *blueScore
 
 	// Handle the evergreen PLC functions: stack lights, stack buzzer, and field reset light.
 	switch arena.MatchState {
@@ -1259,6 +1270,10 @@ func (arena *Arena) handlePlcInputOutput() {
 	redHubCount, blueHubCount := arena.Plc.GetHubCounts()
 	arena.RedRealtimeScore.CurrentScore.Hub.UpdateState(redHubCount, matchStartTime, currentTime)
 	arena.BlueRealtimeScore.CurrentScore.Hub.UpdateState(blueHubCount, matchStartTime, currentTime)
+	// Get all the game-specific inputs and update the score.
+	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
+		arena.RealtimeScoreNotifier.Notify()
+	}
 
 	// Run the hub motors for extra time after counting stops to help exhaust balls.
 	motorCutoff := matchStartTime.Add(

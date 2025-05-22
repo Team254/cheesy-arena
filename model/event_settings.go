@@ -68,6 +68,10 @@ type EventSettings struct {
 	SCCDownCommands                  string
 	PlcAddress                       string
 	LedControllerAddress             string
+	AlternateIOEnabled          	 bool
+	ScoreTableEstopAddress  		 string
+	RedAllianceStationEstopAddress   string
+	BlueAllianceStationEstopAddress  string
 	AdminPassword                    string
 	TeamSignRed1Id                   int
 	TeamSignRed2Id                   int
@@ -138,6 +142,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		SelectionShowUnpickedTeams: true,
 		TbaDownloadEnabled:         true,
 		ApChannel:                  36,
+		AlternateIOEnabled:         false,
 		SCCUpCommands:              strings.Join(sccDefaultUpCommands, "\n"),
 		SCCDownCommands:            strings.Join(sccDefaultDownCommands, "\n"),
 		CompanionAddress:           "",
