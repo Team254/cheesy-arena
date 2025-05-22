@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Status Color Legend</title>
+    <link rel="stylesheet" href="/static/css/Field_monitor_display.css" />
+    <link rel="stylesheet" href="/static/css/Field_monitor_display_help.css" />
+</head>
+<body>
+
+    <h1>Team Status Color Legend</h1>
+
+    <div class="status-container">
+        <div class="team-id" data-status="no-link" >
+            <div class="status-description">
+                <span class="status-name">No Link:</span>
+                <p>This status indicates that the team is not connected to the system.</p>
+            </div>
+        </div>
+
+        <div class="team-id" data-status="ds-linked">
+            <div class="status-description">
+                <span class="status-name">DS Linked:</span>
+                <p>This status indicates that the team is linked to the Driver Station (DS).</p>
+            </div>
+        </div>
+
+        <div class="team-id" data-status="robot-linked">
+            
+            <div class="status-description">
+                <span class="status-name">Robot Linked:</span>
+                <p>This status indicates that the team's robot is linked and ready to operate.</p>
+            </div>
+        </div>
+
+        <div class="team-id" data-status="rio-linked">
+            <div class="status-description">
+                <span class="status-name">RIO Linked:</span>
+                <p>This status indicates that the team's Robot Interface (RIO) is linked.</p>
+            </div>
+        </div>
+
+        <div class="team-id" data-status="radio-linked">
+            <div class="status-description">
+                <span class="status-name">Radio Linked:</span>
+                <p>This status indicates that the team's robot is successfully linked to the radio.</p>
+            </div>
+        </div>
+
+        <div class="team-id" data-status="wrong-station">
+            <div class="status-description">
+                <span class="status-name">Wrong Station:</span>
+                <p>This status indicates that the team is in the wrong station.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

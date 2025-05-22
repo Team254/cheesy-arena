@@ -1,0 +1,51 @@
+/* Global body styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+}
+
+/* Header styling */
+h1 {
+    text-align: center;
+    color: #ffffff;
+}
+
+/* Container for all status items */
+.status-container {
+    margin-top: 20px;
+}
+
+/* Individual status item styling */
+.team-id {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    color: #333;
+}
+
+/* Color box for each status */
+.status-color-box {
+    width: 50px;
+    height: 50px;
+    margin-right: 20px;
+    border-radius: 5px;
+}
+
+/* Description area for each status */
+.status-description {
+    font-size: 16px;
+}
+
+/* Name of the status (bold) */
+.status-name {
+    font-weight: bold;
+}
+
+/* Color code (italic) */
+.status-code {
+    font-style: italic;
+    margin-left: 10px;
+}
