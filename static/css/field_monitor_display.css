@@ -33,6 +33,10 @@ body {
 #matchData[data-ds="true"][data-preMatch="true"]{
   display: none;
 }
+/* Just the FTA Screens */
+#matchData[data-ds="false"]{
+  display: none;
+}
 #matchData{
   position: absolute;
   top: 2%;
