@@ -335,3 +335,27 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match) error 
 	}{bracketType, matchups}
 	return template.ExecuteTemplate(w, "bracket", data)
 }
+
+// Generates a JSON dump of the arenaStatus, primarily for use by the stack Lights.
+func (web *Web) allianceStatusApiHandler(w http.ResponseWriter, r *http.Request) {
+	// Preload the JSON as a string
+	var allianceStations = web.arena.AllianceStations
+
+   	// Iterate through the slice of AllianceStation structs
+   	for i := range allianceStations {
+		// If the struct has a Team field, remove or clear it
+		allianceStations[i].Team = nil // Remove Team information
+	}
+	jsonData, err := json.Marshal(allianceStations)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(jsonData)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+}
