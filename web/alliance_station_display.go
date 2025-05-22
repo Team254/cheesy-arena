@@ -6,6 +6,7 @@
 package web
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"net/http"
@@ -25,7 +26,8 @@ func (web *Web) allianceStationDisplayHandler(w http.ResponseWriter, r *http.Req
 
 	data := struct {
 		*model.EventSettings
-	}{web.arena.EventSettings}
+		MatchSounds []*game.MatchSound
+	}{web.arena.EventSettings, game.MatchSounds}
 	err = template.ExecuteTemplate(w, "alliance_station_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -59,5 +61,6 @@ func (web *Web) allianceStationDisplayWebsocketHandler(w http.ResponseWriter, r 
 		web.arena.MatchTimeNotifier,
 		web.arena.RealtimeScoreNotifier,
 		web.arena.ReloadDisplaysNotifier,
+		web.arena.PlaySoundNotifier,
 	)
 }
