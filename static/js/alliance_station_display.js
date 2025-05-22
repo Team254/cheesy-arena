@@ -118,6 +118,17 @@ var handleMatchTime = function (data) {
   });
 };
 
+
+// Handles a websocket message to play a sound to signal match start/stop/etc.
+const handlePlaySound = function(sound) {
+  $("audio").each(function(k, v) {
+    // Stop and reset any sounds that are still playing.
+    v.pause();
+    v.currentTime = 0;
+  });
+  $("#sound-" + sound)[0].play();
+}; 
+
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function (data) {
   $("#redScore").text(
@@ -152,6 +163,9 @@ $(function () {
     },
     realtimeScore: function (event) {
       handleRealtimeScore(event.data);
+    },
+    playSound: function(event) {
+      handlePlaySound(event.data);
     }
   });
 });
