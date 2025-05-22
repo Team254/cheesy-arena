@@ -49,6 +49,47 @@ body {
   display: none;
 }
 
+/* .score-right .score-fields {
+  align-items: flex-end;
+}*/
+.score-fields {
+  height: 100%;
+  width: 100%;
+  display: flex;
+ flex-direction: column;
+ justify-content: center;
+} 
+.score-field {
+  display: flex;
+  flex-direction: row;
+}
+.coral-icon {
+  height: 35px;
+  width: 35px;
+  margin: 0 12px;
+}
+.algae-icon {
+  height: 31px;
+  width: 31px;
+  margin: 0 14px;
+}
+
+.level-row {
+  display: flex;
+  justify-content: space-between; /* Adjust spacing between elements */
+  align-items: center; /* Align items vertically */
+  gap: 10px; /* Optional: Add spacing between elements */
+}
+
+.level-row > div {
+  flex: 1; /* Make all elements take equal space */
+  text-align: center; /* Center the content inside each element */
+}
+
+#matchData[data-ds="false"]{
+  display: none;
+}
+
 /*  */
 #matchStatusRow {
   height: 6%;

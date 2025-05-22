@@ -6,6 +6,7 @@
 package web
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
