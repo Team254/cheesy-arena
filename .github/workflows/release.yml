@@ -25,26 +25,28 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Cheesy Arena ${{ github.ref }}
-          body: This is a release of Cheesy Arena for the 2025 FRC game, REEFSCAPE. Download the version for your
-              operating system below. Supported operating systems are Linux, macOS (x64 and M1), and Windows.
+          release_name: Freezy Arena ${{ github.ref }}
+          body: This is a release of Freezy Arena for the 2025 FRC game, REEFSCAPE.
+              This is a modified fork from the original Cheesy Arena by Team 254.
+              Download the version for your operating system below.
+              Supported operating systems are Linux, macOS (x64 and M1), and Windows.
           draft: false
           prerelease: false
 
       - name: Set additional environment variables
         run: |
-          echo "LINUX_X64_FILENAME=cheesy-arena.${GITHUB_REF:10}.linux.x64.zip" >> $GITHUB_ENV
-          echo "MACOS_X64_FILENAME=cheesy-arena.${GITHUB_REF:10}.macos.x64.zip" >> $GITHUB_ENV
-          echo "MACOS_M1_FILENAME=cheesy-arena.${GITHUB_REF:10}.macos.m1.zip" >> $GITHUB_ENV
-          echo "WINDOWS_X64_FILENAME=cheesy-arena.${GITHUB_REF:10}.windows.x64.zip" >> $GITHUB_ENV
+          echo "LINUX_X64_FILENAME=freezy-arena.${GITHUB_REF:10}.linux.x64.zip" >> $GITHUB_ENV
+          echo "MACOS_X64_FILENAME=freezy-arena.${GITHUB_REF:10}.macos.x64.zip" >> $GITHUB_ENV
+          echo "MACOS_M1_FILENAME=freezy-arena.${GITHUB_REF:10}.macos.m1.zip" >> $GITHUB_ENV
+          echo "WINDOWS_X64_FILENAME=freezy-arena.${GITHUB_REF:10}.windows.x64.zip" >> $GITHUB_ENV
 
       - name: Build Linux bundle
         run: |
-          rm -rf cheesy-arena*
-          mkdir cheesy-arena
-          GOOS=linux GOARCH=amd64 go build -o cheesy-arena/
-          cp -r ${{ env.ASSET_FILES }} cheesy-arena/
-          zip -r -X ${{ env.LINUX_X64_FILENAME }} cheesy-arena
+          rm -rf freezy-arena*
+          mkdir freezy-arena
+          GOOS=linux GOARCH=amd64 go build -o freezy-arena/
+          cp -r ${{ env.ASSET_FILES }} freezy-arena/
+          zip -r -X ${{ env.LINUX_X64_FILENAME }} freezy-arena
 
       - name: Upload Linux bundle
         uses: actions/upload-release-asset@v1
@@ -58,11 +60,11 @@ jobs:
 
       - name: Build MacOS x64 bundle
         run: |
-          rm -rf cheesy-arena*
-          mkdir cheesy-arena
-          GOOS=darwin GOARCH=amd64 go build -o cheesy-arena/
-          cp -r ${{ env.ASSET_FILES }} cheesy-arena/
-          zip -r -X ${{ env.MACOS_X64_FILENAME }} cheesy-arena
+          rm -rf freezy-arena*
+          mkdir freezy-arena
+          GOOS=darwin GOARCH=amd64 go build -o freezy-arena/
+          cp -r ${{ env.ASSET_FILES }} freezy-arena/
+          zip -r -X ${{ env.MACOS_X64_FILENAME }} freezy-arena
 
       - name: Upload MacOS x64 bundle
         uses: actions/upload-release-asset@v1
@@ -76,11 +78,11 @@ jobs:
 
       - name: Build MacOS M1 bundle
         run: |
-          rm -rf cheesy-arena*
-          mkdir cheesy-arena
-          GOOS=darwin GOARCH=arm64 go build -o cheesy-arena/
-          cp -r ${{ env.ASSET_FILES }} cheesy-arena/
-          zip -r -X ${{ env.MACOS_M1_FILENAME }} cheesy-arena
+          rm -rf freezy-arena*
+          mkdir freezy-arena
+          GOOS=darwin GOARCH=arm64 go build -o freezy-arena/
+          cp -r ${{ env.ASSET_FILES }} freezy-arena/
+          zip -r -X ${{ env.MACOS_M1_FILENAME }} freezy-arena
 
       - name: Upload MacOS M1 bundle
         uses: actions/upload-release-asset@v1
@@ -94,11 +96,11 @@ jobs:
 
       - name: Build Windows bundle
         run: |
-          rm -rf cheesy-arena*
-          mkdir cheesy-arena
-          GOOS=windows GOARCH=amd64 go build -o cheesy-arena/
-          cp -r ${{ env.ASSET_FILES }} cheesy-arena/
-          zip -r -X ${{ env.WINDOWS_X64_FILENAME }} cheesy-arena
+          rm -rf freezy-arena*
+          mkdir freezy-arena
+          GOOS=windows GOARCH=amd64 go build -o freezy-arena/
+          cp -r ${{ env.ASSET_FILES }} freezy-arena/
+          zip -r -X ${{ env.WINDOWS_X64_FILENAME }} freezy-arena
 
       - name: Upload Windows bundle
         uses: actions/upload-release-asset@v1
