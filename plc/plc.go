@@ -35,6 +35,9 @@ type Plc interface {
 	GetCoilNames() []string
 	GetProcessorCounts() (int, int)
 	SetTrussLights(redLights, blueLights [3]bool)
+	//Freezy Arena
+	SetAlternateIOStopState(input int, state bool)
+	ResetEstops()
 }
 
 type ModbusPlc struct {
@@ -455,4 +458,25 @@ func boolToByte(bools []bool) []byte {
 		}
 	}
 	return bytes
+}
+
+// used for Alternate IO stops
+func (plc *ModbusPlc) SetAlternateIOStopState(input int, state bool){
+	plc.inputs[input] = state
+}
+
+func (plc *ModbusPlc) ResetEstops(){
+	plc.inputs[fieldEStop] = true
+	plc.inputs[red1EStop] = true
+	plc.inputs[red2EStop] = true
+	plc.inputs[red3EStop] = true
+	plc.inputs[blue1EStop] = true
+	plc.inputs[blue2EStop] = true
+	plc.inputs[blue3EStop] = true
+	plc.inputs[red1AStop] = true
+	plc.inputs[red2AStop] = true
+	plc.inputs[red3AStop] = true
+	plc.inputs[blue1AStop] = true
+	plc.inputs[blue2AStop] = true
+	plc.inputs[blue3AStop] = true
 }

@@ -107,6 +107,8 @@ func (web *Web) matchPlayMatchLoadHandler(w http.ResponseWriter, r *http.Request
 		handleWebErr(w, err)
 		return
 	}
+
+	web.arena.Plc.ResetEstops()
 }
 
 // The websocket endpoint for the match play client to send control commands and receive status updates.
