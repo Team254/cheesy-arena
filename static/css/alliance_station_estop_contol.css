@@ -1,0 +1,84 @@
+html {
+  height: 100%;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  overscroll-behavior: none;
+}
+body {
+  height: 100%;
+  background-color: #222;
+  overscroll-behavior: none;
+}
+
+.container {
+  padding-top: 1vw;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.row{
+    width: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.btnE {
+    background: rgb(255, 0, 0);
+}
+.btnA {
+    background: rgb(0, 119, 255);
+}
+
+#alliance[data-alliance="red"] {
+  background-color: rgb(138, 17, 21);
+}
+#alliance[data-alliance="blue"] {
+  background-color: rgb(0, 79, 140);
+}
+
+.eStops {
+    width: 98%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    border-radius: 25px;
+    border: 1px solid #333;
+}
+  .teamEstopPanle {
+    width: 10vw;
+    height: auto;
+    margin: 3vw 3vw;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .octagon-button {
+    position: relative;
+    width: 10vw; /* Adjust width */
+    height: 10vw; /* Adjust height */
+    clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 2vw;
+    color: rgb(255, 255, 255); /* Text color */
+    cursor: pointer;
+    border: none;
+  }
+  
+  .octagon-button .icon {
+    margin-top: 1px;
+  }
+  
+  .octagon-button:hover {
+    background: #fbff06; /* Change color on hover */
+    color: rgb(0, 0, 0); /* Text color */
+  }

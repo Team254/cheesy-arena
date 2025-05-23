@@ -1,0 +1,49 @@
+{{/*
+  Author: (Corey Applegate)
+
+  UI for entering Controlling Team Estops.
+*/}}
+{{define "title"}}Alliance Station Estop and Astop Control{{end}}
+{{define "head"}}
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<link href="/static/css/alliance_station_estop_contol.css" rel="stylesheet">
+{{end}}
+{{define "body"}}
+<h1>Alliance Station Estop and Astop Control</h1>
+<p>Click the button below to E-stop or A-stop the selected team.</p>
+<div class="container">
+  <div class="row">
+    <div class="eStops" id="alliance">
+      {{template "2stops" dict "btn1" "1" "txt1" "E-Stop 1" "btn2" "2" "txt2" "A Stop 1"}}
+      {{template "2stops" dict "btn1" "3" "txt1" "E Stop 2" "btn2" "4" "txt2" "A Stop 2"}}
+      {{template "2stops" dict "btn1" "5" "txt1" "E Stop 3" "btn2" "6" "txt2" "A Stop 3"}}
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "script"}}
+<script src="/static/js/alliance_station_estop_control.js"></script>
+{{end}}
+
+{{define "2stops"}}
+<div class="teamEstopPanle">
+  <div class="number-button btnE octagon-button" onclick="triggerEStop({{.btn1}},false);">
+    <div class="shorcutCentered">
+      <div class="iconCentered">
+        {{.txt1}}
+      </div>
+    </div>
+    <div class="shortcut" style="opacity: 0;">{{.btn1}}</div>
+  </div>
+  <div>&nbsp;</div>
+  <div class="number-button btnA octagon-button" onclick="triggerEStop({{.btn2}},false);">
+    <div class="shorcutCentered">
+      <div class="iconCentered">
+        {{.txt2}}
+      </div>
+    </div>
+    <div class="shortcut" style="opacity: 0;">{{.minus}}</div>
+  </div>
+</div>
+{{end}}
