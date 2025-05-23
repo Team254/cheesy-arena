@@ -81,7 +81,7 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	position := r.PathValue("position")
 	parameters, ok := positionParameters[position]
 	if !ok {
-		handleWebErr(w, fmt.Errorf("Invalid position '%s'.", position))
+		handleWebErr(w, fmt.Errorf("Invalid positionn '%s'.", position))
 		return
 	}
 
