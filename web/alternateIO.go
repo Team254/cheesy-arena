@@ -44,3 +44,4 @@ func (web *Web) eStopStatePostHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("eStop state updated successfully."))
 
 }
+
