@@ -19,6 +19,9 @@ body[data-mode=logo] {
 body[data-mode=fieldReset] {
   background-color: #0a3;
 }
+body[data-mode=signalCount] {
+  background-color: #90c;
+}
 
 /* Switching Modes */
 .mode {
@@ -31,6 +34,9 @@ body[data-mode=match] .mode#match {
   display: block;
 }
 body[data-mode=fieldReset] .mode#fieldReset {
+  display: table;
+}
+body[data-mode=signalCount] .mode#signalCount {
   display: table;
 }
 body[data-mode=timeout] .mode#match {
@@ -55,6 +61,20 @@ body[data-mode=timeout] .mode#match {
   height: 100%;
 }
 #fieldReset div {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 350px;
+  line-height: 350px;
+}
+
+/* Signal Count Mode */
+#signalCount {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+#signalCount div {
   display: table-cell;
   vertical-align: middle;
   text-align: center;
