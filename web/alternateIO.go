@@ -10,9 +10,7 @@ import (
 	//"github.com/Team254/cheesy-arena/model"
 	"encoding/json"
 	"net/http"
-
 )
-
 
 // RequestPayload represents the structure of the incoming POST data.
 type RequestPayload struct {
@@ -45,3 +43,32 @@ func (web *Web) eStopStatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (web *Web) getAllPlcCoilsGetHandler(w http.ResponseWriter, r *http.Request) {
+	// Ensure the request is a GET request.
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get the current state of all PLC coils.
+    coilsArray := web.arena.Plc.GetAllCoils()
+    coilsArrayNames := web.arena.Plc.GetCoilNames()
+
+	// Build a map pairing coil names with their values.
+    coilsMap := make(map[string]bool)
+    for i, name := range coilsArrayNames {
+        if i < len(coilsArray) {
+            coilsMap[name] = coilsArray[i]
+        }
+    }
+	
+	// Marshal the response payload.
+	response, err := json.Marshal(coilsMap)
+	if err != nil {
+		http.Error(w, "Failed to marshal PLC Coils state", http.StatusInternalServerError)
+		return
+	}
+
+	// Send the response.
+	w.Write(response)
+}

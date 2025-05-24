@@ -154,3 +154,9 @@ func (plc *FakePlc) ResetEstops(){
 	plc.blueAStops[2] = true
 	
 }
+
+// Returns the value of all PLC coils.
+func (plc *FakePlc) GetAllCoils() [13]bool {
+    var coils [13]bool
+    return coils
+}
