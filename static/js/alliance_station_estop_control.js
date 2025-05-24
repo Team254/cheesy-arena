@@ -7,7 +7,7 @@ $(function() {
 
 
 function triggerEStop(stationNumber, state) {
-    const url = "/freezy/eStopState"; // Relative URL, works dynamically
+    const url = "/api/freezy/eStopState"; // Relative URL, works dynamically
     if (alliance === "blue") {
         stationNumber = stationNumber+6
     }
