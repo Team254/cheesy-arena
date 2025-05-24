@@ -239,6 +239,8 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("POST /freezy/eStopState", web.eStopStatePostHandler)
 	mux.HandleFunc("GET /freezy/eStopControl/{alliance}", web.estopContolDisplayHandler)
 	mux.HandleFunc("GET /freezy/eStopControl/{alliance}/websocket", web.scoringPanelWebsocketHandler)
+	mux.HandleFunc("GET /api/alternateIO/PLC_Coils", web.getAllPlcCoilsGetHandler)
+
 	return mux
 }
 
