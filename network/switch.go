@@ -136,8 +136,12 @@ func (sw *Switch) runCommand(command string) (string, error) {
 
 	// Login to the AP, send the command, and log out all at once.
 	writer := bufio.NewWriter(conn)
-	_, err = writer.WriteString(fmt.Sprintf("%s\nenable\n%s\nterminal length 0\n%sexit\n", sw.password, sw.password,
-		command))
+	_, err = writer.WriteString(
+		fmt.Sprintf(
+			"%s\nenable\n%s\nterminal length 0\n%sexit\n", sw.password, sw.password,
+			command,
+		),
+	)
 	if err != nil {
 		return "", err
 	}

@@ -65,10 +65,12 @@ func newTable[R any](database *Database) (*table[R], error) {
 	}
 
 	// Create the Bolt bucket corresponding to the struct.
-	err := table.bolt.Update(func(tx *bbolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(table.bucketKey)
-		return err
-	})
+	err := table.bolt.Update(
+		func(tx *bbolt.Tx) error {
+			_, err := tx.CreateBucketIfNotExists(table.bucketKey)
+			return err
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -79,42 +81,48 @@ func newTable[R any](database *Database) (*table[R], error) {
 // Returns the record with the given ID, or nil if it doesn't exist.
 func (table *table[R]) getById(id int) (*R, error) {
 	record := new(R)
-	err := table.bolt.View(func(tx *bbolt.Tx) error {
-		bucket, err := table.getBucket(tx)
-		if err != nil {
-			return err
-		}
+	err := table.bolt.View(
+		func(tx *bbolt.Tx) error {
+			bucket, err := table.getBucket(tx)
+			if err != nil {
+				return err
+			}
 
-		if recordJson := bucket.Get(idToKey(id)); recordJson != nil {
-			return json.Unmarshal(recordJson, record)
-		}
+			if recordJson := bucket.Get(idToKey(id)); recordJson != nil {
+				return json.Unmarshal(recordJson, record)
+			}
 
-		// If the record does not exist, set the record pointer to nil.
-		record = nil
-		return nil
-	})
+			// If the record does not exist, set the record pointer to nil.
+			record = nil
+			return nil
+		},
+	)
 	return record, err
 }
 
 // Returns a slice containing every record in the table, ordered by string representation of ID.
 func (table *table[R]) getAll() ([]R, error) {
 	records := []R{}
-	err := table.bolt.View(func(tx *bbolt.Tx) error {
-		bucket, err := table.getBucket(tx)
-		if err != nil {
-			return err
-		}
-
-		return bucket.ForEach(func(key, value []byte) error {
-			var record R
-			err := json.Unmarshal(value, &record)
+	err := table.bolt.View(
+		func(tx *bbolt.Tx) error {
+			bucket, err := table.getBucket(tx)
 			if err != nil {
 				return err
 			}
-			records = append(records, record)
-			return nil
-		})
-	})
+
+			return bucket.ForEach(
+				func(key, value []byte) error {
+					var record R
+					err := json.Unmarshal(value, &record)
+					if err != nil {
+						return err
+					}
+					records = append(records, record)
+					return nil
+				},
+			)
+		},
+	)
 	return records, err
 }
 
@@ -132,35 +140,37 @@ func (table *table[R]) create(record *R) error {
 		)
 	}
 
-	return table.bolt.Update(func(tx *bbolt.Tx) error {
-		bucket, err := table.getBucket(tx)
-		if err != nil {
-			return err
-		}
-
-		if !table.manualId {
-			// Generate a new ID for the record.
-			newSequence, err := bucket.NextSequence()
+	return table.bolt.Update(
+		func(tx *bbolt.Tx) error {
+			bucket, err := table.getBucket(tx)
 			if err != nil {
 				return err
 			}
-			id = int(newSequence)
-			value.Field(*table.idFieldIndex).SetInt(int64(id))
-		}
 
-		// Ensure that a record having the same ID does not already exist in the table.
-		key := idToKey(id)
-		oldRecord := bucket.Get(key)
-		if oldRecord != nil {
-			return fmt.Errorf("%s with ID %d already exists: %s", table.name, id, string(oldRecord))
-		}
+			if !table.manualId {
+				// Generate a new ID for the record.
+				newSequence, err := bucket.NextSequence()
+				if err != nil {
+					return err
+				}
+				id = int(newSequence)
+				value.Field(*table.idFieldIndex).SetInt(int64(id))
+			}
 
-		recordJson, err := json.Marshal(record)
-		if err != nil {
-			return err
-		}
-		return bucket.Put(key, recordJson)
-	})
+			// Ensure that a record having the same ID does not already exist in the table.
+			key := idToKey(id)
+			oldRecord := bucket.Get(key)
+			if oldRecord != nil {
+				return fmt.Errorf("%s with ID %d already exists: %s", table.name, id, string(oldRecord))
+			}
+
+			recordJson, err := json.Marshal(record)
+			if err != nil {
+				return err
+			}
+			return bucket.Put(key, recordJson)
+		},
+	)
 }
 
 // Persists the given record as an update to the existing row in the table. Returns an error if the record does not
@@ -173,62 +183,68 @@ func (table *table[R]) update(record *R) error {
 		return fmt.Errorf("can't update %s with zero ID", table.name)
 	}
 
-	return table.bolt.Update(func(tx *bbolt.Tx) error {
-		bucket, err := table.getBucket(tx)
-		if err != nil {
-			return err
-		}
+	return table.bolt.Update(
+		func(tx *bbolt.Tx) error {
+			bucket, err := table.getBucket(tx)
+			if err != nil {
+				return err
+			}
 
-		// Ensure that a record having the same ID exists in the table.
-		key := idToKey(id)
-		oldRecord := bucket.Get(key)
-		if oldRecord == nil {
-			return fmt.Errorf("can't update non-existent %s with ID %d", table.name, id)
-		}
+			// Ensure that a record having the same ID exists in the table.
+			key := idToKey(id)
+			oldRecord := bucket.Get(key)
+			if oldRecord == nil {
+				return fmt.Errorf("can't update non-existent %s with ID %d", table.name, id)
+			}
 
-		recordJson, err := json.Marshal(record)
-		if err != nil {
-			return err
-		}
-		return bucket.Put(key, recordJson)
-	})
+			recordJson, err := json.Marshal(record)
+			if err != nil {
+				return err
+			}
+			return bucket.Put(key, recordJson)
+		},
+	)
 }
 
 // Deletes the record having the given ID from the table. Returns an error if the record does not exist.
 func (table *table[R]) delete(id int) error {
-	return table.bolt.Update(func(tx *bbolt.Tx) error {
-		bucket, err := table.getBucket(tx)
-		if err != nil {
-			return err
-		}
+	return table.bolt.Update(
+		func(tx *bbolt.Tx) error {
+			bucket, err := table.getBucket(tx)
+			if err != nil {
+				return err
+			}
 
-		// Ensure that a record having the same ID exists in the table.
-		key := idToKey(id)
-		oldRecord := bucket.Get(key)
-		if oldRecord == nil {
-			return fmt.Errorf("can't delete non-existent %s with ID %d", table.name, id)
-		}
+			// Ensure that a record having the same ID exists in the table.
+			key := idToKey(id)
+			oldRecord := bucket.Get(key)
+			if oldRecord == nil {
+				return fmt.Errorf("can't delete non-existent %s with ID %d", table.name, id)
+			}
 
-		return bucket.Delete(key)
-	})
+			return bucket.Delete(key)
+		},
+	)
 }
 
 // Deletes all records from the table.
 func (table *table[R]) truncate() error {
-	return table.bolt.Update(func(tx *bbolt.Tx) error {
-		_, err := table.getBucket(tx)
-		if err != nil {
-			return err
-		}
+	return table.bolt.Update(
+		func(tx *bbolt.Tx) error {
+			_, err := table.getBucket(tx)
+			if err != nil {
+				return err
+			}
 
-		// Carry out the truncation by way of deleting the whole bucket and then recreate it.
-		err = tx.DeleteBucket(table.bucketKey)
-		if err != nil {
+			// Carry out the truncation by way of deleting the whole bucket and then recreate it.
+			err = tx.DeleteBucket(table.bucketKey)
+			if err != nil {
+				return err
+			}
+			_, err = tx.CreateBucket(table.bucketKey)
 			return err
-		}
-		_, err = tx.CreateBucket(table.bucketKey)
-		return err
-	})
+		},
+	)
 }
 
 // Obtains the Bolt bucket belonging to the table.

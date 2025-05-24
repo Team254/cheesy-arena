@@ -3,7 +3,7 @@
 //
 // Shared code for initiating websocket connections back to the server for full-duplex communication.
 
-var CheesyWebsocket = function(path, events) {
+var CheesyWebsocket = function (path, events) {
   var that = this;
   var protocol = "ws://";
   if (window.location.protocol === "https:") {
@@ -20,7 +20,7 @@ var CheesyWebsocket = function(path, events) {
 
   // Insert a default error-handling event if a custom one doesn't already exist.
   if (!events.hasOwnProperty("error")) {
-    events.error = function(event) {
+    events.error = function (event) {
       // Data is just an error string.
       console.log(event.data);
       alert(event.data);
@@ -31,7 +31,7 @@ var CheesyWebsocket = function(path, events) {
   var displayId = new URLSearchParams(window.location.search).get("displayId");
 
   // Insert an event to allow the server to force-reload the client for any display.
-  events.reload = function(event) {
+  events.reload = function (event) {
     if (event.data === null || event.data === displayId) {
       location.reload();
     }
@@ -49,12 +49,12 @@ var CheesyWebsocket = function(path, events) {
     };
   }
 
-  this.connect = function() {
+  this.connect = function () {
     this.websocket = $.websocket(url, {
-      open: function() {
+      open: function () {
         console.log("Websocket connected to the server at " + url + ".")
       },
-      close: function() {
+      close: function () {
         console.log("Websocket lost connection to the server. Reconnecting in 3 seconds...");
         setTimeout(that.connect, 3000);
       },
@@ -62,7 +62,7 @@ var CheesyWebsocket = function(path, events) {
     });
   };
 
-  this.send = function(type, data) {
+  this.send = function (type, data) {
     this.websocket.send(type, data);
   };
 

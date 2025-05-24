@@ -42,9 +42,12 @@ func (database *Database) GetAllLowerThirds() ([]LowerThird, error) {
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(lowerThirds, func(i, j int) bool {
-		return lowerThirds[i].DisplayOrder < lowerThirds[j].DisplayOrder
-	})
+	sort.Slice(
+		lowerThirds,
+		func(i, j int) bool {
+			return lowerThirds[i].DisplayOrder < lowerThirds[j].DisplayOrder
+		},
+	)
 	return lowerThirds, nil
 }
 

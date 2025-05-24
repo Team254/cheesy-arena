@@ -22,9 +22,11 @@ func SetupTestArena(t *testing.T, uniqueName string) *Arena {
 	dbPath := filepath.Join(dbDir, fmt.Sprintf("%s_test.db", uniqueName))
 	arena, err := NewArena(dbPath)
 	assert.Nil(t, err)
-	t.Cleanup(func() {
-		arena.Database.Close()
-	})
+	t.Cleanup(
+		func() {
+			arena.Database.Close()
+		},
+	)
 	return arena
 }
 

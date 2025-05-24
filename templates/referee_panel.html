@@ -1,8 +1,8 @@
 {{/*
-  Copyright 2023 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2023 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  UI for entering and tracking fouls and red/yellow cards.
+UI for entering and tracking fouls and red/yellow cards.
 */}}
 {{define "title"}}Referee Panel{{end}}
 {{define "body"}}
@@ -12,12 +12,12 @@
     <h3>Red/Yellow Cards</h3>
     <div class="alliance-cards" id="redCards">
       {{range $i := seq 3}}
-        {{template "teamCard" dict "alliance" "red" "position" $i}}
+      {{template "teamCard" dict "alliance" "red" "position" $i}}
       {{end}}
     </div>
     <div class="alliance-cards" id="blueCards">
       {{range $i := seq 3}}
-        {{template "teamCard" dict "alliance" "blue" "position" $i}}
+      {{template "teamCard" dict "alliance" "blue" "position" $i}}
       {{end}}
     </div>
     <div id="scoringStatuses">
@@ -81,7 +81,8 @@
 
   <div class="label">Coral</div>
   <div class="wide-row">
-    <span class="coral-l1">0</span> / <span class="coral-l2">0</span> / <span class="coral-l3">0</span> / <span class="coral-l4">0</span>
+    <span class="coral-l1">0</span> / <span class="coral-l2">0</span> / <span class="coral-l3">0</span> /
+    <span class="coral-l4">0</span>
   </div>
 
   <div class="label">Algae</div>

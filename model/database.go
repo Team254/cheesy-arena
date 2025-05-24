@@ -102,8 +102,13 @@ func (database *Database) Backup(eventName, reason string) error {
 	if err != nil {
 		return err
 	}
-	filename := fmt.Sprintf("%s/%s_%s_%s.db", backupsPath, strings.Replace(eventName, " ", "_", -1),
-		time.Now().Format("20060102150405"), reason)
+	filename := fmt.Sprintf(
+		"%s/%s_%s_%s.db",
+		backupsPath,
+		strings.Replace(eventName, " ", "_", -1),
+		time.Now().Format("20060102150405"),
+		reason,
+	)
 
 	dest, err := os.Create(filename)
 	if err != nil {
@@ -119,8 +124,10 @@ func (database *Database) Backup(eventName, reason string) error {
 
 // Takes a snapshot of Bolt database and writes it to the given writer.
 func (database *Database) WriteBackup(writer io.Writer) error {
-	return database.bolt.View(func(tx *bbolt.Tx) error {
-		_, err := tx.WriteTo(writer)
-		return err
-	})
+	return database.bolt.View(
+		func(tx *bbolt.Tx) error {
+			_, err := tx.WriteTo(writer)
+			return err
+		},
+	)
 }

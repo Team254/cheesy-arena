@@ -64,8 +64,9 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 				for k, team := range web.arena.AllianceSelectionRankedTeams {
 					if team.TeamId == teamId {
 						if team.Picked {
-							web.renderAllianceSelection(w, r,
-								fmt.Sprintf("Team %d is already part of an alliance.", teamId))
+							web.renderAllianceSelection(
+								w, r, fmt.Sprintf("Team %d is already part of an alliance.", teamId),
+							)
 							return
 						}
 						found = true

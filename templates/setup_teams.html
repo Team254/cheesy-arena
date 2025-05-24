@@ -1,17 +1,17 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  UI for configuring the team list for an event.
+UI for configuring the team list for an event.
 */}}
 {{define "title"}}Team List{{end}}
 {{define "body"}}
 {{if .ShowErrorMessage}}
-  <div class="alert alert-dismissible alert-danger">
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    You can't modify the team list once the qualification schedule has been generated. If you need to change
-    the team list, clear all other data first on the Settings page.
-  </div>
+<div class="alert alert-dismissible alert-danger">
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  You can't modify the team list once the qualification schedule has been generated. If you need to change
+  the team list, clear all other data first on the Settings page.
+</div>
 {{end}}
 <div class="row">
   <div class="col-lg-3">
@@ -19,21 +19,21 @@
       <fieldset>
         <legend>Import Teams</legend>
         {{if not .EventSettings.TbaDownloadEnabled}}
-          <p>To automatically download data about teams, enable TBA Team Info Download on the settings page</p>
+        <p>To automatically download data about teams, enable TBA Team Info Download on the settings page</p>
         {{end}}
         <div class="row mb-3">
           <textarea class="form-control" rows="10" name="teamNumbers"
-              placeholder="One team number per line"></textarea>
+            placeholder="One team number per line"></textarea>
         </div>
         <div class="row mb-3">
           <button type="submit" class="btn btn-primary" onclick="$('#loadingFromTba').modal('show');">Add Teams</button>
         </div>
         {{if .EventSettings.TbaDownloadEnabled}}
-          <div class="row mb-3">
-            <a href="/setup/teams/refresh" class="btn btn-primary" onclick="$('#loadingFromTba').modal('show');">
-              Refresh Team Data from TBA
-            </a>
-          </div>
+        <div class="row mb-3">
+          <a href="/setup/teams/refresh" class="btn btn-primary" onclick="$('#loadingFromTba').modal('show');">
+            Refresh Team Data from TBA
+          </a>
+        </div>
         {{end}}
         <div class="row mb-3">
           <button type="button" class="btn btn-danger" onclick="$('#confirmClearTeams').modal('show');">
@@ -41,16 +41,16 @@
           </button>
         </div>
         {{if .EventSettings.NetworkSecurityEnabled}}
-          <div class="row mb-3">
-            <a href="/setup/teams/generate_wpa_keys?all=true" class="btn btn-danger">Generate All WPA Keys</a>
-          </div>
-          <div class="row mb-3">
-            <a href="/setup/teams/generate_wpa_keys?all=false" class="btn btn-danger">Generate Missing WPA Keys</a>
-          </div>
+        <div class="row mb-3">
+          <a href="/setup/teams/generate_wpa_keys?all=true" class="btn btn-danger">Generate All WPA Keys</a>
+        </div>
+        <div class="row mb-3">
+          <a href="/setup/teams/generate_wpa_keys?all=false" class="btn btn-danger">Generate Missing WPA Keys</a>
+        </div>
         {{end}}
         {{if .EventSettings.TbaPublishingEnabled}}
-          <p>Team list is not automatically published to The Blue Alliance. Manually publish it from the Settings
-            tab.</p>
+        <p>Team list is not automatically published to The Blue Alliance. Manually publish it from the Settings
+          tab.</p>
         {{end}}
       </fieldset>
     </form>
@@ -71,25 +71,27 @@
       </thead>
       <tbody>
         {{range $team := .Teams}}
-          <tr>
-            <td>{{$team.Id}}</td>
-            <td>{{$team.Name}}</td>
-            <td>{{$team.Nickname}}</td>
-            <td>{{$team.SchoolName}}</td>
-            <td>{{$team.City}}, {{$team.StateProv}}, {{$team.Country}}</td>
-            <td>{{$team.RookieYear}}</td>
-            <td>{{$team.RobotName}}</td>
-            <td class="text-center nowrap">
-              <form action="/setup/teams/{{$team.Id}}/delete" method="POST">
-                <a href="/setup/teams/{{$team.Id}}/edit"><button type="button" class="btn btn-primary btn-sm">
+        <tr>
+          <td>{{$team.Id}}</td>
+          <td>{{$team.Name}}</td>
+          <td>{{$team.Nickname}}</td>
+          <td>{{$team.SchoolName}}</td>
+          <td>{{$team.City}}, {{$team.StateProv}}, {{$team.Country}}</td>
+          <td>{{$team.RookieYear}}</td>
+          <td>{{$team.RobotName}}</td>
+          <td class="text-center nowrap">
+            <form action="/setup/teams/{{$team.Id}}/delete" method="POST">
+              <a href="/setup/teams/{{$team.Id}}/edit">
+                <button type="button" class="btn btn-primary btn-sm">
                   <i class="bi-pencil-square"></i>
-                </button></a>
-                <button type="submit" class="btn btn-danger btn-sm">
-                  <i class="bi-trash"></i>
                 </button>
-              </form>
-            </td>
-          </tr>
+              </a>
+              <button type="submit" class="btn btn-danger btn-sm">
+                <i class="bi-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
         {{end}}
       </tbody>
     </table>
@@ -124,11 +126,11 @@
       <div class="modal-body">
         <div class="progress">
           <div id="teamDownloadProgressBar"
-               class="progress-bar progress-bar-striped progress-bar-animated"
-               role="progressbar"
-               style="width: 10%"
-               aria-valuemin="0"
-               aria-valuemax="100">
+            class="progress-bar progress-bar-striped progress-bar-animated"
+            role="progressbar"
+            style="width: 10%"
+            aria-valuemin="0"
+            aria-valuemax="100">
             5%
           </div>
         </div>
@@ -143,14 +145,14 @@
   $(function updateProgressBar() {
     $.ajax({
       url: '/setup/teams/progress',
-      success: function(data) {
+      success: function (data) {
         teamDownloadProgressBar.css("width", `${data}%`);
         teamDownloadProgressBar.text(`${data}%`);
       },
-      error: function(error) {
+      error: function (error) {
         console.log(error)
       },
-      complete: function() {
+      complete: function () {
         setTimeout(updateProgressBar, 2000)
       }
     })

@@ -5,7 +5,7 @@
 
 var websocket;
 
-$(function() {
+$(function () {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
 
@@ -18,6 +18,5 @@ $(function() {
   });
 
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/displays/twitch/websocket", {
-  });
+  websocket = new CheesyWebsocket("/displays/twitch/websocket", {});
 });

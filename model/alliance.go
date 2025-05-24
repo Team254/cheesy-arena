@@ -44,9 +44,12 @@ func (database *Database) GetAllAlliances() ([]Alliance, error) {
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(alliances, func(i, j int) bool {
-		return alliances[i].Id < alliances[j].Id
-	})
+	sort.Slice(
+		alliances,
+		func(i, j int) bool {
+			return alliances[i].Id < alliances[j].Id
+		},
+	)
 	return alliances, nil
 }
 

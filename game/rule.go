@@ -14,6 +14,7 @@ type Rule struct {
 }
 
 // All rules from the 2022 game that carry point penalties.
+// @formatter:off
 var rules = []*Rule{
 	{1, "G206", false, true, "A team or ALLIANCE may not collude with another team to each purposefully violate a rule in an attempt to influence Ranking Points."},
 	{2, "G210", true, false, "A strategy not consistent with standard gameplay and clearly aimed at forcing the opponent ALLIANCE to violate a rule is not in the spirit of FIRST Robotics Competition and not allowed."},
@@ -56,6 +57,8 @@ var rules = []*Rule{
 	{39, "G434", false, false, "COACHES may not touch SCORING ELEMENTS, unless for safety purposes."},
 	{40, "G435", true, false, "HUMAN PLAYERS may not store more than 4 ALGAE in the PROCESSOR AREA."},
 }
+
+// @formatter:on
 var ruleMap map[int]*Rule
 
 // Returns the rule having the given ID, or nil if no such rule exists.

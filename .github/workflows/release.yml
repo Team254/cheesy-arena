@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ASSET_FILES: LICENSE README.md access_point_config.tar.gz fix_avatar_colors_for_overlay font schedules static
-          switch_config.txt templates tunnel
+        switch_config.txt templates tunnel
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -27,7 +27,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Cheesy Arena ${{ github.ref }}
           body: This is a release of Cheesy Arena for the 2025 FRC game, REEFSCAPE. Download the version for your
-              operating system below. Supported operating systems are Linux, macOS (x64 and M1), and Windows.
+            operating system below. Supported operating systems are Linux, macOS (x64 and M1), and Windows.
           draft: false
           prerelease: false
 

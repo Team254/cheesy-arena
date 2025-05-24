@@ -135,7 +135,7 @@ h3 {
   font-size: 1.8vw;
   border-radius: 0.5vw;
 }
-.foul>* {
+.foul > * {
   margin: 0 1vw;
 }
 .type-button {

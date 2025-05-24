@@ -34,7 +34,12 @@ func NewNexusClient(eventCode string) *NexusClient {
 
 // Gets the team lineup for a given match from the Nexus API. Returns nil and an error if the lineup is not available.
 func (client *NexusClient) GetLineup(tbaMatchKey model.TbaMatchKey) (*[6]int, error) {
-	path := fmt.Sprintf("/api/v1/event/%s/match/%s/lineups?key=%s", client.eventCode, tbaMatchKey.String(), client.apiKey)
+	path := fmt.Sprintf(
+		"/api/v1/event/%s/match/%s/lineups?key=%s",
+		client.eventCode,
+		tbaMatchKey.String(),
+		client.apiKey,
+	)
 	resp, err := client.getRequest(path)
 	if err != nil {
 		return nil, err

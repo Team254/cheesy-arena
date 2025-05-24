@@ -53,8 +53,9 @@ func (ws *Websocket) Close() error {
 func (ws *Websocket) Read() (string, any, error) {
 	var message Message
 	err := ws.conn.ReadJSON(&message)
-	if websocket.IsCloseError(err, websocket.CloseAbnormalClosure, websocket.CloseGoingAway,
-		websocket.CloseNoStatusReceived) {
+	if websocket.IsCloseError(
+		err, websocket.CloseAbnormalClosure, websocket.CloseGoingAway, websocket.CloseNoStatusReceived,
+	) {
 		// This error indicates that the browser terminated the connection normally; rewrite it so that clients don't
 		// log it.
 		return "", nil, io.EOF

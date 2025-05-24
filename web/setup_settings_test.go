@@ -24,16 +24,19 @@ func TestSetupSettings(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Untitled Event")
 	assert.Contains(t, recorder.Body.String(), "8")
-	assert.NotContains(t, recorder.Body.String(), "tbaPublishingEnabled\" checked")
+	assert.NotContains(t, recorder.Body.String(), "tbaPublishingEnabled\"  checked")
 
 	// Change the settings and check the response.
-	recorder = web.postHttpResponse("/setup/settings", "name=Chezy Champs&code=CC&playoffType=single&"+
-		"numPlayoffAlliances=16&tbaPublishingEnabled=on&tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec")
+	recorder = web.postHttpResponse(
+		"/setup/settings",
+		"name=Chezy Champs&code=CC&playoffType=single&numPlayoffAlliances=16&tbaPublishingEnabled=on&"+
+			"tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec",
+	)
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/setup/settings")
 	assert.Contains(t, recorder.Body.String(), "Chezy Champs")
 	assert.Contains(t, recorder.Body.String(), "16")
-	assert.Contains(t, recorder.Body.String(), "tbaPublishingEnabled\" checked")
+	assert.Contains(t, recorder.Body.String(), "tbaPublishingEnabled\"  checked")
 	assert.Contains(t, recorder.Body.String(), "2014cc")
 	assert.Contains(t, recorder.Body.String(), "secretId")
 	assert.Contains(t, recorder.Body.String(), "tbasec")
@@ -195,8 +198,7 @@ func TestSetupSettingsBackupRestoreDb(t *testing.T) {
 	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
 
 	// Check restoring with a corrupt file.
-	recorder = web.postFileHttpResponse("/setup/db/restore", "databaseFile",
-		bytes.NewBufferString("invalid"))
+	recorder = web.postFileHttpResponse("/setup/db/restore", "databaseFile", bytes.NewBufferString("invalid"))
 	assert.Contains(t, recorder.Body.String(), "Could not read uploaded database backup file")
 	assert.NotEqual(t, "Chezy Champs", web.arena.EventSettings.Name)
 

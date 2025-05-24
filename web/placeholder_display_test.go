@@ -44,8 +44,12 @@ func TestPlaceholderDisplayWebsocket(t *testing.T) {
 	}
 
 	// Reconfigure the display and verify that the new configuration is received.
-	displayConfig := field.DisplayConfiguration{Id: "123", Nickname: "Alliance", Type: field.AllianceStationDisplay,
-		Configuration: map[string]string{"station": "B2"}}
+	displayConfig := field.DisplayConfiguration{
+		Id:            "123",
+		Nickname:      "Alliance",
+		Type:          field.AllianceStationDisplay,
+		Configuration: map[string]string{"station": "B2"},
+	}
 	web.arena.UpdateDisplay(displayConfig)
 	readWebsocketType(t, ws, "displayConfiguration")
 }

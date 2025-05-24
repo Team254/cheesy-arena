@@ -1,60 +1,62 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
-  Author: ian@yann.io (Ian Thompson)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
+Author: ian@yann.io (Ian Thompson)
 
-  UI for entering realtime scores.
+UI for entering realtime scores.
 */}}
 {{define "title"}}Scoring Panel{{end}}
 {{define "body"}}
 <header id="banner">
   {{if .Position.ScoresAuto }}
-    <div class="banner-title">Auto</div>
+  <div class="banner-title">Auto</div>
   {{else}}
-    <div class="banner-placeholder"></div>
+  <div class="banner-placeholder"></div>
   {{end}}
   <div class="screen-title">{{.Position.Title}} - <span id="matchName">&nbsp;</span></div>
   {{if .Position.ScoresEndgame }}
-    <div class="banner-title">Endgame</div>
+  <div class="banner-title">Endgame</div>
   {{else}}
-    <div class="banner-placeholder"></div>
+  <div class="banner-placeholder"></div>
   {{end}}
 </header>
 <main>
   <div id="top-controls">
     <div id="auto-controls">
       {{if .Position.ScoresAuto}}
-        {{range $i := seq 3}}
-          {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "class" "scoring-button" "onclick" (printf "handleLeaveClick(%d);" $i))}}
-        {{end}}
+      {{range $i := seq 3}}
+      {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "class" "scoring-button" "onclick"
+      (printf "handleLeaveClick(%d);" $i))}}
+      {{end}}
       {{end}}
     </div>
     <button id="commit" onclick="commitMatchScore();" ontouchstart disabled>Commit</button>
     <div id="endgame-controls">
       {{if .Position.ScoresEndgame}}
-        {{range $i := seq 3}}
-          {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "class" "scoring-teleop-button" "onclick" "showEndgameDialog();")}}
-        {{end}}
+      {{range $i := seq 3}}
+      {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "class" "scoring-teleop-button"
+      "onclick" "showEndgameDialog();")}}
+      {{end}}
       {{end}}
     </div>
   </div>
   <div id="reef-controls">
     <svg id="reef-controls-warning" viewBox="0 0 80 70">
-      <path stroke-width="6" stroke-linejoin="round" stroke="#000000" fill="none" d="M 40,3 3,67 h 74 z" />
-      <line x1="40" y1="23" x2="40" y2="45" stroke-width="8" stroke-linecap="round" stroke="#000000" />
-      <circle fill="#000000" cx="40" cy="57" r="4" />
+      <path stroke-width="6" stroke-linejoin="round" stroke="#000000" fill="none" d="M 40,3 3,67 h 74 z"/>
+      <line x1="40" y1="23" x2="40" y2="45" stroke-width="8" stroke-linecap="round" stroke="#000000"/>
+      <circle fill="#000000" cx="40" cy="57" r="4"/>
     </svg>
     {{$baseIndex := .Position.LeftmostReefPole}}
     {{range $i := seq 6}}
-      {{template "reefColumn" (dict "index" (add $baseIndex $i))}}
+    {{template "reefColumn" (dict "index" (add $baseIndex $i))}}
     {{end}}
   </div>
   <div id="bottom-controls">
     <div class="counter-wrapper">
       {{if .Position.ScoresBarge}}
-        {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
+      {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
       {{else if and .Position.ScoresProcessor (not .PlcIsEnabled)}}
-        {{template "counter" (dict "id" "processor" "label" "Processor Algae")}}
+      {{template "counter" (dict "id" "processor" "label" "Processor Algae")}}
       {{end}}
     </div>
     <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart disabled></button>
@@ -67,9 +69,9 @@
 
 <svg id="reef-graphics" style="display:none">
   <symbol id="coral-indicator" width="30" height="125" viewBox="0 0 30 125">
-    <rect width="30" height="80" fill="var(--coral)" display="var(--current-display)" />
+    <rect width="30" height="80" fill="var(--coral)" display="var(--current-display)"/>
     <g display="var(--auto-display)">
-      <rect width="30" height="20" y="85" fill="var(--coral-auto)" />
+      <rect width="30" height="20" y="85" fill="var(--coral-auto)"/>
       <text font-size="16pt" font-weight="bold" text-anchor="middle" fill="black" x="15" y="103">A</text>
     </g>
   </symbol>
@@ -80,23 +82,26 @@
         --current-display: var(--l4-coral-display);
         --auto-display: var(--l4-coral-auto-display);
       }
+
       .l3-coral {
         --current-display: var(--l3-coral-display);
         --auto-display: var(--l3-coral-auto-display);
       }
+
       .l2-coral {
         --current-display: var(--l2-coral-display);
         --auto-display: var(--l2-coral-auto-display);
       }
     </style>
     <g stroke="var(--reef-pole)" stroke-width="12px" fill="none">
-      <path d="m 60,0 v 125 a 24.142136,24.142136 112.5 0 1 -7.071068,17.07107 L 12.071068,182.92893 A 24.142136,24.142136 112.5 0 0 5,200 v 400" />
-      <line x1="5" y1="355" x2="115" y2="245" />
-      <line x1="5" y1="555" x2="115" y2="445" />
+      <path
+        d="m 60,0 v 125 a 24.142136,24.142136 112.5 0 1 -7.071068,17.07107 L 12.071068,182.92893 A 24.142136,24.142136 112.5 0 0 5,200 v 400"/>
+      <line x1="5" y1="355" x2="115" y2="245"/>
+      <line x1="5" y1="555" x2="115" y2="445"/>
     </g>
-    <use xlink:href="#coral-indicator" class="l4-coral" x="45" y="20" />
-    <use xlink:href="#coral-indicator" class="l3-coral" x="45" y="240" transform="rotate(45, 60, 300)" />
-    <use xlink:href="#coral-indicator" class="l2-coral" x="45" y="440" transform="rotate(45, 60, 500)" />
+    <use xlink:href="#coral-indicator" class="l4-coral" x="45" y="20"/>
+    <use xlink:href="#coral-indicator" class="l3-coral" x="45" y="240" transform="rotate(45, 60, 300)"/>
+    <use xlink:href="#coral-indicator" class="l2-coral" x="45" y="440" transform="rotate(45, 60, 500)"/>
   </symbol>
 </svg>
 
@@ -105,7 +110,7 @@
     <div class="dialog-banner">Endgame Scoring</div>
     <div id="endgame-scoring">
       {{range $i := seq 3}}
-        {{template "endgame-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i)}}
+      {{template "endgame-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i)}}
       {{end}}
     </div>
     <button class="dialog-close" autofocus onclick="closeEndgameDialog();" ontouchstart>Close</button>
@@ -146,21 +151,28 @@
 {{end}}
 
 {{define "teamButton"}}
-<button id="{{.id}}" class="team-button team-{{.index}} {{.class}}" onclick="{{.onclick}}" ontouchstart disabled><div class="team-num"></div><div class="team-text">None</div></button>
+<button id="{{.id}}" class="team-button team-{{.index}} {{.class}}" onclick="{{.onclick}}" ontouchstart disabled>
+  <div class="team-num"></div>
+  <div class="team-text">None</div>
+</button>
 {{end}}
 
 {{define "counter"}}
 <div id="{{.id}}" class="counter">
-  <button class="counter-decrement scoring-button" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart disabled>-1</button>
+  <button class="counter-decrement scoring-button" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart disabled>
+    -1
+  </button>
   <div class="counter-status">
     {{if .has_auto}}
-      <div class="counter-main-clone">Teleop: <span class="counter-value">0</span></div>
-      <div class="counter-auto-row">Auto: <span class="counter-auto-value">0</span></div>
+    <div class="counter-main-clone">Teleop: <span class="counter-value">0</span></div>
+    <div class="counter-auto-row">Auto: <span class="counter-auto-value">0</span></div>
     {{end}}
     <div class="counter-value counter-main-value">0</div>
     <div class="counter-label">{{.label}}</div>
   </div>
-  <button class="counter-increment scoring-button" onclick="handleCounterClick('{{.id}}', 1);" ontouchstart disabled>+1</button>
+  <button class="counter-increment scoring-button" onclick="handleCounterClick('{{.id}}', 1);" ontouchstart disabled>
+    +1
+  </button>
 </div>
 {{end}}
 
@@ -169,10 +181,11 @@
   <div class="reef-column-contents">
     {{ $index := .index }}
     {{range $i := seq 3}}
-      <button class="reef-button scoring-button" onclick="handleReefClick({{$index}}, 5 - {{$i}})" ontouchstart disabled></button>
+    <button class="reef-button scoring-button" onclick="handleReefClick({{$index}}, 5 - {{$i}})" ontouchstart
+      disabled></button>
     {{end}}
     <svg class="reef-image" viewBox="0 0 120 600">
-      <use xlink:href="#reef-column" />
+      <use xlink:href="#reef-column"/>
     </svg>
   </div>
 </div>
@@ -188,5 +201,7 @@
 </div>
 {{end}}
 {{define "endgame-input-button"}}
-<button class="endgame-input-button endgame-{{.endgameState}}" onclick="handleEndgameClick({{.index}}, {{.endgameState}});" >{{.label}}</button>
+<button class="endgame-input-button endgame-{{.endgameState}}"
+  onclick="handleEndgameClick({{.index}}, {{.endgameState}});">{{.label}}
+</button>
 {{end}}

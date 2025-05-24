@@ -148,7 +148,7 @@ html {
   width: 31px;
   margin: 0 14px;
 }
-.score-field>div {
+.score-field > div {
   display: flex;
   justify-content: center;
   align-items: center;

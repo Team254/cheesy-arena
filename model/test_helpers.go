@@ -19,9 +19,11 @@ func SetupTestDb(t *testing.T, uniqueName string) *Database {
 	dbPath := filepath.Join(dbDir, fmt.Sprintf("%s_test.db", uniqueName))
 	database, err := OpenDatabase(dbPath)
 	assert.Nil(t, err)
-	t.Cleanup(func() {
-		database.Close()
-	})
+	t.Cleanup(
+		func() {
+			database.Close()
+		},
+	)
 	return database
 }
 

@@ -1,18 +1,18 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  Display shown on the audience screen overlayed over the video.
+Display shown on the audience screen overlayed over the video.
 */}}
 <!DOCTYPE html>
 <html>
   <head>
     <title>Audience Display - {{.EventSettings.Name}} - Cheesy Arena </title>
     <link rel="shortcut icon" href="/static/img/favicon.ico">
-    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css"/>
     <link rel="stylesheet" href="/static/css/lib/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
-    <link rel="stylesheet" href="/static/css/audience_display.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css"/>
+    <link rel="stylesheet" href="/static/css/audience_display.css"/>
   </head>
   <body>
     <div id="overlayCentering">
@@ -27,17 +27,17 @@
             </div>
             <div class="score reversible-left">
               <div class="avatars">
-                <img class="avatar" id="leftTeam1Avatar" src="" />
-                <img class="avatar" id="leftTeam2Avatar" src="" />
-                <img class="avatar" id="leftTeam3Avatar" src="" />
+                <img class="avatar" id="leftTeam1Avatar" src=""/>
+                <img class="avatar" id="leftTeam2Avatar" src=""/>
+                <img class="avatar" id="leftTeam3Avatar" src=""/>
               </div>
               <div class="score-fields">
                 <div class="score-field">
-                  <img class="coral-icon" src="/static/img/coral.png" />
+                  <img class="coral-icon" src="/static/img/coral.png"/>
                   <div id="leftCoral"></div>
                 </div>
                 <div class="score-field">
-                  <img class="algae-icon" src="/static/img/algae.png" />
+                  <img class="algae-icon" src="/static/img/algae.png"/>
                   <div id="leftAlgae"></div>
                 </div>
               </div>
@@ -48,17 +48,17 @@
               <div class="score-fields">
                 <div class="score-field">
                   <div id="rightCoral"></div>
-                  <img class="coral-icon" src="/static/img/coral.png" />
+                  <img class="coral-icon" src="/static/img/coral.png"/>
                 </div>
                 <div class="score-field">
                   <div id="rightAlgae"></div>
-                  <img class="algae-icon" src="/static/img/algae.png" />
+                  <img class="algae-icon" src="/static/img/algae.png"/>
                 </div>
               </div>
               <div class="avatars">
-                <img class="avatar" id="rightTeam1Avatar" src="" />
-                <img class="avatar" id="rightTeam2Avatar" src="" />
-                <img class="avatar" id="rightTeam3Avatar" src="" />
+                <img class="avatar" id="rightTeam1Avatar" src=""/>
+                <img class="avatar" id="rightTeam2Avatar" src=""/>
+                <img class="avatar" id="rightTeam3Avatar" src=""/>
               </div>
             </div>
             <div class="teams" id="rightTeams">
@@ -78,13 +78,13 @@
         <span id="leftPlayoffAllianceWins"></span>&nbsp;-&nbsp;<span id="rightPlayoffAllianceWins"></span>
       </div>
       <div class="text-center" id="matchCircle">
-        <img id="logo" src="/static/img/game-logo.png" alt="logo" />
+        <img id="logo" src="/static/img/game-logo.png" alt="logo"/>
         <div id="matchTime"></div>
       </div>
       <div id="timeoutDetails">
         <div class="timeout-detail" id="timeoutBreakDescription"></div>
         <div class="timeout-detail" id="timeoutNextMatch">
-          Next Up:<br />
+          Next Up:<br/>
           <span id="timeoutNextMatchName"></span>
         </div>
       </div>
@@ -97,7 +97,7 @@
         <div class="blindsCenter blank"></div>
       </div>
       <div class="blindsCenter full">
-        <img id="blindsLogo" src="/static/img/blinds-logo.png" alt="logo" />
+        <img id="blindsLogo" src="/static/img/blinds-logo.png" alt="logo"/>
       </div>
       <div id="finalScoreCentering">
         <div id="finalScore">
@@ -110,17 +110,17 @@
               <div class="final-teams reversible-left">
                 <div class="final-alliance playoff-only-field" id="leftFinalAlliance"></div>
                 {{range $i := seq 4}}
-                  <div class="final-team-row">
-                    <img class="final-team-avatar" id="leftFinalTeam{{$i}}Avatar" src="" />
-                    <div class="final-team-number" id="leftFinalTeam{{$i}}"></div>
-                    <div class="final-team-card">
-                      <div id="leftFinalTeam{{$i}}Card"></div>
-                    </div>
-                    <div class="final-team-rank playoff-hidden-field">
-                      <img id="leftFinalTeam{{$i}}RankIndicator" src="" />
-                      <div id="leftFinalTeam{{$i}}RankNumber"></div>
-                    </div>
+                <div class="final-team-row">
+                  <img class="final-team-avatar" id="leftFinalTeam{{$i}}Avatar" src=""/>
+                  <div class="final-team-number" id="leftFinalTeam{{$i}}"></div>
+                  <div class="final-team-card">
+                    <div id="leftFinalTeam{{$i}}Card"></div>
                   </div>
+                  <div class="final-team-rank playoff-hidden-field">
+                    <img id="leftFinalTeam{{$i}}RankIndicator" src=""/>
+                    <div id="leftFinalTeam{{$i}}RankNumber"></div>
+                  </div>
+                </div>
                 {{end}}
               </div>
               <div class="playoff-only-field">
@@ -182,17 +182,17 @@
               <div class="final-teams reversible-right">
                 <div class="final-alliance playoff-only-field" id="rightFinalAlliance"></div>
                 {{range $i := seq 4}}
-                  <div class="final-team-row">
-                    <img class="final-team-avatar" id="rightFinalTeam{{$i}}Avatar" src="" />
-                    <div class="final-team-number" id="rightFinalTeam{{$i}}"></div>
-                    <div class="final-team-card">
-                      <div id="rightFinalTeam{{$i}}Card"></div>
-                    </div>
-                    <div class="final-team-rank playoff-hidden-field">
-                      <img id="rightFinalTeam{{$i}}RankIndicator" src="" />
-                      <div id="rightFinalTeam{{$i}}RankNumber"></div>
-                    </div>
+                <div class="final-team-row">
+                  <img class="final-team-avatar" id="rightFinalTeam{{$i}}Avatar" src=""/>
+                  <div class="final-team-number" id="rightFinalTeam{{$i}}"></div>
+                  <div class="final-team-card">
+                    <div id="rightFinalTeam{{$i}}Card"></div>
                   </div>
+                  <div class="final-team-rank playoff-hidden-field">
+                    <img id="rightFinalTeam{{$i}}RankIndicator" src=""/>
+                    <div id="rightFinalTeam{{$i}}RankNumber"></div>
+                  </div>
+                </div>
                 {{end}}
               </div>
               <div class="playoff-only-field">
@@ -207,7 +207,7 @@
         </div>
       </div>
       <div id="bracket">
-        <img id="bracketSvg" src="" />
+        <img id="bracketSvg" src=""/>
       </div>
       <div id="sponsor" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner" id="sponsorContainer">
@@ -217,11 +217,12 @@
     <div id="allianceSelectionCentering" style="display: none;">
       <div id="allianceSelection"></div>
     </div>
-    <div id="allianceRankingsCentering" {{if .SelectionShowUnpickedTeams}}class="enabled"{{end}} style="display: none;">
+    <div id="allianceRankingsCentering" {{if .SelectionShowUnpickedTeams}}class="enabled" {{end}}
+      style="display: none;">
       <div id="allianceRankings"></div>
     </div>
     <div id="lowerThird">
-      <img id="lowerThirdLogo" src="/static/img/lower-third-logo.png" alt="logo" />
+      <img id="lowerThirdLogo" src="/static/img/lower-third-logo.png" alt="logo"/>
       <div id="lowerThirdTop"></div>
       <div id="lowerThirdBottom"></div>
       <div id="lowerThirdSingle"></div>
@@ -229,12 +230,12 @@
     <script id="allianceSelectionTemplate" type="text/x-handlebars-template">
       <table id="allianceSelectionTable">
         {{"{{#each alliances}}"}}
-          <tr>
-            <td class="alliance-cell">{{"{{Index}}"}}</td>
-            {{"{{#each this.TeamIds}}"}}
-              <td class="selection-cell">{{"{{#if this}}"}}{{"{{this}}"}}{{"{{/if}}"}}</td>
-            {{"{{/each}}"}}
-          </tr>
+        <tr>
+          <td class="alliance-cell">{{"{{Index}}"}}</td>
+          {{"{{#each this.TeamIds}}"}}
+          <td class="selection-cell">{{"{{#if this}}"}}{{"{{this}}"}}{{"{{/if}}"}}</td>
+          {{"{{/each}}"}}
+        </tr>
         {{"{{/each}}"}}
         <tr>
           <td id="allianceSelectionTimer" colspan="{{"{{numColumns}}"}}"></td>
@@ -243,21 +244,21 @@
     </script>
     <script id="sponsorImageTemplate" type="text/x-handlebars-template">
       <div class="carousel-item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-bs-interval="{{"{{DisplayTimeMs}}"}}">
-        <div class="sponsor-image-container">
-          <img src="/static/img/sponsors/{{"{{Image}}"}}" />
-        </div>
-        <h1>{{"{{Subtitle}}"}}</h1>
+      <div class="sponsor-image-container">
+        <img src="/static/img/sponsors/{{"{{Image}}"}}" />
+      </div>
+      <h1>{{"{{Subtitle}}"}}</h1>
       </div>
     </script>
     <script id="sponsorTextTemplate" type="text/x-handlebars-template">
       <div class="carousel-item{{"{{#if First}}"}} active{{"{{/if}}"}}" data-bs-interval="{{"{{DisplayTimeMs}}"}}">
-        <h2>{{"{{Line1}}"}}<br />{{"{{Line2}}"}}</h2>
-        <h1>{{"{{Subtitle}}"}}</h1>
+      <h2>{{"{{Line1}}"}}<br/>{{"{{Line2}}"}}</h2>
+      <h1>{{"{{Subtitle}}"}}</h1>
       </div>
     </script>
     {{range $sound := .MatchSounds}}
-      <audio id="sound-{{$sound.Name}}" src="/static/audio/{{$sound.Name}}.{{$sound.FileExtension}}" preload="auto">
-      </audio>
+    <audio id="sound-{{$sound.Name}}" src="/static/audio/{{$sound.Name}}.{{$sound.FileExtension}}" preload="auto">
+    </audio>
     {{end}}
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>

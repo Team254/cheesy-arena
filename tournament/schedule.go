@@ -34,8 +34,9 @@ func BuildRandomSchedule(
 	// Adjust the number of matches to remove any excess from non-perfect block scheduling.
 	numMatches = int(math.Ceil(float64(numTeams) * float64(matchesPerTeam) / TeamsPerMatch))
 
-	file, err := os.Open(fmt.Sprintf("%s/%d_%d.csv", filepath.Join(model.BaseDir, schedulesDir), numTeams,
-		matchesPerTeam))
+	file, err := os.Open(
+		fmt.Sprintf("%s/%d_%d.csv", filepath.Join(model.BaseDir, schedulesDir), numTeams, matchesPerTeam),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("No schedule template exists for %d teams and %d matches", numTeams, matchesPerTeam)
 	}

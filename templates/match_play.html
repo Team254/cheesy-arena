@@ -1,8 +1,8 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  UI for controlling match play and viewing team connection and field status.
+UI for controlling match play and viewing team connection and field status.
 */}}
 {{define "title"}}Match Play{{end}}
 {{define "body"}}
@@ -11,7 +11,8 @@
   <div class="col-lg-8">
     <div class="row text-center mb-2">
       <div id="matchName" class="col-lg-3 card card-body bg-body-tertiary"
-        style="text-transform: uppercase;">&nbsp;</div>
+        style="text-transform: uppercase;">&nbsp;
+      </div>
       <div id="matchState" class="col-lg-3 card card-body bg-body-tertiary">&nbsp;</div>
       <div id="matchTime" class="col-lg-2 card card-body bg-body-tertiary">&nbsp;</div>
       <div id="redScore" class="col-lg-2 card card-body bg-red">&nbsp;</div>
@@ -93,28 +94,28 @@
       <div class="row">
         <div class="col-lg-3">
           <h6>Scoring</h6>
-          <p><span class="badge badge-scoring" id="refereeScoreStatus">Referee</span><br />
-            <span class="badge badge-scoring" id="redNearScoreStatus"></span><br />
-            <span class="badge badge-scoring" id="redFarScoreStatus"></span><br />
-            <span class="badge badge-scoring" id="blueNearScoreStatus"></span><br />
+          <p><span class="badge badge-scoring" id="refereeScoreStatus">Referee</span><br/>
+            <span class="badge badge-scoring" id="redNearScoreStatus"></span><br/>
+            <span class="badge badge-scoring" id="redFarScoreStatus"></span><br/>
+            <span class="badge badge-scoring" id="blueNearScoreStatus"></span><br/>
             <span class="badge badge-scoring" id="blueFarScoreStatus"></span></p>
-        {{if .EventSettings.NetworkSecurityEnabled}}
+          {{if .EventSettings.NetworkSecurityEnabled}}
           <h6>Network Status</h6>
           <p>
-            <span class="badge badge-status" id="accessPointStatus">Access Point</span><br />
+            <span class="badge badge-status" id="accessPointStatus">Access Point</span><br/>
             <span class="badge badge-status" id="switchStatus">Switch</span>
           </p>
-        {{end}}
-        {{if .PlcIsEnabled}}
+          {{end}}
+          {{if .PlcIsEnabled}}
           <h6>PLC Status</h6>
           <p>
             <span class="badge badge-scoring" id="plcStatus"></span>
-            <span class="badge badge-scoring" id="fieldEStop">E-Stop</span><br />
+            <span class="badge badge-scoring" id="fieldEStop">E-Stop</span><br/>
             {{range $name, $status := .PlcArmorBlockStatuses}}
-              <span class="badge badge-scoring" id="plc{{$name}}Status">{{$name}}</span>
+            <span class="badge badge-scoring" id="plc{{$name}}Status">{{$name}}</span>
             {{end}}
           </p>
-        {{end}}
+          {{end}}
         </div>
         <div class="col-lg-3">
           <h6>Audience Display</h6>
@@ -127,7 +128,7 @@
             <div>
               <label>
                 <input type="radio" name="audienceDisplay" value="intro"
-                    onclick="setAudienceDisplay();" id="introRadio"> Match Intro
+                  onclick="setAudienceDisplay();" id="introRadio"> Match Intro
               </label>
             </div>
             <div>
@@ -138,7 +139,7 @@
             <div>
               <label>
                 <input type="radio" name="audienceDisplay" value="score"
-                    onclick="setAudienceDisplay();" id="scoreRadio"> Final Score
+                  onclick="setAudienceDisplay();" id="scoreRadio"> Final Score
               </label>
             </div>
             <div>
@@ -165,7 +166,7 @@
             <div>
               <label>
                 <input type="radio" name="audienceDisplay" value="allianceSelection"
-                    onclick="setAudienceDisplay();"> Alliance Selection
+                  onclick="setAudienceDisplay();"> Alliance Selection
               </label>
             </div>
             <div>
@@ -181,37 +182,37 @@
             <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="blank"
-                       onclick="setAllianceStationDisplay();"> Blank
+                  onclick="setAllianceStationDisplay();"> Blank
               </label>
             </div>
             <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="match"
-                       onclick="setAllianceStationDisplay();"> Match
+                  onclick="setAllianceStationDisplay();"> Match
               </label>
             </div>
             <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="logo"
-                       onclick="setAllianceStationDisplay();"> Logo
+                  onclick="setAllianceStationDisplay();"> Logo
               </label>
             </div>
             <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="timeout"
-                       onclick="setAllianceStationDisplay();"> Timeout
+                  onclick="setAllianceStationDisplay();"> Timeout
               </label>
             </div>
             <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="fieldReset"
-                       onclick="setAllianceStationDisplay();" id="fieldResetRadio"> Field Reset
+                  onclick="setAllianceStationDisplay();" id="fieldResetRadio"> Field Reset
               </label>
             </div>
             <div>
               <label>
                 <input type="radio" name="allianceStationDisplay" value="signalCount"
-                       onclick="setAllianceStationDisplay();" id="fieldResetRadio"> Signal Count
+                  onclick="setAllianceStationDisplay();" id="fieldResetRadio"> Signal Count
               </label>
             </div>
           </div>
@@ -229,14 +230,14 @@
             </label>
           </div>
           <h6 class="mt-4">Timeout</h6>
-          <input type="text" id="timeoutDuration" size="4" value="8:00" />
+          <input type="text" id="timeoutDuration" size="4" value="8:00"/>
           <button type="button" id="startTimeout" class="btn btn-primary btn-sm" onclick="startTimeout();">
             Start
           </button>
           <div id="testMatchSettings">
-            <br /><br />
+            <br/><br/>
             <p>Match Name</p>
-            <input type="text" id="testMatchName" onblur="setTestMatchName();" />
+            <input type="text" id="testMatchName" onblur="setTestMatchName();"/>
           </div>
         </div>
       </div>
@@ -257,7 +258,7 @@
       <div class="modal-body">
         <p id="confirmCommitReplay">This is a replay. Are you sure you want to overwrite the previous results?</p>
         <p id="confirmCommitNotReady">Not all scoring sources are ready yet. Are you sure you want to
-            commit the results?</p>
+          commit the results?</p>
       </div>
       <div class="modal-footer">
         <form class="form-horizontal" action="/setup/teams/clear" method="POST">
@@ -298,7 +299,7 @@
 {{end}}
 {{define "matchPlayTeam"}}
 <div class="row mb-2" id="status{{.color}}{{.position}}">
-  <div class="col-lg-1">{{.position}} </div>
+  <div class="col-lg-1">{{.position}}</div>
   <div class="col-lg-3">
     <input type="number" class="team-number form-control"
       onchange="$('#substituteTeams').prop('disabled', false);">

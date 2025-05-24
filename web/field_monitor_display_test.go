@@ -27,8 +27,9 @@ func TestFieldMonitorDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/field_monitor/websocket?displayId=1&ds=false&fta=false",
-		nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(
+		wsUrl+"/displays/field_monitor/websocket?displayId=1&ds=false&fta=false", nil,
+	)
 	assert.Nil(t, err)
 	defer conn.Close()
 	ws := websocket.NewTestWebsocket(conn)
@@ -55,8 +56,9 @@ func TestFieldMonitorFtaDisplayWebsocket(t *testing.T) {
 
 	server, wsUrl := web.startTestServer()
 	defer server.Close()
-	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/displays/field_monitor/websocket?displayId=1&ds=false&fta=true",
-		nil)
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(
+		wsUrl+"/displays/field_monitor/websocket?displayId=1&ds=false&fta=true", nil,
+	)
 	assert.Nil(t, err)
 	defer conn.Close()
 	ws := websocket.NewTestWebsocket(conn)

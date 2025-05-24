@@ -61,7 +61,11 @@ type DriverStationConnection struct {
 var allianceStationPositionMap = map[string]byte{"R1": 0, "R2": 1, "R3": 2, "B1": 3, "B2": 4, "B3": 5}
 
 // Opens a UDP connection for communicating to the driver station.
-func newDriverStationConnection(teamId int, allianceStation string, tcpConn net.Conn) (*DriverStationConnection, error) {
+func newDriverStationConnection(
+	teamId int,
+	allianceStation string,
+	tcpConn net.Conn,
+) (*DriverStationConnection, error) {
 	ipAddress, _, err := net.SplitHostPort(tcpConn.RemoteAddr().String())
 	if err != nil {
 		return nil, err
@@ -72,7 +76,12 @@ func newDriverStationConnection(teamId int, allianceStation string, tcpConn net.
 	if err != nil {
 		return nil, err
 	}
-	return &DriverStationConnection{TeamId: teamId, AllianceStation: allianceStation, tcpConn: tcpConn, udpConn: udpConn}, nil
+	return &DriverStationConnection{
+		TeamId:          teamId,
+		AllianceStation: allianceStation,
+		tcpConn:         tcpConn,
+		udpConn:         udpConn,
+	}, nil
 }
 
 // Loops indefinitely to read packets and update connection status.

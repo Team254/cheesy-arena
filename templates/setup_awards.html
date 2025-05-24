@@ -1,8 +1,8 @@
 {{/*
-  Copyright 2019 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2019 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  UI for configuring the awards.
+UI for configuring the awards.
 */}}
 {{define "title"}}Awards Configuration{{end}}
 {{define "body"}}
@@ -11,52 +11,52 @@
     <div class="card card-body bg-body-tertiary">
       <legend>Awards Configuration</legend>
       {{range $award := .Awards}}
-        <form class="mt-2" method="POST">
-          <div class="row mb-3">
-            <div class="col-lg-8">
-              <input type="hidden" name="id" value="{{$award.Id}}" />
-              <div class="row mb-2">
-                <label class="col-sm-5 control-label">Award Name</label>
-                <div class="col-sm-7">
-                  <input type="text" class="form-control" name="awardName" value="{{$award.AwardName}}"
-                      placeholder="Safety Award">
-                </div>
-              </div>
-              <div class="row mb-2">
-                <label class="col-sm-5 control-label">Team Awarded</label>
-                <div class="col-sm-7">
-                  <select class="form-control" name="teamId">
-                    <option value="0">No Team</option>
-                    {{range $team := $.Teams}}
-                      <option value="{{$team.Id}}"{{if eq $award.TeamId $team.Id}}}} selected{{end}}>
-                        {{$team.Id}} - {{$team.Nickname}}
-                      </option>
-                    {{end}}
-                  </select>
-                </div>
-              </div>
-              <div class="row mb-2">
-                <label class="col-sm-5 control-label">Person Awarded</label>
-                <div class="col-sm-7">
-                  <input type="text" class="form-control" name="personName" value="{{$award.PersonName}}">
-                </div>
+      <form class="mt-2" method="POST">
+        <div class="row mb-3">
+          <div class="col-lg-8">
+            <input type="hidden" name="id" value="{{$award.Id}}"/>
+            <div class="row mb-2">
+              <label class="col-sm-5 control-label">Award Name</label>
+              <div class="col-sm-7">
+                <input type="text" class="form-control" name="awardName" value="{{$award.AwardName}}"
+                  placeholder="Safety Award">
               </div>
             </div>
-            <div class="col-lg-4">
-              <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="save">Save</button>
-              {{if gt $award.Id 0}}
-                <button type="submit" class="btn btn-danger btn-lower-third" name="action" value="delete">
-                  Delete
-                </button>
-              {{end}}
+            <div class="row mb-2">
+              <label class="col-sm-5 control-label">Team Awarded</label>
+              <div class="col-sm-7">
+                <select class="form-control" name="teamId">
+                  <option value="0">No Team</option>
+                  {{range $team := $.Teams}}
+                  <option value="{{$team.Id}}" {{if eq $award.TeamId $team.Id}}}} selected{{end}}>
+                    {{$team.Id}} - {{$team.Nickname}}
+                  </option>
+                  {{end}}
+                </select>
+              </div>
+            </div>
+            <div class="row mb-2">
+              <label class="col-sm-5 control-label">Person Awarded</label>
+              <div class="col-sm-7">
+                <input type="text" class="form-control" name="personName" value="{{$award.PersonName}}">
+              </div>
             </div>
           </div>
-        </form>
+          <div class="col-lg-4">
+            <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="save">Save</button>
+            {{if gt $award.Id 0}}
+            <button type="submit" class="btn btn-danger btn-lower-third" name="action" value="delete">
+              Delete
+            </button>
+            {{end}}
+          </div>
+        </div>
+      </form>
       {{end}}
       Winner and Finalist awards will be automatically generated once the playoff tournament is complete.
       {{if .EventSettings.TbaPublishingEnabled}}
-        <br /><br />
-        <p>Awards are not automatically published to The Blue Alliance. Manually publish them from the Settings tab.</p>
+      <br/><br/>
+      <p>Awards are not automatically published to The Blue Alliance. Manually publish them from the Settings tab.</p>
       {{end}}
     </div>
   </div>

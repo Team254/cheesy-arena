@@ -1,17 +1,17 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  UI for configuring event settings.
+UI for configuring event settings.
 */}}
 {{define "title"}}Settings{{end}}
 {{define "body"}}
 <div class="row justify-content-center">
   {{if .ErrorMessage}}
-    <div class="alert alert-danger alert-dismissible">
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-      {{.ErrorMessage}}
-    </div>
+  <div class="alert alert-danger alert-dismissible">
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    {{.ErrorMessage}}
+  </div>
   {{end}}
   <div class="col-lg-6">
     <div class="card card-body bg-body-tertiary">
@@ -39,7 +39,7 @@
                 <label>
                   <input type="radio" name="playoffType" value="SingleEliminationPlayoff"
                     onclick="updateNumPlayoffAlliances(false);"
-                      {{if eq .PlayoffType 1}}checked{{end}}>
+                    {{if eq .PlayoffType 1}}checked{{end}}>
                   Single-Elimination (2-16 alliances)
                 </label>
               </div>
@@ -49,7 +49,7 @@
             <label class="col-lg-6 control-label">Number of Alliances</label>
             <div class="col-lg-6">
               <input type="text" class="form-control" name="numPlayoffAlliances" value="{{.NumPlayoffAlliances}}"
-                  {{if eq .PlayoffType 0}}disabled{{end}}>
+                {{if eq .PlayoffType 0}}disabled{{end}}>
             </div>
           </div>
           <div class="row mb-3">
@@ -58,14 +58,14 @@
               <div class="radio">
                 <label>
                   <input type="radio" name="selectionRound2Order" value="F"
-                      {{if eq .SelectionRound2Order "F"}}checked{{end}}>
+                    {{if eq .SelectionRound2Order "F"}}checked{{end}}>
                   First to Last
                 </label>
               </div>
               <div class="radio">
                 <label>
                   <input type="radio" name="selectionRound2Order" value="L"
-                      {{if eq .SelectionRound2Order "L"}}checked{{end}}>
+                    {{if eq .SelectionRound2Order "L"}}checked{{end}}>
                   Last to First
                 </label>
               </div>
@@ -77,21 +77,21 @@
               <div class="radio">
                 <label>
                   <input type="radio" name="selectionRound3Order" value="F"
-                      {{if eq .SelectionRound3Order "F"}}checked{{end}}>
+                    {{if eq .SelectionRound3Order "F"}}checked{{end}}>
                   First to Last
                 </label>
               </div>
               <div class="radio">
                 <label>
                   <input type="radio" name="selectionRound3Order" value="L"
-                      {{if eq .SelectionRound3Order "L"}}checked{{end}}>
+                    {{if eq .SelectionRound3Order "L"}}checked{{end}}>
                   Last to First
                 </label>
               </div>
               <div class="radio">
                 <label>
                   <input type="radio" name="selectionRound3Order" value=""
-                      {{if eq .SelectionRound3Order ""}}checked{{end}}>
+                    {{if eq .SelectionRound3Order ""}}checked{{end}}>
                   None
                 </label>
               </div>
@@ -103,7 +103,7 @@
             </label>
             <div class="col-lg-1 checkbox">
               <input type="checkbox" id="selectionShowUnpickedTeams"
-                     name="selectionShowUnpickedTeams"{{if .SelectionShowUnpickedTeams}} checked{{end}}>
+                name="selectionShowUnpickedTeams" {{if .SelectionShowUnpickedTeams}} checked{{end}}>
             </div>
           </div>
         </fieldset>
@@ -115,7 +115,7 @@
             </label>
             <div class="col-lg-1 checkbox">
               <input type="checkbox" id="tbaDownloadEnabled"
-                name="tbaDownloadEnabled"{{if .TbaDownloadEnabled}} checked{{end}}>
+                name="tbaDownloadEnabled" {{if .TbaDownloadEnabled}} checked{{end}}>
             </div>
           </div>
         </fieldset>
@@ -126,7 +126,7 @@
             <label class="col-lg-8 control-label" for="tbaPublishingEnabled">Enable The Blue Alliance publishing</label>
             <div class="col-lg-1 checkbox">
               <input type="checkbox" id="tbaPublishingEnabled"
-                name="tbaPublishingEnabled"{{if .TbaPublishingEnabled}} checked{{end}}>
+                name="tbaPublishingEnabled" {{if .TbaPublishingEnabled}} checked{{end}}>
             </div>
           </div>
           <div class="row mb-3">
@@ -155,7 +155,7 @@
           <div class="row mb-3">
             <label class="col-lg-8 control-label" for="nexusEnabled">Enable pulling lineup from Nexus</label>
             <div class="col-lg-1 checkbox">
-              <input type="checkbox" id="nexusEnabled" name="nexusEnabled"{{if .NexusEnabled}} checked{{end}}>
+              <input type="checkbox" id="nexusEnabled" name="nexusEnabled" {{if .NexusEnabled}} checked{{end}}>
             </div>
           </div>
         </fieldset>
@@ -177,7 +177,7 @@
             <label class="col-lg-8 control-label" for="networkSecurityEnabled">Enable advanced network security</label>
             <div class="col-lg-1 checkbox">
               <input type="checkbox" id="networkSecurityEnabled"
-                name="networkSecurityEnabled"{{if .NetworkSecurityEnabled}} checked{{end}}>
+                name="networkSecurityEnabled" {{if .NetworkSecurityEnabled}} checked{{end}}>
             </div>
           </div>
           <div class="row mb-3">
@@ -197,10 +197,10 @@
             <div class="col-lg-6">
               <select class="form-select" name="apChannel" value="{{.ApChannel}}">
                 {{range $i, $j := seq 29}}
-                  <option value="{{(add 5 (multiply $i 8))}}"
-                    {{if eq $.ApChannel (add 5 (multiply $i 8))}} selected{{end}}>
-                    {{(add 5 (multiply $i 8))}}
-                  </option>
+                <option value="{{(add 5 (multiply $i 8))}}"
+                  {{if eq $.ApChannel (add 5 (multiply $i 8))}} selected{{end}}>
+                  {{(add 5 (multiply $i 8))}}
+                </option>
                 {{end}}
               </select>
             </div>
@@ -307,25 +307,25 @@
         <fieldset class="mb-4">
           <legend>Game-Specific</legend>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Autonomous Period Duration<br />(seconds)</label>
+            <label class="col-lg-6 control-label">Autonomous Period Duration<br/>(seconds)</label>
             <div class="col-lg-6">
               <input type="text" class="form-control" name="autoDurationSec" value="{{.AutoDurationSec}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Pause Duration<br />(seconds)</label>
+            <label class="col-lg-6 control-label">Pause Duration<br/>(seconds)</label>
             <div class="col-lg-6">
               <input type="text" class="form-control" name="pauseDurationSec" value="{{.PauseDurationSec}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Teleoperated Period Duration<br />(seconds)</label>
+            <label class="col-lg-6 control-label">Teleoperated Period Duration<br/>(seconds)</label>
             <div class="col-lg-6">
               <input type="text" class="form-control" name="teleopDurationSec" value="{{.TeleopDurationSec}}">
             </div>
           </div>
           <div class="row mb-3">
-            <label class="col-lg-6 control-label">Warning Remaining Duration<br />(seconds)</label>
+            <label class="col-lg-6 control-label">Warning Remaining Duration<br/>(seconds)</label>
             <div class="col-lg-6">
               <input type="text" class="form-control" name="warningRemainingDurationSec"
                 value="{{.WarningRemainingDurationSec}}">
@@ -342,7 +342,7 @@
             <label class="col-lg-6 control-label">Coopertition Bonus Enabled</label>
             <div class="col-lg-1 checkbox">
               <input type="checkbox" id="coralBonusCoopEnabled"
-                name="coralBonusCoopEnabled"{{if .CoralBonusCoopEnabled}} checked{{end}}>
+                name="coralBonusCoopEnabled" {{if .CoralBonusCoopEnabled}} checked{{end}}>
             </div>
           </div>
           <div class="row mb-3">
@@ -372,7 +372,9 @@
     <div class="card card-body bg-body-tertiary mb-4">
       <legend>Database</legend>
       <p>
-        <a href="/setup/db/save"><button class="btn btn-primary">Save Copy of Database</button></a>
+        <a href="/setup/db/save">
+          <button class="btn btn-primary">Save Copy of Database</button>
+        </a>
       </p>
       <p>
         <button type="button" class="btn btn-warning" onclick="$('#uploadDatabase').modal('show');">
@@ -396,24 +398,34 @@
       </p>
     </div>
     {{if .TbaPublishingEnabled}}
-      <div class="card card-body bg-body-tertiary">
-        <legend>Publishing</legend>
-        <p>
-          <a href="/setup/settings/publish_teams"><button class="btn btn-primary">Publish Teams</button></a>
-        </p>
-        <p>
-          <a href="/setup/settings/publish_matches"><button class="btn btn-primary">Publish Schedule/Results</button></a>
-        </p>
-        <p>
-          <a href="/setup/settings/publish_rankings"><button class="btn btn-primary">Publish Standings</button></a>
-        </p>
-        <p>
-          <a href="/setup/settings/publish_alliances"><button class="btn btn-primary">Publish Alliances</button></a>
-        </p>
-        <p>
-          <a href="/setup/settings/publish_awards"><button class="btn btn-primary">Publish Awards</button></a>
-        </p>
-      </div>
+    <div class="card card-body bg-body-tertiary">
+      <legend>Publishing</legend>
+      <p>
+        <a href="/setup/settings/publish_teams">
+          <button class="btn btn-primary">Publish Teams</button>
+        </a>
+      </p>
+      <p>
+        <a href="/setup/settings/publish_matches">
+          <button class="btn btn-primary">Publish Schedule/Results</button>
+        </a>
+      </p>
+      <p>
+        <a href="/setup/settings/publish_rankings">
+          <button class="btn btn-primary">Publish Standings</button>
+        </a>
+      </p>
+      <p>
+        <a href="/setup/settings/publish_alliances">
+          <button class="btn btn-primary">Publish Alliances</button>
+        </a>
+      </p>
+      <p>
+        <a href="/setup/settings/publish_awards">
+          <button class="btn btn-primary">Publish Awards</button>
+        </a>
+      </p>
+    </div>
     {{end}}
   </div>
 </div>
@@ -500,7 +512,7 @@
 {{end}}
 {{define "script"}}
 <script>
-  updateNumPlayoffAlliances = function(isDoubleElimination) {
+  updateNumPlayoffAlliances = function (isDoubleElimination) {
     const numPlayoffAlliances = $("input[name=numPlayoffAlliances]");
     numPlayoffAlliances.prop("disabled", isDoubleElimination);
     if (isDoubleElimination) {

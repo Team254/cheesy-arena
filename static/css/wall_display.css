@@ -169,7 +169,7 @@ html {
   width: 31px;
   margin: 0 27px;
 }
-.score-field>div {
+.score-field > div {
   display: flex;
   justify-content: center;
   align-items: center;

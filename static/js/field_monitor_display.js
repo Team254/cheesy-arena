@@ -11,7 +11,7 @@ var lowBatteryThreshold = 8;
 var highBtuThreshold = 7.0;
 
 
-var handleArenaStatus = function(data) {
+var handleArenaStatus = function (data) {
   // If getting data for the wrong match (e.g. after a server restart), reload the page.
   if (currentMatchId == null) {
     currentMatchId = data.MatchId;
@@ -19,7 +19,7 @@ var handleArenaStatus = function(data) {
     location.reload();
   }
 
-  $.each(data.AllianceStations, function(station, stationStatus) {
+  $.each(data.AllianceStations, function (station, stationStatus) {
     // Select the DOM elements corresponding to the team station.
     var teamElementPrefix;
     if (station[0] === "R") {
@@ -104,7 +104,7 @@ var handleArenaStatus = function(data) {
       }
       var btuOkay = wifiStatus.MBits < highBtuThreshold && dsConn.RobotLinked;
       if (wifiStatus.MBits >= 0.01) {
-        teamBandwidthElement.text(wifiStatus.MBits.toFixed(2)+ "Mb");
+        teamBandwidthElement.text(wifiStatus.MBits.toFixed(2) + "Mb");
         teamBandwidthElement.attr("data-status-ok", btuOkay);
       } else {
         teamBandwidthElement.text("-");
@@ -148,8 +148,8 @@ var handleArenaStatus = function(data) {
 };
 
 // Handles a websocket message to update the match time countdown.
-var handleMatchTime = function(data) {
-  translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
+var handleMatchTime = function (data) {
+  translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
     $("#matchTime").text(countdownSec);
     if (matchStateText === "PRE-MATCH" | matchStateText === "POST-MATCH") {
@@ -161,25 +161,25 @@ var handleMatchTime = function(data) {
 };
 
 // Handles a websocket message to update the match score.
-var handleRealtimeScore = function(data,reversed) {
+var handleRealtimeScore = function (data, reversed) {
 
-    if (reversed === "true") {
-      $("#rightScore").text(data.Red.ScoreSummary.Score);
-      $("#leftScore").text(data.Blue.ScoreSummary.Score);
-    } else {
-      $("#rightScore").text(data.Blue.ScoreSummary.Score);
-      $("#leftScore").text(data.Red.ScoreSummary.Score);
+  if (reversed === "true") {
+    $("#rightScore").text(data.Red.ScoreSummary.Score);
+    $("#leftScore").text(data.Blue.ScoreSummary.Score);
+  } else {
+    $("#rightScore").text(data.Blue.ScoreSummary.Score);
+    $("#leftScore").text(data.Red.ScoreSummary.Score);
 
-    }
+  }
 };
 
 // Handles a websocket message to update current match
-var handleMatchLoad = function(data) {
+var handleMatchLoad = function (data) {
   $("#matchName").text(data.Match.LongName);
 };
 
 // Handles a websocket message to update the event status message.
-var handleEventStatus = function(data) {
+var handleEventStatus = function (data) {
   if (data.CycleTime === "") {
     $("#cycleTimeMessage").text("Last cycle time: Unknown");
   } else {
@@ -189,21 +189,21 @@ var handleEventStatus = function(data) {
 };
 
 // Makes the team notes section editable and handles saving edits to the server.
-var editFtaNotes = function(element) {
+var editFtaNotes = function (element) {
   var teamNotesTextElement = $(element);
   var textArea = $("<textarea />");
   textArea.val(teamNotesTextElement.text());
   teamNotesTextElement.replaceWith(textArea);
   textArea.focus();
-  textArea.blur(function() {
+  textArea.blur(function () {
     textArea.replaceWith(teamNotesTextElement);
     if (textArea.val() !== teamNotesTextElement.text()) {
-      websocket.send("updateTeamNotes", { station: teamNotesTextElement.attr("data-station"), notes: textArea.val()});
+      websocket.send("updateTeamNotes", {station: teamNotesTextElement.attr("data-station"), notes: textArea.val()});
     }
   });
 };
 
-$(function() {
+$(function () {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
   var reversed = urlParams.get("reversed");
@@ -218,25 +218,36 @@ $(function() {
   //Read if display to be used in a Driver Station, ignore FTA flag if so.
   var driverStation = urlParams.get("ds");
   if (driverStation === "true") {
-  $(".fta-dependent").attr("data-fta", "false");
-  $(".ds-dependent").attr("data-ds", driverStation);
+    $(".fta-dependent").attr("data-fta", "false");
+    $(".ds-dependent").attr("data-ds", driverStation);
   } else {
-  $(".fta-dependent").attr("data-fta", urlParams.get("fta"));
-  $(".ds-dependent").attr("data-ds", driverStation);
+    $(".fta-dependent").attr("data-fta", urlParams.get("fta"));
+    $(".ds-dependent").attr("data-ds", driverStation);
   }
 
   $(".reversible-left").attr("data-reversed", reversed);
   $(".reversible-right").attr("data-reversed", reversed);
 
 
-
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/field_monitor/websocket", {
-    arenaStatus: function(event) { handleArenaStatus(event.data); },
-    eventStatus: function(event) { handleEventStatus(event.data); },
-    matchLoad: function(event) { handleMatchLoad(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data,reversed); },
+    arenaStatus: function (event) {
+      handleArenaStatus(event.data);
+    },
+    eventStatus: function (event) {
+      handleEventStatus(event.data);
+    },
+    matchLoad: function (event) {
+      handleMatchLoad(event.data);
+    },
+    matchTiming: function (event) {
+      handleMatchTiming(event.data);
+    },
+    matchTime: function (event) {
+      handleMatchTime(event.data);
+    },
+    realtimeScore: function (event) {
+      handleRealtimeScore(event.data, reversed);
+    },
   });
 });

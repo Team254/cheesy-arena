@@ -36,7 +36,7 @@ body {
   font-size: 1.5vw;
   text-transform: uppercase;
 }
-#matchStatusRow[data-ds="true"][data-preMatch="false"]  {
+#matchStatusRow[data-ds="true"][data-preMatch="false"] {
   display: none;
 }
 #eventStatusRow {
@@ -67,7 +67,7 @@ body {
 }
 .right-position[data-ds="true"] {
   display: none;
-} 
+}
 .team {
   width: 44%;
   height: 100%;
@@ -87,20 +87,20 @@ body {
 .team-id[data-status=no-link], .team-notes[data-status=no-link] {
   background-color: #AAA;
 }
-.team-id[data-status=ds-linked], .team-notes[data-status=ds-linked]  {
+.team-id[data-status=ds-linked], .team-notes[data-status=ds-linked] {
   background-color: #EDAB33;
 }
-.team-id[data-status=robot-linked], .team-notes[data-status=robot-linked]  {
+.team-id[data-status=robot-linked], .team-notes[data-status=robot-linked] {
   background-color: #00ff00;
   color: #333;
 }
-.team-id[data-status=rio-linked], .team-notes[data-status=rio-linked]  {
+.team-id[data-status=rio-linked], .team-notes[data-status=rio-linked] {
   background-color: #00cc00;
 }
-.team-id[data-status=radio-linked], .team-notes[data-status=radio-linked]  {
+.team-id[data-status=radio-linked], .team-notes[data-status=radio-linked] {
   background-color: #AA3377;
 }
-.team-id[data-status=wrong-station], .team-notes[data-status=wrong-station]  {
+.team-id[data-status=wrong-station], .team-notes[data-status=wrong-station] {
   background-color: #4477AA;
 }
 .team-box-row {
@@ -109,7 +109,7 @@ body {
   width: 100%;
 }
 .team-box {
-  width: calc(100%/6);
+  width: calc(100% / 6);
   height: 100%;
   font-size: 1.5vw;
   background-color: #333;
