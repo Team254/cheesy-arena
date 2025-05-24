@@ -65,7 +65,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	removeTeamVlansCommand := ""
 	for vlan := 10; vlan <= 60; vlan += 10 {
 		removeTeamVlansCommand += fmt.Sprintf(
-			"interface Vlan%d\nno ip address\nno access-list 1%d\nno ip dhcp pool dhcp%d\n", vlan, vlan, vlan,
+			"interface Vlan%d\nno ip address\nno ip dhcp pool dhcp%d\n", vlan, vlan,
 		)
 	}
 	_, err := sw.runConfigCommand(removeTeamVlansCommand)
@@ -89,9 +89,6 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 				"network 10.%s.0 255.255.255.0\n"+
 				"default-router 10.%s.%d\n"+
 				"lease 7\n"+
-				"access-list 1%d permit ip 10.%s.0 0.0.0.255 host %s\n"+
-				"access-list 1%d permit udp any eq bootpc any eq bootps\n"+
-				"access-list 1%d permit icmp any any\n"+
 				"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
 			teamPartialIp,
 			teamPartialIp,
@@ -101,11 +98,6 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 			teamPartialIp,
 			teamPartialIp,
 			switchTeamGatewayAddress,
-			vlan,
-			teamPartialIp,
-			ServerIpAddress,
-			vlan,
-			vlan,
 			vlan,
 			teamPartialIp,
 			switchTeamGatewayAddress,
@@ -166,5 +158,5 @@ func (sw *Switch) runCommand(command string) (string, error) {
 // Logs into the switch via Telnet and runs the given command in global configuration mode. Reads the output
 // and returns it as a string.
 func (sw *Switch) runConfigCommand(command string) (string, error) {
-	return sw.runCommand(fmt.Sprintf("config terminal\n%send\ncopy running-config startup-config\n\n", command))
+	return sw.runCommand(fmt.Sprintf("config terminal\n%send\n", command))
 }
