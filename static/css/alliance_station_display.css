@@ -54,27 +54,13 @@ body[data-mode=timeout] .mode#match {
   margin: auto auto;
 }
 
-/* Field Reset Mode */
-#fieldReset {
+/* Field Reset and Count Modes */
+#fieldReset, #signalCount {
   position: absolute;
   width: 100%;
   height: 100%;
 }
-#fieldReset div {
-  display: table-cell;
-  vertical-align: middle;
-  text-align: center;
-  font-size: 350px;
-  line-height: 350px;
-}
-
-/* Signal Count Mode */
-#signalCount {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-#signalCount div {
+#fieldReset div, #signalCount div {
   display: table-cell;
   vertical-align: middle;
   text-align: center;
