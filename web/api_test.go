@@ -196,7 +196,7 @@ func TestAllianceStatusApi_Empty(t *testing.T) {
 	model.BuildTestAlliances(web.arena.Database)
 
     // No alliances or teams are created, so all fields should be default/empty.
-    recorder := web.getHttpResponse("/api/allianceStatus")
+    recorder := web.getHttpResponse("/api/freezy/allianceStatus")
     assert.Equal(t, 200, recorder.Code)
     assert.Equal(t, "application/json", recorder.Header()["Content-Type"][0])
 
