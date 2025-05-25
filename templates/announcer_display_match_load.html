@@ -1,67 +1,69 @@
 {{define "announcer_display_match_load"}}
 <div class="row card card-body bg-red">
   {{if eq .Match.Type playoffMatch}}
-    <h4><b>Alliance {{.Match.PlayoffRedAlliance}}</b></h4>
+  <h4><b>Alliance {{.Match.PlayoffRedAlliance}}</b></h4>
   {{end}}
   {{template "team" dict "alliance" "red" "team" (index .Teams "R1") "rankings" .Rankings}}
   {{template "team" dict "alliance" "red" "team" (index .Teams "R2") "rankings" .Rankings}}
   {{template "team" dict "alliance" "red" "team" (index .Teams "R3") "rankings" .Rankings}}
   {{range $team := .RedOffFieldTeams}}
-    {{template "team" dict "alliance" "red" "team" $team "rankings" $.Rankings "isOffField" true}}
+  {{template "team" dict "alliance" "red" "team" $team "rankings" $.Rankings "isOffField" true}}
   {{end}}
 </div>
 <div class="row card card-body bg-blue">
   {{if eq .Match.Type playoffMatch}}
-    <h4><b>Alliance {{.Match.PlayoffBlueAlliance}}</b></h4>
+  <h4><b>Alliance {{.Match.PlayoffBlueAlliance}}</b></h4>
   {{end}}
   {{template "team" dict "alliance" "blue" "team" (index .Teams "B1") "rankings" .Rankings}}
   {{template "team" dict "alliance" "blue" "team" (index .Teams "B2") "rankings" .Rankings}}
   {{template "team" dict "alliance" "blue" "team" (index .Teams "B3") "rankings" .Rankings}}
   {{range $team := .BlueOffFieldTeams}}
-    {{template "team" dict "alliance" "blue" "team" $team "rankings" $.Rankings "isOffField" true}}
+  {{template "team" dict "alliance" "blue" "team" $team "rankings" $.Rankings "isOffField" true}}
   {{end}}
 </div>
 {{end}}
 {{define "team"}}
 <div class="row">
   {{if .team}}
-    <div class="col-sm-2">
-      <h2><b>{{.team.Id}}</b>{{if .isOffField}}<span style="font-size: 0.5em;"> (not on field)</span>{{end}}</h2>
+  <div class="col-sm-2">
+    <h2><b>{{.team.Id}}</b>{{if .isOffField}}<span style="font-size: 0.5em;"> (not on field)</span>{{end}}</h2>
+  </div>
+  <div class="col-sm-4"><h2>{{.team.Nickname}}</h2></div>
+  <div class="col-sm-2"><h5>{{.team.SchoolName}}</h5></div>
+  <div class="col-sm-3">
+    <div><h5>{{.team.City}}, {{.team.StateProv}}, {{.team.Country}}</h5></div>
+  </div>
+  <div class="col-sm-1">
+    <div class="row">
+      <div class="col-sm-6">{{if index .rankings (itoa .team.Id)}}{{index .rankings (itoa .team.Id)}}{{end}}</div>
+      <div class="col-sm-6">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="$('#team{{.team.Id}}Details').modal('show');">
+          More
+        </button>
+      </div>
     </div>
-    <div class="col-sm-4"><h2>{{.team.Nickname}}</h2></div>
-    <div class="col-sm-2"><h5>{{.team.SchoolName}}</h5></div>
-    <div class="col-sm-3"><div><h5>{{.team.City}}, {{.team.StateProv}}, {{.team.Country}}</h5></div></div>
-    <div class="col-sm-1">
-      <div class="row">
-        <div class="col-sm-6">{{if index .rankings (itoa .team.Id)}}{{index .rankings (itoa .team.Id)}}{{end}}</div>
-        <div class="col-sm-6">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="$('#team{{.team.Id}}Details').modal('show');">
-            More
-          </button>
+  </div>
+  <div id="team{{.team.Id}}Details" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Team {{.team.Id}}</span></h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3"><b>Rookie Year:</b> {{.team.RookieYear}}</div>
+          <div class="mb-3"><b>Robot Name:</b> {{.team.RobotName}}</div>
+          <div class="mb-1"><b>Recent Accomplishments:</b></div>
+          <div>{{.team.Accomplishments}}</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
-    <div id="team{{.team.Id}}Details" class="modal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Team {{.team.Id}}</span></h4>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3"><b>Rookie Year:</b> {{.team.RookieYear}}</div>
-            <div class="mb-3"><b>Robot Name:</b> {{.team.RobotName}}</div>
-            <div class="mb-1"><b>Recent Accomplishments:</b></div>
-            <div>{{.team.Accomplishments}}</div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
+  </div>
   {{else}}
-    <div class="col-sm-12"><h3><b>No team present</b></h3></div>
+  <div class="col-sm-12"><h3><b>No team present</b></h3></div>
   {{end}}
 </div>
 {{end}}

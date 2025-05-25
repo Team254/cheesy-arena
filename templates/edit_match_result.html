@@ -1,8 +1,8 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  UI for manually editing the result for a match.
+UI for manually editing the result for a match.
 */}}
 {{define "title"}}Edit Match Results{{end}}
 {{define "body"}}
@@ -15,8 +15,9 @@
         <div id="blueScore"></div>
         <div class="row">
           <div class="text-center col-lg-12">
-            <a href="{{if .IsCurrentMatch}}/match_play{{else}}/match_review{{end}}"><button type="button"
-              class="btn btn-secondary">Cancel</button></a>
+            <a href="{{if .IsCurrentMatch}}/match_play{{else}}/match_review{{end}}">
+              <button type="button" class="btn btn-secondary">Cancel</button>
+            </a>
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </div>
@@ -26,235 +27,249 @@
 </div>
 <div id="scoreTemplate" style="display: none;">
   <div class="card card-body bg-{{"{{alliance}}"}} mb-3">
-    <fieldset>
-      <legend>Autonomous</legend>
-      <h6 class="fw-bold mb-2">Bypassed</h6>
-      <div class="row mb-3">
-        {{range $i := seq 3}}
-          <div class="col-lg-2">
-            <label class="control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-            <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}RobotsBypassed{{$i}}">
-          </div>
-        {{end}}
-      </div>
-      <h6 class="fw-bold mb-2">Leave</h6>
-      <div class="row mb-3">
-        {{range $i := seq 3}}
-          <div class="col-lg-2">
-            <label class="control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-            <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}LeaveStatuses{{$i}}">
-          </div>
-        {{end}}
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>Reef</legend>
-      <div class="row mb-2">
-        <div class="col-lg-1"></div>
-        <div class="row col-lg-11">
-          <label class="col-lg-1 control-label">A</label>
-          <label class="col-lg-1 control-label">B</label>
-          <label class="col-lg-1 control-label">C</label>
-          <label class="col-lg-1 control-label">D</label>
-          <label class="col-lg-1 control-label">E</label>
-          <label class="col-lg-1 control-label">F</label>
-          <label class="col-lg-1 control-label">G</label>
-          <label class="col-lg-1 control-label">H</label>
-          <label class="col-lg-1 control-label">I</label>
-          <label class="col-lg-1 control-label">J</label>
-          <label class="col-lg-1 control-label">K</label>
-          <label class="col-lg-1 control-label">L</label>
-        </div>
-      </div>
-      {{template "reefPipe" dict "pipe" 2 "pipeName" "Level 4"}}
-      {{template "reefPipe" dict "pipe" 1 "pipeName" "Level 3"}}
-      {{template "reefPipe" dict "pipe" 0 "pipeName" "Level 2"}}
-      <div class="row mb-3">
-        <label class="col-lg-1 control-label">Level 1</label>
-        <label class="col-lg-1 text-end">Auto Near:</label>
-        <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoTroughNearCoral">
-        </div>
-        <label class="col-lg-1 text-end">Auto Far:</label>
-        <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoTroughFarCoral">
-        </div>
-        <label class="col-lg-1 text-end"> Near:</label>
-        <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TroughNearCoral">
-        </div>
-        <label class="col-lg-1 text-end"> Far:</label>
-        <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TroughFarCoral">
-        </div>
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>Algae</legend>
-      <div class="row">
-        <label class="col-lg-1 text-end">Barge:</label>
-        <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}BargeAlgae">
-        </div>
-        <label class="col-lg-1 text-end">Processor:</label>
-        <div class="col-lg-1">
-          <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}ProcessorAlgae">
-        </div>
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>Endgame</legend>
-      <div class="mb-3">
-        {{range $i := seq 3}}
-          <div class="row mb-2">
-            <label class="col-lg-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-            <div class="col-lg-1">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="0"> None
-            </div>
-            <div class="col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1"> Parked
-            </div>
-            <div class="col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2"> Shallow Cage
-            </div>
-            <div class="col-lg-2">
-              <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="3"> Deep Cage
-            </div>
-          </div>
-        {{end}}
-      </div>
-    </fieldset>
-    <fieldset>
-      <legend>Fouls</legend>
-      {{"{{#each score.Fouls}}"}}
-        <input type="hidden" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Index"
-          value="{{"{{@index}}"}}">
-        <div class="card card-body bg-dark-{{"{{../alliance}}"}} mb-2">
-          <button type="button" class="btn-close" onclick="deleteFoul('{{"{{../alliance}}"}}', {{"{{@index}}"}});">
-          </button>
-          <br />
-          <div class="row mb-3">
-            <label class="col-lg-2 control-label">Is Major?</label>
-            <div class="col-lg-3">
-              <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsMajor">
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-2 control-label">Team</label>
-            <div class="col-lg-8">
-              <div class="row">
-                <div class="col-lg-2">
-                  <label>
-                    <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team1}}"}}">
-                    Team {{"{{../team1}}"}}
-                   </label>
-                </div>
-                <div class="col-lg-2">
-                  <label>
-                    <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team2}}"}}">
-                    Team {{"{{../team2}}"}}
-                  </label>
-                </div>
-                <div class="col-lg-2">
-                  <label>
-                    <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team3}}"}}">
-                    Team {{"{{../team3}}"}}
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <label class="col-lg-2 control-label">Rule</label>
-            <div class="col-lg-9">
-              <select class="form-control" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleId">
-                {{range $rule := .Rules}}
-                  <option value="{{$rule.Id}}">{{$rule.RuleNumber}}
-                    [{{if $rule.IsRankingPoint}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul + RP
-                    {{else}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul{{end}}]: {{$rule.Description}}
-                  </option>
-                {{end}}
-              </select>
-            </div>
-          </div>
-        </div>
-      {{"{{/each}}"}}
-      <button type="button" class="btn btn-secondary btn-sm" onclick="addFoul('{{"{{alliance}}"}}');">
-        Add Foul
-      </button>
-      <br /><br />
-    </fieldset>
-    <fieldset>
-      <legend>Cards</legend>
+  <fieldset>
+    <legend>Autonomous</legend>
+    <h6 class="fw-bold mb-2">Bypassed</h6>
+    <div class="row mb-3">
       {{range $i := seq 3}}
-        <div class="row mb-3">
-          <label class="col-lg-2 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-          <div class="col-lg-8">
-            <div class="row">
-              <div class="col-lg-2">
-                <label>
-                  <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="" checked>
-                  None
-                </label>
-              </div>
-              <div class="col-lg-2">
-                <label>
-                  <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="yellow">
-                  Yellow
-                </label>
-              </div>
-              <div class="col-lg-2">
-                <label>
-                  <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="red">
-                  Red
-                </label>
-              </div>
-              <div class="col-lg-2">
-                <label>
-                  <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="dq">
-                  DQ
-                </label>
-              </div>
-            </div>
+      <div class="col-lg-2">
+        <label class="control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+        <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}RobotsBypassed{{$i}}">
+      </div>
+      {{end}}
+    </div>
+    <h6 class="fw-bold mb-2">Leave</h6>
+    <div class="row mb-3">
+      {{range $i := seq 3}}
+      <div class="col-lg-2">
+        <label class="control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+        <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}LeaveStatuses{{$i}}">
+      </div>
+      {{end}}
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Reef</legend>
+    <div class="row mb-2">
+      <div class="col-lg-1"></div>
+      <div class="row col-lg-11">
+        <label class="col-lg-1 control-label">A</label>
+        <label class="col-lg-1 control-label">B</label>
+        <label class="col-lg-1 control-label">C</label>
+        <label class="col-lg-1 control-label">D</label>
+        <label class="col-lg-1 control-label">E</label>
+        <label class="col-lg-1 control-label">F</label>
+        <label class="col-lg-1 control-label">G</label>
+        <label class="col-lg-1 control-label">H</label>
+        <label class="col-lg-1 control-label">I</label>
+        <label class="col-lg-1 control-label">J</label>
+        <label class="col-lg-1 control-label">K</label>
+        <label class="col-lg-1 control-label">L</label>
+      </div>
+    </div>
+    {{template "reefPipe" dict "pipe" 2 "pipeName" "Level 4"}}
+    {{template "reefPipe" dict "pipe" 1 "pipeName" "Level 3"}}
+    {{template "reefPipe" dict "pipe" 0 "pipeName" "Level 2"}}
+    <div class="row mb-3">
+      <label class="col-lg-1 control-label">Level 1</label>
+      <label class="col-lg-1 text-end">Auto Near:</label>
+      <div class="col-lg-1">
+        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoTroughNearCoral">
+      </div>
+      <label class="col-lg-1 text-end">Auto Far:</label>
+      <div class="col-lg-1">
+        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoTroughFarCoral">
+      </div>
+      <label class="col-lg-1 text-end"> Near:</label>
+      <div class="col-lg-1">
+        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TroughNearCoral">
+      </div>
+      <label class="col-lg-1 text-end"> Far:</label>
+      <div class="col-lg-1">
+        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TroughFarCoral">
+      </div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Algae</legend>
+    <div class="row">
+      <label class="col-lg-1 text-end">Barge:</label>
+      <div class="col-lg-1">
+        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}BargeAlgae">
+      </div>
+      <label class="col-lg-1 text-end">Processor:</label>
+      <div class="col-lg-1">
+        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}ProcessorAlgae">
+      </div>
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Endgame</legend>
+    <div class="mb-3">
+      {{range $i := seq 3}}
+      <div class="row mb-2">
+        <label class="col-lg-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+        <div class="col-lg-1">
+          <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="0"> None
+        </div>
+        <div class="col-lg-2">
+          <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1"> Parked
+        </div>
+        <div class="col-lg-2">
+          <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2"> Shallow Cage
+        </div>
+        <div class="col-lg-2">
+          <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="3"> Deep Cage
+        </div>
+      </div>
+      {{end}}
+    </div>
+  </fieldset>
+  <fieldset>
+    <legend>Fouls</legend>
+    {{"{{#each score.Fouls}}"}}
+    <input type="hidden" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Index"
+    value="{{"{{@index}}"}}">
+    <div class="card card-body bg-dark-{{"{{../alliance}}"}} mb-2">
+    <button type="button" class="btn-close" onclick="deleteFoul('{{"{{../alliance}}"}}', {{"{{@index}}"}});">
+    </button>
+    <br/>
+    <div class="row mb-3">
+      <label class="col-lg-2 control-label">Is Major?</label>
+      <div class="col-lg-3">
+        <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsMajor">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label class="col-lg-2 control-label">Team</label>
+      <div class="col-lg-8">
+        <div class="row">
+          <div class="col-lg-2">
+            <label>
+              <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team1}}"}}">
+              Team {{"{{../team1}}"}}
+            </label>
+          </div>
+          <div class="col-lg-2">
+            <label>
+              <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team2}}"}}">
+              Team {{"{{../team2}}"}}
+            </label>
+          </div>
+          <div class="col-lg-2">
+            <label>
+              <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team3}}"}}">
+              Team {{"{{../team3}}"}}
+            </label>
           </div>
         </div>
-      {{end}}
-    </fieldset>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label class="col-lg-2 control-label">Rule</label>
+      <div class="col-lg-9">
+        <select class="form-control" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleId">
+        {{range $rule := .Rules}}
+        <option value="{{$rule.Id}}">{{$rule.RuleNumber}}
+          [{{if $rule.IsRankingPoint}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul + RP
+          {{else}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul{{end}}]: {{$rule.Description}}
+        </option>
+        {{end}}
+        </select>
+      </div>
+    </div>
+</div>
+{{"{{/each}}"}}
+<button type="button" class="btn btn-secondary btn-sm" onclick="addFoul('{{"{{alliance}}"}}');">
+Add Foul
+</button>
+<br/><br/>
+</fieldset>
+<fieldset>
+  <legend>Cards</legend>
+  {{range $i := seq 3}}
+  <div class="row mb-3">
+    <label class="col-lg-2 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
+    <div class="col-lg-8">
+      <div class="row">
+        <div class="col-lg-2">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="" checked>
+            None
+          </label>
+        </div>
+        <div class="col-lg-2">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="yellow">
+            Yellow
+          </label>
+        </div>
+        <div class="col-lg-2">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="red">
+            Red
+          </label>
+        </div>
+        <div class="col-lg-2">
+          <label>
+            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="dq">
+            DQ
+          </label>
+        </div>
+      </div>
+    </div>
   </div>
+  {{end}}
+</fieldset>
+</div>
 </div>
 {{end}}
 {{define "script"}}
 <script src="/static/js/match_review.js"></script>
 <script>
+  <!-- @formatter:off -->
   var matchId = {{.Match.Id}};
   matchResult = jQuery.parseJSON('{{.MatchResultJson}}');
-  allianceResults["red"] = {alliance: "red", team1: {{.Match.Red1}}, team2: {{.Match.Red2}},
-      team3: {{.Match.Red3}}, score: matchResult.RedScore, cards: matchResult.RedCards};
-  allianceResults["blue"] = {alliance: "blue", team1: {{.Match.Blue1}}, team2: {{.Match.Blue2}},
-      team3: {{.Match.Blue3}}, score: matchResult.BlueScore, cards: matchResult.BlueCards};
+  allianceResults["red"] = {
+    alliance: "red",
+    team1: {{.Match.Red1}},
+    team2: {{.Match.Red2}},
+    team3: {{.Match.Red3}},
+    score: matchResult.RedScore,
+    cards: matchResult.RedCards,
+  };
+  allianceResults["blue"] = {
+    alliance: "blue",
+    team1: {{.Match.Blue1}},
+    team2: {{.Match.Blue2}},
+    team3: {{.Match.Blue3}},
+    score: matchResult.BlueScore,
+    cards: matchResult.BlueCards,
+  };
   renderResults("red");
   renderResults("blue");
+  <!-- @formatter:on -->
 </script>
 {{end}}
 {{define "reefPipe"}}
-  <div class="row">
-    <label class="col-lg-1">{{.pipeName}}</label>
-    <div class="row col-lg-11">
-      {{range $i := seq 12}}
-        {{template "reefBranch" dict "pipe" $.pipe "level" (add $i -1)}}
-      {{end}}
-    </div>
+<div class="row">
+  <label class="col-lg-1">{{.pipeName}}</label>
+  <div class="row col-lg-11">
+    {{range $i := seq 12}}
+    {{template "reefBranch" dict "pipe" $.pipe "level" (add $i -1)}}
+    {{end}}
   </div>
-  <br />
+</div>
+<br/>
 {{end}}
 {{define "reefBranch"}}
-  <div class="col-lg-1">
-    <input type="checkbox" class="" name="{{"{{alliance}}"}}ReefAutoBranchesPipe{{.pipe}}Branch{{.level}}"
-      id="{{"{{alliance}}"}}AutoPipe{{.pipe}}Branch{{.level}}">
-    <label for="{{"{{alliance}}"}}AutoPipe{{.pipe}}Branch{{.level}}">Auto</label>
-    <br />
-    <input type="checkbox" class="" name="{{"{{alliance}}"}}ReefBranchesPipe{{.pipe}}Branch{{.level}}"
-      id="{{"{{alliance}}"}}Pipe{{.pipe}}Branch{{.level}}">
-    <label for="{{"{{alliance}}"}}Pipe{{.pipe}}Branch{{.level}}">Overall</label>
-  </div>
+<div class="col-lg-1">
+  <input type="checkbox" class="" name="{{"{{alliance}}"}}ReefAutoBranchesPipe{{.pipe}}Branch{{.level}}"
+  id="{{"{{alliance}}"}}AutoPipe{{.pipe}}Branch{{.level}}">
+  <label for="{{"{{alliance}}"}}AutoPipe{{.pipe}}Branch{{.level}}">Auto</label>
+  <br/>
+  <input type="checkbox" class="" name="{{"{{alliance}}"}}ReefBranchesPipe{{.pipe}}Branch{{.level}}"
+  id="{{"{{alliance}}"}}Pipe{{.pipe}}Branch{{.level}}">
+  <label for="{{"{{alliance}}"}}Pipe{{.pipe}}Branch{{.level}}">Overall</label>
+</div>
 {{end}}

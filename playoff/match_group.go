@@ -43,13 +43,15 @@ type matchSpec struct {
 // collectMatchGroups returns a map of all match groups including and below the given root match group, keyed by ID.
 func collectMatchGroups(rootMatchGroup MatchGroup) (map[string]MatchGroup, error) {
 	matchGroups := make(map[string]MatchGroup)
-	err := rootMatchGroup.traverse(func(matchGroup MatchGroup) error {
-		if _, ok := matchGroups[matchGroup.Id()]; ok {
-			return fmt.Errorf("match group with ID %q defined more than once", matchGroup.Id())
-		}
-		matchGroups[matchGroup.Id()] = matchGroup
-		return nil
-	})
+	err := rootMatchGroup.traverse(
+		func(matchGroup MatchGroup) error {
+			if _, ok := matchGroups[matchGroup.Id()]; ok {
+				return fmt.Errorf("match group with ID %q defined more than once", matchGroup.Id())
+			}
+			matchGroups[matchGroup.Id()] = matchGroup
+			return nil
+		},
+	)
 	return matchGroups, err
 }
 
@@ -61,37 +63,42 @@ func collectMatchSpecs(rootMatchGroup MatchGroup) ([]*matchSpec, error) {
 	uniqueTbaKeys := make(map[model.TbaMatchKey]struct{})
 
 	var matches []*matchSpec
-	err := rootMatchGroup.traverse(func(matchGroup MatchGroup) error {
-		for _, match := range matchGroup.MatchSpecs() {
-			if _, ok := uniqueLongNames[match.longName]; ok {
-				return fmt.Errorf("match with long name %q defined more than once", match.longName)
-			}
-			if _, ok := uniqueShortNames[match.shortName]; ok {
-				return fmt.Errorf("match with short name %q defined more than once", match.shortName)
-			}
-			if _, ok := uniqueOrders[match.order]; ok {
-				return fmt.Errorf("match with order %d defined more than once", match.order)
-			}
-			if _, ok := uniqueTbaKeys[match.tbaMatchKey]; ok {
-				return fmt.Errorf("match with TBA key %q defined more than once", match.tbaMatchKey)
-			}
+	err := rootMatchGroup.traverse(
+		func(matchGroup MatchGroup) error {
+			for _, match := range matchGroup.MatchSpecs() {
+				if _, ok := uniqueLongNames[match.longName]; ok {
+					return fmt.Errorf("match with long name %q defined more than once", match.longName)
+				}
+				if _, ok := uniqueShortNames[match.shortName]; ok {
+					return fmt.Errorf("match with short name %q defined more than once", match.shortName)
+				}
+				if _, ok := uniqueOrders[match.order]; ok {
+					return fmt.Errorf("match with order %d defined more than once", match.order)
+				}
+				if _, ok := uniqueTbaKeys[match.tbaMatchKey]; ok {
+					return fmt.Errorf("match with TBA key %q defined more than once", match.tbaMatchKey)
+				}
 
-			match.matchGroupId = matchGroup.Id()
-			matches = append(matches, match)
-			uniqueLongNames[match.longName] = struct{}{}
-			uniqueShortNames[match.shortName] = struct{}{}
-			uniqueOrders[match.order] = struct{}{}
-			uniqueTbaKeys[match.tbaMatchKey] = struct{}{}
-		}
-		return nil
-	})
+				match.matchGroupId = matchGroup.Id()
+				matches = append(matches, match)
+				uniqueLongNames[match.longName] = struct{}{}
+				uniqueShortNames[match.shortName] = struct{}{}
+				uniqueOrders[match.order] = struct{}{}
+				uniqueTbaKeys[match.tbaMatchKey] = struct{}{}
+			}
+			return nil
+		},
+	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	sort.Slice(matches, func(i, j int) bool {
-		return matches[i].order < matches[j].order
-	})
+	sort.Slice(
+		matches,
+		func(i, j int) bool {
+			return matches[i].order < matches[j].order
+		},
+	)
 	return matches, nil
 }

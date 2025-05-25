@@ -35,9 +35,12 @@ func (database *Database) GetScheduleBlocksByMatchType(matchType MatchType) ([]S
 		}
 	}
 
-	sort.Slice(matchingScheduleBlocks, func(i, j int) bool {
-		return matchingScheduleBlocks[i].StartTime.Before(matchingScheduleBlocks[j].StartTime)
-	})
+	sort.Slice(
+		matchingScheduleBlocks,
+		func(i, j int) bool {
+			return matchingScheduleBlocks[i].StartTime.Before(matchingScheduleBlocks[j].StartTime)
+		},
+	)
 	return matchingScheduleBlocks, nil
 }
 

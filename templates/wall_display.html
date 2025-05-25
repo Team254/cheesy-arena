@@ -1,40 +1,40 @@
 {{/*
-  Copyright 2023 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2023 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  Display that can be shown on a screen supplemental to one with the audience display overlay.
+Display that can be shown on a screen supplemental to one with the audience display overlay.
 */}}
 <!DOCTYPE html>
 <html>
   <head>
     <title>Wall Display - {{.EventSettings.Name}} - Cheesy Arena </title>
     <link rel="shortcut icon" href="/static/img/favicon.ico">
-    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css"/>
     <link rel="stylesheet" href="/static/css/lib/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
-    <link rel="stylesheet" href="/static/css/wall_display.css" />
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css"/>
+    <link rel="stylesheet" href="/static/css/wall_display.css"/>
   </head>
   <body>
     <div id="overlayCentering">
       <div id="matchOverlayAux">
         <div class="score-aux reversible-left" id="leftScoreAux">
           <div class="score-field">
-            <img class="coral-icon" src="/static/img/coral.png" />
+            <img class="coral-icon" src="/static/img/coral.png"/>
             <div id="leftCoral"></div>
           </div>
           <div class="score-field">
-            <img class="algae-icon" src="/static/img/algae.png" />
+            <img class="algae-icon" src="/static/img/algae.png"/>
             <div id="leftAlgae"></div>
           </div>
         </div>
         <div class="score-aux reversible-right" id="rightScoreAux">
           <div class="score-field">
             <div id="rightCoral"></div>
-            <img class="coral-icon" src="/static/img/coral.png" />
+            <img class="coral-icon" src="/static/img/coral.png"/>
           </div>
           <div class="score-field">
             <div id="rightAlgae"></div>
-            <img class="algae-icon" src="/static/img/algae.png" />
+            <img class="algae-icon" src="/static/img/algae.png"/>
           </div>
         </div>
       </div>
@@ -49,9 +49,9 @@
             </div>
             <div class="score reversible-left">
               <div class="avatars">
-                <img class="avatar" id="leftTeam1Avatar" src="" />
-                <img class="avatar" id="leftTeam2Avatar" src="" />
-                <img class="avatar" id="leftTeam3Avatar" src="" />
+                <img class="avatar" id="leftTeam1Avatar" src=""/>
+                <img class="avatar" id="leftTeam2Avatar" src=""/>
+                <img class="avatar" id="leftTeam3Avatar" src=""/>
               </div>
               <div class="score-fields"></div>
               <div class="score-number" id="leftScoreNumber"></div>
@@ -60,9 +60,9 @@
               <div class="score-number" id="rightScoreNumber"></div>
               <div class="score-fields"></div>
               <div class="avatars">
-                <img class="avatar" id="rightTeam1Avatar" src="" />
-                <img class="avatar" id="rightTeam2Avatar" src="" />
-                <img class="avatar" id="rightTeam3Avatar" src="" />
+                <img class="avatar" id="rightTeam1Avatar" src=""/>
+                <img class="avatar" id="rightTeam2Avatar" src=""/>
+                <img class="avatar" id="rightTeam3Avatar" src=""/>
               </div>
             </div>
             <div class="teams" id="rightTeams">
@@ -82,13 +82,13 @@
         <span id="leftPlayoffAllianceWins"></span>&nbsp;-&nbsp;<span id="rightPlayoffAllianceWins"></span>
       </div>
       <div class="text-center" id="matchCircle">
-        <img id="logo" src="/static/img/game-logo.png" alt="logo" />
+        <img id="logo" src="/static/img/game-logo.png" alt="logo"/>
         <div id="matchTime"></div>
       </div>
       <div id="timeoutDetails">
         <div class="timeout-detail" id="timeoutBreakDescription"></div>
         <div class="timeout-detail" id="timeoutNextMatch">
-          Next Up:<br />
+          Next Up:<br/>
           <span id="timeoutNextMatchName"></span>
         </div>
       </div>

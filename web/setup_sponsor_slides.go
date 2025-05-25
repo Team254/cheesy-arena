@@ -64,10 +64,13 @@ func (web *Web) sponsorSlidesPostHandler(w http.ResponseWriter, r *http.Request)
 	case "save":
 		displayTimeSec, _ := strconv.Atoi(r.PostFormValue("displayTimeSec"))
 		if sponsorSlide == nil {
-			sponsorSlide = &model.SponsorSlide{Subtitle: r.PostFormValue("subtitle"),
-				Line1: r.PostFormValue("line1"), Line2: r.PostFormValue("line2"),
-				Image: r.PostFormValue("image"), DisplayTimeSec: displayTimeSec,
-				DisplayOrder: web.arena.Database.GetNextSponsorSlideDisplayOrder(),
+			sponsorSlide = &model.SponsorSlide{
+				Subtitle:       r.PostFormValue("subtitle"),
+				Line1:          r.PostFormValue("line1"),
+				Line2:          r.PostFormValue("line2"),
+				Image:          r.PostFormValue("image"),
+				DisplayTimeSec: displayTimeSec,
+				DisplayOrder:   web.arena.Database.GetNextSponsorSlideDisplayOrder(),
 			}
 			err = web.arena.Database.CreateSponsorSlide(sponsorSlide)
 		} else {

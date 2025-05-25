@@ -48,9 +48,12 @@ func (database *Database) GetAllAwards() ([]Award, error) {
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(awards, func(i, j int) bool {
-		return awards[i].Id < awards[j].Id
-	})
+	sort.Slice(
+		awards,
+		func(i, j int) bool {
+			return awards[i].Id < awards[j].Id
+		},
+	)
 	return awards, nil
 }
 

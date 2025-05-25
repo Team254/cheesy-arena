@@ -487,8 +487,9 @@ func TestByteToBool(t *testing.T) {
 	bytes := []byte{7, 254, 3}
 	bools := byteToBool(bytes, 17)
 	if assert.Equal(t, 17, len(bools)) {
-		expectedBools := []bool{true, true, true, false, false, false, false, false, false, true, true, true, true,
-			true, true, true, true}
+		expectedBools := []bool{
+			true, true, true, false, false, false, false, false, false, true, true, true, true, true, true, true, true,
+		}
 		assert.Equal(t, expectedBools, bools)
 	}
 }

@@ -3,7 +3,7 @@
 //
 // Common JavaScript constants and functions used across multiple pages.
 
-const newDateTimePicker = function(id, defaultTime) {
+const newDateTimePicker = function (id, defaultTime) {
   new tempusDominus.TempusDominus(
     document.getElementById(id),
     {

@@ -6,15 +6,15 @@
 var websocket;
 
 // Handles a websocket message to update the teams for the current match.
-var handleMatchLoad = function(data) {
+var handleMatchLoad = function (data) {
   fetch("/displays/queueing/match_load")
     .then(response => response.text())
     .then(html => $("#matches").html(html));
 };
 
 // Handles a websocket message to update the match time countdown.
-var handleMatchTime = function(data) {
-  translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
+var handleMatchTime = function (data) {
+  translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
     var countdownString = String(countdownSec % 60);
     if (countdownString.length === 1) {
@@ -26,16 +26,24 @@ var handleMatchTime = function(data) {
 };
 
 // Handles a websocket message to update the event status message.
-var handleEventStatus = function(data) {
+var handleEventStatus = function (data) {
   $("#earlyLateMessage").text(data.EarlyLateMessage);
 };
 
-$(function() {
+$(function () {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/queueing/websocket", {
-    eventStatus: function(event) { handleEventStatus(event.data); },
-    matchLoad: function(event) { handleMatchLoad(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
+    eventStatus: function (event) {
+      handleEventStatus(event.data);
+    },
+    matchLoad: function (event) {
+      handleMatchLoad(event.data);
+    },
+    matchTime: function (event) {
+      handleMatchTime(event.data);
+    },
+    matchTiming: function (event) {
+      handleMatchTiming(event.data);
+    },
   });
 });

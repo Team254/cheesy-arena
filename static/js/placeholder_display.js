@@ -5,7 +5,7 @@
 
 var websocket;
 
-$(function() {
+$(function () {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
   $("#displayId").text(urlParams.get("displayId"));
@@ -15,6 +15,5 @@ $(function() {
   }
 
   // Set up the websocket back to the server.
-  websocket = new CheesyWebsocket("/display/websocket", {
-  });
+  websocket = new CheesyWebsocket("/display/websocket", {});
 });

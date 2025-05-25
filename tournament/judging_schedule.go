@@ -85,9 +85,11 @@ func BuildJudgingSchedule(database *model.Database, params JudgingScheduleParams
 	}
 
 	// Randomly shuffle the teams to avoid bias in the scheduling.
-	rand.Shuffle(len(teams), func(i, j int) {
-		teams[i], teams[j] = teams[j], teams[i]
-	})
+	rand.Shuffle(
+		len(teams), func(i, j int) {
+			teams[i], teams[j] = teams[j], teams[i]
+		},
+	)
 
 	// Loop until all teams have been scheduled.
 	scheduledTeams := make(map[int]struct{})
@@ -180,7 +182,10 @@ func createTeamMatchMap(teams []model.Team, matches []model.Match) map[int][]mod
 
 // getNextSlotForTeam finds the next available judging slot for a team at or after the given candidate time.
 func getNextSlotForTeam(
-	team model.Team, candidateTime time.Time, matches []model.Match, params JudgingScheduleParams,
+	team model.Team,
+	candidateTime time.Time,
+	matches []model.Match,
+	params JudgingScheduleParams,
 ) model.JudgingSlot {
 	var previousMatch *model.Match
 	for _, match := range matches {

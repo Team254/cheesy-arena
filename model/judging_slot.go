@@ -34,8 +34,11 @@ func (database *Database) GetAllJudgingSlots() ([]JudgingSlot, error) {
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(judgingSlots, func(i, j int) bool {
-		return judgingSlots[i].TeamId < judgingSlots[j].TeamId
-	})
+	sort.Slice(
+		judgingSlots,
+		func(i, j int) bool {
+			return judgingSlots[i].TeamId < judgingSlots[j].TeamId
+		},
+	)
 	return judgingSlots, nil
 }

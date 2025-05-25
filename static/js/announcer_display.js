@@ -7,7 +7,7 @@ var websocket;
 let isFirstScorePosted = true;
 
 // Handles a websocket message to hide the score dialog once the next match is being introduced.
-var handleAudienceDisplayMode = function(targetScreen) {
+var handleAudienceDisplayMode = function (targetScreen) {
   // Hide the final results so that they aren't blocking the current teams when the announcer needs them most.
   if (targetScreen === "intro" || targetScreen === "match") {
     $("#matchResult").modal("hide");
@@ -15,7 +15,7 @@ var handleAudienceDisplayMode = function(targetScreen) {
 };
 
 // Handles a websocket message to update the event status message.
-const handleEventStatus = function(data) {
+const handleEventStatus = function (data) {
   if (data.CycleTime === "") {
     $("#cycleTimeMessage").text("Last cycle time: Unknown");
   } else {
@@ -25,7 +25,7 @@ const handleEventStatus = function(data) {
 };
 
 // Handles a websocket message to update the teams for the current match.
-var handleMatchLoad = function(data) {
+var handleMatchLoad = function (data) {
   $("#matchName").text(data.Match.LongName);
 
   const teams = $("#teams");
@@ -37,34 +37,34 @@ var handleMatchLoad = function(data) {
 };
 
 // Handles a websocket message to update the match time countdown.
-var handleMatchTime = function(data) {
-  translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
+var handleMatchTime = function (data) {
+  translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
     $("#matchTime").text(getCountdown(data.MatchState, data.MatchTimeSec));
   });
 };
 
 // Handles a websocket message to update the match score.
-var handleRealtimeScore = function(data) {
+var handleRealtimeScore = function (data) {
   $("#redScore").text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
   $("#blueScore").text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
 };
 
 // Handles a websocket message to populate the final score data.
-var handleScorePosted = function(data) {
+var handleScorePosted = function (data) {
   if (isFirstScorePosted) {
     // Don't show the final score dialog when the page is first loaded.
     isFirstScorePosted = false;
     return;
   }
 
-  const matchResult = document.getElementById("matchResult"); 
+  const matchResult = document.getElementById("matchResult");
   fetch("/displays/announcer/score_posted")
     .then(response => response.text())
     .then(html => {
-      matchResult.innerHTML = html; 
-      const modal = new bootstrap.Modal(matchResult); 
-      modal.show(); 
+      matchResult.innerHTML = html;
+      const modal = new bootstrap.Modal(matchResult);
+      modal.show();
 
       // Activate tooltips above the foul listings.
       const tooltipTriggerList = document.querySelectorAll("[data-bs-toggle=tooltip]");
@@ -72,20 +72,34 @@ var handleScorePosted = function(data) {
     });
 };
 
-$(function() {
+$(function () {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/announcer/websocket", {
-    audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
-    eventStatus: function(event) { handleEventStatus(event.data); },
-    matchLoad: function(event) { handleMatchLoad(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    scorePosted: function(event) { handleScorePosted(event.data); }
+    audienceDisplayMode: function (event) {
+      handleAudienceDisplayMode(event.data);
+    },
+    eventStatus: function (event) {
+      handleEventStatus(event.data);
+    },
+    matchLoad: function (event) {
+      handleMatchLoad(event.data);
+    },
+    matchTime: function (event) {
+      handleMatchTime(event.data);
+    },
+    matchTiming: function (event) {
+      handleMatchTiming(event.data);
+    },
+    realtimeScore: function (event) {
+      handleRealtimeScore(event.data);
+    },
+    scorePosted: function (event) {
+      handleScorePosted(event.data);
+    }
   });
 
   // Make the score blink.
-  setInterval(function() {
+  setInterval(function () {
     var blinkOn = $("#savedMatchResult").attr("data-blink") === "true";
     $("#savedMatchResult").attr("data-blink", !blinkOn);
   }, 500);

@@ -14,5 +14,5 @@ func TestOpenUnreachableDatabase(t *testing.T) {
 }
 
 func setupTestDb(t *testing.T) *Database {
-	return SetupTestDb(t, "model")
+	return SetupTestDb(t)
 }

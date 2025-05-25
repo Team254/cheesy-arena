@@ -14,8 +14,14 @@ import (
 
 // Renders the audience display to be chroma keyed over the video feed.
 func (web *Web) audienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.enforceDisplayConfiguration(w, r, map[string]string{"background": "#0f0", "reversed": "false",
-		"overlayLocation": "bottom"}) {
+	if !web.enforceDisplayConfiguration(
+		w,
+		r,
+		map[string]string{
+			"background": "#0f0", "reversed": "false",
+			"overlayLocation": "bottom",
+		},
+	) {
 		return
 	}
 
@@ -53,8 +59,17 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(display.Notifier, web.arena.MatchTimingNotifier, web.arena.AudienceDisplayModeNotifier,
-		web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
-		web.arena.PlaySoundNotifier, web.arena.ScorePostedNotifier, web.arena.AllianceSelectionNotifier,
-		web.arena.LowerThirdNotifier, web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(
+		display.Notifier,
+		web.arena.MatchTimingNotifier,
+		web.arena.AudienceDisplayModeNotifier,
+		web.arena.MatchLoadNotifier,
+		web.arena.MatchTimeNotifier,
+		web.arena.RealtimeScoreNotifier,
+		web.arena.PlaySoundNotifier,
+		web.arena.ScorePostedNotifier,
+		web.arena.AllianceSelectionNotifier,
+		web.arena.LowerThirdNotifier,
+		web.arena.ReloadDisplaysNotifier,
+	)
 }

@@ -74,13 +74,19 @@ func (web *Web) scheduleGeneratePostHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	if len(teams) == 0 {
-		web.renderSchedule(w, r, "No team list is configured. Set up the list of teams at the event before "+
-			"generating the schedule.")
+		web.renderSchedule(
+			w,
+			r,
+			"No team list is configured. Set up the list of teams at the event before generating the schedule.",
+		)
 		return
 	}
 	if len(teams) < 6 {
-		web.renderSchedule(w, r, fmt.Sprintf("There are only %d teams. There must be at least 6 teams to generate "+
-			"a schedule.", len(teams)))
+		web.renderSchedule(
+			w,
+			r,
+			fmt.Sprintf("There are only %d teams. There must be at least 6 teams to generate a schedule.", len(teams)),
+		)
 		return
 	}
 
@@ -131,8 +137,16 @@ func (web *Web) scheduleSavePostHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	if len(existingMatches) > 0 {
-		web.renderSchedule(w, r, fmt.Sprintf("Can't save schedule because a schedule of %d %s matches already "+
-			"exists. Clear it first on the Settings page.", len(existingMatches), matchType))
+		web.renderSchedule(
+			w,
+			r,
+			fmt.Sprintf(
+				"Can't save schedule because a schedule of %d %s matches already exists. Clear it first on the "+
+					"Settings page.",
+				len(existingMatches),
+				matchType,
+			),
+		)
 		return
 	}
 
@@ -186,8 +200,15 @@ func (web *Web) renderSchedule(w http.ResponseWriter, r *http.Request, errorMess
 		Matches          []model.Match
 		TeamFirstMatches map[int]string
 		ErrorMessage     string
-	}{web.arena.EventSettings, matchType, scheduleBlocks, len(teams), cachedMatches[matchType],
-		cachedTeamFirstMatches[matchType], errorMessage}
+	}{
+		web.arena.EventSettings,
+		matchType,
+		scheduleBlocks,
+		len(teams),
+		cachedMatches[matchType],
+		cachedTeamFirstMatches[matchType],
+		errorMessage,
+	}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -205,8 +226,9 @@ func getScheduleBlocks(r *http.Request) ([]model.ScheduleBlock, error) {
 	scheduleBlocks := make([]model.ScheduleBlock, numScheduleBlocks)
 	location, _ := time.LoadLocation("Local")
 	for i := 0; i < numScheduleBlocks; i++ {
-		scheduleBlocks[i].StartTime, err = time.ParseInLocation("2006-01-02 03:04:05 PM",
-			r.PostFormValue(fmt.Sprintf("startTime%d", i)), location)
+		scheduleBlocks[i].StartTime, err = time.ParseInLocation(
+			"2006-01-02 03:04:05 PM", r.PostFormValue(fmt.Sprintf("startTime%d", i)), location,
+		)
 		if err != nil {
 			returnErr = err
 		}

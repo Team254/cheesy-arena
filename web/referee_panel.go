@@ -200,6 +200,8 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				continue
 			}
 			web.arena.FieldVolunteers = true
+			web.arena.AllianceStationDisplayMode = "signalCount"
+			web.arena.AllianceStationDisplayModeNotifier.Notify()
 		case "signalReset":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow clearing the field until the match is over.

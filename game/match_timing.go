@@ -25,11 +25,14 @@ func GetDurationToAutoEnd() time.Duration {
 }
 
 func GetDurationToTeleopStart() time.Duration {
-	return time.Duration(MatchTiming.WarmupDurationSec+MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec) *
-		time.Second
+	return time.Duration(
+		MatchTiming.WarmupDurationSec+MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec,
+	) * time.Second
 }
 
 func GetDurationToTeleopEnd() time.Duration {
-	return time.Duration(MatchTiming.WarmupDurationSec+MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec+
-		MatchTiming.TeleopDurationSec) * time.Second
+	return time.Duration(
+		MatchTiming.WarmupDurationSec+MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec+
+			MatchTiming.TeleopDurationSec,
+	) * time.Second
 }

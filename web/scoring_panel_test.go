@@ -196,29 +196,85 @@ func TestScoringPanelWebsocket(t *testing.T) {
 		readWebsocketType(t, blueWs, "realtimeScore")
 	}
 	// Red Auto
-	assert.Equal(t, [12]bool{false, false, false, false, false, false, false, false, false, false, false, false}, web.arena.RedRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level4])
-	assert.Equal(t, [12]bool{false, false, false, false, false, false, false, false, false, false, false, false}, web.arena.RedRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level3])
-	assert.Equal(t, [12]bool{false, false, false, false, false, false, false, false, false, false, false, false}, web.arena.RedRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level2])
+	assert.Equal(
+		t,
+		[12]bool{false, false, false, false, false, false, false, false, false, false, false, false},
+		web.arena.RedRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level4],
+	)
+	assert.Equal(
+		t,
+		[12]bool{false, false, false, false, false, false, false, false, false, false, false, false},
+		web.arena.RedRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level3],
+	)
+	assert.Equal(
+		t,
+		[12]bool{false, false, false, false, false, false, false, false, false, false, false, false},
+		web.arena.RedRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level2],
+	)
 	// Red Current
-	assert.Equal(t, [12]bool{false, false, false, false, false, false, false, false, false, false, false, false}, web.arena.RedRealtimeScore.CurrentScore.Reef.Branches[game.Level4])
-	assert.Equal(t, [12]bool{false, false, false, false, false, false, false, false, false, false, false, true}, web.arena.RedRealtimeScore.CurrentScore.Reef.Branches[game.Level3])
-	assert.Equal(t, [12]bool{false, false, true, false, false, false, false, false, false, false, false, false}, web.arena.RedRealtimeScore.CurrentScore.Reef.Branches[game.Level2])
+	assert.Equal(
+		t,
+		[12]bool{false, false, false, false, false, false, false, false, false, false, false, false},
+		web.arena.RedRealtimeScore.CurrentScore.Reef.Branches[game.Level4],
+	)
+	assert.Equal(
+		t,
+		[12]bool{false, false, false, false, false, false, false, false, false, false, false, true},
+		web.arena.RedRealtimeScore.CurrentScore.Reef.Branches[game.Level3],
+	)
+	assert.Equal(
+		t,
+		[12]bool{false, false, true, false, false, false, false, false, false, false, false, false},
+		web.arena.RedRealtimeScore.CurrentScore.Reef.Branches[game.Level2],
+	)
 	// Blue Auto
-	assert.Equal(t, [12]bool{false, false, false, false, false, false, false, false, false, false, false, false}, web.arena.BlueRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level4])
-	assert.Equal(t, [12]bool{false, false, false, false, false, false, false, false, false, false, false, false}, web.arena.BlueRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level3])
-	assert.Equal(t, [12]bool{false, true, false, false, false, false, false, false, false, false, false, false}, web.arena.BlueRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level2])
+	assert.Equal(
+		t,
+		[12]bool{false, false, false, false, false, false, false, false, false, false, false, false},
+		web.arena.BlueRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level4],
+	)
+	assert.Equal(
+		t,
+		[12]bool{false, false, false, false, false, false, false, false, false, false, false, false},
+		web.arena.BlueRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level3],
+	)
+	assert.Equal(
+		t,
+		[12]bool{false, true, false, false, false, false, false, false, false, false, false, false},
+		web.arena.BlueRealtimeScore.CurrentScore.Reef.AutoBranches[game.Level2],
+	)
 	// Blue Current
-	assert.Equal(t, [12]bool{false, false, false, false, false, false, false, false, false, false, false, false}, web.arena.BlueRealtimeScore.CurrentScore.Reef.Branches[game.Level4])
-	assert.Equal(t, [12]bool{false, false, false, false, false, false, false, false, false, false, false, false}, web.arena.BlueRealtimeScore.CurrentScore.Reef.Branches[game.Level3])
-	assert.Equal(t, [12]bool{false, true, false, false, false, false, false, false, false, false, false, false}, web.arena.BlueRealtimeScore.CurrentScore.Reef.Branches[game.Level2])
+	assert.Equal(
+		t,
+		[12]bool{false, false, false, false, false, false, false, false, false, false, false, false},
+		web.arena.BlueRealtimeScore.CurrentScore.Reef.Branches[game.Level4],
+	)
+	assert.Equal(
+		t,
+		[12]bool{false, false, false, false, false, false, false, false, false, false, false, false},
+		web.arena.BlueRealtimeScore.CurrentScore.Reef.Branches[game.Level3],
+	)
+	assert.Equal(
+		t,
+		[12]bool{false, true, false, false, false, false, false, false, false, false, false, false},
+		web.arena.BlueRealtimeScore.CurrentScore.Reef.Branches[game.Level2],
+	)
 
 	// Send some endgame scoring commands
 	endgameData := struct {
 		TeamPosition  int
 		EndgameStatus int
 	}{}
-	assert.Equal(t, [3]game.EndgameStatus{game.EndgameNone, game.EndgameNone, game.EndgameNone}, web.arena.RedRealtimeScore.CurrentScore.EndgameStatuses)
-	assert.Equal(t, [3]game.EndgameStatus{game.EndgameNone, game.EndgameNone, game.EndgameNone}, web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses)
+	assert.Equal(
+		t,
+		[3]game.EndgameStatus{game.EndgameNone, game.EndgameNone, game.EndgameNone},
+		web.arena.RedRealtimeScore.CurrentScore.EndgameStatuses,
+	)
+	assert.Equal(
+		t,
+		[3]game.EndgameStatus{game.EndgameNone, game.EndgameNone, game.EndgameNone},
+		web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses,
+	)
 	endgameData.TeamPosition = 1
 	endgameData.EndgameStatus = 2
 	redWs.Write("endgame", endgameData)
@@ -241,8 +297,16 @@ func TestScoringPanelWebsocket(t *testing.T) {
 		readWebsocketType(t, redWs, "realtimeScore")
 		readWebsocketType(t, blueWs, "realtimeScore")
 	}
-	assert.Equal(t, [3]game.EndgameStatus{game.EndgameShallowCage, game.EndgameNone, game.EndgameDeepCage}, web.arena.RedRealtimeScore.CurrentScore.EndgameStatuses)
-	assert.Equal(t, [3]game.EndgameStatus{game.EndgameNone, game.EndgameDeepCage, game.EndgameParked}, web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses)
+	assert.Equal(
+		t,
+		[3]game.EndgameStatus{game.EndgameShallowCage, game.EndgameNone, game.EndgameDeepCage},
+		web.arena.RedRealtimeScore.CurrentScore.EndgameStatuses,
+	)
+	assert.Equal(
+		t,
+		[3]game.EndgameStatus{game.EndgameNone, game.EndgameDeepCage, game.EndgameParked},
+		web.arena.BlueRealtimeScore.CurrentScore.EndgameStatuses,
+	)
 
 	// Test that some invalid commands do nothing and don't result in score change notifications.
 	redWs.Write("invalid", nil)
