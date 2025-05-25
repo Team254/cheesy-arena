@@ -37,11 +37,16 @@ func (web *Web) rankingsCsvReportHandler(w http.ResponseWriter, r *http.Request)
 		handleWebErr(w, err)
 		return
 	}
-	err = template.ExecuteTemplate(w, "rankings.csv", rankings)
+	var buf bytes.Buffer
+	err = template.ExecuteTemplate(&buf, "rankings.csv", rankings)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+
+	// Strip out carriage returns to ensure consistent behavior across platforms.
+	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
+	w.Write(cleaned)
 }
 
 // Generates a PDF-formatted report of the qualification rankings.
@@ -200,11 +205,16 @@ func (web *Web) backupTeamsCsvReportHandler(w http.ResponseWriter, r *http.Reque
 		handleWebErr(w, err)
 		return
 	}
-	err = template.ExecuteTemplate(w, "backups.csv", backupTeams)
+	var buf bytes.Buffer
+	err = template.ExecuteTemplate(&buf, "backups.csv", backupTeams)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+
+	// Strip out carriage returns to ensure consistent behavior across platforms.
+	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
+	w.Write(cleaned)
 }
 
 // Generates a PDF-formatted report of the backup teams.
@@ -403,11 +413,16 @@ func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request)
 		handleWebErr(w, err)
 		return
 	}
-	err = template.ExecuteTemplate(w, "schedule.csv", matches)
+	var buf bytes.Buffer
+	err = template.ExecuteTemplate(&buf, "schedule.csv", matches)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+
+	// Strip out carriage returns to ensure consistent behavior across platforms.
+	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
+	w.Write(cleaned)
 }
 
 // Generates a PDF-formatted report of the match schedule.
@@ -569,11 +584,16 @@ func (web *Web) teamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	err = template.ExecuteTemplate(w, "teams.csv", teams)
+	var buf bytes.Buffer
+	err = template.ExecuteTemplate(&buf, "teams.csv", teams)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+
+	// Strip out carriage returns to ensure consistent behavior across platforms.
+	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
+	w.Write(cleaned)
 }
 
 // Generates a PDF-formatted report of the team list.
@@ -812,11 +832,16 @@ func (web *Web) bracketPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 		handleWebErr(w, err)
 		return
 	}
-	err = template.ExecuteTemplate(w, "bracket_report.html", buffer.String())
+	var buf bytes.Buffer
+	err = template.ExecuteTemplate(&buf, "bracket_report.html", buffer.String())
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+
+	// Strip out carriage returns to ensure consistent behavior across platforms.
+	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
+	w.Write(cleaned)
 }
 
 // Returns the text to display if a team is a surrogate.
@@ -947,11 +972,16 @@ func (web *Web) ftaCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	err = template.ExecuteTemplate(w, "fta.csv", teams)
+	var buf bytes.Buffer
+	err = template.ExecuteTemplate(&buf, "fta.csv", teams)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+
+	// Strip out carriage returns to ensure consistent behavior across platforms.
+	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
+	w.Write(cleaned)
 }
 
 // Generates a PDF-formatted report of the judging schedule.
