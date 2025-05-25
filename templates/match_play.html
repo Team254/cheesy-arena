@@ -67,7 +67,7 @@ UI for controlling match play and viewing team connection and field status.
     <div class="row justify-content-center mt-1">
       <button type="button" id="substituteTeams" class="btn btn-primary btn-match-play btn-match-play-narrow ms-1"
         onclick="substituteTeams();" disabled>
-        Substitute Teams
+        Substitute
       </button>
       <button type="button" id="abortMatch" class="btn btn-danger btn-match-play btn-match-play-narrow ms-1"
         onclick="abortMatch();" disabled>
@@ -237,7 +237,7 @@ UI for controlling match play and viewing team connection and field status.
           <div id="testMatchSettings">
             <br/><br/>
             <p>Match Name</p>
-            <input type="text" id="testMatchName" onblur="setTestMatchName();"/>
+            <input type="text" id="testMatchName" size="16" onblur="setTestMatchName();"/>
           </div>
         </div>
       </div>
