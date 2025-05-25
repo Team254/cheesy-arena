@@ -4,6 +4,7 @@
 package field
 
 import (
+	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,7 @@ func TestEncodeControlPacket(t *testing.T) {
 
 	tcpConn := setupFakeTcpConnection(t)
 	defer tcpConn.Close()
-	dsConn, err := newDriverStationConnection(254, "R1", tcpConn)
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
 	assert.Nil(t, err)
 	defer dsConn.close()
 
@@ -139,7 +140,7 @@ func TestSendControlPacket(t *testing.T) {
 
 	tcpConn := setupFakeTcpConnection(t)
 	defer tcpConn.Close()
-	dsConn, err := newDriverStationConnection(254, "R1", tcpConn)
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
 	assert.Nil(t, err)
 	defer dsConn.close()
 
@@ -151,7 +152,7 @@ func TestSendControlPacket(t *testing.T) {
 func TestDecodeStatusPacket(t *testing.T) {
 	tcpConn := setupFakeTcpConnection(t)
 	defer tcpConn.Close()
-	dsConn, err := newDriverStationConnection(254, "R1", tcpConn)
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
 	assert.Nil(t, err)
 	defer dsConn.close()
 
@@ -221,6 +222,26 @@ func TestListenForDriverStations(t *testing.T) {
 			assert.Equal(t, 14, dsConn.DsRobotTripTimeMs)
 		}
 	}
+}
+
+func TestNewDriverStationConnection_UdpPortSelection(t *testing.T) {
+	tcpConn := setupFakeTcpConnection(t)
+	defer tcpConn.Close()
+
+	// Test with default settings (FMS port).
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
+	assert.Nil(t, err)
+	defer dsConn.close()
+	assert.Contains(t, dsConn.udpConn.RemoteAddr().String(), fmt.Sprintf(":%d", driverStationUdpSendPort))
+
+	tcpConnLite := setupFakeTcpConnection(t)
+	defer tcpConnLite.Close()
+
+	// Test with FMS Lite port enabled.
+	dsConnLite, err := newDriverStationConnection(254, "R1", tcpConnLite, true)
+	assert.Nil(t, err)
+	defer dsConnLite.close()
+	assert.Contains(t, dsConnLite.udpConn.RemoteAddr().String(), fmt.Sprintf(":%d", driverStationUdpSendPortLite))
 }
 
 func setupFakeTcpConnection(t *testing.T) net.Conn {
