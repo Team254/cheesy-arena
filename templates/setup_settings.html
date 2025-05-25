@@ -400,6 +400,17 @@ UI for configuring event settings.
                     value="{{if gt .TeamSignBlueTimerId 0}}{{.TeamSignBlueTimerId}}{{end}}">
                 </div>
               </div>
+              <div class="row mb-3">
+                <legend>Driver Station Lite Mode</legend>
+                <p>When enabled, the Driver Station software will prompt teams to allow Cheesy Arena to connect rather
+                  than automatically connecting, and will preserve the ability to use the spacebar for robot
+                  disablement. Consider enabling this setting when physical E-Stop buttons are not present.</p>
+                <label class="col-lg-8 control-label" for="useLiteUdpPort"> Lite Mode </label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="useLiteUdpPort" name="useLiteUdpPort"
+                    {{if .UseLiteUdpPort}} checked{{end}}>
+                </div>
+              </div>
             </fieldset>
           </div>
           <div class="tab-pane" id="publishing" role="tabpanel">

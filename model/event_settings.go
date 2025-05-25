@@ -48,6 +48,7 @@ type EventSettings struct {
 	TeamSignBlue2Id             int
 	TeamSignBlue3Id             int
 	TeamSignBlueTimerId         int
+	UseLiteUdpPort              bool
 	BlackmagicAddresses         string
 	WarmupDurationSec           int
 	AutoDurationSec             int
