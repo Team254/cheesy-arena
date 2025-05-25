@@ -50,19 +50,23 @@ func (notifier *Notifier) NotifyWithMessage(messageBody any) {
 }
 
 func (notifier *Notifier) notifyListener(listener chan messageEnvelope, message messageEnvelope) {
+
+	// 2) Otherwise proceed as normal:
 	defer func() {
-		// If channel is closed sending to it will cause a panic; recover and remove it from the list.
 		if r := recover(); r != nil {
 			delete(notifier.listeners, listener)
 		}
 	}()
 
-	// Do a non-blocking send. This guarantees that sending notifications won't interrupt the main event loop,
-	// at the risk of clients missing some messages if they don't read them all promptly.
 	select {
 	case listener <- message:
-		// The notification was sent and received successfully.
+		// sent successfully
 	default:
+		// 1) If this notifier is the stationTrip topic, just drop the message entirely.
+		if notifier.messageType == "stationTrip" {
+			return
+		}
+		// only log blocked‐listener warnings for non‐stationTrip topics
 		log.Printf("Failed to send a '%s' notification due to blocked listener.", notifier.messageType)
 	}
 }

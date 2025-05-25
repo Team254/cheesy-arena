@@ -73,10 +73,12 @@ var handleMatchLoad = function (data) {
   }
 };
 
-// Handles a websocket message to update the team connection status.
+// Handles a websocket message to update the team connection status and A/E-stop.
 var handleArenaStatus = function (data) {
   stationStatus = data.AllianceStations[station];
   var blink = false;
+
+  // Existing DS connection/blink logic
   if (stationStatus && stationStatus.Bypass) {
     $("#match").attr("data-status", "bypass");
   } else if (stationStatus) {
@@ -99,6 +101,14 @@ var handleArenaStatus = function (data) {
     clearInterval(blinkInterval);
     blinkInterval = null;
   }
+
+  // A/E-stop highlighting (copied from match_play.js)
+  $("#match").removeClass("solid-orange blink-orange");
+  if (stationStatus.EStop) {
+    $("#match").addClass("solid-orange"); // E-stop: solid orange
+  } else if (stationStatus.AStop) {
+    $("#match").addClass("blink-orange"); // A-stop: blinking orange
+  }
 };
 
 // Handles a websocket message to update the match time countdown.
@@ -118,16 +128,14 @@ var handleMatchTime = function (data) {
   });
 };
 
-
 // Handles a websocket message to play a sound to signal match start/stop/etc.
 const handlePlaySound = function(sound) {
   $("audio").each(function(k, v) {
-    // Stop and reset any sounds that are still playing.
     v.pause();
     v.currentTime = 0;
   });
   $("#sound-" + sound)[0].play();
-}; 
+};
 
 // Handles a websocket message to update the match score.
 var handleRealtimeScore = function (data) {

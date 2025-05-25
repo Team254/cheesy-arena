@@ -92,8 +92,8 @@ type Arena struct {
 	soundsPlayed                      map[*game.MatchSound]struct{}
 	breakDescription                  string
 	preloadedTeams                    *[6]*model.Team
-	Esp32					 		  plc.Esp32
 	lastPlcNotifyTime 				  time.Time
+	Esp32                             plc.Esp32
 }
 
 type AllianceStation struct {
@@ -676,6 +676,7 @@ func (arena *Arena) Update() {
 
 	arena.LastMatchTimeSec = matchTimeSec
 	arena.lastMatchState = arena.MatchState
+
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -932,7 +933,7 @@ func (arena *Arena) getAssignedAllianceStation(teamId int) string {
 
 // Updates the score given new input information from the field PLC, and actuates PLC outputs accordingly.
 func (arena *Arena) handlePlcInputOutput() {
-	
+
 	// Handle the team E-stop and A-stop buttons always.
 	redEStops, blueEStops := arena.Plc.GetTeamEStops()
 	redAStops, blueAStops := arena.Plc.GetTeamAStops()
@@ -950,8 +951,9 @@ func (arena *Arena) handlePlcInputOutput() {
         arena.lastPlcNotifyTime = time.Now()
     }
 
-	if (!arena.Plc.IsEnabled() && !arena.EventSettings.AlternateIOEnabled) {  // && not alternateIO Enabled
-		return 
+	// If the PLC is not enabled, or alternate I/O is not enabled, do not process any further PLC inputs.
+	if !arena.Plc.IsEnabled() && !arena.EventSettings.AlternateIOEnabled { // && not alternateIO Enabled
+		return
 	}
 
 	// Handle PLC functions that are always active.

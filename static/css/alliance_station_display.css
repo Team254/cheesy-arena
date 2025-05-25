@@ -189,3 +189,15 @@ body[data-position=right] #inMatch #blueScore {
   font-family: "FuturaLT";
   font-size: 50px;
 }
+
+/*styling for a/e stop*/
+.blink-orange {
+  background-color: orange !important;
+  animation: blink-orange 1s step-start infinite;
+}
+.solid-orange {
+  background-color: orange !important;
+}
+@keyframes blink-orange {
+  50% { opacity: 0.3; }
+}
