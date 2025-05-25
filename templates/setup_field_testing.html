@@ -1,8 +1,8 @@
 {{/*
-  Copyright 2018 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2018 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  UI for testing the game sounds and the LEDs and PLC connected to the field.
+UI for testing the game sounds and the LEDs and PLC connected to the field.
 */}}
 {{define "title"}}Field Testing{{end}}
 {{define "body"}}
@@ -11,11 +11,11 @@
     <div class="card card-body bg-body-tertiary">
       <legend>Game Sounds</legend>
       {{range $sound := .MatchSounds}}
-        <p>
-          <button type="button" class="btn btn-sm btn-primary btn-game-sound" onclick="playSound('{{$sound.Name}}');">
-            <i class="bi-play-fill"></i>&nbsp;&nbsp;{{toUpper $sound.Name}}
-          </button>
-        </p>
+      <p>
+        <button type="button" class="btn btn-sm btn-primary btn-game-sound" onclick="playSound('{{$sound.Name}}');">
+          <i class="bi-play-fill"></i>&nbsp;&nbsp;{{toUpper $sound.Name}}
+        </button>
+      </p>
       {{end}}
     </div>
   </div>

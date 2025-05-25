@@ -18,12 +18,45 @@ import (
 func TestMatchesApi(t *testing.T) {
 	web := setupTestWeb(t)
 
-	match1 := model.Match{Type: model.Qualification, ShortName: "Q1", Time: time.Unix(0, 0), Red1: 1, Red2: 2, Red3: 3,
-		Blue1: 4, Blue2: 5, Blue3: 6, Blue1IsSurrogate: true, Blue2IsSurrogate: true, Blue3IsSurrogate: true}
-	match2 := model.Match{Type: model.Qualification, ShortName: "Q2", Time: time.Unix(600, 0), Red1: 7, Red2: 8,
-		Red3: 9, Blue1: 10, Blue2: 11, Blue3: 12, Red1IsSurrogate: true, Red2IsSurrogate: true, Red3IsSurrogate: true}
-	match3 := model.Match{Type: model.Practice, ShortName: "P1", Time: time.Now(), Red1: 6, Red2: 5, Red3: 4,
-		Blue1: 3, Blue2: 2, Blue3: 1}
+	match1 := model.Match{
+		Type:             model.Qualification,
+		ShortName:        "Q1",
+		Time:             time.Unix(0, 0),
+		Red1:             1,
+		Red2:             2,
+		Red3:             3,
+		Blue1:            4,
+		Blue2:            5,
+		Blue3:            6,
+		Blue1IsSurrogate: true,
+		Blue2IsSurrogate: true,
+		Blue3IsSurrogate: true,
+	}
+	match2 := model.Match{
+		Type:            model.Qualification,
+		ShortName:       "Q2",
+		Time:            time.Unix(600, 0),
+		Red1:            7,
+		Red2:            8,
+		Red3:            9,
+		Blue1:           10,
+		Blue2:           11,
+		Blue3:           12,
+		Red1IsSurrogate: true,
+		Red2IsSurrogate: true,
+		Red3IsSurrogate: true,
+	}
+	match3 := model.Match{
+		Type:      model.Practice,
+		ShortName: "P1",
+		Time:      time.Now(),
+		Red1:      6,
+		Red2:      5,
+		Red3:      4,
+		Blue1:     3,
+		Blue2:     2,
+		Blue3:     1,
+	}
 	web.arena.Database.CreateMatch(&match1)
 	web.arena.Database.CreateMatch(&match2)
 	web.arena.Database.CreateMatch(&match3)

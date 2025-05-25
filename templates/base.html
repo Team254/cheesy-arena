@@ -1,8 +1,8 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  Base template used by most pages to include common resources and optionally render the top bar.
+Base template used by most pages to include common resources and optionally render the top bar.
 */}}
 {{define "base"}}
   <!DOCTYPE html>
@@ -123,80 +123,80 @@
                 <a class="dropdown-item" href="/help/freezy/field_monitor_help">Field Monitor Color Code</a>
                 <a class="dropdown-item" href="/static/pdf/DriverStation Preferences.pdf" target="_blank" rel="noopener noreferrer">DriverStation Preferences</a>
               </div>
-            </li>
-          </ul>
-          <ul class="navbar-nav ms-auto">
-            <li class="navbar-item">
-              <a class="nav-link" href="#" onclick="$('#aboutPage').modal('show');">About</a>
-            </li>
-          </ul>
-        </div>
-      </nav>
-      <div class="container mt-4">
-        {{template "body" .}}
+           </li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="navbar-item">
+            <a class="nav-link" href="#" onclick="$('#aboutPage').modal('show');">About</a>
+          </li>
+        </ul>
       </div>
-      <div id="aboutPage" class="modal" style="top: 20%;">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h4 class="modal-title">About Cheesy Arena</h4>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <p>A field management system that just works.</p>
-              <p>Copyright &copy; 2014-2025 Team 254. All Rights Reserved.</p>
-              <p><a href="https://github.com/Team254/cheesy-arena">https://github.com/Team254/cheesy-arena</a></p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
+    </nav>
+    <div class="container mt-4">
+      {{template "body" .}}
+    </div>
+    <div id="aboutPage" class="modal" style="top: 20%;">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">About Cheesy Arena</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <p>A field management system that just works.</p>
+            <p>Copyright &copy; 2014-2025 Team 254. All Rights Reserved.</p>
+            <p><a href="https://github.com/Team254/cheesy-arena">https://github.com/Team254/cheesy-arena</a></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
-      {{template "script_common" .}}
-      {{template "script" .}}
-    </body>
-  </html>
+    </div>
+    {{template "script_common" .}}
+    {{template "script" .}}
+  </body>
+</html>
 {{end}}
 
 {{define "base_no_navbar"}}
-  <!DOCTYPE html>
-  <html lang="en" data-bs-theme="dark">
-    <head>
-      {{template "head_common" .}}
-      {{template "head" .}}
-    </head>
-    <body>
-      <div class="container">
-        {{template "body" .}}
-      </div>
-      {{template "script_common" .}}
-      {{template "script" .}}
-    </body>
-  </html>
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    {{template "head_common" .}}
+    {{template "head" .}}
+  </head>
+  <body>
+    <div class="container">
+      {{template "body" .}}
+    </div>
+    {{template "script_common" .}}
+    {{template "script" .}}
+  </body>
+</html>
 {{end}}
 
 {{define "head_common"}}
-  <title>{{template "title" .}} - {{.EventSettings.Name}} - Cheesy Arena</title>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="shortcut icon" href="/static/img/favicon.ico">
-  <link href="/static/css/lib/bootstrap.min.css" rel="stylesheet">
-  <link href="/static/css/lib/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="/static/css/lib/tempus-dominus.min.css" rel="stylesheet">
-  <link href="/static/css/cheesy-arena.css" rel="stylesheet">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{template "title" .}} - {{.EventSettings.Name}} - Cheesy Arena</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="shortcut icon" href="/static/img/favicon.ico">
+<link href="/static/css/lib/bootstrap.min.css" rel="stylesheet">
+<link href="/static/css/lib/bootstrap-icons.min.css" rel="stylesheet">
+<link href="/static/css/lib/tempus-dominus.min.css" rel="stylesheet">
+<link href="/static/css/cheesy-arena.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 {{end}}
 
 {{define "script_common"}}
-  <script src="/static/js/lib/jquery.min.js"></script>
-  <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
-  <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
-  <script src="/static/js/lib/bootstrap.bundle.min.js"></script>
-  <script src="/static/js/lib/moment.min.js"></script>
-  <script src="/static/js/lib/handlebars-1.3.0.js"></script>
-  <script src="/static/js/lib/popper.min.js"></script>
-  <script src="/static/js/lib/tempus-dominus.min.js"></script>
-  <script src="/static/js/cheesy-common.js"></script>
-  <script src="/static/js/cheesy-websocket.js"></script>
+<script src="/static/js/lib/jquery.min.js"></script>
+<script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+<script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+<script src="/static/js/lib/bootstrap.bundle.min.js"></script>
+<script src="/static/js/lib/moment.min.js"></script>
+<script src="/static/js/lib/handlebars-1.3.0.js"></script>
+<script src="/static/js/lib/popper.min.js"></script>
+<script src="/static/js/lib/tempus-dominus.min.js"></script>
+<script src="/static/js/cheesy-common.js"></script>
+<script src="/static/js/cheesy-websocket.js"></script>
 {{end}}

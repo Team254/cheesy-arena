@@ -13,8 +13,8 @@ var rankingsData;
 var prevHighestPlayedMatch;
 
 // Loads the JSON rankings data from the event server.
-var getRankingsData = function(callback) {
-  $.getJSON("/api/rankings", function(data) {
+var getRankingsData = function (callback) {
+  $.getJSON("/api/rankings", function (data) {
     rankingsData = data;
     if (callback) {
       callback(data);
@@ -23,8 +23,8 @@ var getRankingsData = function(callback) {
 };
 
 // Updates the rankings in place and initiates scrolling if they are long enough to require it.
-var updateStaticRankings = function() {
-  getRankingsData(function() {
+var updateStaticRankings = function () {
+  getRankingsData(function () {
     var rankingsHtml = standingsTemplate(rankingsData);
     $("#rankings2").html(rankingsHtml);
     $("#scroller").css("transform", "translate(0px, -2px);");
@@ -41,10 +41,10 @@ var updateStaticRankings = function() {
 };
 
 // Seamlessly copies the newer table contents to the older one, resets the scrolling, and loads new data.
-var cycleRankings = function() {
+var cycleRankings = function () {
   // Overwrite the top data with the bottom data and reset the scrolling back up to the top of the top table.
   $("#rankings1").html($("#rankings2").html());
-  $("#scroller").css({ transform: "translate(0px, -1px);" });
+  $("#scroller").css({transform: "translate(0px, -1px);"});
 
   // Load new data into the now out-of-sight bottom table.
   var rankingsHtml = standingsTemplate(rankingsData);
@@ -71,7 +71,7 @@ var cycleRankings = function() {
 };
 
 // Updates the "Standings as of" message with the given value, or blanks it out if there is no data yet.
-var setHighestPlayedMatch = function(highestPlayedMatch) {
+var setHighestPlayedMatch = function (highestPlayedMatch) {
   if (highestPlayedMatch === "") {
     $("#highestPlayedMatch").text("");
   } else {
@@ -80,18 +80,20 @@ var setHighestPlayedMatch = function(highestPlayedMatch) {
 };
 
 // Handles a websocket message to update the event status message.
-var handleEventStatus = function(data) {
+var handleEventStatus = function (data) {
   $("#earlyLateMessage").text(data.EarlyLateMessage);
 };
 
-$(function() {
+$(function () {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
   scrollMsPerRow = urlParams.get("scrollMsPerRow");
 
   // Set up the websocket back to the server. Used only for remote forcing of reloads.
   websocket = new CheesyWebsocket("/displays/rankings/websocket", {
-    eventStatus: function(event) { handleEventStatus(event.data); },
+    eventStatus: function (event) {
+      handleEventStatus(event.data);
+    },
   });
 
   updateStaticRankings();

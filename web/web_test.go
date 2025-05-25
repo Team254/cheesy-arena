@@ -86,6 +86,6 @@ func readWebsocketMultiple(t *testing.T, ws *websocket.Websocket, count int) map
 func setupTestWeb(t *testing.T) *Web {
 	game.MatchTiming.WarmupDurationSec = 3
 	game.MatchTiming.PauseDurationSec = 2
-	arena := field.SetupTestArena(t, "web")
+	arena := field.SetupTestArena(t)
 	return NewWeb(arena)
 }

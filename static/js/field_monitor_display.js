@@ -11,7 +11,7 @@ var lowBatteryThreshold = 8;
 var highBtuThreshold = 7.0;
 
 
-var handleArenaStatus = function(data) {
+var handleArenaStatus = function (data) {
   // If getting data for the wrong match (e.g. after a server restart), reload the page.
   if (currentMatchId == null) {
     currentMatchId = data.MatchId;
@@ -19,7 +19,7 @@ var handleArenaStatus = function(data) {
     location.reload();
   }
 
-  $.each(data.AllianceStations, function(station, stationStatus) {
+  $.each(data.AllianceStations, function (station, stationStatus) {
     // Select the DOM elements corresponding to the team station.
     var teamElementPrefix;
     if (station[0] === "R") {
@@ -104,7 +104,7 @@ var handleArenaStatus = function(data) {
       }
       var btuOkay = wifiStatus.MBits < highBtuThreshold && dsConn.RobotLinked;
       if (wifiStatus.MBits >= 0.01) {
-        teamBandwidthElement.text(wifiStatus.MBits.toFixed(2)+ "Mb");
+        teamBandwidthElement.text(wifiStatus.MBits.toFixed(2) + "Mb");
         teamBandwidthElement.attr("data-status-ok", btuOkay);
       } else {
         teamBandwidthElement.text("-");
@@ -148,8 +148,8 @@ var handleArenaStatus = function(data) {
 };
 
 // Handles a websocket message to update the match time countdown.
-var handleMatchTime = function(data) {
-  translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
+var handleMatchTime = function (data) {
+  translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
     $("#matchTime").text(countdownSec);
     $("#matchTimeAllianceStation").text(countdownSec);
@@ -173,9 +173,11 @@ const handlePlaySound = function(sound) {
 
 
 // Handles a websocket message to update the match score.
-var handleRealtimeScore = function(data,reversed) {
+var handleRealtimeScore = function(data) {
+  var urlParams = new URLSearchParams(window.location.search);
+  var reversed = urlParams.get("reversed");
   let redCoral, blueCoral;
- /*  if (currentMatch.Type === matchTypePlayoff) { */
+  /*  if (currentMatch.Type === matchTypePlayoff) { */
   if (false) {
     redCoral = "1";//data.Red.ScoreSummary.NumCoral;
     blueCoral = "2";//data.Blue.ScoreSummary.NumCoral;
@@ -184,51 +186,44 @@ var handleRealtimeScore = function(data,reversed) {
     blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
   } 
 
-let level1, level2, level3, level4;
-
-
-    if (reversed  === "true") {
-      $("#rightScore").text(data.Red.ScoreSummary.Score);
-      $("#leftScore").text(data.Blue.ScoreSummary.Score);
-      $("#rightScoreAllianceDisplay").text(data.Blue.ScoreSummary.Score);
-      $("#leftScoreAllianceDisplay").text(data.Red.ScoreSummary.Score);
-      $("#currentCoral").text(blueCoral);
-      $("#currentAlgae").text(data.Blue.ScoreSummary.NumAlgae);
-      level1 = data.Blue.Score.Reef.TroughNear+data.Blue.Score.Reef.TroughFar;
-      level2 = data.Blue.Score.Reef.Branches[0].filter(Boolean).length;
-      level3 = data.Blue.Score.Reef.Branches[1].filter(Boolean).length;
-      level4 = data.Blue.Score.Reef.Branches[2].filter(Boolean).length;
-      $("#level1").text("1-" + level1.toString().padStart(2, "0"));
-      $("#level2").text("2-" + level2.toString().padStart(2, "0"));
-      $("#level3").text("3-" + level3.toString().padStart(2, "0"));
-      $("#level4").text("4-" + level4.toString().padStart(2, "0"));
-    } else {
-      $("#rightScore").text(data.Blue.ScoreSummary.Score);
-      $("#leftScore").text(data.Red.ScoreSummary.Score);
-      $("#rightScoreAllianceDisplay").text(data.Red.ScoreSummary.Score);
-      $("#leftScoreAllianceDisplay").text(data.Blue.ScoreSummary.Score);
-      $("#currentCoral").text(redCoral);
-      $("#currentAlgae").text(data.Red.ScoreSummary.NumAlgae);
-      level1 = data.Red.Score.Reef.TroughNear+data.Red.Score.Reef.TroughFar;
-      level2 = data.Red.Score.Reef.Branches[0].filter(Boolean).length;
-      level3 = data.Red.Score.Reef.Branches[1].filter(Boolean).length;
-      level4 = data.Red.Score.Reef.Branches[2].filter(Boolean).length;
-      $("#level1").text("1-" + level1.toString().padStart(2, "0"));
-      $("#level2").text("2-" + level2.toString().padStart(2, "0"));
-      $("#level3").text("3-" + level3.toString().padStart(2, "0"));
-      $("#level4").text("4-" + level4.toString().padStart(2, "0"));
-      
-    }
+  let level1, level2, level3, level4;
+  if (reversed  === "true") {
+    $("#rightScoreAllianceDisplay").text(data.Red.ScoreSummary.Score);
+    $("#leftScoreAllianceDisplay").text(data.Blue.ScoreSummary.Score);
+    $("#currentCoral").text(blueCoral);
+    $("#currentAlgae").text(data.Blue.ScoreSummary.NumAlgae);
+    level1 = data.Blue.Score.Reef.TroughNear+data.Blue.Score.Reef.TroughFar;
+    level2 = data.Blue.Score.Reef.Branches[0].filter(Boolean).length;
+    level3 = data.Blue.Score.Reef.Branches[1].filter(Boolean).length;
+    level4 = data.Blue.Score.Reef.Branches[2].filter(Boolean).length;
+    $("#level1").text("1-" + level1.toString().padStart(2, "0"));
+    $("#level2").text("2-" + level2.toString().padStart(2, "0"));
+    $("#level3").text("3-" + level3.toString().padStart(2, "0"));
+    $("#level4").text("4-" + level4.toString().padStart(2, "0"));
+  } else {
+    $("#rightScoreAllianceDisplay").text(data.Blue.ScoreSummary.Score);
+    $("#leftScoreAllianceDisplay").text(data.Red.ScoreSummary.Score);
+    $("#currentCoral").text(redCoral);
+    $("#currentAlgae").text(data.Red.ScoreSummary.NumAlgae);
+    level1 = data.Red.Score.Reef.TroughNear+data.Red.Score.Reef.TroughFar;
+    level2 = data.Red.Score.Reef.Branches[0].filter(Boolean).length;
+    level3 = data.Red.Score.Reef.Branches[1].filter(Boolean).length;
+    level4 = data.Red.Score.Reef.Branches[2].filter(Boolean).length;
+    $("#level1").text("1-" + level1.toString().padStart(2, "0"));
+    $("#level2").text("2-" + level2.toString().padStart(2, "0"));
+    $("#level3").text("3-" + level3.toString().padStart(2, "0"));
+    $("#level4").text("4-" + level4.toString().padStart(2, "0"));
+  }
 
 };
 
 // Handles a websocket message to update current match
-var handleMatchLoad = function(data) {
+var handleMatchLoad = function (data) {
   $("#matchName").text(data.Match.LongName);
 };
 
 // Handles a websocket message to update the event status message.
-var handleEventStatus = function(data) {
+var handleEventStatus = function (data) {
   if (data.CycleTime === "") {
     $("#cycleTimeMessage").text("Last cycle time: Unknown");
   } else {
@@ -238,21 +233,21 @@ var handleEventStatus = function(data) {
 };
 
 // Makes the team notes section editable and handles saving edits to the server.
-var editFtaNotes = function(element) {
+var editFtaNotes = function (element) {
   var teamNotesTextElement = $(element);
   var textArea = $("<textarea />");
   textArea.val(teamNotesTextElement.text());
   teamNotesTextElement.replaceWith(textArea);
   textArea.focus();
-  textArea.blur(function() {
+  textArea.blur(function () {
     textArea.replaceWith(teamNotesTextElement);
     if (textArea.val() !== teamNotesTextElement.text()) {
-      websocket.send("updateTeamNotes", { station: teamNotesTextElement.attr("data-station"), notes: textArea.val()});
+      websocket.send("updateTeamNotes", {station: teamNotesTextElement.attr("data-station"), notes: textArea.val()});
     }
   });
 };
 
-$(function() {
+$(function () {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
   var reversed = urlParams.get("reversed") === "true"; // Initialize reversed variable
@@ -294,26 +289,39 @@ $(function() {
   //Read if display to be used in a Driver Station, ignore FTA flag if so.
   var driverStation = urlParams.get("ds");
   if (driverStation === "true") {
-  $(".fta-dependent").attr("data-fta", "false");
-  $(".ds-dependent").attr("data-ds", driverStation);
+    $(".fta-dependent").attr("data-fta", "false");
+    $(".ds-dependent").attr("data-ds", driverStation);
   } else {
-  $(".fta-dependent").attr("data-fta", urlParams.get("fta"));
-  $(".ds-dependent").attr("data-ds", driverStation);
+    $(".fta-dependent").attr("data-fta", urlParams.get("fta"));
+    $(".ds-dependent").attr("data-ds", driverStation);
   }
 
   $(".reversible-left").attr("data-reversed", reversed);
   $(".reversible-right").attr("data-reversed", reversed);
 
 
-
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/field_monitor/websocket", {
-    arenaStatus: function(event) { handleArenaStatus(event.data); },
-    eventStatus: function(event) { handleEventStatus(event.data); },
-    matchLoad: function(event) { handleMatchLoad(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data,reversed); },
-    playSound: function(event) { handlePlaySound(event.data); },
+    arenaStatus: function (event) {
+      handleArenaStatus(event.data);
+    },
+    eventStatus: function (event) {
+      handleEventStatus(event.data);
+    },
+    matchLoad: function (event) {
+      handleMatchLoad(event.data);
+    },
+    matchTiming: function (event) {
+      handleMatchTiming(event.data);
+    },
+    matchTime: function (event) {
+      handleMatchTime(event.data);
+    },
+    realtimeScore: function (event) {
+      handleRealtimeScore(event.data);
+    },
+    playSound: function(event) {
+      handlePlaySound(event.data);
+    },
   });
 });

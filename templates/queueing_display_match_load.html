@@ -28,31 +28,31 @@
             </div>
           </div>
           {{if eq $i 0}}
-            <div class="row mt-3">
-              <div id="matchState" class="col-lg-4 ps-4"></div>
-              <div id="matchTime" class="col-lg-3"></div>
-            </div>
+          <div class="row mt-3">
+            <div id="matchState" class="col-lg-4 ps-4"></div>
+            <div id="matchTime" class="col-lg-3"></div>
+          </div>
           {{end}}
         </div>
         <div class="col-lg-1 avatars text-end">
-          <img class="avatar" src="/api/teams/{{$match.Red1}}/avatar" /><br />
-          <img class="avatar" src="/api/teams/{{$match.Red2}}/avatar" /><br />
-          <img class="avatar" src="/api/teams/{{$match.Red3}}/avatar" />
+          <img class="avatar" src="/api/teams/{{$match.Red1}}/avatar"/><br/>
+          <img class="avatar" src="/api/teams/{{$match.Red2}}/avatar"/><br/>
+          <img class="avatar" src="/api/teams/{{$match.Red3}}/avatar"/>
         </div>
         <div class="col-lg-2 red-teams">
           {{if $match.Red1}}
           <div class="row">
             <div class="col-lg-8">
-              {{$match.Red1}}<br />{{$match.Red2}}<br />{{$match.Red3}}
+              {{$match.Red1}}<br/>{{$match.Red2}}<br/>{{$match.Red3}}
               {{range $team := (index $.RedOffFieldTeams $i) }}
-              <br />{{$team}}
+              <br/>{{$team}}
               {{end}}
             </div>
             <div class="col-lg-4">
               {{if $match.PlayoffRedAlliance}}
-                <div class="alliance-container{{if (index $.RedOffFieldTeams $i)}} alliance-tall{{end}}">
-                  <div class="alliance-number">{{$match.PlayoffRedAlliance}}</div>
-                </div>
+              <div class="alliance-container{{if (index $.RedOffFieldTeams $i)}} alliance-tall{{end}}">
+                <div class="alliance-number">{{$match.PlayoffRedAlliance}}</div>
+              </div>
               {{end}}
             </div>
           </div>
@@ -63,25 +63,25 @@
           <div class="row">
             <div class="col-lg-4">
               {{if $match.PlayoffBlueAlliance}}
-                <div class="alliance-container{{if (index $.BlueOffFieldTeams $i)}} alliance-tall{{end}}">
-                  <div></div>
-                  <div class="alliance-number">{{$match.PlayoffBlueAlliance}}</div>
-                </div>
+              <div class="alliance-container{{if (index $.BlueOffFieldTeams $i)}} alliance-tall{{end}}">
+                <div></div>
+                <div class="alliance-number">{{$match.PlayoffBlueAlliance}}</div>
+              </div>
               {{end}}
             </div>
             <div class="col-lg-8">
-              {{$match.Blue1}}<br />{{$match.Blue2}}<br />{{$match.Blue3}}
+              {{$match.Blue1}}<br/>{{$match.Blue2}}<br/>{{$match.Blue3}}
               {{range $team := (index $.BlueOffFieldTeams $i) }}
-              <br />{{$team}}
+              <br/>{{$team}}
               {{end}}
             </div>
           </div>
           {{end}}
         </div>
         <div class="col-lg-1 avatars">
-          <img class="avatar" src="/api/teams/{{$match.Blue1}}/avatar" /><br />
-          <img class="avatar" src="/api/teams/{{$match.Blue2}}/avatar" /><br />
-          <img class="avatar" src="/api/teams/{{$match.Blue3}}/avatar" />
+          <img class="avatar" src="/api/teams/{{$match.Blue1}}/avatar"/><br/>
+          <img class="avatar" src="/api/teams/{{$match.Blue2}}/avatar"/><br/>
+          <img class="avatar" src="/api/teams/{{$match.Blue3}}/avatar"/>
         </div>
       </div>
     </div>

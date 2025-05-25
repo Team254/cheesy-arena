@@ -24,14 +24,18 @@ func TestPublishTeams(t *testing.T) {
 	database.CreateTeam(&model.Team{Id: 1114})
 
 	// Mock the TBA server.
-	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Contains(t, r.URL.String(), "event/my_event_code")
-		var reader bytes.Buffer
-		reader.ReadFrom(r.Body)
-		assert.Equal(t, "[\"frc254\",\"frc1114\"]", reader.String())
-		assert.Equal(t, "my_secret_id", r.Header["X-Tba-Auth-Id"][0])
-		assert.Equal(t, "f5c022fde6d1186ea0719fe28ab6cc63", r.Header["X-Tba-Auth-Sig"][0])
-	}))
+	tbaServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				assert.Contains(t, r.URL.String(), "event/my_event_code")
+				var reader bytes.Buffer
+				reader.ReadFrom(r.Body)
+				assert.Equal(t, "[\"frc254\",\"frc1114\"]", reader.String())
+				assert.Equal(t, "my_secret_id", r.Header["X-Tba-Auth-Id"][0])
+				assert.Equal(t, "f5c022fde6d1186ea0719fe28ab6cc63", r.Header["X-Tba-Auth-Sig"][0])
+			},
+		),
+	)
 	defer tbaServer.Close()
 	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
 	client.BaseUrl = tbaServer.URL
@@ -62,18 +66,22 @@ func TestPublishMatches(t *testing.T) {
 	database.CreateMatchResult(matchResult1)
 
 	// Mock the TBA server.
-	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, _ := io.ReadAll(r.Body)
-		var matches []*TbaMatch
-		json.Unmarshal(body, &matches)
-		assert.Equal(t, 2, len(matches))
-		assert.Equal(t, "qm", matches[0].CompLevel)
-		assert.Equal(t, 0, matches[0].SetNumber)
-		assert.Equal(t, 2, matches[0].MatchNumber)
-		assert.Equal(t, "omg", matches[1].CompLevel)
-		assert.Equal(t, 5, matches[1].SetNumber)
-		assert.Equal(t, 29, matches[1].MatchNumber)
-	}))
+	tbaServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				body, _ := io.ReadAll(r.Body)
+				var matches []*TbaMatch
+				json.Unmarshal(body, &matches)
+				assert.Equal(t, 2, len(matches))
+				assert.Equal(t, "qm", matches[0].CompLevel)
+				assert.Equal(t, 0, matches[0].SetNumber)
+				assert.Equal(t, 2, matches[0].MatchNumber)
+				assert.Equal(t, "omg", matches[1].CompLevel)
+				assert.Equal(t, 5, matches[1].SetNumber)
+				assert.Equal(t, 29, matches[1].MatchNumber)
+			},
+		),
+	)
 	defer tbaServer.Close()
 	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
 	client.BaseUrl = tbaServer.URL
@@ -88,14 +96,18 @@ func TestPublishRankings(t *testing.T) {
 	database.CreateRanking(game.TestRanking1())
 
 	// Mock the TBA server.
-	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		body, _ := io.ReadAll(r.Body)
-		var response TbaRankings
-		json.Unmarshal(body, &response)
-		assert.Equal(t, 2, len(response.Rankings))
-		assert.Equal(t, "frc254", response.Rankings[0].TeamKey)
-		assert.Equal(t, "frc1114", response.Rankings[1].TeamKey)
-	}))
+	tbaServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				body, _ := io.ReadAll(r.Body)
+				var response TbaRankings
+				json.Unmarshal(body, &response)
+				assert.Equal(t, 2, len(response.Rankings))
+				assert.Equal(t, "frc254", response.Rankings[0].TeamKey)
+				assert.Equal(t, "frc1114", response.Rankings[1].TeamKey)
+			},
+		),
+	)
 	defer tbaServer.Close()
 	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
 	client.BaseUrl = tbaServer.URL
@@ -109,19 +121,23 @@ func TestPublishAlliances(t *testing.T) {
 	model.BuildTestAlliances(database)
 
 	// Mock the TBA server.
-	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var reader bytes.Buffer
-		reader.ReadFrom(r.Body)
-		if strings.Contains(r.URL.String(), "alliance_selections") {
-			assert.Equal(
-				t,
-				"[[\"frc254\",\"frc469\",\"frc2848\",\"frc74\",\"frc3175\"],[\"frc1718\",\"frc2451\",\"frc1619\"]]",
-				reader.String(),
-			)
-		} else {
-			assert.Equal(t, "{\"playoff_type\":10}", reader.String())
-		}
-	}))
+	tbaServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				var reader bytes.Buffer
+				reader.ReadFrom(r.Body)
+				if strings.Contains(r.URL.String(), "alliance_selections") {
+					assert.Equal(
+						t,
+						"[[\"frc254\",\"frc469\",\"frc2848\",\"frc74\",\"frc3175\"],[\"frc1718\",\"frc2451\",\"frc1619\"]]",
+						reader.String(),
+					)
+				} else {
+					assert.Equal(t, "{\"playoff_type\":10}", reader.String())
+				}
+			},
+		),
+	)
 	defer tbaServer.Close()
 	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
 	client.BaseUrl = tbaServer.URL
@@ -135,9 +151,13 @@ func TestPublishingErrors(t *testing.T) {
 	model.BuildTestAlliances(database)
 
 	// Mock the TBA server.
-	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "oh noes", 500)
-	}))
+	tbaServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, "oh noes", 500)
+			},
+		),
+	)
 	defer tbaServer.Close()
 	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
 	client.BaseUrl = tbaServer.URL
@@ -155,13 +175,21 @@ func TestPublishAwards(t *testing.T) {
 	database.CreateAward(&model.Award{0, model.JudgedAward, "Spirt Award", 0, "Bob Dorough"})
 
 	// Mock the TBA server.
-	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Contains(t, r.URL.String(), "event/my_event_code")
-		var reader bytes.Buffer
-		reader.ReadFrom(r.Body)
-		assert.Equal(t, "[{\"name_str\":\"Saftey Award\",\"team_key\":\"frc254\",\"awardee\":\"\"},"+
-			"{\"name_str\":\"Spirt Award\",\"team_key\":\"frc0\",\"awardee\":\"Bob Dorough\"}]", reader.String())
-	}))
+	tbaServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				assert.Contains(t, r.URL.String(), "event/my_event_code")
+				var reader bytes.Buffer
+				reader.ReadFrom(r.Body)
+				assert.Equal(
+					t,
+					"[{\"name_str\":\"Saftey Award\",\"team_key\":\"frc254\",\"awardee\":\"\"},"+
+						"{\"name_str\":\"Spirt Award\",\"team_key\":\"frc0\",\"awardee\":\"Bob Dorough\"}]",
+					reader.String(),
+				)
+			},
+		),
+	)
 	defer tbaServer.Close()
 	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
 	client.BaseUrl = tbaServer.URL
@@ -170,5 +198,5 @@ func TestPublishAwards(t *testing.T) {
 }
 
 func setupTestDb(t *testing.T) *model.Database {
-	return model.SetupTestDb(t, "partner")
+	return model.SetupTestDb(t)
 }

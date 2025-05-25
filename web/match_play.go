@@ -480,8 +480,9 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 
 		// Back up the database, but don't error out if it fails.
-		err = web.arena.Database.Backup(web.arena.EventSettings.Name,
-			fmt.Sprintf("post_%s_match_%s", match.Type, match.ShortName))
+		err = web.arena.Database.Backup(
+			web.arena.EventSettings.Name, fmt.Sprintf("post_%s_match_%s", match.Type, match.ShortName),
+		)
 		if err != nil {
 			log.Println(err)
 		}
@@ -499,9 +500,14 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 }
 
 func (web *Web) getCurrentMatchResult() *model.MatchResult {
-	return &model.MatchResult{MatchId: web.arena.CurrentMatch.Id, MatchType: web.arena.CurrentMatch.Type,
-		RedScore: &web.arena.RedRealtimeScore.CurrentScore, BlueScore: &web.arena.BlueRealtimeScore.CurrentScore,
-		RedCards: web.arena.RedRealtimeScore.Cards, BlueCards: web.arena.BlueRealtimeScore.Cards}
+	return &model.MatchResult{
+		MatchId:   web.arena.CurrentMatch.Id,
+		MatchType: web.arena.CurrentMatch.Type,
+		RedScore:  &web.arena.RedRealtimeScore.CurrentScore,
+		BlueScore: &web.arena.BlueRealtimeScore.CurrentScore,
+		RedCards:  web.arena.RedRealtimeScore.Cards,
+		BlueCards: web.arena.BlueRealtimeScore.Cards,
+	}
 }
 
 // Saves the realtime result as the final score for the match currently loaded into the arena.

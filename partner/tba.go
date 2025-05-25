@@ -163,8 +163,13 @@ var endGameStatusMapping = map[game.EndgameStatus]string{
 }
 
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
-	return &TbaClient{BaseUrl: tbaBaseUrl, eventCode: eventCode, secretId: secretId, secret: secret,
-		eventNamesCache: make(map[string]string)}
+	return &TbaClient{
+		BaseUrl:         tbaBaseUrl,
+		eventCode:       eventCode,
+		secretId:        secretId,
+		secret:          secret,
+		eventNamesCache: make(map[string]string),
+	}
 }
 
 func (client *TbaClient) GetTeam(teamNumber int) (*TbaTeam, error) {
@@ -358,10 +363,18 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 			}
 		}
 		alliances := make(map[string]*TbaAlliance)
-		alliances["red"] = createTbaAlliance([3]int{match.Red1, match.Red2, match.Red3}, [3]bool{match.Red1IsSurrogate,
-			match.Red2IsSurrogate, match.Red3IsSurrogate}, redScore, redCards)
-		alliances["blue"] = createTbaAlliance([3]int{match.Blue1, match.Blue2, match.Blue3},
-			[3]bool{match.Blue1IsSurrogate, match.Blue2IsSurrogate, match.Blue3IsSurrogate}, blueScore, blueCards)
+		alliances["red"] = createTbaAlliance(
+			[3]int{match.Red1, match.Red2, match.Red3},
+			[3]bool{match.Red1IsSurrogate, match.Red2IsSurrogate, match.Red3IsSurrogate},
+			redScore,
+			redCards,
+		)
+		alliances["blue"] = createTbaAlliance(
+			[3]int{match.Blue1, match.Blue2, match.Blue3},
+			[3]bool{match.Blue1IsSurrogate, match.Blue2IsSurrogate, match.Blue3IsSurrogate},
+			blueScore,
+			blueCards,
+		)
 
 		tbaMatches[i] = TbaMatch{
 			CompLevel:      match.TbaMatchKey.CompLevel,

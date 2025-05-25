@@ -396,8 +396,11 @@ func (plc *ModbusPlc) readRegisters() bool {
 		return false
 	}
 	if len(registers)/2 < len(plc.registers) {
-		log.Printf("Insufficient length of PLC registers: got %d bytes, expected %d words.", len(registers),
-			len(plc.registers))
+		log.Printf(
+			"Insufficient length of PLC registers: got %d bytes, expected %d words.",
+			len(registers),
+			len(plc.registers),
+		)
 		return false
 	}
 

@@ -70,8 +70,11 @@ func TestAllianceSelection(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), ">110<")
 
 	// Update remainder of teams.
-	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=101&selection0_1=102&selection0_2=103&"+
-		"selection1_0=104&selection1_1=105&selection1_2=106&selection2_0=107&selection2_1=108&selection2_2=109")
+	recorder = web.postHttpResponse(
+		"/alliance_selection",
+		"selection0_0=101&selection0_1=102&selection0_2=103&selection1_0=104&selection1_1=105&selection1_2=106&"+
+			"selection2_0=107&selection2_1=108&selection2_2=109",
+	)
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/alliance_selection")
 	assert.Contains(t, recorder.Body.String(), ">110<")
@@ -127,12 +130,15 @@ func TestAllianceSelectionErrors(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "already part of an alliance")
 
 	// Finalize early and without required parameters.
-	recorder = web.postHttpResponse("/alliance_selection/finalize",
-		"startTime=2014-01-01 01:00:00 PM&matchSpacingSec=360")
+	recorder = web.postHttpResponse(
+		"/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM&matchSpacingSec=360",
+	)
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "until all spots have been filled")
-	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=101&selection0_1=102&selection0_2=103&"+
-		"selection1_0=104&selection1_1=105&selection1_2=106")
+	recorder = web.postHttpResponse(
+		"/alliance_selection",
+		"selection0_0=101&selection0_1=102&selection0_2=103&selection1_0=104&selection1_1=105&selection1_2=106",
+	)
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.postHttpResponse("/alliance_selection/finalize", "startTime=asdf")
 	assert.Equal(t, 200, recorder.Code)
@@ -171,8 +177,10 @@ func TestAllianceSelectionReset(t *testing.T) {
 	// Start, populate, and finalize the alliance selection.
 	recorder := web.postHttpResponse("/alliance_selection/start", "")
 	assert.Equal(t, 303, recorder.Code)
-	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=101&selection0_1=102&selection0_2=103&"+
-		"selection1_0=104&selection1_1=105&selection1_2=106")
+	recorder = web.postHttpResponse(
+		"/alliance_selection",
+		"selection0_0=101&selection0_1=102&selection0_2=103&selection1_0=104&selection1_1=105&selection1_2=106",
+	)
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.postHttpResponse("/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
 	assert.Equal(t, 303, recorder.Code)
@@ -192,8 +200,10 @@ func TestAllianceSelectionReset(t *testing.T) {
 	// Start, populate, and finalize the alliance selection again.
 	recorder = web.postHttpResponse("/alliance_selection/start", "")
 	assert.Equal(t, 303, recorder.Code)
-	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=101&selection0_1=102&selection0_2=103&"+
-		"selection1_0=104&selection1_1=105&selection1_2=106")
+	recorder = web.postHttpResponse(
+		"/alliance_selection",
+		"selection0_0=101&selection0_1=102&selection0_2=103&selection1_0=104&selection1_1=105&selection1_2=106",
+	)
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.postHttpResponse("/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
 	assert.Equal(t, 303, recorder.Code)

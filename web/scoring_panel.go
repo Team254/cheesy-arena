@@ -138,8 +138,12 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	ws.Write("resetLocalState", nil)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
-	go ws.HandleNotifiers(web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
-		web.arena.ReloadDisplaysNotifier)
+	go ws.HandleNotifiers(
+		web.arena.MatchLoadNotifier,
+		web.arena.MatchTimeNotifier,
+		web.arena.RealtimeScoreNotifier,
+		web.arena.ReloadDisplaysNotifier,
+	)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {

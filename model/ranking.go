@@ -35,9 +35,12 @@ func (database *Database) GetAllRankings() (game.Rankings, error) {
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(rankings, func(i, j int) bool {
-		return rankings[i].Rank < rankings[j].Rank
-	})
+	sort.Slice(
+		rankings,
+		func(i, j int) bool {
+			return rankings[i].Rank < rankings[j].Rank
+		},
+	)
 	return rankings, nil
 }
 

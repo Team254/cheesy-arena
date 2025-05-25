@@ -19,11 +19,15 @@ func TestAccessPoint_ConfigureTeamWifi(t *testing.T) {
 	ap.SetSettings("dummy", "password1", 123, true, wifiStatuses)
 
 	// Mock the radio API server.
-	radioServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.URL.Path, "/configuration")
-		assert.Equal(t, "Bearer password1", r.Header.Get("Authorization"))
-		assert.Nil(t, json.NewDecoder(r.Body).Decode(&request))
-	}))
+	radioServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, r.URL.Path, "/configuration")
+				assert.Equal(t, "Bearer password1", r.Header.Get("Authorization"))
+				assert.Nil(t, json.NewDecoder(r.Body).Decode(&request))
+			},
+		),
+	)
 	ap.apiUrl = radioServer.URL
 
 	// All stations assigned.
@@ -67,10 +71,14 @@ func TestAccessPoint_ConfigureTeamWifi(t *testing.T) {
 	)
 
 	// Radio API returns an error.
-	radioServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.URL.Path, "/configuration")
-		http.Error(w, "oh noes", 507)
-	}))
+	radioServer = httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, r.URL.Path, "/configuration")
+				http.Error(w, "oh noes", 507)
+			},
+		),
+	)
 	ap.apiUrl = radioServer.URL
 	err := ap.ConfigureTeamWifi([6]*model.Team{team1, team2, team3, team4, team5, team6})
 	if assert.NotNil(t, err) {
@@ -98,11 +106,15 @@ func TestAccessPoint_updateMonitoring(t *testing.T) {
 	}
 
 	// Mock the radio API server.
-	radioServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.URL.Path, "/status")
-		assert.Equal(t, "Bearer password2", r.Header.Get("Authorization"))
-		assert.Nil(t, json.NewEncoder(w).Encode(apStatus))
-	}))
+	radioServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, r.URL.Path, "/status")
+				assert.Equal(t, "Bearer password2", r.Header.Get("Authorization"))
+				assert.Nil(t, json.NewEncoder(w).Encode(apStatus))
+			},
+		),
+	)
 	ap.apiUrl = radioServer.URL
 
 	// All stations assigned.
@@ -136,10 +148,14 @@ func TestAccessPoint_updateMonitoring(t *testing.T) {
 	assert.Equal(t, TeamWifiStatus{}, *wifiStatuses[5])
 
 	// Radio API returns an error.
-	radioServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, r.URL.Path, "/status")
-		http.Error(w, "gosh darn", 404)
-	}))
+	radioServer = httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, r.URL.Path, "/status")
+				http.Error(w, "gosh darn", 404)
+			},
+		),
+	)
 	ap.apiUrl = radioServer.URL
 	err := ap.updateMonitoring()
 	if assert.NotNil(t, err) {

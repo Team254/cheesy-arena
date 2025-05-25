@@ -1,17 +1,17 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  UI for generating a match schedule.
+UI for generating a match schedule.
 */}}
 {{define "title"}}Match Scheduling{{end}}
 {{define "body"}}
 <div class="row">
   {{if .ErrorMessage}}
-    <div class="alert alert-dismissible alert-danger">
-      <button type="button" class="close" data-dismiss="alert">×</button>
-      {{.ErrorMessage}}
-    </div>
+  <div class="alert alert-dismissible alert-danger">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    {{.ErrorMessage}}
+  </div>
   {{end}}
   <div class="col-lg-5">
     <div class="card card-body bg-body-tertiary">
@@ -24,16 +24,16 @@
               <div class="radio">
                 <label>
                   <input type="radio" name="matchType" value="practice"
-                      onchange="window.location = '/setup/schedule?matchType=practice';"
-                      {{if eq .MatchType practiceMatch}}checked{{end}}>
+                    onchange="window.location = '/setup/schedule?matchType=practice';"
+                    {{if eq .MatchType practiceMatch}}checked{{end}}>
                   Practice
                 </label>
               </div>
               <div class="radio">
                 <label>
                   <input type="radio" name="matchType" value="qualification"
-                      onchange="window.location = '/setup/schedule?matchType=qualification';"
-                      {{if eq .MatchType qualificationMatch}}checked{{end}}>
+                    onchange="window.location = '/setup/schedule?matchType=qualification';"
+                    {{if eq .MatchType qualificationMatch}}checked{{end}}>
                   Qualification
                 </label>
               </div>
@@ -41,23 +41,27 @@
           </div>
           <div id="blockContainer"></div>
           <p>
-            <b>Total match count: <span id="totalNumMatches">0</span></b><br />
-            <b>Matches per team: <span id="matchesPerTeam">0</span></b><br />
-            <b>Excess matches: <span id="numExcessMatches">0</span></b><br />
+            <b>Total match count: <span id="totalNumMatches">0</span></b><br/>
+            <b>Matches per team: <span id="matchesPerTeam">0</span></b><br/>
+            <b>Excess matches: <span id="numExcessMatches">0</span></b><br/>
             <b>Matches needed for +1 per team: <span id="nextLevelMatches">0</span></b>
           </p>
           <div class="row">
             <div class="col-lg-12">
-              <p><button type="button" class="btn btn-secondary" onclick="addBlock();">Add Block</button>
-              <button type="button" class="btn btn-primary" onclick="generateSchedule();">
-                Generate Schedule/Save Blocks
-              </button></p>
-              <p><button type="submit" class="btn btn-danger">Save Schedule</button></p>
+              <p>
+                <button type="button" class="btn btn-secondary" onclick="addBlock();">Add Block</button>
+                <button type="button" class="btn btn-primary" onclick="generateSchedule();">
+                  Generate Schedule/Save Blocks
+                </button>
+              </p>
+              <p>
+                <button type="submit" class="btn btn-danger">Save Schedule</button>
+              </p>
             </div>
           </div>
           {{if .EventSettings.TbaPublishingEnabled}}
-            <p>Schedule is not automatically published to The Blue Alliance. Manually publish it from the Settings
-              tab.</p>
+          <p>Schedule is not automatically published to The Blue Alliance. Manually publish it from the Settings
+            tab.</p>
           {{end}}
         </fieldset>
       </form>
@@ -73,10 +77,10 @@
       </thead>
       <tbody>
         {{range $match := .Matches}}
-          <tr>
-            <td>{{$match.LongName}}</td>
-            <td>{{$match.Time}}</td>
-          </tr>
+        <tr>
+          <td>{{$match.LongName}}</td>
+          <td>{{$match.Time}}</td>
+        </tr>
         {{end}}
       </tbody>
     </table>
@@ -91,10 +95,10 @@
       </thead>
       <tbody>
         {{range $team, $firstMatch := .TeamFirstMatches}}
-          <tr>
-            <td>{{$team}}</td>
-            <td>{{$firstMatch}}</td>
-          </tr>
+        <tr>
+          <td>{{$team}}</td>
+          <td>{{$firstMatch}}</td>
+        </tr>
         {{end}}
       </tbody>
     </table>
@@ -102,48 +106,51 @@
 </div>
 <div id="blockTemplate" style="display: none;">
   <div class="card card-body bg-body-tertiary mb-3" id="block{{"{{blockNumber}}"}}">
-    <div class="row justify-content-between mb-3">
-      <div class="col-lg-6"><b>Block {{"{{blockNumber}}"}}</b></div>
-      <div class="col-lg-1"><button class="btn-close" onclick="deleteBlock({{"{{blockNumber}}"}});"></button></div>
-    </div>
-    <div class="row mb-3">
-      <label class="col-lg-4 control-label">Start Time</label>
-      <div class="col-lg-8">
-        <div class="input-group" id="startTimePicker{{"{{blockNumber}}"}}"
-          onchange="updateBlock({{"{{blockNumber}}"}});">
-          <input type="text" class="form-control" id="startTime{{"{{blockNumber}}"}}"
-              onchange="updateBlock({{"{{blockNumber}}"}});">
-          <span class="input-group-text"><i class="bi-calendar-week"></i></span>
-        </div>
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label class="col-lg-4 control-label">End Time</label>
-      <div class="col-lg-8">
-        <div class="input-group" id="endTimePicker{{"{{blockNumber}}"}}"
-            onchange="updateBlock({{"{{blockNumber}}"}});">
-          <input type="text" class="form-control" id="endTime{{"{{blockNumber}}"}}"
-              onchange="updateBlock({{"{{blockNumber}}"}});">
-          <span class="input-group-text"><i class="bi-calendar-week"></i></span>
-        </div>
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label class="col-lg-4 control-label">Cycle Time (m:s)</label>
-      <div class="col-lg-8">
-        <input type="text" class="form-control input-sm" id="matchSpacingMinSec{{"{{blockNumber}}"}}"
-            value="{{"{{matchSpacingMinSec}}"}}" placeholder="6:00" onchange="updateBlock({{"{{blockNumber}}"}});">
-      </div>
-    </div>
-    <div class="row mb-3">
-      <div class="col-lg-4">Match count: <span id="numMatches{{"{{blockNumber}}"}}"></span></div>
-      <div class="col-lg-8">Actual end time: <span id="actualEndTime{{"{{blockNumber}}"}}"></span></div>
+  <div class="row justify-content-between mb-3">
+    <div class="col-lg-6"><b>Block {{"{{blockNumber}}"}}</b></div>
+    <div class="col-lg-1">
+      <button class="btn-close" onclick="deleteBlock({{"{{blockNumber}}"}});"></button>
     </div>
   </div>
+  <div class="row mb-3">
+    <label class="col-lg-4 control-label">Start Time</label>
+    <div class="col-lg-8">
+      <div class="input-group" id="startTimePicker{{"{{blockNumber}}"}}"
+      onchange="updateBlock({{"{{blockNumber}}"}});">
+      <input type="text" class="form-control" id="startTime{{"{{blockNumber}}"}}"
+      onchange="updateBlock({{"{{blockNumber}}"}});">
+      <span class="input-group-text"><i class="bi-calendar-week"></i></span>
+    </div>
+  </div>
+</div>
+<div class="row mb-3">
+  <label class="col-lg-4 control-label">End Time</label>
+  <div class="col-lg-8">
+    <div class="input-group" id="endTimePicker{{"{{blockNumber}}"}}"
+    onchange="updateBlock({{"{{blockNumber}}"}});">
+    <input type="text" class="form-control" id="endTime{{"{{blockNumber}}"}}"
+    onchange="updateBlock({{"{{blockNumber}}"}});">
+    <span class="input-group-text"><i class="bi-calendar-week"></i></span>
+  </div>
+</div>
+</div>
+<div class="row mb-3">
+  <label class="col-lg-4 control-label">Cycle Time (m:s)</label>
+  <div class="col-lg-8">
+    <input type="text" class="form-control input-sm" id="matchSpacingMinSec{{"{{blockNumber}}"}}"
+    value="{{"{{matchSpacingMinSec}}"}}" placeholder="6:00" onchange="updateBlock({{"{{blockNumber}}"}});">
+  </div>
+</div>
+<div class="row mb-3">
+  <div class="col-lg-4">Match count: <span id="numMatches{{"{{blockNumber}}"}}"></span></div>
+  <div class="col-lg-8">Actual end time: <span id="actualEndTime{{"{{blockNumber}}"}}"></span></div>
+</div>
+</div>
 </div>
 
 {{end}}
 {{define "script"}}
+<!-- @formatter:off -->
 <script>var numTeams = {{.NumTeams}};</script>
 <script src="/static/js/setup_schedule.js"></script>
 <script>
@@ -154,4 +161,5 @@
     addBlock();
   {{end}}
 </script>
+<!-- @formatter:on -->
 {{end}}

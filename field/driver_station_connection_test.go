@@ -155,8 +155,7 @@ func TestDecodeStatusPacket(t *testing.T) {
 	assert.Nil(t, err)
 	defer dsConn.close()
 
-	data := [36]byte{22, 28, 103, 19, 192, 0, 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0}
+	data := [36]byte{22, 28, 103, 19, 192, 0, 246}
 	dsConn.decodeStatusPacket(data)
 	assert.Equal(t, 103, dsConn.MissedPacketCount)
 	assert.Equal(t, 14, dsConn.DsRobotTripTimeMs)
@@ -215,8 +214,7 @@ func TestListenForDriverStations(t *testing.T) {
 			dataSend = [5]byte{0, 3, 37, 0, 0}
 			tcpConn.Write(dataSend[:])
 			time.Sleep(time.Millisecond * 10)
-			dataSend2 := [38]byte{0, 36, 22, 28, 103, 19, 192, 0, 246, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+			dataSend2 := [38]byte{0, 36, 22, 28, 103, 19, 192, 0, 246}
 			tcpConn.Write(dataSend2[:])
 			time.Sleep(time.Millisecond * 10)
 			assert.Equal(t, 103, dsConn.MissedPacketCount)

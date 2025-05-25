@@ -9,17 +9,17 @@ let isReplay;
 const lowBatteryThreshold = 8;
 
 // Sends a websocket message to load the specified match.
-const loadMatch = function(matchId) {
-  websocket.send("loadMatch", { matchId: matchId });
+const loadMatch = function (matchId) {
+  websocket.send("loadMatch", {matchId: matchId});
 }
 
 // Sends a websocket message to load the results for the specified match into the display buffer.
-const showResult = function(matchId) {
-  websocket.send("showResult", { matchId: matchId });
+const showResult = function (matchId) {
+  websocket.send("showResult", {matchId: matchId});
 }
 
 // Sends a websocket message to load all teams into their respective alliance stations.
-const substituteTeams = function(team, position) {
+const substituteTeams = function (team, position) {
   const teams = {
     Red1: getTeamNumber("R1"),
     Red2: getTeamNumber("R2"),
@@ -33,67 +33,67 @@ const substituteTeams = function(team, position) {
 };
 
 // Sends a websocket message to toggle the bypass status for an alliance station.
-const toggleBypass = function(station) {
+const toggleBypass = function (station) {
   websocket.send("toggleBypass", station);
 };
 
 // Sends a websocket message to start the match.
-const startMatch = function() {
+const startMatch = function () {
   websocket.send("startMatch",
-      { muteMatchSounds: $("#muteMatchSounds").prop("checked") });
+    {muteMatchSounds: $("#muteMatchSounds").prop("checked")});
 };
 
 // Sends a websocket message to abort the match.
-const abortMatch = function() {
+const abortMatch = function () {
   websocket.send("abortMatch");
 };
 
 // Sends a websocket message to signal to the volunteers that they may enter the field.
-const signalVolunteers = function() {
+const signalVolunteers = function () {
   websocket.send("signalVolunteers");
 };
 
 // Sends a websocket message to signal to the teams that they may enter the field.
-const signalReset = function() {
+const signalReset = function () {
   websocket.send("signalReset");
 };
 
 // Sends a websocket message to commit the match score and load the next match.
-const commitResults = function() {
+const commitResults = function () {
   websocket.send("commitResults");
 };
 
 // Sends a websocket message to discard the match score and load the next match.
-const discardResults = function() {
+const discardResults = function () {
   websocket.send("discardResults");
 };
 
 // Switches the audience display to the match intro screen.
-const showOverlay = function() {
+const showOverlay = function () {
   $("input[name=audienceDisplay][value=intro]").prop("checked", true);
   setAudienceDisplay();
   $("#showOverlay").prop("disabled", true);
 }
 
 // Switches the audience display to the final score screen.
-const showFinalScore = function() {
+const showFinalScore = function () {
   $("input[name=audienceDisplay][value=score]").prop("checked", true);
   setAudienceDisplay();
   $("#showFinalScore").prop("disabled", true);
 }
 
 // Sends a websocket message to change what the audience display is showing.
-const setAudienceDisplay = function() {
+const setAudienceDisplay = function () {
   websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
 };
 
 // Sends a websocket message to change what the alliance station display is showing.
-const setAllianceStationDisplay = function() {
+const setAllianceStationDisplay = function () {
   websocket.send("setAllianceStationDisplay", $("input[name=allianceStationDisplay]:checked").val());
 };
 
 // Sends a websocket message to start the timeout.
-const startTimeout = function() {
+const startTimeout = function () {
   const duration = $("#timeoutDuration").val().split(":");
   let durationSec = parseFloat(duration[0]);
   if (duration.length > 1) {
@@ -102,7 +102,7 @@ const startTimeout = function() {
   websocket.send("startTimeout", durationSec);
 };
 
-const confirmCommit = function() {
+const confirmCommit = function () {
   if (isReplay || !scoreIsReady) {
     // Show the appropriate message(s) in the confirmation dialog.
     $("#confirmCommitReplay").css("display", isReplay ? "block" : "none");
@@ -114,20 +114,20 @@ const confirmCommit = function() {
 };
 
 // Sends a websocket message to specify a custom name for the current test match.
-const setTestMatchName = function() {
+const setTestMatchName = function () {
   websocket.send("setTestMatchName", $("#testMatchName").val());
 };
 
 // Returns the integer team number entered into the team number input box for the given station, or 0 if it is empty.
-const getTeamNumber = function(station) {
+const getTeamNumber = function (station) {
   const teamId = $(`#status${station} .team-number`).val().trim();
   return teamId ? parseInt(teamId) : 0;
 }
 
 // Handles a websocket message to update the team connection status.
-const handleArenaStatus = function(data) {
+const handleArenaStatus = function (data) {
   // Update the team status view.
-  $.each(data.AllianceStations, function(station, stationStatus) {
+  $.each(data.AllianceStations, function (station, stationStatus) {
     const wifiStatus = stationStatus.WifiStatus;
     $("#status" + station + " .radio-status").text(wifiStatus.TeamId);
 
@@ -136,7 +136,7 @@ const handleArenaStatus = function(data) {
       const dsConn = stationStatus.DsConn;
       $("#status" + station + " .ds-status").attr("data-status-ok", dsConn.DsLinked);
       if (dsConn.DsLinked) {
-        $("#status" + station + " .ds-status").text(wifiStatus.MBits.toFixed(2)  + "Mb");
+        $("#status" + station + " .ds-status").text(wifiStatus.MBits.toFixed(2) + "Mb");
       } else {
         $("#status" + station + " .ds-status").text("");
       }
@@ -274,7 +274,7 @@ const handleArenaStatus = function(data) {
   }
 
   $("#fieldEStop").attr("data-ready", !data.FieldEStop);
-  $.each(data.PlcArmorBlockStatuses, function(name, status) {
+  $.each(data.PlcArmorBlockStatuses, function (name, status) {
     $("#plc" + name + "Status").attr("data-ready", status);
   });
 
@@ -317,7 +317,7 @@ const handleArenaStatus = function(data) {
 };
 
 // Handles a websocket message to update the teams for the current match.
-const handleMatchLoad = function(data) {
+const handleMatchLoad = function (data) {
   isReplay = data.IsReplay;
 
   fetch("/match_play/match_load")
@@ -327,7 +327,7 @@ const handleMatchLoad = function(data) {
   $("#matchName").text(data.Match.LongName);
   $("#testMatchName").val(data.Match.LongName);
   $("#testMatchSettings").toggle(data.Match.Type === matchTypeTest);
-  $.each(data.Teams, function(station, team) {
+  $.each(data.Teams, function (station, team) {
     const teamId = $(`#status${station} .team-number`);
     teamId.val(team ? team.Id : "");
     teamId.prop("disabled", !data.AllowSubstitution);
@@ -342,21 +342,21 @@ const handleMatchLoad = function(data) {
 }
 
 // Handles a websocket message to update the match time countdown.
-const handleMatchTime = function(data) {
-  translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
+const handleMatchTime = function (data) {
+  translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
     $("#matchTime").text(countdownSec);
   });
 };
 
 // Handles a websocket message to update the match score.
-const handleRealtimeScore = function(data) {
+const handleRealtimeScore = function (data) {
   $("#redScore").text(data.Red.ScoreSummary.Score);
   $("#blueScore").text(data.Blue.ScoreSummary.Score);
 };
 
 // Handles a websocket message to populate the final score data.
-const handleScorePosted = function(data) {
+const handleScorePosted = function (data) {
   let matchName = data.Match.LongName;
   if (matchName) {
     $("#showFinalScore").prop("disabled", false);
@@ -368,13 +368,13 @@ const handleScorePosted = function(data) {
 }
 
 // Handles a websocket message to update the audience display screen selector.
-const handleAudienceDisplayMode = function(data) {
+const handleAudienceDisplayMode = function (data) {
   $("input[name=audienceDisplay]:checked").prop("checked", false);
   $("input[name=audienceDisplay][value=" + data + "]").prop("checked", true);
 };
 
 // Handles a websocket message to signal whether the referee and scorers have committed after the match.
-const handleScoringStatus = function(data) {
+const handleScoringStatus = function (data) {
   scoreIsReady = data.RefereeScoreReady;
   for (const status of Object.values(data.PositionStatuses)) {
     if (!status.Ready) {
@@ -390,7 +390,7 @@ const handleScoringStatus = function(data) {
 };
 
 // Helper function to update a badge that shows scoring panel commit status.
-const updateScoreStatus = function(data, position, element, displayName) {
+const updateScoreStatus = function (data, position, element, displayName) {
   const status = data.PositionStatuses[position];
   $(element).text(`${displayName} ${status.NumPanelsReady}/${status.NumPanels}`);
   $(element).attr("data-present", status.NumPanels > 0);
@@ -398,13 +398,13 @@ const updateScoreStatus = function(data, position, element, displayName) {
 };
 
 // Handles a websocket message to update the alliance station display screen selector.
-const handleAllianceStationDisplayMode = function(data) {
+const handleAllianceStationDisplayMode = function (data) {
   $("input[name=allianceStationDisplay]:checked").prop("checked", false);
   $("input[name=allianceStationDisplay][value=" + data + "]").prop("checked", true);
 };
 
 // Handles a websocket message to update the event status message.
-const handleEventStatus = function(data) {
+const handleEventStatus = function (data) {
   if (data.CycleTime === "") {
     $("#cycleTimeMessage").text("Last cycle time: Unknown");
   } else {
@@ -413,7 +413,7 @@ const handleEventStatus = function(data) {
   $("#earlyLateMessage").text(data.EarlyLateMessage);
 };
 
-const formatPlayoffAllianceInfo = function(allianceNumber, offFieldTeams) {
+const formatPlayoffAllianceInfo = function (allianceNumber, offFieldTeams) {
   if (allianceNumber === 0) {
     return "";
   }
@@ -424,22 +424,42 @@ const formatPlayoffAllianceInfo = function(allianceNumber, offFieldTeams) {
   return allianceInfo;
 }
 
-$(function() {
+$(function () {
   // Activate tooltips above the status headers.
   const tooltipTriggerList = document.querySelectorAll("[data-bs-toggle=tooltip]");
   const tooltipList = [...tooltipTriggerList].map(element => new bootstrap.Tooltip(element));
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/match_play/websocket", {
-    allianceStationDisplayMode: function(event) { handleAllianceStationDisplayMode(event.data); },
-    arenaStatus: function(event) { handleArenaStatus(event.data); },
-    audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
-    eventStatus: function(event) { handleEventStatus(event.data); },
-    matchLoad: function(event) { handleMatchLoad(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    scorePosted: function(event) { handleScorePosted(event.data); },
-    scoringStatus: function(event) { handleScoringStatus(event.data); },
+    allianceStationDisplayMode: function (event) {
+      handleAllianceStationDisplayMode(event.data);
+    },
+    arenaStatus: function (event) {
+      handleArenaStatus(event.data);
+    },
+    audienceDisplayMode: function (event) {
+      handleAudienceDisplayMode(event.data);
+    },
+    eventStatus: function (event) {
+      handleEventStatus(event.data);
+    },
+    matchLoad: function (event) {
+      handleMatchLoad(event.data);
+    },
+    matchTime: function (event) {
+      handleMatchTime(event.data);
+    },
+    matchTiming: function (event) {
+      handleMatchTiming(event.data);
+    },
+    realtimeScore: function (event) {
+      handleRealtimeScore(event.data);
+    },
+    scorePosted: function (event) {
+      handleScorePosted(event.data);
+    },
+    scoringStatus: function (event) {
+      handleScoringStatus(event.data);
+    },
   });
 });

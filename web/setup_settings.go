@@ -152,8 +152,9 @@ func (web *Web) saveDbHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filename := fmt.Sprintf("%s-%s.db", strings.Replace(web.arena.EventSettings.Name, " ", "_", -1),
-		time.Now().Format("20060102150405"))
+	filename := fmt.Sprintf(
+		"%s-%s.db", strings.Replace(web.arena.EventSettings.Name, " ", "_", -1), time.Now().Format("20060102150405"),
+	)
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
 
 	if err := web.arena.Database.WriteBackup(w); err != nil {
@@ -191,8 +192,9 @@ func (web *Web) restoreDbHandler(w http.ResponseWriter, r *http.Request) {
 	tempFile.Close()
 	tempDb, err := model.OpenDatabase(tempFilePath)
 	if err != nil {
-		web.renderSettings(w, r, "Could not read uploaded database backup file. Please verify that it a valid "+
-			"database file.")
+		web.renderSettings(
+			w, r, "Could not read uploaded database backup file. Please verify that it a valid database file.",
+		)
 		return
 	}
 	tempDb.Close()

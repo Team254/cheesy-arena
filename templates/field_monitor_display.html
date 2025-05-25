@@ -7,29 +7,29 @@ Display showing robot connection status.
 <!DOCTYPE html>
 <html>
 
-<head>
-  <title>Field Monitor - {{.EventSettings.Name}} - Cheesy Arena</title>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no" />
-  <link rel="shortcut icon" href="/static/img/favicon.ico">
-  <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
-  <link rel="stylesheet" href="/static/css/lib/bootstrap-icons.min.css" />
-  <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
-  <link rel="stylesheet" href="/static/css/field_monitor_display.css" />
-</head>
+  <head>
+    <title>Field Monitor - {{.EventSettings.Name}} - Cheesy Arena</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no"/>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/css/lib/bootstrap-icons.min.css"/>
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css"/>
+    <link rel="stylesheet" href="/static/css/field_monitor_display.css"/>
+  </head>
 
-<body>
-  <div id="matchStatusRow" class="ds-dependent">
-    {{if .EventSettings.NetworkSecurityEnabled}}
+  <body>
+    <div id="matchStatusRow" class="ds-dependent">
+      {{if .EventSettings.NetworkSecurityEnabled}}
       <div id="matchName" class="text-start" style="width: 20%; padding-left: 1%;"></div>
       <div id="fieldConnection" style="width: 25%; padding-left: 1%;">
         <span class="badge badge-status" id="accessPointStatus"><i class="bi bi-wifi"></i> Access Point
         </span>
         <span class="badge badge-status" id="switchStatus"> <i class="bi bi-hdd-network"></i> Switch</span>
       </div>
-    {{end}}
-    {{if not .EventSettings.NetworkSecurityEnabled}}
+      {{end}}
+      {{if not .EventSettings.NetworkSecurityEnabled}}
       <div id="matchName" class="text-start" style="width: 45%; padding-left: 1%;"></div>
     {{end}}
     <div id="matchTime" class="text-center" style="width: 10%;"></div>
@@ -51,9 +51,9 @@ Display showing robot connection status.
     <div id="matchTimeAllianceStation"></div>
     Score
     <div id="Score">
-      <span id="rightScoreAllianceDisplay" class="left-score ds-dependent text-center reversible-right"></span>
+      <span id="leftScoreAllianceDisplay" class="left-score ds-dependent text-center reversible-left"></span>
       <span class="note-splitter">/</span>
-      <span id="leftScoreAllianceDisplay" class="right-score ds-dependent text-center reversible-right"></span>
+      <span id="rightScoreAllianceDisplay" class="right-score ds-dependent text-center reversible-right"></span>
     </div> 
     <div class="score-fields">
       <div class="score-field">
@@ -122,9 +122,11 @@ Display showing robot connection status.
   </div>
   <div class="team-box-row">
     <div id="{{.side}}Team{{.position}}Ethernet" class="team-box center"
-      title="Driver Station Ethernet Connected&#10;Trip Time (ms)">ETH</div>
+      title="Driver Station Ethernet Connected&#10;Trip Time (ms)">ETH
+    </div>
     <div id="{{.side}}Team{{.position}}Ds" class="team-box center"
-      title="Driver Station Software Running&#10;Missed Packets">DS</div>
+      title="Driver Station Software Running&#10;Missed Packets">DS
+    </div>
     <div id="{{.side}}Team{{.position}}Radio" class="team-box center" title="Field Access Point Configured Team">
       <i class="bi-reception-4"></i>
       <span></span>

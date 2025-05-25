@@ -375,8 +375,17 @@ func TestMatchPlayWebsocketLoadMatch(t *testing.T) {
 	web.arena.Database.CreateTeam(&model.Team{Id: 104})
 	web.arena.Database.CreateTeam(&model.Team{Id: 105})
 	web.arena.Database.CreateTeam(&model.Team{Id: 106})
-	match := model.Match{Type: model.Playoff, ShortName: "QF4-3", Status: game.RedWonMatch, Red1: 101,
-		Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
+	match := model.Match{
+		Type:      model.Playoff,
+		ShortName: "QF4-3",
+		Status:    game.RedWonMatch,
+		Red1:      101,
+		Red2:      102,
+		Red3:      103,
+		Blue1:     104,
+		Blue2:     105,
+		Blue3:     106,
+	}
 	web.arena.Database.CreateMatch(&match)
 
 	matchIdMessage := struct{ MatchId int }{match.Id}
@@ -502,8 +511,9 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	assert.Equal(t, 2, matchTime.MatchTimeSec)
 
 	// Check across a match state boundary.
-	web.arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec+
-		game.MatchTiming.AutoDurationSec) * time.Second)
+	web.arena.MatchStartTime = time.Now().Add(
+		-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
+	)
 	web.arena.Update()
 	statusReceived, matchTime = readWebsocketStatusMatchTime(t, ws)
 	assert.Equal(t, true, statusReceived)

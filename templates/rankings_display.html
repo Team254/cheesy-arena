@@ -1,18 +1,18 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: nick@team254.com (Nick Eyre)
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: nick@team254.com (Nick Eyre)
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  Display for showing team rankings.
+Display for showing team rankings.
 */}}
 <!DOCTYPE html>
 <html>
   <head>
     <title>Standings Display - {{.EventSettings.Name}} - Cheesy Arena </title>
     <link rel="shortcut icon" href="/static/img/favicon.ico">
-    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
-    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
-    <link rel="stylesheet" href="/static/css/rankings_display.css" />
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css"/>
+    <link rel="stylesheet" href="/static/css/rankings_display.css"/>
   </head>
   <body>
     <div id="column">
@@ -51,19 +51,19 @@
     <script id="standingsTemplate" type="text/x-handlebars-template">
       <tbody>
         {{"{{#each Rankings}}"}}
-          <tr>
-            <td class="team-field">{{"{{../Iteration}}"}} {{"{{this.Rank}}"}}</td>
-            <td class="team-field">{{"{{this.TeamId}}"}}</td>
-            <td class="team-nickname">{{"{{this.Nickname}}"}}</td>
-            <td class="team-field">{{"{{this.RankingPoints}}"}}</td>
-            <td class="team-field">{{"{{this.CoopertitionPoints}}"}}</td>
-            <td class="team-field">{{"{{this.MatchPoints}}"}}</td>
-            <td class="team-field">{{"{{this.AutoPoints}}"}}</td>
-            <td class="team-field">{{"{{this.BargePoints}}"}}</td>
-            <td class="team-field">{{"{{this.Wins}}"}}-{{"{{this.Losses}}"}}-{{"{{this.Ties}}"}}</td>
-            <td class="team-field">{{"{{this.Disqualifications}}"}}</td>
-            <td class="team-field">{{"{{this.Played}}"}}</td>
-          </tr>
+        <tr>
+          <td class="team-field">{{"{{../Iteration}}"}} {{"{{this.Rank}}"}}</td>
+          <td class="team-field">{{"{{this.TeamId}}"}}</td>
+          <td class="team-nickname">{{"{{this.Nickname}}"}}</td>
+          <td class="team-field">{{"{{this.RankingPoints}}"}}</td>
+          <td class="team-field">{{"{{this.CoopertitionPoints}}"}}</td>
+          <td class="team-field">{{"{{this.MatchPoints}}"}}</td>
+          <td class="team-field">{{"{{this.AutoPoints}}"}}</td>
+          <td class="team-field">{{"{{this.BargePoints}}"}}</td>
+          <td class="team-field">{{"{{this.Wins}}"}}-{{"{{this.Losses}}"}}-{{"{{this.Ties}}"}}</td>
+          <td class="team-field">{{"{{this.Disqualifications}}"}}</td>
+          <td class="team-field">{{"{{this.Played}}"}}</td>
+        </tr>
         {{"{{/each}}"}}
       </tbody>
     </script>

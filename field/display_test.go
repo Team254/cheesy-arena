@@ -52,8 +52,14 @@ func TestDisplayFromUrl(t *testing.T) {
 }
 
 func TestDisplayToUrl(t *testing.T) {
-	display := &Display{DisplayConfiguration: DisplayConfiguration{Id: "254", Nickname: "Test Nickname",
-		Type: RankingsDisplay, Configuration: map[string]string{"f": "1", "z": "#fff", "a": "3", "c": "4"}}}
+	display := &Display{
+		DisplayConfiguration: DisplayConfiguration{
+			Id:            "254",
+			Nickname:      "Test Nickname",
+			Type:          RankingsDisplay,
+			Configuration: map[string]string{"f": "1", "z": "#fff", "a": "3", "c": "4"},
+		},
+	}
 	assert.Equal(t, "/displays/rankings?displayId=254&nickname=Test+Nickname&a=3&c=4&f=1&z=%23fff", display.ToUrl())
 }
 
@@ -70,8 +76,12 @@ func TestNextDisplayId(t *testing.T) {
 func TestDisplayRegisterUnregister(t *testing.T) {
 	arena := setupTestArena(t)
 
-	displayConfig := &DisplayConfiguration{Id: "254", Nickname: "Placeholder", Type: PlaceholderDisplay,
-		Configuration: map[string]string{}}
+	displayConfig := &DisplayConfiguration{
+		Id:            "254",
+		Nickname:      "Placeholder",
+		Type:          PlaceholderDisplay,
+		Configuration: map[string]string{},
+	}
 	arena.RegisterDisplay(displayConfig, "1.2.3.4")
 	if assert.Contains(t, arena.Displays, "254") {
 		assert.Equal(t, "Placeholder", arena.Displays["254"].DisplayConfiguration.Nickname)
@@ -82,8 +92,12 @@ func TestDisplayRegisterUnregister(t *testing.T) {
 	notifier := arena.Displays["254"].Notifier
 
 	// Register a second instance of the same display.
-	displayConfig2 := &DisplayConfiguration{Id: "254", Nickname: "Rankings", Type: RankingsDisplay,
-		Configuration: map[string]string{}}
+	displayConfig2 := &DisplayConfiguration{
+		Id:            "254",
+		Nickname:      "Rankings",
+		Type:          RankingsDisplay,
+		Configuration: map[string]string{},
+	}
 	arena.RegisterDisplay(displayConfig2, "2.3.4.5")
 	if assert.Contains(t, arena.Displays, "254") {
 		assert.Equal(t, "Rankings", arena.Displays["254"].DisplayConfiguration.Nickname)
@@ -101,8 +115,12 @@ func TestDisplayRegisterUnregister(t *testing.T) {
 	}
 
 	// Update the first display.
-	displayConfig4 := DisplayConfiguration{Id: "254", Nickname: "Alliance", Type: AllianceStationDisplay,
-		Configuration: map[string]string{"station": "B2"}}
+	displayConfig4 := DisplayConfiguration{
+		Id:            "254",
+		Nickname:      "Alliance",
+		Type:          AllianceStationDisplay,
+		Configuration: map[string]string{"station": "B2"},
+	}
 	arena.UpdateDisplay(displayConfig4)
 	if assert.Contains(t, arena.Displays, "254") {
 		assert.Equal(t, "Alliance", arena.Displays["254"].DisplayConfiguration.Nickname)
