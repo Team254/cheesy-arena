@@ -1,0 +1,117 @@
+{{define "title"}}Filler Queue{{end}}
+
+{{define "body"}}
+<div class="d-flex flex-row align-start gap-4">
+  <!-- Match List -->
+  <div class="card rounded-3 shadow-sm me-5" style="min-width: 500px;">
+    <div class="card-header bg-secondary text-white rounded-top">
+      <h4 class="mb-0">Practice Match Schedule</h4>
+    </div>
+    <div class="card-body p-3">
+      <table class="table table-sm table-striped table-hover rounded-2 overflow-hidden">
+        <thead class="table-dark">
+          <tr>
+            <th>Match</th>
+            <th>Time</th>
+            <th>Red Alliance</th>
+            <th>Blue Alliance</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Matches}}
+          <tr>
+            <td>{{.ShortName}}</td>
+            <td>{{.Time.Format "15:04"}}</td>
+            <td class="text-danger fw-bold">{{.Red1}}, {{.Red2}}, {{.Red3}}</td>
+            <td class="text-primary fw-bold">{{.Blue1}}, {{.Blue2}}, {{.Blue3}}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-secondary"
+                onclick='populateEditModal("{{.Id}}", "{{.Red1}}", "{{.Red2}}", "{{.Red3}}", "{{.Blue1}}", "{{.Blue2}}", "{{.Blue3}}", "{{.ShortName}}")'
+                data-bs-toggle="modal" data-bs-target="#editModal">
+                Edit
+              </button>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Match -->
+  <div class="card rounded-3 shadow-sm" style="max-width: 500px;">
+    <div class="card-header bg-primary text-white rounded-top">
+      <h4 class="mb-0">Add Practice Match</h4>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/panel/freezy/add_practice_match">
+        <fieldset class="mb-3">
+          <legend class="h6">Red Alliance</legend>
+          {{range $i, $label := (seq 3)}}
+          <div class="mb-2">
+            <label for="red{{$label}}">Red {{$label}}:</label>
+            <input type="number" id="red{{$label}}" name="red{{$label}}" class="form-control rounded-2" required>
+          </div>
+          {{end}}
+        </fieldset>
+
+        <fieldset class="mb-3">
+          <legend class="h6">Blue Alliance</legend>
+          {{range $i, $label := (seq 3)}}
+          <div class="mb-2">
+            <label for="blue{{$label}}">Blue {{$label}}:</label>
+            <input type="number" id="blue{{$label}}" name="blue{{$label}}" class="form-control rounded-2" required>
+          </div>
+          {{end}}
+        </fieldset>
+
+        <button type="submit" class="btn btn-success w-100 rounded-pill">Add Match</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" action="/panel/freezy/edit_practice_match" class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">Edit Practice Match: <span id="editMatchLabel"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" name="matchId" id="editMatchId">
+
+        <fieldset class="mb-3">
+          <legend class="h6">Red Alliance</legend>
+          {{range $i, $label := (seq 3)}}
+          <div class="mb-2">
+            <label for="editRed{{$label}}">Red {{$label}}:</label>
+            <input type="number" id="editRed{{$label}}" name="red{{$label}}" class="form-control rounded-2" required>
+          </div>
+          {{end}}
+        </fieldset>
+
+        <fieldset class="mb-3">
+          <legend class="h6">Blue Alliance</legend>
+          {{range $i, $label := (seq 3)}}
+          <div class="mb-2">
+            <label for="editBlue{{$label}}">Blue {{$label}}:</label>
+            <input type="number" id="editBlue{{$label}}" name="blue{{$label}}" class="form-control rounded-2" required>
+          </div>
+          {{end}}
+        </fieldset>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary rounded-pill">Save Changes</button>
+        <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}
+
+{{define "script"}}
+<script src="/static/js/add_practice_match.js"></script>
+{{end}}

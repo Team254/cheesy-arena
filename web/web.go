@@ -7,13 +7,14 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/Team254/cheesy-arena/game"
 
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
@@ -244,7 +245,10 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /panel/freezy/eStopControl/{alliance}/websocket", web.scoringPanelWebsocketHandler)
 	mux.HandleFunc("GET /api/freezy/alternateIO/PLC_Coils", web.getAllPlcCoilsGetHandler)
 	mux.HandleFunc("POST /api/freezy/startMatch", web.startMatchPostHandler)
-	
+	mux.HandleFunc("POST /panel/freezy/add_practice_match", web.addPracticeMatchPostHandler)
+	mux.HandleFunc("GET /panel/freezy/add_practice_match", web.addPracticeMatchGetHandler)
+	mux.HandleFunc("POST /panel/freezy/edit_practice_match", web.editPracticeMatchHandler)
+
 	return mux
 }
 
