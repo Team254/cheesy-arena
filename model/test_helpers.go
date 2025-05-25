@@ -6,17 +6,16 @@
 package model
 
 import (
-	"fmt"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
 	"path/filepath"
 	"testing"
 )
 
-func SetupTestDb(t *testing.T, uniqueName string) *Database {
+func SetupTestDb(t *testing.T) *Database {
 	BaseDir = ".."
 	dbDir := t.TempDir()
-	dbPath := filepath.Join(dbDir, fmt.Sprintf("%s_test.db", uniqueName))
+	dbPath := filepath.Join(dbDir, "test.db")
 	database, err := OpenDatabase(dbPath)
 	assert.Nil(t, err)
 	t.Cleanup(
