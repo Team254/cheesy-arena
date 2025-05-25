@@ -32,7 +32,7 @@ const scoreIn = $(".score").css("width");
 const scoreMid = "185px";
 const scoreOut = "370px";
 const scoreFieldsOut = "150px";
-const scoreLogoTop = "-500px";
+const scoreLogoTop = "-530px";
 const bracketLogoTop = "-780px";
 const bracketLogoScale = 0.75;
 const timeoutDetailsIn = $("#timeoutDetails").css("width");
@@ -178,6 +178,12 @@ const handleScorePosted = function (data) {
   $(`#${redSide}FinalAlgaePoints`).text(data.RedScoreSummary.AlgaePoints);
   $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.BargePoints);
   $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
+  $(`#${redSide}FinalCoopertitionBonus`).html(
+    data.RedScoreSummary.CoopertitionBonus ? "&#x2714;" : "&#x2718;"
+  );
+  $(`#${redSide}FinalCoopertitionBonus`).attr(
+    "data-checked", data.RedScoreSummary.CoopertitionBonus
+  );
   $(`#${redSide}FinalAutoBonusRankingPoint`).html(
     data.RedScoreSummary.AutoBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
@@ -218,6 +224,12 @@ const handleScorePosted = function (data) {
   $(`#${blueSide}FinalAlgaePoints`).text(data.BlueScoreSummary.AlgaePoints);
   $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.BargePoints);
   $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
+  $(`#${blueSide}FinalCoopertitionBonus`).html(
+    data.BlueScoreSummary.CoopertitionBonus ? "&#x2714;" : "&#x2718;"
+  );
+  $(`#${blueSide}FinalCoopertitionBonus`).attr(
+    "data-checked", data.BlueScoreSummary.CoopertitionBonus
+  );
   $(`#${blueSide}FinalAutoBonusRankingPoint`).html(
     data.BlueScoreSummary.AutoBonusRankingPoint ? "&#x2714;" : "&#x2718;"
   );
@@ -260,6 +272,7 @@ const handleScorePosted = function (data) {
     $(".playoff-hidden-field").show();
     $(".playoff-only-field").hide();
   }
+  $(".coopertition-hidden-field").toggle(data.CoopertitionEnabled);
 };
 
 // Handles a websocket message to play a sound to signal match start/stop/etc.
