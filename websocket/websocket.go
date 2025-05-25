@@ -7,7 +7,6 @@ package websocket
 
 import (
 	"fmt"
-	"github.com/gorilla/websocket"
 	"io"
 	"log"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 const pingInterval = time.Second * 10
@@ -31,7 +32,7 @@ type Message struct {
 	Data any    `json:"data"`
 }
 
-var websocketUpgrader = websocket.Upgrader{ReadBufferSize: 1024, WriteBufferSize: 2014}
+var websocketUpgrader = websocket.Upgrader{EnableCompression: false, ReadBufferSize: 1024, WriteBufferSize: 2014}
 
 // Upgrades the given HTTP request to a websocket connection.
 func NewWebsocket(w http.ResponseWriter, r *http.Request) (*Websocket, error) {

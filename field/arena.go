@@ -814,6 +814,7 @@ func (arena *Arena) Update() {
 
 	arena.LastMatchTimeSec = matchTimeSec
 	arena.lastMatchState = arena.MatchState
+
 }
 
 // Checks if the endgame warning period has started and triggers the Companion event if so.
@@ -1195,7 +1196,7 @@ func (arena *Arena) handleAutoWinner() {
 
 // Updates the score given new input information from the field PLC, and actuates PLC outputs accordingly.
 func (arena *Arena) handlePlcInputOutput() {
-	
+
 	// Handle the team E-stop and A-stop buttons always.
 	redEStops, blueEStops := arena.Plc.GetTeamEStops()
 	redAStops, blueAStops := arena.Plc.GetTeamAStops()
@@ -1213,8 +1214,9 @@ func (arena *Arena) handlePlcInputOutput() {
         arena.lastPlcNotifyTime = time.Now()
     }
 
-	if (!arena.Plc.IsEnabled() && !arena.EventSettings.AlternateIOEnabled) {  // && not alternateIO Enabled
-		return 
+	// If the PLC is not enabled, or alternate I/O is not enabled, do not process any further PLC inputs.
+	if !arena.Plc.IsEnabled() && !arena.EventSettings.AlternateIOEnabled { // && not alternateIO Enabled
+		return
 	}
 
 	// Handle PLC functions that are always active.
