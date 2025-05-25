@@ -34,6 +34,7 @@ func (database *Database) GetAllJudgingSlots() ([]JudgingSlot, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	sort.Slice(
 		judgingSlots,
 		func(i, j int) bool {

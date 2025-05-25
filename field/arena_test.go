@@ -660,6 +660,7 @@ func TestArenaTimeout(t *testing.T) {
 	assert.NotNil(t, arena.StartTimeout("Timeout", 1))
 	assert.NotEqual(t, TimeoutActive, arena.MatchState)
 	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
+
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(
 			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+

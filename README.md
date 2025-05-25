@@ -114,6 +114,7 @@ the [Configuring Cheesy Arena wiki page](https://github.com/Team254/cheesy-arena
 for details configurating the team signs in Cheesy Arena.
 https://github.com/Team254/cheesy-arena/wiki/Configuring-Cheesy-Arena-Settings
 
+
 ## LED hardware
 
 Due to the prohibitive cost of the LEDs and LED controllers used on official fields, for years in which LEDs are

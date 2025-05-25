@@ -68,6 +68,20 @@ body[data-mode=timeout] .mode#match {
   line-height: 350px;
 }
 
+/* Signal Count Mode */
+#signalCount {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+#signalCount div {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  font-size: 350px;
+  line-height: 350px;
+}
+
 /* Match Mode */
 #match {
   position: absolute;
