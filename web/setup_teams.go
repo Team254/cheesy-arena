@@ -337,7 +337,9 @@ func (web *Web) populateOfficialTeamInfo(team *model.Team) error {
 	team.Accomplishments = accomplishmentsBuffer.String()
 
 	// Download and store the team's avatar; if there isn't one, ignore the error.
-	web.arena.TbaClient.DownloadTeamAvatar(team.Id, time.Now().Year())
+	if err = web.arena.TbaClient.DownloadTeamAvatar(team.Id, time.Now().Year()); err != nil {
+		return err
+	}
 
 	return nil
 }
