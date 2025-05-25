@@ -118,7 +118,7 @@ func TestEarlyLateMessage(t *testing.T) {
 	setMatch(arena.Database, &matches[0], time.Now().Add(-300*time.Second), time.Now().Add(-601*time.Second), true)
 	assert.Equal(t, "", arena.getEarlyLateMessage())
 
-	setMatch(arena.Database, &matches[1], time.Now().Add(900*time.Second), time.Time{}, false)
+	setMatch(arena.Database, &matches[1], time.Now().Add(901*time.Second), time.Time{}, false)
 	arena.CurrentMatch = &matches[1]
 	arena.MatchState = PreMatch
 	assert.Equal(t, "Event is running on schedule", arena.getEarlyLateMessage())
