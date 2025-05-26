@@ -74,6 +74,13 @@ body {
   background-color: #333;
   display: flex;
   flex-direction: column;
+  border-bottom: #333 solid 10px;
+}
+.team-left {
+  border-right: #333 solid 5px;
+}
+.team-right {
+  border-left: #333 solid 5px;
 }
 .team-id {
   width: 100%;
