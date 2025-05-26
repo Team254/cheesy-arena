@@ -19,6 +19,7 @@ func (web *Web) wallDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		r,
 		map[string]string{
 			"background":   "#000",
+			"message":      "",
 			"reversed":     "false",
 			"topSpacingPx": "0",
 			"zoomFactor":   "1",

@@ -27,10 +27,14 @@ const timeoutDetailsOut = "570px";
 
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function (targetScreen) {
+  if (targetScreen === "logoLuma") {
+    targetScreen = "logo";
+  }
   if (
     targetScreen !== "intro" &&
     targetScreen !== "match" &&
-    targetScreen !== "timeout"
+    targetScreen !== "timeout" &&
+    targetScreen !== "logo"
   ) {
     targetScreen = "blank";
   }
@@ -153,7 +157,6 @@ const handleRealtimeScore = function (data) {
 };
 
 const transitionBlankToIntro = function (callback) {
-  //$("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function() {
   $(".teams").css("display", "flex");
   $(".avatars").css("display", "flex");
   $(".avatars").css("opacity", 1);
@@ -161,8 +164,12 @@ const transitionBlankToIntro = function (callback) {
     $("#eventMatchInfo").css("display", "flex");
     $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
   });
-  //});
 };
+
+const transitionBlankToLogo = function (callback) {
+  $("#message").show();
+  $("#message").transition({queue: false, opacity: 1}, 750, "ease", callback);
+}
 
 const transitionBlankToMatch = function (callback) {
   $(".teams").css("display", "flex");
@@ -229,6 +236,13 @@ const transitionIntroToTimeout = function (callback) {
     });
   });
 };
+
+const transitionLogoToBlank = function (callback) {
+  $("#message").transition({queue: false, opacity: 0}, 750, "ease", function () {
+    $("#message").hide();
+    callback();
+  });
+}
 
 const transitionMatchToBlank = function (callback) {
   $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease");
@@ -310,6 +324,11 @@ $(function () {
   overlayCentering.css("top", parseInt(urlParams.get("topSpacingPx")) + overlayTopOffset + "px");
   overlayCentering.css("transform", `scale(${urlParams.get("zoomFactor")})`);
 
+  const message = urlParams.get("message");
+  const messageDiv = $("#message");
+  messageDiv.text(message);
+  messageDiv.toggle(message !== "");
+
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/wall/websocket", {
     allianceSelection: function (event) {
@@ -337,6 +356,7 @@ $(function () {
   transitionMap = {
     blank: {
       intro: transitionBlankToIntro,
+      logo: transitionBlankToLogo,
       match: transitionBlankToMatch,
       timeout: transitionBlankToTimeout,
     },
@@ -344,6 +364,9 @@ $(function () {
       blank: transitionIntroToBlank,
       match: transitionIntroToMatch,
       timeout: transitionIntroToTimeout,
+    },
+    logo: {
+      blank: transitionLogoToBlank,
     },
     match: {
       blank: transitionMatchToBlank,
