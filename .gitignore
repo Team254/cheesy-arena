@@ -30,3 +30,4 @@ _testmain.go
 static/logs
 static/img/avatars
 cheesy-arena.exe~
+.vscode/launch.json
