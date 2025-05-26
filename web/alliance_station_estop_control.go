@@ -7,7 +7,7 @@ package web
 import (
 	"fmt"
 	"net/http"
-
+	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/Team254/cheesy-arena/model"
 )
 
@@ -38,5 +38,21 @@ func (web *Web) estopContolDisplayHandler(w http.ResponseWriter, r *http.Request
 		handleWebErr(w, err)
 		return
 	}
+}
+
+// The websocket endpoint for the Estop Control client to receive status updates.
+func (web *Web) estopContolDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	ws, err := websocket.NewWebsocket(w, r)
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+	defer ws.Close()
+
+	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
+	ws.HandleNotifiers(
+		web.arena.PlcCoilsNotifier,  // Notifier for PLC coil state changes with Descriptions
+		web.arena.Plc.IoChangeNotifier(), // Notifier for PLC IO changes includs All PLC coils Inputs and Fegisters
+	)
 }
 
