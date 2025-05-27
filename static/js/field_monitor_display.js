@@ -34,10 +34,13 @@ const handleArenaStatus = function (data) {
     const teamDsElement = $(teamElementPrefix + "Ds");
     const teamRadioElement = $(teamElementPrefix + "Radio");
     const teamRadioIconElement = $(teamElementPrefix + "Radio i");
-    const teamRadioTextElement = $(teamElementPrefix + "Radio span");
     const teamRobotElement = $(teamElementPrefix + "Robot");
+    const teamBatteryElement = $(teamElementPrefix + "Battery");
     const teamBypassElement = $(teamElementPrefix + "Bypass");
+    const teamStatsElement = $(teamElementPrefix + "Stats");
     const teamBandwidthElement = $(teamElementPrefix + "Bandwidth");
+    const teamTripTimeElement = $(teamElementPrefix + "TripTime");
+    const teamMissedPacketsElement = $(teamElementPrefix + "MissedPackets");
 
     teamNotesTextElement.attr("data-station", station);
 
@@ -80,7 +83,6 @@ const handleArenaStatus = function (data) {
 
     const wifiStatus = stationStatus.WifiStatus;
     teamRadioIconElement.attr("class", `bi-reception-${wifiStatus.ConnectionQuality}`);
-    teamRadioTextElement.text(wifiStatus.TeamId);
 
     $("#accessPointStatus").attr("data-status", data.AccessPointStatus);
     $("#switchStatus").attr("data-status", data.SwitchStatus);
@@ -102,23 +104,30 @@ const handleArenaStatus = function (data) {
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
         teamRobotElement.text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
       } else {
-        teamRobotElement.text(dsConn.BatteryVoltage.toFixed(1) + "V");
+        teamRobotElement.text("RIO");
       }
+      teamBatteryElement.text(dsConn.BatteryPercentage.toFixed(1) + "V");
+
       const btuOkay = wifiStatus.MBits < highBtuThreshold && dsConn.RobotLinked;
+      teamStatsElement.attr("data-status-ok", btuOkay);
       if (wifiStatus.MBits >= 0.01) {
-        teamBandwidthElement.text(wifiStatus.MBits.toFixed(2) + "Mb");
-        teamBandwidthElement.attr("data-status-ok", btuOkay);
+        teamBandwidthElement.text(wifiStatus.MBits.toFixed(2));
+        teamTripTimeElement.text(dsConn.DsRobotTripTimeMs);
+        teamMissedPacketsElement.text(dsConn.MissedPacketCount);
       } else {
         teamBandwidthElement.text("-");
-        teamBandwidthElement.attr("data-status-ok", btuOkay);
+        teamTripTimeElement.text("-");
+        teamMissedPacketsElement.text("-");
       }
     } else {
       teamDsElement.attr("data-status-ok", "");
       teamDsElement.text("DS");
       teamRobotElement.attr("data-status-ok", "");
-      teamRobotElement.text("RBT");
-      teamBandwidthElement.attr("data-status-ok", "");
+      teamRobotElement.text("RIO");
+      teamBatteryElement.text("0.0V");
       teamBandwidthElement.text("-");
+      teamTripTimeElement.text("-");
+      teamMissedPacketsElement.text("-");
 
       // Format the robot status box according to whether the AP is configured with the correct SSID.
       const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
@@ -135,16 +144,16 @@ const handleArenaStatus = function (data) {
 
     if (stationStatus.EStop) {
       teamBypassElement.attr("data-status-ok", false);
-      teamBypassElement.text("ES");
+      teamBypassElement.text("E-STP");
     } else if (stationStatus.AStop) {
       teamBypassElement.attr("data-status-ok", true);
-      teamBypassElement.text("AS");
+      teamBypassElement.text("A-STP");
     } else if (stationStatus.Bypass) {
       teamBypassElement.attr("data-status-ok", false);
       teamBypassElement.text("BYP");
     } else {
       teamBypassElement.attr("data-status-ok", true);
-      teamBypassElement.text("ES");
+      teamBypassElement.text("");
     }
   });
 };
