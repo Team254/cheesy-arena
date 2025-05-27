@@ -66,7 +66,7 @@ func TestAllianceStationDisplayWebsocket(t *testing.T) {
 	assert.True(t, ok)
 	web.arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
 	web.arena.Update()
-	messages = readWebsocketMultiple(t, ws, 2)
+	messages = readWebsocketMultiple(t, ws, 3)
 	_, ok = messages["arenaStatus"]
 	assert.True(t, ok)
 	_, ok = messages["matchTime"]

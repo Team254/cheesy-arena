@@ -127,13 +127,21 @@ Display showing robot connection status.
     <div id="{{.side}}Team{{.position}}Ds" class="team-box center"
       title="Driver Station Software Running&#10;Missed Packets">DS
     </div>
-    <div id="{{.side}}Team{{.position}}Radio" class="team-box center" title="Field Access Point Configured Team">
-      <i class="bi-reception-4"></i>
-      <span></span>
+    <div id="{{.side}}Team{{.position}}Radio" class="team-box center"><i></i></div>
+    <div id="{{.side}}Team{{.position}}Robot" class="team-box center" title="Seconds Since Last Connected"></div>
+    <div id="{{.side}}Team{{.position}}Battery" class="team-box center"></div>
+    <div id="{{.side}}Team{{.position}}Stats" class="team-box center team-stats"
+      title="Team bandwidth (Mbits/s), trip time (ms), and missed packet count">
+      <div class="team-stats-row">
+        <div class="team-bandwidth">BWU <span id="{{.side}}Team{{.position}}Bandwidth"></span></div>
+      </div>
+      <div class="team-stats-row">
+        <div class="team-trip-time">TT <span id="{{.side}}Team{{.position}}TripTime"></span></div>&nbsp;&nbsp;
+      </div>
+      <div class="team-stats-row">
+        <div class="team-missed-packets">MP <span id="{{.side}}Team{{.position}}MissedPackets"></span></div>
+      </div>
     </div>
-    <div id="{{.side}}Team{{.position}}Robot" class="team-box center"
-      title="Battery Voltage&#10;Seconds Since Last Connected"></div>
-    <div id="{{.side}}Team{{.position}}Bandwidth" class="team-box center" title="Team bandwidth Mbits/s"></div>
     <div id="{{.side}}Team{{.position}}Bypass" class="team-box center" title="Emergency-Stopped or Bypassed"></div>
   </div>
 </div>

@@ -256,3 +256,12 @@ html {
   font-size: 14px;
   opacity: 0;
 }
+#message {
+  position: absolute;
+  display: none;
+  opacity: 0;
+  top: 130px;
+  font-size: 1.4vw;
+  font-family: "FuturaLTBold";
+  color: #fff;
+}

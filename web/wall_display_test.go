@@ -17,12 +17,13 @@ func TestWallDisplay(t *testing.T) {
 	assert.Equal(t, 302, recorder.Code)
 	assert.Contains(t, recorder.Header().Get("Location"), "displayId=100")
 	assert.Contains(t, recorder.Header().Get("Location"), "background=%23000")
+	assert.Contains(t, recorder.Header().Get("Location"), "message=")
 	assert.Contains(t, recorder.Header().Get("Location"), "reversed=false")
 	assert.Contains(t, recorder.Header().Get("Location"), "topSpacingPx=0")
 	assert.Contains(t, recorder.Header().Get("Location"), "zoomFactor=1")
 
 	recorder = web.getHttpResponse(
-		"/displays/wall?displayId=1&background=%23fff&reversed=true&topSpacingPx=10&zoomFactor=2",
+		"/displays/wall?displayId=1&background=%23fff&message=hello+there&reversed=true&topSpacingPx=10&zoomFactor=2",
 	)
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Wall Display - Untitled Event - Cheesy Arena")
