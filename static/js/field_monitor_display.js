@@ -3,15 +3,15 @@
 //
 // Client-side logic for the field monitor display.
 
-var websocket;
-var currentMatchId;
-var redSide;
-var blueSide;
-var lowBatteryThreshold = 8;
-var highBtuThreshold = 7.0;
+let websocket;
+let currentMatchId;
+let redSide;
+let blueSide;
+const lowBatteryThreshold = 8;
+const highBtuThreshold = 7.0;
 
 
-var handleArenaStatus = function (data) {
+const handleArenaStatus = function (data) {
   // If getting data for the wrong match (e.g. after a server restart), reload the page.
   if (currentMatchId == null) {
     currentMatchId = data.MatchId;
@@ -21,29 +21,30 @@ var handleArenaStatus = function (data) {
 
   $.each(data.AllianceStations, function (station, stationStatus) {
     // Select the DOM elements corresponding to the team station.
-    var teamElementPrefix;
+    let teamElementPrefix;
     if (station[0] === "R") {
       teamElementPrefix = "#" + redSide + "Team" + station[1];
     } else {
       teamElementPrefix = "#" + blueSide + "Team" + station[1];
     }
-    var teamIdElement = $(teamElementPrefix + "Id");
-    var teamNotesElement = $(teamElementPrefix + "Notes");
-    var teamNotesTextElement = $(teamElementPrefix + "Notes div");
-    var teamEthernetElement = $(teamElementPrefix + "Ethernet");
-    var teamDsElement = $(teamElementPrefix + "Ds");
-    var teamRadioElement = $(teamElementPrefix + "Radio");
-    var teamRadioTextElement = $(teamElementPrefix + "Radio span");
-    var teamRobotElement = $(teamElementPrefix + "Robot");
-    var teamBypassElement = $(teamElementPrefix + "Bypass");
-    var teamBandwidthElement = $(teamElementPrefix + "Bandwidth");
+    const teamIdElement = $(teamElementPrefix + "Id");
+    const teamNotesElement = $(teamElementPrefix + "Notes");
+    const teamNotesTextElement = $(teamElementPrefix + "Notes div");
+    const teamEthernetElement = $(teamElementPrefix + "Ethernet");
+    const teamDsElement = $(teamElementPrefix + "Ds");
+    const teamRadioElement = $(teamElementPrefix + "Radio");
+    const teamRadioIconElement = $(teamElementPrefix + "Radio i");
+    const teamRadioTextElement = $(teamElementPrefix + "Radio span");
+    const teamRobotElement = $(teamElementPrefix + "Robot");
+    const teamBypassElement = $(teamElementPrefix + "Bypass");
+    const teamBandwidthElement = $(teamElementPrefix + "Bandwidth");
 
     teamNotesTextElement.attr("data-station", station);
 
     if (stationStatus.Team) {
       // Set the team number and status.
       teamIdElement.text(stationStatus.Team.Id);
-      var status = "no-link";
+      let status = "no-link";
       if (stationStatus.Bypass) {
         status = "";
       } else if (stationStatus.DsConn) {
@@ -78,6 +79,7 @@ var handleArenaStatus = function (data) {
     }
 
     const wifiStatus = stationStatus.WifiStatus;
+    teamRadioIconElement.attr("class", `bi-reception-${wifiStatus.ConnectionQuality}`);
     teamRadioTextElement.text(wifiStatus.TeamId);
 
     $("#accessPointStatus").attr("data-status", data.AccessPointStatus);
@@ -85,24 +87,24 @@ var handleArenaStatus = function (data) {
 
     if (stationStatus.DsConn) {
       // Format the driver station status box.
-      var dsConn = stationStatus.DsConn;
+      const dsConn = stationStatus.DsConn;
       teamDsElement.attr("data-status-ok", dsConn.DsLinked);
       teamDsElement.text(dsConn.MissedPacketCount);
 
       // Format the radio status box according to the connection status of the robot radio.
-      var radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId &&
+      const radioOkay = stationStatus.Team && stationStatus.Team.Id === wifiStatus.TeamId &&
         (wifiStatus.RadioLinked || dsConn.RobotLinked);
       teamRadioElement.attr("data-status-ok", radioOkay);
 
       // Format the robot status box.
-      var robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
+      const robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
       teamRobotElement.attr("data-status-ok", robotOkay);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
         teamRobotElement.text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
       } else {
         teamRobotElement.text(dsConn.BatteryVoltage.toFixed(1) + "V");
       }
-      var btuOkay = wifiStatus.MBits < highBtuThreshold && dsConn.RobotLinked;
+      const btuOkay = wifiStatus.MBits < highBtuThreshold && dsConn.RobotLinked;
       if (wifiStatus.MBits >= 0.01) {
         teamBandwidthElement.text(wifiStatus.MBits.toFixed(2) + "Mb");
         teamBandwidthElement.attr("data-status-ok", btuOkay);
@@ -119,7 +121,7 @@ var handleArenaStatus = function (data) {
       teamBandwidthElement.text("-");
 
       // Format the robot status box according to whether the AP is configured with the correct SSID.
-      var expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+      const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
       if (wifiStatus.TeamId === expectedTeamId) {
         if (wifiStatus.RadioLinked) {
           teamRadioElement.attr("data-status-ok", true);
@@ -148,7 +150,7 @@ var handleArenaStatus = function (data) {
 };
 
 // Handles a websocket message to update the match time countdown.
-var handleMatchTime = function (data) {
+const handleMatchTime = function (data) {
   translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchState").text(matchStateText);
     $("#matchTime").text(countdownSec);
@@ -218,12 +220,12 @@ var handleRealtimeScore = function(data) {
 };
 
 // Handles a websocket message to update current match
-var handleMatchLoad = function (data) {
+const handleMatchLoad = function (data) {
   $("#matchName").text(data.Match.LongName);
 };
 
 // Handles a websocket message to update the event status message.
-var handleEventStatus = function (data) {
+const handleEventStatus = function (data) {
   if (data.CycleTime === "") {
     $("#cycleTimeMessage").text("Last cycle time: Unknown");
   } else {
@@ -233,9 +235,9 @@ var handleEventStatus = function (data) {
 };
 
 // Makes the team notes section editable and handles saving edits to the server.
-var editFtaNotes = function (element) {
-  var teamNotesTextElement = $(element);
-  var textArea = $("<textarea />");
+const editFtaNotes = function (element) {
+  const teamNotesTextElement = $(element);
+  const textArea = $("<textarea />");
   textArea.val(teamNotesTextElement.text());
   teamNotesTextElement.replaceWith(textArea);
   textArea.focus();
@@ -287,7 +289,7 @@ $(function () {
   }
 
   //Read if display to be used in a Driver Station, ignore FTA flag if so.
-  var driverStation = urlParams.get("ds");
+  const driverStation = urlParams.get("ds");
   if (driverStation === "true") {
     $(".fta-dependent").attr("data-fta", "false");
     $(".ds-dependent").attr("data-ds", driverStation);

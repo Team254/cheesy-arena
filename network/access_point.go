@@ -33,12 +33,13 @@ type AccessPoint struct {
 }
 
 type TeamWifiStatus struct {
-	TeamId           int
-	RadioLinked      bool
-	MBits            float64
-	RxRate           float64
-	TxRate           float64
-	SignalNoiseRatio int
+	TeamId            int
+	RadioLinked       bool
+	MBits             float64
+	RxRate            float64
+	TxRate            float64
+	SignalNoiseRatio  int
+	ConnectionQuality int
 }
 
 type configurationRequest struct {
@@ -66,6 +67,14 @@ type stationStatus struct {
 	TxRateMbps        float64 `json:"txRateMbps"`
 	SignalNoiseRatio  int     `json:"signalNoiseRatio"`
 	BandwidthUsedMbps float64 `json:"bandwidthUsedMbps"`
+	ConnectionQuality string  `json:"connectionQuality"`
+}
+
+var connectionQualityMap = map[string]int{
+	"caution":   1,
+	"warning":   2,
+	"good":      3,
+	"excellent": 4,
 }
 
 func (ap *AccessPoint) SetSettings(
@@ -237,6 +246,7 @@ func updateTeamWifiStatus(teamWifiStatus *TeamWifiStatus, stationStatus *station
 		teamWifiStatus.RxRate = 0
 		teamWifiStatus.TxRate = 0
 		teamWifiStatus.SignalNoiseRatio = 0
+		teamWifiStatus.ConnectionQuality = 0
 	} else {
 		teamWifiStatus.TeamId, _ = strconv.Atoi(stationStatus.Ssid)
 		teamWifiStatus.RadioLinked = stationStatus.IsLinked
@@ -244,6 +254,12 @@ func updateTeamWifiStatus(teamWifiStatus *TeamWifiStatus, stationStatus *station
 		teamWifiStatus.RxRate = stationStatus.RxRateMbps
 		teamWifiStatus.TxRate = stationStatus.TxRateMbps
 		teamWifiStatus.SignalNoiseRatio = stationStatus.SignalNoiseRatio
+		if quality, ok := connectionQualityMap[stationStatus.ConnectionQuality]; ok {
+			teamWifiStatus.ConnectionQuality = quality
+		} else {
+			// Default to 0 if there is no mapping for the connection quality string.
+			teamWifiStatus.ConnectionQuality = 0
+		}
 	}
 }
 

@@ -209,7 +209,8 @@ func TestAllianceStatusApi_Empty(t *testing.T) {
             "Bypass":   false,
             "Team":     nil,
             "WifiStatus": map[string]interface{}{
-                "TeamId":            float64(0),
+                "ConnectionQuality": float64(0),
+				"TeamId":            float64(0),
                 "RadioLinked":       false,
                 "MBits":             float64(0),
                 "RxRate":            float64(0),
@@ -225,7 +226,8 @@ func TestAllianceStatusApi_Empty(t *testing.T) {
             "Bypass":   false,
             "Team":     nil,
             "WifiStatus": map[string]interface{}{
-                "TeamId":            float64(0),
+                "ConnectionQuality": float64(0),
+				"TeamId":            float64(0),
                 "RadioLinked":       false,
                 "MBits":             float64(0),
                 "RxRate":            float64(0),
@@ -241,7 +243,8 @@ func TestAllianceStatusApi_Empty(t *testing.T) {
             "Bypass":   false,
             "Team":     nil,
             "WifiStatus": map[string]interface{}{
-                "TeamId":            float64(0),
+                "ConnectionQuality": float64(0),
+				"TeamId":            float64(0),
                 "RadioLinked":       false,
                 "MBits":             float64(0),
                 "RxRate":            float64(0),
@@ -257,7 +260,8 @@ func TestAllianceStatusApi_Empty(t *testing.T) {
             "Bypass":   false,
             "Team":     nil,
             "WifiStatus": map[string]interface{}{
-                "TeamId":            float64(0),
+                "ConnectionQuality": float64(0),
+				"TeamId":            float64(0),
                 "RadioLinked":       false,
                 "MBits":             float64(0),
                 "RxRate":            float64(0),
@@ -273,7 +277,8 @@ func TestAllianceStatusApi_Empty(t *testing.T) {
             "Bypass":   false,
             "Team":     nil,
             "WifiStatus": map[string]interface{}{
-                "TeamId":            float64(0),
+                "ConnectionQuality": float64(0),
+				"TeamId":            float64(0),
                 "RadioLinked":       false,
                 "MBits":             float64(0),
                 "RxRate":            float64(0),
@@ -289,7 +294,8 @@ func TestAllianceStatusApi_Empty(t *testing.T) {
             "Bypass":   false,
             "Team":     nil,
             "WifiStatus": map[string]interface{}{
-                "TeamId":            float64(0),
+                "ConnectionQuality": float64(0),
+				"TeamId":            float64(0),
                 "RadioLinked":       false,
                 "MBits":             float64(0),
                 "RxRate":            float64(0),
