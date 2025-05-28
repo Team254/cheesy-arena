@@ -263,7 +263,7 @@ UI for configuring event settings.
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">AP Address</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" name="apAddress" value="{{.ApAddress}}">
+                  <input type="text" class="form-control" name="apAddress" value="{{.ApAddress}}" placeholder="10.0.100.2">
                 </div>
               </div>
               <div class="row mb-3">
@@ -288,7 +288,7 @@ UI for configuring event settings.
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Switch Address</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" name="switchAddress" value="{{.SwitchAddress}}">
+                  <input type="text" class="form-control" name="switchAddress" value="{{.SwitchAddress}}" placeholder="10.0.100.3">
                 </div>
               </div>
               <div class="row mb-3">
@@ -303,7 +303,7 @@ UI for configuring event settings.
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">PLC Address</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" name="plcAddress" value="{{.PlcAddress}}">
+                  <input type="text" class="form-control" name="plcAddress" value="{{.PlcAddress}}" placeholder="10.0.100.40">
                 </div>
               </div>
             </fieldset>
@@ -348,56 +348,56 @@ UI for configuring event settings.
                 <label class="col-lg-6 control-label">Red 1 Sign ID</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="teamSignRed1Id"
-                    value="{{if gt .TeamSignRed1Id 0}}{{.TeamSignRed1Id}}{{end}}">
+                    value="{{if gt .TeamSignRed1Id 0}}{{.TeamSignRed1Id}}{{end}}" placeholder="51">
                 </div>
               </div>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Red 2 Sign ID</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="teamSignRed2Id"
-                    value="{{if gt .TeamSignRed2Id 0}}{{.TeamSignRed2Id}}{{end}}">
+                    value="{{if gt .TeamSignRed2Id 0}}{{.TeamSignRed2Id}}{{end}}" placeholder="52">
                 </div>
               </div>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Red 3 Sign ID</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="teamSignRed3Id"
-                    value="{{if gt .TeamSignRed3Id 0}}{{.TeamSignRed3Id}}{{end}}">
+                    value="{{if gt .TeamSignRed3Id 0}}{{.TeamSignRed3Id}}{{end}}" placeholder="53">
                 </div>
               </div>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Red Timer Sign ID</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="teamSignRedTimerId"
-                    value="{{if gt .TeamSignRedTimerId 0}}{{.TeamSignRedTimerId}}{{end}}">
+                    value="{{if gt .TeamSignRedTimerId 0}}{{.TeamSignRedTimerId}}{{end}}" placeholder="50">
                 </div>
               </div>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Blue 1 Sign ID</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="teamSignBlue1Id"
-                    value="{{if gt .TeamSignBlue1Id 0}}{{.TeamSignBlue1Id}}{{end}}">
+                    value="{{if gt .TeamSignBlue1Id 0}}{{.TeamSignBlue1Id}}{{end}}" placeholder="55">
                 </div>
               </div>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Blue 2 Sign ID</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="teamSignBlue2Id"
-                    value="{{if gt .TeamSignBlue2Id 0}}{{.TeamSignBlue2Id}}{{end}}">
+                    value="{{if gt .TeamSignBlue2Id 0}}{{.TeamSignBlue2Id}}{{end}}" placeholder="56">
                 </div>
               </div>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Blue 3 Sign ID</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="teamSignBlue3Id"
-                    value="{{if gt .TeamSignBlue3Id 0}}{{.TeamSignBlue3Id}}{{end}}">
+                    value="{{if gt .TeamSignBlue3Id 0}}{{.TeamSignBlue3Id}}{{end}}" placeholder="57">
                 </div>
               </div>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Blue Timer Sign ID</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="teamSignBlueTimerId"
-                    value="{{if gt .TeamSignBlueTimerId 0}}{{.TeamSignBlueTimerId}}{{end}}">
+                    value="{{if gt .TeamSignBlueTimerId 0}}{{.TeamSignBlueTimerId}}{{end}}" placeholder="54">
                 </div>
               </div>
               <div class="row mb-3">
