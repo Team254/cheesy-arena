@@ -308,8 +308,11 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 					for range allianceSelectionTicker.C {
 						web.arena.AllianceSelectionTimeRemainingSec--
 						web.arena.AllianceSelectionNotifier.Notify()
-						if web.arena.AllianceSelectionTimeRemainingSec == 0 {
+						if web.arena.AllianceSelectionTimeRemainingSec == 5 {
+							web.arena.PlaySound("pick_clock")
+						} else if web.arena.AllianceSelectionTimeRemainingSec == 0 {
 							allianceSelectionTicker.Stop()
+							web.arena.PlaySound("pick_clock_expired")
 						}
 					}
 				}()

@@ -7,6 +7,7 @@ var websocket;
 
 // Sends a websocket message to set the timer to the given time limit.
 const setTimer = function (timeLimitInput) {
+  document.getElementById("timeLimitSecInput").value = timeLimitInput.value;
   websocket.send("setTimer", parseInt(timeLimitInput.value));
 }
 

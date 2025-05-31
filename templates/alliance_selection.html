@@ -84,16 +84,22 @@ UI for controlling the alliance selection process.
         </div>
         <p>Timer is hidden on the audience overlay until the Start/Show button below is pressed.</p>
         <div class="row">
-          <label class="col-lg-5 control-label">Time limit in seconds<br/>(0 = disabled)</label>
-          <div class="col-lg-6">
-            <input type="radio" name="timeLimitSec" value="45" onclick="setTimer(this);"> 45 Seconds( 1st Round Picks
-            ) </br>
-            <input type="radio" name="timeLimitSec" value="90" onclick="setTimer(this);"> 90 Seconds( 2+ Round Picks
-            ) </br>
-            <input type="radio" name="timeLimitSec" value="120" onclick="setTimer(this);"> 120 Seconds( Break Time
-            between Rounds ) </br>
-            <input type="text" class="form-control" name="timeLimitSec" value="{{.TimeLimitSec}}"
-              onblur="setTimer(this);">
+          <label class="col-lg-4 control-label">Time limit<br/>(0 = disabled)</label>
+          <div class="col-lg-8">
+            <label>
+              <input type="radio" name="timeLimitSec" value="45" onclick="setTimer(this);">
+              45 seconds (1st round)
+            </label>
+            <label>
+              <input type="radio" name="timeLimitSec" value="90" onclick="setTimer(this);">
+              90 seconds (2nd+ round)
+            </label>
+            <label>
+              <input type="radio" name="timeLimitSec" value="120" onclick="setTimer(this);">
+              120 seconds (break between rounds)
+            </label>
+            <input type="text" class="form-control mt-2" id="timeLimitSecInput" name="timeLimitSec"
+              value="{{.TimeLimitSec}}" onblur="setTimer(this);">
           </div>
         </div>
         <div class="mt-3 row justify-content-center">
