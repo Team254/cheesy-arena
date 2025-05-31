@@ -463,7 +463,7 @@ func (arena *Arena) AbortMatch() error {
 	}
 
 	if arena.MatchState != WarmupPeriod {
-		arena.playSound("abort")
+		arena.PlaySound("abort")
 	}
 	arena.MatchState = PostMatch
 	arena.matchAborted = true
@@ -519,7 +519,7 @@ func (arena *Arena) SetAudienceDisplayMode(mode string) {
 		arena.AudienceDisplayMode = mode
 		arena.AudienceDisplayModeNotifier.Notify()
 		if mode == "score" {
-			arena.playSound("match_result")
+			arena.PlaySound("match_result")
 		}
 	}
 }
@@ -1075,14 +1075,14 @@ func (arena *Arena) handleSounds(matchTimeSec float64) {
 		}
 		if _, ok := arena.soundsPlayed[sound]; !ok {
 			if matchTimeSec >= sound.MatchTimeSec && matchTimeSec-sound.MatchTimeSec < 1 {
-				arena.playSound(sound.Name)
+				arena.PlaySound(sound.Name)
 				arena.soundsPlayed[sound] = struct{}{}
 			}
 		}
 	}
 }
 
-func (arena *Arena) playSound(name string) {
+func (arena *Arena) PlaySound(name string) {
 	if !arena.MuteMatchSounds {
 		arena.PlaySoundNotifier.NotifyWithMessage(name)
 	}

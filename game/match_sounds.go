@@ -55,5 +55,15 @@ func UpdateMatchSounds() {
 			"wav",
 			-1,
 		},
+		{
+			"pick_clock",
+			"wav",
+			-1,
+		},
+		{
+			"pick_clock_expired",
+			"wav",
+			-1,
+		},
 	}
 }
