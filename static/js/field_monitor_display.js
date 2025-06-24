@@ -106,7 +106,10 @@ const handleArenaStatus = function (data) {
       } else {
         teamRobotElement.text("RIO");
       }
-      teamBatteryElement.text(dsConn.BatteryPercentage.toFixed(1) + "V");
+      teamBatteryElement.text(
+        dsConn.BatteryPercentage == null // null or undefined
+          ? "N/A"
+          : dsConn.BatteryPercentage.toFixed(1) + "V");
 
       const btuOkay = wifiStatus.MBits < highBtuThreshold && dsConn.RobotLinked;
       teamStatsElement.attr("data-status-ok", btuOkay);
