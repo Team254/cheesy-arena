@@ -97,7 +97,6 @@ Cheesy Arena has the ability to integrate with
 the [Cypress Team Signs](https://cypressintegration.com/customsolutions/teamdisplay/) used at official FRC events. See
 the [Configuring Cheesy Arena wiki page](https://github.com/Team254/cheesy-arena/wiki/Configuring-Cheesy-Arena-Settings#team-signs)
 for details configurating the team signs in Cheesy Arena.
-https://github.com/Team254/cheesy-arena/wiki/Configuring-Cheesy-Arena-Settings
 
 ## LED hardware
 
