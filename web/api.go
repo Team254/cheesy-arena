@@ -84,7 +84,8 @@ func (web *Web) matchesApiHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	_, err = w.Write(jsonData)
 	if err != nil {
 		handleWebErr(w, err)
@@ -110,7 +111,8 @@ func (web *Web) sponsorSlidesApiHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	_, err = w.Write(jsonData)
 	if err != nil {
 		handleWebErr(w, err)
@@ -170,7 +172,8 @@ func (web *Web) rankingsApiHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	_, err = w.Write(jsonData)
 	if err != nil {
 		handleWebErr(w, err)
@@ -192,7 +195,8 @@ func (web *Web) alliancesApiHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	_, err = w.Write(jsonData)
 	if err != nil {
 		handleWebErr(w, err)
@@ -239,7 +243,8 @@ func (web *Web) bracketSvgApiHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Header().Set("Content-Type", "image/svg+xml")
+	w.Header().Add("Content-Type", "image/svg+xml")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
 	if err := web.generateBracketSvg(w, activeMatch); err != nil {
 		handleWebErr(w, err)
 		return
