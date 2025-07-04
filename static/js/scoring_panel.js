@@ -206,7 +206,7 @@ const handleRealtimeScore = function (data) {
 const handleCounterClick = function (command, adjustment) {
   websocket.send(command, {
     Adjustment: adjustment,
-    Current: !editingAuto,
+    Current: true,
     Autonomous: !inTeleop || editingAuto,
     NearSide: nearSide
   });
