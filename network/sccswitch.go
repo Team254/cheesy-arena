@@ -1,3 +1,8 @@
+// Copyright 2025 Team 254. All Rights Reserved.
+// Author: pat@patfairbank.com (Patrick Fairbank)
+//
+// Methods for configuring an SCC Switch via SSH.
+
 package network
 
 import (
