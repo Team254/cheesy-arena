@@ -14,12 +14,17 @@ import (
 
 // Renders the audience display to be chroma keyed over the video feed.
 func (web *Web) wallDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.enforceDisplayConfiguration(w, r, map[string]string{
-		"background":   "#000",
-		"reversed":     "false",
-		"topSpacingPx": "0",
-		"zoomFactor":   "1",
-	}) {
+	if !web.enforceDisplayConfiguration(
+		w,
+		r,
+		map[string]string{
+			"background":   "#000",
+			"message":      "",
+			"reversed":     "false",
+			"topSpacingPx": "0",
+			"zoomFactor":   "1",
+		},
+	) {
 		return
 	}
 
@@ -57,7 +62,13 @@ func (web *Web) wallDisplayWebsocketHandler(w http.ResponseWriter, r *http.Reque
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(display.Notifier, web.arena.MatchTimingNotifier, web.arena.AudienceDisplayModeNotifier,
-		web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier, web.arena.RealtimeScoreNotifier,
-		web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(
+		display.Notifier,
+		web.arena.MatchTimingNotifier,
+		web.arena.AudienceDisplayModeNotifier,
+		web.arena.MatchLoadNotifier,
+		web.arena.MatchTimeNotifier,
+		web.arena.RealtimeScoreNotifier,
+		web.arena.ReloadDisplaysNotifier,
+	)
 }

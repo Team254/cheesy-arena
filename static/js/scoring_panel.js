@@ -27,33 +27,33 @@ let localFoulCounts = {
 
 // Handle controls to open/close the endgame dialog
 const endgameDialog = $("#endgame-dialog")[0];
-const showEndgameDialog = function() {
+const showEndgameDialog = function () {
   endgameDialog.showModal();
 }
-const closeEndgameDialog = function() {
+const closeEndgameDialog = function () {
   endgameDialog.close();
 }
-const closeEndgameDialogIfOutside = function(event) {
+const closeEndgameDialogIfOutside = function (event) {
   if (event.target === endgameDialog) {
     closeEndgameDialog();
   }
 }
 
 const foulsDialog = $("#fouls-dialog")[0];
-const showFoulsDialog = function() {
+const showFoulsDialog = function () {
   foulsDialog.showModal();
 }
-const closeFoulsDialog = function() {
+const closeFoulsDialog = function () {
   foulsDialog.close();
 }
-const closeFoulsDialogIfOutside = function(event) {
+const closeFoulsDialogIfOutside = function (event) {
   if (event.target === foulsDialog) {
     closeFoulsDialog();
   }
 }
 
 // Handles a websocket message to update the teams for the current match.
-const handleMatchLoad = function(data) {
+const handleMatchLoad = function (data) {
   $("#matchName").text(data.Match.LongName);
   if (alliance === "red") {
     $(".team-1 .team-num").text(data.Match.Red1);
@@ -66,14 +66,14 @@ const handleMatchLoad = function(data) {
   }
 };
 
-const renderLocalFoulCounts = function() {
+const renderLocalFoulCounts = function () {
   for (const foulType in localFoulCounts) {
     const count = localFoulCounts[foulType];
     $(`#foul-${foulType} .fouls-local`).text(count);
   }
 }
 
-const resetFoulCounts = function() {
+const resetFoulCounts = function () {
   localFoulCounts["red-minor"] = 0;
   localFoulCounts["blue-minor"] = 0;
   localFoulCounts["red-major"] = 0;
@@ -81,7 +81,7 @@ const resetFoulCounts = function() {
   renderLocalFoulCounts();
 }
 
-const addFoul = function(alliance, isMajor) {
+const addFoul = function (alliance, isMajor) {
   const foulType = `${alliance}-${isMajor ? "major" : "minor"}`;
   localFoulCounts[foulType] += 1;
   websocket.send("addFoul", {Alliance: alliance, IsMajor: isMajor});
@@ -89,7 +89,7 @@ const addFoul = function(alliance, isMajor) {
 }
 
 // Handles a websocket message to update the match status.
-const handleMatchTime = function(data) {
+const handleMatchTime = function (data) {
   switch (matchStates[data.MatchState]) {
     case "AUTO_PERIOD":
     case "PAUSE_PERIOD":
@@ -124,20 +124,20 @@ const handleMatchTime = function(data) {
 };
 
 // Switch in and out of autonomous editing mode
-const toggleEditAuto = function() {
+const toggleEditAuto = function () {
   editingAuto = !editingAuto;
   updateUIMode();
 }
 
 // Clear any local ephemeral state that is not maintained by the server
-const resetLocalState = function() {
+const resetLocalState = function () {
   committed = false;
   editingAuto = false;
   updateUIMode();
 }
 
 // Refresh which UI controls are enabled/disabled
-const updateUIMode = function() {
+const updateUIMode = function () {
   $(".scoring-button").prop('disabled', !scoringAvailable);
   $(".scoring-teleop-button").prop('disabled', !(inTeleop && scoringAvailable));
   $("#commit").prop('disabled', !commitAvailable);
@@ -155,7 +155,7 @@ const endgameStatusNames = [
 ];
 
 // Handles a websocket message to update the realtime scoring fields.
-const handleRealtimeScore = function(data) {
+const handleRealtimeScore = function (data) {
   let realtimeScore;
   if (alliance === "red") {
     realtimeScore = data.Red;
@@ -166,9 +166,9 @@ const handleRealtimeScore = function(data) {
 
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
-    $(`#auto-status-${i1}>.team-text`).text(score.LeaveStatuses[i] ? "Leave" : "None");
+    $(`#auto-status-${i1} > .team-text`).text(score.LeaveStatuses[i] ? "Leave" : "None");
     $(`#auto-status-${i1}`).attr("data-selected", score.LeaveStatuses[i]);
-    $(`#endgame-status-${i1}>.team-text`).text(endgameStatusNames[score.EndgameStatuses[i]]);
+    $(`#endgame-status-${i1} > .team-text`).text(endgameStatusNames[score.EndgameStatuses[i]]);
     $(`#endgame-status-${i1}`).attr("data-selected", endgameStatusNames[score.EndgameStatuses[i]] != "None");
     for (let j = 0; j < endgameStatusNames.length; j++) {
       $(`#endgame-input-${i1} .endgame-${j}`).attr("data-selected", j == score.EndgameStatuses[i]);
@@ -203,21 +203,32 @@ const handleRealtimeScore = function(data) {
 };
 
 // Websocket message senders for various buttons
-const handleCounterClick = function(command, adjustment) {
-  websocket.send(command, {Adjustment: adjustment, Current: !editingAuto, Autonomous: !inTeleop || editingAuto, NearSide: nearSide});
+const handleCounterClick = function (command, adjustment) {
+  websocket.send(command, {
+    Adjustment: adjustment,
+    Current: true,
+    Autonomous: !inTeleop || editingAuto,
+    NearSide: nearSide
+  });
 }
-const handleLeaveClick = function(teamPosition) {
+const handleLeaveClick = function (teamPosition) {
   websocket.send("leave", {TeamPosition: teamPosition});
 }
-const handleEndgameClick = function(teamPosition, endgameStatus) {
+const handleEndgameClick = function (teamPosition, endgameStatus) {
   websocket.send("endgame", {TeamPosition: teamPosition, EndgameStatus: endgameStatus});
 }
-const handleReefClick = function(reefPosition, reefLevel) {
-  websocket.send("reef", {ReefPosition: reefPosition, ReefLevel: reefLevel, Current: !editingAuto, Autonomous: !inTeleop || editingAuto, NearSide: nearSide});
+const handleReefClick = function (reefPosition, reefLevel) {
+  websocket.send("reef", {
+    ReefPosition: reefPosition,
+    ReefLevel: reefLevel,
+    Current: !editingAuto,
+    Autonomous: !inTeleop || editingAuto,
+    NearSide: nearSide
+  });
 }
 
 // Sends a websocket message to indicate that the score for this alliance is ready.
-const commitMatchScore = function() {
+const commitMatchScore = function () {
   websocket.send("commitMatch");
 
   committed = true;
@@ -228,7 +239,7 @@ const commitMatchScore = function() {
   updateUIMode();
 };
 
-$(function() {
+$(function () {
   position = window.location.href.split("/").slice(-1)[0];
   [alliance, side] = position.split("_");
   $(".container").attr("data-alliance", alliance);
@@ -237,9 +248,17 @@ $(function() {
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/panels/scoring/" + position + "/websocket", {
-    matchLoad: function(event) { handleMatchLoad(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); },
-    resetLocalState: function(event) { resetLocalState(); },
+    matchLoad: function (event) {
+      handleMatchLoad(event.data);
+    },
+    matchTime: function (event) {
+      handleMatchTime(event.data);
+    },
+    realtimeScore: function (event) {
+      handleRealtimeScore(event.data);
+    },
+    resetLocalState: function (event) {
+      resetLocalState();
+    },
   });
 });

@@ -165,13 +165,15 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 		logs.TeamId = match.Blue3
 	}
 	headerMap := make(map[string]int)
-	//rows []MatchLogRow
+	// rows []MatchLogRow
 	// Load a csv file.
 	if logs.TeamId == 0 {
 		return nil, nil, false, nil
 	}
 	var files []string
-	files, _ = filepath.Glob(filepath.Join(".", "static", "logs", "*_*_Match_"+match.ShortName+"_"+strconv.Itoa(logs.TeamId)+".csv"))
+	files, _ = filepath.Glob(
+		filepath.Join(".", "static", "logs", "*_*_Match_"+match.ShortName+"_"+strconv.Itoa(logs.TeamId)+".csv"),
+	)
 	if len(files) == 0 {
 		return match, &logs, false, nil
 	}

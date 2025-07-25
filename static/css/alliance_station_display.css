@@ -19,6 +19,9 @@ body[data-mode=logo] {
 body[data-mode=fieldReset] {
   background-color: #0a3;
 }
+body[data-mode=signalCount] {
+  background-color: #90c;
+}
 
 /* Switching Modes */
 .mode {
@@ -31,6 +34,9 @@ body[data-mode=match] .mode#match {
   display: block;
 }
 body[data-mode=fieldReset] .mode#fieldReset {
+  display: table;
+}
+body[data-mode=signalCount] .mode#signalCount {
   display: table;
 }
 body[data-mode=timeout] .mode#match {
@@ -48,13 +54,13 @@ body[data-mode=timeout] .mode#match {
   margin: auto auto;
 }
 
-/* Field Reset Mode */
-#fieldReset {
+/* Field Reset and Count Modes */
+#fieldReset, #signalCount {
   position: absolute;
   width: 100%;
   height: 100%;
 }
-#fieldReset div {
+#fieldReset div, #signalCount div {
   display: table-cell;
   vertical-align: middle;
   text-align: center;
@@ -69,7 +75,7 @@ body[data-mode=timeout] .mode#match {
   height: 100%;
 }
 #match[data-state=WARMUP_PERIOD], #match[data-state=AUTO_PERIOD], #match[data-state=PAUSE_PERIOD],
-    #match[data-state=TELEOP_PERIOD], #match[data-state=TIMEOUT_ACTIVE], #match[data-state=POST_TIMEOUT] {
+#match[data-state=TELEOP_PERIOD], #match[data-state=TIMEOUT_ACTIVE], #match[data-state=POST_TIMEOUT] {
   background-color: #fff;
   color: #000;
 }
@@ -80,8 +86,8 @@ body[data-mode=timeout] .mode#match {
   display: block;
 }
 #match[data-state=WARMUP_PERIOD] #inMatch, #match[data-state=AUTO_PERIOD] #inMatch,
-    #match[data-state=PAUSE_PERIOD] #inMatch, #match[data-state=TELEOP_PERIOD] #inMatch,
-    #match[data-state=TIMEOUT_ACTIVE] #inMatch, #match[data-state=POST_TIMEOUT] #inMatch {
+#match[data-state=PAUSE_PERIOD] #inMatch, #match[data-state=TELEOP_PERIOD] #inMatch,
+#match[data-state=TIMEOUT_ACTIVE] #inMatch, #match[data-state=POST_TIMEOUT] #inMatch {
   display: block;
 }
 

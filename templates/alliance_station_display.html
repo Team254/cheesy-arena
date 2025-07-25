@@ -1,17 +1,17 @@
 {{/*
-  Copyright 2014 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2014 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  Display shown on the screens above each driver station.
+Display shown on the screens above each driver station.
 */}}
 <!DOCTYPE html>
 <html>
   <head>
     <title>Alliance Station Display - {{.EventSettings.Name}} - Cheesy Arena </title>
     <link rel="shortcut icon" href="/static/img/favicon.ico">
-    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
-    <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
-    <link rel="stylesheet" href="/static/css/alliance_station_display.css" />
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css"/>
+    <link rel="stylesheet" href="/static/css/alliance_station_display.css"/>
   </head>
   <body>
     <div id="match" class="mode">
@@ -30,9 +30,14 @@
       </div>
     </div>
     <div id="logo" class="mode">
-      <img id="logoImg" src="/static/img/alliance-station-logo.png" alt="logo" />
+      <img id="logoImg" src="/static/img/alliance-station-logo.png" alt="logo"/>
     </div>
-    <div id="fieldReset" class="mode"><div>FIELD<br />RESET</div></div>
+    <div id="fieldReset" class="mode">
+      <div>FIELD<br/>RESET</div>
+    </div>
+    <div id="signalCount" class="mode">
+      <div>COUNT</div>
+    </div>
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>

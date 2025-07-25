@@ -42,9 +42,12 @@ func (database *Database) GetAllSponsorSlides() ([]SponsorSlide, error) {
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(sponsorSlides, func(i, j int) bool {
-		return sponsorSlides[i].DisplayOrder < sponsorSlides[j].DisplayOrder
-	})
+	sort.Slice(
+		sponsorSlides,
+		func(i, j int) bool {
+			return sponsorSlides[i].DisplayOrder < sponsorSlides[j].DisplayOrder
+		},
+	)
 	return sponsorSlides, nil
 }
 

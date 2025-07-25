@@ -111,12 +111,15 @@ func (web *Web) renderJudging(w http.ResponseWriter, r *http.Request, errorMessa
 	}
 
 	// Sort slots by judge team and then by time for display.
-	sort.Slice(slots, func(i, j int) bool {
-		if slots[i].JudgeNumber != slots[j].JudgeNumber {
-			return slots[i].JudgeNumber < slots[j].JudgeNumber
-		}
-		return slots[i].Time.Before(slots[j].Time)
-	})
+	sort.Slice(
+		slots,
+		func(i, j int) bool {
+			if slots[i].JudgeNumber != slots[j].JudgeNumber {
+				return slots[i].JudgeNumber < slots[j].JudgeNumber
+			}
+			return slots[i].Time.Before(slots[j].Time)
+		},
+	)
 
 	template, err := web.parseFiles("templates/setup_judging.html", "templates/base.html")
 	if err != nil {

@@ -22,20 +22,23 @@ func TestLoginDisplay(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "Log In - Untitled Event - Cheesy Arena")
 
 	// Check logging in with the wrong username and right password.
-	recorder = web.postHttpResponse("/login?redirect=%2Fmatch_play%3Fp1%3Dv1%26p2%3Dv2",
-		"username=blorpy&password=reader")
+	recorder = web.postHttpResponse(
+		"/login?redirect=%2Fmatch_play%3Fp1%3Dv1%26p2%3Dv2", "username=blorpy&password=reader",
+	)
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Invalid login credentials.")
 
 	// Check logging in with the right username and wrong password.
-	recorder = web.postHttpResponse("/login?redirect=%2Fmatch_play%3Fp1%3Dv1%26p2%3Dv2",
-		"username=admin&password=blorpy")
+	recorder = web.postHttpResponse(
+		"/login?redirect=%2Fmatch_play%3Fp1%3Dv1%26p2%3Dv2", "username=admin&password=blorpy",
+	)
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Invalid login credentials.")
 
 	// Check logging in with the right username and password.
-	recorder = web.postHttpResponse("/login?redirect=%2Fmatch_play%3Fp1%3Dv1%26p2%3Dv2",
-		"username=admin&password=admin")
+	recorder = web.postHttpResponse(
+		"/login?redirect=%2Fmatch_play%3Fp1%3Dv1%26p2%3Dv2", "username=admin&password=admin",
+	)
 	assert.Equal(t, 303, recorder.Code)
 	assert.Equal(t, "/match_play?p1=v1&p2=v2", recorder.Header().Get("Location"))
 	cookie := recorder.Header().Get("Set-Cookie")

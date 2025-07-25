@@ -64,8 +64,9 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 				for k, team := range web.arena.AllianceSelectionRankedTeams {
 					if team.TeamId == teamId {
 						if team.Picked {
-							web.renderAllianceSelection(w, r,
-								fmt.Sprintf("Team %d is already part of an alliance.", teamId))
+							web.renderAllianceSelection(
+								w, r, fmt.Sprintf("Team %d is already part of an alliance.", teamId),
+							)
 							return
 						}
 						found = true
@@ -307,8 +308,11 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 					for range allianceSelectionTicker.C {
 						web.arena.AllianceSelectionTimeRemainingSec--
 						web.arena.AllianceSelectionNotifier.Notify()
-						if web.arena.AllianceSelectionTimeRemainingSec == 0 {
+						if web.arena.AllianceSelectionTimeRemainingSec == 5 {
+							web.arena.PlaySound("pick_clock")
+						} else if web.arena.AllianceSelectionTimeRemainingSec == 0 {
 							allianceSelectionTicker.Stop()
+							web.arena.PlaySound("pick_clock_expired")
 						}
 					}
 				}()

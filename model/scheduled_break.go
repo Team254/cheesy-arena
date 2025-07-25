@@ -44,9 +44,12 @@ func (database *Database) GetScheduledBreaksByMatchType(matchType MatchType) ([]
 		}
 	}
 
-	sort.Slice(matchingScheduledBreaks, func(i, j int) bool {
-		return matchingScheduledBreaks[i].TypeOrderBefore < matchingScheduledBreaks[j].TypeOrderBefore
-	})
+	sort.Slice(
+		matchingScheduledBreaks,
+		func(i, j int) bool {
+			return matchingScheduledBreaks[i].TypeOrderBefore < matchingScheduledBreaks[j].TypeOrderBefore
+		},
+	)
 	return matchingScheduledBreaks, nil
 }
 

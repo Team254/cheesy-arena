@@ -169,7 +169,7 @@ html {
   width: 31px;
   margin: 0 27px;
 }
-.score-field>div {
+.score-field > div {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -255,4 +255,13 @@ html {
   font-weight: bold;
   font-size: 14px;
   opacity: 0;
+}
+#message {
+  position: absolute;
+  display: none;
+  opacity: 0;
+  top: 130px;
+  font-size: 1.4vw;
+  font-family: "FuturaLTBold";
+  color: #fff;
 }

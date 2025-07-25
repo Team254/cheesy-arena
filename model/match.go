@@ -111,9 +111,12 @@ func (database *Database) GetMatchesByType(matchType MatchType, includeHidden bo
 		}
 	}
 
-	sort.Slice(matchingMatches, func(i, j int) bool {
-		return matchingMatches[i].TypeOrder < matchingMatches[j].TypeOrder
-	})
+	sort.Slice(
+		matchingMatches,
+		func(i, j int) bool {
+			return matchingMatches[i].TypeOrder < matchingMatches[j].TypeOrder
+		},
+	)
 	return matchingMatches, nil
 }
 

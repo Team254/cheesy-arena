@@ -1,43 +1,43 @@
 {{/*
-  Copyright 2018 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2018 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  UI for authenticating with the server.
+UI for authenticating with the server.
 */}}
 {{define "title"}}Log In{{end}}
 {{define "body"}}
-  <div class="row justify-content-center">
-    <div class="col-lg-4">
-      {{if .ErrorMessage}}
-        <div class="alert alert-dismissible alert-danger">
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          {{.ErrorMessage}}
+<div class="row justify-content-center">
+  <div class="col-lg-4">
+    {{if .ErrorMessage}}
+    <div class="alert alert-dismissible alert-danger">
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      {{.ErrorMessage}}
+    </div>
+    {{end}}
+    <div class="card card-body bg-body-tertiary">
+      <form method="POST">
+        <legend>Log In</legend>
+        <div class="row mb-3">
+          <label class="col-lg-4 control-label">Username</label>
+          <div class="col-lg-8">
+            <input type="text" class="form-control" name="username" autofocus/>
+          </div>
         </div>
-      {{end}}
-      <div class="card card-body bg-body-tertiary">
-        <form method="POST">
-          <legend>Log In</legend>
-          <div class="row mb-3">
-            <label class="col-lg-4 control-label">Username</label>
-            <div class="col-lg-8">
-              <input type="text" class="form-control" name="username" autofocus />
-            </div>
+        <div class="row mb-3">
+          <label class="col-lg-4 control-label">Password</label>
+          <div class="col-lg-8">
+            <input type="password" class="form-control" name="password"/>
           </div>
-          <div class="row mb-3">
-            <label class="col-lg-4 control-label">Password</label>
-            <div class="col-lg-8">
-              <input type="password" class="form-control" name="password" />
-            </div>
+        </div>
+        <div class="row justify-content-center">
+          <div class="col-lg-3">
+            <button type="submit" class="btn btn-primary">Log In</button>
           </div>
-          <div class="row justify-content-center">
-            <div class="col-lg-3">
-              <button type="submit" class="btn btn-primary">Log In</button>
-            </div>
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   </div>
+</div>
 {{end}}
 {{define "script"}}
 {{end}}

@@ -8,7 +8,7 @@ const allianceResults = {};
 let matchResult;
 
 // Hijack the form submission to inject the data in JSON form so that it's easier for the server to parse.
-$("form").submit(function() {
+$("form").submit(function () {
   updateResults("red");
   updateResults("blue");
 
@@ -25,7 +25,7 @@ $("form").submit(function() {
 });
 
 // Draws the match-editing form for one alliance based on the cached result data.
-const renderResults = function(alliance) {
+const renderResults = function (alliance) {
   const result = allianceResults[alliance];
   const scoreContent = scoreTemplate(result);
   $(`#${alliance}Score`).html(scoreContent);
@@ -54,7 +54,7 @@ const renderResults = function(alliance) {
   }
 
   if (result.score.Fouls != null) {
-    $.each(result.score.Fouls, function(k, v) {
+    $.each(result.score.Fouls, function (k, v) {
       getInputElement(alliance, `Foul${k}IsMajor`).prop("checked", v.IsMajor);
       getInputElement(alliance, `Foul${k}Team`, v.TeamId).prop("checked", true);
       getSelectElement(alliance, `Foul${k}RuleId`).val(v.RuleId);
@@ -62,17 +62,17 @@ const renderResults = function(alliance) {
   }
 
   if (result.cards != null) {
-    $.each(result.cards, function(k, v) {
+    $.each(result.cards, function (k, v) {
       getInputElement(alliance, `Team${k}Card`, v).prop("checked", true);
     });
   }
 };
 
 // Converts the current form values back into JSON structures and caches them.
-const updateResults = function(alliance) {
+const updateResults = function (alliance) {
   const result = allianceResults[alliance];
   const formData = {};
-  $.each($("form").serializeArray(), function(k, v) {
+  $.each($("form").serializeArray(), function (k, v) {
     formData[v.name] = v.value;
   });
 
@@ -116,13 +116,13 @@ const updateResults = function(alliance) {
   }
 
   result.cards = {};
-  $.each([result.team1, result.team2, result.team3], function(i, team) {
+  $.each([result.team1, result.team2, result.team3], function (i, team) {
     result.cards[team] = formData[`${alliance}Team${team}Card`];
   });
 };
 
 // Appends a blank foul to the end of the list.
-const addFoul = function(alliance) {
+const addFoul = function (alliance) {
   updateResults(alliance);
   const result = allianceResults[alliance];
   result.score.Fouls.push({IsMajor: false, TeamId: 0, Rule: 0});
@@ -130,7 +130,7 @@ const addFoul = function(alliance) {
 };
 
 // Removes the given foul from the list.
-const deleteFoul = function(alliance, index) {
+const deleteFoul = function (alliance, index) {
   updateResults(alliance);
   const result = allianceResults[alliance];
   result.score.Fouls.splice(index, 1);
@@ -138,7 +138,7 @@ const deleteFoul = function(alliance, index) {
 };
 
 // Returns the form input element having the given parameters.
-const getInputElement = function(alliance, name, value) {
+const getInputElement = function (alliance, name, value) {
   let selector = `input[name=${alliance}${name}]`;
   if (value !== undefined) {
     selector += `[value=${value}]`;
@@ -147,7 +147,7 @@ const getInputElement = function(alliance, name, value) {
 };
 
 // Returns the form select element having the given parameters.
-const getSelectElement = function(alliance, name) {
+const getSelectElement = function (alliance, name) {
   const selector = `select[name=${alliance}${name}]`;
   return $(selector);
 };

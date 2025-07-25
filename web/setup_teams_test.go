@@ -66,20 +66,30 @@ func TestSetupTeams(t *testing.T) {
 		],
 		"year": 2014
 	}]`
+	teamMediaBody := `[{
+		"type": "not_an_avatar",
+		"details": {}
+	}]`
 	eventBody := `{ "name": "Championship" }`
-	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Contains(r.RequestURI, "robots") {
-			fmt.Fprintln(w, teamRobotsBody)
-		} else if strings.Contains(r.RequestURI, "awards") {
-			fmt.Fprintln(w, teamAwardsBody)
-		} else if strings.Contains(r.RequestURI, "team") {
-			fmt.Fprintln(w, teamInfoBody)
-		} else if strings.Contains(r.RequestURI, "event") {
-			fmt.Fprintln(w, eventBody)
-		} else {
-			http.Error(w, "Unexpected request during test", 500)
-		}
-	}))
+	tbaServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				if strings.Contains(r.RequestURI, "robots") {
+					fmt.Fprintln(w, teamRobotsBody)
+				} else if strings.Contains(r.RequestURI, "awards") {
+					fmt.Fprintln(w, teamAwardsBody)
+				} else if strings.Contains(r.RequestURI, "media") {
+					fmt.Fprintln(w, teamMediaBody)
+				} else if strings.Contains(r.RequestURI, "team") {
+					fmt.Fprintln(w, teamInfoBody)
+				} else if strings.Contains(r.RequestURI, "event") {
+					fmt.Fprintln(w, eventBody)
+				} else {
+					http.Error(w, "Unexpected request during test", 500)
+				}
+			},
+		),
+	)
 	defer tbaServer.Close()
 	web.arena.TbaClient.BaseUrl = tbaServer.URL
 

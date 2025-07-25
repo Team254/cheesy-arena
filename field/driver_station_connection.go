@@ -23,6 +23,7 @@ import (
 const (
 	driverStationTcpListenPort     = 1750
 	driverStationUdpSendPort       = 1121
+	driverStationUdpSendPortLite   = 1120
 	driverStationUdpReceivePort    = 1160
 	driverStationTcpLinkTimeoutSec = 5
 	driverStationUdpLinkTimeoutSec = 1
@@ -61,18 +62,33 @@ type DriverStationConnection struct {
 var allianceStationPositionMap = map[string]byte{"R1": 0, "R2": 1, "R3": 2, "B1": 3, "B2": 4, "B3": 5}
 
 // Opens a UDP connection for communicating to the driver station.
-func newDriverStationConnection(teamId int, allianceStation string, tcpConn net.Conn) (*DriverStationConnection, error) {
+func newDriverStationConnection(
+	teamId int,
+	allianceStation string,
+	tcpConn net.Conn,
+	useLiteUdpPort bool,
+) (*DriverStationConnection, error) {
 	ipAddress, _, err := net.SplitHostPort(tcpConn.RemoteAddr().String())
 	if err != nil {
 		return nil, err
 	}
 	log.Printf("Driver station for Team %d connected from %s\n", teamId, ipAddress)
 
-	udpConn, err := net.Dial("udp4", fmt.Sprintf("%s:%d", ipAddress, driverStationUdpSendPort))
+	udpSendPort := driverStationUdpSendPort
+	if useLiteUdpPort {
+		udpSendPort = driverStationUdpSendPortLite
+	}
+
+	udpConn, err := net.Dial("udp4", fmt.Sprintf("%s:%d", ipAddress, udpSendPort))
 	if err != nil {
 		return nil, err
 	}
-	return &DriverStationConnection{TeamId: teamId, AllianceStation: allianceStation, tcpConn: tcpConn, udpConn: udpConn}, nil
+	return &DriverStationConnection{
+		TeamId:          teamId,
+		AllianceStation: allianceStation,
+		tcpConn:         tcpConn,
+		udpConn:         udpConn,
+	}, nil
 }
 
 // Loops indefinitely to read packets and update connection status.
@@ -340,7 +356,7 @@ func (arena *Arena) listenForDriverStations() {
 			continue
 		}
 
-		dsConn, err := newDriverStationConnection(teamId, assignedStation, tcpConn)
+		dsConn, err := newDriverStationConnection(teamId, assignedStation, tcpConn, arena.EventSettings.UseLiteUdpPort)
 		if err != nil {
 			log.Printf("Error registering driver station connection: %v", err)
 			tcpConn.Close()

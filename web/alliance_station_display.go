@@ -50,7 +50,14 @@ func (web *Web) allianceStationDisplayWebsocketHandler(w http.ResponseWriter, r 
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(display.Notifier, web.arena.MatchTimingNotifier, web.arena.AllianceStationDisplayModeNotifier,
-		web.arena.ArenaStatusNotifier, web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier,
-		web.arena.RealtimeScoreNotifier, web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(
+		display.Notifier,
+		web.arena.MatchTimingNotifier,
+		web.arena.AllianceStationDisplayModeNotifier,
+		web.arena.ArenaStatusNotifier,
+		web.arena.MatchLoadNotifier,
+		web.arena.MatchTimeNotifier,
+		web.arena.RealtimeScoreNotifier,
+		web.arena.ReloadDisplaysNotifier,
+	)
 }

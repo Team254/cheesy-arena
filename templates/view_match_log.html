@@ -1,8 +1,8 @@
 {{/*
-  Copyright 2024 Team 254. All Rights Reserved.
-  Author: pat@patfairbank.com (Patrick Fairbank)
+Copyright 2024 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
 
-  Page showing the logs of a single match for a single team.
+Page showing the logs of a single match for a single team.
 */}}
 {{define "title"}}Match Log - {{.Match.ShortName}} - {{ .MatchLogs.TeamId}} ({{.MatchLogs.AllianceStation}}){{end}}
 {{define "body"}}
@@ -10,41 +10,42 @@
 <h3>Match Log: {{.Match.ShortName}} - {{ .MatchLogs.TeamId}} ({{.MatchLogs.AllianceStation}})</h3>
 <ul id="matchTabs" class="nav nav-tabs mt-4">
   {{range $logs := .MatchLogs.Logs}}
-    <li>
-      <a href="#{{$logs.StartTime}}" class="nav-link{{if eq $logs.StartTime $.FirstMatch }} active{{end}}"
-        data-bs-toggle="tab">{{$logs.StartTime}}</a>
-    </li>
+  <li>
+    <a href="#{{$logs.StartTime}}" class="nav-link{{if eq $logs.StartTime $.FirstMatch }} active{{end}}"
+      data-bs-toggle="tab">{{$logs.StartTime}}</a>
+  </li>
   {{end}}
 </ul>
 <div class="tab-content">
   {{range $logs := .MatchLogs.Logs}}
-    <div class="tab-pane {{if eq $.FirstMatch $logs.StartTime}} active{{end}}" id="{{$logs.StartTime}}">
+  <div class="tab-pane {{if eq $.FirstMatch $logs.StartTime}} active{{end}}" id="{{$logs.StartTime}}">
 
-      <div class="mt-3 mb-2 ms-2">
-        <a href="/{{$logs.Filename}}">Download CSV</a>
-      </div>
+    <div class="mt-3 mb-2 ms-2">
+      <a href="/{{$logs.Filename}}">Download CSV</a>
+    </div>
 
-      <div style="position: relative; height:40vh;">
-        <canvas id="link_chart_{{$logs.StartTime}}"></canvas>
-      </div>
+    <div style="position: relative; height:40vh;">
+      <canvas id="link_chart_{{$logs.StartTime}}"></canvas>
+    </div>
 
-      <div style="position: relative; height:30vh;">
-        <canvas id="voltage_chart_{{$logs.StartTime}}"></canvas>
-      </div>
+    <div style="position: relative; height:30vh;">
+      <canvas id="voltage_chart_{{$logs.StartTime}}"></canvas>
+    </div>
 
-      <div style="position: relative; height:30vh;">
-        <canvas id="latency_chart_{{$logs.StartTime}}"></canvas>
-      </div>
+    <div style="position: relative; height:30vh;">
+      <canvas id="latency_chart_{{$logs.StartTime}}"></canvas>
+    </div>
 
-      <div style="position: relative; height:30vh;">
-        <canvas id="missed_packets_chart_{{$logs.StartTime}}"></canvas>
-      </div>
+    <div style="position: relative; height:30vh;">
+      <canvas id="missed_packets_chart_{{$logs.StartTime}}"></canvas>
+    </div>
 
-      <div style="position: relative; height:30vh;">
-        <canvas id="snr_chart_{{$logs.StartTime}}"></canvas>
-      </div>
+    <div style="position: relative; height:30vh;">
+      <canvas id="snr_chart_{{$logs.StartTime}}"></canvas>
+    </div>
 
-      <script>
+    <script>
+      <!-- @formatter:off -->
         const ctx_link_{{$logs.StartTime}} = document.getElementById("link_chart_{{$logs.StartTime}}");
         const ctx_voltage_{{$logs.StartTime}} = document.getElementById("voltage_chart_{{$logs.StartTime}}");
         const ctx_latency_{{$logs.StartTime}} = document.getElementById("latency_chart_{{$logs.StartTime}}");
@@ -234,53 +235,54 @@
             }]
           }
         });
-      </script>
+        <!-- @formatter:on -->
+    </script>
 
-      <table class="table">
-        <thead class="thead-dark" style="position: sticky; top: 0px;">
-          <tr>
-            <th>Match Time</th>
-            <th>DS Linked</th>
-            <th>Radio Linked</th>
-            <th>Rio Linked</th>
-            <th>Robot Linked</th>
-            <th>Mode</th>
-            <th>Enabled</th>
-            <th class="nowrap">E-Stop</th>
-            <th class="nowrap">A-Stop</th>
-            <th>Voltage</th>
-            <th>Missed Packets</th>
-            <th>Latency</th>
-            <th>TX Rate</th>
-            <th>RX Rate</th>
-            <th>SNR</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{range $row := $logs.Rows}}
-            <tr>
-              <td class="{{if and $row.DsLinked $row.RadioLinked $row.RobotLinked}}bg-green{{else}}bg-red{{end}}">
-                {{printf "%.2f" $row.MatchTimeSec}}
-              </td>
-              <td>{{$row.DsLinked}}</td>
-              <td>{{if $row.DsLinked}}{{$row.RadioLinked}}{{else}}*****{{end}}</td>
-              <td>{{if and $row.DsLinked $row.RadioLinked}}{{$row.RioLinked}}{{else}}*****{{end}}</td>
-              <td>{{if and $row.DsLinked $row.RadioLinked $row.RioLinked}}{{$row.RobotLinked}}{{else}}*****{{end}}</td>
-              <td>{{if $row.Auto}}Auto{{else}}Telop{{end}}</td>
-              <td>{{$row.Enabled}}</td>
-              <td>{{$row.EmergencyStop}}</td>
-              <td>{{$row.AutonomousStop}}</td>
-              <td>{{printf "%.3f" $row.BatteryVoltage}}</td>
-              <td>{{$row.MissedPacketCount}}</td>
-              <td>{{$row.DsRobotTripTimeMs}}</td>
-              <td>{{$row.TxRate}}</td>
-              <td>{{$row.RxRate}}</td>
-              <td>{{$row.SignalNoiseRatio}}</td>
-            </tr>
-          {{end}}
-        </tbody>
-      </table>
-    </div>
+    <table class="table">
+      <thead class="thead-dark" style="position: sticky; top: 0px;">
+        <tr>
+          <th>Match Time</th>
+          <th>DS Linked</th>
+          <th>Radio Linked</th>
+          <th>Rio Linked</th>
+          <th>Robot Linked</th>
+          <th>Mode</th>
+          <th>Enabled</th>
+          <th class="nowrap">E-Stop</th>
+          <th class="nowrap">A-Stop</th>
+          <th>Voltage</th>
+          <th>Missed Packets</th>
+          <th>Latency</th>
+          <th>TX Rate</th>
+          <th>RX Rate</th>
+          <th>SNR</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range $row := $logs.Rows}}
+        <tr>
+          <td class="{{if and $row.DsLinked $row.RadioLinked $row.RobotLinked}}bg-green{{else}}bg-red{{end}}">
+            {{printf "%.2f" $row.MatchTimeSec}}
+          </td>
+          <td>{{$row.DsLinked}}</td>
+          <td>{{if $row.DsLinked}}{{$row.RadioLinked}}{{else}}*****{{end}}</td>
+          <td>{{if and $row.DsLinked $row.RadioLinked}}{{$row.RioLinked}}{{else}}*****{{end}}</td>
+          <td>{{if and $row.DsLinked $row.RadioLinked $row.RioLinked}}{{$row.RobotLinked}}{{else}}*****{{end}}</td>
+          <td>{{if $row.Auto}}Auto{{else}}Telop{{end}}</td>
+          <td>{{$row.Enabled}}</td>
+          <td>{{$row.EmergencyStop}}</td>
+          <td>{{$row.AutonomousStop}}</td>
+          <td>{{printf "%.3f" $row.BatteryVoltage}}</td>
+          <td>{{$row.MissedPacketCount}}</td>
+          <td>{{$row.DsRobotTripTimeMs}}</td>
+          <td>{{$row.TxRate}}</td>
+          <td>{{$row.RxRate}}</td>
+          <td>{{$row.SignalNoiseRatio}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
   {{end}}
 </div>
 {{end}}

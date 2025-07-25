@@ -329,14 +329,17 @@ func (web *Web) populateOfficialTeamInfo(team *model.Team) error {
 	for i := len(recentAwards) - 1; i >= 0; i-- {
 		award := recentAwards[i]
 		if time.Now().Year()-award.Year <= 1 {
-			accomplishmentsBuffer.WriteString(fmt.Sprintf("<p>%d %s - %s</p>", award.Year, award.EventName,
-				award.Name))
+			accomplishmentsBuffer.WriteString(
+				fmt.Sprintf("<p>%d %s - %s</p>", award.Year, award.EventName, award.Name),
+			)
 		}
 	}
 	team.Accomplishments = accomplishmentsBuffer.String()
 
 	// Download and store the team's avatar; if there isn't one, ignore the error.
-	web.arena.TbaClient.DownloadTeamAvatar(team.Id, time.Now().Year())
+	if err = web.arena.TbaClient.DownloadTeamAvatar(team.Id, time.Now().Year()); err != nil {
+		return err
+	}
 
 	return nil
 }

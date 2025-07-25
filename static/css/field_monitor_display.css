@@ -20,6 +20,7 @@ body {
 }
 .position-row {
   height: 29%;
+  border-bottom: #333 solid 10px;
 }
 .position-row[data-ds="true"] {
   height: 31%;
@@ -36,7 +37,7 @@ body {
   font-size: 1.5vw;
   text-transform: uppercase;
 }
-#matchStatusRow[data-ds="true"][data-preMatch="false"]  {
+#matchStatusRow[data-ds="true"][data-preMatch="false"] {
   display: none;
 }
 #eventStatusRow {
@@ -67,7 +68,7 @@ body {
 }
 .right-position[data-ds="true"] {
   display: none;
-} 
+}
 .team {
   width: 44%;
   height: 100%;
@@ -75,10 +76,16 @@ body {
   display: flex;
   flex-direction: column;
 }
+.team-left {
+  border-right: #333 solid 5px;
+}
+.team-right {
+  border-left: #333 solid 5px;
+}
 .team-id {
   width: 100%;
-  height: 80%;
-  font-size: 12vw;
+  height: 70%;
+  font-size: 9vw;
 }
 .team-id[data-fta="true"] {
   height: 40%;
@@ -87,31 +94,31 @@ body {
 .team-id[data-status=no-link], .team-notes[data-status=no-link] {
   background-color: #AAA;
 }
-.team-id[data-status=ds-linked], .team-notes[data-status=ds-linked]  {
+.team-id[data-status=ds-linked], .team-notes[data-status=ds-linked] {
   background-color: #EDAB33;
 }
-.team-id[data-status=robot-linked], .team-notes[data-status=robot-linked]  {
+.team-id[data-status=robot-linked], .team-notes[data-status=robot-linked] {
   background-color: #00ff00;
   color: #333;
 }
-.team-id[data-status=rio-linked], .team-notes[data-status=rio-linked]  {
+.team-id[data-status=rio-linked], .team-notes[data-status=rio-linked] {
   background-color: #00cc00;
 }
-.team-id[data-status=radio-linked], .team-notes[data-status=radio-linked]  {
+.team-id[data-status=radio-linked], .team-notes[data-status=radio-linked] {
   background-color: #AA3377;
 }
-.team-id[data-status=wrong-station], .team-notes[data-status=wrong-station]  {
+.team-id[data-status=wrong-station], .team-notes[data-status=wrong-station] {
   background-color: #4477AA;
 }
 .team-box-row {
   display: flex;
-  height: 20%;
+  height: 30%;
   width: 100%;
 }
 .team-box {
-  width: calc(100%/6);
+  width: calc(100% / 6);
   height: 100%;
-  font-size: 1.5vw;
+  font-size: 1.8vw;
   background-color: #333;
 }
 .team-box[data-status-ok="true"] {
@@ -147,6 +154,23 @@ body {
 }
 .team-right[data-ds="true"] {
   display: none;
+}
+.team-stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  font-size: 1vw;
+  font-family: FuturaLT;
+}
+.team-stats-row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+.team-stats-row span {
+  font-family: FuturaLTBold;
 }
 textarea {
   width: 96%;

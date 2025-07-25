@@ -12,7 +12,7 @@ import (
 )
 
 func setupTestDb(t *testing.T) *model.Database {
-	return model.SetupTestDb(t, "playoff")
+	return model.SetupTestDb(t)
 }
 
 type expectedMatchSpec struct {

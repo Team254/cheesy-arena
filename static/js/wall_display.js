@@ -26,11 +26,15 @@ const timeoutDetailsIn = $("#timeoutDetails").css("width");
 const timeoutDetailsOut = "570px";
 
 // Handles a websocket message to change which screen is displayed.
-const handleAudienceDisplayMode = function(targetScreen) {
+const handleAudienceDisplayMode = function (targetScreen) {
+  if (targetScreen === "logoLuma") {
+    targetScreen = "logo";
+  }
   if (
-      targetScreen !== "intro" &&
-      targetScreen !== "match" &&
-      targetScreen !== "timeout"
+    targetScreen !== "intro" &&
+    targetScreen !== "match" &&
+    targetScreen !== "timeout" &&
+    targetScreen !== "logo"
   ) {
     targetScreen = "blank";
   }
@@ -41,7 +45,7 @@ const handleAudienceDisplayMode = function(targetScreen) {
 
 // Sequentially executes all transitions in the queue. Returns without doing anything if another invocation is already
 // in progress.
-const executeTransitionQueue = function() {
+const executeTransitionQueue = function () {
   if (transitionInProgress) {
     // There is an existing invocation of this method which will execute all transitions in the queue.
     return;
@@ -50,7 +54,7 @@ const executeTransitionQueue = function() {
   if (transitionQueue.length > 0) {
     transitionInProgress = true;
     const targetScreen = transitionQueue.shift();
-    const callback = function() {
+    const callback = function () {
       // When the current transition is complete, call this method again to invoke the next one in the queue.
       currentScreen = targetScreen;
       transitionInProgress = false;
@@ -67,7 +71,7 @@ const executeTransitionQueue = function() {
       transitions(callback);
     } else {
       // There is no direct transition defined; need to go to the blank screen first.
-      transitionMap[currentScreen]["blank"](function() {
+      transitionMap[currentScreen]["blank"](function () {
         transitionMap["blank"][targetScreen](callback);
       });
     }
@@ -75,7 +79,7 @@ const executeTransitionQueue = function() {
 };
 
 // Handles a websocket message to update the teams for the current match.
-const handleMatchLoad = function(data) {
+const handleMatchLoad = function (data) {
   currentMatch = data.Match;
   $(`#${redSide}Team1`).text(currentMatch.Red1);
   $(`#${redSide}Team1`).attr("data-yellow-card", data.Teams["R1"]?.YellowCard);
@@ -127,14 +131,14 @@ const handleMatchLoad = function(data) {
 };
 
 // Handles a websocket message to update the match time countdown.
-const handleMatchTime = function(data) {
-  translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
+const handleMatchTime = function (data) {
+  translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchTime").text(getCountdownString(countdownSec));
   });
 };
 
 // Handles a websocket message to update the match score.
-const handleRealtimeScore = function(data) {
+const handleRealtimeScore = function (data) {
   $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
   $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
 
@@ -152,24 +156,27 @@ const handleRealtimeScore = function(data) {
   $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
 };
 
-const transitionBlankToIntro = function(callback) {
-  //$("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function() {
-    $(".teams").css("display", "flex");
-    $(".avatars").css("display", "flex");
-    $(".avatars").css("opacity", 1);
-    $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function() {
-      $("#eventMatchInfo").css("display", "flex");
-      $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
-    });
-  //});
+const transitionBlankToIntro = function (callback) {
+  $(".teams").css("display", "flex");
+  $(".avatars").css("display", "flex");
+  $(".avatars").css("opacity", 1);
+  $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function () {
+    $("#eventMatchInfo").css("display", "flex");
+    $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
+  });
 };
 
-const transitionBlankToMatch = function(callback) {
+const transitionBlankToLogo = function (callback) {
+  $("#message").show();
+  $("#message").transition({queue: false, opacity: 1}, 750, "ease", callback);
+}
+
+const transitionBlankToMatch = function (callback) {
   $(".teams").css("display", "flex");
   $(".score-fields").css("display", "flex");
   $(".score-fields").transition({queue: false, width: scoreFieldsOut}, 500, "ease");
   $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
-  $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function() {
+  $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function () {
     $("#eventMatchInfo").css("display", "flex");
     $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
     $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
@@ -179,18 +186,18 @@ const transitionBlankToMatch = function(callback) {
   });
 };
 
-const transitionBlankToTimeout = function(callback) {
+const transitionBlankToTimeout = function (callback) {
   $("#timeoutDetails").transition({queue: false, width: timeoutDetailsOut}, 500, "ease");
-  $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function() {
+  $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function () {
     $(".timeout-detail").transition({queue: false, opacity: 1}, 750, "ease");
     $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
   });
 };
 
-const transitionIntroToBlank = function(callback) {
-  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease", function() {
+const transitionIntroToBlank = function (callback) {
+  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease", function () {
     $("#eventMatchInfo").hide();
-    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function() {
+    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function () {
       $(".avatars").css("opacity", 0);
       $(".avatars").hide();
       $(".teams").hide();
@@ -199,14 +206,14 @@ const transitionIntroToBlank = function(callback) {
   });
 };
 
-const transitionIntroToMatch = function(callback) {
-  $(".avatars").transition({queue: false, opacity: 0}, 500, "ease", function() {
+const transitionIntroToMatch = function (callback) {
+  $(".avatars").transition({queue: false, opacity: 0}, 500, "ease", function () {
     $(".avatars").hide();
   });
   $(".score-fields").css("display", "flex");
   $(".score-fields").transition({queue: false, width: scoreFieldsOut}, 500, "ease");
   $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
-  $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function() {
+  $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function () {
     $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
     $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
     $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
@@ -214,15 +221,15 @@ const transitionIntroToMatch = function(callback) {
   });
 };
 
-const transitionIntroToTimeout = function(callback) {
-  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease", function() {
+const transitionIntroToTimeout = function (callback) {
+  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease", function () {
     $("#eventMatchInfo").hide();
-    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function() {
+    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function () {
       $(".avatars").css("opacity", 0);
       $(".avatars").hide();
       $(".teams").hide();
       $("#timeoutDetails").transition({queue: false, width: timeoutDetailsOut}, 500, "ease");
-      $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function() {
+      $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function () {
         $(".timeout-detail").transition({queue: false, opacity: 1}, 750, "ease");
         $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
       });
@@ -230,16 +237,23 @@ const transitionIntroToTimeout = function(callback) {
   });
 };
 
-const transitionMatchToBlank = function(callback) {
+const transitionLogoToBlank = function (callback) {
+  $("#message").transition({queue: false, opacity: 0}, 750, "ease", function () {
+    $("#message").hide();
+    callback();
+  });
+}
+
+const transitionMatchToBlank = function (callback) {
   $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear");
   $(".score-fields").transition({queue: false, opacity: 0}, 300, "ease");
   $(".score-aux").transition({queue: false, opacity: 0}, 750, "ease");
-  $(".score-number").transition({queue: false, opacity: 0}, 300, "linear", function() {
+  $(".score-number").transition({queue: false, opacity: 0}, 300, "linear", function () {
     $("#eventMatchInfo").hide();
     $(".score-fields").transition({queue: false, width: 0}, 500, "ease");
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease");
-    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function() {
+    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function () {
       $(".teams").hide();
       $(".score-fields").hide();
       callback();
@@ -247,14 +261,14 @@ const transitionMatchToBlank = function(callback) {
   });
 };
 
-const transitionMatchToIntro = function(callback) {
+const transitionMatchToIntro = function (callback) {
   $(".score-number").transition({queue: false, opacity: 0}, 300, "linear");
   $(".score-fields").transition({queue: false, opacity: 0}, 300, "ease");
   $(".score-aux").transition({queue: false, opacity: 0}, 750, "ease");
-  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
+  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function () {
     $(".score-fields").transition({queue: false, width: 0}, 500, "ease");
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease");
-    $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function() {
+    $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function () {
       $(".score-fields").hide();
       $(".avatars").css("display", "flex");
       $(".avatars").transition({queue: false, opacity: 1}, 500, "ease", callback);
@@ -262,19 +276,19 @@ const transitionMatchToIntro = function(callback) {
   });
 };
 
-const transitionTimeoutToBlank = function(callback) {
+const transitionTimeoutToBlank = function (callback) {
   $(".timeout-detail").transition({queue: false, opacity: 0}, 300, "linear");
-  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
+  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function () {
     $("#timeoutDetails").transition({queue: false, width: timeoutDetailsIn}, 500, "ease");
     $("#logo").transition({queue: false, top: logoDown}, 500, "ease", callback);
   });
 };
 
-const transitionTimeoutToIntro = function(callback) {
+const transitionTimeoutToIntro = function (callback) {
   $(".timeout-detail").transition({queue: false, opacity: 0}, 300, "linear");
-  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function() {
+  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function () {
     $("#timeoutDetails").transition({queue: false, width: timeoutDetailsIn}, 500, "ease");
-    $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function() {
+    $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function () {
       $(".avatars").css("display", "flex");
       $(".avatars").css("opacity", 1);
       $(".teams").css("display", "flex");
@@ -286,11 +300,11 @@ const transitionTimeoutToIntro = function(callback) {
   });
 };
 
-const getAvatarUrl = function(teamId) {
+const getAvatarUrl = function (teamId) {
   return "/api/teams/" + teamId + "/avatar";
 };
 
-$(function() {
+$(function () {
   // Read the configuration for this display from the URL query string.
   const urlParams = new URLSearchParams(window.location.search);
   document.body.style.backgroundColor = urlParams.get("background");
@@ -310,14 +324,31 @@ $(function() {
   overlayCentering.css("top", parseInt(urlParams.get("topSpacingPx")) + overlayTopOffset + "px");
   overlayCentering.css("transform", `scale(${urlParams.get("zoomFactor")})`);
 
+  const message = urlParams.get("message");
+  const messageDiv = $("#message");
+  messageDiv.text(message);
+  messageDiv.toggle(message !== "");
+
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/wall/websocket", {
-    allianceSelection: function(event) { handleAllianceSelection(event.data); },
-    audienceDisplayMode: function(event) { handleAudienceDisplayMode(event.data); },
-    matchLoad: function(event) { handleMatchLoad(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); },
+    allianceSelection: function (event) {
+      handleAllianceSelection(event.data);
+    },
+    audienceDisplayMode: function (event) {
+      handleAudienceDisplayMode(event.data);
+    },
+    matchLoad: function (event) {
+      handleMatchLoad(event.data);
+    },
+    matchTime: function (event) {
+      handleMatchTime(event.data);
+    },
+    matchTiming: function (event) {
+      handleMatchTiming(event.data);
+    },
+    realtimeScore: function (event) {
+      handleRealtimeScore(event.data);
+    },
   });
 
   // Map how to transition from one screen to another. Missing links between screens indicate that first we
@@ -325,6 +356,7 @@ $(function() {
   transitionMap = {
     blank: {
       intro: transitionBlankToIntro,
+      logo: transitionBlankToLogo,
       match: transitionBlankToMatch,
       timeout: transitionBlankToTimeout,
     },
@@ -332,6 +364,9 @@ $(function() {
       blank: transitionIntroToBlank,
       match: transitionIntroToMatch,
       timeout: transitionIntroToTimeout,
+    },
+    logo: {
+      blank: transitionLogoToBlank,
     },
     match: {
       blank: transitionMatchToBlank,

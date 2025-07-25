@@ -7,54 +7,54 @@ Display showing robot connection status.
 <!DOCTYPE html>
 <html>
 
-<head>
-  <title>Field Monitor - {{.EventSettings.Name}} - Cheesy Arena</title>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no" />
-  <link rel="shortcut icon" href="/static/img/favicon.ico">
-  <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css" />
-  <link rel="stylesheet" href="/static/css/lib/bootstrap-icons.min.css" />
-  <link rel="stylesheet" href="/static/css/cheesy-arena.css" />
-  <link rel="stylesheet" href="/static/css/field_monitor_display.css" />
-</head>
+  <head>
+    <title>Field Monitor - {{.EventSettings.Name}} - Cheesy Arena</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no"/>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/css/lib/bootstrap-icons.min.css"/>
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css"/>
+    <link rel="stylesheet" href="/static/css/field_monitor_display.css"/>
+  </head>
 
-<body>
-  <div id="matchStatusRow" class="ds-dependent">
-    {{if .EventSettings.NetworkSecurityEnabled}}
+  <body>
+    <div id="matchStatusRow" class="ds-dependent">
+      {{if .EventSettings.NetworkSecurityEnabled}}
       <div id="matchName" class="text-start" style="width: 20%; padding-left: 1%;"></div>
       <div id="fieldConnection" style="width: 25%; padding-left: 1%;">
         <span class="badge badge-status" id="accessPointStatus"><i class="bi bi-wifi"></i> Access Point
         </span>
         <span class="badge badge-status" id="switchStatus"> <i class="bi bi-hdd-network"></i> Switch</span>
       </div>
-    {{end}}
-    {{if not .EventSettings.NetworkSecurityEnabled}}
+      {{end}}
+      {{if not .EventSettings.NetworkSecurityEnabled}}
       <div id="matchName" class="text-start" style="width: 45%; padding-left: 1%;"></div>
-    {{end}}
-    <div id="matchTime" class="text-center" style="width: 10%;"></div>
-    <div id="matchState" class="text-end" style="width: 45%; padding-right: 1%;"></div>
-  </div>
-  {{template "row" dict "leftPosition" "1" "rightPosition" "3"}}
-  {{template "row" dict "leftPosition" "2" "rightPosition" "2"}}
-  {{template "row" dict "leftPosition" "3" "rightPosition" "1"}}
-  <div id="eventStatusRow" class="ds-dependent">
-    <div id="leftScore" class="fta-dependent ds-dependent left-score text-center reversible-left"
-      style="width:8%; vertical-align:middle;"></div>
-    <div id="cycleTimeMessage" class="text-center ds-dependent" style="width: 46%;"></div>
-    <div id="earlyLateMessage" class="text-center ds-dependent" style="width: 38%;"></div>
-    <div id="rightScore" class="right-score ds-dependent text-center fta-dependent reversible-right "
-      style="width: 8%;"></div>
-  </div>
-</body>
-<script src="/static/js/lib/jquery.min.js"></script>
-<script src="/static/js/lib/jquery.json-2.4.min.js"></script>
-<script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
-<script src="/static/js/cheesy-websocket.js"></script>
-<script src="/static/js/lib/jquery.transit.min.js"></script>
-<script src="/static/js/lib/bootstrap.bundle.min.js"></script>
-<script src="/static/js/match_timing.js"></script>
-<script src="/static/js/field_monitor_display.js"></script>
+      {{end}}
+      <div id="matchTime" class="text-center" style="width: 10%;"></div>
+      <div id="matchState" class="text-end" style="width: 45%; padding-right: 1%;"></div>
+    </div>
+    {{template "row" dict "leftPosition" "1" "rightPosition" "3"}}
+    {{template "row" dict "leftPosition" "2" "rightPosition" "2"}}
+    {{template "row" dict "leftPosition" "3" "rightPosition" "1"}}
+    <div id="eventStatusRow" class="ds-dependent">
+      <div id="leftScore" class="fta-dependent ds-dependent left-score text-center reversible-left"
+        style="width:8%; vertical-align:middle;"></div>
+      <div id="cycleTimeMessage" class="text-center ds-dependent" style="width: 46%;"></div>
+      <div id="earlyLateMessage" class="text-center ds-dependent" style="width: 38%;"></div>
+      <div id="rightScore" class="right-score ds-dependent text-center fta-dependent reversible-right "
+        style="width: 8%;"></div>
+    </div>
+  </body>
+  <script src="/static/js/lib/jquery.min.js"></script>
+  <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+  <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+  <script src="/static/js/cheesy-websocket.js"></script>
+  <script src="/static/js/lib/jquery.transit.min.js"></script>
+  <script src="/static/js/lib/bootstrap.bundle.min.js"></script>
+  <script src="/static/js/match_timing.js"></script>
+  <script src="/static/js/field_monitor_display.js"></script>
 
 </html>
 
@@ -76,16 +76,26 @@ Display showing robot connection status.
   </div>
   <div class="team-box-row">
     <div id="{{.side}}Team{{.position}}Ethernet" class="team-box center"
-      title="Driver Station Ethernet Connected&#10;Trip Time (ms)">ETH</div>
-    <div id="{{.side}}Team{{.position}}Ds" class="team-box center"
-      title="Driver Station Software Running&#10;Missed Packets">DS</div>
-    <div id="{{.side}}Team{{.position}}Radio" class="team-box center" title="Field Access Point Configured Team">
-      <i class="bi-reception-4"></i>
-      <span></span>
+      title="Driver Station Ethernet Connected&#10;Trip Time (ms)">ETH
     </div>
-    <div id="{{.side}}Team{{.position}}Robot" class="team-box center"
-      title="Battery Voltage&#10;Seconds Since Last Connected"></div>
-    <div id="{{.side}}Team{{.position}}Bandwidth" class="team-box center" title="Team bandwidth Mbits/s"></div>
+    <div id="{{.side}}Team{{.position}}Ds" class="team-box center"
+      title="Driver Station Software Running&#10;Missed Packets">DS
+    </div>
+    <div id="{{.side}}Team{{.position}}Radio" class="team-box center"><i></i></div>
+    <div id="{{.side}}Team{{.position}}Robot" class="team-box center" title="Seconds Since Last Connected"></div>
+    <div id="{{.side}}Team{{.position}}Battery" class="team-box center"></div>
+    <div id="{{.side}}Team{{.position}}Stats" class="team-box center team-stats"
+      title="Team bandwidth (Mbits/s), trip time (ms), and missed packet count">
+      <div class="team-stats-row">
+        <div class="team-bandwidth">BWU <span id="{{.side}}Team{{.position}}Bandwidth"></span></div>
+      </div>
+      <div class="team-stats-row">
+        <div class="team-trip-time">TT <span id="{{.side}}Team{{.position}}TripTime"></span></div>&nbsp;&nbsp;
+      </div>
+      <div class="team-stats-row">
+        <div class="team-missed-packets">MP <span id="{{.side}}Team{{.position}}MissedPackets"></span></div>
+      </div>
+    </div>
     <div id="{{.side}}Team{{.position}}Bypass" class="team-box center" title="Emergency-Stopped or Bypassed"></div>
   </div>
 </div>

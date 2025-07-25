@@ -125,17 +125,20 @@ func TestReefCoralCountsAndPoints(t *testing.T) {
 	}
 
 	for i, testCase := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			for level := Level1; level < LevelCount; level++ {
-				assert.Equal(
-					t, testCase.expectedTotalCountByLevel[level+1], testCase.reef.CountTotalCoralByLevel(level),
-				)
-			}
-			assert.Equal(t, testCase.expectedAutoCount, testCase.reef.AutoCoralCount())
-			assert.Equal(t, testCase.expectedAutoPoints, testCase.reef.AutoCoralPoints())
-			assert.Equal(t, testCase.expectedTeleopCount, testCase.reef.TeleopCoralCount())
-			assert.Equal(t, testCase.expectedTeleopPoints, testCase.reef.TeleopCoralPoints())
-		})
+		t.Run(
+			strconv.Itoa(i),
+			func(t *testing.T) {
+				for level := Level1; level < LevelCount; level++ {
+					assert.Equal(
+						t, testCase.expectedTotalCountByLevel[level+1], testCase.reef.CountTotalCoralByLevel(level),
+					)
+				}
+				assert.Equal(t, testCase.expectedAutoCount, testCase.reef.AutoCoralCount())
+				assert.Equal(t, testCase.expectedAutoPoints, testCase.reef.AutoCoralPoints())
+				assert.Equal(t, testCase.expectedTeleopCount, testCase.reef.TeleopCoralCount())
+				assert.Equal(t, testCase.expectedTeleopPoints, testCase.reef.TeleopCoralPoints())
+			},
+		)
 	}
 }
 
@@ -205,11 +208,14 @@ func TestReef_isAutoBonusCoralThresholdMet(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			AutoBonusCoralThreshold = tc.threshold
-			result := tc.reef.isAutoBonusCoralThresholdMet()
-			assert.Equal(t, tc.expectedThresholdMet, result)
-		})
+		t.Run(
+			strconv.Itoa(i),
+			func(t *testing.T) {
+				AutoBonusCoralThreshold = tc.threshold
+				result := tc.reef.isAutoBonusCoralThresholdMet()
+				assert.Equal(t, tc.expectedThresholdMet, result)
+			},
+		)
 	}
 }
 
@@ -300,10 +306,13 @@ func TestReef_countCoralBonusSatisfiedLevels(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			CoralBonusPerLevelThreshold = tc.threshold
-			result := tc.reef.countCoralBonusSatisfiedLevels()
-			assert.Equal(t, tc.expectedSatisfiedLevels, result)
-		})
+		t.Run(
+			strconv.Itoa(i),
+			func(t *testing.T) {
+				CoralBonusPerLevelThreshold = tc.threshold
+				result := tc.reef.countCoralBonusSatisfiedLevels()
+				assert.Equal(t, tc.expectedSatisfiedLevels, result)
+			},
+		)
 	}
 }

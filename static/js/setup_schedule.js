@@ -7,7 +7,7 @@ var blockTemplate = Handlebars.compile($("#blockTemplate").html());
 var blockMatches = {};
 
 // Adds a new scheduling block to the page.
-var addBlock = function(startTime, numMatches, matchSpacingSec) {
+var addBlock = function (startTime, numMatches, matchSpacingSec) {
   var lastBlockNumber = getLastBlockNumber();
   if (!startTime) {
     if ($.isEmptyObject(blockMatches)) {
@@ -33,7 +33,7 @@ var addBlock = function(startTime, numMatches, matchSpacingSec) {
 };
 
 // Updates the per-block and global schedule statistics.
-var updateBlock = function(blockNumber) {
+var updateBlock = function (blockNumber) {
   var startTime = moment($("#startTime" + blockNumber).val(), "YYYY-MM-DD hh:mm:ss A");
   var endTime = moment($("#endTime" + blockNumber).val(), "YYYY-MM-DD hh:mm:ss A");
   var matchSpacingSec = getMatchSpacingSec(blockNumber);
@@ -51,10 +51,10 @@ var updateBlock = function(blockNumber) {
   updateStats();
 };
 
-var updateStats = function() {
+var updateStats = function () {
   // Update total number of matches.
   var totalNumMatches = 0;
-  $.each(blockMatches, function(k, v) {
+  $.each(blockMatches, function (k, v) {
     totalNumMatches += v;
   });
   var matchesPerTeam = Math.floor(totalNumMatches * 6 / numTeams);
@@ -66,26 +66,26 @@ var updateStats = function() {
   $("#nextLevelMatches").text(nextLevelMatches);
 };
 
-var deleteBlock = function(blockNumber) {
+var deleteBlock = function (blockNumber) {
   delete blockMatches[blockNumber];
   $("#block" + blockNumber).remove();
   updateStats();
 };
 
 // Dynamically generates and posts a form containing the schedule blocks to the server for population.
-var generateSchedule = function() {
+var generateSchedule = function () {
   var form = $("#scheduleForm");
   form.attr("method", "POST");
   form.attr("action", "/setup/schedule/generate");
-  var addField = function(name, value) {
-  var field = $(document.createElement("input"));
+  var addField = function (name, value) {
+    var field = $(document.createElement("input"));
     field.attr("type", "hidden");
     field.attr("name", name);
     field.attr("value", value);
     form.append(field);
   };
   var i = 0;
-  $.each(blockMatches, function(k, v) {
+  $.each(blockMatches, function (k, v) {
     addField("startTime" + i, $("#startTime" + k).val());
     addField("numMatches" + i, $("#numMatches" + k).text());
     addField("matchSpacingSec" + i, getMatchSpacingSec(k));
@@ -96,14 +96,14 @@ var generateSchedule = function() {
 };
 
 // Parses the min:sec match spacing field for the given block and returns the number of seconds.
-var getMatchSpacingSec = function(blockNumber) {
+var getMatchSpacingSec = function (blockNumber) {
   var matchSpacingMinSec = $("#matchSpacingMinSec" + blockNumber).val().split(":");
   return parseInt(matchSpacingMinSec[0]) * 60 + parseInt(matchSpacingMinSec[1]);
 };
 
-var getLastBlockNumber = function() {
+var getLastBlockNumber = function () {
   var max = 0;
-  $.each(blockMatches, function(k, v) {
+  $.each(blockMatches, function (k, v) {
     var number = parseInt(k);
     if (number > max) {
       max = number;

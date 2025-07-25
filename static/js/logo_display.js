@@ -5,7 +5,7 @@
 
 var websocket;
 
-$(function() {
+$(function () {
   // Read the configuration for this display from the URL query string.
   const urlParams = new URLSearchParams(window.location.search);
   const message = urlParams.get("message");

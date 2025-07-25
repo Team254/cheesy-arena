@@ -123,6 +123,12 @@ func (web *Web) queueingDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
-	ws.HandleNotifiers(display.Notifier, web.arena.MatchTimingNotifier, web.arena.MatchLoadNotifier,
-		web.arena.MatchTimeNotifier, web.arena.EventStatusNotifier, web.arena.ReloadDisplaysNotifier)
+	ws.HandleNotifiers(
+		display.Notifier,
+		web.arena.MatchTimingNotifier,
+		web.arena.MatchLoadNotifier,
+		web.arena.MatchTimeNotifier,
+		web.arena.EventStatusNotifier,
+		web.arena.ReloadDisplaysNotifier,
+	)
 }

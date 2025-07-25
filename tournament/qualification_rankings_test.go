@@ -125,22 +125,52 @@ func TestAddMatchResultToRankingsHandleCards(t *testing.T) {
 
 // Sets up a schedule and results that touches on all possible variables.
 func setupMatchResultsForRankings(database *model.Database) {
-	match1 := model.Match{Type: model.Qualification, TypeOrder: 1, Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5,
-		Blue3: 6, Status: game.RedWonMatch}
+	match1 := model.Match{
+		Type:      model.Qualification,
+		TypeOrder: 1,
+		Red1:      1,
+		Red2:      2,
+		Red3:      3,
+		Blue1:     4,
+		Blue2:     5,
+		Blue3:     6,
+		Status:    game.RedWonMatch,
+	}
 	database.CreateMatch(&match1)
 	matchResult1 := model.BuildTestMatchResult(match1.Id, 1)
 	matchResult1.RedCards = map[string]string{"2": "red"}
 	database.CreateMatchResult(matchResult1)
 
-	match2 := model.Match{Type: model.Qualification, TypeOrder: 2, Red1: 1, Red2: 3, Red3: 5, Blue1: 2, Blue2: 4,
-		Blue3: 6, Status: game.BlueWonMatch, Red2IsSurrogate: true, Blue3IsSurrogate: true}
+	match2 := model.Match{
+		Type:             model.Qualification,
+		TypeOrder:        2,
+		Red1:             1,
+		Red2:             3,
+		Red3:             5,
+		Blue1:            2,
+		Blue2:            4,
+		Blue3:            6,
+		Status:           game.BlueWonMatch,
+		Red2IsSurrogate:  true,
+		Blue3IsSurrogate: true,
+	}
 	database.CreateMatch(&match2)
 	matchResult2 := model.BuildTestMatchResult(match2.Id, 1)
 	matchResult2.BlueScore = matchResult2.RedScore
 	database.CreateMatchResult(matchResult2)
 
-	match3 := model.Match{Type: model.Qualification, TypeOrder: 3, Red1: 6, Red2: 5, Red3: 4, Blue1: 3, Blue2: 2,
-		Blue3: 1, Status: game.TieMatch, Red3IsSurrogate: true}
+	match3 := model.Match{
+		Type:            model.Qualification,
+		TypeOrder:       3,
+		Red1:            6,
+		Red2:            5,
+		Red3:            4,
+		Blue1:           3,
+		Blue2:           2,
+		Blue3:           1,
+		Status:          game.TieMatch,
+		Red3IsSurrogate: true,
+	}
 	database.CreateMatch(&match3)
 	matchResult3 := model.BuildTestMatchResult(match3.Id, 1)
 	database.CreateMatchResult(matchResult3)
@@ -149,20 +179,47 @@ func setupMatchResultsForRankings(database *model.Database) {
 	matchResult3.PlayNumber = 2
 	database.CreateMatchResult(matchResult3)
 
-	match4 := model.Match{Type: model.Practice, TypeOrder: 1, Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5,
-		Blue3: 6, Status: game.RedWonMatch}
+	match4 := model.Match{
+		Type:      model.Practice,
+		TypeOrder: 1,
+		Red1:      1,
+		Red2:      2,
+		Red3:      3,
+		Blue1:     4,
+		Blue2:     5,
+		Blue3:     6,
+		Status:    game.RedWonMatch,
+	}
 	database.CreateMatch(&match4)
 	matchResult4 := model.BuildTestMatchResult(match4.Id, 1)
 	database.CreateMatchResult(matchResult4)
 
-	match5 := model.Match{Type: model.Playoff, TypeOrder: 8, Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5,
-		Blue3: 6, Status: game.BlueWonMatch}
+	match5 := model.Match{
+		Type:      model.Playoff,
+		TypeOrder: 8,
+		Red1:      1,
+		Red2:      2,
+		Red3:      3,
+		Blue1:     4,
+		Blue2:     5,
+		Blue3:     6,
+		Status:    game.BlueWonMatch,
+	}
 	database.CreateMatch(&match5)
 	matchResult5 := model.BuildTestMatchResult(match5.Id, 1)
 	database.CreateMatchResult(matchResult5)
 
-	match6 := model.Match{Type: model.Qualification, TypeOrder: 4, Red1: 7, Red2: 8, Red3: 9, Blue1: 10, Blue2: 11,
-		Blue3: 12, Status: game.MatchScheduled}
+	match6 := model.Match{
+		Type:      model.Qualification,
+		TypeOrder: 4,
+		Red1:      7,
+		Red2:      8,
+		Red3:      9,
+		Blue1:     10,
+		Blue2:     11,
+		Blue3:     12,
+		Status:    game.MatchScheduled,
+	}
 	database.CreateMatch(&match6)
 	matchResult6 := model.BuildTestMatchResult(match6.Id, 1)
 	database.CreateMatchResult(matchResult6)

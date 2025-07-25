@@ -31,8 +31,14 @@ func NewTeamMatchLog(teamId int, match *model.Match, wifiStatus *network.TeamWif
 		return nil, err
 	}
 
-	filename := fmt.Sprintf("%s/%s_%s_Match_%s_%d.csv", filepath.Join(model.BaseDir, logsDir),
-		time.Now().Format("20060102150405"), match.Type.String(), match.ShortName, teamId)
+	filename := fmt.Sprintf(
+		"%s/%s_%s_Match_%s_%d.csv",
+		filepath.Join(model.BaseDir, logsDir),
+		time.Now().Format("20060102150405"),
+		match.Type.String(),
+		match.ShortName,
+		teamId,
+	)
 	logFile, err := os.Create(filename)
 	if err != nil {
 		return nil, err

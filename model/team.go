@@ -49,8 +49,10 @@ func (database *Database) GetAllTeams() ([]Team, error) {
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(teams, func(i, j int) bool {
-		return teams[i].Id < teams[j].Id
-	})
+	sort.Slice(
+		teams, func(i, j int) bool {
+			return teams[i].Id < teams[j].Id
+		},
+	)
 	return teams, nil
 }

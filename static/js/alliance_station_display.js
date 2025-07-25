@@ -9,7 +9,7 @@ var currentScreen = "blank";
 var websocket;
 
 // Handles a websocket message to change which screen is displayed.
-var handleAllianceStationDisplayMode = function(targetScreen) {
+var handleAllianceStationDisplayMode = function (targetScreen) {
   currentScreen = targetScreen;
   if (station === "") {
     // Don't do anything if this screen hasn't been assigned a position yet.
@@ -35,7 +35,7 @@ var handleAllianceStationDisplayMode = function(targetScreen) {
 };
 
 // Handles a websocket message to update the team to display.
-var handleMatchLoad = function(data) {
+var handleMatchLoad = function (data) {
   if (station !== "") {
     var team = data.Teams[station];
     if (team) {
@@ -74,7 +74,7 @@ var handleMatchLoad = function(data) {
 };
 
 // Handles a websocket message to update the team connection status.
-var handleArenaStatus = function(data) {
+var handleArenaStatus = function (data) {
   stationStatus = data.AllianceStations[station];
   var blink = false;
   if (stationStatus && stationStatus.Bypass) {
@@ -85,7 +85,7 @@ var handleArenaStatus = function(data) {
     } else if (!stationStatus.DsConn.RobotLinked) {
       blink = true;
       if (!blinkInterval) {
-        blinkInterval = setInterval(function() {
+        blinkInterval = setInterval(function () {
           var status = $("#match").attr("data-status");
           $("#match").attr("data-status", (status === "") ? station[0] : "");
         }, 250);
@@ -102,8 +102,8 @@ var handleArenaStatus = function(data) {
 };
 
 // Handles a websocket message to update the match time countdown.
-var handleMatchTime = function(data) {
-  translateMatchTime(data, function(matchState, matchStateText, countdownSec) {
+var handleMatchTime = function (data) {
+  translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     if (station[0] === "N") {
       // Pin the state for a non-alliance display to an in-match state, so as to always show time or score.
       matchState = "TELEOP_PERIOD";
@@ -119,7 +119,7 @@ var handleMatchTime = function(data) {
 };
 
 // Handles a websocket message to update the match score.
-var handleRealtimeScore = function(data) {
+var handleRealtimeScore = function (data) {
   $("#redScore").text(
     data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints
   );
@@ -128,18 +128,30 @@ var handleRealtimeScore = function(data) {
   );
 };
 
-$(function() {
+$(function () {
   // Read the configuration for this display from the URL query string.
   var urlParams = new URLSearchParams(window.location.search);
   station = urlParams.get("station");
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/alliance_station/websocket", {
-    allianceStationDisplayMode: function(event) { handleAllianceStationDisplayMode(event.data); },
-    arenaStatus: function(event) { handleArenaStatus(event.data); },
-    matchLoad: function(event) { handleMatchLoad(event.data); },
-    matchTime: function(event) { handleMatchTime(event.data); },
-    matchTiming: function(event) { handleMatchTiming(event.data); },
-    realtimeScore: function(event) { handleRealtimeScore(event.data); }
+    allianceStationDisplayMode: function (event) {
+      handleAllianceStationDisplayMode(event.data);
+    },
+    arenaStatus: function (event) {
+      handleArenaStatus(event.data);
+    },
+    matchLoad: function (event) {
+      handleMatchLoad(event.data);
+    },
+    matchTime: function (event) {
+      handleMatchTime(event.data);
+    },
+    matchTiming: function (event) {
+      handleMatchTiming(event.data);
+    },
+    realtimeScore: function (event) {
+      handleRealtimeScore(event.data);
+    }
   });
 });

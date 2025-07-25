@@ -182,8 +182,9 @@ func (arena *Arena) RegisterDisplay(displayConfig *DisplayConfiguration, ipAddre
 	} else {
 		if !ok {
 			display = new(Display)
-			display.Notifier = websocket.NewNotifier("displayConfiguration",
-				display.generateDisplayConfigurationMessage)
+			display.Notifier = websocket.NewNotifier(
+				"displayConfiguration", display.generateDisplayConfigurationMessage,
+			)
 			arena.Displays[displayConfig.Id] = display
 		}
 		display.DisplayConfiguration = *displayConfig
