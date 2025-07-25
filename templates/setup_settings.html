@@ -300,6 +300,56 @@ UI for configuring event settings.
               </div>
             </fieldset>
             <fieldset class="mb-4">
+              <legend>SCC Switch</legend>
+              <p>Enable this setting if you have an SSH-capable managed switch in your SCCs and want to run commands
+                to disable team ethernet ports while network reconfiguration is in progress. This setting only works
+                if advanced network security is enabled above.</p>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label"
+                  for="sccManagementEnabled">Enable SCC switch management</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="sccManagementEnabled"
+                    name="sccManagementEnabled" {{if .SCCManagementEnabled}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Red SCC Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="redSCCAddress" value="{{.RedSCCAddress}}" placeholder="10.0.100.48">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Blue SCC Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="blueSCCAddress" value="{{.BlueSCCAddress}}" placeholder="10.0.100.49">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">SCC Username</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="sccUsername" value="{{.SCCUsername}}" placeholder="admin">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">SCC Password</label>
+                <div class="col-lg-6">
+                  <input type="password" class="form-control" name="sccPassword" value="{{.SCCPassword}}">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">SCC Enable Commands</label>
+                <div class="col-lg-6">
+                  <textarea class="form-control" name="sccUpCommands" rows="8">{{.SCCUpCommands}}</textarea>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">SCC Disable Commands</label>
+                <div class="col-lg-6">
+                  <textarea class="form-control" name="sccDownCommands" rows="8">{{.SCCDownCommands}}</textarea>
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="mb-4">
               <legend>PLC</legend>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">PLC Address</label>
