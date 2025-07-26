@@ -106,7 +106,7 @@
 .badge-status[data-status=BOOTING] {
   background-color: #f92;
 }
-.badge-status[data-status=CONFIGURING] {
+.badge-status[data-status=CONFIGURING], .badge-status[data-status=DISABLED] {
   background-color: #08f;
 }
 .badge-status[data-status=ACTIVE] {
