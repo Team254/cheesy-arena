@@ -255,6 +255,13 @@ main {
   justify-content: space-around;
 }
 
+#l1-total {
+  margin-top: 10px;
+  color: var(--text-active);
+  font-size: 18pt;
+  font-weight: bold;
+}
+
 #commit {
   flex: 1 1 0%;
   height: 100%;
