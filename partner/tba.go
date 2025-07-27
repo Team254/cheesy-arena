@@ -680,6 +680,7 @@ func createTbaScoringBreakdown(
 	breakdown.TeleopReef.TbaTopRowCount = breakdown.AutoReef.TbaTopRowCount +
 		score.Reef.CountCoralByLevelAndPeriod(game.Level4, false)
 	breakdown.TeleopReef.Trough = score.Reef.CountCoralByLevelAndPeriod(game.Level1, false)
+	breakdown.TeleopCoralCount = score.Reef.TeleopCoralCount()
 	teleopCoralPoints := score.Reef.TeleopCoralPoints()
 	breakdown.TeleopCoralPoints = teleopCoralPoints
 	breakdown.NetAlgaeCount = score.BargeAlgae
