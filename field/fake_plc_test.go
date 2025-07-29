@@ -160,3 +160,8 @@ func (plc *FakePlc) GetAllCoils() [13]bool {
     var coils [13]bool
     return coils
 }
+
+// Returns the state of the field stack light (red, blue, orange, green).
+func (plc *FakePlc) GetFieldStackLight() (bool, bool, bool, bool) {
+	return plc.stackLights[0], plc.stackLights[1], plc.stackLights[2], plc.stackLights[3]
+}

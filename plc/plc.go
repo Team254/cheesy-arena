@@ -44,6 +44,7 @@ type Plc interface {
 	SetAlternateIOStopState(input int, state bool)
 	ResetEstops()
 	GetAllCoils() ([coilCount]bool)
+	GetFieldStackLight() (bool, bool, bool, bool)
 }
 
 type ModbusPlc struct {
@@ -575,4 +576,9 @@ func (plc *ModbusPlc) ResetEstops(){
 // Returns the value of all PLC coils.
 func (plc *ModbusPlc) GetAllCoils() [coilCount]bool {
     return plc.coils
+}
+
+// Returns the state of the field stack light (red, blue, orange, green).
+func (plc *ModbusPlc) GetFieldStackLight() (bool, bool, bool, bool) {
+	return plc.coils[stackLightRed], plc.coils[stackLightBlue], plc.coils[stackLightOrange], plc.coils[stackLightGreen]
 }
