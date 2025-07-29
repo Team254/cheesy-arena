@@ -88,3 +88,32 @@ func (web *Web) startMatchPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Field stack light state updated successfully."))
 }
+
+type fieldStackLight struct {
+	Red    bool `json:"redStackLight"`
+	Blue   bool `json:"blueStackLight"`
+	Orange bool `json:"orangeStackLight"`
+	Green  bool `json:"greenStackLight"`
+}
+
+func (web *Web) fieldStackLightGetHandler(w http.ResponseWriter, r *http.Request) {
+	// Ensure the request is a GET request.
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get the current state of the field stack light.
+	var stackLight fieldStackLight
+	stackLight.Red, stackLight.Blue, stackLight.Orange, stackLight.Green = web.arena.Plc.GetFieldStackLight()
+
+	// Marshal the response payload.
+	response, err := json.Marshal(stackLight)
+	if err != nil {
+		http.Error(w, "Failed to marshal eStop state", http.StatusInternalServerError)
+		return
+	}
+
+	// Send the response.
+	w.Write(response)
+}

@@ -248,6 +248,7 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("POST /panel/freezy/add_practice_match", web.addPracticeMatchPostHandler)
 	mux.HandleFunc("GET /panel/freezy/add_practice_match", web.addPracticeMatchGetHandler)
 	mux.HandleFunc("POST /panel/freezy/edit_practice_match", web.editPracticeMatchHandler)
+	mux.HandleFunc("GET /api/freezy/field_stack_light", web.fieldStackLightGetHandler)
 
 	return mux
 }
