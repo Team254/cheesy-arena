@@ -85,7 +85,7 @@ func (scc *SCCSwitch) runCommandSequence(commands []string) (string, error) {
 			ssh.Password(scc.password),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Allow any host key for simplicity
-		Timeout:         sccSwitchConnectTimeoutSec * time.Second,
+		Timeout:         scc.connectTimeoutDuration,
 	}
 	client, err := ssh.Dial("tcp", net.JoinHostPort(scc.address, strconv.Itoa(scc.port)), sshConfig)
 	if err != nil {
@@ -133,7 +133,7 @@ func (scc *SCCSwitch) runCommandSequence(commands []string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to run command sequence: %w", err)
 		}
-	case <-time.After(scc.connectTimeoutDuration):
+	case <-time.After(scc.configTimeoutDuration):
 		return "", fmt.Errorf("timed out waiting for command sequence to complete")
 	}
 
