@@ -38,7 +38,7 @@ func TestConfigureSCC(t *testing.T) {
 	}
 	scc := NewSCCSwitch("127.0.0.1", username, password, upCommands, downCommands)
 	scc.port = 9150
-	scc.connectTimeoutDuration = time.Millisecond
+	scc.connectTimeoutDuration = 10 * time.Millisecond
 	scc.configTimeoutDuration = 15 * time.Millisecond
 
 	var receivedUpCommands, receivedDownCommands []string
