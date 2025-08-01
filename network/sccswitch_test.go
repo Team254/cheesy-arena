@@ -21,19 +21,19 @@ func TestConfigureSCC(t *testing.T) {
 	username := "username"
 	password := "password"
 	upCommands := []string{
-		"config terminal",
-		"interface range gigabitEthernet 1/2-4",
-		"no shutdown",
-		"exit",
-		"exit",
+		"up_line1",
+		"up line 2",
+		"up-line/3",
+		"up line 4",
+		"up line 5",
 		"exit",
 	}
 	downCommands := []string{
-		"config terminal",
-		"interface range gigabitEthernet 1/2-4",
-		"shutdown",
-		"exit",
-		"exit",
+		"down_line1",
+		"down line 2",
+		"down-line/3",
+		"down line 4",
+		"down line 5",
 		"exit",
 	}
 	scc := NewSCCSwitch("127.0.0.1", username, password, upCommands, downCommands)

@@ -21,7 +21,7 @@ const (
 // Configured here to avoid circular import dependencies.
 var (
 	sccDefaultUpCommands = []string{
-		"config terminal",
+		"configure terminal",
 		"interface range gigabitEthernet 1/2-4",
 		"no shutdown",
 		"exit",
@@ -29,7 +29,7 @@ var (
 		"exit",
 	}
 	sccDefaultDownCommands = []string{
-		"config terminal",
+		"configure terminal",
 		"interface range gigabitEthernet 1/2-4",
 		"shutdown",
 		"exit",
