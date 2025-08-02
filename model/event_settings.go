@@ -5,13 +5,37 @@
 
 package model
 
-import "github.com/Team254/cheesy-arena/game"
+import (
+	"strings"
+
+	"github.com/Team254/cheesy-arena/game"
+)
 
 type PlayoffType int
 
 const (
 	DoubleEliminationPlayoff PlayoffType = iota
 	SingleEliminationPlayoff
+)
+
+// Configured here to avoid circular import dependencies.
+var (
+	sccDefaultUpCommands = []string{
+		"configure terminal",
+		"interface range gigabitEthernet 1/2-4",
+		"no shutdown",
+		"exit",
+		"exit",
+		"exit",
+	}
+	sccDefaultDownCommands = []string{
+		"configure terminal",
+		"interface range gigabitEthernet 1/2-4",
+		"shutdown",
+		"exit",
+		"exit",
+		"exit",
+	}
 )
 
 type EventSettings struct {
@@ -34,6 +58,13 @@ type EventSettings struct {
 	ApChannel                   int
 	SwitchAddress               string
 	SwitchPassword              string
+	SCCManagementEnabled        bool
+	RedSCCAddress               string
+	BlueSCCAddress              string
+	SCCUsername                 string
+	SCCPassword                 string
+	SCCUpCommands               string
+	SCCDownCommands             string
 	PlcAddress                  string
 	AlternateIOEnabled          bool
 	ScoreTableEstopAddress  		string
@@ -81,6 +112,8 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		TbaDownloadEnabled:          true,
 		ApChannel:                   36,
 		AlternateIOEnabled:          false,
+		SCCUpCommands:               strings.Join(sccDefaultUpCommands, "\n"),
+		SCCDownCommands:             strings.Join(sccDefaultDownCommands, "\n"),
 		WarmupDurationSec:           game.MatchTiming.WarmupDurationSec,
 		AutoDurationSec:             game.MatchTiming.AutoDurationSec,
 		PauseDurationSec:            game.MatchTiming.PauseDurationSec,
