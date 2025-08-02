@@ -135,6 +135,8 @@ func (web *Web) matchReviewEditPostHandler(w http.ResponseWriter, r *http.Reques
 		web.arena.RedRealtimeScore.Cards = matchResult.RedCards
 		web.arena.BlueRealtimeScore.Cards = matchResult.BlueCards
 
+		web.arena.RealtimeScoreNotifier.Notify()
+
 		http.Redirect(w, r, "/match_play", 303)
 	} else {
 		err = web.commitMatchScore(match, &matchResult, true)

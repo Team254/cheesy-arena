@@ -99,13 +99,15 @@ const handleArenaStatus = function (data) {
       teamRadioElement.attr("data-status-ok", radioOkay);
 
       // Format the robot status box.
-      const robotOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
-      teamRobotElement.attr("data-status-ok", robotOkay);
+      const rioOkay = dsConn.RobotLinked;
+      teamRobotElement.attr("data-status-ok", rioOkay);
       if (stationStatus.DsConn.SecondsSinceLastRobotLink > 1 && stationStatus.DsConn.SecondsSinceLastRobotLink < 1000) {
         teamRobotElement.text(stationStatus.DsConn.SecondsSinceLastRobotLink.toFixed());
       } else {
         teamRobotElement.text("RIO");
       }
+      const batteryOkay = dsConn.BatteryVoltage > lowBatteryThreshold && dsConn.RobotLinked;
+      teamBatteryElement.attr("data-status-ok", batteryOkay);
       teamBatteryElement.text(dsConn.BatteryVoltage.toFixed(1) + "V");
 
       const btuOkay = wifiStatus.MBits < highBtuThreshold && dsConn.RobotLinked;

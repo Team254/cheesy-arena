@@ -121,6 +121,10 @@ const handleRealtimeScore = function (data) {
     let l2_total = score.Reef.Branches[0].filter(Boolean).length;
     let l3_total = score.Reef.Branches[1].filter(Boolean).length;
     let l4_total = score.Reef.Branches[2].filter(Boolean).length;
+    let l1_auto_total = score.Reef.AutoTroughNear + score.Reef.AutoTroughFar;
+    let l2_auto_total = score.Reef.AutoBranches[0].filter(Boolean).length;
+    let l3_auto_total = score.Reef.AutoBranches[1].filter(Boolean).length;
+    let l4_auto_total = score.Reef.AutoBranches[2].filter(Boolean).length;
 
     let scoreRoot = `${alliance}ScoreSummary`;
     $(`#${scoreRoot} .team-1-leave`).text(score.LeaveStatuses[0] ? "✓" : "❌");
@@ -133,6 +137,10 @@ const handleRealtimeScore = function (data) {
     $(`#${scoreRoot} .coral-l2`).text(l2_total);
     $(`#${scoreRoot} .coral-l3`).text(l3_total);
     $(`#${scoreRoot} .coral-l4`).text(l4_total);
+    $(`#${scoreRoot} .coral-l1-auto`).text(l1_auto_total);
+    $(`#${scoreRoot} .coral-l2-auto`).text(l2_auto_total);
+    $(`#${scoreRoot} .coral-l3-auto`).text(l3_auto_total);
+    $(`#${scoreRoot} .coral-l4-auto`).text(l4_auto_total);
     $(`#${scoreRoot} .processor`).text(score.ProcessorAlgae);
     $(`#${scoreRoot} .barge`).text(score.BargeAlgae);
   }
