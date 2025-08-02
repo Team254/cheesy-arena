@@ -26,6 +26,8 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			SelectionShowUnpickedTeams:  true,
 			TbaDownloadEnabled:          true,
 			ApChannel:                   36,
+			SCCUpCommands:               "configure terminal\ninterface range gigabitEthernet 1/2-4\nno shutdown\nexit\nexit\nexit",
+			SCCDownCommands:             "configure terminal\ninterface range gigabitEthernet 1/2-4\nshutdown\nexit\nexit\nexit",
 			WarmupDurationSec:           0,
 			AutoDurationSec:             15,
 			PauseDurationSec:            3,

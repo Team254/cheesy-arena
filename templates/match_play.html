@@ -104,6 +104,11 @@ UI for controlling match play and viewing team connection and field status.
           <p>
             <span class="badge badge-status" id="accessPointStatus">Access Point</span><br/>
             <span class="badge badge-status" id="switchStatus">Switch</span>
+            {{if .EventSettings.SCCManagementEnabled}}
+            <br/>
+            <span class="badge badge-status" id="redSCCStatus">Red SCC</span><br/>
+            <span class="badge badge-status" id="blueSCCStatus">Blue SCC</span>
+            {{end}}
           </p>
           {{end}}
           {{if .PlcIsEnabled}}
