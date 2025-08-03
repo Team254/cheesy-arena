@@ -74,7 +74,7 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 		NumWinsToAdvance:   1,
 		redAllianceSource:  matchupSource{matchup: &m3, useWinner: true},
 		blueAllianceSource: matchupSource{matchup: &m4, useWinner: true},
-		matchSpecs:         newDoubleEliminationMatch(8, "Round 2 Upper", 540),
+		matchSpecs:         newDoubleEliminationMatch(8, "Round 2 Upper", 300),
 	}
 
 	// Define Round 3 matches.
@@ -129,6 +129,7 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 
 	// Define scheduled breaks.
 	breakSpecs := []breakSpec{
+		{9, 360, "Field Break"},
 		{11, 360, "Field Break"},
 		{13, 900, "Awards Break"},
 		{14, 900, "Awards Break"},
