@@ -450,7 +450,7 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 			NumWinsToAdvance:   1,
 			redAllianceSource:  matchupSource{matchup: &m3, useWinner: true},
 			blueAllianceSource: matchupSource{matchup: &m4, useWinner: true},
-			matchSpecs:         newDoubleEliminationMatch(8, "Round 2 Upper", 540),
+			matchSpecs:         newDoubleEliminationMatch(8, "Round 2 Upper", 300),
 		}
 
 		// Define Round 3 matches.
@@ -503,10 +503,9 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 			matchSpecs:         newFinalMatches(14),
 		}
 
-		// Define scheduled breaks.
+			// Define scheduled breaks.
 		breakSpecs := []breakSpec{
-			//{5, 540, "Field Break"},
-			//{9, 540, "Field Break"},
+			{9, 360, "Field Break"},
 			{11, 360, "Field Break"},
 			{13, 900, "Awards Break"},
 			{14, 900, "Awards Break"},
@@ -518,8 +517,6 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 	}else{
 		return nil, nil, fmt.Errorf("double-elimination bracket must have 3 to 8 alliances")
 	}
-
-	
 }
 
 // Helper method to create the matches for a given pre-final double-elimination matchup.
