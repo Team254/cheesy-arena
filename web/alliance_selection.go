@@ -277,7 +277,7 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
-	go ws.HandleNotifiers(web.arena.AllianceSelectionNotifier)
+	go ws.HandleNotifiers(web.arena.AllianceSelectionNotifier, web.arena.AudienceDisplayModeNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
@@ -322,6 +322,13 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 			web.arena.AllianceSelectionShowTimer = false
 			web.arena.AllianceSelectionTimeRemainingSec = 0
 			web.arena.AllianceSelectionNotifier.Notify()
+		case "setAudienceDisplay":
+			mode, ok := data.(string)
+			if !ok {
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			web.arena.SetAudienceDisplayMode(mode)
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}
@@ -340,7 +347,9 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 		}
 	}
 
-	template, err := web.parseFiles("templates/alliance_selection.html", "templates/base.html")
+	template, err := web.parseFiles(
+		"templates/alliance_selection.html", "templates/audience_display_radio_buttons.html", "templates/base.html",
+	)
 	if err != nil {
 		handleWebErr(w, err)
 		return

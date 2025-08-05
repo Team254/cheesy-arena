@@ -21,7 +21,7 @@ UI for controlling the alliance selection process.
     </form>
   </div>
   {{else}}
-  <div class="col-lg-3 ">
+  <div class="col-lg-3">
     <legend>Alliance Selection</legend>
     <div class="mb-2">
       <button type="submit" class="btn btn-primary" form="alliancesForm">Update</button>
@@ -35,6 +35,10 @@ UI for controlling the alliance selection process.
       <button type="button" class="btn btn-danger" onclick="$('#confirmFinalizeAllianceSelection').modal('show');">
         Finalize Alliance Selection
       </button>
+    </div>
+    <div class="card card-body bg-body-tertiary mt-4">
+      <legend>Audience Display</legend>
+      {{template "audience_display_radio_buttons"}}
     </div>
   </div>
   <div class="col-lg-5">

@@ -55,6 +55,7 @@ const handleAudienceDisplayMode = function (data) {
 const setAudienceDisplay = function () {
   websocket.send("setAudienceDisplay", $("input[name=audienceDisplay]:checked").val());
 };
+
 $(function () {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/setup/lower_thirds/websocket", {
