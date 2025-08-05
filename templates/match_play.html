@@ -124,62 +124,7 @@ UI for controlling match play and viewing team connection and field status.
         </div>
         <div class="col-lg-3">
           <h6>Audience Display</h6>
-          <div class="row">
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="blank" onclick="setAudienceDisplay();"> Blank
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="intro"
-                  onclick="setAudienceDisplay();" id="introRadio"> Match Intro
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="match" onclick="setAudienceDisplay();"> Match Play
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="score"
-                  onclick="setAudienceDisplay();" id="scoreRadio"> Final Score
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="bracket" onclick="setAudienceDisplay();"> Bracket
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="logo" onclick="setAudienceDisplay();"> Logo With BG
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="logoLuma" onclick="setAudienceDisplay();">
-                Logo Without BG
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="sponsor" onclick="setAudienceDisplay();"> Sponsor Reel
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="allianceSelection"
-                  onclick="setAudienceDisplay();"> Alliance Selection
-              </label>
-            </div>
-            <div>
-              <label>
-                <input type="radio" name="audienceDisplay" value="timeout" onclick="setAudienceDisplay();"> Timeout
-              </label>
-            </div>
-          </div>
+          {{template "audience_display_radio_buttons"}}
         </div>
         <div class="col-lg-3">
           <h6>Alliance Station Display</h6>

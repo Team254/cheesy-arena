@@ -21,7 +21,9 @@ func (web *Web) lowerThirdsGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/setup_lower_thirds.html", "templates/base.html")
+	template, err := web.parseFiles(
+		"templates/setup_lower_thirds.html", "templates/audience_display_radio_buttons.html", "templates/base.html",
+	)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -138,6 +140,7 @@ func (web *Web) lowerThirdsWebsocketHandler(w http.ResponseWriter, r *http.Reque
 				continue
 			}
 			web.arena.SetAudienceDisplayMode(mode)
+			continue
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue

@@ -37,7 +37,9 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/match_play.html", "templates/base.html")
+	template, err := web.parseFiles(
+		"templates/match_play.html", "templates/audience_display_radio_buttons.html", "templates/base.html",
+	)
 	if err != nil {
 		handleWebErr(w, err)
 		return
