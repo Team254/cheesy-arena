@@ -175,3 +175,10 @@ input[data-changed="true"], select[data-changed="true"] {
 .badge-alternatIO[data-ready="2"] {
   background-color: #0c6;
 }
+
+/* Placeholder styles for input fields*/
+.col-lg-6 input::placeholder {
+    color: #ff0000; /* Red placeholder text */
+    font-style: italic;
+    opacity: 0.4;
+}
