@@ -85,7 +85,8 @@ Display shown on the audience screen overlayed over the video.
         <span id="leftPlayoffAllianceWins"></span>&nbsp;-&nbsp;<span id="rightPlayoffAllianceWins"></span>
       </div>
       <div class="text-center" id="matchCircle">
-        <img id="logo" src="/static/img/game-logo.png" alt="logo"/>
+        <img id="logo" src="/static/img/game-logo{{.EventSettings.LogoSuffix}}.png" 
+          onerror="this.src='/static/img/game-logo.png'" alt="logo"/>
         <div id="matchTime"></div>
       </div>
       <div id="timeoutDetails">
@@ -104,7 +105,8 @@ Display shown on the audience screen overlayed over the video.
         <div class="blindsCenter blank"></div>
       </div>
       <div class="blindsCenter full">
-        <img id="blindsLogo" src="/static/img/blinds-logo.png" alt="logo"/>
+        <img id="blindsLogo" src="/static/img/blinds-logo{{.EventSettings.LogoSuffix}}.png" 
+          onerror="this.src='/static/img/blinds-logo.png'" alt="logo"/>
       </div>
       <div id="finalScoreCentering">
         <div id="finalScore">

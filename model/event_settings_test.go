@@ -20,6 +20,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 		EventSettings{
 			Id:                         1,
 			Name:                       "Untitled Event",
+			LogoSuffix: 				 "",
 			PlayoffType:                DoubleEliminationPlayoff,
 			NumPlayoffAlliances:        8,
 			SelectionRound2Order:       "L",

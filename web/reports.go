@@ -19,6 +19,7 @@ import (
 	"sort"
 	"strconv"
 	"time"
+	"os"
 )
 
 // Generates a CSV-formatted report of the qualification rankings.
@@ -292,6 +293,7 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	pdf.SetLineWidth(1)
 
 	eventName := web.arena.EventSettings.Name
+	logoSuffix := web.arena.EventSettings.LogoSuffix
 	numAlliances := web.arena.EventSettings.NumPlayoffAlliances
 
 	for page := 0; page < (numAlliances+3)/4; page++ {
@@ -303,13 +305,13 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 			pdf.RoundedRect(cSideMargin, float64(heightAcc), cWidth, cHeight, 4, "1234", "D")
 			couponX := cSideMargin + (cWidth * 0.5)
 			couponY := float64(heightAcc) + (cHeight * 0.5)
-			drawCoupon(pdf, eventName, couponX, couponY, i+1, "VAR Coupon")
+			drawCoupon(pdf, eventName, couponX, couponY, i+1, "VAR Coupon", logoSuffix)
 
 			pdf.RoundedRect(cWidth+cHPad+cSideMargin, float64(heightAcc), cWidth, cHeight, 4, "1234", "D")
 			couponX = cSideMargin + cWidth + cHPad + (cWidth * 0.5)
 			couponY = float64(heightAcc) + (cHeight * 0.5)
 			heightAcc += cHeight + cVPad
-			drawCoupon(pdf, eventName, couponX, couponY, i+1, "Backup Coupon")
+			drawCoupon(pdf, eventName, couponX, couponY, i+1, "Backup Coupon", logoSuffix)
 		}
 	}
 
@@ -321,9 +323,9 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func drawCoupon(pdf *reportPdf, eventName string, x float64, y float64, allianceNumber int, text string) {
+func drawCoupon(pdf *reportPdf, eventName string, x float64, y float64, allianceNumber int, text string, logoSuffix string) {
 	pdf.SetTextColor(0, 0, 0)
-	drawPdfLogo(pdf, x, y, cImgWidth)
+	drawPdfLogo(pdf, x, y, cImgWidth, logoSuffix)
 
 	pdf.SetFont("Arial", "B", 24)
 	drawCenteredText(pdf, text, x, y+10)
@@ -356,9 +358,15 @@ func drawCenteredText(pdf *reportPdf, txt string, x float64, y float64) {
 	pdf.Text(x-(width/2), y, txt)
 }
 
-func drawPdfLogo(pdf gofpdf.Pdf, x float64, y float64, width float64) {
+func drawPdfLogo(pdf *reportPdf, x float64, y float64, width float64, logoSuffix string) {
+	// Check if the dynamic image file exists
+	imagePath := "static/img/game-logo" + logoSuffix + ".png"
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		// If the dynamic image doesn't exist, use the default image
+		imagePath = "static/img/game-logo.png"
+	}
 	pdf.ImageOptions(
-		"static/img/game-logo.png",
+		imagePath ,
 		x-(width/2),
 		y-25,
 		width,

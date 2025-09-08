@@ -30,7 +30,8 @@ Display shown on the screens above each driver station.
       </div>
     </div>
     <div id="logo" class="mode">
-      <img id="logoImg" src="/static/img/alliance-station-logo.png" alt="logo"/>
+      <img id="logoImg" src="/static/img/alliance-station-logo{{.EventSettings.LogoSuffix}}.png" 
+        onerror="this.src='/static/img/alliance-station-logo.png'" alt="logo"/>
     </div>
     <div id="fieldReset" class="mode">
       <div>FIELD<br/>RESET</div>
