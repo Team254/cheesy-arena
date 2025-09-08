@@ -20,6 +20,7 @@ import (
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/jung-kurt/gofpdf"
+	"os"
 )
 
 // Generates a CSV-formatted report of the qualification rankings.
@@ -300,6 +301,7 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	eventName := web.arena.EventSettings.Name
+	logoSuffix := web.arena.EventSettings.LogoSuffix
 
 	for page := 0; page < (len(alliances)+3)/4; page++ {
 		heightAcc := cTopMargin
@@ -312,13 +314,13 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 			pdf.RoundedRect(cSideMargin, float64(heightAcc), cWidth, cHeight, 4, "1234", "D")
 			timeoutX := cSideMargin + (cWidth * 0.5)
 			timeoutY := float64(heightAcc) + (cHeight * 0.5)
-			drawTimeoutCoupon(pdf, eventName, timeoutX, timeoutY, allianceCaptain, i+1)
+			drawTimeoutCoupon(pdf, eventName, logoSuffix, timeoutX, timeoutY, allianceCaptain, i+1)
 
 			pdf.RoundedRect(cWidth+cHPad+cSideMargin, float64(heightAcc), cWidth, cHeight, 4, "1234", "D")
 			backupX := cSideMargin + cWidth + cHPad + (cWidth * 0.5)
 			backupY := float64(heightAcc) + (cHeight * 0.5)
 			heightAcc += cHeight + cVPad
-			drawBackupCoupon(pdf, eventName, backupX, backupY, allianceCaptain, i+1)
+			drawBackupCoupon(pdf, eventName, logoSuffix, backupX, backupY, allianceCaptain, i+1)
 		}
 	}
 
@@ -331,9 +333,9 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func drawTimeoutCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, teamId int, allianceNumber int) {
+func drawTimeoutCoupon(pdf gofpdf.Pdf, eventName string, logoSuffix string, x float64, y float64, teamId int, allianceNumber int) {
 	pdf.SetTextColor(0, 0, 0)
-	drawPdfLogo(pdf, x, y, cImgWidth)
+	drawPdfLogo(pdf, x, y, cImgWidth, logoSuffix)
 
 	pdf.SetFont("Arial", "B", 24)
 	drawCenteredText(pdf, "Timeout Coupon", x, y+10)
@@ -343,9 +345,9 @@ func drawTimeoutCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, t
 	drawEventWatermark(pdf, x, y, eventName)
 }
 
-func drawBackupCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, teamId int, allianceNumber int) {
+func drawBackupCoupon(pdf gofpdf.Pdf, eventName string, logoSuffix string, x float64, y float64, teamId int, allianceNumber int) {
 	pdf.SetTextColor(0, 0, 0)
-	drawPdfLogo(pdf, x, y, cImgWidth)
+	drawPdfLogo(pdf, x, y, cImgWidth, logoSuffix)
 
 	pdf.SetFont("Arial", "B", 24)
 	drawCenteredText(pdf, "Backup Coupon", x, y+10)
@@ -378,9 +380,15 @@ func drawCenteredText(pdf gofpdf.Pdf, txt string, x float64, y float64) {
 	pdf.Text(x-(width/2), y, txt)
 }
 
-func drawPdfLogo(pdf gofpdf.Pdf, x float64, y float64, width float64) {
+func drawPdfLogo(pdf gofpdf.Pdf, x float64, y float64, width float64, logoSuffix string) {
+	// Check if the dynamic image file exists
+	imagePath := "static/img/game-logo" + logoSuffix + ".png"
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		// If the dynamic image doesn't exist, use the default image
+		imagePath = "static/img/game-logo.png"
+	}
 	pdf.ImageOptions(
-		"static/img/game-logo.png",
+		imagePath ,
 		x-(width/2),
 		y-25,
 		width,

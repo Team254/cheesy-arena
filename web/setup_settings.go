@@ -129,6 +129,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.ScoreTableEstopAddress = r.PostFormValue("ScoreTableEstopAddress")
 	eventSettings.RedAllianceStationEstopAddress = r.PostFormValue("RedAllianceStationEstopAddress")
 	eventSettings.BlueAllianceStationEstopAddress = r.PostFormValue("BlueAllianceStationEstopAddress")
+	eventSettings.LogoSuffix = r.PostFormValue("logosuffix")
 
 	err := web.arena.Database.UpdateEventSettings(eventSettings)
 	if err != nil {
