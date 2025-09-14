@@ -91,8 +91,13 @@ func mockSSHSwitch(t *testing.T, port int, username, password string, commands *
 		assert.Nil(t, err)
 		defer channel.Close()
 
-		// Wait for the client to request a shell
+		// Wait for the client to request a PTY
 		req := <-requests
+		assert.Equal(t, "pty-req", req.Type)
+		req.Reply(true, nil)
+
+		// Wait for the client to request a shell
+		req = <-requests
 		assert.Equal(t, "shell", req.Type)
 		req.Reply(true, nil)
 
