@@ -140,3 +140,7 @@ func (plc *FakePlc) GetAllCoils() [14]bool {
 func (plc *FakePlc) GetFieldStackLight() (bool, bool, bool, bool) {
 	return plc.stackLights[0], plc.stackLights[1], plc.stackLights[2], plc.stackLights[3]
 }
+
+func (plc *FakePlc) SetMatchState(state uint16){
+
+}
