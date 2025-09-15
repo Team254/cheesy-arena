@@ -53,7 +53,14 @@ UI for configuring event settings.
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Name</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" name="name" placeholder="{{.Name}}">
+                  <input type="text" class="form-control" name="name" value="{{.Name}}" placeholder="{{.Name}}">
+                </div>
+              </div>
+              <div>Logo Suffix</div>
+              <div class="row mb-3" >
+                <label class="col-lg-6 control-label">Enter suffix used to load alterntive Logo files</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="logosuffix" value="{{.LogoSuffix}}" placeholder="{{.LogoSuffix}}">
                 </div>
               </div>
               <div class="row mb-3">

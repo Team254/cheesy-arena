@@ -15,7 +15,8 @@ Display to show a static logo and configurable message.
   </head>
   <body>
     <div id="logo">
-      <img id="logoImg" src="/static/img/alliance-station-logo.png" alt="logo"/>
+      <img id="logoImg" src="/static/img/alliance-station-logo{{.EventSettings.LogoSuffix}}.png" 
+        onerror="this.src='/static/img/alliance-station-logo.png'" alt="logo"/>
     </div>
     <div id="message"></div>
     <script src="/static/js/lib/jquery.min.js"></script>
