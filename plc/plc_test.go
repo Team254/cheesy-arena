@@ -92,6 +92,7 @@ func TestPlcGetNames(t *testing.T) {
 			"fieldIoConnection",
 			"redProcessor",
 			"blueProcessor",
+			"matchState",
 		},
 		plc.GetRegisterNames(),
 	)
