@@ -110,6 +110,11 @@ func (scc *SCCSwitch) runCommandSequence(commands []string) (string, error) {
 		return "", fmt.Errorf("failed to create input pipe: %w", err)
 	}
 
+	modes := ssh.TerminalModes{ssh.ECHO: 0}
+	if err := session.RequestPty("vt100", 80, 40, modes); err != nil {
+		return "", fmt.Errorf("failed to configure shell: %w", err)
+	}
+
 	// Launch the switch's interactive shell
 	err = session.Shell()
 	if err != nil {
