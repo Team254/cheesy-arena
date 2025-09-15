@@ -1011,6 +1011,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
 
 	// Handle the evergreen PLC functions: stack lights, stack buzzer, and field reset light.
+	arena.Plc.SetMatchState(uint16(arena.MatchState))
 	switch arena.MatchState {
 	case PreMatch:
 		if arena.lastMatchState != PreMatch {

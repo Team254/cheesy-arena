@@ -84,3 +84,7 @@ func (client *FakeModbusClient) MaskWriteRegister(address, andMask, orMask uint1
 func (client *FakeModbusClient) ReadFIFOQueue(address uint16) (results []byte, err error) {
 	return nil, nil
 }
+
+func (plc *ModbusPlc) SetMatchState(){
+
+}

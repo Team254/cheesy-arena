@@ -40,6 +40,7 @@ type Plc interface {
 	ResetEstops()
 	GetAllCoils() ([coilCount]bool)
 	GetFieldStackLight() (bool, bool, bool, bool)
+	SetMatchState(state uint16)
 }
 
 type ModbusPlc struct {
@@ -102,6 +103,7 @@ const (
 	fieldIoConnection register = iota
 	redProcessor
 	blueProcessor
+	matchState
 	registerCount
 )
 
@@ -494,4 +496,8 @@ func (plc *ModbusPlc) GetAllCoils() [coilCount]bool {
 // Returns the state of the field stack light (red, blue, orange, green).
 func (plc *ModbusPlc) GetFieldStackLight() (bool, bool, bool, bool) {
 	return plc.coils[stackLightRed], plc.coils[stackLightBlue], plc.coils[stackLightOrange], plc.coils[stackLightGreen]
+}
+
+func (plc *ModbusPlc) SetMatchState(state uint16){
+	plc.registers[matchState] = state
 }
