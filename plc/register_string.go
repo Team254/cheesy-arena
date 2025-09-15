@@ -15,7 +15,7 @@ func _() {
 	_ = x[registerCount-4]
 }
 
-const _register_name = "fieldIoConnectionredProcessorblueProcessorregisterCount"
+const _register_name = "fieldIoConnectionredProcessorblueProcessormatchStateregisterCount"
 
 var _register_index = [...]uint8{0, 17, 29, 42, 52, 65}
 
