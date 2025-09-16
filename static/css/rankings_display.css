@@ -30,6 +30,10 @@ body {
   color: #fff;
   text-transform: uppercase;
 }
+#logo {
+  margin-bottom: 10px;
+  height: 50px;
+}
 #standings {
   border-radius: 10px;
   background-color: #fff;

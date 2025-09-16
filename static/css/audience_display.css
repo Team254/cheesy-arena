@@ -169,12 +169,12 @@ html {
 }
 #logo {
   position: relative;
-  top: 38px;
-  height: 70px;
+  top: 43px;
+  height: 60px;
 }
 #matchTime {
   position: relative;
-  top: 17px;
+  top: 25px;
   height: 60px;
   color: #222;
   font-family: "FuturaLTBold";
@@ -299,8 +299,8 @@ html {
 }
 #blindsLogo {
   position: relative;
-  top: 55px;
-  height: 220px;
+  top: 85px;
+  height: 140px;
 }
 #finalScoreCentering {
   position: fixed;
@@ -591,7 +591,11 @@ html {
   border: 2px solid #222;
   text-align: center;
   font-family: "FuturaLT";
-  font-size: 2.6em;
+  font-size: 3.5em;
+}
+#allianceSelectionTable img {
+  width: 10em;
+  margin: 0.4em;
 }
 #allianceSelectionTable tr:nth-child(even) {
   background-color: #ccc;
@@ -618,8 +622,8 @@ html {
   height: 87px;
 }
 #lowerThirdLogo {
-  margin: 12px 20px;
-  height: 60px;
+  margin: 20px;
+  height: 45px;
   float: left;
 }
 #lowerThirdTop {
