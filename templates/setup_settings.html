@@ -238,11 +238,18 @@ UI for configuring event settings.
                     name="coralBonusPerLevelThreshold" value="{{.CoralBonusPerLevelThreshold}}">
                 </div>
               </div>
-              <div class="row">
+              <div class="row mb-3">
                 <label class="col-lg-6 control-label">Barge Bonus RP Point Threshold</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" id="bargeBonusPointThreshold" name="bargeBonusPointThreshold"
                     value="{{.BargeBonusPointThreshold}}">
+                </div>
+              </div>
+              <div class="row">
+                <label class="col-lg-6 control-label">Include Algae Points Towards Barge Bonus</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="includeAlgaeInBargeBonus"
+                    name="includeAlgaeInBargeBonus" {{if .IncludeAlgaeInBargeBonus}} checked{{end}}>
                 </div>
               </div>
             </fieldset>

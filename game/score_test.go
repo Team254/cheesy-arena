@@ -278,6 +278,29 @@ func TestScoreBargeBonusRankingPoint(t *testing.T) {
 	}
 }
 
+func TestScoreBargeBonusRankingPointIncludingAlgae(t *testing.T) {
+	// Save the original setting and restore it after the test.
+	originalIncludeAlgae := IncludeAlgaeInBargeBonus
+	defer func() {
+		IncludeAlgaeInBargeBonus = originalIncludeAlgae
+	}()
+
+	IncludeAlgaeInBargeBonus = false
+	BargeBonusPointThreshold = 36
+
+	score := Score{
+		EndgameStatuses: [3]EndgameStatus{EndgameDeepCage, EndgameDeepCage, EndgameParked},
+		BargeAlgae:      1,
+		ProcessorAlgae:  1,
+	}
+	summary := score.Summarize(&Score{})
+	assert.Equal(t, false, summary.BargeBonusRankingPoint)
+
+	IncludeAlgaeInBargeBonus = true
+	summary = score.Summarize(&Score{})
+	assert.Equal(t, true, summary.BargeBonusRankingPoint)
+}
+
 func TestScoreAutoRankingPointFromFouls(t *testing.T) {
 	testCases := []struct {
 		ownFouls           []Foul

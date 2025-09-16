@@ -37,6 +37,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			CoralBonusPerLevelThreshold: 7,
 			CoralBonusCoopEnabled:       true,
 			BargeBonusPointThreshold:    16,
+			IncludeAlgaeInBargeBonus:    false,
 		},
 		*eventSettings,
 	)

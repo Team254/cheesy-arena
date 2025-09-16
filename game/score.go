@@ -21,6 +21,7 @@ var AutoBonusCoralThreshold = 1
 var CoralBonusPerLevelThreshold = 7
 var CoralBonusCoopEnabled = true
 var BargeBonusPointThreshold = 16
+var IncludeAlgaeInBargeBonus = false
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
@@ -124,7 +125,11 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	}
 
 	// Barge bonus ranking point.
-	if summary.BargePoints >= BargeBonusPointThreshold {
+	bargePointsForBonus := summary.BargePoints
+	if IncludeAlgaeInBargeBonus {
+		bargePointsForBonus += summary.AlgaePoints
+	}
+	if bargePointsForBonus >= BargeBonusPointThreshold {
 		summary.BargeBonusRankingPoint = true
 	}
 
