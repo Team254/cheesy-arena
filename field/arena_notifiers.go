@@ -31,6 +31,7 @@ type ArenaNotifiers struct {
 	ScorePostedNotifier                *websocket.Notifier
 	ScoringStatusNotifier              *websocket.Notifier
 	PlcCoilsNotifier                   *websocket.Notifier
+	MatchListNotifier 				   *websocket.Notifier
 }
 
 type MatchTimeMessage struct {
@@ -67,6 +68,7 @@ func (arena *Arena) configureNotifiers() {
 	arena.ScorePostedNotifier = websocket.NewNotifier("scorePosted", arena.GenerateScorePostedMessage)
 	arena.ScoringStatusNotifier = websocket.NewNotifier("scoringStatus", arena.generateScoringStatusMessage)
 	arena.PlcCoilsNotifier = websocket.NewNotifier("plcCoils", arena.generatePlcCoilsMessage)
+	arena.MatchListNotifier = websocket.NewNotifier("matchListUpdate", nil)
 
 }
 

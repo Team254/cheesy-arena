@@ -138,6 +138,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 		web.arena.RealtimeScoreNotifier,
 		web.arena.ScorePostedNotifier,
 		web.arena.ScoringStatusNotifier,
+		web.arena.MatchListNotifier,
 	)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.

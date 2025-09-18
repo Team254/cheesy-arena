@@ -270,3 +270,4 @@ func (web *Web) parseFiles(filenames ...string) (*template.Template, error) {
 	template := template.New("").Funcs(web.templateHelpers)
 	return template.ParseFiles(paths...)
 }
+
