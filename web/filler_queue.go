@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -104,6 +105,8 @@ func (web *Web) addPracticeMatchPostHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	log.Printf("Created practice match: %s", match.LongName)
+	web.arena.MatchListNotifier.Notify()
 	http.Redirect(w, r, "/panel/freezy/add_practice_match", http.StatusSeeOther)
 }
 
@@ -136,6 +139,8 @@ func (web *Web) editPracticeMatchHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	log.Println("Edited practice match:", match.Id)
+	web.arena.MatchListNotifier.Notify()
 	http.Redirect(w, r, "/panel/freezy/add_practice_match", http.StatusSeeOther)
 }
 

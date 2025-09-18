@@ -414,6 +414,13 @@ const handleEventStatus = function (data) {
   $("#earlyLateMessage").text(data.EarlyLateMessage);
 };
 
+const matchListUpdate = function () {
+ //window.location.reload();
+ fetch("/match_play/match_load")
+    .then(response => response.text())
+    .then(html => $("#matchListColumn").html(html));
+};
+
 const formatPlayoffAllianceInfo = function (allianceNumber, offFieldTeams) {
   if (allianceNumber === 0) {
     return "";
@@ -461,6 +468,9 @@ $(function () {
     },
     scoringStatus: function (event) {
       handleScoringStatus(event.data);
+    },
+    matchListUpdate: function () {
+      matchListUpdate();
     },
   });
 });
