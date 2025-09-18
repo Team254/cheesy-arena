@@ -416,7 +416,10 @@ const handleEventStatus = function (data) {
 };
 
 const matchListUpdate = function () {
- window.location.reload();
+ //window.location.reload();
+ fetch("/match_play/match_load")
+    .then(response => response.text())
+    .then(html => $("#matchListColumn").html(html));
 };
 
 const formatPlayoffAllianceInfo = function (allianceNumber, offFieldTeams) {
