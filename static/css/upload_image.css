@@ -1,0 +1,23 @@
+* { box-sizing: border-box; }
+body { font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 20px; background:#0f1113; color:#eef; }
+.container { max-width: 1100px; margin: 0 auto; }
+
+h1 { margin-bottom: 12px; }
+
+.field { margin-bottom: 16px; display:flex; gap:8px; align-items:center; }
+.field span { min-width: 220px; color:#9ab; }
+.field input { flex:1; padding:8px; border-radius:6px; border:1px solid #333; background:#111; color:#eef; }
+
+.boxes { display:flex; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
+.drop-box { width: 32%; min-width: 220px; background:#0b0c0e; border-radius:8px; padding:10px; border:1px solid #222; }
+.box-label { font-weight:600; margin-bottom:8px; color:#9cf; text-align:center; }
+.drop-zone { border:2px dashed #2a2a2a; border-radius:6px; padding:20px; text-align:center; cursor:pointer; background:linear-gradient(#070708,#0b0c0e); }
+.drop-zone.dragover { border-color:#0af; background:linear-gradient(#061728,#071a25); }
+.drop-zone p { margin:0; color:#9aa; }
+.drop-zone input[type="file"] { margin-top:8px; }
+
+.preview { display:block; width:100%; margin-top:10px; max-height:140px; object-fit:contain; border-radius:4px; background:#050506; border:1px solid #222; }
+
+.controls { display:flex; gap:12px; align-items:center; }
+#uploadBtn { padding:10px 18px; border-radius:6px; border:none; background:#0af; color:#012; font-weight:700; cursor:pointer; }
+.message { color:#9cf; margin-left:8px; }

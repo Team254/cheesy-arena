@@ -1,0 +1,57 @@
+{{/*
+Copyright All Rights Reserved.
+Author: cpapplefamily@gmail.com (Corey Applegate)
+
+UI for Uploading Logos to Arena.
+*/}}
+{{define "title"}}Upload Logos{{end}}
+{{define "body"}}
+  <link href="/static/css/upload_image.css" rel="stylesheet">
+    <h1>Upload Logos</h1>
+
+    <label class="field">
+      <span>Filename suffix (appended to each file)</span>
+      <input id="nameSuffix" type="text" placeholder="e.g. _v1 or _team254" />
+    </label>
+
+    <div class="boxes">
+      <div class="drop-box" data-key="alliance-station-logo">
+        <div class="box-label">Alliance Station Logo</div>
+        <div class="drop-zone" data-target="alliance-station-logo">
+          <p>Drag & drop PNG here</p>
+          <input type="file" accept=".png" class="file-input" />
+        </div>
+        <img class="preview" alt="" />
+      </div>
+
+      <div class="drop-box" data-key="blinds-logo">
+        <div class="box-label">Blinds Logo</div>
+        <div class="drop-zone" data-target="blinds-logo">
+          <p>Drag & drop PNG here</p>
+          <input type="file" accept=".png" class="file-input" />
+        </div>
+        <img class="preview" alt="" />
+      </div>
+
+      <div class="drop-box" data-key="game-logo">
+        <div class="box-label">Game Logo</div>
+        <div class="drop-zone" data-target="game-logo">
+          <p>Drag & drop PNG here</p>
+          <input type="file" accept=".png" class="file-input" />
+        </div>
+        <img class="preview" alt="" />
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="uploadBtn">Upload selected</button>
+      <div id="status" class="message"></div>
+    </div>
+{{end}}
+{{define "script"}}
+<script src="/static/js/upload_image.js"></script>
+{{end}}
+{{define "head"}}
+<link href="/static/css/upload_image.css" rel="stylesheet">
+{{end}}
+  
