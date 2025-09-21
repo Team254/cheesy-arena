@@ -1,10 +1,3 @@
-/* Global body styles */
-body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    padding: 0;
-}
-
 /* Header styling */
 h1 {
     text-align: center;
@@ -48,4 +41,24 @@ h1 {
 .status-code {
     font-style: italic;
     margin-left: 10px;
+}
+
+.team-id[data-status=no-link], .team-notes[data-status=no-link] {
+  background-color: #AAA;
+}
+.team-id[data-status=ds-linked], .team-notes[data-status=ds-linked] {
+  background-color: #EDAB33;
+}
+.team-id[data-status=robot-linked], .team-notes[data-status=robot-linked] {
+  background-color: #00ff00;
+  color: #333;
+}
+.team-id[data-status=rio-linked], .team-notes[data-status=rio-linked] {
+  background-color: #00cc00;
+}
+.team-id[data-status=radio-linked], .team-notes[data-status=radio-linked] {
+  background-color: #AA3377;
+}
+.team-id[data-status=wrong-station], .team-notes[data-status=wrong-station] {
+  background-color: #4477AA;
 }

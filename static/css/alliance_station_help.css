@@ -1,0 +1,77 @@
+/*
+  Alliance Station Display Help CSS
+  Matches FTA Monitor legend styling with data-status background
+*/
+
+/* Header styling */
+h1 {
+    text-align: center;
+    color: #ffffff;
+}
+
+/* Container for all status items */
+.status-container {
+    margin-top: 20px;
+}
+
+/* Individual status item styling */
+.team-id {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+    color: #333;
+}
+
+/* Description area for each status */
+.status-description {
+    font-size: 16px;
+}
+
+/* Name of the status (bold) */
+.status-name {
+    font-weight: bold;
+}
+
+/* Color code (italic) */
+.status-code {
+    font-style: italic;
+    margin-left: 10px;
+}
+
+/* Status backgrounds based on data-status */
+.team-id[data-status="a-stop"] {
+    background-color: orange;
+    animation: blink-orange 1s step-start infinite;
+}
+
+.team-id[data-status="e-stop"] {
+    background-color: orange;
+}
+
+.team-id[data-status="bypass"] {
+    background-color: grey;
+}
+
+.team-id[data-status="connected"]{
+    background-color:red;
+    color:white;
+}
+.team-id[data-status="disconnected"]{
+    background-color:blue;
+    animation: blink-orange 1s step-start infinite;
+    color: white;
+}
+.team-id[data-status="count"]{
+    background-color: purple;
+    color: white;
+}
+.team-id[data-status="reset"]{
+    background-color: #0a3;
+    color: white;
+}
+
+@keyframes blink-orange {
+    50% { opacity: 0.3; }
+}

@@ -1,0 +1,124 @@
+/*Author: justfishin@icloud.com
+ CSS to format general help page*/
+
+h1 {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.5em;
+  font-weight: normal;
+  color: #ffffff;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+h3 {
+  font-size: 1.1em;
+  font-weight: normal;
+  color: #ffffff;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.intro-text {
+  max-width: 800px;
+  margin: 0 auto 30px;
+  font-size: 1.1em;
+  color: #ffffff;
+}
+
+.help-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.help-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.help-card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.card-title {
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #222;
+}
+
+.card-code {
+  font-size: 1em;
+  color: #666;
+  background-color: #e8ecef;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.pre-match-card {
+  font-size: 1em;
+  color: white;
+  background-color: #00b994;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.during-match-card {
+  font-size: 1em;
+  color: white;
+  background-color: #8549ca;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.post-match-card {
+  font-size: 1em;
+  color: white;
+  background-color: #5dabe6;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.other-details-card {
+  font-size: 1em;
+  color: white;
+  background-color: #c4578c;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.card-content {
+  flex-grow: 1;
+}
+
+.card-content p {
+  margin: 0;
+  font-size: 1em;
+  color: #333;
+}
+
+code {
+  color: black;
+}
