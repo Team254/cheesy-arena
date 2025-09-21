@@ -1,0 +1,70 @@
+{{/*
+  Alliance Station Display Help Template
+*/}}
+
+{{define "title"}}Alliance Station Display Help{{end}}
+
+{{define "body"}}
+<!-- Include the FTA Monitor styling -->
+<link rel="stylesheet" href="/static/css/alliance_station_help.css">
+
+<h1>Alliance Station Status Color Legend</h1>
+
+<div class="status-container">
+  <div class="team-id" data-status="a-stop">
+    <div class="status-description">
+      <span class="status-name">A-Stop (Driver Station A-Stopped):</span>
+      <span class="status-code">a-stop</span>
+      <p>This status indicates that a driver station's A-Stop is tripped.</p>
+    </div>
+  </div>
+
+  <div class="team-id" data-status="e-stop">
+    <div class="status-description">
+      <span class="status-name">E-Stop (Emergency Stop):</span>
+      <span class="status-code">e-stop</span>
+      <p>This status indicates that a driver station's E-Stop is tripped.</p>
+    </div>
+  </div>
+
+  <div class="team-id" data-status="bypass">
+    <div class="status-description">
+      <span class="status-name">Bypass Mode:</span>
+      <span class="status-code">bypass</span>
+      <p>This status indicates that a driver station is in bypass mode.</p>
+    </div>
+  </div>
+  <div class="team-id" data-status="disconnected">
+    <div class="status-description">
+      <span class="status-name">Team Disconnected:</span>
+      <span class="status-code">disconnected</span>
+      <p>This status indicates that a driver station is disconnected.</p>
+    </div>
+  </div>
+  <div class="team-id" data-status="connected">
+    <div class="status-description">
+      <span class="status-name">Team Connected:</span>
+      <span class="status-code">connected</span>
+      <p>This status indicates that a driver station is connected.</p>
+    </div>
+  </div>
+  <div class="team-id" data-status="count">
+    <div class="status-description">
+      <span class="status-name">Count:</span>
+      <span class="status-code">count</span>
+      <p>This status indicates that official scorers are counting game pieces, and the field should not be opened.</p>
+    </div>
+  </div>
+  <div class="team-id" data-status="reset">
+    <div class="status-description">
+      <span class="status-name">Field Reset:</span>
+      <span class="status-code">reset</span>
+      <p>This status indicates that the field reset crew should begin clearing the field.</p>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "script"}}
+<!-- No additional scripts needed -->
+{{end}}

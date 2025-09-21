@@ -235,11 +235,14 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /setup/teams/generate_wpa_keys", web.teamsGenerateWpaKeysHandler)
 	mux.HandleFunc("GET /setup/teams/progress", web.teamsUpdateProgressBarHandler)
 	mux.HandleFunc("GET /setup/teams/refresh", web.teamsRefreshHandler)
-	
+
 	// Freezy Arena
 	mux.HandleFunc("GET /help/freezy/field_monitor_help", web.fieldMonitorDisplayHelpHandler)
-	mux.HandleFunc("GET /api/freezy/allianceStatus", web.allianceStatusApiHandler)
+	mux.HandleFunc("GET /help/freezy/configuring_advanced_networking_help", web.configuringAdvancedNetworkingHandler)
+	mux.HandleFunc("GET /help/freezy/alliance_station_display_help", web.allianceStationDisplayHelpHandler)
+	mux.HandleFunc("GET /help/freezy/running_the_event_help", web.runningTheEventHelpHandler)
 	mux.HandleFunc("POST /api/freezy/eStopState", web.eStopStatePostHandler)
+	mux.HandleFunc("GET /api/freezy/allianceStatus", web.allianceStatusApiHandler)
 	mux.HandleFunc("GET /panel/freezy/eStopControl/{alliance}", web.estopContolDisplayHandler)
 	mux.HandleFunc("GET /panel/freezy/eStopControl/websocket", web.estopContolDisplayWebsocketHandler)
 	mux.HandleFunc("GET /panel/freezy/eStopControl/{alliance}/websocket", web.scoringPanelWebsocketHandler)
@@ -270,4 +273,3 @@ func (web *Web) parseFiles(filenames ...string) (*template.Template, error) {
 	template := template.New("").Funcs(web.templateHelpers)
 	return template.ParseFiles(paths...)
 }
-

@@ -1,0 +1,175 @@
+<!--Author: justfishin@icloud.com-->
+<!--General help guide for Freezy Arena-->
+
+{{define "title"}}Help - Configuring Advanced Networking{{end}}
+
+{{define "body"}}
+<link rel="stylesheet" href="/static/css/running_the_event_help.css">
+
+<h1>Configuring Advanced Networking</h1>
+<h3>Click on the card to be brought to the page it is referencing.</h2>
+<hr>
+<h2>Configuring the switch</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Hardware Requiements</span>
+      <span class="pre-match-card">Network Switch</span>
+    </div>
+    <div class="card-content">
+      <p>Freezy Arena requires a Cisco Layer 3 switch to run advanced networking. Any Cisco switch made from 1999 to present should function permitting it is layer 3. 
+        For example, any switch within the 3500 series, 3700 series, 3800 series, or 9300 series will function correctly.
+      </b>
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#game';">
+    <div class="card-header">
+      <span class="card-title">Software Requirements</span>
+      <span class="during-match-card">Cisco IOS</span>
+    </div>
+    <div class="card-content">
+      <p>In order to configure the Cisco Switch, you will need an RS232 to USB cable, or an RS232 to RJ45 cable with a serial port or adapter. Once you configure the initial settings, 
+        you will then be able to access the switch via a terminal emulator (PuTTY or Tera Term recommended). When correctly configured, you should be able to access the switch via telnet at 10.0.100.3.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Configuring the Switch</span>
+      <span class="post-match-card">Cisco IOS CLI</span>
+    </div>
+    <div class="card-content">
+      <p>To configure the switch, download the latest switch configuration from github.com/cpapplefamily/freesy-arena. Once downloaded, power up the switch and connect the console cable to the console port on
+         the back of the switch. Open your terminal emulator, and connect to the Serial COM port shown in your device manager. Once connected to the switch, wait for it to show <code>Switch></code>. 
+         Once here, type in <code>enable</code>. It should then show <code>Switch#</code>. From here, enter <code>configure terminal</code>. It should then show <code>switch(config)#</code>. You can then copy and paste the entire 
+         switch config text file into the terminal emulator. Once it finishes, enter <code>copy running-config startup-config</code> and press enter twice to confirm. Once completed, connect the FMS to port 7 on the switch. 
+         You should then be able to run <code>ping 10.0.100.3</code> if the FMS is configured correctly.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Connecting the field network</span>
+      <span class="other-details-card">Field Setup</span>
+    </div>
+    <div class="card-content">
+      <p>The Switch should have devices connected as follows: 
+        <br><b>Field Radio:</b> port 5. 
+        <br><b>SCC Trunk (Blue):</b> ports 1 and/or 2
+        <br><b>SCC Trunk (Red):</b> ports 3 and/or 4
+        <br><b>FMS Computer:</b> port 7
+        <br><b>Internet Uplink:</b> port 18
+        <br><b>Blue Driver Stations (No SCC):</b> B1 - 12, B2 - 14, B3 - 16
+        <br><b>Red Driver Stations (No SCC):</b> B1 - 13, B2 - 15, B3 - 17
+        <br><b>General Use (Internet and Full Field Network):</b> ports 19 thru 36
+        <br><b>Limited Network Access (Internet and FMS Web Only):</b> ports 37 thru 48</p>
+        <hr>
+        <p>The default password for the switch is <code>1234Five</code>, with IP <code>10.0.100.3</code>
+      </p>
+    </div>
+  </div>
+</div>
+<br>
+<hr>
+<h2>Configuring the Field AP</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Hardware Requirements</span>
+      <span class="pre-match-card">Field Access Point</span>
+    </div>
+    <div class="card-content">
+      <p>Freezy Arena currently only supports the VividHosting VH-113 (VH-109) radio/access point, which requires a passive PoE injector and 2 ethernet cables to run.</p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Software Requirements</span>
+      <span class="during-match-card">VH-109 .img</span>
+    </div>
+    <div class="card-content">
+      <p>Freezy Arena requires VividHosting's VH-109/113 firmare version 1.2.9 or later (VH-109_AP_OFFSEASON_1.2.9-02102025).</p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Configuring the Field AP</span>
+      <span class="post-match-card">VividHosting VH-113</span>
+    </div>
+    <div class="card-content">
+      <p>To configure the Field AP for use with the FMS, navigate to VividHosting's website and download the <i>offseason version</i> of the Field AP firmware. Copy the MD5 hash to Notepad. 
+        Once downloaded, connect the field AP to passive PoE power. Once the radio has powered on, connect the radio to your PC. From a web browser, connect to the VH-109 at IP 192.168.69.1 (Or 10.0.1.1 if defaulted).
+        Choose to 'Update Firmware' and select the VH-113 file. Enter the MD5 hash from notepad, and begin the upgrade. Once the upgrade has completed, you should be able to access the Field AP at 10.0.100.2 when it is connected to port 5 on the Cisco switch.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Cofiguring the FMS for the field AP</span>
+      <span class="other-details-card">Freezy Arena Settings</span>
+    </div>
+    <div class="card-content">
+      <p>Navigate to Settings, and select the field tab. Under the access point section, you'll enter the following details about the field AP:
+      <br><b>Access Point IP:</b> 10.0.100.2
+      <br><b>Password: </b><i>leave blank</i></p>
+    </div>
+  </div>
+</div>
+<br>
+<hr>
+<h2>Configuring the Radio Kiosk</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Hardware Requirements</span>
+      <span class="pre-match-card">Laptop PC</span>
+    </div>
+    <div class="card-content">
+      <p>To setup the radio kiosk, you'll need a computer that supports virtualization technology. Ensure virtualization is enabled in BIOS.</p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Software Requirements</span>
+      <span class="during-match-card">Operating System and Apps</span>
+    </div>
+    <div class="card-content">
+      <p>The VividHosting Radio Kiosk requires Linux or Windows 10 (or later), and Docker Desktop to be installed. You will also need to download the installer from VividHosting.
+        You can find the installer at: <a href="https://vividhosting.app.box.com/v/frc-radio-kiosk">https://vividhosting.app.box.com/v/frc-radio-kiosk</a>
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Installing the Kiosk</span>
+      <span class="post-match-card">Installer / Docker</span>
+    </div>
+    <div class="card-content">
+      <p>To install the kiosk, start off by ensuring that Docker Desktop isi nstalled and running. Download and extract the zip file from the link in the software requirements. 
+        Once extracted, run the executable as administrator. You'll then select the network interface you wish to connect to radios during programming (Usually Ethernet). Once selected, click 'Configure'. 
+        Once the program shows 'Configuration successful for interface: Ethernet', you'll be prompted to run a test. Press 'Check Kiosk Status' to verify the installation. If the prompt returns that the 
+        kiosk is successfully running, the installation is completed. Click 'Yes' to open the kiosk.</p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/reports/csv/wpa_keys';">
+    <div class="card-header">
+      <span class="card-title">Setting up the Kiosk</span>
+      <span class="other-details-card">VividHosting Radio Kiosk</span>
+    </div>
+    <div class="card-content">
+      <p>On the FMS, Open a web browser and navigate to Setup > Team List. Scroll down and click the <a href="/setup/teams/generate_wpa_keys?all=true">Generate All WPA Keys</a> button. Then navigate to Report > CSV Data Export > WPA Keys and save the file on a USB drive.
+        <br><br>On the radio kiosk, open a web browser and go to http://localhost/admin. Enter the password (if required) <code>supercoolpassword</code>. Here, you can see teams that have been programmed and enable various options.
+       Navigate to http://localhost/upload. Upload the exported CSV file from the FMS. The kiosk is now ready for use.</p>
+    </div>
+  </div>
+</div>
+<br>
+<hr>
+</div>
+<br>
+{{end}}
+
+{{define "script"}}
+<!-- No additional scripts needed -->
+{{end}}

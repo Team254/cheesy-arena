@@ -1,0 +1,363 @@
+<!--Author: justfishin@icloud.com-->
+<!--General help guide for Freezy Arena-->
+
+{{define "title"}}Help - Running The Event{{end}}
+
+{{define "body"}}
+<link rel="stylesheet" href="/static/css/running_the_event_help.css">
+
+<h1>Running an event</h1>
+<h3>Click on the card to be brought to the page it is referencing.</h2>
+<hr>
+<h2>Setting Up The Arena</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/setup/settings';">
+    <div class="card-header">
+      <span class="card-title">Event Settings Tab</span>
+      <span class="pre-match-card">Size of Event and Alliances</span>
+    </div>
+    <div class="card-content">
+      <p>Under the 'Event' tab, you can set the Event Name, Playoff Type (Double or Single eliminiation), number of Alliances, selection order, and if unpicked teams should be displayed.
+        You can also set if you want to download team data from The Blue Alliance, optionally set an admin password, and backup and clear the database.
+      </b>
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#game';">
+    <div class="card-header">
+      <span class="card-title">Game-Specific Tab</span>
+      <span class="during-match-card">Match Durations and RP</span>
+    </div>
+    <div class="card-content">
+      <p>On the 'Game' tab, you can set the duration of Autonomous, Pause between Auto/Tele, Teleop, and the warning for the Endgame.
+        You can also set the thresholds for game specific RP here.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#field';">
+    <div class="card-header">
+      <span class="card-title">Field Settings Tab</span>
+      <span class="post-match-card">Networking and PLC/IO</span>
+    </div>
+    <div class="card-content">
+      <p>On the field settings tab, you can enable and configure advanced networking (AP, AP Channel, L3 Switch), configure the PLC address, enable alternate IO, and set the 
+        team sign display IDs if they are in use. You can also enable DS Lite mode to allow driver stations to keep the ability to control their own robot (E-Stop on space bar).
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/settings#publishing';">
+    <div class="card-header">
+      <span class="card-title">Publishing and Automation Tabs</span>
+      <span class="other-details-card">TBA and Nexus settings</span>
+    </div>
+    <div class="card-content">
+      <p>On the 'Publishing' tab, you can set your TBA Event Code/Auth ID/TBA Secert to allow for publishing to TBA. On the 'Automation' tab, you can enable pulling lineups from Nexus, 
+        and can configure a Blackmagic HyperDeck to auto start/stop match video recording.
+      </p>
+    </div>
+  </div>
+</div>
+<br>
+<hr>
+<h2>Setup Teams at Event, Match Schedule, and Testing</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/setup/teams';">
+    <div class="card-header">
+      <span class="card-title">Team List Page</span>
+      <span class="pre-match-card">Import Teams</span>
+    </div>
+    <div class="card-content">
+      <p>Here, you can enter the teams at the event. Enter one team per line in the box. Effectively, you enter a team, and press enter. No comma or spacing required.
+        Once completed, press 'Add Teams'. If you have TBA Download enabled, it will take a few minutes to populate the data.
+      </b>
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/teams';">
+    <div class="card-header">
+      <span class="card-title">Edit Team Info</span>
+      <span class="during-match-card">Edit Button</span>
+    </div>
+    <div class="card-content">
+      <p>If you do not import data from TBA, or need to correct a team's information, you can select the Pencil icon on the right hand side of the team row. You can then 
+        enter the team name, nickname, school name, city, state, country, rookie year, robot name, recent accomplishments, and can enter if they've connected to the field.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/schedule';">
+    <div class="card-header">
+      <span class="card-title">Match Scheduling Page</span>
+      <span class="post-match-card">Schedule Parameters</span>
+    </div>
+    <div class="card-content">
+      <p>On the match scheduling screen, you will create the practice (optional)/qualification schedule blocks. You start by entering the start and end time of the block, and then configure 
+        your cycle time. (Time from start of match to beginning of next). If you have another time frame (e.g. after lunch), click 'Add Block' and repeat the process. Once completed, click 'Generate/Save Blocks'.
+       Once you have completed your schedule, click 'Save Schedule'.</p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/setup/field_testing';">
+    <div class="card-header">
+      <span class="card-title">Field Testing Page</span>
+      <span class="other-details-card">Making sure it works!</span>
+    </div>
+    <div class="card-content">
+      <p>On the Field Testing screen, you can see if your PLC inputs are trigged or PLC coils are triggered. 
+        You can also test that the game sounds are playing correctly (e.g. make sure they are loud enough and playing in the right places!)</p>
+    </div>
+  </div>
+</div>
+<br>
+<hr>
+<h2>Match Play</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/match_play';">
+    <div class="card-header">
+      <span class="card-title">Match Setup</span>
+      <span class="pre-match-card">Pre-Match</span>
+    </div>
+    <div class="card-content">
+      <p>Before a match can be started, all robots and driver stations must show successfully connected (green) on the Match Play screen.
+        Once you are ready to start the match, you click the 'Start Match' button which will start moving robots. <b>Make sure that all gates are closed
+        and that all field personnel are clear of robots and moving objects.</b>
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/match_play';">
+    <div class="card-header">
+      <span class="card-title">Active Match</span>
+      <span class="during-match-card">During Match</span>
+    </div>
+    <div class="card-content">
+      <p>Once the match has been started, it will run through 3 phases. Autonomous - Pause - Teleop. In Autonomous, robots are running pre-programmed routines. There is then a configured pause (usually 3 seconds).
+        Robots then enter teleop (driver control), where robots are operator controlled. Once the end of the configured duration for teleop is reached, the match is ended and all robots are disabled.
+        If something goes sideways, you can 'Abort' the match to stop the field at that time. This can be executed at any time during the match.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/match_play';">
+    <div class="card-header">
+      <span class="card-title">Post Match</span>
+      <span class="post-match-card">Post-Match</span>
+    </div>
+    <div class="card-content">
+      <p>Once the match has been completed, you will need to 'Commit' the scores. This should <b>only be completed once the head referee has given the OK.</b>
+        If additional time is needed to count scores, select the 'Count' button which will toggle the alliance station displays to indiciate that counting is underway.
+        Once ready, you will need to click the 'Show Final Scores' button, which will change the audience display to show the scores. Make sure the announcer is ready!
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/match_review';">
+    <div class="card-header">
+      <span class="card-title">Editing Scores</span>
+      <span class="other-details-card">Other Situations</span>
+    </div>
+    <div class="card-content">
+      <p>In the event that scores need to be edited, you can select the "Edit Results" button which will give you the option to edit any score that has been entered.
+        Once done editing, press 'Save' at the bottom to finalize the edit. You will then commit the scores the same way as a normal match.
+      If you are outside of the match, you can go to Match Review, and select "Edit" on the respective match. Be sure to save!</p>
+    </div>
+  </div>
+</div>
+<br>
+<hr>
+<h2>Reporting</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/reports/pdf/teams';">
+    <div class="card-header">
+      <span class="card-title">Team Information/Schedules</span>
+      <span class="pre-match-card">Team List and Schedules</span>
+    </div>
+    <div class="card-content">
+      <p>To get a team list, select the reports dropdown (category PDF reports) and then select 'Team List'. This will bring up a PDF report containing the list of configured teams.
+         To get a practice or qualification schedule, select the reports dropdown (category PDF reports) and then select either Practice Schedule or Qualification Schedule.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/reports/pdf/schedule/playoff';">
+    <div class="card-header">
+      <span class="card-title">Playoff reports</span>
+      <span class="during-match-card">Schedule, Alliances, and Bracket</span>
+    </div>
+    <div class="card-content">
+      <p>To get a playoff schedule, select the report dropdown (category PDF reports) and then select 'Playoff Schedule'. This will bring up a PDF report of the playoff matches. 
+        To get a playoff bracket, select the report dropdown (category PDF reports) and then select 'Playoff Bracket'. This will bring up a PDF report of the playoff bracket. 
+        To get a alliance list, select the report dropdown (category PDF reports) and then select 'Playoff Alliances'. This will bring up a PDF report of the playoff alliances. 
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/static/pdf/DriverStation_Preferences.pdf';">
+    <div class="card-header">
+      <span class="card-title">Alliance Station Preferences</span>
+      <span class="post-match-card">Playoff Station Selections</span>
+    </div>
+    <div class="card-content">
+      <p>There are two ways to get sheets/coupons to hand out to alliance captains for selecting their preferred driver station during playoffs (or to sub out with a backup team). 
+        You can either select Help > DriverStation Preferences which will bring up a PDF of 4 driver station preference cards. You can also select reports > Playoff Alliance Coupons 
+        <b>after alliance selection has been completed</b> to get an alternate format of a similar report.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/reports/pdf/backups';">
+    <div class="card-header">
+      <span class="card-title">Backup Teams</span>
+      <span class="other-details-card">Playoff Substitutions</span>
+    </div>
+    <div class="card-content">
+      <p>During playoffs, alliance captains have the option to sub out a robot for a backup should they feel the robot is no longer capable of performing at it's peak capability. 
+        Generally, the highest ranked remaining 4-8 teams are asked to stay as backups during playoffs. If a team needs to sub out with a backup, they are issued the next highest ranked 
+        available team as a backup. You can obtain a list of backups by selecting reports > Backup Teams.
+      </p>
+    </div>
+  </div>
+</div>
+<br>
+<hr>
+<h2>Alliance Station Displays</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/displays/alliance_station?station=R1';">
+    <div class="card-header">
+      <span class="card-title">Alliance Station Displays</span>
+      <span class="pre-match-card">Pre-Match</span>
+    </div>
+    <div class="card-content">
+      <p>Alliance Station Displays will show a team's number and a team's name/nickname.
+        It will be either red or blue based on the team's respective alliance. If a team is disabled, it will show 'DISABLED' under their team number.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/displays/alliance_station?station=R2';">
+    <div class="card-header">
+      <span class="card-title">Alliance Station Displays</span>
+      <span class="during-match-card">During Match</span>
+    </div>
+    <div class="card-content">
+      <p>Alliance station displays will change to show the red alliance score, blue alliance score, and the remaining match time.
+        The middle display will show the time.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/displays/alliance_station?station=R3';">
+    <div class="card-header">
+      <span class="card-title">Alliance Station Displays</span>
+      <span class="post-match-card">Post-Match</span>
+    </div>
+    <div class="card-content">
+      <p>Alliance station displays will show the team number until the head-ref signals for 'Count' or 'Field Reset'.
+        At this point, the driver station may flash amber or be solid amber to indiciate an A or E stop trip.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/displays/alliance_station?station=B1';">
+    <div class="card-header">
+      <span class="card-title">Alliance Station Displays</span>
+      <span class="other-details-card">Continuous</span>
+    </div>
+    <div class="card-content">
+      <p>Alliance station displays will also play game sounds.
+      </p>
+    </div>
+  </div>
+</div>
+<br>
+<hr>
+<h2>Audience Displays</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/displays/audience';">
+    <div class="card-header">
+      <span class="card-title">Audience Displays</span>
+      <span class="pre-match-card">Pre-Match</span>
+    </div>
+    <div class="card-content">
+      <p>Audience displays will show the 'Match Intro' display. This shows the teams that are on the field, their avatar (if available), the match type and number, and the event name.</p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/displays/audience';">
+    <div class="card-header">
+      <span class="card-title">Audience Displays</span>
+      <span class="during-match-card">During Match</span>
+    </div>
+    <div class="card-content">
+      <p>Audience displays will show the 'Match Play' display.
+        This shows the teams that are on the field, their avatar (if available), the match type and number, event name, each alliance's scores, and the game time remaining.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/displays/audience';">
+    <div class="card-header">
+      <span class="card-title">Audience Displays</span>
+      <span class="post-match-card">Post-Match</span>
+    </div>
+    <div class="card-content">
+      <p>The audience display will show the 'Blank' display once the match completes. Once the scores have been committed, and 'Show final score' has been selected,
+        the audience display will then change to the 'Final Score' display. This will show the outcome of the match, in addition to the score breakdown and rankings of 
+        teams that are in the match.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/displays/audience';">
+    <div class="card-header">
+      <span class="card-title">Audience Displays</span>
+      <span class="other-details-card">Other Functions</span>
+    </div>
+    <div class="card-content">
+      <p>Audience Displays will always play game sounds. 
+        You can also choose to show the playoff bracket, alliance selection display, game logo, or sponsor reel (if configured).
+      </p>
+    </div>
+  </div>
+</div>
+<br>
+<hr>
+<h2>Alliance Station E-Stop/A-Stop</h2>
+<div class="help-container">
+  <div class="help-card" onclick="window.location='/panel/freezy/eStopControl/red';">
+    <div class="card-header">
+      <span class="card-title">E-Stop/A-Stop</span>
+      <span class="pre-match-card">Pre-Match</span>
+    </div>
+    <div class="card-content">
+      <p>From the A-Stop/E-Stop panel, teams can be A-Stopped or E-Stopped. If a team is A-Stopped prior to a match, they will be able to resume at teleop/driver control.
+        A team cannot be E-Stopped prior to a match, or the match will not be able to be started.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/panel/freezy/eStopControl/blue';">
+    <div class="card-header">
+      <span class="card-title">E-Stop/A-Stop</span>
+      <span class="during-match-card">During Match</span>
+    </div>
+    <div class="card-content">
+      <p>If a team A-Stops during autonomous, the robot is disabled for the remainder of the Autonomous period. The A-Stop cannot be used outside of autonomous.
+        If a team E-Stops at any time during the match, the robot is disabled for the remainder of the match and cannot be re-enabled.
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/panel/freezy/eStopControl/red';">
+    <div class="card-header">
+      <span class="card-title">E-Stop/A-Stop</span>
+      <span class="post-match-card">Post-Match</span>
+    </div>
+    <div class="card-content">
+      <p>Once the match has ended, all E-Stops and A-Stops will need to be physically reset. This is done by unlocking/releasing the button that has been pressed.
+        This can be identified by an amber flashing driver station display (A-Stop), or a solid amber driver station display (E-Stop).
+      </p>
+    </div>
+  </div>
+  <div class="help-card" onclick="window.location='/panel/freezy/eStopControl/blue';">
+    <div class="card-header">
+      <span class="card-title">E-Stop/A-Stop</span>
+      <span class="other-details-card">Other Functions</span>
+    </div>
+    <div class="card-content">
+      <p>Optionally, all teams can be A-Stopped or E-Stopped from an FMS panel (Panels > E-Stops/A-Stops > Red or Blue).
+        This can be used if an event does not have the physical hardware available to provide A-Stops or E-Stops in a driver station.
+      </p>
+    </div>
+  </div>
+</div>
+<br>
+{{end}}
+
+{{define "script"}}
+<!-- No additional scripts needed -->
+{{end}}
