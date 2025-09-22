@@ -44,7 +44,8 @@ Display shown on the screens above each driver station.
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
     <script src="/static/js/cheesy-websocket.js"></script>
     <script src="/static/js/match_timing.js"></script>
-    <script src="/static/js/alliance_station_display.js"></script>
+    {{if .EventSettings.FlashDSEnabled}}<script src="/static/js/alliance_station_display.js"></script>{{end}}
+    {{if not .EventSettings.FlashDSEnabled}}<script src="/static/js/alliance_station_display_noflash.js"></script>{{end}}
     {{range $sound := .MatchSounds}}
     <audio id="sound-{{$sound.Name}}" src="/static/audio/{{$sound.Name}}.{{$sound.FileExtension}}" preload="auto">
     </audio>

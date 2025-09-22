@@ -729,6 +729,18 @@ UI for configuring event settings.
                 </div>
               </div>
             </fieldset>
+            <fieldset class="mb-4">
+              <legend>Alliance Station Enhancements</legend>
+              <p>Enable this setting to allow the driver station displays to flash orange to indiciate an e-stop, or solid orange
+                to indiciate an a-stop. When enabled, the driver station will only flash outside of the match. <b>Display reload required for changes to take effect.</b>
+              </p>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Enable DS E/A Stop Alerting</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" name="flashDSEnabled" {{if .FlashDSEnabled}}checked{{end}}>
+                </div>
+              </div>
+            </fieldset>
           </div>
           <div class="row justify-content-center">
             <div class="col-lg-3 align-items-center">

@@ -121,6 +121,7 @@ type EventSettings struct {
 	EnergizedBonusThreshold          int
 	SuperchargedBonusThreshold       int
 	TraversalBonusThreshold          int
+	FlashDSEnabled                  bool
 }
 
 func (database *Database) GetEventSettings() (*EventSettings, error) {
