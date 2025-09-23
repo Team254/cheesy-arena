@@ -173,3 +173,9 @@ input[data-changed="true"], select[data-changed="true"] {
     font-style: italic;
     opacity: 0.4;
 }
+
+.col-lg-2 input::placeholder {
+    color: #ff0000; /* Red placeholder text */
+    font-style: italic;
+    opacity: 0.4;
+}
