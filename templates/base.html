@@ -120,6 +120,9 @@ Base template used by most pages to include common resources and optionally rend
         </ul>
         <ul class="navbar-nav ms-auto">
           <li class="navbar-item">
+            <a class="nav-link" href="#" id="openCmdPalette">Search</a>
+          </li>
+          <li class="navbar-item">
             <a class="nav-link" href="#" onclick="$('#aboutPage').modal('show');">About</a>
           </li>
         </ul>
@@ -142,6 +145,28 @@ Base template used by most pages to include common resources and optionally rend
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Command Palette Modal -->
+    <div id="cmdPalette" class="modal" tabindex="-1" aria-hidden="true" style="--ca-modal-top: 10%;">
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 720px;">
+        <div class="modal-content">
+          <div class="modal-body p-2">
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input id="cmdInput" type="text" class="form-control" placeholder="Search pages… (Ctrl/⌘+K)"
+                autocomplete="off">
+            </div>
+            <div id="cmdResults" class="list-group list-group-flush mt-2" role="listbox"
+              aria-label="Command results"></div>
+            <div class="d-flex justify-content-end text-muted small mt-2">
+              <span class="me-2">↑/↓ to navigate</span>
+              <span class="me-2">Enter to open</span>
+              <span>Esc to close</span>
+            </div>
           </div>
         </div>
       </div>
@@ -179,6 +204,7 @@ Base template used by most pages to include common resources and optionally rend
 <link href="/static/css/lib/tempus-dominus.min.css" rel="stylesheet">
 <link href="/static/css/cheesy-arena.css" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 {{end}}
 
 {{define "script_common"}}
@@ -192,4 +218,5 @@ Base template used by most pages to include common resources and optionally rend
 <script src="/static/js/lib/tempus-dominus.min.js"></script>
 <script src="/static/js/cheesy-common.js"></script>
 <script src="/static/js/cheesy-websocket.js"></script>
+<script src="/static/js/command_palette.js"></script>
 {{end}}
