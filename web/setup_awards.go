@@ -1,8 +1,3 @@
-// Copyright 2019 Team 254. All Rights Reserved.
-// Author: pat@patfairbank.com (Patrick Fairbank)
-//
-// Web routes for managing awards.
-
 package web
 
 import (
@@ -12,11 +7,16 @@ import (
 	"strconv"
 )
 
-// Shows the awards configuration page.
+// Prevent MIME sniffing in browsers.
+func addSecurityHeaders(w http.ResponseWriter) {
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+}
+
 func (web *Web) awardsGetHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
+	addSecurityHeaders(w)
 
 	template, err := web.parseFiles("templates/setup_awards.html", "templates/base.html")
 	if err != nil {
@@ -33,8 +33,6 @@ func (web *Web) awardsGetHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-
-	// Append a blank award to the end that can be used to add a new one.
 	awards = append(awards, model.Award{})
 
 	data := struct {
@@ -42,18 +40,17 @@ func (web *Web) awardsGetHandler(w http.ResponseWriter, r *http.Request) {
 		Awards []model.Award
 		Teams  []model.Team
 	}{web.arena.EventSettings, awards, teams}
-	err = template.ExecuteTemplate(w, "base", data)
-	if err != nil {
+	if err := template.ExecuteTemplate(w, "base", data); err != nil {
 		handleWebErr(w, err)
 		return
 	}
 }
 
-// Saves the new or modified awards to the database.
 func (web *Web) awardsPostHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
 	}
+	addSecurityHeaders(w)
 
 	awardId, _ := strconv.Atoi(r.PostFormValue("id"))
 	if r.PostFormValue("action") == "delete" {
@@ -76,5 +73,5 @@ func (web *Web) awardsPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "/setup/awards", 303)
+	http.Redirect(w, r, "/setup/awards", http.StatusSeeOther)
 }
