@@ -1,3 +1,7 @@
+// Copyright 2019 Team 254. All Rights Reserved.
+// Author: pat@patfairbank.com (Patrick Fairbank)
+//
+// Web routes for managing awards.
 package web
 
 import (
