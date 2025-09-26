@@ -96,6 +96,7 @@ type Arena struct {
 	soundsPlayed                      map[*game.MatchSound]struct{}
 	breakDescription                  string
 	preloadedTeams                    *[6]*model.Team
+	NextFoulId                        int
 }
 
 type AllianceStation struct {
@@ -331,6 +332,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.BlueRealtimeScore = NewRealtimeScore()
 	arena.ScoringPanelRegistry.resetScoreCommitted()
 	arena.Plc.ResetMatch()
+	arena.NextFoulId = 1
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
