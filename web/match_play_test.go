@@ -127,10 +127,10 @@ func TestCommitTiebreak(t *testing.T) {
 		// These should all be fields that aren't part of the tiebreaker.
 		RedScore: &game.Score{
 			Reef:  game.Reef{TroughFar: 1},
-			Fouls: []game.Foul{{IsMajor: false}, {IsMajor: false}},
+			Fouls: []game.Foul{{FoulId: 1, IsMajor: false}, {FoulId: 2, IsMajor: false}},
 		},
 		BlueScore: &game.Score{
-			Fouls: []game.Foul{{IsMajor: false}},
+			Fouls: []game.Foul{{FoulId: 3, IsMajor: false}},
 		},
 	}
 
@@ -156,7 +156,7 @@ func TestCommitTiebreak(t *testing.T) {
 
 	// Change the score to still be equal nominally but trigger the tiebreaker criteria.
 	matchResult.BlueScore.ProcessorAlgae = 1
-	matchResult.BlueScore.Fouls = []game.Foul{{IsMajor: false}, {IsMajor: true}}
+	matchResult.BlueScore.Fouls = []game.Foul{{FoulId: 3, IsMajor: false}, {FoulId: 4, IsMajor: true}}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
 	assert.Equal(

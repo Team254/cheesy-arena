@@ -179,7 +179,7 @@ func TestScoreCoralBonusRankingPoint(t *testing.T) {
 	assert.Equal(t, true, blueScoreSummary.CoralBonusRankingPoint)
 
 	// Check that G206 disqualifies the alliance from the Coral bonus.
-	blueScore.Fouls = []Foul{{RuleId: 1}}
+	blueScore.Fouls = []Foul{{FoulId: 1, RuleId: 1}}
 	redScoreSummary = redScore.Summarize(blueScore)
 	blueScoreSummary = blueScore.Summarize(redScore)
 	assert.Equal(t, 0, redScoreSummary.FoulPoints)

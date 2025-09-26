@@ -6,6 +6,7 @@
 package game
 
 type Foul struct {
+	FoulId  int
 	IsMajor bool
 	TeamId  int
 	RuleId  int
