@@ -7,13 +7,13 @@ package game
 
 func TestScore1() *Score {
 	fouls := []Foul{
-		{true, 25, 16},
-		{false, 1868, 13},
-		{false, 1868, 13},
-		{true, 25, 15},
-		{true, 25, 15},
-		{true, 25, 15},
-		{true, 25, 15},
+		{1, true, 25, 16},
+		{2, false, 1868, 13},
+		{3, false, 1868, 13},
+		{4, true, 25, 15},
+		{5, true, 25, 15},
+		{6, true, 25, 15},
+		{7, true, 25, 15},
 	}
 	return &Score{
 		RobotsBypassed: [3]bool{false, false, true},
