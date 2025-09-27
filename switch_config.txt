@@ -60,25 +60,21 @@ vlan internal allocation policy ascending
 interface GigabitEthernet0/1
  switchport trunk encapsulation dot1q
  switchport trunk native vlan 100
- switchport trunk allowed vlan 10,20,30,100
  switchport mode trunk
 !
 interface GigabitEthernet0/2
  switchport trunk encapsulation dot1q
  switchport trunk native vlan 100
- switchport trunk allowed vlan 10,20,30,100
  switchport mode trunk
 !
 interface GigabitEthernet0/3
  switchport trunk encapsulation dot1q
  switchport trunk native vlan 100
- switchport trunk allowed vlan 40,50,60,100
  switchport mode trunk
 !
 interface GigabitEthernet0/4
  switchport trunk encapsulation dot1q
  switchport trunk native vlan 100
- switchport trunk allowed vlan 40,50,60,100
  switchport mode trunk
 !
 interface GigabitEthernet0/5
