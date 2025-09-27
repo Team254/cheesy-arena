@@ -173,3 +173,24 @@ input[data-changed="true"], select[data-changed="true"] {
     font-style: italic;
     opacity: 0.4;
 }
+
+/* Command palette visuals */
+#cmdPalette .modal-content {
+  border-radius: .75rem;
+}
+
+#cmdPalette .list-group-item {
+  cursor: pointer;
+}
+
+#cmdPalette .list-group-item.active, #cmdPalette .list-group-item:hover {
+  background: rgba(13, 110, 253, .15);
+}
+
+#cmdPalette .group-label {
+  padding: .35rem .75rem;
+  font-weight: 600;
+  opacity: .7;
+  text-transform: uppercase;
+  font-size: .75rem;
+}
