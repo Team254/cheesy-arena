@@ -310,15 +310,15 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 			allianceCaptain := alliances[i].TeamIds[0]
 
 			pdf.RoundedRect(cSideMargin, float64(heightAcc), cWidth, cHeight, 4, "1234", "D")
-			timeoutX := cSideMargin + (cWidth * 0.5)
-			timeoutY := float64(heightAcc) + (cHeight * 0.5)
-			drawTimeoutCoupon(pdf, eventName, timeoutX, timeoutY, allianceCaptain, i+1)
+			couponX := cSideMargin + (cWidth * 0.5)
+			couponY := float64(heightAcc) + (cHeight * 0.5)
+			drawCoupon(pdf, eventName, couponX, couponY, allianceCaptain, i+1, "VAR Coupon")
 
 			pdf.RoundedRect(cWidth+cHPad+cSideMargin, float64(heightAcc), cWidth, cHeight, 4, "1234", "D")
-			backupX := cSideMargin + cWidth + cHPad + (cWidth * 0.5)
-			backupY := float64(heightAcc) + (cHeight * 0.5)
+			couponX = cSideMargin + cWidth + cHPad + (cWidth * 0.5)
+			couponY = float64(heightAcc) + (cHeight * 0.5)
 			heightAcc += cHeight + cVPad
-			drawBackupCoupon(pdf, eventName, backupX, backupY, allianceCaptain, i+1)
+			drawCoupon(pdf, eventName, couponX, couponY, allianceCaptain, i+1, "Backup Coupon")
 		}
 	}
 
@@ -331,24 +331,12 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func drawTimeoutCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, teamId int, allianceNumber int) {
+func drawCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, teamId int, allianceNumber int, text string) {
 	pdf.SetTextColor(0, 0, 0)
 	drawPdfLogo(pdf, x, y, cImgWidth)
 
 	pdf.SetFont("Arial", "B", 24)
-	drawCenteredText(pdf, "Timeout Coupon", x, y+10)
-
-	pdf.SetFont("Arial", "", 14)
-	drawCenteredText(pdf, fmt.Sprintf("Alliance: %v    Captain: %v", allianceNumber, teamId), x, y+20)
-	drawEventWatermark(pdf, x, y, eventName)
-}
-
-func drawBackupCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, teamId int, allianceNumber int) {
-	pdf.SetTextColor(0, 0, 0)
-	drawPdfLogo(pdf, x, y, cImgWidth)
-
-	pdf.SetFont("Arial", "B", 24)
-	drawCenteredText(pdf, "Backup Coupon", x, y+10)
+	drawCenteredText(pdf, text, x, y+10)
 
 	pdf.SetFont("Arial", "", 14)
 	drawCenteredText(pdf, fmt.Sprintf("Alliance: %v    Captain: %v", allianceNumber, teamId), x, y+20)
