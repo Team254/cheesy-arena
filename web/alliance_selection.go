@@ -301,23 +301,34 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 		case "startTimer":
 			if !web.arena.AllianceSelectionShowTimer {
 				web.arena.AllianceSelectionShowTimer = true
-				web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
-				web.arena.AllianceSelectionNotifier.Notify()
-				allianceSelectionTicker = time.NewTicker(time.Second)
-				go func() {
-					for range allianceSelectionTicker.C {
-						web.arena.AllianceSelectionTimeRemainingSec--
-						web.arena.AllianceSelectionNotifier.Notify()
-						if web.arena.AllianceSelectionTimeRemainingSec == 5 {
-							web.arena.PlaySound("pick_clock")
-						} else if web.arena.AllianceSelectionTimeRemainingSec == 0 {
-							allianceSelectionTicker.Stop()
-							web.arena.PlaySound("pick_clock_expired")
-						}
-					}
-				}()
 			}
+			if web.arena.AllianceSelectionTimeRemainingSec == 0 {
+				web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
+			}
+			web.arena.AllianceSelectionNotifier.Notify()
+			allianceSelectionTicker = time.NewTicker(time.Second)
+			go func() {
+				for range allianceSelectionTicker.C {
+					web.arena.AllianceSelectionTimeRemainingSec--
+					web.arena.AllianceSelectionNotifier.Notify()
+					if web.arena.AllianceSelectionTimeRemainingSec == 5 {
+						web.arena.PlaySound("pick_clock")
+					} else if web.arena.AllianceSelectionTimeRemainingSec == 0 {
+						allianceSelectionTicker.Stop()
+						web.arena.PlaySound("pick_clock_expired")
+					}
+				}
+			}()
 		case "stopTimer":
+			allianceSelectionTicker.Stop()
+			web.arena.AllianceSelectionNotifier.Notify()
+		case "restartTimer":
+			if !web.arena.AllianceSelectionShowTimer {
+				web.arena.AllianceSelectionShowTimer = true
+			}
+			web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
+			web.arena.AllianceSelectionNotifier.Notify()
+		case "hideTimer":
 			allianceSelectionTicker.Stop()
 			web.arena.AllianceSelectionShowTimer = false
 			web.arena.AllianceSelectionTimeRemainingSec = 0

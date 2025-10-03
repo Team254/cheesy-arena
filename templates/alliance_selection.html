@@ -89,7 +89,7 @@ UI for controlling the alliance selection process.
         <p>Timer is hidden on the audience overlay until the Start/Show button below is pressed.</p>
         <div class="row">
           <label class="col-lg-4 control-label">Time limit<br/>(0 = disabled)</label>
-          <div class="col-lg-8">
+          <div class="col-lg-4">
             <label>
               <input type="radio" name="timeLimitSec" value="45" onclick="setTimer(this);">
               45 seconds (1st round)
@@ -109,7 +109,9 @@ UI for controlling the alliance selection process.
         <div class="mt-3 row justify-content-center">
           <div class="col-lg-8 text-center">
             <button type="button" class="btn btn-success" onclick="startTimer();">Start/Show Timer</button>
-            <button type="button" class="btn btn-secondary" onclick="stopTimer();">Stop/Hide Timer</button>
+            <button type="button" class="btn btn-danger" onclick="stopTimer();">Stop Timer</button>
+            <button type="button" class="btn btn-info" onclick="restartTimer();">Reset/Show Timer</button>
+            <button type="button" class="btn btn-secondary" onclick="hideTimer();">Stop/Hide Timer</button>
           </div>
         </div>
       </div>
