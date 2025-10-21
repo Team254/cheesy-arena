@@ -841,7 +841,7 @@ func (arena *Arena) preLoadNextMatch() {
 		}
 	}
 	arena.setupNetwork(teams, true)
-	arena.TeamSigns.SetNextMatchTeams(nextMatch)
+	arena.TeamSigns.SetNextMatchTeams(teamIds)
 }
 
 // Enable or disable the team ethernet ports on both SCCs
