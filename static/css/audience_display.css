@@ -469,3 +469,22 @@
   font-family: "FuturaLTBold";
   line-height: 87px;
 }
+
+#videoOverlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000; /* Black background for better video contrast */
+  z-index: 100; /* High z-index to overlay all other elements */
+  justify-content: center;
+  align-items: center;
+}
+
+#transitionVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Preserve aspect ratio; use 'cover' if you want to fill the screen */
+}

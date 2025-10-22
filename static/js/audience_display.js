@@ -45,6 +45,8 @@ const bracketLogoScale = 0.75;
 const timeoutDetailsIn = $("#timeoutDetails").css("width");
 const timeoutDetailsOut = "570px";
 
+let winner = "tie";
+
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function (targetScreen) {
   transitionQueue.push(targetScreen);
@@ -229,6 +231,15 @@ const handleScorePosted = function (data) {
   } else {
     $(".playoff-hidden-field").show();
     $(".playoff-only-field").hide();
+  }
+  $(".coopertition-hidden-field").toggle(data.CoopertitionEnabled);
+
+  if (parseInt(data.RedScoreSummary.Score) > parseInt(data.BlueScoreSummary.Score)) {
+    winner = "red";
+  } else if (parseInt(data.BlueScoreSummary.Score) > parseInt(data.RedScoreSummary.Score)) {
+    winner = "blue";
+  } else {
+    winner = "tie";
   }
 };
 
@@ -422,7 +433,14 @@ const transitionBracketToScore = function (callback) {
   $("#bracket").transition({queue: false, opacity: 0}, 1000, "ease", function () {
     $("#bracket").hide();
     $("#finalScore").show();
-    $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+    $("#finalScore").css("opacity", 0); // Ensure it's hidden initially
+    setTimeout(function () {
+      playVictoryVideo(function () {
+        transitionScoreToLogo(function () {
+          $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+        });
+      });
+    }, 1000); // 1-second delay before video
   });
 };
 
@@ -507,7 +525,16 @@ const transitionLogoToLogoLuma = function (callback) {
 const transitionLogoToScore = function (callback) {
   $(".blindsCenter.full").transition({queue: false, top: scoreLogoTop}, 625, "ease");
   $("#finalScore").show();
-  $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+  $("#finalScore").css("opacity", 0); // Ensure it's hidden initially
+  setTimeout(function () {
+    playVictoryVideo(function () {
+      setTimeout(function () {
+        $("#finalScore").transition({queue: false, opacity: 1}, 5000, "ease", callback);
+      }, 500); // Small delay to avoid visual glitches
+    
+  });
+  }, 1000);
+  
 };
 
 const transitionLogoToSponsor = function (callback) {
@@ -684,6 +711,47 @@ const initializeSponsorDisplay = function () {
       $("#sponsorContainer").append(slideHtml);
     });
   });
+};
+
+const playVictoryVideo = function (callback) {
+  const videoOverlay = $("#videoOverlay");
+  const video = $("#transitionVideo")[0];
+
+  // Dynamic selection based on winner (for production):
+  let videoFile = "";
+  if (winner === "red") {
+    videoFile = "RedWins.mp4";
+  } else if (winner === "blue") {
+    videoFile = "BlueWins.mp4";
+  } else if (winner === "tie") {
+    videoFile = "Tie.mp4"; // Assume a tie video exists; otherwise, skip with immediate callback().
+    // if (!videoFile) { callback(); return; }
+  }
+  if (!videoFile) {
+    if (callback) callback(); // Skip video if no file.
+    return;
+  }
+  video.src = "/static/video/" + videoFile;
+  
+
+  videoOverlay.show();
+  video.play();
+
+  video.onended = function () {
+    setTimeout(function () {
+      videoOverlay.hide();
+      video.src = ""; // Reset source to avoid memory issues
+      video.onended = null; // Clean up event listener
+      if (callback) callback();
+    }, 500); // 2-second delay to show the last frame
+  };
+
+  // Handle errors (e.g., video not found)
+  video.onerror = function () {
+    console.error("Error loading video:", video.src);
+    videoOverlay.hide();
+    if (callback) callback(); // Proceed anyway
+  };
 };
 
 const getAvatarUrl = function (teamId) {
