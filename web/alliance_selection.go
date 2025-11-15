@@ -89,12 +89,6 @@ func (web *Web) allianceSelectionPostHandler(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	if allianceSelectionTicker != nil {
-		allianceSelectionTicker.Stop()
-		web.arena.AllianceSelectionShowTimer = false
-		web.arena.AllianceSelectionTimeRemainingSec = 0
-	}
-
 	web.arena.AllianceSelectionNotifier.Notify()
 	http.Redirect(w, r, "/alliance_selection", 303)
 }
