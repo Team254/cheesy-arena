@@ -304,7 +304,7 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 			}
 			if web.arena.AllianceSelectionTimeRemainingSec == 0 {
 				web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
-			  currentAllianceSelectionTimeLimitSec = allianceSelectionTimeLimitSec
+				currentAllianceSelectionTimeLimitSec = allianceSelectionTimeLimitSec
 			}
 			web.arena.AllianceSelectionShowTimer = true
 			web.arena.AllianceSelectionNotifier.Notify()
