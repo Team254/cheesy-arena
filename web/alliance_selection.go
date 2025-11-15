@@ -332,6 +332,7 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 			if allianceSelectionTicker != nil {
 				allianceSelectionTicker.Stop()
 			}
+			web.arena.AllianceSelectionNotifier.Notify()
 		case "restartTimer":
 			web.arena.AllianceSelectionShowTimer = true
 			web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
