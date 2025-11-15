@@ -299,12 +299,13 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 				ws.WriteError("Invalid time limit value.")
 			}
 		case "startTimer":
-			if !web.arena.AllianceSelectionShowTimer {
-				web.arena.AllianceSelectionShowTimer = true
+			if allianceSelectionTicker != nil {
+				allianceSelectionTicker.Stop()
 			}
 			if web.arena.AllianceSelectionTimeRemainingSec == 0 {
 				web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
 			}
+			web.arena.AllianceSelectionShowTimer = true
 			web.arena.AllianceSelectionNotifier.Notify()
 			allianceSelectionTicker = time.NewTicker(time.Second)
 			go func() {
@@ -320,16 +321,17 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 				}
 			}()
 		case "stopTimer":
-			allianceSelectionTicker.Stop()
-			web.arena.AllianceSelectionNotifier.Notify()
-		case "restartTimer":
-			if !web.arena.AllianceSelectionShowTimer {
-				web.arena.AllianceSelectionShowTimer = true
+			if allianceSelectionTicker != nil {
+				allianceSelectionTicker.Stop()
 			}
+		case "restartTimer":
+			web.arena.AllianceSelectionShowTimer = true
 			web.arena.AllianceSelectionTimeRemainingSec = allianceSelectionTimeLimitSec
 			web.arena.AllianceSelectionNotifier.Notify()
 		case "hideTimer":
-			allianceSelectionTicker.Stop()
+			if allianceSelectionTicker != nil {
+				allianceSelectionTicker.Stop()
+			}
 			web.arena.AllianceSelectionShowTimer = false
 			web.arena.AllianceSelectionTimeRemainingSec = 0
 			web.arena.AllianceSelectionNotifier.Notify()
