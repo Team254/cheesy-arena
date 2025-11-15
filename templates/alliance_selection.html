@@ -76,19 +76,18 @@ UI for controlling the alliance selection process.
           {{end}}
         </tbody>
       </table>
-      Hint: Press 'Enter' after entering each team number for easiest use.
+      Press <kbd>Enter</kbd> after each pick is confirmed
       <div class="card card-body bg-body-secondary mt-4">
         <div class="row">
           <div class="col-lg-8">
-            <legend>Selection Timer</legend>
+            <legend>Timer</legend>
           </div>
           <div class="col-lg-4 text-end">
             <legend id="timer"></legend>
           </div>
         </div>
-        <p>Timer is hidden on the audience overlay until the Start/Show button below is pressed.</p>
         <div class="row">
-          <label class="col-lg-4 control-label">Time limit<br/>(0 = disabled)</label>
+          <label class="col-lg-4 control-label">Duration</label>
           <div class="col-lg-8">
             <label>
               <input type="radio" name="timeLimitSec" value="45" onclick="setTimer(this);">
@@ -100,16 +99,22 @@ UI for controlling the alliance selection process.
             </label>
             <label>
               <input type="radio" name="timeLimitSec" value="120" onclick="setTimer(this);">
-              120 seconds (break between rounds)
+              120 seconds (between rounds)
             </label>
             <input type="text" class="form-control mt-2" id="timeLimitSecInput" name="timeLimitSec"
               value="{{.TimeLimitSec}}" onblur="setTimer(this);">
           </div>
         </div>
         <div class="mt-3 row justify-content-center">
+          <div class="col-lg-8 gap-3 d-flex justify-content-center">
+            <button type="button" class="btn btn-success" onclick="startTimer();">Start</button>
+            <button type="button" class="btn btn-warning" onclick="stopTimer();">Pause</button>
+            <button type="button" class="btn btn-danger" onclick="restartTimer();">Reset</button>
+          </div>
+        </div>
+        <div class="mt-5 row justify-content-center">
           <div class="col-lg-8 text-center">
-            <button type="button" class="btn btn-success" onclick="startTimer();">Start/Show Timer</button>
-            <button type="button" class="btn btn-secondary" onclick="stopTimer();">Stop/Hide Timer</button>
+            <button type="button" class="btn btn-secondary" onclick="hideTimer();">Hide</button>
           </div>
         </div>
       </div>

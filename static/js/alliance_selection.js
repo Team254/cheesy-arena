@@ -16,10 +16,20 @@ const startTimer = function () {
   websocket.send("startTimer");
 };
 
-// Sends a websocket message to stop and hide the timer.
+// Sends a websocket message to hide the timer.
+const hideTimer = function() {
+  websocket.send("hideTimer");
+}
+
+// Sends a websocket message to stop the timer.
 const stopTimer = function () {
   websocket.send("stopTimer");
 }
+
+// Sends a websocket message to restart the timer. 
+const restartTimer = function () {
+  websocket.send("restartTimer");
+};
 
 // Handles a websocket message to update the alliance selection status.
 const handleAllianceSelection = function (data) {
