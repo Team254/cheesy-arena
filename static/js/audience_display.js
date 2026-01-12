@@ -135,30 +135,226 @@ const handleMatchLoad = function (data) {
   $("#timeoutBreakDescription").text(data.BreakDescription);
 };
 
+// Store current match time data and score data for hub indicator updates
+let currentMatchTimeData = null;
+let currentScoreData = null;
+
 // Handles a websocket message to update the match time countdown.
 const handleMatchTime = function (data) {
+  currentMatchTimeData = data;
   translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchTime").text(getCountdownString(countdownSec));
   });
+
+  // Update hub indicators when time changes (if we have score data)
+  if (currentScoreData) {
+    updateHubIndicators(currentScoreData);
+  }
 };
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function (data) {
-  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
-  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
+  currentScoreData = data; // Store for hub indicator updates
 
-  let redCoral, blueCoral;
-  if (currentMatch.Type === matchTypePlayoff) {
-    redCoral = data.Red.ScoreSummary.NumCoral;
-    blueCoral = data.Blue.ScoreSummary.NumCoral;
-  } else {
-    redCoral = `${data.Red.ScoreSummary.NumCoralLevels}/${data.Red.ScoreSummary.NumCoralLevelsGoal}`;
-    blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
+  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score);
+  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score);
+
+  // Update FUEL counts (just the number, white color)
+  $(`#${redSide}Fuel`).text(data.Red.ScoreSummary.TotalFuel);
+  $(`#${blueSide}Fuel`).text(data.Blue.ScoreSummary.TotalFuel);
+
+  // Update hub activation indicators
+  updateHubIndicators(data);
+};
+
+// Updates the hub activation indicators based on current match state and time
+const updateHubIndicators = function(scoreData) {
+  if (!currentMatchTimeData) {
+    return;
   }
-  $(`#${redSide}Coral`).text(redCoral);
-  $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
-  $(`#${blueSide}Coral`).text(blueCoral);
-  $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
+
+  const matchTimeSec = currentMatchTimeData.MatchTimeSec;
+  const matchState = currentMatchTimeData.MatchState;
+
+  // Determine who won auto
+  const redAutoPoints = scoreData.Red.ScoreSummary.AutoPoints;
+  const blueAutoPoints = scoreData.Blue.ScoreSummary.AutoPoints;
+  let redWonAuto = redAutoPoints > blueAutoPoints;
+  let blueWonAuto = blueAutoPoints > redAutoPoints;
+
+  // Handle tie case - use random tie-breaker from backend
+  if (!redWonAuto && !blueWonAuto) {
+    if (scoreData.AutoTieWinner === "red") {
+      redWonAuto = true;
+    } else {
+      blueWonAuto = true;
+    }
+  }
+
+  // Calculate hub activation status
+  const redHubActive = isRedHubActive(matchTimeSec, matchState, redWonAuto);
+  const blueHubActive = isBlueHubActive(matchTimeSec, matchState, blueWonAuto);
+
+  // Determine if we should flash (last 3 seconds of a shift or match)
+  const shouldFlash = shouldHubFlash(matchTimeSec, matchState);
+
+  // Update red hub indicator
+  const redIndicator = $(`#${redSide}HubIndicator`);
+  if (redHubActive) {
+    redIndicator.addClass("active");
+    if (shouldFlash) {
+      redIndicator.addClass("flashing");
+    } else {
+      redIndicator.removeClass("flashing");
+    }
+  } else {
+    redIndicator.removeClass("active flashing");
+  }
+
+  // Update blue hub indicator
+  const blueIndicator = $(`#${blueSide}HubIndicator`);
+  if (blueHubActive) {
+    blueIndicator.addClass("active");
+    if (shouldFlash) {
+      blueIndicator.addClass("flashing");
+    } else {
+      blueIndicator.removeClass("flashing");
+    }
+  } else {
+    blueIndicator.removeClass("active flashing");
+  }
+};
+
+// Helper function to determine if red hub is active (mirrors game/match_timing.go logic)
+const isRedHubActive = function(matchTimeSec, matchState, redWonAuto) {
+  const teleopStartSec = 23; // warmup(0) + auto(20) + pause(3)
+  const transitionDurationSec = 10; // First 10 seconds of teleop when both hubs are active
+  const teleopEndSec = 163; // teleopStartSec + teleop(140)
+  const endGameDurationSec = 30;
+
+  // During auto and pause, both hubs are active
+  // matchState: 3 = AUTO_PERIOD, 4 = PAUSE_PERIOD (see match_timing.js)
+  if (matchState === 3 || matchState === 4) {
+    return true;
+  }
+
+  // During transition period (first 10 seconds of teleop), both hubs are active
+  if (matchState === 5 && matchTimeSec >= teleopStartSec && matchTimeSec < teleopStartSec + transitionDurationSec) {
+    return true;
+  }
+
+  // During END GAME (last 30 seconds), both hubs are active
+  if (matchTimeSec >= teleopEndSec - endGameDurationSec && matchTimeSec < teleopEndSec) {
+    return true;
+  }
+
+  // After the match ends, hubs are not active
+  if (matchTimeSec >= teleopEndSec) {
+    return false;
+  }
+
+  // During teleop alternating shifts (after transition period)
+  if (matchTimeSec < teleopStartSec) {
+    return false;
+  }
+
+  // Calculate which alternating shift we're in (after transition period)
+  const postTransitionSec = matchTimeSec - (teleopStartSec + transitionDurationSec);
+  if (postTransitionSec < 0) {
+    return false;
+  }
+  const shift = Math.floor(postTransitionSec / 25); // 25 second shifts
+
+  if (redWonAuto) {
+    // Red won auto, so Red is INACTIVE first, then alternates
+    // Red is INACTIVE on even shifts (0, 2, 4...), ACTIVE on odd shifts (1, 3, 5...)
+    return shift % 2 === 1;
+  } else {
+    // Blue won auto, so Red is ACTIVE first, then alternates
+    // Red is ACTIVE on even shifts (0, 2, 4...), INACTIVE on odd shifts (1, 3, 5...)
+    return shift % 2 === 0;
+  }
+};
+
+// Helper function to determine if blue hub is active (mirrors game/match_timing.go logic)
+const isBlueHubActive = function(matchTimeSec, matchState, blueWonAuto) {
+  const teleopStartSec = 23; // warmup(0) + auto(20) + pause(3)
+  const transitionDurationSec = 10; // First 10 seconds of teleop when both hubs are active
+  const teleopEndSec = 163; // teleopStartSec + teleop(140)
+  const endGameDurationSec = 30;
+
+  // During auto and pause, both hubs are active
+  // matchState: 3 = AUTO_PERIOD, 4 = PAUSE_PERIOD (see match_timing.js)
+  if (matchState === 3 || matchState === 4) {
+    return true;
+  }
+
+  // During transition period (first 10 seconds of teleop), both hubs are active
+  if (matchState === 5 && matchTimeSec >= teleopStartSec && matchTimeSec < teleopStartSec + transitionDurationSec) {
+    return true;
+  }
+
+  // During END GAME (last 30 seconds), both hubs are active
+  if (matchTimeSec >= teleopEndSec - endGameDurationSec && matchTimeSec < teleopEndSec) {
+    return true;
+  }
+
+  // After the match ends, hubs are not active
+  if (matchTimeSec >= teleopEndSec) {
+    return false;
+  }
+
+  // During teleop alternating shifts (after transition period)
+  if (matchTimeSec < teleopStartSec) {
+    return false;
+  }
+
+  // Calculate which alternating shift we're in (after transition period)
+  const postTransitionSec = matchTimeSec - (teleopStartSec + transitionDurationSec);
+  if (postTransitionSec < 0) {
+    return false;
+  }
+  const shift = Math.floor(postTransitionSec / 25);
+
+  if (blueWonAuto) {
+    // Blue won auto, so Blue is INACTIVE first, then alternates
+    // Blue is INACTIVE on even shifts (0, 2, 4...), ACTIVE on odd shifts (1, 3, 5...)
+    return shift % 2 === 1;
+  } else {
+    // Red won auto, so Blue is ACTIVE first, then alternates
+    // Blue is ACTIVE on even shifts (0, 2, 4...), INACTIVE on odd shifts (1, 3, 5...)
+    return shift % 2 === 0;
+  }
+};
+
+// Helper function to determine if hub indicators should flash
+const shouldHubFlash = function(matchTimeSec, matchState) {
+  const teleopStartSec = 23; // warmup(0) + auto(20) + pause(3)
+  const transitionDurationSec = 10;
+  const transitionEndSec = teleopStartSec + transitionDurationSec;
+  const teleopEndSec = 163; // teleopStartSec + teleop(140)
+  const shiftDurationSec = 25;
+  const flashThresholdSec = 3;
+
+  // Flash during last 3 seconds of match
+  if (matchTimeSec >= teleopEndSec - flashThresholdSec && matchTimeSec < teleopEndSec) {
+    return true;
+  }
+
+  // Flash during last 3 seconds of transition period
+  if (matchTimeSec >= transitionEndSec - flashThresholdSec && matchTimeSec < transitionEndSec) {
+    return true;
+  }
+
+  // Flash during last 3 seconds of each shift (during teleop, not in END GAME)
+  // matchState: 5 = TELEOP_PERIOD (see match_timing.js)
+  if (matchState === 5 && matchTimeSec >= transitionEndSec && matchTimeSec < teleopEndSec - 30) {
+    const postTransitionSec = matchTimeSec - transitionEndSec;
+    const timeInShift = postTransitionSec % shiftDurationSec;
+    return timeInShift >= shiftDurationSec - flashThresholdSec;
+  }
+
+  return false;
 };
 
 // Handles a websocket message to populate the final score data.
@@ -173,34 +369,28 @@ const handleScorePosted = function (data) {
   } else {
     setTeamInfo(redSide, 4, 0, data.RedCards, data.RedRankings);
   }
-  $(`#${redSide}FinalLeavePoints`).text(data.RedScoreSummary.LeavePoints);
-  $(`#${redSide}FinalCoralPoints`).text(data.RedScoreSummary.CoralPoints);
-  $(`#${redSide}FinalAlgaePoints`).text(data.RedScoreSummary.AlgaePoints);
-  $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.BargePoints);
+  $(`#${redSide}FinalAutoFuelPoints`).text(data.RedScoreSummary.AutoFuelPoints);
+  $(`#${redSide}FinalAutoClimbPoints`).text(data.RedScoreSummary.AutoClimbPoints);
+  $(`#${redSide}FinalActiveFuelPoints`).text(data.RedScoreSummary.ActiveFuelPoints);
+  $(`#${redSide}FinalTeleopClimbPoints`).text(data.RedScoreSummary.TeleopClimbPoints);
   $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
-  $(`#${redSide}FinalCoopertitionBonus`).html(
-    data.RedScoreSummary.CoopertitionBonus ? "&#x2714;" : "&#x2718;"
+  $(`#${redSide}FinalEnergizedRankingPoint`).html(
+    data.RedScoreSummary.EnergizedRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${redSide}FinalCoopertitionBonus`).attr(
-    "data-checked", data.RedScoreSummary.CoopertitionBonus
+  $(`#${redSide}FinalEnergizedRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.EnergizedRankingPoint
   );
-  $(`#${redSide}FinalAutoBonusRankingPoint`).html(
-    data.RedScoreSummary.AutoBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${redSide}FinalSuperchargedRankingPoint`).html(
+    data.RedScoreSummary.SuperchargedRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${redSide}FinalAutoBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.AutoBonusRankingPoint
+  $(`#${redSide}FinalSuperchargedRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.SuperchargedRankingPoint
   );
-  $(`#${redSide}FinalCoralBonusRankingPoint`).html(
-    data.RedScoreSummary.CoralBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${redSide}FinalTraversalRankingPoint`).html(
+    data.RedScoreSummary.TraversalRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${redSide}FinalCoralBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.CoralBonusRankingPoint
-  );
-  $(`#${redSide}FinalBargeBonusRankingPoint`).html(
-    data.RedScoreSummary.BargeBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${redSide}FinalBargeBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.BargeBonusRankingPoint
+  $(`#${redSide}FinalTraversalRankingPoint`).attr(
+    "data-checked", data.RedScoreSummary.TraversalRankingPoint
   );
   $(`#${redSide}FinalRankingPoints`).html(data.RedRankingPoints);
   $(`#${redSide}FinalWins`).text(data.RedWins);
@@ -219,34 +409,28 @@ const handleScorePosted = function (data) {
   } else {
     setTeamInfo(blueSide, 4, 0, data.BlueCards, data.BlueRankings);
   }
-  $(`#${blueSide}FinalLeavePoints`).text(data.BlueScoreSummary.LeavePoints);
-  $(`#${blueSide}FinalCoralPoints`).text(data.BlueScoreSummary.CoralPoints);
-  $(`#${blueSide}FinalAlgaePoints`).text(data.BlueScoreSummary.AlgaePoints);
-  $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.BargePoints);
+  $(`#${blueSide}FinalAutoFuelPoints`).text(data.BlueScoreSummary.AutoFuelPoints);
+  $(`#${blueSide}FinalAutoClimbPoints`).text(data.BlueScoreSummary.AutoClimbPoints);
+  $(`#${blueSide}FinalActiveFuelPoints`).text(data.BlueScoreSummary.ActiveFuelPoints);
+  $(`#${blueSide}FinalTeleopClimbPoints`).text(data.BlueScoreSummary.TeleopClimbPoints);
   $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
-  $(`#${blueSide}FinalCoopertitionBonus`).html(
-    data.BlueScoreSummary.CoopertitionBonus ? "&#x2714;" : "&#x2718;"
+  $(`#${blueSide}FinalEnergizedRankingPoint`).html(
+    data.BlueScoreSummary.EnergizedRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${blueSide}FinalCoopertitionBonus`).attr(
-    "data-checked", data.BlueScoreSummary.CoopertitionBonus
+  $(`#${blueSide}FinalEnergizedRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.EnergizedRankingPoint
   );
-  $(`#${blueSide}FinalAutoBonusRankingPoint`).html(
-    data.BlueScoreSummary.AutoBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${blueSide}FinalSuperchargedRankingPoint`).html(
+    data.BlueScoreSummary.SuperchargedRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${blueSide}FinalAutoBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.AutoBonusRankingPoint
+  $(`#${blueSide}FinalSuperchargedRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.SuperchargedRankingPoint
   );
-  $(`#${blueSide}FinalCoralBonusRankingPoint`).html(
-    data.BlueScoreSummary.CoralBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+  $(`#${blueSide}FinalTraversalRankingPoint`).html(
+    data.BlueScoreSummary.TraversalRankingPoint ? "&#x2714;" : "&#x2718;"
   );
-  $(`#${blueSide}FinalCoralBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.CoralBonusRankingPoint
-  );
-  $(`#${blueSide}FinalBargeBonusRankingPoint`).html(
-    data.BlueScoreSummary.BargeBonusRankingPoint ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${blueSide}FinalBargeBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.BargeBonusRankingPoint
+  $(`#${blueSide}FinalTraversalRankingPoint`).attr(
+    "data-checked", data.BlueScoreSummary.TraversalRankingPoint
   );
   $(`#${blueSide}FinalRankingPoints`).html(data.BlueRankingPoints);
   $(`#${blueSide}FinalWins`).text(data.BlueWins);

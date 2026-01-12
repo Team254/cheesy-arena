@@ -198,34 +198,34 @@ func generateInMatchTeamRearText(arena *Arena, isRed bool, countdown string) str
 		formatString = "B%03d-R%03d"
 	}
 	scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
-	scoreTotal := scoreSummary.Score - scoreSummary.BargePoints
+	scoreTotal := scoreSummary.Score
 	opponentScoreSummary := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore)
-	opponentScoreTotal := opponentScoreSummary.Score - opponentScoreSummary.BargePoints
+	opponentScoreTotal := opponentScoreSummary.Score
 	allianceScores := fmt.Sprintf(formatString, scoreTotal, opponentScoreTotal)
 
-	var coralRankingPointProgress string
+	// TODO: Add REBUILT-specific ranking point progress display
+	var rankingPointProgress string
 	if arena.CurrentMatch.Type != model.Playoff {
-		coralRankingPointProgress = fmt.Sprintf("%d/%d", scoreSummary.NumCoralLevels, scoreSummary.NumCoralLevelsGoal)
+		rankingPointProgress = fmt.Sprintf("%d", scoreSummary.TotalFuel)
 	}
 
-	return fmt.Sprintf("%s %s %s", countdown, allianceScores, coralRankingPointProgress)
+	return fmt.Sprintf("%s %s %s", countdown, allianceScores, rankingPointProgress)
 }
 
 // Returns the in-match rear text for the timer display for the given alliance.
 func generateInMatchTimerRearText(arena *Arena, isRed bool) string {
-	var reef *game.Reef
+	// TODO: Add REBUILT-specific rear text display (e.g., ball counts, shift info)
+	var score *game.Score
 	if isRed {
-		reef = &arena.RedRealtimeScore.CurrentScore.Reef
+		score = &arena.RedRealtimeScore.CurrentScore
 	} else {
-		reef = &arena.BlueRealtimeScore.CurrentScore.Reef
+		score = &arena.BlueRealtimeScore.CurrentScore
 	}
 
 	return fmt.Sprintf(
-		"1-%02d 2-%02d 3-%02d 4-%02d",
-		reef.CountTotalCoralByLevel(game.Level1),
-		reef.CountTotalCoralByLevel(game.Level2),
-		reef.CountTotalCoralByLevel(game.Level3),
-		reef.CountTotalCoralByLevel(game.Level4),
+		"A:%02d T:%03d",
+		score.ActiveFuel,
+		score.ActiveFuel+score.InactiveFuel,
 	)
 }
 

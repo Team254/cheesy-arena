@@ -211,16 +211,18 @@ func (arena *Arena) generateMatchTimingMessage() any {
 
 func (arena *Arena) generateRealtimeScoreMessage() any {
 	fields := struct {
-		Red       *audienceAllianceScoreFields
-		Blue      *audienceAllianceScoreFields
-		RedCards  map[string]string
-		BlueCards map[string]string
+		Red           *audienceAllianceScoreFields
+		Blue          *audienceAllianceScoreFields
+		RedCards      map[string]string
+		BlueCards     map[string]string
+		AutoTieWinner string
 		MatchState
 	}{
 		getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary()),
 		getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary()),
 		arena.RedRealtimeScore.Cards,
 		arena.BlueRealtimeScore.Cards,
+		arena.autoTieWinner,
 		arena.MatchState,
 	}
 	return &fields
@@ -315,7 +317,7 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		blueWins,
 		redDestination,
 		blueDestination,
-		game.CoralBonusCoopEnabled,
+		false, // Coopertition not used in REBUILT
 	}
 }
 

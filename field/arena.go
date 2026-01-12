@@ -98,6 +98,7 @@ type Arena struct {
 	breakDescription                  string
 	preloadedTeams                    *[6]*model.Team
 	NextFoulId                        int
+	autoTieWinner                     string // "red" or "blue" - randomly chosen at match start for tie-breaking
 }
 
 type AllianceStation struct {
@@ -272,11 +273,9 @@ func (arena *Arena) LoadSettings() error {
 	game.UpdateMatchSounds()
 	arena.MatchTimingNotifier.Notify()
 
-	game.AutoBonusCoralThreshold = settings.AutoBonusCoralThreshold
-	game.CoralBonusPerLevelThreshold = settings.CoralBonusPerLevelThreshold
-	game.CoralBonusCoopEnabled = settings.CoralBonusCoopEnabled
-	game.BargeBonusPointThreshold = settings.BargeBonusPointThreshold
-	game.IncludeAlgaeInBargeBonus = settings.IncludeAlgaeInBargeBonus
+	game.EnergizedRPThreshold = settings.EnergizedRPThreshold
+	game.SuperchargedRPThreshold = settings.SuperchargedRPThreshold
+	game.TraversalRPThreshold = settings.TraversalRPThreshold
 
 	// Reconstruct the playoff tournament in memory.
 	if err = arena.CreatePlayoffTournament(); err != nil {
@@ -649,6 +648,12 @@ func (arena *Arena) Update() {
 		arena.AllianceStationDisplayModeNotifier.Notify()
 		go arena.BlackmagicClient.StartRecording()
 		go arena.CompanionClient.SendEvent(partner.EventMatchStart)
+		// Randomly choose a tie-breaker for auto (50/50 chance)
+		if time.Now().UnixNano()%2 == 0 {
+			arena.autoTieWinner = "red"
+		} else {
+			arena.autoTieWinner = "blue"
+		}
 		if game.MatchTiming.WarmupDurationSec > 0 {
 			arena.MatchState = WarmupPeriod
 			enabled = false
@@ -1134,47 +1139,138 @@ func (arena *Arena) handlePlcInputOutput() {
 	}
 
 	// Get all the game-specific inputs and update the score.
+	// For REBUILT: Get hub FUEL counts from PLC and route to active/inactive based on which hub is active.
+	// The PLC provides cumulative counts, so we calculate deltas from the current score totals.
 	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod ||
 		inGracePeriod {
-		redScore.ProcessorAlgae, blueScore.ProcessorAlgae = arena.Plc.GetProcessorCounts()
+		redHubFuel, blueHubFuel := arena.Plc.GetHubBallCounts()
+
+		// Calculate the delta since last read using current score totals
+		redTotalFuel := redScore.AutoFuel + redScore.ActiveFuel + redScore.InactiveFuel
+		blueTotalFuel := blueScore.AutoFuel + blueScore.ActiveFuel + blueScore.InactiveFuel
+		redDelta := redHubFuel - redTotalFuel
+		blueDelta := blueHubFuel - blueTotalFuel
+
+		// Only process positive deltas (new FUEL scored)
+		if redDelta > 0 || blueDelta > 0 {
+			if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod {
+				// During auto and pause (transition), all FUEL counts as auto FUEL
+				// This includes the grace period after auto ends to account for FUEL in flight
+				if redDelta > 0 {
+					redScore.AutoFuel += redDelta
+				}
+				if blueDelta > 0 {
+					blueScore.AutoFuel += blueDelta
+				}
+			} else if arena.MatchState == TeleopPeriod {
+				// During teleop, route to active or inactive based on which hub is currently active
+				// Include grace period after hub deactivates to account for FUEL in flight
+				// Determine who won auto to know which hub is active (calculate once)
+				redAutoSummary := redScore.Summarize(blueScore)
+				blueAutoSummary := blueScore.Summarize(redScore)
+				redWonAuto := redAutoSummary.AutoPoints > blueAutoSummary.AutoPoints
+				blueWonAuto := blueAutoSummary.AutoPoints > redAutoSummary.AutoPoints
+
+				// Handle tie case - use random tie-breaker
+				if !redWonAuto && !blueWonAuto {
+					if arena.autoTieWinner == "red" {
+						redWonAuto = true
+					} else {
+						blueWonAuto = true
+					}
+				}
+
+				matchTimeSec := arena.MatchTimeSec()
+
+				if redDelta > 0 {
+					if game.IsRedHubActiveForScoring(matchTimeSec, redWonAuto) {
+						redScore.ActiveFuel += redDelta
+					} else {
+						redScore.InactiveFuel += redDelta
+					}
+				}
+
+				if blueDelta > 0 {
+					if game.IsBlueHubActiveForScoring(matchTimeSec, blueWonAuto) {
+						blueScore.ActiveFuel += blueDelta
+					} else {
+						blueScore.InactiveFuel += blueDelta
+					}
+				}
+			}
+		}
 	}
+
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
 		arena.RealtimeScoreNotifier.Notify()
 	}
 
-	// Handle the truss lights.
+	// Handle the hub lights.
 	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
-		warningSequenceActive, lights := trussLightWarningSequence(arena.MatchTimeSec())
-		if warningSequenceActive {
-			arena.Plc.SetTrussLights(lights, lights)
-		} else {
-			if !game.CoralBonusCoopEnabled || arena.CurrentMatch.Type == model.Playoff {
-				// Just leave the lights on all match if co-op is not enabled for this match (or event).
-				arena.Plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
+		// Determine who won auto to know which hub is active
+		redAutoSummary := redScore.Summarize(blueScore)
+		blueAutoSummary := blueScore.Summarize(redScore)
+		redWonAuto := redAutoSummary.AutoPoints > blueAutoSummary.AutoPoints
+		blueWonAuto := blueAutoSummary.AutoPoints > redAutoSummary.AutoPoints
+
+		// Handle tie case - use random tie-breaker
+		if !redWonAuto && !blueWonAuto {
+			if arena.autoTieWinner == "red" {
+				redWonAuto = true
 			} else {
-				// Set the lights to reflect co-op status.
-				if arena.RedScoreSummary().CoopertitionBonus && arena.BlueScoreSummary().CoopertitionBonus {
-					arena.Plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
-				} else {
-					arena.Plc.SetTrussLights(
-						[3]bool{
-							arena.RedRealtimeScore.CurrentScore.ProcessorAlgae >= 1,
-							arena.RedRealtimeScore.CurrentScore.ProcessorAlgae >= 2,
-							false,
-						},
-						[3]bool{
-							arena.BlueRealtimeScore.CurrentScore.ProcessorAlgae >= 1,
-							arena.BlueRealtimeScore.CurrentScore.ProcessorAlgae >= 2,
-							false,
-						},
-					)
-				}
+				blueWonAuto = true
 			}
 		}
+
+		matchTimeSec := arena.MatchTimeSec()
+		redHubActive := game.IsRedHubActive(matchTimeSec, redWonAuto)
+		blueHubActive := game.IsBlueHubActive(matchTimeSec, blueWonAuto)
+
+		// Check if we're within 3 seconds of a hub deactivation and flash at 0.5Hz (1 second period)
+		teleopStartSec := float64(game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec)
+		teleopEndSec := teleopStartSec + float64(game.MatchTiming.TeleopDurationSec)
+		transitionEndSec := teleopStartSec + float64(game.TransitionDurationSec)
+		shouldFlash := false
+
+		// Flash during last 3 seconds of match
+		if matchTimeSec >= teleopEndSec-3.0 && matchTimeSec < teleopEndSec {
+			shouldFlash = true
+		}
+
+		// Flash during last 3 seconds of transition period
+		if matchTimeSec >= transitionEndSec-3.0 && matchTimeSec < transitionEndSec {
+			shouldFlash = true
+		}
+
+		// Flash during last 3 seconds of each shift (during teleop, not in END GAME)
+		if matchTimeSec >= transitionEndSec && matchTimeSec < teleopEndSec-float64(game.EndGameDurationSec) {
+			postTransitionSec := matchTimeSec - transitionEndSec
+			timeInShift := postTransitionSec - float64(int(postTransitionSec/float64(game.ShiftDurationSec)))*float64(game.ShiftDurationSec)
+			if timeInShift >= float64(game.ShiftDurationSec)-3.0 {
+				shouldFlash = true
+			}
+		}
+
+		redLight := redHubActive
+		blueLight := blueHubActive
+		if shouldFlash {
+			// Flash the currently active hub(s) at 0.5Hz (1 second period = on for 0.5s, off for 0.5s)
+			flashOn := int(matchTimeSec*2)%2 == 0
+			if redHubActive {
+				redLight = flashOn
+			}
+			if blueHubActive {
+				blueLight = flashOn
+			}
+		}
+
+		arena.Plc.SetHubLights(redLight, blueLight)
+	} else if arena.MatchState == PreMatch {
+		// During pre-match, turn on both hub lights for testing
+		arena.Plc.SetHubLights(false, false)
 	} else {
-		arena.Plc.SetTrussLights(
-			[3]bool{inGracePeriod, inGracePeriod, inGracePeriod}, [3]bool{inGracePeriod, inGracePeriod, inGracePeriod},
-		)
+		// During grace period, turn on both hub lights
+		arena.Plc.SetHubLights(inGracePeriod, inGracePeriod)
 	}
 }
 
@@ -1230,27 +1326,4 @@ func (arena *Arena) positionPostMatchScoreReady(position string) bool {
 func (arena *Arena) runPeriodicTasks() {
 	arena.updateEarlyLateMessage()
 	arena.purgeDisconnectedDisplays()
-}
-
-// trussLightWarningSequence generates the sequence of truss light states during the "sonar ping" warning sound. It
-// returns true if the sequence is active, and an array of booleans indicating the state of each truss light.
-func trussLightWarningSequence(matchTimeSec float64) (bool, [3]bool) {
-	stepTimeSec := 0.2
-	sequence := []int{1, 2, 3, 2, 1, 2, 3, 0, 0, 1, 2, 3, 2, 1, 2, 3, 0, 0}
-	startTime := float64(
-		game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec +
-			game.MatchTiming.TeleopDurationSec - game.MatchTiming.WarningRemainingDurationSec,
-	)
-	lights := [3]bool{false, false, false}
-
-	if matchTimeSec < startTime {
-		// The sequence is not active yet.
-		return false, lights
-	}
-
-	step := int((matchTimeSec - startTime) / stepTimeSec)
-	if step < len(sequence) && sequence[step] > 0 {
-		lights[sequence[step]-1] = true
-	}
-	return step < len(sequence), lights
 }

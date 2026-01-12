@@ -25,8 +25,8 @@ UI for entering realtime scores.
     <div id="auto-controls">
       {{if .Position.ScoresAuto}}
       {{range $i := seq 3}}
-      {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "class" "scoring-button" "onclick"
-      (printf "handleLeaveClick(%d);" $i))}}
+      {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "class" "scoring-auto-button" "onclick"
+      (printf "handleAutoClimbClick(%d);" $i))}}
       {{end}}
       {{end}}
     </div>
@@ -40,78 +40,24 @@ UI for entering realtime scores.
       {{end}}
     </div>
   </div>
-  <div id="reef-controls">
-    <svg id="reef-controls-warning" viewBox="0 0 80 70">
-      <path stroke-width="6" stroke-linejoin="round" stroke="#000000" fill="none" d="M 40,3 3,67 h 74 z"/>
-      <line x1="40" y1="23" x2="40" y2="45" stroke-width="8" stroke-linecap="round" stroke="#000000"/>
-      <circle fill="#000000" cx="40" cy="57" r="4"/>
-    </svg>
-    {{$baseIndex := .Position.LeftmostReefPole}}
-    {{range $i := seq 6}}
-    {{template "reefColumn" (dict "index" (add $baseIndex $i))}}
-    {{end}}
+  {{if not .PlcIsEnabled}}
+  <div id="fuel-controls">
+    {{template "counter" (dict "id" "autoFuel" "label" "Auto FUEL")}}
+    {{template "counter" (dict "id" "activeFuel" "label" "Active FUEL")}}
+    {{template "counter" (dict "id" "inactiveFuel" "label" "Inactive FUEL")}}
   </div>
+  {{end}}
   <div id="bottom-controls">
-    <div class="counter-wrapper">
-      {{if .Position.ScoresBarge}}
-      {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
-      {{else if and .Position.ScoresProcessor (not .PlcIsEnabled)}}
-      {{template "counter" (dict "id" "processor" "label" "Processor Algae")}}
-      {{end}}
-    </div>
-    <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart disabled></button>
-    <div class="counter-wrapper">
-      {{template "counter" (dict "id" "trough" "label" "L1 Coral" "has_auto" true)}}
-    </div>
     <button id="fouls-button" class="scoring-button" onclick="showFoulsDialog();" ontouchstart disabled>Fouls</button>
   </div>
-  <div id="l1-total">L1 Coral Total: <span id="l1-total-count">0</span></div>
 </main>
-
-<svg id="reef-graphics" style="display:none">
-  <symbol id="coral-indicator" width="30" height="125" viewBox="0 0 30 125">
-    <rect width="30" height="80" fill="var(--coral)" display="var(--current-display)"/>
-    <g display="var(--auto-display)">
-      <rect width="30" height="20" y="85" fill="var(--coral-auto)"/>
-      <text font-size="16pt" font-weight="bold" text-anchor="middle" fill="black" x="15" y="103">A</text>
-    </g>
-  </symbol>
-
-  <symbol id="reef-column" width="120" height="600" viewBox="0 0 120 600">
-    <style>
-      .l4-coral {
-        --current-display: var(--l4-coral-display);
-        --auto-display: var(--l4-coral-auto-display);
-      }
-
-      .l3-coral {
-        --current-display: var(--l3-coral-display);
-        --auto-display: var(--l3-coral-auto-display);
-      }
-
-      .l2-coral {
-        --current-display: var(--l2-coral-display);
-        --auto-display: var(--l2-coral-auto-display);
-      }
-    </style>
-    <g stroke="var(--reef-pole)" stroke-width="12px" fill="none">
-      <path
-        d="m 60,0 v 125 a 24.142136,24.142136 112.5 0 1 -7.071068,17.07107 L 12.071068,182.92893 A 24.142136,24.142136 112.5 0 0 5,200 v 400"/>
-      <line x1="5" y1="355" x2="115" y2="245"/>
-      <line x1="5" y1="555" x2="115" y2="445"/>
-    </g>
-    <use xlink:href="#coral-indicator" class="l4-coral" x="45" y="20"/>
-    <use xlink:href="#coral-indicator" class="l3-coral" x="45" y="240" transform="rotate(45, 60, 300)"/>
-    <use xlink:href="#coral-indicator" class="l2-coral" x="45" y="440" transform="rotate(45, 60, 500)"/>
-  </symbol>
-</svg>
 
 <dialog id="endgame-dialog" onclick="closeEndgameDialogIfOutside(event);">
   <div class="dialog-container">
-    <div class="dialog-banner">Endgame Scoring</div>
+    <div class="dialog-banner">Teleop Climb Scoring</div>
     <div id="endgame-scoring">
       {{range $i := seq 3}}
-      {{template "endgame-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i)}}
+      {{template "teleop-climb-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i)}}
       {{end}}
     </div>
     <button class="dialog-close" autofocus onclick="closeEndgameDialog();" ontouchstart>Close</button>
@@ -192,17 +138,19 @@ UI for entering realtime scores.
 </div>
 {{end}}
 
-{{define "endgame-input"}}
+{{define "teleop-climb-input"}}
 <div id="{{.id}}" class="endgame-input team-{{.index}}">
   <div class="team-num"></div>
-  {{template "endgame-input-button" (dict "label" "Deep" "endgameState" 3 "index" .index)}}
-  {{template "endgame-input-button" (dict "label" "Shallow" "endgameState" 2 "index" .index)}}
-  {{template "endgame-input-button" (dict "label" "Park" "endgameState" 1 "index" .index)}}
-  {{template "endgame-input-button" (dict "label" "None" "endgameState" 0 "index" .index)}}
+  <div class="climb-buttons">
+    {{template "teleop-climb-button" (dict "label" "L3" "climbLevel" 3 "index" .index)}}
+    {{template "teleop-climb-button" (dict "label" "L2" "climbLevel" 2 "index" .index)}}
+    {{template "teleop-climb-button" (dict "label" "L1" "climbLevel" 1 "index" .index)}}
+    {{template "teleop-climb-button" (dict "label" "None" "climbLevel" 0 "index" .index)}}
+  </div>
 </div>
 {{end}}
-{{define "endgame-input-button"}}
-<button class="endgame-input-button endgame-{{.endgameState}}"
-  onclick="handleEndgameClick({{.index}}, {{.endgameState}});">{{.label}}
+{{define "teleop-climb-button"}}
+<button class="climb-input-button teleop-climb-{{.climbLevel}}"
+  onclick="handleTeleopClimbClick({{.index}}, {{.climbLevel}});">{{.label}}
 </button>
 {{end}}

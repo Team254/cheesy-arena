@@ -33,12 +33,8 @@ Display shown on the audience screen overlayed over the video.
               </div>
               <div class="score-fields">
                 <div class="score-field">
-                  <img class="coral-icon" src="/static/img/coral.png"/>
-                  <div id="leftCoral"></div>
-                </div>
-                <div class="score-field">
-                  <img class="algae-icon" src="/static/img/algae.png"/>
-                  <div id="leftAlgae"></div>
+                  <div class="hub-indicator" id="leftHubIndicator"></div>
+                  <div id="leftFuel" class="rp-progress"></div>
                 </div>
               </div>
               <div class="score-number" id="leftScoreNumber"></div>
@@ -47,12 +43,8 @@ Display shown on the audience screen overlayed over the video.
               <div class="score-number" id="rightScoreNumber"></div>
               <div class="score-fields">
                 <div class="score-field">
-                  <div id="rightCoral"></div>
-                  <img class="coral-icon" src="/static/img/coral.png"/>
-                </div>
-                <div class="score-field">
-                  <div id="rightAlgae"></div>
-                  <img class="algae-icon" src="/static/img/algae.png"/>
+                  <div id="rightFuel" class="rp-progress"></div>
+                  <div class="hub-indicator" id="rightHubIndicator"></div>
                 </div>
               </div>
               <div class="avatars">
@@ -128,16 +120,15 @@ Display shown on the audience screen overlayed over the video.
               </div>
             </div>
             <div class="final-breakdown" id="leftFinalBreakdown">
-              <div id="leftFinalLeavePoints"></div>
-              <div id="leftFinalCoralPoints"></div>
-              <div id="leftFinalAlgaePoints"></div>
-              <div id="leftFinalBargePoints"></div>
+              <div id="leftFinalAutoFuelPoints"></div>
+              <div id="leftFinalAutoClimbPoints"></div>
+              <div id="leftFinalActiveFuelPoints"></div>
+              <div id="leftFinalTeleopClimbPoints"></div>
               <div id="leftFinalFoulPoints"></div>
               <div class="playoff-hidden-field">
-                <div class="coopertition-hidden-field" id="leftFinalCoopertitionBonus"></div>
-                <div id="leftFinalAutoBonusRankingPoint"></div>
-                <div id="leftFinalCoralBonusRankingPoint"></div>
-                <div id="leftFinalBargeBonusRankingPoint"></div>
+                <div id="leftFinalEnergizedRankingPoint"></div>
+                <div id="leftFinalSuperchargedRankingPoint"></div>
+                <div id="leftFinalTraversalRankingPoint"></div>
                 <div id="leftFinalRankingPoints"></div>
               </div>
               <div class="playoff-only-field">
@@ -146,16 +137,15 @@ Display shown on the audience screen overlayed over the video.
               </div>
             </div>
             <div class="final-breakdown" id="centerFinalBreakdown">
-              <div>Leave</div>
-              <div>Coral</div>
-              <div>Algae</div>
-              <div>Barge</div>
+              <div>Auto FUEL</div>
+              <div>Auto Climb</div>
+              <div>Active FUEL</div>
+              <div>Teleop Climb (TOWER)</div>
               <div>Foul</div>
               <div class="playoff-hidden-field">
-                <div class="coopertition-hidden-field">Coopertition Bonus</div>
-                <div>Auto Bonus</div>
-                <div>Coral Bonus</div>
-                <div>Barge Bonus</div>
+                <div>ENERGIZED RP</div>
+                <div>SUPERCHARGED RP</div>
+                <div>TRAVERSAL RP</div>
                 <div>Ranking Points</div>
               </div>
               <div class="playoff-only-field">
@@ -164,16 +154,15 @@ Display shown on the audience screen overlayed over the video.
               </div>
             </div>
             <div class="final-breakdown" id="rightFinalBreakdown">
-              <div id="rightFinalLeavePoints"></div>
-              <div id="rightFinalCoralPoints"></div>
-              <div id="rightFinalAlgaePoints"></div>
-              <div id="rightFinalBargePoints"></div>
+              <div id="rightFinalAutoFuelPoints"></div>
+              <div id="rightFinalAutoClimbPoints"></div>
+              <div id="rightFinalActiveFuelPoints"></div>
+              <div id="rightFinalTeleopClimbPoints"></div>
               <div id="rightFinalFoulPoints"></div>
               <div class="playoff-hidden-field">
-                <div class="coopertition-hidden-field" id="rightFinalCoopertitionBonus"></div>
-                <div id="rightFinalAutoBonusRankingPoint"></div>
-                <div id="rightFinalCoralBonusRankingPoint"></div>
-                <div id="rightFinalBargeBonusRankingPoint"></div>
+                <div id="rightFinalEnergizedRankingPoint"></div>
+                <div id="rightFinalSuperchargedRankingPoint"></div>
+                <div id="rightFinalTraversalRankingPoint"></div>
                 <div id="rightFinalRankingPoints"></div>
               </div>
               <div class="playoff-only-field">
