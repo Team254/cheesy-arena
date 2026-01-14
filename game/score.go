@@ -8,7 +8,7 @@ package game
 type Score struct {
 	RobotsBypassed      [3]bool
 	ActiveFuel          int              // FUEL scored while hub was active
-	InactiveFuel        int              // FUEL scored while hub was inactive (count for RP only)
+	InactiveFuel        int              // FUEL scored while hub was inactive (does NOT count for RPs)
 	AutoFuel            int              // FUEL scored during autonomous
 	AutoClimbStatuses   [3]EndgameStatus // Climb status at end of auto (Level 1 only)
 	TeleopClimbStatuses [3]EndgameStatus // Climb status at end of teleop (Levels 1-3)
@@ -97,16 +97,16 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	summary.Score = summary.MatchPoints + summary.FoulPoints
 
 	// Calculate bonus ranking points.
-	// Total FUEL scored in HUB for ENERGIZED and SUPERCHARGED RPs (includes auto, active, and inactive).
-	// Note: TotalFuel already calculated above
+	// Only auto and active FUEL count towards ENERGIZED and SUPERCHARGED RPs (inactive FUEL does NOT count).
+	fuelForRankingPoints := score.AutoFuel + score.ActiveFuel
 
-	// ENERGIZED RP: FUEL scored in HUB at or above threshold.
-	if summary.TotalFuel >= EnergizedRPThreshold {
+	// ENERGIZED RP: FUEL scored in HUB at or above threshold (auto + active only).
+	if fuelForRankingPoints >= EnergizedRPThreshold {
 		summary.EnergizedRankingPoint = true
 	}
 
-	// SUPERCHARGED RP: FUEL scored in HUB at or above threshold.
-	if summary.TotalFuel >= SuperchargedRPThreshold {
+	// SUPERCHARGED RP: FUEL scored in HUB at or above threshold (auto + active only).
+	if fuelForRankingPoints >= SuperchargedRPThreshold {
 		summary.SuperchargedRankingPoint = true
 	}
 
