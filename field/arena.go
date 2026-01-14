@@ -699,6 +699,9 @@ func (arena *Arena) Update() {
 			enabled = true
 			sendDsPacket = true
 			go arena.CompanionClient.SendEvent(partner.EventTeleopStart)
+
+			// Send game data to driver stations indicating which hub goes inactive first
+			arena.sendHubActivationGameData()
 		}
 	case TeleopPeriod:
 		auto = false
@@ -1049,6 +1052,57 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 	arena.lastDsPacketTime = time.Now()
 }
 
+// Determines which alliance won the autonomous period, using the random tie-breaker if needed.
+// Returns (redWonAuto, blueWonAuto) where exactly one will be true.
+func (arena *Arena) determineAutoWinner() (redWonAuto bool, blueWonAuto bool) {
+	redScore := &arena.RedRealtimeScore.CurrentScore
+	blueScore := &arena.BlueRealtimeScore.CurrentScore
+
+	redAutoSummary := redScore.Summarize(blueScore)
+	blueAutoSummary := blueScore.Summarize(redScore)
+	redWonAuto = redAutoSummary.AutoPoints > blueAutoSummary.AutoPoints
+	blueWonAuto = blueAutoSummary.AutoPoints > redAutoSummary.AutoPoints
+
+	// Handle tie case - use random tie-breaker
+	if !redWonAuto && !blueWonAuto {
+		if arena.autoTieWinner == "red" {
+			redWonAuto = true
+		} else {
+			blueWonAuto = true
+		}
+	}
+
+	return redWonAuto, blueWonAuto
+}
+
+// Sends game data to all driver stations indicating which hub will go inactive first.
+// "R" means Red hub goes inactive first (Red won auto).
+// "B" means Blue hub goes inactive first (Blue won auto or tie).
+func (arena *Arena) sendHubActivationGameData() {
+	// Determine who won auto
+	redWonAuto, _ := arena.determineAutoWinner()
+
+	// Determine which hub goes inactive first
+	var gameData string
+	if redWonAuto {
+		gameData = "R" // Red won auto, so Red hub goes inactive first
+	} else {
+		gameData = "B" // Blue won auto or tie, so Blue hub goes inactive first
+	}
+
+	// Send game data to all driver stations
+	for _, allianceStation := range arena.AllianceStations {
+		if allianceStation.DsConn != nil {
+			err := allianceStation.DsConn.sendGameDataPacket(gameData)
+			if err != nil {
+				log.Printf("Unable to send game data packet to team %d: %v", allianceStation.Team.Id, err)
+			}
+		}
+	}
+
+	log.Printf("Sent game data '%s' to driver stations (Red won auto: %v)", gameData, redWonAuto)
+}
+
 // Returns the alliance station identifier for the given team, or the empty string if the team is not present
 // in the current match.
 func (arena *Arena) getAssignedAllianceStation(teamId int) string {
@@ -1165,20 +1219,8 @@ func (arena *Arena) handlePlcInputOutput() {
 			} else if arena.MatchState == TeleopPeriod {
 				// During teleop, route to active or inactive based on which hub is currently active
 				// Include grace period after hub deactivates to account for FUEL in flight
-				// Determine who won auto to know which hub is active (calculate once)
-				redAutoSummary := redScore.Summarize(blueScore)
-				blueAutoSummary := blueScore.Summarize(redScore)
-				redWonAuto := redAutoSummary.AutoPoints > blueAutoSummary.AutoPoints
-				blueWonAuto := blueAutoSummary.AutoPoints > redAutoSummary.AutoPoints
-
-				// Handle tie case - use random tie-breaker
-				if !redWonAuto && !blueWonAuto {
-					if arena.autoTieWinner == "red" {
-						redWonAuto = true
-					} else {
-						blueWonAuto = true
-					}
-				}
+				// Determine who won auto to know which hub is active
+				redWonAuto, blueWonAuto := arena.determineAutoWinner()
 
 				matchTimeSec := arena.MatchTimeSec()
 
@@ -1208,19 +1250,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	// Handle the hub lights.
 	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
 		// Determine who won auto to know which hub is active
-		redAutoSummary := redScore.Summarize(blueScore)
-		blueAutoSummary := blueScore.Summarize(redScore)
-		redWonAuto := redAutoSummary.AutoPoints > blueAutoSummary.AutoPoints
-		blueWonAuto := blueAutoSummary.AutoPoints > redAutoSummary.AutoPoints
-
-		// Handle tie case - use random tie-breaker
-		if !redWonAuto && !blueWonAuto {
-			if arena.autoTieWinner == "red" {
-				redWonAuto = true
-			} else {
-				blueWonAuto = true
-			}
-		}
+		redWonAuto, blueWonAuto := arena.determineAutoWinner()
 
 		matchTimeSec := arena.MatchTimeSec()
 		redHubActive := game.IsRedHubActive(matchTimeSec, redWonAuto)
