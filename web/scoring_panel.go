@@ -1,5 +1,6 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2026 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+// Modified for 2026 REBUILT Game
 //
 // Web handlers for scoring interface.
 
@@ -7,251 +8,158 @@ package web
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
-	"io"
-	"log"
-	"net/http"
-	"strings"
 )
 
 type ScoringPosition struct {
-	Title            string
-	Alliance         string
-	NearSide         bool
-	ScoresAuto       bool
-	ScoresEndgame    bool
-	ScoresBarge      bool
-	ScoresProcessor  bool
-	LeftmostReefPole int
+	Title         string
+	Alliance      string
+	NearSide      bool
+	ScoresAuto    bool
+	ScoresEndgame bool
 }
 
+// 2026 Configuration: Removed Barge/Processor specific flags
 var positionParameters = map[string]ScoringPosition{
 	"red_near": {
-		Title:            "Red Near",
-		Alliance:         "red",
-		NearSide:         true,
-		ScoresAuto:       true,
-		ScoresEndgame:    true,
-		ScoresBarge:      true,
-		ScoresProcessor:  false,
-		LeftmostReefPole: 6,
+		Title:         "Red Near",
+		Alliance:      "red",
+		NearSide:      true,
+		ScoresAuto:    true,
+		ScoresEndgame: true,
 	},
 	"red_far": {
-		Title:            "Red Far",
-		Alliance:         "red",
-		NearSide:         false,
-		ScoresAuto:       false,
-		ScoresEndgame:    false,
-		ScoresBarge:      false,
-		ScoresProcessor:  true,
-		LeftmostReefPole: 0,
+		Title:         "Red Far",
+		Alliance:      "red",
+		NearSide:      false,
+		ScoresAuto:    true,
+		ScoresEndgame: true,
 	},
 	"blue_near": {
-		Title:            "Blue Near",
-		Alliance:         "blue",
-		NearSide:         true,
-		ScoresAuto:       false,
-		ScoresEndgame:    false,
-		ScoresBarge:      false,
-		ScoresProcessor:  true,
-		LeftmostReefPole: 0,
+		Title:         "Blue Near",
+		Alliance:      "blue",
+		NearSide:      true,
+		ScoresAuto:    true,
+		ScoresEndgame: true,
 	},
 	"blue_far": {
-		Title:            "Blue Far",
-		Alliance:         "blue",
-		NearSide:         false,
-		ScoresAuto:       true,
-		ScoresEndgame:    true,
-		ScoresBarge:      true,
-		ScoresProcessor:  false,
-		LeftmostReefPole: 6,
+		Title:         "Blue Far",
+		Alliance:      "blue",
+		NearSide:      false,
+		ScoresAuto:    true,
+		ScoresEndgame: true,
 	},
 }
 
-// Renders the scoring interface which enables input of scores in real-time.
-func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
+func (web *Web) scoringGetHandler(w http.ResponseWriter, r *http.Request) {
+	position := r.FormValue("position")
+	if _, ok := positionParameters[position]; !ok {
+		http.Error(w, fmt.Sprintf("Invalid position: %s", position), 404)
 		return
 	}
 
-	position := r.PathValue("position")
-	parameters, ok := positionParameters[position]
-	if !ok {
-		handleWebErr(w, fmt.Errorf("Invalid position '%s'.", position))
-		return
-	}
-
-	template, err := web.parseFiles("templates/scoring_panel.html", "templates/base.html")
+	template, err := web.parseFiles("templates/scoring.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	data := struct {
-		*model.EventSettings
-		PlcIsEnabled bool
-		PositionName string
-		Position     ScoringPosition
-	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), position, parameters}
-	err = template.ExecuteTemplate(w, "base_no_navbar", data)
+	err = template.ExecuteTemplate(w, "base", positionParameters[position])
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 }
 
-// The websocket endpoint for the scoring interface client to send control commands and receive status updates.
-func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
+func (web *Web) scoringHandler(ws *websocket.WebSocket) {
+	position := ws.Request.FormValue("position")
+	params, ok := positionParameters[position]
+	if !ok {
+		ws.WriteError(fmt.Sprintf("Invalid position: %s", position))
 		return
 	}
 
-	position := r.PathValue("position")
-	if position != "red_near" && position != "red_far" && position != "blue_near" && position != "blue_far" {
-		handleWebErr(w, fmt.Errorf("Invalid position '%s'.", position))
-		return
-	}
-	alliance := strings.Split(position, "_")[0]
-
-	var realtimeScore **field.RealtimeScore
-	if alliance == "red" {
-		realtimeScore = &web.arena.RedRealtimeScore
-	} else {
-		realtimeScore = &web.arena.BlueRealtimeScore
-	}
-
-	ws, err := websocket.NewWebsocket(w, r)
-	if err != nil {
-		handleWebErr(w, err)
-		return
-	}
-	defer ws.Close()
-	web.arena.ScoringPanelRegistry.RegisterPanel(position, ws)
-	web.arena.ScoringStatusNotifier.Notify()
-	defer web.arena.ScoringStatusNotifier.Notify()
-	defer web.arena.ScoringPanelRegistry.UnregisterPanel(position, ws)
-
-	// Instruct panel to clear any local state in case this is a reconnect
-	ws.Write("resetLocalState", nil)
-
-	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
-	go ws.HandleNotifiers(
-		web.arena.MatchLoadNotifier,
-		web.arena.MatchTimeNotifier,
-		web.arena.RealtimeScoreNotifier,
-		web.arena.ReloadDisplaysNotifier,
-	)
-
-	// Loop, waiting for commands and responding to them, until the client closes the connection.
+	// Listen for score updates.
 	for {
-		command, data, err := ws.Read()
+		message, err := ws.ReadMessage()
 		if err != nil {
-			if err == io.EOF {
-				// Client has closed the connection; nothing to do here.
-				return
-			}
-			log.Println(err)
-			return
+			break
 		}
-		score := &(*realtimeScore).CurrentScore
-		scoreChanged := false
 
-		if command == "commitMatch" {
-			if web.arena.MatchState != field.PostMatch {
-				// Don't allow committing the score until the match is over.
-				ws.WriteError("Cannot commit score: Match is not over.")
-				continue
-			}
-			web.arena.ScoringPanelRegistry.SetScoreCommitted(position, ws)
-			web.arena.ScoringStatusNotifier.Notify()
-		} else if command == "reef" {
-			args := struct {
-				ReefPosition int
-				ReefLevel    int
-				Current      bool
-				Autonomous   bool
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
+		if message.Type == "subscribe" {
+			web.arena.RealtimeScoreNotifier.Register(ws)
+			web.arena.ArenaStatusNotifier.Register(ws)
+		} else if message.Type == "score" {
+			if web.arena.MatchState == field.PreMatch || web.arena.MatchState == field.PostMatch ||
+				web.arena.MatchState == field.TimeoutActive || web.arena.MatchState == field.PostTimeout {
+				// Don't allow score updates when a match is not in progress.
 				continue
 			}
 
-			if args.ReefPosition >= 1 && args.ReefPosition <= 12 && args.ReefLevel >= 2 && args.ReefLevel <= 4 {
-				level := game.Level(args.ReefLevel - 2)
-				reefIndex := args.ReefPosition - 1
-				if args.Current {
-					score.Reef.Branches[level][reefIndex] = !score.Reef.Branches[level][reefIndex]
-					scoreChanged = true
-				}
-				if args.Autonomous {
-					score.Reef.AutoBranches[level][reefIndex] = !score.Reef.AutoBranches[level][reefIndex]
-					scoreChanged = true
-				}
-				scoreChanged = true
-			}
-
-		} else if command == "endgame" {
-			args := struct {
-				TeamPosition  int
-				EndgameStatus int
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.EndgameStatus >= 0 && args.EndgameStatus <= 3 {
-				endgameStatus := game.EndgameStatus(args.EndgameStatus)
-				score.EndgameStatuses[args.TeamPosition-1] = endgameStatus
-				scoreChanged = true
-			}
-		} else if command == "leave" {
-			args := struct {
-				TeamPosition int
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
-				score.LeaveStatuses[args.TeamPosition-1] = !score.LeaveStatuses[args.TeamPosition-1]
-				scoreChanged = true
-			}
-		} else if command == "addFoul" {
-			args := struct {
-				Alliance string
-				IsMajor  bool
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			// Add the foul to the correct alliance's list.
-			foul := game.Foul{FoulId: web.arena.NextFoulId, IsMajor: args.IsMajor}
-			web.arena.NextFoulId++
-			if args.Alliance == "red" {
-				web.arena.RedRealtimeScore.CurrentScore.Fouls =
-					append(web.arena.RedRealtimeScore.CurrentScore.Fouls, foul)
+			// Determine which alliance's score to update.
+			var score *game.Score
+			if params.Alliance == "red" {
+				score = &web.arena.RedRealtimeScore.CurrentScore
 			} else {
-				web.arena.BlueRealtimeScore.CurrentScore.Fouls =
-					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
+				score = &web.arena.BlueRealtimeScore.CurrentScore
 			}
-			web.arena.RealtimeScoreNotifier.Notify()
-		} else {
+
+			command := message.Data.(map[string]interface{})["command"].(string)
+			data := message.Data.(map[string]interface{})["data"]
+			scoreChanged := false
+
+			if command == "foul" {
+				// Handle fouls (unchanged from 2025 logic mostly)
+				args := struct {
+					Alliance string
+					RuleId   int
+					IsMajor  bool
+				}{}
+				err = mapstructure.Decode(data, &args)
+				if err != nil {
+					ws.WriteError(err.Error())
+					continue
+				}
+
+				foul := game.Foul{
+					FoulId:  web.arena.NextFoulId,
+					RuleId:  args.RuleId,
+					IsMajor: args.IsMajor,
+				}
+				web.arena.NextFoulId++
+
+				// Invert logic: Panel sends who committed the foul, we add it to THAT alliance's foul list.
+				// (Note: score.go logic calculates points FROM opponent's fouls)
+				if args.Alliance == "red" {
+					web.arena.RedRealtimeScore.CurrentScore.Fouls = append(web.arena.RedRealtimeScore.CurrentScore.Fouls, foul)
+				} else {
+					web.arena.BlueRealtimeScore.CurrentScore.Fouls = append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
+				}
+				web.arena.RedRealtimeScore.FoulsCommitted = true
+				web.arena.BlueRealtimeScore.FoulsCommitted = true
+				web.arena.RealtimeScoreNotifier.Notify()
+				continue
+			} else if command == "commit" {
+				// Commit logic
+				if params.Alliance == "red" {
+					web.arena.SetNumScoreCommitted(position, web.arena.GetNumScoreCommitted(position)+1)
+				} else {
+					web.arena.SetNumScoreCommitted(position, web.arena.GetNumScoreCommitted(position)+1)
+				}
+				web.arena.ScoringStatusNotifier.Notify()
+				continue
+			}
+
+			// --- 2026 Game Logic ---
 			args := struct {
 				Adjustment int
-				Current    bool
+				RobotIndex int // 0, 1, 2
+				Level      int // For Climb
 				Autonomous bool
-				NearSide   bool
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -260,34 +168,53 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 
 			switch command {
-			case "barge":
-				score.BargeAlgae = max(0, score.BargeAlgae+args.Adjustment)
+			case "fuel":
+				// Add or subtract fuel
+				if args.Autonomous {
+					score.AutoFuelCount = max(0, score.AutoFuelCount+args.Adjustment)
+				} else {
+					score.TeleopFuelCount = max(0, score.TeleopFuelCount+args.Adjustment)
+				}
 				scoreChanged = true
-			case "processor":
-				score.ProcessorAlgae = max(0, score.ProcessorAlgae+args.Adjustment)
-				scoreChanged = true
-			case "trough":
-				if args.Current {
-					if args.NearSide {
-						score.Reef.TroughNear = max(0, score.Reef.TroughNear+args.Adjustment)
-					} else {
-						score.Reef.TroughFar = max(0, score.Reef.TroughFar+args.Adjustment)
+
+			case "climb":
+				// Set climb status for a specific robot
+				if args.RobotIndex >= 0 && args.RobotIndex < 3 {
+					// Map integer level to Enum
+					var status game.EndgameStatus
+					switch args.Level {
+					case 0:
+						status = game.EndgameNone
+					case 2:
+						status = game.EndgameLevel2
+					case 3:
+						status = game.EndgameLevel3
+					default:
+						status = game.EndgameNone
 					}
+					score.EndgameStatuses[args.RobotIndex] = status
 					scoreChanged = true
 				}
-				if args.Autonomous {
-					if args.NearSide {
-						score.Reef.AutoTroughNear = max(0, score.Reef.AutoTroughNear+args.Adjustment)
-					} else {
-						score.Reef.AutoTroughFar = max(0, score.Reef.AutoTroughFar+args.Adjustment)
-					}
+
+			case "auto_tower":
+				// Set Auto Tower Level 1 status
+				if args.RobotIndex >= 0 && args.RobotIndex < 3 {
+					// Using Adjustment as boolean (1=true, 0=false)
+					score.AutoTowerLevel1[args.RobotIndex] = (args.Adjustment > 0)
 					scoreChanged = true
 				}
 			}
-		}
 
-		if scoreChanged {
-			web.arena.RealtimeScoreNotifier.Notify()
+			if scoreChanged {
+				web.arena.RealtimeScoreNotifier.Notify()
+			}
 		}
 	}
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }

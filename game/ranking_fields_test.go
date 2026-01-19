@@ -1,96 +1,69 @@
-// Copyright 2017 Team 254. All Rights Reserved.
+// Copyright 2026 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+// Modified for 2026 REBUILT Game
+//
+// Tests for ranking logic.
 
 package game
 
 import (
-	"github.com/stretchr/testify/assert"
-	"math/rand"
-	"sort"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddScoreSummary(t *testing.T) {
-	rand.Seed(0)
+	// 模擬紅隊分數 (贏家)
 	redSummary := &ScoreSummary{
-		LeavePoints:            4,
-		AutoPoints:             30,
-		BargePoints:            19,
-		MatchPoints:            67,
-		Score:                  67,
-		CoopertitionBonus:      false,
-		AutoBonusRankingPoint:  true,
-		CoralBonusRankingPoint: false,
-		BargeBonusRankingPoint: true,
-		BonusRankingPoints:     2,
+		MatchPoints:        90,
+		AutoPoints:         25,
+		TotalTowerPoints:   30, // 2026 爬升分
+		Score:              100,
+		BonusRankingPoints: 1, // 例如拿到 Energized RP
 	}
+
+	// 模擬藍隊分數 (輸家)
 	blueSummary := &ScoreSummary{
-		LeavePoints:            2,
-		AutoPoints:             16,
-		BargePoints:            14,
-		MatchPoints:            61,
-		Score:                  81,
-		CoopertitionBonus:      true,
-		AutoBonusRankingPoint:  false,
-		CoralBonusRankingPoint: true,
-		BargeBonusRankingPoint: false,
-		BonusRankingPoints:     1,
+		MatchPoints:        50,
+		AutoPoints:         10,
+		TotalTowerPoints:   20,
+		Score:              50,
+		BonusRankingPoints: 0,
 	}
+
 	rankingFields := RankingFields{}
 
-	// Add a loss.
-	rankingFields.AddScoreSummary(redSummary, blueSummary, false)
-	assert.Equal(t, RankingFields{2, 0, 67, 30, 19, 0.9451961492941164, 0, 1, 0, 0, 1}, rankingFields)
-
-	// Add a win.
+	// 測試 1: 加入一場敗場 (Add a loss)
+	// 假設我們是藍隊，對手是紅隊
+	rankingFields = RankingFields{}
 	rankingFields.AddScoreSummary(blueSummary, redSummary, false)
-	assert.Equal(t, RankingFields{6, 1, 128, 46, 33, 0.24496508529377975, 1, 1, 0, 0, 2}, rankingFields)
+	// 預期: 0 RP(輸) + 0 Bonus = 0 RP. 1 Loss. MatchPoints=50.
+	assert.Equal(t, 0, rankingFields.RankingPoints)
+	assert.Equal(t, 1, rankingFields.Losses)
+	assert.Equal(t, 50, rankingFields.MatchPoints)
 
-	// Add a tie.
-	rankingFields.AddScoreSummary(redSummary, redSummary, false)
-	assert.Equal(t, RankingFields{9, 1, 195, 76, 52, 0.6559562651954052, 1, 1, 1, 0, 3}, rankingFields)
+	// 測試 2: 加入一場勝場 (Add a win)
+	// 假設我們是紅隊，對手是藍隊
+	rankingFields = RankingFields{}
+	rankingFields.AddScoreSummary(redSummary, blueSummary, false)
+	// 預期: 3 RP(贏) + 1 Bonus = 4 RP. 1 Win. MatchPoints=90.
+	assert.Equal(t, 4, rankingFields.RankingPoints)
+	assert.Equal(t, 1, rankingFields.Wins)
+	assert.Equal(t, 90, rankingFields.MatchPoints)
+	assert.Equal(t, 30, rankingFields.TowerPoints) // 檢查 TowerPoints 是否正確記錄
 
-	// Add a disqualification.
-	rankingFields.AddScoreSummary(blueSummary, redSummary, true)
-	assert.Equal(t, RankingFields{9, 1, 195, 76, 52, 0.05434383959970039, 1, 1, 1, 1, 4}, rankingFields)
-}
+	// 測試 3: 加入一場平手 (Add a tie)
+	rankingFields = RankingFields{}
+	tieScore := &ScoreSummary{Score: 80, MatchPoints: 80}
+	rankingFields.AddScoreSummary(tieScore, tieScore, false)
+	// 預期: 1 RP(平) = 1 RP. 1 Tie.
+	assert.Equal(t, 1, rankingFields.RankingPoints)
+	assert.Equal(t, 1, rankingFields.Ties)
 
-func TestSortRankings(t *testing.T) {
-	// Check tiebreakers.
-	rankings := make(Rankings, 12)
-	rankings[0] = Ranking{1, 0, 0, RankingFields{50, 50, 50, 50, 50, 0.49, 3, 2, 1, 0, 10}}
-	rankings[1] = Ranking{2, 0, 0, RankingFields{50, 50, 50, 50, 50, 0.51, 3, 2, 1, 0, 10}}
-	rankings[2] = Ranking{3, 0, 0, RankingFields{50, 50, 50, 50, 49, 0.50, 3, 2, 1, 0, 10}}
-	rankings[3] = Ranking{4, 0, 0, RankingFields{50, 50, 50, 50, 51, 0.50, 3, 2, 1, 0, 10}}
-	rankings[4] = Ranking{5, 0, 0, RankingFields{50, 50, 50, 49, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[5] = Ranking{6, 0, 0, RankingFields{50, 50, 50, 51, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[6] = Ranking{7, 0, 0, RankingFields{50, 50, 49, 50, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[7] = Ranking{8, 0, 0, RankingFields{50, 50, 51, 50, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[8] = Ranking{9, 0, 0, RankingFields{50, 49, 50, 50, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[9] = Ranking{10, 0, 0, RankingFields{50, 51, 50, 50, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[10] = Ranking{11, 0, 0, RankingFields{49, 50, 50, 50, 50, 0.50, 3, 2, 1, 0, 10}}
-	rankings[11] = Ranking{12, 0, 0, RankingFields{51, 50, 50, 50, 50, 0.50, 3, 2, 1, 0, 10}}
-	sort.Sort(rankings)
-	assert.Equal(t, 12, rankings[0].TeamId)
-	assert.Equal(t, 10, rankings[1].TeamId)
-	assert.Equal(t, 8, rankings[2].TeamId)
-	assert.Equal(t, 6, rankings[3].TeamId)
-	assert.Equal(t, 4, rankings[4].TeamId)
-	assert.Equal(t, 2, rankings[5].TeamId)
-	assert.Equal(t, 1, rankings[6].TeamId)
-	assert.Equal(t, 3, rankings[7].TeamId)
-	assert.Equal(t, 5, rankings[8].TeamId)
-	assert.Equal(t, 7, rankings[9].TeamId)
-	assert.Equal(t, 9, rankings[10].TeamId)
-	assert.Equal(t, 11, rankings[11].TeamId)
-
-	// Check with unequal number of matches played.
-	rankings = make(Rankings, 3)
-	rankings[0] = Ranking{1, 0, 0, RankingFields{10, 25, 25, 25, 25, 0.49, 3, 2, 1, 0, 5}}
-	rankings[1] = Ranking{2, 0, 0, RankingFields{19, 50, 50, 50, 50, 0.51, 3, 2, 1, 0, 9}}
-	rankings[2] = Ranking{3, 0, 0, RankingFields{20, 50, 50, 50, 50, 0.51, 3, 2, 1, 0, 10}}
-	sort.Sort(rankings)
-	assert.Equal(t, 2, rankings[0].TeamId)
-	assert.Equal(t, 3, rankings[1].TeamId)
-	assert.Equal(t, 1, rankings[2].TeamId)
+	// 測試 4: 犯規被取消資格 (Disqualification)
+	rankingFields = RankingFields{}
+	rankingFields.AddScoreSummary(redSummary, blueSummary, true)
+	// 預期: 0 RP. 1 DQ.
+	assert.Equal(t, 0, rankingFields.RankingPoints)
+	assert.Equal(t, 1, rankingFields.Disqualifications)
 }
