@@ -1,98 +1,502 @@
 {{/*
-Copyright 2023 Team 254. All Rights Reserved.
+Copyright 2026 Team 254. All Rights Reserved.
 Author: pat@patfairbank.com (Patrick Fairbank)
+Modified for 2026 REBUILT Game
 
 UI for entering and tracking fouls and red/yellow cards.
 */}}
 {{define "title"}}Referee Panel{{end}}
+
+{{define "head"}}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  body {
+    background-color: #222;
+    color: white;
+    font-family: "Roboto", sans-serif;
+    margin: 0;
+    padding: 10px;
+    touch-action: manipulation;
+    user-select: none;
+  }
+
+  #matchName {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  #refereePanel {
+    display: flex;
+    height: calc(100vh - 100px);
+    transition: all 0.3s ease;
+  }
+
+  /* 左側：紅黃牌區域 */
+  #cards {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    margin-right: 20px;
+    flex-shrink: 0;
+  }
+
+  .alliance-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex: 1;
+  }
+
+  .alliance-header {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+    color: #ccc;
+    border-bottom: 1px solid #555;
+  }
+
+  .team-card {
+    background-color: #333;
+    border: 2px solid #555;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    font-weight: bold;
+    flex: 1;
+    cursor: pointer;
+    transition: all 0.1s;
+  }
+
+  .team-card:active { transform: scale(0.98); }
+  
+  #redCards .team-card { border-color: #d9534f; }
+  #blueCards .team-card { border-color: #428bca; }
+
+  /* 卡片狀態樣式 */
+  .team-card.yellow { background-color: #f0ad4e; color: black; border-color: #eea236; }
+  .team-card.red { background-color: #d9534f; color: white; border-color: #d43f3a; }
+
+  /* 右側：分數摘要與犯規 */
+  #fouls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #scoreSummary {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 20px;
+  }
+
+  /* 計分網格佈局 */
+  .scoreSummaryContainer {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 Teams */
+    text-align: center;
+    width: 300px;
+  }
+
+  .score-header {
+    font-size: 1.5em;
+    font-weight: bold;
+    padding-bottom: 5px;
+  }
+
+  .score-label {
+    grid-column: 1 / -1; /* 跨越 3 欄 */
+    color: #aaa;
+    font-size: 0.9em;
+    margin-top: 5px;
+    border-top: 1px solid #444;
+    padding-top: 2px;
+  }
+
+  .score-value {
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+
+  .score-value-wide {
+    grid-column: 1 / -1;
+    font-size: 1.4em;
+    font-weight: bold;
+  }
+
+  /* 顏色定義 */
+  .auto-val { color: #f0ad4e; } /* 黃色代表 Auto */
+  .teleop-val { color: white; }
+  .success { color: #5cb85c; } /* 綠色打勾 */
+  .fail { color: #d9534f; }    /* 紅色叉叉 */
+
+  /* 犯規按鈕區 */
+  .foul-header {
+    text-align: center;
+    color: #ccc;
+    font-size: 1.2em;
+    margin-bottom: 5px;
+  }
+
+  #foulButtons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr; /* Blue, Blue Major, Red, Red Major */
+    gap: 15px;
+    height: 120px;
+  }
+
+  .foul-button {
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8em;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  }
+  .foul-button:active { transform: scale(0.98); }
+
+  .blue-foul { background-color: #428bca; border: 2px solid #357ebd; }
+  .red-foul { background-color: #d9534f; border: 2px solid #ac2925; }
+  .major-foul { background-color: #204d74; } /* Darker Blue */
+  .red-major-foul { background-color: #c9302c; } /* Darker Red */
+
+  /* 底部控制列 */
+  #controlButtons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #111;
+    border-top: 1px solid #444;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .control-button {
+    padding: 10px 30px;
+    background-color: #555;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  #commitButton { background-color: #5cb85c; }
+  #commitButton.disabled { background-color: #333; color: #777; cursor: default; }
+
+  /* 連線狀態小燈 */
+  #scoringStatuses {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+  }
+  .status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #444;
+    border: 1px solid #666;
+  }
+  .status-dot.active { background-color: #5cb85c; box-shadow: 0 0 5px #5cb85c; }
+
+  /* Field Referee Mode (hr=false) Styles */
+  .field-ref-note {
+    text-align: center;
+    margin-top: 20px;
+    color: #ccc;
+    font-size: 1em;
+  }
+
+</style>
+{{end}}
+
 {{define "body"}}
-<div id="matchName"></div>
+<div id="matchName">Loading...</div>
+
 <div id="refereePanel">
-  <div id="cards" class="headRef-dependent">
-    <h3>Red/Yellow Cards</h3>
+  <div id="cards" class="head-ref-only">
+    <div class="alliance-header" style="color: #d9534f;">Red/Yellow Cards</div>
     <div class="alliance-cards" id="redCards">
       {{range $i := seq 3}}
-      {{template "teamCard" dict "alliance" "red" "position" $i}}
+        {{template "teamCard" dict "alliance" "red" "position" $i}}
       {{end}}
     </div>
+    
+    <div class="alliance-header" style="color: #428bca;">Blue/Yellow Cards</div>
     <div class="alliance-cards" id="blueCards">
       {{range $i := seq 3}}
-      {{template "teamCard" dict "alliance" "blue" "position" $i}}
+        {{template "teamCard" dict "alliance" "blue" "position" $i}}
       {{end}}
     </div>
+
     <div id="scoringStatuses">
-      <div class="scoring-status" id="redNearScoreStatus"></div>
-      <div class="scoring-status" id="redFarScoreStatus"></div>
-      <div class="scoring-status" id="blueNearScoreStatus"></div>
-      <div class="scoring-status" id="blueFarScoreStatus"></div>
+      <div class="status-dot" id="redNearStatus" title="Red Near"></div>
+      <div class="status-dot" id="redFarStatus" title="Red Far"></div>
+      <div class="status-dot" id="blueNearStatus" title="Blue Near"></div>
+      <div class="status-dot" id="blueFarStatus" title="Blue Far"></div>
     </div>
   </div>
+
   <div id="fouls">
-    <div id="scoreSummary" class="headRef-dependent">
-      {{template "scoreSummary" dict "id" "blueScoreSummary"}}
-      {{template "scoreSummary" dict "id" "redScoreSummary"}}
+    
+    <div id="scoreSummary" class="head-ref-only">
+      {{template "scoreSummaryBox" dict "alliance" "blue"}}
+      {{template "scoreSummaryBox" dict "alliance" "red"}}
     </div>
-    <h3>Fouls</h3>
+
+    <div class="foul-header">Fouls</div>
     <div id="foulButtons">
-      <div class="foul-button blue-foul" onclick="addFoul('blue', false);">Blue</div>
-      <div class="foul-button blue-foul" onclick="addFoul('blue', true);">Blue Major</div>
-      <div class="foul-button red-foul" onclick="addFoul('red', false);">Red</div>
-      <div class="foul-button red-foul" onclick="addFoul('red', true);">Red Major</div>
+      <div class="foul-button blue-foul" onclick="addFoul('blue', false)">Blue</div>
+      <div class="foul-button blue-foul major-foul" onclick="addFoul('blue', true)">Blue Major</div>
+      <div class="foul-button red-foul" onclick="addFoul('red', false)">Red</div>
+      <div class="foul-button red-foul red-major-foul" onclick="addFoul('red', true)">Red Major</div>
     </div>
-    <div id="foulList"></div>
+    
+    <div class="head-ref-only" style="display: flex; gap: 10px; margin-top: 10px;">
+       <div class="control-button" style="flex:1; background:#333; text-align:center;" onclick="addSpecificFoul('blue', 'G206', true)">Blue G206 (RP)</div>
+       <div class="control-button" style="flex:1; background:#333; text-align:center;" onclick="addSpecificFoul('red', 'G206', true)">Red G206 (RP)</div>
+    </div>
+
+    <div class="field-ref-note" style="display: none;">
+      Note: Team and rule assignment are optional.
+    </div>
+
   </div>
 </div>
-<p>Note: Team and rule assignment are optional.</p>
-<div id="controlButtons" class="headRef-dependent">
-  <div class="control-button" id="volunteerButton" onclick="signalVolunteers();">Signal Count</div>
-  <div class="control-button" id="resetButton" onclick="signalReset();">Signal Reset</div>
-  <div class="control-button" id="commitButton" onclick="commitMatch();">Commit Match</div>
+
+<div id="controlButtons" class="head-ref-only">
+  <div class="control-button" onclick="signalVolunteers()">Signal Count</div>
+  <div class="control-button" onclick="signalReset()">Signal Reset</div>
+  <div class="control-button disabled" id="commitButton" onclick="commitMatch()">Commit Match</div>
 </div>
 {{end}}
-{{define "head"}}
-<link rel="manifest" href="/static/manifest/referee.manifest">
-<meta name="viewport" content="width=device-width, user-scalable=no">
-<link href="/static/css/referee_panel.css" rel="stylesheet">
-{{end}}
-{{define "script"}}
-<script src="/static/js/match_timing.js"></script>
-<script src="/static/js/referee_panel.js"></script>
-{{end}}
+
+{{/* Sub-Template: Team Card */}}
 {{define "teamCard"}}
-<div class="team-card" id="{{.alliance}}Team{{.position}}Card" data-alliance="{{.alliance}}" onclick="cycleCard(this);">
+<div class="team-card" 
+     id="{{.alliance}}Team{{.position}}Card" 
+     data-alliance="{{.alliance}}" 
+     data-position="{{.position}}"
+     onclick="cycleCard(this)">
+  ---
 </div>
 {{end}}
-{{define "scoreSummary"}}
-<div id="{{.id}}" class="scoreSummary">
-  <div class="placeholder"></div>
-  <div class="team-1">0</div>
-  <div class="team-2">0</div>
-  <div class="team-3">0</div>
 
-  <div class="label">Leave</div>
-  <div class="leave-symbol team-1-leave">❌</div>
-  <div class="leave-symbol team-2-leave">❌</div>
-  <div class="leave-symbol team-3-leave">❌</div>
+{{/* Sub-Template: Score Summary Box */}}
+{{define "scoreSummaryBox"}}
+<div class="scoreSummaryContainer" id="{{.alliance}}ScoreSummary">
+  <div class="score-header team-0">0</div>
+  <div class="score-header team-1">0</div>
+  <div class="score-header team-2">0</div>
 
-  <div class="label">Endgame</div>
-  <div class="team-1-endgame">None</div>
-  <div class="team-2-endgame">None</div>
-  <div class="team-3-endgame">None</div>
+  <div class="score-label">Auto Tower</div>
+  <div class="score-value team-0-tower fail">❌</div>
+  <div class="score-value team-1-tower fail">❌</div>
+  <div class="score-value team-2-tower fail">❌</div>
 
-  <div class="label">Coral</div>
-  <div class="wide-row">
-    <span class="coral-l1">0</span> / <span class="coral-l2">0</span> / <span class="coral-l3">0</span> /
-    <span class="coral-l4">0</span>
-    <br />
-    <span style="color: yellow">
-      <span class="coral-l1-auto">0</span> / <span class="coral-l2-auto">0</span> / <span class="coral-l3-auto">0</span> /
-      <span class="coral-l4-auto">0</span>
-    </span>
-  </div>
+  <div class="score-label">Endgame</div>
+  <div class="score-value team-0-endgame" style="font-size:1em;">None</div>
+  <div class="score-value team-1-endgame" style="font-size:1em;">None</div>
+  <div class="score-value team-2-endgame" style="font-size:1em;">None</div>
 
-  <div class="label">Algae</div>
-  <div class="wide-row">
-    <span class="processor">0</span> / <span class="barge">0</span>
+  <div class="score-label">Fuel (Auto <span style="color:#f0ad4e">●</span> / Teleop ○)</div>
+  <div class="score-value-wide">
+    <span class="auto-val fuel-auto">0</span>
+    <span style="color:#666"> / </span>
+    <span class="teleop-val fuel-teleop">0</span>
   </div>
 </div>
+{{end}}
+
+{{define "script"}}
+<script>
+  var ws = null;
+  var matchState = 0;
+  var teamData = { red: [], blue: [] };
+
+  $(document).ready(function() {
+    // 1. Check if this is a Field Referee (hr=false)
+    const urlParams = new URLSearchParams(window.location.search);
+    const isHeadRef = urlParams.get('hr') !== 'false';
+
+    if (!isHeadRef) {
+      // Hide all Head-Ref-Only elements
+      $(".head-ref-only").hide();
+      // Show the field ref note
+      $(".field-ref-note").show();
+      // Adjust layout to center the foul buttons
+      $("#refereePanel").css("justify-content", "center");
+      $("#fouls").css("flex", "0 1 800px"); // Limit width
+      $("#cards").remove(); // Remove left column to allow centering
+    }
+
+    connectWebsocket();
+  });
+
+  function connectWebsocket() {
+    if (ws) return;
+    var loc = window.location;
+    var new_uri = (loc.protocol === "https:" ? "wss:" : "ws:") + "//" + loc.host + "/panels/referee/websocket";
+    ws = new WebSocket(new_uri);
+    
+    ws.onmessage = function(event) {
+      var msg = JSON.parse(event.data);
+      if (msg.type === "matchLoad") {
+        handleMatchLoad(msg.data);
+      } else if (msg.type === "matchTime") {
+        matchState = msg.data.MatchState;
+        updateCommitButton();
+      } else if (msg.type === "realtimeScore") {
+        updateCards(msg.data);
+        updateScores(msg.data);
+      } else if (msg.type === "scoringStatus") {
+        updateScoringStatus(msg.data);
+      }
+    };
+
+    ws.onclose = function() {
+      ws = null;
+      setTimeout(connectWebsocket, 1000);
+    };
+  }
+
+  function sendCommand(cmd, data) {
+    if (ws) ws.send(JSON.stringify({command: cmd, data: data}));
+  }
+
+  // --- Logic ---
+
+  function handleMatchLoad(data) {
+    var name = data.Match.ShortName;
+    if (name === "T" || name === "") name = "Test Match";
+    $("#matchName").text(name);
+    
+    teamData.red = [data.Teams["R1"]?.Id || 0, data.Teams["R2"]?.Id || 0, data.Teams["R3"]?.Id || 0];
+    teamData.blue = [data.Teams["B1"]?.Id || 0, data.Teams["B2"]?.Id || 0, data.Teams["B3"]?.Id || 0];
+
+    updateTeamUi("red");
+    updateTeamUi("blue");
+  }
+
+  function updateTeamUi(alliance) {
+    var teams = teamData[alliance];
+    for(var i=0; i<3; i++) {
+      var id = teams[i] > 0 ? teams[i] : "---";
+      $(`#${alliance}Team${i}Card`).text(id);
+      $(`#${alliance}ScoreSummary .team-${i}`).text(id);
+    }
+  }
+
+  function updateScores(data) {
+    // Only update if elements exist (Head Ref mode)
+    if ($("#redScoreSummary").length) {
+      applyScore("red", data.Red.Score);
+      applyScore("blue", data.Blue.Score);
+    }
+  }
+
+  function applyScore(alliance, score) {
+    var div = $(`#${alliance}ScoreSummary`);
+    
+    // Fuel
+    div.find(".fuel-auto").text(score.AutoFuelCount);
+    div.find(".fuel-teleop").text(score.TeleopFuelCount);
+
+    // Auto Tower & Endgame
+    for(var i=0; i<3; i++) {
+      var towerOk = score.AutoTowerLevel1[i];
+      div.find(`.team-${i}-tower`)
+         .text(towerOk ? "✔" : "❌")
+         .removeClass("success fail")
+         .addClass(towerOk ? "success" : "fail");
+
+      var status = score.EndgameStatuses[i];
+      var txt = "None";
+      if(status == 2) txt = "Lvl 2";
+      if(status == 3) txt = "Lvl 3";
+      div.find(`.team-${i}-endgame`).text(txt);
+    }
+  }
+
+  function updateCards(data) {
+    if ($("#redCards").length) {
+      applyCardStyles("red", data.RedCards);
+      applyCardStyles("blue", data.BlueCards);
+    }
+  }
+
+  function applyCardStyles(alliance, cardMap) {
+    var teams = teamData[alliance];
+    for(var i=0; i<3; i++) {
+      var teamId = teams[i];
+      var el = $(`#${alliance}Team${i}Card`);
+      el.removeClass("yellow red");
+      if(teamId > 0 && cardMap && cardMap[teamId]) {
+        el.addClass(cardMap[teamId]);
+      }
+    }
+  }
+
+  function cycleCard(el) {
+    var alliance = $(el).data("alliance");
+    var pos = $(el).data("position");
+    var teamId = teamData[alliance][pos];
+    if(!teamId) return;
+
+    var type = "none";
+    if($(el).hasClass("yellow")) type = "red";
+    else if($(el).hasClass("red")) type = "none";
+    else type = "yellow";
+
+    sendCommand("assignCard", { TeamId: teamId.toString(), Type: type });
+  }
+
+  function addFoul(alliance, isMajor) {
+    sendCommand("addFoul", { Alliance: alliance, RuleId: 0, IsMajor: isMajor });
+  }
+  
+  function addSpecificFoul(alliance, rule, isMajor) {
+    addFoul(alliance, isMajor);
+  }
+
+  function commitMatch() {
+    if(matchState !== 6) return;
+    $.post("/setup/match_control/commit", {}, function() {
+      $("#commitButton").text("Committed").addClass("disabled");
+    });
+  }
+
+  function updateCommitButton() {
+    if(matchState === 6) $("#commitButton").removeClass("disabled").text("Commit Match");
+    else $("#commitButton").addClass("disabled").text("Commit Match");
+  }
+
+  function updateScoringStatus(data) {
+    if (!$("#scoringStatuses").length) return;
+    var map = {
+      "red_near": "redNearStatus", "red_far": "redFarStatus",
+      "blue_near": "blueNearStatus", "blue_far": "blueFarStatus"
+    };
+    if(!data.PositionStatuses) return;
+    for(var k in map) {
+      var s = data.PositionStatuses[k];
+      var el = $("#" + map[k]);
+      if(s && s.NumPanels > 0) el.addClass("active");
+      else el.removeClass("active");
+    }
+  }
+
+  function signalVolunteers() { alert("Signal Volunteers (Not Implemented)"); }
+  function signalReset() { alert("Signal Reset (Not Implemented)"); }
+
+</script>
 {{end}}
