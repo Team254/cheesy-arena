@@ -9,7 +9,8 @@ package web
 import (
 	"fmt"
 	"io"
-	"log"
+
+	//"log"
 	"net/http"
 	"strings"
 
@@ -140,12 +141,12 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			if err == io.EOF {
 				return
 			}
-			log.Printf("[Scoring] WebSocket Read Error: %v", err)
+			//log.Printf("[Scoring] WebSocket Read Error: %v", err)
 			return
 		}
 
 		// [Debug] 印出收到的原始指令
-		log.Printf("[Scoring] received: Command=%s Data=%+v", command, data)
+		//log.Printf("[Scoring] received: Command=%s Data=%+v", command, data)
 
 		// 2026 Fix: 處理前端傳來的 "type: score" 包裝層
 		// 如果指令是 "score"，我們需要拆開 data 裡面的內容
@@ -154,7 +155,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				// 嘗試提取內層的 command
 				if innerCmd, ok := dataMap["command"].(string); ok {
 					command = innerCmd
-					log.Printf("[Scoring] unpacked Command: %s", command)
+					//log.Printf("[Scoring] unpacked Command: %s", command)
 				}
 				// 嘗試提取內層的 data
 				if innerData, ok := dataMap["data"]; ok {
@@ -182,12 +183,12 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				log.Printf("[Scoring] Fuel Decode Error: %v", err)
+				//log.Printf("[Scoring] Fuel Decode Error: %v", err)
 				ws.WriteError(err.Error())
 				continue
 			}
 
-			log.Printf("[Scoring] update Fuel: Auto=%v Adj=%d", args.Autonomous, args.Adjustment)
+			//log.Printf("[Scoring] update Fuel: Auto=%v Adj=%d", args.Autonomous, args.Adjustment)
 
 			if args.Autonomous {
 				score.AutoFuelCount = max(0, score.AutoFuelCount+args.Adjustment)
@@ -204,7 +205,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				log.Printf("[Scoring] Climb Decode Error: %v", err)
+				//log.Printf("[Scoring] Climb Decode Error: %v", err)
 				ws.WriteError(err.Error())
 				continue
 			}
@@ -220,7 +221,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					status = game.EndgameNone
 				}
 				score.EndgameStatuses[args.RobotIndex] = status
-				log.Printf("[Scoring] update Climb: Robot=%d Status=%v", args.RobotIndex, status)
+				//log.Printf("[Scoring] update Climb: Robot=%d Status=%v", args.RobotIndex, status)
 				scoreChanged = true
 			}
 
@@ -232,14 +233,14 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				log.Printf("[Scoring] AutoTower Decode Error: %v", err)
+				//log.Printf("[Scoring] AutoTower Decode Error: %v", err)
 				ws.WriteError(err.Error())
 				continue
 			}
 
 			if args.RobotIndex >= 0 && args.RobotIndex < 3 {
 				score.AutoTowerLevel1[args.RobotIndex] = (args.Adjustment > 0)
-				log.Printf("[Scoring] update AutoTower: Robot=%d Active=%v", args.RobotIndex, score.AutoTowerLevel1[args.RobotIndex])
+				//log.Printf("[Scoring] update AutoTower: Robot=%d Active=%v", args.RobotIndex, score.AutoTowerLevel1[args.RobotIndex])
 				scoreChanged = true
 			}
 
@@ -251,7 +252,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				log.Printf("[Scoring] Foul Decode Error: %v", err)
+				//log.Printf("[Scoring] Foul Decode Error: %v", err)
 				ws.WriteError(err.Error())
 				continue
 			}
@@ -263,7 +264,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.NextFoulId++
 
-			log.Printf("[Scoring] add foul: %s Major=%v", args.Alliance, args.IsMajor)
+			//log.Printf("[Scoring] add foul: %s Major=%v", args.Alliance, args.IsMajor)
 
 			if args.Alliance == "red" {
 				web.arena.RedRealtimeScore.CurrentScore.Fouls =
@@ -278,7 +279,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		}
 
 		if scoreChanged {
-			log.Println("[Scoring] score changed, sending notification")
+			//log.Println("[Scoring] score changed, sending notification")
 			web.arena.RealtimeScoreNotifier.Notify()
 		}
 	}
