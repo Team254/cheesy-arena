@@ -138,12 +138,31 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		command, data, err := ws.Read()
 		if err != nil {
 			if err == io.EOF {
-				// Client has closed the connection; nothing to do here.
 				return
 			}
-			log.Println(err)
+			log.Printf("[Scoring] WebSocket Read Error: %v", err)
 			return
 		}
+
+		// [Debug] 印出收到的原始指令
+		log.Printf("[Scoring] received: Command=%s Data=%+v", command, data)
+
+		// 2026 Fix: 處理前端傳來的 "type: score" 包裝層
+		// 如果指令是 "score"，我們需要拆開 data 裡面的內容
+		if command == "score" {
+			if dataMap, ok := data.(map[string]interface{}); ok {
+				// 嘗試提取內層的 command
+				if innerCmd, ok := dataMap["command"].(string); ok {
+					command = innerCmd
+					log.Printf("[Scoring] unpacked Command: %s", command)
+				}
+				// 嘗試提取內層的 data
+				if innerData, ok := dataMap["data"]; ok {
+					data = innerData
+				}
+			}
+		}
+
 		score := &(*realtimeScore).CurrentScore
 		scoreChanged := false
 
@@ -163,9 +182,12 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
+				log.Printf("[Scoring] Fuel Decode Error: %v", err)
 				ws.WriteError(err.Error())
 				continue
 			}
+
+			log.Printf("[Scoring] update Fuel: Auto=%v Adj=%d", args.Autonomous, args.Adjustment)
 
 			if args.Autonomous {
 				score.AutoFuelCount = max(0, score.AutoFuelCount+args.Adjustment)
@@ -175,18 +197,18 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			scoreChanged = true
 
 		} else if command == "climb" {
-			// 2026: 處理 Endgame 爬升 (Level 2/3)
+			// 2026: 處理 Endgame 爬升
 			args := struct {
-				RobotIndex int // 0-2 (注意前端可能傳 1-3，需確認)
-				Level      int // 0, 2, 3
+				RobotIndex int
+				Level      int
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
+				log.Printf("[Scoring] Climb Decode Error: %v", err)
 				ws.WriteError(err.Error())
 				continue
 			}
 
-			// 這裡假設前端傳來的是 0-2 的 RobotIndex，如果是 1-3 請自行減 1
 			if args.RobotIndex >= 0 && args.RobotIndex < 3 {
 				var status game.EndgameStatus
 				switch args.Level {
@@ -198,25 +220,26 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					status = game.EndgameNone
 				}
 				score.EndgameStatuses[args.RobotIndex] = status
+				log.Printf("[Scoring] update Climb: Robot=%d Status=%v", args.RobotIndex, status)
 				scoreChanged = true
 			}
 
 		} else if command == "auto_tower" {
-			// 2026: 處理 Auto 爬升 (Level 1)
+			// 2026: 處理 Auto 爬升
 			args := struct {
 				RobotIndex int
-				Adjustment int // 使用 +1/-1 來代表 True/False 切換，或直接傳 Bool
+				Adjustment int
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
+				log.Printf("[Scoring] AutoTower Decode Error: %v", err)
 				ws.WriteError(err.Error())
 				continue
 			}
 
 			if args.RobotIndex >= 0 && args.RobotIndex < 3 {
-				// 簡單切換：如果 Adjustment > 0 設為 true，否則 false
-				// 或者是 toggle 邏輯，視前端實作而定。這裡假設是設定值。
 				score.AutoTowerLevel1[args.RobotIndex] = (args.Adjustment > 0)
+				log.Printf("[Scoring] update AutoTower: Robot=%d Active=%v", args.RobotIndex, score.AutoTowerLevel1[args.RobotIndex])
 				scoreChanged = true
 			}
 
@@ -228,6 +251,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
+				log.Printf("[Scoring] Foul Decode Error: %v", err)
 				ws.WriteError(err.Error())
 				continue
 			}
@@ -238,6 +262,9 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				IsMajor: args.IsMajor,
 			}
 			web.arena.NextFoulId++
+
+			log.Printf("[Scoring] add foul: %s Major=%v", args.Alliance, args.IsMajor)
+
 			if args.Alliance == "red" {
 				web.arena.RedRealtimeScore.CurrentScore.Fouls =
 					append(web.arena.RedRealtimeScore.CurrentScore.Fouls, foul)
@@ -245,13 +272,13 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				web.arena.BlueRealtimeScore.CurrentScore.Fouls =
 					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
 			}
-			// 更新雙方的 Foul 提交狀態
 			web.arena.RedRealtimeScore.FoulsCommitted = true
 			web.arena.BlueRealtimeScore.FoulsCommitted = true
 			web.arena.RealtimeScoreNotifier.Notify()
 		}
 
 		if scoreChanged {
+			log.Println("[Scoring] score changed, sending notification")
 			web.arena.RealtimeScoreNotifier.Notify()
 		}
 	}
