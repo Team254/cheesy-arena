@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
 )
@@ -25,14 +26,18 @@ func (web *Web) refereePanelHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	// 傳遞 EventSettings 以便前端知道比賽設定
-	err = template.ExecuteTemplate(w, "base_no_navbar", web.arena.EventSettings)
+
+	// FIX: 將 EventSettings 包裝在 struct 中，滿足 base.html 的需求
+	data := struct {
+		*model.EventSettings
+	}{web.arena.EventSettings}
+
+	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 }
-
 func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
