@@ -190,6 +190,16 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 
 			//log.Printf("[Scoring] update Fuel: Auto=%v Adj=%d", args.Autonomous, args.Adjustment)
 
+			// --- [NEW] 防呆檢查: 只有進攻方 (HubActive) 才能加分 ---
+			// 注意: 如果 Adjustment 是負數(扣分修正)，通常還是允許的，即使 Hub 關閉
+			if args.Adjustment > 0 && !args.Autonomous && !score.HubActive {
+				// 如果這不是自動階段，且 Hub 是關閉的，且裁判嘗試加分 -> 拒絕
+				ws.WriteError("Hub is INACTIVE! Cannot score Fuel.")
+				//log.Printf("[Scoring] 拒絕加分: Hub Inactive")
+				continue
+			}
+			// -----------------------------------------------------
+
 			if args.Autonomous {
 				score.AutoFuelCount = max(0, score.AutoFuelCount+args.Adjustment)
 			} else {
