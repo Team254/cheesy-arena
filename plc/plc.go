@@ -116,6 +116,7 @@ const (
 	fieldResetLight
 	redHubLight
 	blueHubLight
+	hubMotors
 	coilCount
 )
 

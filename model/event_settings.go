@@ -66,6 +66,7 @@ type EventSettings struct {
 	SCCUpCommands                    string
 	SCCDownCommands                  string
 	PlcAddress                       string
+	DMXAddress                       string
 	AdminPassword                    string
 	TeamSignRed1Id                   int
 	TeamSignRed2Id                   int
@@ -146,6 +147,7 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		EnergizedRPThreshold:        game.EnergizedRPThreshold,
 		SuperchargedRPThreshold:     game.SuperchargedRPThreshold,
 		TraversalRPThreshold:        game.TraversalRPThreshold,
+		DMXAddress:                  "10.0.100.80",
 	}
 
 	if err := database.eventSettingsTable.create(&eventSettings); err != nil {

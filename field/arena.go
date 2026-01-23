@@ -8,6 +8,7 @@ package field
 import (
 	"fmt"
 	"log"
+	"math"
 	"reflect"
 	"strconv"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/network"
 	"github.com/Team254/cheesy-arena/partner"
@@ -59,6 +61,8 @@ type Arena struct {
 	redSCC           *network.SCCSwitch
 	blueSCC          *network.SCCSwitch
 	Plc              plc.Plc
+	RedHubLeds       led.Controller
+	BlueHubLeds      led.Controller
 	TbaClient        *partner.TbaClient
 	NexusClient      *partner.NexusClient
 	BlackmagicClient *partner.BlackmagicClient
@@ -117,6 +121,9 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena := new(Arena)
 	arena.configureNotifiers()
 	arena.Plc = new(plc.ModbusPlc)
+
+	arena.RedHubLeds = led.Controller{Universe: 1, StartChannel: 1}
+	arena.BlueHubLeds = led.Controller{Universe: 2, StartChannel: 1}
 
 	arena.AllianceStations = make(map[string]*AllianceStation)
 	arena.AllianceStations["R1"] = new(AllianceStation)
@@ -207,6 +214,8 @@ func (arena *Arena) LoadSettings() error {
 		sccDownCommands,
 	)
 	arena.Plc.SetAddress(settings.PlcAddress)
+	arena.RedHubLeds.SetAddress(settings.DMXAddress)
+	arena.BlueHubLeds.SetAddress(settings.DMXAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
 	arena.BlackmagicClient = partner.NewBlackmagicClient(settings.BlackmagicAddresses)
@@ -765,6 +774,7 @@ func (arena *Arena) Update() {
 
 	// Handle field sensors/lights/actuators.
 	arena.handlePlcInputOutput()
+	arena.handleHubLights()
 
 	// Handle the team number / timer displays.
 	arena.TeamSigns.Update(arena)
@@ -1256,7 +1266,7 @@ func (arena *Arena) handlePlcInputOutput() {
 		redHubActive := game.IsRedHubActive(matchTimeSec, redWonAuto)
 		blueHubActive := game.IsBlueHubActive(matchTimeSec, blueWonAuto)
 
-		// Check if we're within 3 seconds of a hub deactivation and flash at 0.5Hz (1 second period)
+		// Check if we're within 3 seconds of a hub deactivation and flash at 2Hz (0.5 second period)
 		teleopStartSec := float64(game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec)
 		teleopEndSec := teleopStartSec + float64(game.MatchTiming.TeleopDurationSec)
 		transitionEndSec := teleopStartSec + float64(game.TransitionDurationSec)
@@ -1284,8 +1294,8 @@ func (arena *Arena) handlePlcInputOutput() {
 		redLight := redHubActive
 		blueLight := blueHubActive
 		if shouldFlash {
-			// Flash the currently active hub(s) at 0.5Hz (1 second period = on for 0.5s, off for 0.5s)
-			flashOn := int(matchTimeSec*2)%2 == 0
+			// Flash the currently active hub(s) at 2Hz (0.5 second period = on for 0.25s, off for 0.25s)
+			flashOn := int(matchTimeSec*4)%2 == 0
 			if redHubActive {
 				redLight = flashOn
 			}
@@ -1302,6 +1312,125 @@ func (arena *Arena) handlePlcInputOutput() {
 		// During grace period, turn on both hub lights
 		arena.Plc.SetHubLights(inGracePeriod, inGracePeriod)
 	}
+}
+
+// Updates the DMX light bars based on match state and hub activation.
+func (arena *Arena) handleHubLights() {
+	// Handle the hub lights based on match state.
+	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
+		// Determine who won auto to know which hub is active
+		redWonAuto, blueWonAuto := arena.determineAutoWinner()
+
+		matchTimeSec := arena.MatchTimeSec()
+		redHubActive := game.IsRedHubActive(matchTimeSec, redWonAuto)
+		blueHubActive := game.IsBlueHubActive(matchTimeSec, blueWonAuto)
+
+		// Check if we're within 3 seconds of a hub deactivation and flash/ramp
+		teleopStartSec := float64(game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec)
+		teleopEndSec := teleopStartSec + float64(game.MatchTiming.TeleopDurationSec)
+		transitionEndSec := teleopStartSec + float64(game.TransitionDurationSec)
+		shouldFlash := false
+
+		// Flash during last 3 seconds of match
+		if matchTimeSec >= teleopEndSec-3.0 && matchTimeSec < teleopEndSec {
+			shouldFlash = true
+		}
+
+		// Flash during last 3 seconds of transition period
+		if matchTimeSec >= transitionEndSec-3.0 && matchTimeSec < transitionEndSec {
+			shouldFlash = true
+		}
+
+		// Flash during last 3 seconds of each shift (during teleop, not in END GAME)
+		if matchTimeSec >= transitionEndSec && matchTimeSec < teleopEndSec-float64(game.EndGameDurationSec) {
+			postTransitionSec := matchTimeSec - transitionEndSec
+			timeInShift := postTransitionSec - float64(int(postTransitionSec/float64(game.ShiftDurationSec)))*float64(game.ShiftDurationSec)
+			if timeInShift >= float64(game.ShiftDurationSec)-3.0 {
+				shouldFlash = true
+			}
+		}
+
+		// Set DMX colors based on hub state
+		arena.setLedHubColors(redHubActive, blueHubActive, shouldFlash, matchTimeSec)
+	} else if arena.MatchState == PreMatch {
+		// During pre-match, green for field safe
+		arena.RedHubLeds.SetColor(led.ColorGreen)
+		arena.BlueHubLeds.SetColor(led.ColorGreen)
+	} else if arena.MatchState == PostMatch {
+		// Sequence for PostMatch:
+		// 1. End of match: ColorOff
+		// 2. Ref signals Count (FieldVolunteers = true): ColorPurple
+		// 3. Ref signals Reset (FieldReset = true): ColorGreen
+		if arena.FieldReset {
+			arena.RedHubLeds.SetColor(led.ColorGreen)
+			arena.BlueHubLeds.SetColor(led.ColorGreen)
+		} else if arena.FieldVolunteers {
+			arena.RedHubLeds.SetColor(led.ColorPurple)
+			arena.BlueHubLeds.SetColor(led.ColorPurple)
+		} else {
+			arena.RedHubLeds.SetColor(led.ColorOff)
+			arena.BlueHubLeds.SetColor(led.ColorOff)
+		}
+	} else if arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout {
+		// During timeout, green for field safe
+		arena.RedHubLeds.SetColor(led.ColorGreen)
+		arena.BlueHubLeds.SetColor(led.ColorGreen)
+	} else {
+		// Default to off
+		arena.RedHubLeds.SetColor(led.ColorOff)
+		arena.BlueHubLeds.SetColor(led.ColorOff)
+	}
+
+	arena.RedHubLeds.Update()
+	arena.BlueHubLeds.Update()
+	arena.HubLedNotifier.Notify()
+}
+
+// setLedHubColors sets the DMX light bar colors based on hub activation state.
+func (arena *Arena) setLedHubColors(redHubActive, blueHubActive, shouldFlash bool, matchTimeSec float64) {
+	var redColor, blueColor led.Color
+
+	// Determine colors based on hub state
+	if redHubActive {
+		redColor = led.ColorRed // Red alliance color when active
+	} else {
+		redColor = led.ColorOff // Off when inactive
+	}
+
+	if blueHubActive {
+		blueColor = led.ColorBlue // Blue alliance color when active
+	} else {
+		blueColor = led.ColorOff // Off when inactive
+	}
+
+	// Apply flashing/ramping if needed
+	if shouldFlash {
+		// Ramp: Dim over 0.5s, then brighten over 0.5s (1Hz cycle)
+		// matchTimeSec % 1.0 gives time within the current second [0.0, 1.0)
+		timeInCycle := math.Mod(matchTimeSec, 1.0)
+		var multiplier float64
+		if timeInCycle < 0.5 {
+			// Dimming: 1.0 down to 0.0
+			multiplier = 1.0 - (timeInCycle / 0.5)
+		} else {
+			// Brightening: 0.0 up to 1.0
+			multiplier = (timeInCycle - 0.5) / 0.5
+		}
+
+		if redHubActive {
+			redColor.R = uint8(float64(redColor.R) * multiplier)
+			redColor.G = uint8(float64(redColor.G) * multiplier)
+			redColor.B = uint8(float64(redColor.B) * multiplier)
+		}
+		if blueHubActive {
+			blueColor.R = uint8(float64(blueColor.R) * multiplier)
+			blueColor.G = uint8(float64(blueColor.G) * multiplier)
+			blueColor.B = uint8(float64(blueColor.B) * multiplier)
+		}
+	}
+
+	arena.RedHubLeds.SetColor(redColor)
+	arena.BlueHubLeds.SetColor(blueColor)
 }
 
 func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) {

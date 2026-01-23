@@ -18,6 +18,23 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
       </p>
       {{end}}
     </div>
+    <div class="card card-body bg-body-tertiary mt-3">
+      <legend>Hub LEDs</legend>
+      <table class="table">
+        <tr>
+          <th class="bg-body-tertiary">Universe</th>
+          <th class="bg-body-tertiary">RGB Value</th>
+        </tr>
+        <tr>
+          <td class="bg-body-tertiary">1 (Red)</td>
+          <td class="bg-body-tertiary" id="hubLedRed">rgb({{.RedHubColor.R}}, {{.RedHubColor.G}}, {{.RedHubColor.B}})</td>
+        </tr>
+        <tr>
+          <td class="bg-body-tertiary">2 (Blue)</td>
+          <td class="bg-body-tertiary" id="hubLedBlue">rgb({{.BlueHubColor.R}}, {{.BlueHubColor.G}}, {{.BlueHubColor.B}})</td>
+        </tr>
+      </table>
+    </div>
   </div>
   <div class="col-lg-8">
     <div class="card card-body bg-body-tertiary">

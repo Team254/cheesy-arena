@@ -109,6 +109,7 @@ func TestPlcGetNames(t *testing.T) {
 			"fieldResetLight",
 			"redHubLight",
 			"blueHubLight",
+			"hubMotors",
 		},
 		plc.GetCoilNames(),
 	)
