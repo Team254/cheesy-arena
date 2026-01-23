@@ -66,4 +66,47 @@ UI for listing matches and their results.
 </div>
 {{end}}
 {{define "script"}}
+<script src="/static/js/match_review.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    // 從 Go 後端傳入的 JSON 字串解析出原始資料
+    matchResult = JSON.parse({{.MatchResultJson}});
+    var rawJson = {{.MatchResultJson}};
+        
+        if (!rawJson || rawJson === "") {
+            matchResult = { 
+                RedScore: { Fouls: [], RobotsBypassed: [false,false,false], AutoTowerLevel1: [false,false,false], EndgameStatuses: [0,0,0] }, 
+                BlueScore: { Fouls: [], RobotsBypassed: [false,false,false], AutoTowerLevel1: [false,false,false], EndgameStatuses: [0,0,0] } 
+            };
+        } else {
+            try {
+                matchResult = (typeof rawJson === "string") ? JSON.parse(rawJson) : rawJson;
+            } catch (e) {
+                console.error("MatchResultJson parse error:", e);
+                matchResult = { RedScore: {Fouls:[]}, BlueScore: {Fouls:[]} };
+            }
+        }
+    // 初始化紅方資料
+    allianceResults["red"] = {
+      team1: {{.Match.Red1}},
+      team2: {{.Match.Red2}},
+      team3: {{.Match.Red3}},
+      score: matchResult.RedScore || { Fouls: [], RobotsBypassed: [false,false,false], LeaveStatuses: [false,false,false], EndgameStatuses: [0,0,0] },
+      cards: matchResult.RedCards || {}
+    };
+
+    // 初始化藍方資料
+    allianceResults["blue"] = {
+      team1: {{.Match.Blue1}},
+      team2: {{.Match.Blue2}},
+      team3: {{.Match.Blue3}},
+      score: matchResult.BlueScore || { Fouls: [], RobotsBypassed: [false,false,false], LeaveStatuses: [false,false,false], EndgameStatuses: [0,0,0] },
+      cards: matchResult.BlueCards || {}
+    };
+
+    // 執行渲染，如果 JS 沒報錯，藍方就會出現
+    renderResults("red");
+    renderResults("blue");
+  });
+</script>
 {{end}}
