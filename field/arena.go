@@ -406,8 +406,14 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	log.Printf("[Arena] Match Loaded. Auto Tie Breaker: %v (True=Red, False=Blue)", arena.autoTieBreakerRedWin)
 
 	// 2026: Reset PLC Fuel tracking
-	arena.lastRedPlcFuel = 0
-	arena.lastBluePlcFuel = 0
+	if arena.Plc.IsEnabled() {
+		r, b := arena.Plc.GetFuelCounts()
+		arena.lastRedPlcFuel = r
+		arena.lastBluePlcFuel = b
+	} else {
+		arena.lastRedPlcFuel = 0
+		arena.lastBluePlcFuel = 0
+	}
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
@@ -544,8 +550,14 @@ func (arena *Arena) StartMatch() error {
 		}
 
 		// 2026: Reset PLC Fuel trackers before match starts (double safety)
-		arena.lastRedPlcFuel = 0
-		arena.lastBluePlcFuel = 0
+		if arena.Plc.IsEnabled() {
+			r, b := arena.Plc.GetFuelCounts()
+			arena.lastRedPlcFuel = r
+			arena.lastBluePlcFuel = b
+		} else {
+			arena.lastRedPlcFuel = 0
+			arena.lastBluePlcFuel = 0
+		}
 
 		arena.MatchState = StartMatch
 	}
@@ -1226,10 +1238,6 @@ func (arena *Arena) handlePlcInputOutput() {
 	oldRedScore := *redScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
 	oldBlueScore := *blueScore
-	matchStartTime := arena.MatchStartTime
-	currentTime := time.Now()
-	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.TeleopGracePeriodSec*time.Second)
-	inGracePeriod := arena.MatchState == PostMatch && currentTime.Before(teleopGracePeriod) && !arena.matchAborted
 
 	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
@@ -1283,24 +1291,33 @@ func (arena *Arena) handlePlcInputOutput() {
 	redDelta := redPlcFuel - arena.lastRedPlcFuel
 	blueDelta := bluePlcFuel - arena.lastBluePlcFuel
 
-	// If delta is positive (count increased), add to score
-	// If delta is negative (PLC reset), ignore it (reset handled by lastPlcFuel update)
+	// --- Red Alliance Scoring Logic ---
 	if redDelta > 0 {
 		if arena.MatchState == AutoPeriod {
+			// Auto 期間通常皆可得分
 			arena.RedRealtimeScore.CurrentScore.AutoFuelCount += redDelta
 		} else if arena.MatchState == TeleopPeriod {
-			arena.RedRealtimeScore.CurrentScore.TeleopFuelCount += redDelta
+			// [FIX] Teleop 期間必須 HubActive 才能得分
+			if arena.RedRealtimeScore.CurrentScore.HubActive {
+				arena.RedRealtimeScore.CurrentScore.TeleopFuelCount += redDelta
+			}
 		}
 	}
+
+	// --- Blue Alliance Scoring Logic ---
 	if blueDelta > 0 {
 		if arena.MatchState == AutoPeriod {
 			arena.BlueRealtimeScore.CurrentScore.AutoFuelCount += blueDelta
 		} else if arena.MatchState == TeleopPeriod {
-			arena.BlueRealtimeScore.CurrentScore.TeleopFuelCount += blueDelta
+			// [FIX] Teleop 期間必須 HubActive 才能得分
+			if arena.BlueRealtimeScore.CurrentScore.HubActive {
+				arena.BlueRealtimeScore.CurrentScore.TeleopFuelCount += blueDelta
+			}
 		}
 	}
 
 	// Update last known values for next iteration
+	// 注意：無論是否得分，都要更新 lastPlcFuel，確保被忽略的球不會在下一次被誤算
 	arena.lastRedPlcFuel = redPlcFuel
 	arena.lastBluePlcFuel = bluePlcFuel
 
@@ -1319,8 +1336,7 @@ func (arena *Arena) handlePlcInputOutput() {
 		)
 	} else {
 		// Turn off when not playing
-		// 2026: Use Hub lights for grace period indication if needed, otherwise off
-		arena.Plc.SetHubLights(inGracePeriod, inGracePeriod)
+		arena.Plc.SetHubLights(false, false)
 	}
 }
 

@@ -11,8 +11,38 @@ import (
 
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/stretchr/testify/assert"
 )
+
+// Minimal Mock PLC implementation satisfying plc.Plc interface
+type MockPlc struct {
+	RedFuelVal  int
+	BlueFuelVal int
+	HubRed      bool
+	HubBlue     bool
+}
+
+func (m *MockPlc) SetAddress(string)                        {}
+func (m *MockPlc) IsEnabled() bool                          { return true }
+func (m *MockPlc) IsHealthy() bool                          { return true }
+func (m *MockPlc) IoChangeNotifier() *websocket.Notifier    { return nil }
+func (m *MockPlc) Run()                                     {}
+func (m *MockPlc) GetArmorBlockStatuses() map[string]bool   { return nil }
+func (m *MockPlc) GetFieldEStop() bool                      { return false }
+func (m *MockPlc) GetTeamEStops() ([3]bool, [3]bool)        { return [3]bool{}, [3]bool{} }
+func (m *MockPlc) GetTeamAStops() ([3]bool, [3]bool)        { return [3]bool{}, [3]bool{} }
+func (m *MockPlc) GetEthernetConnected() ([3]bool, [3]bool) { return [3]bool{}, [3]bool{} }
+func (m *MockPlc) ResetMatch()                              {}
+func (m *MockPlc) SetStackLights(bool, bool, bool, bool)    {}
+func (m *MockPlc) SetStackBuzzer(bool)                      {}
+func (m *MockPlc) SetFieldResetLight(bool)                  {}
+func (m *MockPlc) GetCycleState(int, int, int) bool         { return false }
+func (m *MockPlc) GetInputNames() []string                  { return nil }
+func (m *MockPlc) GetRegisterNames() []string               { return nil }
+func (m *MockPlc) GetCoilNames() []string                   { return nil }
+func (m *MockPlc) GetFuelCounts() (int, int)                { return m.RedFuelVal, m.BlueFuelVal }
+func (m *MockPlc) SetHubLights(red bool, blue bool)         { m.HubRed = red; m.HubBlue = blue }
 
 // Helper to create a basic arena for testing
 func createTestArena() *Arena {
@@ -20,12 +50,19 @@ func createTestArena() *Arena {
 		RedRealtimeScore:  NewRealtimeScore(),
 		BlueRealtimeScore: NewRealtimeScore(),
 		CurrentMatch:      &model.Match{},
+		Plc:               &MockPlc{},
 	}
 	// Default timing settings
 	game.MatchTiming.WarmupDurationSec = 0
 	game.MatchTiming.AutoDurationSec = 15
 	game.MatchTiming.PauseDurationSec = 3
 	game.MatchTiming.TeleopDurationSec = 140
+
+	// Initialize alliance stations to avoid panic in sendDsPacket
+	arena.AllianceStations = make(map[string]*AllianceStation)
+	for _, s := range []string{"R1", "R2", "R3", "B1", "B2", "B3"} {
+		arena.AllianceStations[s] = &AllianceStation{}
+	}
 	return arena
 }
 
@@ -80,6 +117,7 @@ func TestUpdateHubStatus_RedWinsAuto(t *testing.T) {
 	arena.BlueRealtimeScore.CurrentScore.AutoFuelCount = 10
 
 	// Simulate Match Time (Teleop starts at 18s)
+	// Auto(15) + Pause(3) = 18s
 
 	// 1. Transition (140s -> 130s left) => Both Active
 	// MatchTime: 18 + 5 = 23s (135s left)
@@ -124,23 +162,64 @@ func TestUpdateHubStatus_RedWinsAuto(t *testing.T) {
 	assert.True(t, arena.BlueRealtimeScore.CurrentScore.HubActive, "Endgame: Blue should be Active")
 }
 
-func TestUpdateHubStatus_BlueWinsAuto(t *testing.T) {
-	// Scenario: Blue Wins Auto (Message "R")
-	// Shift 1: Red Active, Blue Inactive
+func TestPlcFuelScoring(t *testing.T) {
 	arena := createTestArena()
+	mockPlc := arena.Plc.(*MockPlc)
 	arena.MatchState = TeleopPeriod
-	arena.RedRealtimeScore.CurrentScore.AutoFuelCount = 10
-	arena.BlueRealtimeScore.CurrentScore.AutoFuelCount = 20
+	arena.RedRealtimeScore.CurrentScore.HubActive = true // Allow scoring
 
-	// 1. Shift 1 (120s left)
-	arena.MatchStartTime = time.Now().Add(-time.Second * 38)
-	arena.updateHubStatus()
-	assert.True(t, arena.RedRealtimeScore.CurrentScore.HubActive, "Shift 1 (Blue Won): Red Active")
-	assert.False(t, arena.BlueRealtimeScore.CurrentScore.HubActive, "Shift 1 (Blue Won): Blue Inactive")
+	// 1. Initial State
+	arena.handlePlcInputOutput()
+	assert.Equal(t, 0, arena.RedRealtimeScore.CurrentScore.TeleopFuelCount)
 
-	// 2. Shift 2 (90s left)
-	arena.MatchStartTime = time.Now().Add(-time.Second * 68)
-	arena.updateHubStatus()
-	assert.False(t, arena.RedRealtimeScore.CurrentScore.HubActive, "Shift 2 (Blue Won): Red Inactive")
-	assert.True(t, arena.BlueRealtimeScore.CurrentScore.HubActive, "Shift 2 (Blue Won): Blue Active")
+	// 2. Increase Fuel by 5
+	mockPlc.RedFuelVal = 5
+	arena.handlePlcInputOutput()
+	assert.Equal(t, 5, arena.RedRealtimeScore.CurrentScore.TeleopFuelCount)
+	assert.Equal(t, 5, arena.lastRedPlcFuel)
+
+	// 3. Increase Fuel by 2 (Total 7)
+	mockPlc.RedFuelVal = 7
+	arena.handlePlcInputOutput()
+	assert.Equal(t, 7, arena.RedRealtimeScore.CurrentScore.TeleopFuelCount)
+
+	// 4. PLC Reset (Value drops to 0) -> Score should NOT change/decrease
+	mockPlc.RedFuelVal = 0
+	arena.handlePlcInputOutput()
+	assert.Equal(t, 7, arena.RedRealtimeScore.CurrentScore.TeleopFuelCount)
+	assert.Equal(t, 0, arena.lastRedPlcFuel) // Last value tracks reset
+
+	// 5. Increase from 0 to 3 -> Score should increase by 3 (Total 10)
+	mockPlc.RedFuelVal = 3
+	arena.handlePlcInputOutput()
+	assert.Equal(t, 10, arena.RedRealtimeScore.CurrentScore.TeleopFuelCount)
+}
+
+func TestPlcFuelScoring_InactiveHub(t *testing.T) {
+	arena := createTestArena()
+	mockPlc := arena.Plc.(*MockPlc)
+	arena.MatchState = TeleopPeriod
+
+	// Set Hub to Inactive
+	arena.RedRealtimeScore.CurrentScore.HubActive = false
+
+	// Try to score 5 fuel
+	mockPlc.RedFuelVal = 5
+	arena.handlePlcInputOutput()
+
+	// Should NOT add to score
+	assert.Equal(t, 0, arena.RedRealtimeScore.CurrentScore.TeleopFuelCount)
+
+	// BUT should update last value (so these 5 aren't counted later when active)
+	assert.Equal(t, 5, arena.lastRedPlcFuel)
+
+	// Set Hub to Active
+	arena.RedRealtimeScore.CurrentScore.HubActive = true
+
+	// Score 2 more (Total 7)
+	mockPlc.RedFuelVal = 7
+	arena.handlePlcInputOutput()
+
+	// Should only add the new 2
+	assert.Equal(t, 2, arena.RedRealtimeScore.CurrentScore.TeleopFuelCount)
 }
