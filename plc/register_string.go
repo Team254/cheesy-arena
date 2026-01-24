@@ -9,18 +9,19 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[fieldIoConnection-0]
-	_ = x[redProcessor-1]
-	_ = x[blueProcessor-2]
+	_ = x[redFuel-1]
+	_ = x[blueFuel-2]
 	_ = x[registerCount-3]
 }
 
-const _register_name = "fieldIoConnectionredProcessorblueProcessorregisterCount"
+const _register_name = "fieldIoConnectionredFuelblueFuelregisterCount"
 
-var _register_index = [...]uint8{0, 17, 29, 42, 55}
+var _register_index = [...]uint8{0, 17, 24, 32, 45}
 
 func (i register) String() string {
-	if i < 0 || i >= register(len(_register_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_register_index)-1 {
 		return "register(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _register_name[_register_index[i]:_register_index[i+1]]
+	return _register_name[_register_index[idx]:_register_index[idx+1]]
 }
