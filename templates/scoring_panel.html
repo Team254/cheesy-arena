@@ -45,15 +45,15 @@ UI for the real-time scoring interface.
         </div>
       </div>
       <div class="card mb-3" id="hub-status-card">
-    <div class="card-header bg-dark text-white text-center">
-      <h5 class="mb-0">Hub Status</h5>
-    </div>
-    <div class="card-body text-center p-4">
-      <div id="hub-status-indicator" class="h2 fw-bold p-3 rounded" style="transition: all 0.3s ease;">
-        HUB INITIALIZING
+        <div class="card-header bg-dark text-white text-center">
+          <h5 class="mb-0">Hub Status</h5>
+        </div>
+        <div class="card-body text-center p-4">
+          <div id="hub-status-indicator" class="h2 fw-bold p-3 rounded" style="transition: all 0.3s ease;">
+            HUB INITIALIZING
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
 
       <!--<div class="card border-danger">
         <div class="card-header bg-danger text-white">
@@ -217,6 +217,25 @@ UI for the real-time scoring interface.
   $(document).ready(function() {
     connectWebsocket();
   });
+  // 新增：處理 Hub 狀態的 UI 變色邏輯
+function updateHubUI(redActive, blueActive) {
+  var indicator = $("#hub-status-indicator");
+  var card = $("#hub-status-card");
+
+  if (redActive && blueActive) {
+    indicator.text("BOTH ACTIVE").css({"background-color": "#198754", "color": "white"});
+    card.css("border-color", "#198754");
+  } else if (redActive) {
+    indicator.text("RED ACTIVE").css({"background-color": "#dc3545", "color": "white"});
+    card.css("border-color", "#dc3545");
+  } else if (blueActive) {
+    indicator.text("BLUE ACTIVE").css({"background-color": "#0d6efd", "color": "white"});
+    card.css("border-color", "#0d6efd");
+  } else {
+    indicator.text("HUB INACTIVE").css({"background-color": "#6c757d", "color": "white"});
+    card.css("border-color", "#6c757d");
+  }
+}
 
   function connectWebsocket() {
     if (ws) return;
@@ -343,6 +362,10 @@ UI for the real-time scoring interface.
   function updateScoreDisplay(data) {
     // data structure depends on ArenaNotifiers.go
     // Assuming data contains { Red: { Score: {...} }, Blue: {...} }
+    // --- 關鍵新增：更新 Hub 狀態 ---
+    if (data.Red && data.Blue) {
+    updateHubUI(data.Red.Score.HubActive, data.Blue.Score.HubActive);
+  }
     var myScore;
     if (alliance === "red") {
       myScore = data.Red.Score;

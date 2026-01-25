@@ -24,6 +24,25 @@ let localFoulCounts = {
   "red-major": 0,
   "blue-major": 0,
 }
+// 新增一個輔助函式來處理 UI 顏色與文字
+const updateHubUI = function(redActive, blueActive) {
+    const indicator = $("#hub-status-indicator");
+    const card = $("#hub-status-card");
+
+    if (redActive && blueActive) {
+        indicator.text("BOTH ACTIVE").css({"background-color": "#198754", "color": "white"}); // 綠色
+        card.css("border-color", "#198754");
+    } else if (redActive) {
+        indicator.text("RED ACTIVE").css({"background-color": "#dc3545", "color": "white"}); // 紅色
+        card.css("border-color", "#dc3545");
+    } else if (blueActive) {
+        indicator.text("BLUE ACTIVE").css({"background-color": "#0d6efd", "color": "white"}); // 藍色
+        card.css("border-color", "#0d6efd");
+    } else {
+        indicator.text("HUB INACTIVE").css({"background-color": "#6c757d", "color": "white"}); // 灰色
+        card.css("border-color", "#6c757d");
+    }
+};
 
 // Handle controls to open/close the endgame dialog
 const endgameDialog = $("#endgame-dialog")[0];
@@ -167,6 +186,11 @@ const handleRealtimeScore = function (data) {
   const score = realtimeScore.Score;
   if (!score) return;
 
+  // 這裡我們需要同時看 data.Red 和 data.Blue
+    const redActive = data.Red.Score.HubActive;
+    const blueActive = data.Blue.Score.HubActive;
+    updateHubUI(redActive, blueActive);
+
   // 1. 同步 Fuel (燃料) 計數
   $("#auto_fuel_count").text(score.AutoFuelCount || 0);
   $("#teleop_fuel_count").text(score.TeleopFuelCount || 0);
@@ -219,6 +243,8 @@ const handleLeaveClick = function (teamPosition) {
 const handleEndgameClick = function (teamPosition, endgameStatus) {
   websocket.send("endgame", {TeamPosition: teamPosition, EndgameStatus: endgameStatus});
 }
+
+
 // 對應 HTML: updateFuel(isAuto, delta)
 const updateFuel = function (isAuto, delta) {
   websocket.send("fuel", {

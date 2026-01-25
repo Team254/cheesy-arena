@@ -146,6 +146,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 // Equals returns true if and only if all fields of the two scores are equal.
 func (score *Score) Equals(other *Score) bool {
 	if score.RobotsBypassed != other.RobotsBypassed ||
+		score.HubActive != other.HubActive ||
 		score.AutoTowerLevel1 != other.AutoTowerLevel1 ||
 		score.AutoFuelCount != other.AutoFuelCount ||
 		score.TeleopFuelCount != other.TeleopFuelCount ||
