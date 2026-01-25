@@ -148,10 +148,10 @@ const updateUIMode = function () {
 }
 
 const endgameStatusNames = [
-  "None",
-  "Park",
-  "Shallow",
-  "Deep",
+  "None",    // 0
+  "Level 1", // 1
+  "Level 2", // 2
+  "Level 3", // 3
 ];
 
 // Handles a websocket message to update the realtime scoring fields.
@@ -162,48 +162,46 @@ const handleRealtimeScore = function (data) {
   } else {
     realtimeScore = data.Blue;
   }
-  const score = realtimeScore.Score;
-
-  for (let i = 0; i < 3; i++) {
-    const i1 = i + 1;
-    $(`#auto-status-${i1} > .team-text`).text(score.LeaveStatuses[i] ? "Leave" : "None");
-    $(`#auto-status-${i1}`).attr("data-selected", score.LeaveStatuses[i]);
-    $(`#endgame-status-${i1} > .team-text`).text(endgameStatusNames[score.EndgameStatuses[i]]);
-    $(`#endgame-status-${i1}`).attr("data-selected", endgameStatusNames[score.EndgameStatuses[i]] != "None");
-    for (let j = 0; j < endgameStatusNames.length; j++) {
-      $(`#endgame-input-${i1} .endgame-${j}`).attr("data-selected", j == score.EndgameStatuses[i]);
-    }
-  }
-
-  for (let i = 0; i < 12; i++) {
-    const i1 = i + 1;
-    for (let j = 0; j < 3; j++) {
-      const j2 = j + 2;
-      $(`#reef-column-${i1}`).attr(`data-l${j2}-scored`, score.Reef.Branches[j][i]);
-      $(`#reef-column-${i1}`).attr(`data-l${j2}-auto-scored`, score.Reef.AutoBranches[j][i]);
-    }
-  }
-
-  const l1Total = score.Reef.TroughNear + score.Reef.TroughFar;
-  $("#l1-total-count").text(l1Total);
   
-  $(`#barge .counter-value`).text(score.BargeAlgae);
-  $(`#processor .counter-value`).text(score.ProcessorAlgae);
+  // 取得後端傳來的 2026 核心分數結構
+  const score = realtimeScore.Score;
+  if (!score) return;
 
-  if (nearSide) {
-    $(`#trough .counter-value`).text(score.Reef.TroughNear);
-    $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughNear);
-  } else {
-    $(`#trough .counter-value`).text(score.Reef.TroughFar);
-    $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughFar);
+  // 1. 同步 Fuel (燃料) 計數
+  $("#auto_fuel_count").text(score.AutoFuelCount || 0);
+  $("#teleop_fuel_count").text(score.TeleopFuelCount || 0);
+
+  // 2. 同步 Auto Tower (自動階段塔) 勾選狀態
+  // 假設後端 AutoTowerLevel1 是一個包含 3 個布林值的陣列
+  if (score.AutoTowerLevel1) {
+    for (let i = 0; i < 3; i++) {
+      $(`#auto_tower_${i}`).prop("checked", score.AutoTowerLevel1[i]);
+    }
   }
 
-  redFouls = data.Red.Score.Fouls || [];
-  blueFouls = data.Blue.Score.Fouls || [];
-  $(`#foul-blue-minor .fouls-global`).text(blueFouls.filter(foul => !foul.IsMajor).length)
-  $(`#foul-blue-major .fouls-global`).text(blueFouls.filter(foul => foul.IsMajor).length)
-  $(`#foul-red-minor .fouls-global`).text(redFouls.filter(foul => !foul.IsMajor).length)
-  $(`#foul-red-major .fouls-global`).text(redFouls.filter(foul => foul.IsMajor).length)
+  // 3. 同步 Endgame / Climb (攀爬) 狀態
+  // 這是解決你 "Level 1 無法點擊" 的關鍵
+  if (score.EndgameStatuses) {
+    for (let i = 0; i < 3; i++) {
+      const status = score.EndgameStatuses[i]; // 0=None, 1=Lvl1, 2=Lvl2, 3=Lvl3
+      
+      // 更新 HTML 上的 Radio 按鈕
+      // 注意：你的 HTML name 是 climb_0, climb_1, climb_2
+      $(`input[name='climb_${i}']`).filter(`[value='${status}']`).prop("checked", true);
+      
+      // 如果你有顯示文字標籤，也可以更新它
+      $(`#endgame-status-${i+1} > .team-text`).text(endgameStatusNames[status] || "None");
+    }
+  }
+
+  // 4. 同步 Fouls (犯規)
+  const redFouls = data.Red.Score.Fouls || [];
+  const blueFouls = data.Blue.Score.Fouls || [];
+  
+  $(`#foul-blue-minor .fouls-global`).text(blueFouls.filter(f => !f.IsMajor).length);
+  $(`#foul-blue-major .fouls-global`).text(blueFouls.filter(f => f.IsMajor).length);
+  $(`#foul-red-minor .fouls-global`).text(redFouls.filter(f => !f.IsMajor).length);
+  $(`#foul-red-major .fouls-global`).text(redFouls.filter(f => f.IsMajor).length);
 };
 
 // Websocket message senders for various buttons
@@ -221,6 +219,32 @@ const handleLeaveClick = function (teamPosition) {
 const handleEndgameClick = function (teamPosition, endgameStatus) {
   websocket.send("endgame", {TeamPosition: teamPosition, EndgameStatus: endgameStatus});
 }
+// 對應 HTML: updateFuel(isAuto, delta)
+const updateFuel = function (isAuto, delta) {
+  websocket.send("fuel", {
+    Adjustment: delta,
+    Autonomous: isAuto
+  });
+};
+
+// 對應 HTML: updateAutoTower(robotIdx, checked)
+const updateAutoTower = function (robotIdx, checked) {
+  websocket.send("auto_tower", {
+    RobotIndex: robotIdx,
+    Adjustment: checked ? 1 : 0
+  });
+};
+
+// 對應 HTML: updateClimb(robotIdx, level)
+// 這是解決 Level 1 點擊沒反應的最關鍵修正
+const updateClimb = function (robotIdx, level) {
+  console.log("Sending climb command:", robotIdx, level);
+  websocket.send("climb", {
+    RobotIndex: parseInt(robotIdx),
+    Level: parseInt(level)
+  });
+};
+
 const handleReefClick = function (reefPosition, reefLevel) {
   websocket.send("reef", {
     ReefPosition: reefPosition,

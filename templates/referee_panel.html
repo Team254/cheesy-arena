@@ -33,7 +33,15 @@ Modified for 2026 REBUILT Game
       {{template "scoreSummary" dict "id" "blueScoreSummary"}}
       {{template "scoreSummary" dict "id" "redScoreSummary"}}
     </div>
-    
+      <div class="navigation-buttons" style="margin: 10px; display: flex; gap: 10px;">
+      <button class="btn btn-primary" onclick="window.location.href='/panels/scoring/blue_near'">
+        Blue Scoring Panel
+      </button>
+      <button class="btn btn-danger" onclick="window.location.href='/panels/scoring/red_near'">
+        Red Scoring Panel
+      </button>
+
+  </div>
     <h3>Fouls</h3>
     <div id="foulButtons">
       <div class="foul-button blue-foul" onclick="addFoul('blue', false);">Blue</div>
@@ -44,6 +52,7 @@ Modified for 2026 REBUILT Game
     <div id="foulList"></div>
   </div>
 </div>
+
 
 <p>Note: Team and rule assignment are optional.</p>
 
