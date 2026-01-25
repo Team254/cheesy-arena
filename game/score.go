@@ -101,11 +101,15 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	totalFuel := score.AutoFuelCount + score.TeleopFuelCount
 	if totalFuel >= EnergizedFuelThreshold {
 		summary.EnergizedRankingPoint = true
+	} else {
+		summary.EnergizedRankingPoint = false
 	}
 
 	// B. Supercharged RP (基於更高的 Fuel 數量)
 	if totalFuel >= SuperchargedFuelThreshold {
 		summary.SuperchargedRankingPoint = true
+	} else {
+		summary.SuperchargedRankingPoint = false
 	}
 
 	// C. Traversal RP (基於 Tower 總分)

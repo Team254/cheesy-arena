@@ -244,10 +244,10 @@ const handleScorePosted = function (data) {
   } else {
     setTeamInfo(redSide, 4, 0, data.RedCards, data.RedRankings);
   }
-  $(`#${redSide}FinalLeavePoints`).text(data.RedScoreSummary.LeavePoints);
-  $(`#${redSide}FinalCoralPoints`).text(data.RedScoreSummary.CoralPoints);
-  $(`#${redSide}FinalAlgaePoints`).text(data.RedScoreSummary.AlgaePoints);
-  $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.BargePoints);
+  $(`#${redSide}FinalLeavePoints`).text(data.RedScoreSummary.AutoFuelPoints);
+  $(`#${redSide}FinalCoralPoints`).text(data.RedScoreSummary.AutoTowerPoints);
+  $(`#${redSide}FinalAlgaePoints`).text(data.RedScoreSummary.TeleopFuelPoints);
+  $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.EndgameTowerPoints);
   $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
   $(`#${redSide}FinalAutoBonusRankingPoint`).html(
     data.RedScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/red_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : ' '
@@ -291,10 +291,10 @@ const handleScorePosted = function (data) {
   } else {
     setTeamInfo(blueSide, 4, 0, data.BlueCards, data.BlueRankings);
   }
-  $(`#${blueSide}FinalLeavePoints`).text(data.BlueScoreSummary.LeavePoints);
-  $(`#${blueSide}FinalCoralPoints`).text(data.BlueScoreSummary.CoralPoints);
-  $(`#${blueSide}FinalAlgaePoints`).text(data.BlueScoreSummary.AlgaePoints);
-  $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.BargePoints);
+  $(`#${blueSide}FinalLeavePoints`).text(data.BlueScoreSummary.AutoFuelPoints);
+  $(`#${blueSide}FinalCoralPoints`).text(data.BlueScoreSummary.AutoTowerPoints);
+  $(`#${blueSide}FinalAlgaePoints`).text(data.BlueScoreSummary.TeleopFuelPoints);
+  $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.EndgameTowerPoints);
   $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
   $(`#${blueSide}FinalAutoBonusRankingPoint`).html(
     data.BlueScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/blue_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
