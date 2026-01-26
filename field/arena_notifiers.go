@@ -36,6 +36,9 @@ type ArenaNotifiers struct {
 type MatchTimeMessage struct {
 	MatchState
 	MatchTimeSec int
+	// 新增以下兩行
+	HubActiveRed  bool
+	HubActiveBlue bool
 }
 
 type audienceAllianceScoreFields struct {
@@ -204,7 +207,12 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 }
 
 func (arena *Arena) generateMatchTimeMessage() any {
-	return MatchTimeMessage{arena.MatchState, int(arena.MatchTimeSec())}
+	return MatchTimeMessage{
+		arena.MatchState,
+		int(arena.MatchTimeSec()),
+		arena.RedRealtimeScore.CurrentScore.HubActive,  // 抓取紅隊實時 Hub 狀態
+		arena.BlueRealtimeScore.CurrentScore.HubActive, // 抓取藍隊實時 Hub 狀態
+	}
 }
 
 func (arena *Arena) generateMatchTimingMessage() any {
