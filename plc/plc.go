@@ -82,21 +82,21 @@ const (
 	red2AStop                        // 23
 	red3EStop                        // 24
 	red3AStop                        // 25
-	blue1EStop                       // 26
-	blue1AStop                       // 27
-	blue2EStop                       // 28
-	blue2AStop                       // 29
-	blue3EStop                       // 30
-	blue3AStop                       // 31
 	redConnected1                    // 32
 	redConnected2                    // 33
 	redConnected3                    // 34
-	blueConnected1                   // 35
-	blueConnected2                   // 36
-	blueConnected3                   // 37
+	blue1EStop     input = iota + 31 // 40
+	blue1AStop                       // 41
+	blue2EStop                       // 42
+	blue2AStop                       // 43
+	blue3EStop                       // 44
+	blue3AStop                       // 45
+	blueConnected1                   // 46
+	blueConnected2                   // 47
+	blueConnected3                   // 48
 
 	// inputCount 會自動變成最後一個數值 + 1
-	// 這裡會是 38，用來定義陣列的大小
+	// 這裡會是 49，用來定義陣列的
 	inputCount
 )
 
