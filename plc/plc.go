@@ -76,7 +76,7 @@ const (
 // 第二個區塊：定義 Address 20 以後的輸入
 // 在新的 const 區塊中，iota 會重置為 0
 const (
-	red1EStop      input = iota + 20 // iota = 0, 值 = 20
+	red1EStop      input = iota + 16 // iota = 0, 值 = 16
 	red1AStop                        // iota = 1, 值 = 21 (自動沿用 +20 的規則)
 	red2EStop                        // 22
 	red2AStop                        // 23
@@ -85,7 +85,7 @@ const (
 	redConnected1                    // 32
 	redConnected2                    // 33
 	redConnected3                    // 34
-	blue1EStop     input = iota + 31 // 40
+	blue1EStop     input = iota + 32 // 40
 	blue1AStop                       // 41
 	blue2EStop                       // 42
 	blue2AStop                       // 43

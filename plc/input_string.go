@@ -9,25 +9,25 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[fieldEStop-0]
-	_ = x[red1EStop-20]
-	_ = x[red1AStop-21]
-	_ = x[red2EStop-22]
-	_ = x[red2AStop-23]
-	_ = x[red3EStop-24]
-	_ = x[red3AStop-25]
-	_ = x[redConnected1-26]
-	_ = x[redConnected2-27]
-	_ = x[redConnected3-28]
-	_ = x[blue1EStop-40]
-	_ = x[blue1AStop-41]
-	_ = x[blue2EStop-42]
-	_ = x[blue2AStop-43]
-	_ = x[blue3EStop-44]
-	_ = x[blue3AStop-45]
-	_ = x[blueConnected1-46]
-	_ = x[blueConnected2-47]
-	_ = x[blueConnected3-48]
-	_ = x[inputCount-49]
+	_ = x[red1EStop-16]
+	_ = x[red1AStop-17]
+	_ = x[red2EStop-18]
+	_ = x[red2AStop-19]
+	_ = x[red3EStop-20]
+	_ = x[red3AStop-21]
+	_ = x[redConnected1-22]
+	_ = x[redConnected2-23]
+	_ = x[redConnected3-24]
+	_ = x[blue1EStop-41]
+	_ = x[blue1AStop-42]
+	_ = x[blue2EStop-43]
+	_ = x[blue2AStop-44]
+	_ = x[blue3EStop-45]
+	_ = x[blue3AStop-46]
+	_ = x[blueConnected1-47]
+	_ = x[blueConnected2-48]
+	_ = x[blueConnected3-49]
+	_ = x[inputCount-50]
 }
 
 const (
@@ -45,11 +45,11 @@ func (i input) String() string {
 	switch {
 	case i == 0:
 		return _input_name_0
-	case 20 <= i && i <= 28:
-		i -= 20
+	case 16 <= i && i <= 24:
+		i -= 16
 		return _input_name_1[_input_index_1[i]:_input_index_1[i+1]]
-	case 40 <= i && i <= 49:
-		i -= 40
+	case 41 <= i && i <= 50:
+		i -= 41
 		return _input_name_2[_input_index_2[i]:_input_index_2[i+1]]
 	default:
 		return "input(" + strconv.FormatInt(int64(i), 10) + ")"
