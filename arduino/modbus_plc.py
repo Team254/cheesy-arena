@@ -9,7 +9,7 @@ import sys
 
 # --- 1. 硬體腳位設定 (BOARD 模式) ---
 # 輸入: 4個 inputs (對應 Modbus Coil 0~3)
-INPUT_PINS = [27, 29, 31, 33]
+INPUT_PINS = [29, 31, 32, 33]
 
 # 輸出: 2個 outputs (對應 Modbus Coil 16, 17)
 # Index 0 -> Pin 35
@@ -74,7 +74,7 @@ def background_loop():
 if __name__ == "__main__":
     print("------------------------------------------------", flush=True)
     print(" Jetson Modbus PLC (2 Outputs Version)", flush=True)
-    print(" Inputs : 27, 29, 31, 33 (Active Low)", flush=True)
+    print(" Inputs : 29, 31, 32, 33 (Active Low)", flush=True)
     print(" Outputs: 35 (Coil 16), 37 (Coil 17)", flush=True)
     print("------------------------------------------------", flush=True)
     
