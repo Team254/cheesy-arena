@@ -9,35 +9,49 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[fieldEStop-0]
-	_ = x[red1EStop-1]
-	_ = x[red1AStop-2]
-	_ = x[red2EStop-3]
-	_ = x[red2AStop-4]
-	_ = x[red3EStop-5]
-	_ = x[red3AStop-6]
-	_ = x[blue1EStop-7]
-	_ = x[blue1AStop-8]
-	_ = x[blue2EStop-9]
-	_ = x[blue2AStop-10]
-	_ = x[blue3EStop-11]
-	_ = x[blue3AStop-12]
-	_ = x[redConnected1-13]
-	_ = x[redConnected2-14]
-	_ = x[redConnected3-15]
-	_ = x[blueConnected1-16]
-	_ = x[blueConnected2-17]
-	_ = x[blueConnected3-18]
-	_ = x[inputCount-19]
+	_ = x[red1EStop-16]
+	_ = x[red1AStop-17]
+	_ = x[red2EStop-18]
+	_ = x[red2AStop-19]
+	_ = x[red3EStop-20]
+	_ = x[red3AStop-21]
+	_ = x[redConnected1-22]
+	_ = x[redConnected2-23]
+	_ = x[redConnected3-24]
+	_ = x[blue1EStop-41]
+	_ = x[blue1AStop-42]
+	_ = x[blue2EStop-43]
+	_ = x[blue2AStop-44]
+	_ = x[blue3EStop-45]
+	_ = x[blue3AStop-46]
+	_ = x[blueConnected1-47]
+	_ = x[blueConnected2-48]
+	_ = x[blueConnected3-49]
+	_ = x[inputCount-50]
 }
 
-const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3inputCount"
+const (
+	_input_name_0 = "fieldEStop"
+	_input_name_1 = "red1EStopred1AStopred2EStopred2AStopred3EStopred3AStopredConnected1redConnected2redConnected3"
+	_input_name_2 = "blue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopblueConnected1blueConnected2blueConnected3inputCount"
+)
 
-var _input_index = [...]uint8{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 215}
+var (
+	_input_index_1 = [...]uint8{0, 9, 18, 27, 36, 45, 54, 67, 80, 93}
+	_input_index_2 = [...]uint8{0, 10, 20, 30, 40, 50, 60, 74, 88, 102, 112}
+)
 
 func (i input) String() string {
-	idx := int(i) - 0
-	if i < 0 || idx >= len(_input_index)-1 {
+	switch {
+	case i == 0:
+		return _input_name_0
+	case 16 <= i && i <= 24:
+		i -= 16
+		return _input_name_1[_input_index_1[i]:_input_index_1[i+1]]
+	case 41 <= i && i <= 50:
+		i -= 41
+		return _input_name_2[_input_index_2[i]:_input_index_2[i+1]]
+	default:
 		return "input(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _input_name[_input_index[idx]:_input_index[idx+1]]
 }

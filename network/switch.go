@@ -1,7 +1,6 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
-//
-// Methods for configuring a Cisco Switch 3500-series switch for team VLANs.
+// Modified for Fortinet Switch Support
 
 package network
 
@@ -34,6 +33,7 @@ const (
 type Switch struct {
 	address               string
 	port                  int
+	username              string // Fortinet 通常需要帳號
 	password              string
 	mutex                 sync.Mutex
 	configBackoffDuration time.Duration
@@ -41,12 +41,13 @@ type Switch struct {
 	Status                string
 }
 
-var ServerIpAddress = "10.0.100.5" // The DS will try to connect to this address only.
+var ServerIpAddress = "10.0.100.5"
 
 func NewSwitch(address, password string) *Switch {
 	return &Switch{
 		address:               address,
 		port:                  switchTelnetPort,
+		username:              "admin", // 預設為 admin
 		password:              password,
 		configBackoffDuration: switchConfigBackoffDurationSec * time.Second,
 		configPauseDuration:   switchConfigPauseDurationSec * time.Second,
@@ -54,94 +55,95 @@ func NewSwitch(address, password string) *Switch {
 	}
 }
 
-// Sets up wired networks for the given set of teams.
+// ConfigureTeamEthernet 針對 Fortinet 語法進行了重構
 func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
-	// Make sure multiple configurations aren't being set at the same time.
 	sw.mutex.Lock()
 	defer sw.mutex.Unlock()
 	sw.Status = "CONFIGURING"
 
-	// Remove old team VLANs to reset the switch state.
-	removeTeamVlansCommand := ""
+	// 1. 移除舊的 DHCP Server 設定 (Fortinet 刪除邏輯)
+	removeTeamVlansCommand := "config system dhcp server\n"
 	for vlan := 10; vlan <= 60; vlan += 10 {
-		removeTeamVlansCommand += fmt.Sprintf(
-			"interface Vlan%d\nno ip address\nno ip dhcp pool dhcp%d\n", vlan, vlan,
-		)
+		removeTeamVlansCommand += fmt.Sprintf("delete %d\n", vlan)
 	}
-	_, err := sw.runConfigCommand(removeTeamVlansCommand)
+	removeTeamVlansCommand += "end\n"
+
+	_, err := sw.runCommand(removeTeamVlansCommand)
 	if err != nil {
 		sw.Status = "ERROR"
 		return err
 	}
 	time.Sleep(sw.configPauseDuration)
 
-	// Create the new team VLANs.
+	// 2. 建立新設定
 	addTeamVlansCommand := ""
 	addTeamVlan := func(team *model.Team, vlan int) {
 		if team == nil {
 			return
 		}
 		teamPartialIp := fmt.Sprintf("%d.%d", team.Id/100, team.Id%100)
+		
+		// FortiOS 指令：先設 Interface IP，再設 DHCP Server
 		addTeamVlansCommand += fmt.Sprintf(
-			"ip dhcp excluded-address 10.%s.1 10.%s.19\n"+
-				"ip dhcp excluded-address 10.%s.200 10.%s.254\n"+
-				"ip dhcp pool dhcp%d\n"+
-				"network 10.%s.0 255.255.255.0\n"+
-				"default-router 10.%s.%d\n"+
-				"lease 7\n"+
-				"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
-			teamPartialIp,
-			teamPartialIp,
-			teamPartialIp,
-			teamPartialIp,
-			vlan,
-			teamPartialIp,
-			teamPartialIp,
-			switchTeamGatewayAddress,
-			vlan,
-			teamPartialIp,
-			switchTeamGatewayAddress,
+			"config system interface\n"+
+				"edit \"vlan%d\"\n"+
+				"set ip 10.%s.%d 255.255.255.0\n"+
+				"next\n"+
+			"end\n"+
+			"config system dhcp server\n"+
+				"edit %d\n"+
+				"set interface \"vlan%d\"\n"+
+				"set default-gateway 10.%s.%d\n"+
+				"set netmask 255.255.255.0\n"+
+				"config ip-range\n"+
+					"edit 1\n"+
+					"set start-ip 10.%s.20\n"+
+					"set end-ip 10.%s.199\n"+
+					"next\n"+
+				"end\n"+
+				"next\n"+
+			"end\n",
+			vlan, teamPartialIp, switchTeamGatewayAddress, // Interface
+			vlan, vlan, teamPartialIp, switchTeamGatewayAddress, // DHCP
+			teamPartialIp, teamPartialIp, // IP Range
 		)
 	}
+
 	addTeamVlan(teams[0], red1Vlan)
 	addTeamVlan(teams[1], red2Vlan)
 	addTeamVlan(teams[2], red3Vlan)
 	addTeamVlan(teams[3], blue1Vlan)
 	addTeamVlan(teams[4], blue2Vlan)
 	addTeamVlan(teams[5], blue3Vlan)
+
 	if len(addTeamVlansCommand) > 0 {
-		_, err = sw.runConfigCommand(addTeamVlansCommand)
+		_, err = sw.runCommand(addTeamVlansCommand)
 		if err != nil {
 			sw.Status = "ERROR"
 			return err
 		}
 	}
 
-	// Give some time for the configuration to take before another one can be attempted.
 	time.Sleep(sw.configBackoffDuration)
-
 	sw.Status = "ACTIVE"
 	return nil
 }
 
-// Logs into the switch via Telnet and runs the given command in user exec mode. Reads the output and
-// returns it as a string.
+// runCommand 處理 Fortinet 的登入與分頁關閉
 func (sw *Switch) runCommand(command string) (string, error) {
-	// Open a Telnet connection to the switch.
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port))
 	if err != nil {
 		return "", err
 	}
 	defer conn.Close()
 
-	// Login to the AP, send the command, and log out all at once.
 	writer := bufio.NewWriter(conn)
-	_, err = writer.WriteString(
-		fmt.Sprintf(
-			"%s\nenable\n%s\nterminal length 0\n%sexit\n", sw.password, sw.password,
-			command,
-		),
-	)
+	
+	// Fortinet 登入流程：帳號 -> 密碼 -> 關閉分頁 -> 執行指令
+	loginPayload := fmt.Sprintf("%s\n%s\n", sw.username, sw.password)
+	disablePaging := "config system console\nset output standard\nend\n"
+	
+	_, err = writer.WriteString(loginPayload + disablePaging + command + "exit\n")
 	if err != nil {
 		return "", err
 	}
@@ -150,7 +152,6 @@ func (sw *Switch) runCommand(command string) (string, error) {
 		return "", err
 	}
 
-	// Read the response.
 	var reader bytes.Buffer
 	_, err = reader.ReadFrom(conn)
 	if err != nil {
@@ -159,8 +160,7 @@ func (sw *Switch) runCommand(command string) (string, error) {
 	return reader.String(), nil
 }
 
-// Logs into the switch via Telnet and runs the given command in global configuration mode. Reads the output
-// and returns it as a string.
+// runConfigCommand 在 Fortinet 中與 runCommand 共用邏輯
 func (sw *Switch) runConfigCommand(command string) (string, error) {
-	return sw.runCommand(fmt.Sprintf("config terminal\n%send\n", command))
+	return sw.runCommand(command)
 }

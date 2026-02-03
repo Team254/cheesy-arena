@@ -68,26 +68,35 @@ const (
 //go:generate stringer -type=input
 type input int
 
+// 第一個區塊：定義 Address 0
 const (
-	fieldEStop input = iota
-	red1EStop
-	red1AStop
-	red2EStop
-	red2AStop
-	red3EStop
-	red3AStop
-	blue1EStop
-	blue1AStop
-	blue2EStop
-	blue2AStop
-	blue3EStop
-	blue3AStop
-	redConnected1
-	redConnected2
-	redConnected3
-	blueConnected1
-	blueConnected2
-	blueConnected3
+	fieldEStop input = iota // iota = 0, 所以 fieldEStop = 0
+)
+
+// 第二個區塊：定義 Address 20 以後的輸入
+// 在新的 const 區塊中，iota 會重置為 0
+const (
+	red1EStop      input = iota + 16 // iota = 0, 值 = 16
+	red1AStop                        // iota = 1, 值 = 21 (自動沿用 +20 的規則)
+	red2EStop                        // 22
+	red2AStop                        // 23
+	red3EStop                        // 24
+	red3AStop                        // 25
+	redConnected1                    // 32
+	redConnected2                    // 33
+	redConnected3                    // 34
+	blue1EStop     input = iota + 32 // 40
+	blue1AStop                       // 41
+	blue2EStop                       // 42
+	blue2AStop                       // 43
+	blue3EStop                       // 44
+	blue3AStop                       // 45
+	blueConnected1                   // 46
+	blueConnected2                   // 47
+	blueConnected3                   // 48
+
+	// inputCount 會自動變成最後一個數值 + 1
+	// 這裡會是 49，用來定義陣列的
 	inputCount
 )
 
