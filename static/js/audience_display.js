@@ -150,6 +150,25 @@ const handleMatchTime = function (data) {
   translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchTime").text(getCountdownString(countdownSec));
   });
+  
+ // --- 即時更新 Coopertition 邏輯 ---
+    // 根據 reversed 判斷紅藍方在哪一邊
+    const redElement = (redSide === "left") ? "#left_Hubactive" : "#right_Hubactive";
+    const blueElement = (blueSide === "left") ? "#left_Hubactive" : "#right_Hubactive";
+
+    // 判斷紅方狀態
+    $(redElement).html(
+        data.HubActiveRed === true
+        ? '<img src="/static/img/red_Coopertition.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
+        : ''
+    );
+
+    // 判斷藍方狀態
+    $(blueElement).html(
+        data.HubActiveBlue === true
+        ? '<img src="/static/img/blue_Coopertition.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
+        : ''
+    );
 };
 
 // Handles a websocket message to update the match score.
@@ -171,15 +190,6 @@ const handleRealtimeScore = function (data) {
   $(`#${blueSide}Coral`).text(blueCoral);
   $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
 
-  $("#left_Coopertition").html(
-  data.Red.ScoreSummary.NumCoralLevelsGoal == 3
-    ? '<img src="/static/img/red_Coopertition.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
-    : '');
-
-  $("#right_Coopertition").html(
-  data.Red.ScoreSummary.NumCoralLevelsGoal == 3
-    ? '<img src="/static/img/blue_Coopertition.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
-    : '');
 };
 
 //撥放勝利影片

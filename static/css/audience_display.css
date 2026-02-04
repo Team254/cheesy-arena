@@ -208,23 +208,24 @@ html {
   color: #fff;
   opacity: 0;
 }
-.score-right .score-left .score-fields {
+.score-right .score-left {
   align-items: flex-end;
 
 }
 .score-fields {
-  height: 5%;
-  display: none;
+  display: none; /* JS 會改為 flex */
   flex-direction: row;
   justify-content: space-evenly;
-  position: fixed; /* 或 absolute，依你的需求而定 */
-  bottom: 20px;
-
+  align-items: center; /* 改為 center，確保所有圖標在同一水平線上 */
+  position: fixed;
+  bottom: 15px;
+  height: 60px; /* 給予固定高度，不要用 5%，避免內容撐開不一 */
 }
 .score-field {
   display: flex;
   flex-direction: row;
-  
+  align-items: center; /* 確保圖標跟數字對齊 */
+  justify-content: center;
 }
 
 .coral-icon {
