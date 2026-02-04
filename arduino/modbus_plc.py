@@ -65,7 +65,7 @@ def background_loop():
             # --- C. 印出狀態 ---
             # 每 1 秒印一次就好，比較不會洗版
             print(f"In: {input_status} | Out(35,37): {output_status}", flush=True)
-            time.sleep(1)
+            time.sleep(0.1)
             
         except Exception as e:
             print(f"Error: {e}", flush=True)
