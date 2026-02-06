@@ -5,12 +5,13 @@ package field
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
-	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEncodeControlPacket(t *testing.T) {
@@ -147,19 +148,6 @@ func TestSendControlPacket(t *testing.T) {
 	// No real way of checking this since the destination IP is remote, so settle for there being no errors.
 	err = dsConn.sendControlPacket(arena)
 	assert.Nil(t, err)
-}
-
-func TestDecodeStatusPacket(t *testing.T) {
-	tcpConn := setupFakeTcpConnection(t)
-	defer tcpConn.Close()
-	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
-	assert.Nil(t, err)
-	defer dsConn.close()
-
-	data := [36]byte{22, 28, 103, 19, 192, 0, 246}
-	dsConn.decodeStatusPacket(data)
-	assert.Equal(t, 103, dsConn.MissedPacketCount)
-	assert.Equal(t, 14, dsConn.DsRobotTripTimeMs)
 }
 
 func TestListenForDriverStations(t *testing.T) {

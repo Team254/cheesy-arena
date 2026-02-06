@@ -48,7 +48,6 @@ type DriverStationConnection struct {
 	lastPacketTime            time.Time
 	lastRobotLinkedTime       time.Time
 	packetCount               int
-	missedPacketOffset        int
 	tcpConn                   net.Conn
 	udpConn                   net.Conn
 	log                       *TeamMatchLog
@@ -100,9 +99,13 @@ func (arena *Arena) listenForDsUdpPackets() {
 	}
 	log.Printf("Listening for driver stations on UDP port %d\n", driverStationUdpReceivePort)
 
-	var data [50]byte
+	data := make([]byte, 1500)
 	for {
-		listener.Read(data[:])
+		count, _ := listener.Read(data[:])
+		if count < 8 {
+			log.Printf("Received packet with insufficient length: %d", count)
+			continue
+		}
 
 		teamId := int(data[4])<<8 + int(data[5])
 
@@ -115,6 +118,24 @@ func (arena *Arena) listenForDsUdpPackets() {
 		}
 
 		if dsConn != nil {
+			// Search through tags looking for tag 1
+			index := 8
+			for index < count {
+				length := data[index]
+				index++
+				if length == 0 {
+					continue
+				}
+				tag := data[index]
+				if tag == 1 && length == 6 {
+					lost := (int(data[index+1]) << 8) + int(data[index+2])
+					ping := int(data[index+5])
+					dsConn.MissedPacketCount = lost
+					dsConn.DsRobotTripTimeMs = ping
+				}
+				index += int(length)
+			}
+
 			dsConn.DsLinked = true
 			dsConn.lastPacketTime = time.Now()
 
@@ -165,7 +186,7 @@ func (dsConn *DriverStationConnection) close() {
 // Called at the start of the match to allow for driver station initialization.
 func (dsConn *DriverStationConnection) signalMatchStart(match *model.Match, wifiStatus *network.TeamWifiStatus) error {
 	// Zero out missed packet count and begin logging.
-	dsConn.missedPacketOffset = dsConn.MissedPacketCount
+	dsConn.MissedPacketCount = 0
 	var err error
 	dsConn.log, err = NewTeamMatchLog(dsConn.TeamId, match, wifiStatus)
 	return err
@@ -269,15 +290,6 @@ func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena) error {
 	}
 
 	return nil
-}
-
-// Deserializes a packet from the DS into a structure representing the DS/robot status.
-func (dsConn *DriverStationConnection) decodeStatusPacket(data [36]byte) {
-	// Average DS-robot trip time in milliseconds.
-	dsConn.DsRobotTripTimeMs = int(data[1]) / 2
-
-	// Number of missed packets sent from the DS to the robot.
-	dsConn.MissedPacketCount = int(data[2]) - dsConn.missedPacketOffset
 }
 
 // Listens for TCP connection requests to Cheesy Arena from driver stations.
@@ -391,11 +403,7 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 			// DS keepalive packet; do nothing.
 			continue
 		case 22:
-			// Robot status packet.
-			var statusPacket [36]byte
-			copy(statusPacket[:], buffer[2:38])
-			dsConn.decodeStatusPacket(statusPacket)
-
+			// Robot log packet. Just use to trigger fms log
 			// Create a log entry if the match is in progress.
 			matchTimeSec := arena.MatchTimeSec()
 			if matchTimeSec > 0 && dsConn.log != nil {
