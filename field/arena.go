@@ -518,7 +518,7 @@ func (arena *Arena) StartMatch() error {
 
 			// Save the teams that have successfully connected to the field.
 			if allianceStation.Team != nil && !allianceStation.Team.HasConnected && allianceStation.DsConn != nil &&
-				allianceStation.DsConn.RobotLinked {
+			  allianceStation.DsConn.RobotLinked {
 				allianceStation.Team.HasConnected = true
 				arena.Database.UpdateTeam(allianceStation.Team)
 			}
@@ -793,7 +793,7 @@ func (arena *Arena) checkEndgameStart(matchTimeSec float64) {
 	// Calculate the time when endgame warning should start
 	endgameStartTime := float64(
 		game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec +
-			game.MatchTiming.TeleopDurationSec - game.MatchTiming.WarningRemainingDurationSec,
+		  game.MatchTiming.TeleopDurationSec - game.MatchTiming.WarningRemainingDurationSec,
 	)
 
 	// Check if we've crossed the endgame threshold and haven't already triggered it
@@ -1050,7 +1050,7 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 		if dsConn != nil {
 			dsConn.Auto = auto
 			dsConn.Enabled = enabled && !allianceStation.EStop && !(auto && allianceStation.AStop) &&
-				!allianceStation.Bypass
+			  !allianceStation.Bypass
 			dsConn.EStop = allianceStation.EStop
 			dsConn.AStop = allianceStation.AStop
 			err := dsConn.update(arena)
@@ -1165,6 +1165,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
 
 	// Handle the evergreen PLC functions: stack lights, stack buzzer, and field reset light.
+	hubMotorsOn := false
 	switch arena.MatchState {
 	case PreMatch:
 		if arena.lastMatchState != PreMatch {
@@ -1194,19 +1195,26 @@ func (arena *Arena) handlePlcInputOutput() {
 			arena.Plc.SetFieldResetLight(true)
 		}
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
-			arena.positionPostMatchScoreReady("red_near") && arena.positionPostMatchScoreReady("red_far") &&
-			arena.positionPostMatchScoreReady("blue_near") && arena.positionPostMatchScoreReady("blue_far")
+		  arena.positionPostMatchScoreReady("red_near") && arena.positionPostMatchScoreReady("red_far") &&
+		  arena.positionPostMatchScoreReady("blue_near") && arena.positionPostMatchScoreReady("blue_far")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
-	case AutoPeriod, PausePeriod, TeleopPeriod:
+
+		// Keep hub motors on for 3 seconds after the match ends.
+		if time.Since(arena.MatchStartTime).Seconds() <= game.GetDurationToTeleopEnd().Seconds()+3.0 && !arena.matchAborted && !arena.MatchStartTime.IsZero() {
+			hubMotorsOn = true
+		}
+	case AutoPeriod, PausePeriod, TeleopPeriod, WarmupPeriod:
 		arena.Plc.SetStackBuzzer(false)
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, true)
+		hubMotorsOn = true
 	}
+	arena.Plc.SetHubMotors(hubMotorsOn)
 
 	// Get all the game-specific inputs and update the score.
 	// For REBUILT: Get hub FUEL counts from PLC and route to active/inactive based on which hub is active.
 	// The PLC provides cumulative counts, so we calculate deltas from the current score totals.
 	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod ||
-		inGracePeriod {
+	  inGracePeriod {
 		redHubFuel, blueHubFuel := arena.Plc.GetHubBallCounts()
 
 		// Calculate the delta since last read using current score totals

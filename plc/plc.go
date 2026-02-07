@@ -35,6 +35,7 @@ type Plc interface {
 	GetCoilNames() []string
 	GetHubBallCounts() (int, int)
 	SetHubLights(redLight, blueLight bool)
+	SetHubMotors(state bool)
 }
 
 type ModbusPlc struct {
@@ -301,6 +302,10 @@ func (plc *ModbusPlc) GetHubBallCounts() (int, int) {
 func (plc *ModbusPlc) SetHubLights(redLight, blueLight bool) {
 	plc.coils[redHubLight] = redLight
 	plc.coils[blueHubLight] = blueLight
+}
+
+func (plc *ModbusPlc) SetHubMotors(state bool) {
+	plc.coils[hubMotors] = state
 }
 
 func (plc *ModbusPlc) connect() error {

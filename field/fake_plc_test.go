@@ -26,6 +26,7 @@ type FakePlc struct {
 	blueHubCount          int
 	redHubLight           bool
 	blueHubLight          bool
+	hubMotors             bool
 }
 
 func (plc *FakePlc) SetAddress(address string) {
@@ -107,4 +108,8 @@ func (plc *FakePlc) GetHubBallCounts() (int, int) {
 func (plc *FakePlc) SetHubLights(redLight, blueLight bool) {
 	plc.redHubLight = redLight
 	plc.blueHubLight = blueLight
+}
+
+func (plc *FakePlc) SetHubMotors(state bool) {
+	plc.hubMotors = state
 }

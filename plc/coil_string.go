@@ -7,7 +7,7 @@ import "strconv"
 func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
-	var x [1]struct{}
+	var x [11]struct{}
 	_ = x[heartbeat-0]
 	_ = x[matchReset-1]
 	_ = x[stackLightGreen-2]
@@ -18,12 +18,13 @@ func _() {
 	_ = x[fieldResetLight-7]
 	_ = x[redHubLight-8]
 	_ = x[blueHubLight-9]
-	_ = x[coilCount-10]
+	_ = x[hubMotors-10]
+	_ = x[coilCount-11]
 }
 
-const _coil_name = "heartbeatmatchResetstackLightGreenstackLightOrangestackLightRedstackLightBluestackLightBuzzerfieldResetLightredHubLightblueHubLightcoilCount"
+const _coil_name = "heartbeatmatchResetstackLightGreenstackLightOrangestackLightRedstackLightBluestackLightBuzzerfieldResetLightredHubLightblueHubLighthubMotorscoilCount"
 
-var _coil_index = [...]uint8{0, 9, 19, 34, 50, 63, 77, 93, 108, 119, 131, 140}
+var _coil_index = [...]uint8{0, 9, 19, 34, 50, 63, 77, 93, 108, 119, 131, 140, 149}
 
 func (i coil) String() string {
 	if i < 0 || i >= coil(len(_coil_index)-1) {
