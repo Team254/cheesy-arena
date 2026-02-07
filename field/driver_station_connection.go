@@ -375,6 +375,10 @@ func (arena *Arena) listenForDriverStations() {
 }
 
 func readTaggedTcpPacket(tcpConn net.Conn, buffer []byte) (int, error) {
+	if len(buffer) < 2 {
+		return 0, fmt.Errorf("buffer too small to read TCP packet")
+	}
+
 	tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationTcpLinkTimeoutSec))
 	_, err := io.ReadFull(tcpConn, buffer[:2])
 	if err != nil {
@@ -382,6 +386,11 @@ func readTaggedTcpPacket(tcpConn net.Conn, buffer []byte) (int, error) {
 	}
 
 	packetLength := int(buffer[0])<<8 + int(buffer[1])
+
+	if len(buffer) < 2+packetLength {
+		return 0, fmt.Errorf("buffer too small to read full TCP packet")
+	}
+
 	_, err = io.ReadFull(tcpConn, buffer[2:2+packetLength])
 	if err != nil {
 		return 0, err
