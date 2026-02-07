@@ -126,6 +126,10 @@ func (arena *Arena) listenForDsUdpPackets() {
 				if length == 0 {
 					continue
 				}
+				if index+int(length) > count {
+					log.Printf("Unable to finish parsing UDP packet")
+					break
+				}
 				tag := data[index]
 				if tag == 1 && length == 6 {
 					lost := (int(data[index+1]) << 8) + int(data[index+2])
