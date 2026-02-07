@@ -159,14 +159,14 @@ const handleMatchTime = function (data) {
     // 判斷紅方狀態
     $(redElement).html(
         data.HubActiveRed === true
-        ? '<img src="/static/img/red_Coopertition.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
+        ? '<img src="/static/img/hubactive_left.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
         : ''
     );
 
     // 判斷藍方狀態
     $(blueElement).html(
         data.HubActiveBlue === true
-        ? '<img src="/static/img/blue_Coopertition.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
+        ? '<img src="/static/img/hubactive_right.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
         : ''
     );
 };
@@ -178,12 +178,23 @@ const handleRealtimeScore = function (data) {
   $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score);
   $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score);
   let redCoral, blueCoral;
+  let redfuelgoal,bluefuelgoal;
+
+  // 定義一個取得燃料目標值的輔助函式，減少重複程式碼
+  const getFuelGoal = (summary) => (summary.EnergizedRankingPoint ? 250 : 100);
+
   if (currentMatch.Type === matchTypePlayoff) {
-    redCoral = data.Red.ScoreSummary.NumCoral;
-    blueCoral = data.Blue.ScoreSummary.NumCoral;
+      redCoral = data.Red.ScoreSummary.NumCoral;
+      blueCoral = data.Blue.ScoreSummary.NumCoral;
   } else {
-    redCoral = `${data.Red.ScoreSummary.NumCoralLevels}/${data.Red.ScoreSummary.NumCoralLevelsGoal}`;
-    blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
+      // 1. 計算紅藍兩隊的目標值
+      const redFuelGoal = getFuelGoal(data.Red.ScoreSummary);
+      const blueFuelGoal = getFuelGoal(data.Blue.ScoreSummary);
+
+      // 2. 使用樣板字面值 (Template Literals) 正確帶入變數
+      // 修正了你紅藍兩隊後綴不統一的問題（原本藍隊用 NumCoralLevelsGoal）
+      redCoral = `${data.Red.ScoreSummary.TeleopFuelPoints}/${redFuelGoal}`;
+      blueCoral = `${data.Blue.ScoreSummary.TeleopFuelPoints}/${blueFuelGoal}`;
   }
   $(`#${redSide}Coral`).text(redCoral);
   $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
