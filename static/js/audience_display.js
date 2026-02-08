@@ -169,6 +169,23 @@ const handleMatchTime = function (data) {
         ? '<img src="/static/img/hubactive_right.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
         : ''
     );
+
+  // 3. 顯示 Shift 轉換次數與固定計時器位置
+    if (data.MatchState === 5) { // TELEOP 手動階段
+        $("#shiftCounter, #shiftTime").show();
+        
+        // 直接顯示後台傳來的數據，例如：0, 1, 2, 3, 4, 5
+        // 後端傳什麼，這裡就顯示什麼
+        $("#currentShift").text(data.CurrentShift);
+    // 直接顯示後端傳來的階段剩餘秒數，並補齊兩位數格式 (例如 :25, :05)
+        const sTime = data.ShiftTimeSec;
+        $("#shiftTime").text(":" + (sTime < 10 ? "0" : " ") + sTime);
+      $("#logo").css("visibility", "hidden");
+    } 
+    else {
+        $("#shiftCounter, #shiftTime").hide();
+        $("#logo").css("visibility", "visible");
+    }
 };
 
 // Handles a websocket message to update the match score.
