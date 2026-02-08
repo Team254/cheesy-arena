@@ -11,6 +11,8 @@ let currentScreen = "blank";
 let redSide;
 let blueSide;
 let currentMatch;
+let messageText = "";
+let hasMessage = false;
 
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
 const eventMatchInfoDown = "30px";
@@ -157,40 +159,45 @@ const handleRealtimeScore = function (data) {
 };
 
 const transitionBlankToIntro = function (callback) {
-  $(".teams").css("display", "flex");
-  $(".avatars").css("display", "flex");
-  $(".avatars").css("opacity", 1);
-  $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function () {
-    $("#eventMatchInfo").css("display", "flex");
-    $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
+  hideMessage(function () {
+    $(".teams").css("display", "flex");
+    $(".avatars").css("display", "flex");
+    $(".avatars").css("opacity", 1);
+    $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function () {
+      $("#eventMatchInfo").css("display", "flex");
+      $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
+    });
   });
 };
 
 const transitionBlankToLogo = function (callback) {
-  $("#message").show();
-  $("#message").transition({queue: false, opacity: 1}, 750, "ease", callback);
+  showMessage(callback);
 }
 
 const transitionBlankToMatch = function (callback) {
-  $(".teams").css("display", "flex");
-  $(".score-fields").css("display", "flex");
-  $(".score-fields").transition({queue: false, width: scoreFieldsOut}, 500, "ease");
-  $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
-  $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function () {
-    $("#eventMatchInfo").css("display", "flex");
-    $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
-    $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
-    $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease");
-    $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
-    $(".score-aux").transition({queue: false, opacity: 1}, 750, "ease");
+  hideMessage(function () {
+    $(".teams").css("display", "flex");
+    $(".score-fields").css("display", "flex");
+    $(".score-fields").transition({queue: false, width: scoreFieldsOut}, 500, "ease");
+    $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
+    $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function () {
+      $("#eventMatchInfo").css("display", "flex");
+      $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
+      $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
+      $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease");
+      $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
+      $(".score-aux").transition({queue: false, opacity: 1}, 750, "ease");
+    });
   });
 };
 
 const transitionBlankToTimeout = function (callback) {
-  $("#timeoutDetails").transition({queue: false, width: timeoutDetailsOut}, 500, "ease");
-  $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function () {
-    $(".timeout-detail").transition({queue: false, opacity: 1}, 750, "ease");
-    $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
+  hideMessage(function () {
+    $("#timeoutDetails").transition({queue: false, width: timeoutDetailsOut}, 500, "ease");
+    $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function () {
+      $(".timeout-detail").transition({queue: false, opacity: 1}, 750, "ease");
+      $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
+    });
   });
 };
 
@@ -201,7 +208,7 @@ const transitionIntroToBlank = function (callback) {
       $(".avatars").css("opacity", 0);
       $(".avatars").hide();
       $(".teams").hide();
-      callback();
+      showMessage(callback);
     });
   });
 };
@@ -238,10 +245,7 @@ const transitionIntroToTimeout = function (callback) {
 };
 
 const transitionLogoToBlank = function (callback) {
-  $("#message").transition({queue: false, opacity: 0}, 750, "ease", function () {
-    $("#message").hide();
-    callback();
-  });
+  showMessage(callback);
 }
 
 const transitionMatchToBlank = function (callback) {
@@ -256,7 +260,7 @@ const transitionMatchToBlank = function (callback) {
     $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function () {
       $(".teams").hide();
       $(".score-fields").hide();
-      callback();
+      showMessage(callback);
     });
   });
 };
@@ -280,7 +284,9 @@ const transitionTimeoutToBlank = function (callback) {
   $(".timeout-detail").transition({queue: false, opacity: 0}, 300, "linear");
   $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function () {
     $("#timeoutDetails").transition({queue: false, width: timeoutDetailsIn}, 500, "ease");
-    $("#logo").transition({queue: false, top: logoDown}, 500, "ease", callback);
+    $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function () {
+      showMessage(callback);
+    });
   });
 };
 
@@ -297,6 +303,32 @@ const transitionTimeoutToIntro = function (callback) {
         $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
       });
     });
+  });
+};
+
+const showMessage = function (callback) {
+  if (!hasMessage) {
+    if (callback) {
+      callback();
+    }
+    return;
+  }
+  $("#message").show();
+  $("#message").transition({queue: false, opacity: 1}, 750, "ease", callback);
+};
+
+const hideMessage = function (callback) {
+  if (!hasMessage) {
+    if (callback) {
+      callback();
+    }
+    return;
+  }
+  $("#message").transition({queue: false, opacity: 0}, 750, "ease", function () {
+    $("#message").hide();
+    if (callback) {
+      callback();
+    }
   });
 };
 
@@ -324,10 +356,14 @@ $(function () {
   overlayCentering.css("top", parseInt(urlParams.get("topSpacingPx")) + overlayTopOffset + "px");
   overlayCentering.css("transform", `scale(${urlParams.get("zoomFactor")})`);
 
-  const message = urlParams.get("message");
+  messageText = urlParams.get("message") || "";
+  hasMessage = messageText !== "";
   const messageDiv = $("#message");
-  messageDiv.text(message);
-  messageDiv.toggle(message !== "");
+  messageDiv.text(messageText);
+  messageDiv.toggle(hasMessage);
+  if (hasMessage) {
+    showMessage();
+  }
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/wall/websocket", {
