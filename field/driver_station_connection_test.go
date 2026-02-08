@@ -195,6 +195,19 @@ func TestListenForDriverStations(t *testing.T) {
 
 	// Connect as a team in the current match.
 	arena.assignTeam(1503, "B2")
+
+	// Connect as a team in the current match with a fragmented initial packet.
+	tcpConn, err = net.Dial("tcp", "127.0.0.1:1750")
+	if assert.Nil(t, err) {
+		dataSend := [5]byte{0, 3, 24, 5, 223}
+		tcpConn.Write(dataSend[:1])
+		tcpConn.Write(dataSend[1:5])
+		var dataReceived [5]byte
+		_, err := tcpConn.Read(dataReceived[:])
+		assert.Nil(t, err)
+		tcpConn.Close()
+	}
+
 	tcpConn, err = net.Dial("tcp", "127.0.0.1:1750")
 	if assert.Nil(t, err) {
 		defer tcpConn.Close()

@@ -7,6 +7,7 @@ package field
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"regexp"
@@ -27,7 +28,7 @@ const (
 	driverStationUdpReceivePort    = 1160
 	driverStationTcpLinkTimeoutSec = 5
 	driverStationUdpLinkTimeoutSec = 1
-	maxTcpPacketBytes              = 4096
+	maxTcpPacketBytes              = 65537 // 2 for size, then 2^16-1 for data.
 )
 
 type DriverStationConnection struct {
@@ -300,7 +301,7 @@ func (arena *Arena) listenForDriverStations() {
 
 		// Read the team number back and start tracking the driver station.
 		var packet [5]byte
-		_, err = tcpConn.Read(packet[:])
+		_, err = readTaggedTcpPacket(tcpConn, packet[:])
 		if err != nil {
 			log.Println("Error reading initial packet: ", err.Error())
 			continue
@@ -373,11 +374,35 @@ func (arena *Arena) listenForDriverStations() {
 	}
 }
 
+func readTaggedTcpPacket(tcpConn net.Conn, buffer []byte) (int, error) {
+	if len(buffer) < 2 {
+		return 0, fmt.Errorf("buffer too small to read TCP packet")
+	}
+
+	tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationTcpLinkTimeoutSec))
+	_, err := io.ReadFull(tcpConn, buffer[:2])
+	if err != nil {
+		return 0, err
+	}
+
+	packetLength := int(buffer[0])<<8 + int(buffer[1])
+
+	if len(buffer) < 2+packetLength {
+		return 0, fmt.Errorf("buffer too small to read full TCP packet")
+	}
+
+	_, err = io.ReadFull(tcpConn, buffer[2:2+packetLength])
+	if err != nil {
+		return 0, err
+	}
+
+	return 2 + packetLength, nil
+}
+
 func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 	buffer := make([]byte, maxTcpPacketBytes)
 	for {
-		dsConn.tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationTcpLinkTimeoutSec))
-		_, err := dsConn.tcpConn.Read(buffer)
+		_, err := readTaggedTcpPacket(dsConn.tcpConn, buffer)
 		if err != nil {
 			log.Printf("Error reading from connection for Team %d: %v", dsConn.TeamId, err)
 			dsConn.close()
