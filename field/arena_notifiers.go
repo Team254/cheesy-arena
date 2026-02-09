@@ -39,6 +39,8 @@ type MatchTimeMessage struct {
 	// 新增以下兩行
 	HubActiveRed  bool
 	HubActiveBlue bool
+	CurrentShift  int // <--- 新增這一行
+	ShiftTimeSec  int
 }
 
 type audienceAllianceScoreFields struct {
@@ -207,11 +209,40 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 }
 
 func (arena *Arena) generateMatchTimeMessage() any {
+	time := int(arena.MatchTimeSec())
+	currentShift := 0 // 預設 0 (非 Teleop 階段)
+	shiftTimeSec := 0
+
+	// 只有在 MatchState 為 Teleop (通常是 5) 時計算 Shift
+	if arena.MatchState == 5 {
+		// 根據您提供的時間表進行邏輯判斷 (倒數秒數總共162秒)
+		if time > 0 && time < 33 {
+			currentShift = 1 // TRANSITION 暫定為 0 或視需求設為 1
+			shiftTimeSec = 33 - time
+		} else if time < 58 {
+			currentShift = 2 // SHIFT 1: 2:10 - 1:45
+			shiftTimeSec = 58 - time
+		} else if time < 83 {
+			currentShift = 3 // SHIFT 2: 1:45 - 1:20
+			shiftTimeSec = 83 - time
+		} else if time < 108 {
+			currentShift = 4 // SHIFT 3: 1:20 - 0:55
+			shiftTimeSec = 108 - time
+		} else if time < 133 {
+			currentShift = 5 // SHIFT 4: 0:55 - 0:30
+			shiftTimeSec = 133 - time
+		} else {
+			currentShift = 6 // END GAME
+			shiftTimeSec = 163 - time
+		}
+	}
 	return MatchTimeMessage{
 		arena.MatchState,
 		int(arena.MatchTimeSec()),
 		arena.RedRealtimeScore.CurrentScore.HubActive,  // 抓取紅隊實時 Hub 狀態
 		arena.BlueRealtimeScore.CurrentScore.HubActive, // 抓取藍隊實時 Hub 狀態
+		currentShift, // <--- 將計算出的 Shift 數值發送出去
+		shiftTimeSec,
 	}
 }
 

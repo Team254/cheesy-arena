@@ -140,6 +140,7 @@ html {
 }
 
 .score {
+  position: relative; /* 新增這一行 */
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
   width: 0vw;
   height: 80%;
@@ -217,7 +218,7 @@ html {
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center; /* 改為 center，確保所有圖標在同一水平線上 */
-  position: fixed;
+  position: absolute; /* 從 fixed 改為 absolute */
   bottom: 15px;
   height: 60px; /* 給予固定高度，不要用 5%，避免內容撐開不一 */
 }
@@ -236,6 +237,26 @@ html {
   width: 35px;
   margin: 0 14px;
 }
+/* 新增：包裹容器樣式 */
+.shift-info-wrapper {
+  position: absolute;
+  top: 5px; /* 固定在圓盤上方 */
+  width: 100%;
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center;     /* 垂直對齊 */
+  gap: 5px;                /* 數字與秒數間的微小間距 */
+}
+
+/* 調整 Shift 數字與秒數的字體 */
+#shiftCounter, #shiftTime {
+  font-family: 'Arboto Bold', sans-serif;
+  font-size: 26px; /* 稍微縮小字體以利並排 */
+  font-weight: 700;
+  color: #222;
+  white-space: nowrap; /* 避免換行 */
+}
+
 #coopetition{
   width: 31px;
   display: flex;
@@ -268,13 +289,16 @@ html {
   height: 50px;
 }
 #matchTime {
-  position: relative;
-  top: 0px;
+  position: absolute;
+  bottom: 20px; /* 固定在容器底部 */
+  left: 0;
+  right: 0;
   height: 70px;
   color: #222;
   font-family: 'Arboto Bold', sans-serif;
-  font-weight: 700;  /* bold */
+  font-weight: 700;
   font-size: 50px;
+  text-align: center;
   opacity: 0;
 }
 #eventMatchInfo {

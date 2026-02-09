@@ -47,13 +47,11 @@
               <div class="score reversible-left" data-reversed="false">
                 <div class="score-fields score-left">
                   <div class="score-field">
-                    <img class="coral-icon" src="/static/img/coral.png" />
                     <div id="leftCoral"></div>
+                    <img class="coral-icon" src="/static/img/red_Fuelgoal.png" />
+
                   </div>
-                  <div class="score-field">
-                    <img class="algae-icon" src="/static/img/algae.png" />
-                    <div id="leftAlgae"></div>
-                  </div>
+
                   <div class="score-field coopertition" id="left_Hubactive"></div>
                 </div>
                 
@@ -96,12 +94,8 @@
                 <div class="score-fields">
                 <div class="score-field coopertition" id="right_Hubactive"></div>
                   <div class="score-field">
+                    <img class="coral-icon" src="/static/img/blue_Fuelgoal.png" />
                     <div id="rightCoral"></div>
-                    <img class="coral-icon" src="/static/img/coral.png" />
-                  </div>
-                  <div class="score-field">
-                    <div id="rightAlgae"></div>
-                    <img class="algae-icon" src="/static/img/algae.png" />
                   </div>
                 </div>
                 <!--<div class="avatars">
@@ -123,6 +117,13 @@
         <span id="leftPlayoffAllianceWins"></span>&nbsp;-&nbsp;<span id="rightPlayoffAllianceWins"></span>
       </div>
       <div class="text-center" id="matchCircle">
+        <div class="shift-info-wrapper">
+          <div id="shiftCounter" style="display: none; font-family: 'Arboto Bold'; font-size: 24px; color: #222; text-align: center;">
+          <span id="currentShift">1</span>/6
+          </div>
+          <div id="shiftTime">:</div>
+        </div>
+        
         <img id="logo" src="/static/img/robot.png" alt="logo" />
         <div id="matchTime"></div>
       </div>

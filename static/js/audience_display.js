@@ -159,16 +159,33 @@ const handleMatchTime = function (data) {
     // 判斷紅方狀態
     $(redElement).html(
         data.HubActiveRed === true
-        ? '<img src="/static/img/red_Coopertition.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
+        ? '<img src="/static/img/hubactive_left.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
         : ''
     );
 
     // 判斷藍方狀態
     $(blueElement).html(
         data.HubActiveBlue === true
-        ? '<img src="/static/img/blue_Coopertition.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
+        ? '<img src="/static/img/hubactive_right.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
         : ''
     );
+
+  // 3. 顯示 Shift 轉換次數與固定計時器位置
+    if (data.MatchState === 5) { // TELEOP 手動階段
+        $("#shiftCounter, #shiftTime").show();
+        
+        // 直接顯示後台傳來的數據，例如：0, 1, 2, 3, 4, 5
+        // 後端傳什麼，這裡就顯示什麼
+        $("#currentShift").text(data.CurrentShift);
+    // 直接顯示後端傳來的階段剩餘秒數，並補齊兩位數格式 (例如 :25, :05)
+        const sTime = data.ShiftTimeSec;
+        $("#shiftTime").text(":" + (sTime < 10 ? "0" : "") + sTime);
+      $("#logo").css("visibility", "hidden");
+    } 
+    else {
+        $("#shiftCounter, #shiftTime").hide();
+        $("#logo").css("visibility", "visible");
+    }
 };
 
 // Handles a websocket message to update the match score.
@@ -178,12 +195,23 @@ const handleRealtimeScore = function (data) {
   $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score);
   $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score);
   let redCoral, blueCoral;
+  let redfuelgoal,bluefuelgoal;
+
+  // 定義一個取得燃料目標值的輔助函式，減少重複程式碼
+  const getFuelGoal = (summary) => (summary.EnergizedRankingPoint ? 360 : 100);
+
   if (currentMatch.Type === matchTypePlayoff) {
-    redCoral = data.Red.ScoreSummary.NumCoral;
-    blueCoral = data.Blue.ScoreSummary.NumCoral;
+      redCoral = data.Red.ScoreSummary.NumCoral;
+      blueCoral = data.Blue.ScoreSummary.NumCoral;
   } else {
-    redCoral = `${data.Red.ScoreSummary.NumCoralLevels}/${data.Red.ScoreSummary.NumCoralLevelsGoal}`;
-    blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
+      // 1. 計算紅藍兩隊的目標值
+      const redFuelGoal = getFuelGoal(data.Red.ScoreSummary);
+      const blueFuelGoal = getFuelGoal(data.Blue.ScoreSummary);
+
+      // 2. 使用樣板字面值 (Template Literals) 正確帶入變數
+      // 修正了你紅藍兩隊後綴不統一的問題（原本藍隊用 NumCoralLevelsGoal）
+      redCoral = `${data.Red.ScoreSummary.TeleopFuelPoints}/${redFuelGoal}`;
+      blueCoral = `${data.Blue.ScoreSummary.TeleopFuelPoints}/${blueFuelGoal}`;
   }
   $(`#${redSide}Coral`).text(redCoral);
   $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
@@ -260,19 +288,19 @@ const handleScorePosted = function (data) {
   $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.EndgameTowerPoints);
   $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
   $(`#${redSide}FinalAutoBonusRankingPoint`).html(
-    data.RedScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/red_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : ' '
+    data.RedScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/red_energizedRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : ' '
   );
   $(`#${redSide}FinalAutoBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.EnergizedRankingPoint
   );
   $(`#${redSide}FinalCoralBonusRankingPoint`).html(
-    data.RedScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/red_coralRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.RedScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/red_superRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalCoralBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.CoralBonusRankingPoint
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).html(
-    data.RedScoreSummary.TraversalRankingPoint ? '<img src="/static/img/red_bargeRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.RedScoreSummary.TraversalRankingPoint ? '<img src="/static/img/red_towerRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.BargeBonusRankingPoint
@@ -307,19 +335,19 @@ const handleScorePosted = function (data) {
   $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.EndgameTowerPoints);
   $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
   $(`#${blueSide}FinalAutoBonusRankingPoint`).html(
-    data.BlueScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/blue_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.BlueScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/blue_energizedRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalAutoBonusRankingPoint`).attr(
     "data-checked", data.BlueScoreSummary.EnergizedRankingPoint
   );
   $(`#${blueSide}FinalCoralBonusRankingPoint`).html(
-    data.BlueScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/blue_coralRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.BlueScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/blue_superRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalCoralBonusRankingPoint`).attr(
     "data-checked", data.BlueScoreSummary.SuperchargedRankingPoint
   );
   $(`#${blueSide}FinalBargeBonusRankingPoint`).html(
-    data.BlueScoreSummary.TraversalRankingPoint ? '<img src="/static/img/blue_bargeRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.BlueScoreSummary.TraversalRankingPoint ? '<img src="/static/img/blue_towerRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalBargeBonusRankingPoint`).attr(
     "data-checked", data.BlueScoreSummary.TraversalRankingPoint
