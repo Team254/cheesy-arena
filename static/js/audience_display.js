@@ -179,7 +179,7 @@ const handleMatchTime = function (data) {
         $("#currentShift").text(data.CurrentShift);
     // 直接顯示後端傳來的階段剩餘秒數，並補齊兩位數格式 (例如 :25, :05)
         const sTime = data.ShiftTimeSec;
-        $("#shiftTime").text(":" + (sTime < 10 ? "0" : " ") + sTime);
+        $("#shiftTime").text(":" + (sTime < 10 ? "0" : "") + sTime);
       $("#logo").css("visibility", "hidden");
     } 
     else {
@@ -198,7 +198,7 @@ const handleRealtimeScore = function (data) {
   let redfuelgoal,bluefuelgoal;
 
   // 定義一個取得燃料目標值的輔助函式，減少重複程式碼
-  const getFuelGoal = (summary) => (summary.EnergizedRankingPoint ? 250 : 100);
+  const getFuelGoal = (summary) => (summary.EnergizedRankingPoint ? 360 : 100);
 
   if (currentMatch.Type === matchTypePlayoff) {
       redCoral = data.Red.ScoreSummary.NumCoral;
@@ -288,19 +288,19 @@ const handleScorePosted = function (data) {
   $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.EndgameTowerPoints);
   $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
   $(`#${redSide}FinalAutoBonusRankingPoint`).html(
-    data.RedScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/red_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : ' '
+    data.RedScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/red_energizedRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : ' '
   );
   $(`#${redSide}FinalAutoBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.EnergizedRankingPoint
   );
   $(`#${redSide}FinalCoralBonusRankingPoint`).html(
-    data.RedScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/red_coralRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.RedScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/red_superRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalCoralBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.CoralBonusRankingPoint
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).html(
-    data.RedScoreSummary.TraversalRankingPoint ? '<img src="/static/img/red_bargeRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.RedScoreSummary.TraversalRankingPoint ? '<img src="/static/img/red_towerRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.BargeBonusRankingPoint
@@ -335,19 +335,19 @@ const handleScorePosted = function (data) {
   $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.EndgameTowerPoints);
   $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
   $(`#${blueSide}FinalAutoBonusRankingPoint`).html(
-    data.BlueScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/blue_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.BlueScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/blue_energizedRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalAutoBonusRankingPoint`).attr(
     "data-checked", data.BlueScoreSummary.EnergizedRankingPoint
   );
   $(`#${blueSide}FinalCoralBonusRankingPoint`).html(
-    data.BlueScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/blue_coralRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.BlueScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/blue_superRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalCoralBonusRankingPoint`).attr(
     "data-checked", data.BlueScoreSummary.SuperchargedRankingPoint
   );
   $(`#${blueSide}FinalBargeBonusRankingPoint`).html(
-    data.BlueScoreSummary.TraversalRankingPoint ? '<img src="/static/img/blue_bargeRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.BlueScoreSummary.TraversalRankingPoint ? '<img src="/static/img/blue_towerRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalBargeBonusRankingPoint`).attr(
     "data-checked", data.BlueScoreSummary.TraversalRankingPoint
