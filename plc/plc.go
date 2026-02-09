@@ -85,7 +85,7 @@ const (
 	redConnected1                    // 32
 	redConnected2                    // 33
 	redConnected3                    // 34
-	blue1EStop     input = iota + 32 // 40
+	blue1EStop     input = iota + 23 // 40
 	blue1AStop                       // 41
 	blue2EStop                       // 42
 	blue2AStop                       // 43
