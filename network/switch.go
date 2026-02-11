@@ -69,6 +69,13 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	}
 	removeTeamVlansCommand += "end\n"
 
+	// 新增：移除 Interface vlan 的指令
+	removeTeamVlansCommand += "config system interface\n"
+	for vlan := 10; vlan <= 60; vlan += 10 {
+		removeTeamVlansCommand += fmt.Sprintf("delete \"vlan%d\"\n", vlan)
+	}
+	removeTeamVlansCommand += "end\n"
+
 	_, err := sw.runCommand(removeTeamVlansCommand)
 	if err != nil {
 		sw.Status = "ERROR"
