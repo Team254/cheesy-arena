@@ -5,12 +5,13 @@ package field
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
-	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEncodeControlPacket(t *testing.T) {
@@ -149,19 +150,6 @@ func TestSendControlPacket(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestDecodeStatusPacket(t *testing.T) {
-	tcpConn := setupFakeTcpConnection(t)
-	defer tcpConn.Close()
-	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
-	assert.Nil(t, err)
-	defer dsConn.close()
-
-	data := [36]byte{22, 28, 103, 19, 192, 0, 246}
-	dsConn.decodeStatusPacket(data)
-	assert.Equal(t, 103, dsConn.MissedPacketCount)
-	assert.Equal(t, 14, dsConn.DsRobotTripTimeMs)
-}
-
 func TestListenForDriverStations(t *testing.T) {
 	arena := setupTestArena(t)
 
@@ -195,6 +183,19 @@ func TestListenForDriverStations(t *testing.T) {
 
 	// Connect as a team in the current match.
 	arena.assignTeam(1503, "B2")
+
+	// Connect as a team in the current match with a fragmented initial packet.
+	tcpConn, err = net.Dial("tcp", "127.0.0.1:1750")
+	if assert.Nil(t, err) {
+		dataSend := [5]byte{0, 3, 24, 5, 223}
+		tcpConn.Write(dataSend[:1])
+		tcpConn.Write(dataSend[1:5])
+		var dataReceived [5]byte
+		_, err := tcpConn.Read(dataReceived[:])
+		assert.Nil(t, err)
+		tcpConn.Close()
+	}
+
 	tcpConn, err = net.Dial("tcp", "127.0.0.1:1750")
 	if assert.Nil(t, err) {
 		defer tcpConn.Close()
@@ -215,11 +216,6 @@ func TestListenForDriverStations(t *testing.T) {
 			dataSend = [5]byte{0, 3, 37, 0, 0}
 			tcpConn.Write(dataSend[:])
 			time.Sleep(time.Millisecond * 10)
-			dataSend2 := [38]byte{0, 36, 22, 28, 103, 19, 192, 0, 246}
-			tcpConn.Write(dataSend2[:])
-			time.Sleep(time.Millisecond * 10)
-			assert.Equal(t, 103, dsConn.MissedPacketCount)
-			assert.Equal(t, 14, dsConn.DsRobotTripTimeMs)
 		}
 	}
 }

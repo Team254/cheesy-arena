@@ -84,6 +84,10 @@ func BuildJudgingSchedule(database *model.Database, params JudgingScheduleParams
 		}
 	}
 
+	if params.NumJudges <= 0 {
+		return fmt.Errorf("cannot generate judging schedule: no judges available")
+	}
+
 	// Randomly shuffle the teams to avoid bias in the scheduling.
 	rand.Shuffle(
 		len(teams), func(i, j int) {
@@ -93,6 +97,8 @@ func BuildJudgingSchedule(database *model.Database, params JudgingScheduleParams
 
 	// Loop until all teams have been scheduled.
 	scheduledTeams := make(map[int]struct{})
+	noProgressCount := 0
+	maxNoProgress := len(teams) * params.NumJudges * 5
 	for len(scheduledTeams) < len(teams) {
 		// Select the judge with fewest scheduled visits (or first if there are multiple).
 		var selectedJudge *judgeSchedule
@@ -112,38 +118,65 @@ func BuildJudgingSchedule(database *model.Database, params JudgingScheduleParams
 				continue
 			}
 
-			slot := getNextSlotForTeam(team, candidateTime, teamMatches[team.Id], params)
+			slot, err := getNextSlotForTeam(team, candidateTime, teamMatches[team.Id], params)
+			if err != nil {
+				return fmt.Errorf("error finding next slot for team %d: %v", team.Id, err)
+			}
 			if selectedSlot == nil || slot.Time.Before(selectedSlot.Time) {
-				selectedSlot = &slot
+				selectedSlot = slot
 			}
 			if slot.Time == candidateTime {
 				// The slot perfectly matches the candidate time; no need to evaluate the remaining teams.
 				break
 			}
 		}
+		if selectedSlot == nil {
+			return fmt.Errorf("no available judging slot found")
+		}
 
 		// Check the validity of the selected slot with respect to the scheduled breaks.
 		slotEndTime := selectedSlot.Time.Add(time.Duration(params.DurationMinutes) * time.Minute)
 		validAssignment := true
-		for _, block := range scheduleBlocks {
+		for i, block := range scheduleBlocks {
 			blockEndTime := block.StartTime.Add(time.Duration(block.NumMatches*block.MatchSpacingSec) * time.Second)
-			if selectedSlot.Time.After(block.StartTime) && selectedSlot.Time.Before(blockEndTime) &&
-				slotEndTime.After(block.StartTime) && slotEndTime.Before(blockEndTime) {
-				// The slot time falls within the block; do nothing.
-				break
-			}
-			if selectedSlot.Time.Before(block.StartTime) || slotEndTime.Before(block.StartTime) {
+			if selectedSlot.Time.Before(block.StartTime) {
 				// The slot time falls between blocks; advance the judge's end time to the start of the next block.
 				selectedJudge.endTime = block.StartTime
-				if selectedSlot.Time.Before(block.StartTime) {
-					// Don't allow a slot to start during a break, but do allow one to end during a break.
-					validAssignment = false
+				// Don't allow a slot to start during a break, but do allow one to end during a break.
+				validAssignment = false
+				break
+			}
+			if selectedSlot.Time.Before(blockEndTime) {
+				// The slot starts within the block.
+				if slotEndTime.After(blockEndTime) && i+1 < len(scheduleBlocks) {
+					nextBlockStart := scheduleBlocks[i+1].StartTime
+					if slotEndTime.After(nextBlockStart) {
+						// The slot runs into the next block; advance to the next block start.
+						selectedJudge.endTime = nextBlockStart
+						validAssignment = false
+					}
 				}
 				break
 			}
 		}
 		if !validAssignment {
 			// The slot time is invalid; try the next judge.
+			noProgressCount++
+			if noProgressCount >= maxNoProgress {
+				judgeEndTimes := make([]time.Time, len(judgeSchedules))
+				for i, judge := range judgeSchedules {
+					judgeEndTimes[i] = judge.endTime
+				}
+				return fmt.Errorf(
+					"cannot generate judging schedule: no progress after %d attempts (scheduled %d/%d, candidate %s, judgeEndTimes %v, params %+v)",
+					noProgressCount,
+					len(scheduledTeams),
+					len(teams),
+					candidateTime.Format(time.RFC3339),
+					judgeEndTimes,
+					params,
+				)
+			}
 			continue
 		}
 
@@ -156,6 +189,7 @@ func BuildJudgingSchedule(database *model.Database, params JudgingScheduleParams
 		if err := database.CreateJudgingSlot(selectedSlot); err != nil {
 			return fmt.Errorf("error saving judging slot for team %d: %v", selectedSlot.TeamId, err)
 		}
+		noProgressCount = 0
 	}
 
 	return nil
@@ -186,9 +220,14 @@ func getNextSlotForTeam(
 	candidateTime time.Time,
 	matches []model.Match,
 	params JudgingScheduleParams,
-) model.JudgingSlot {
+) (*model.JudgingSlot, error) {
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("no qualification matches for team")
+	}
+
 	var previousMatch *model.Match
-	for _, match := range matches {
+	for i := range matches {
+		match := matches[i]
 		if match.Time.After(candidateTime) {
 			// Calculate the spacing between the candidate time and the previous match.
 			previousSpacingMinutes := float64(params.PreviousSpacingMinutes)
@@ -213,20 +252,27 @@ func getNextSlotForTeam(
 					slot.PreviousMatchNumber = previousMatch.TypeOrder
 					slot.PreviousMatchTime = previousMatch.Time
 				}
-				return slot
+				return &slot, nil
 			}
 
 			// The candidate time is too close to the next match; continue searching.
 		}
-		previousMatch = &match
+		previousMatch = &matches[i]
 	}
 
 	// If we get here, the team can only be scheduled once all matches are complete.
-	candidateTime = previousMatch.Time.Add(time.Duration(params.PreviousSpacingMinutes) * time.Minute)
-	return model.JudgingSlot{
+	if previousMatch == nil {
+		return nil, fmt.Errorf("no previous match found for team")
+	}
+	minCandidateTime := previousMatch.Time.Add(time.Duration(params.PreviousSpacingMinutes) * time.Minute)
+	if candidateTime.Before(minCandidateTime) {
+		candidateTime = minCandidateTime
+	}
+	slot := model.JudgingSlot{
 		Time:                candidateTime,
 		TeamId:              team.Id,
 		PreviousMatchNumber: previousMatch.TypeOrder,
 		PreviousMatchTime:   previousMatch.Time,
 	}
+	return &slot, nil
 }
