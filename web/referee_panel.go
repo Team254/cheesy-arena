@@ -43,35 +43,32 @@ func (web *Web) refereePanelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// 2026: 犯規列表的 HTML 片段渲染 (供 AJAX 呼叫)
-func (web *Web) refereePanelFoulListHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.userIsAdmin(w, r) {
-		return
-	}
-
-	template, err := web.parseFiles("templates/referee_panel_foul_list.html")
+// foulListHandler 負責渲染犯規清單的局部 HTML 片段
+func (web *Web) foulListHandler(w http.ResponseWriter, r *http.Request) {
+	// 只解析局部模板，不要包含 base.html
+	tmpl, err := web.parseFiles("templates/referee_panel_foul_list.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
-	// 準備資料給 Template
+	// 準備渲染資料
 	data := struct {
-		Match     *model.Match
 		RedFouls  []game.Foul
 		BlueFouls []game.Foul
+		Match     *model.Match
 		Rules     map[int]*game.Rule
 	}{
-		web.arena.CurrentMatch,
-		web.arena.RedRealtimeScore.CurrentScore.Fouls,
-		web.arena.BlueRealtimeScore.CurrentScore.Fouls,
-		game.GetAllRules(),
+		RedFouls:  web.arena.RedRealtimeScore.CurrentScore.Fouls,
+		BlueFouls: web.arena.BlueRealtimeScore.CurrentScore.Fouls,
+		Match:     web.arena.CurrentMatch,
+		Rules:     game.GetAllRules(), // 這是關鍵：提供 2026 規則清單
 	}
 
-	err = template.ExecuteTemplate(w, "referee_panel_foul_list", data)
+	// 執行渲染，這會產生 HTML 片段傳回給 JS
+	err = tmpl.ExecuteTemplate(w, "referee_panel_foul_list", data)
 	if err != nil {
 		handleWebErr(w, err)
-		return
 	}
 }
 
