@@ -36,6 +36,7 @@ def background_loop():
     print("Background thread started...", flush=True)
     while True:
         try:
+            input_status = []
             # 掃描 6 顆按鈕
             for i, pin in enumerate(INPUT_PINS):
                 # 0觸發邏輯 (Active Low)
@@ -45,6 +46,7 @@ def background_loop():
                 val = 1 if raw_val == 0 else 0
                 
                 store.setValues(1, i, [val])
+                input_status.append(str(val))
             
             # 控制輸出 (Coil 16)
             #target = store.getValues(1, 16, count=1)
@@ -54,6 +56,7 @@ def background_loop():
             #    GPIO.output(OUTPUT_PIN, GPIO.LOW)
             
             # 掃描頻率 0.05秒
+            print(f"In: {input_status}" , flush=True)
             time.sleep(0.05)
             
         except Exception as e:
