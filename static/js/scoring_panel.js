@@ -14,16 +14,19 @@ $(function () {
         // 嘗試觸發一次獲取分數的動作（這取決於後端支援什麼指令，有些是 "refresh" 或 "get_score"）
         websocket.send("fuel", { Adjustment: 0, Autonomous: true }); 
         console.log("Subscribed and sent initial refresh.");
-        },  
-      matchTime: function (event) {
-            handleMatchTime(event.data);
-      },
+        }, 
+        matchTime: function (event) {
+                handleMatchTime(event.data);
+        },
         realtimeScore: function (event) {
             handleRealtimeScore(event.data);
         },
         resetLocalState: function (event) {
             resetLocalState();
-        }
+        },
+        matchLoad: function (event) {
+            handleMatchLoad(event.data); 
+        },
     });
 });
 
@@ -81,6 +84,24 @@ function handleRealtimeScore(data) {
         var status = myScore.EndgameStatuses[i];
         $(`input[name=climb_${i}][value=${status}]`).prop("checked", true);
     }
+}
+function handleMatchLoad(data) {
+    // 1. 更新比賽場次名稱 (例如: Qualification 3)
+    $("#match_name_display").text(data.Match.LongName);
+
+    // 2. 根據你的聯盟顏色 (red/blue)，更新畫面上的隊伍編號
+    // 假設你的 HTML 有 id="team_0", id="team_1", id="team_2"
+    if (alliance === "red") {
+        $("#team_0_label").text(data.Match.Red1);
+        $("#team_1_label").text(data.Match.Red2);
+        $("#team_2_label").text(data.Match.Red3);
+    } else {
+        $("#team_0_label").text(data.Match.Blue1);
+        $("#team_1_label").text(data.Match.Blue2);
+        $("#team_2_label").text(data.Match.Blue3);
+    }
+    
+    console.log("Match Loaded: " + data.Match.LongName);
 }
 
 // 4. Hub 狀態變色邏輯

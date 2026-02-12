@@ -33,6 +33,7 @@ UI for the real-time scoring interface.
     <div class="col-md-3">
       <div class="card mb-3">
         <div class="card-header bg-primary text-white">
+          <h4 id="match_name_display" class="card-title mb-0">Match Name</h4>
           <h4 class="card-title mb-0">{{.Position.Title}}</h4>
         </div>
         <div class="card-body">
@@ -95,17 +96,17 @@ UI for the real-time scoring interface.
               <h5>Auto Tower (Level 1 - 10 pts)</h5>
               <div class="d-flex justify-content-around mt-2">
                 <div class="btn-group-vertical" role="group">
-                  <span class="mb-1 fw-bold">Robot 1</span>
+                  <span id="team_0_label" class="mb-1 fw-bold">Robot 1</span>
                   <input type="checkbox" class="btn-check" id="auto_tower_0" autocomplete="off" onchange="updateAutoTower(0, this.checked)">
                   <label class="btn btn-outline-primary btn-lg" for="auto_tower_0">Success</label>
                 </div>
                 <div class="btn-group-vertical" role="group">
-                  <span class="mb-1 fw-bold">Robot 2</span>
+                  <span id="team_1_label" class="mb-1 fw-bold">Robot 2</span>
                   <input type="checkbox" class="btn-check" id="auto_tower_1" autocomplete="off" onchange="updateAutoTower(1, this.checked)">
                   <label class="btn btn-outline-primary btn-lg" for="auto_tower_1">Success</label>
                 </div>
                 <div class="btn-group-vertical" role="group">
-                  <span class="mb-1 fw-bold">Robot 3</span>
+                  <span id="team_2_label" class="mb-1 fw-bold">Robot 3</span>
                   <input type="checkbox" class="btn-check" id="auto_tower_2" autocomplete="off" onchange="updateAutoTower(2, this.checked)">
                   <label class="btn btn-outline-primary btn-lg" for="auto_tower_2">Success</label>
                 </div>
