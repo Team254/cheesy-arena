@@ -1,0 +1,10 @@
+/COM,ANSYS RELEASE 2025 R2           BUILD 25.2      UP20250519       19:37:01
+
+ *** ERROR ***                           CP =       0.234   TIME= 19:37:02
+ Data file C:\Users\aa\Desktop\frc2026º“¿¿¡…\cheesy-arena\event.db has   
+ incorrect format, is missing READ/WRITE permission, or is empty for     
+ RESUME.                                                                 
+
+ *** WARNING ***                         CP =       0.234   TIME= 19:37:02
+ WHILE PROCESSING FILE BASED INPUT (/INPUT OR MACRO) AN ERROR HAS        
+ OCCURRED.  SHOULD INPUT PROCESSING BE SUSPENDED?                        
