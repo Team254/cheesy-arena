@@ -9,10 +9,11 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
 )
 
 const (
@@ -34,6 +35,7 @@ const (
 type Switch struct {
 	address               string
 	port                  int
+	username              string
 	password              string
 	mutex                 sync.Mutex
 	configBackoffDuration time.Duration
@@ -47,6 +49,7 @@ func NewSwitch(address, password string) *Switch {
 	return &Switch{
 		address:               address,
 		port:                  switchTelnetPort,
+		username:              "admin",
 		password:              password,
 		configBackoffDuration: switchConfigBackoffDurationSec * time.Second,
 		configPauseDuration:   switchConfigPauseDurationSec * time.Second,
@@ -63,9 +66,10 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 
 	// Remove old team VLANs to reset the switch state.
 	removeTeamVlansCommand := ""
+	removeTeamVlansCommand += "config system dhcp server"
 	for vlan := 10; vlan <= 60; vlan += 10 {
 		removeTeamVlansCommand += fmt.Sprintf(
-			"interface Vlan%d\nno ip address\nno ip dhcp pool dhcp%d\n", vlan, vlan,
+			"delete %d\n", vlan,
 		)
 	}
 	_, err := sw.runConfigCommand(removeTeamVlansCommand)
@@ -83,24 +87,17 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 		}
 		teamPartialIp := fmt.Sprintf("%d.%d", team.Id/100, team.Id%100)
 		addTeamVlansCommand += fmt.Sprintf(
-			"ip dhcp excluded-address 10.%s.1 10.%s.19\n"+
-				"ip dhcp excluded-address 10.%s.200 10.%s.254\n"+
-				"ip dhcp pool dhcp%d\n"+
-				"network 10.%s.0 255.255.255.0\n"+
-				"default-router 10.%s.%d\n"+
-				"lease 7\n"+
-				"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
-			teamPartialIp,
-			teamPartialIp,
-			teamPartialIp,
-			teamPartialIp,
-			vlan,
-			teamPartialIp,
-			teamPartialIp,
-			switchTeamGatewayAddress,
-			vlan,
-			teamPartialIp,
-			switchTeamGatewayAddress,
+			"edit %d\n"+
+				"set interface %d\n"+
+				"set default-gateway 10.%s.%d\n"+
+				"set netmask 255.255.255.0\n"+
+				"config ip-range\n"+
+				"edit %d\n"+
+				"set start-ip 10.%s.20\n"+
+				"set end-ip 10.%s.199\n"+
+				"next\n"+
+				"end\n"+
+				"next\n", vlan, vlan, teamPartialIp, switchTeamGatewayAddress, vlan, teamPartialIp, teamPartialIp,
 		)
 	}
 	addTeamVlan(teams[0], red1Vlan)
@@ -136,12 +133,14 @@ func (sw *Switch) runCommand(command string) (string, error) {
 
 	// Login to the AP, send the command, and log out all at once.
 	writer := bufio.NewWriter(conn)
-	_, err = writer.WriteString(
+	_, err = writer.WriteString(fmt.Sprintf("%s\n%s\n%s\n", sw.username, sw.password,
+		command))
+	/*_, err = writer.WriteString(
 		fmt.Sprintf(
 			"%s\nenable\n%s\nterminal length 0\n%sexit\n", sw.password, sw.password,
 			command,
 		),
-	)
+	)*/
 	if err != nil {
 		return "", err
 	}
@@ -162,5 +161,5 @@ func (sw *Switch) runCommand(command string) (string, error) {
 // Logs into the switch via Telnet and runs the given command in global configuration mode. Reads the output
 // and returns it as a string.
 func (sw *Switch) runConfigCommand(command string) (string, error) {
-	return sw.runCommand(fmt.Sprintf("config terminal\n%send\n", command))
+	return sw.runCommand(command) //(fmt.Sprintf("config terminal\n%send\n", command))
 }

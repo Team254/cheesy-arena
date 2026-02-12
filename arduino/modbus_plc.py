@@ -55,7 +55,7 @@ def background_loop():
             
             for i, pin in enumerate(OUTPUT_PINS):
                 state = target_states[i] # 取得對應的 Modbus 狀態
-                if state == 1:
+                if state == 0:
                     GPIO.output(pin, GPIO.HIGH)
                     output_status.append("ON")
                 else:
