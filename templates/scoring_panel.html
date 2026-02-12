@@ -282,7 +282,7 @@ UI for the real-time scoring interface.
   }
 
   function commitScore() {
-    sendCommand("commit", {});
+    sendCommand("commitMatch", {});
     $("#commit_btn").text("SCORE COMMITTED").addClass("btn-secondary").removeClass("btn-primary").prop("disabled", true);
   }
 

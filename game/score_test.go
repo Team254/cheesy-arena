@@ -14,7 +14,7 @@ import (
 func TestScoreSummarize(t *testing.T) {
 	// 建立一個模擬分數
 	score := &Score{
-		// Auto: 2台機器人達成 Level 1 (2 * 10 = 20分)
+		// Auto: 2台機器人達成 Level 1 (2 * 15 = 30分)
 		AutoTowerLevel1: [3]bool{true, true, false},
 		// Auto: 5顆球 (5 * 1 = 5分)
 		AutoFuelCount: 5,
@@ -30,8 +30,8 @@ func TestScoreSummarize(t *testing.T) {
 
 	// 驗證 Auto 分數
 	assert.Equal(t, 5, summary.AutoFuelPoints)
-	assert.Equal(t, 20, summary.AutoTowerPoints)
-	assert.Equal(t, 25, summary.AutoPoints) // 5 + 20
+	assert.Equal(t, 30, summary.AutoTowerPoints)
+	assert.Equal(t, 35, summary.AutoPoints) // 5 + 30
 
 	// 驗證 Teleop/Endgame 分數
 	assert.Equal(t, 20, summary.TeleopFuelPoints)
@@ -39,18 +39,18 @@ func TestScoreSummarize(t *testing.T) {
 
 	// 驗證總分
 	// Fuel Total: 5 + 20 = 25
-	// Tower Total: 20 + 50 = 70
-	// Match Total: 25 + 70 = 95
+	// Tower Total: 30 + 50 = 80
+	// Match Total: 25 + 80 = 105
 	assert.Equal(t, 25, summary.TotalFuelPoints)
-	assert.Equal(t, 70, summary.TotalTowerPoints)
-	assert.Equal(t, 95, summary.MatchPoints)
+	assert.Equal(t, 80, summary.TotalTowerPoints)
+	assert.Equal(t, 105, summary.MatchPoints)
 }
 
 // 測試 Energized RP (球數門檻)
 func TestEnergizedRP(t *testing.T) {
 	// 備份並修改全域設定以方便測試
 	originalEnergized := EnergizedFuelThreshold
-	EnergizedFuelThreshold = 10 // 設定只要 10 顆球就有 RP
+	EnergizedFuelThreshold = 100 // 設定只要 100 顆球就有 RP
 	defer func() { EnergizedFuelThreshold = originalEnergized }()
 
 	score := &Score{
@@ -60,7 +60,7 @@ func TestEnergizedRP(t *testing.T) {
 	summary := score.Summarize(&Score{})
 	assert.False(t, summary.EnergizedRankingPoint)
 
-	score.TeleopFuelCount = 6 // 總共 10 顆 -> 應該有 RP
+	score.TeleopFuelCount = 96 // 總共 100 顆 -> 應該有 RP
 	summary = score.Summarize(&Score{})
 	assert.True(t, summary.EnergizedRankingPoint)
 }
@@ -69,18 +69,22 @@ func TestEnergizedRP(t *testing.T) {
 func TestTraversalRP(t *testing.T) {
 	// 備份並修改全域設定
 	originalTraversal := TraversalPointThreshold
-	TraversalPointThreshold = 20 // 設定只要 20 分就有 RP
+	TraversalPointThreshold = 50 // 設定只要 50 分就有 RP
 	defer func() { TraversalPointThreshold = originalTraversal }()
 
 	score := &Score{
-		// 只有 Auto Level 1 (10分) -> 不夠
+		// 只有 Auto Level 1 (15分) -> 不夠
 		AutoTowerLevel1: [3]bool{true, false, false},
 	}
 	summary := score.Summarize(&Score{})
 	assert.False(t, summary.TraversalRankingPoint)
 
-	// 加上 Endgame Level 2 (10 + 20 = 30分) -> 夠了
+	// 加上 Endgame Level 2 (15 + 20 = 35分) -> no RP
 	score.EndgameStatuses[0] = EndgameLevel2
+	summary = score.Summarize(&Score{})
+	assert.False(t, summary.TraversalRankingPoint)
+
+	score.EndgameStatuses[1] = EndgameLevel3 // (15 + 20 + 30 = 65分) -> 有 RP
 	summary = score.Summarize(&Score{})
 	assert.True(t, summary.TraversalRankingPoint)
 }

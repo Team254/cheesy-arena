@@ -13,20 +13,22 @@ type Score struct {
 	EndgameStatuses [3]EndgameStatus
 	Fouls           []Foul
 	PlayoffDq       bool
+	HubActive       bool
 }
 
 // Game-specific settings that can be changed via the settings.
-var EnergizedFuelThreshold = 42    // 獲得 Energized RP 需要的球數
-var SuperchargedFuelThreshold = 55 // 獲得 Supercharged RP 需要的球數
-var TraversalPointThreshold = 60   // 獲得 Traversal RP 需要的爬升總分
+var EnergizedFuelThreshold = 100    // 獲得 Energized RP 需要的球數
+var SuperchargedFuelThreshold = 360 // 獲得 Supercharged RP 需要的球數
+var TraversalPointThreshold = 50    // 獲得 Traversal RP 需要的爬升總分
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
 
 const (
-	EndgameNone   EndgameStatus = iota
-	EndgameLevel2               // Low Rung (20 pts)
-	EndgameLevel3               // Mid Rung (30 pts)
+	EndgameNone   EndgameStatus = iota // No Rung (0 pts)
+	EndgameLevel1                      // 1 Rung (10 pts)
+	EndgameLevel2                      // 2 Rung (20 pts)
+	EndgameLevel3                      // 3 Rung (30 pts)
 )
 
 // Summarize calculates and returns the summary fields used for ranking and display.
@@ -45,7 +47,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	// Tower Level 1: 10 pts per Robot
 	for _, reachedL1 := range score.AutoTowerLevel1 {
 		if reachedL1 {
-			summary.AutoTowerPoints += 10
+			summary.AutoTowerPoints += 15
 		}
 	}
 
@@ -58,6 +60,8 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	// Endgame Tower: Level 2 (20pts), Level 3 (30pts)
 	for _, status := range score.EndgameStatuses {
 		switch status {
+		case EndgameLevel1:
+			summary.EndgameTowerPoints += 10
 		case EndgameLevel2:
 			summary.EndgameTowerPoints += 20
 		case EndgameLevel3:
