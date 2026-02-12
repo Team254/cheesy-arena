@@ -184,6 +184,7 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /panels/scoring/{position}/websocket", web.scoringPanelWebsocketHandler)
 	mux.HandleFunc("GET /panels/referee", web.refereePanelHandler)
 	// 移除了 foul_list，因為已經改用 WebSocket
+	mux.HandleFunc("GET /panels/referee/foul_list", web.foulListHandler)
 	mux.HandleFunc("GET /panels/referee/websocket", web.refereePanelWebsocketHandler)
 	mux.HandleFunc("GET /reports/csv/backups", web.backupTeamsCsvReportHandler)
 	mux.HandleFunc("GET /reports/csv/fta", web.ftaCsvReportHandler)
@@ -255,4 +256,33 @@ func (web *Web) parseFiles(filenames ...string) (*template.Template, error) {
 
 	template := template.New("").Funcs(web.templateHelpers)
 	return template.ParseFiles(paths...)
+}
+
+// foulListHandler 負責渲染犯規清單的局部 HTML 片段
+func (web *Web) foulListHandler(w http.ResponseWriter, r *http.Request) {
+	// 只解析局部模板，不要包含 base.html
+	tmpl, err := web.parseFiles("templates/referee_panel_foul_list.html")
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
+
+	// 準備渲染資料
+	data := struct {
+		RedFouls  []game.Foul
+		BlueFouls []game.Foul
+		Match     *model.Match
+		Rules     map[int]*game.Rule
+	}{
+		RedFouls:  web.arena.RedRealtimeScore.CurrentScore.Fouls,
+		BlueFouls: web.arena.BlueRealtimeScore.CurrentScore.Fouls,
+		Match:     web.arena.CurrentMatch,
+		Rules:     game.GetAllRules(), // 這是關鍵：提供 2026 規則清單
+	}
+
+	// 執行渲染，這會產生 HTML 片段傳回給 JS
+	err = tmpl.ExecuteTemplate(w, "referee_panel_foul_list", data)
+	if err != nil {
+		handleWebErr(w, err)
+	}
 }
