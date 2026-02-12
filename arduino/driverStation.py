@@ -9,7 +9,7 @@ import sys
 
 # --- 硬體腳位設定 (BOARD 模式) ---
 # 依序對應: RE1, RA1, RE2, RA2, RE3, RA3
-INPUT_PINS = [27, 29, 31, 33, 35, 37]
+INPUT_PINS = [29, 31, 32, 33, 35, 37]
 
 # 輸出腳位
 #OUTPUT_PIN = 37
@@ -62,7 +62,7 @@ def background_loop():
 if __name__ == "__main__":
     print("------------------------------------------------", flush=True)
     print(" Jetson PLC Running: 6 Buttons Mode", flush=True)
-    print(" Pins: 27, 29, 31, 33, 35, 37", flush=True)
+    print(" Pins: 29, 31, 32, 33, 35, 37", flush=True)
     print("------------------------------------------------", flush=True)
     
     t = threading.Thread(target=background_loop)

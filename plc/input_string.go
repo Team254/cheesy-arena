@@ -9,35 +9,44 @@ func _() {
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[fieldEStop-0]
-	_ = x[red1EStop-1]
-	_ = x[red1AStop-2]
-	_ = x[red2EStop-3]
-	_ = x[red2AStop-4]
-	_ = x[red3EStop-5]
-	_ = x[red3AStop-6]
-	_ = x[blue1EStop-7]
-	_ = x[blue1AStop-8]
-	_ = x[blue2EStop-9]
-	_ = x[blue2AStop-10]
-	_ = x[blue3EStop-11]
-	_ = x[blue3AStop-12]
-	_ = x[redConnected1-13]
-	_ = x[redConnected2-14]
-	_ = x[redConnected3-15]
-	_ = x[blueConnected1-16]
-	_ = x[blueConnected2-17]
-	_ = x[blueConnected3-18]
-	_ = x[inputCount-19]
+	_ = x[red1EStop-20]
+	_ = x[red1AStop-21]
+	_ = x[red2EStop-22]
+	_ = x[red2AStop-23]
+	_ = x[red3EStop-24]
+	_ = x[red3AStop-25]
+	_ = x[blue1EStop-26]
+	_ = x[blue1AStop-27]
+	_ = x[blue2EStop-28]
+	_ = x[blue2AStop-29]
+	_ = x[blue3EStop-30]
+	_ = x[blue3AStop-31]
+	_ = x[redConnected1-32]
+	_ = x[redConnected2-33]
+	_ = x[redConnected3-34]
+	_ = x[blueConnected1-35]
+	_ = x[blueConnected2-36]
+	_ = x[blueConnected3-37]
+	_ = x[inputCount-38]
 }
 
-const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3inputCount"
+const (
+	_input_name_0 = "fieldEStop"
+	_input_name_1 = "red1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3inputCount"
+)
 
-var _input_index = [...]uint8{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 215}
+var (
+	_input_index_1 = [...]uint8{0, 9, 18, 27, 36, 45, 54, 64, 74, 84, 94, 104, 114, 127, 140, 153, 167, 181, 195, 205}
+)
 
 func (i input) String() string {
-	idx := int(i) - 0
-	if i < 0 || idx >= len(_input_index)-1 {
+	switch {
+	case i == 0:
+		return _input_name_0
+	case 20 <= i && i <= 38:
+		i -= 20
+		return _input_name_1[_input_index_1[i]:_input_index_1[i+1]]
+	default:
 		return "input(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _input_name[_input_index[idx]:_input_index[idx+1]]
 }
