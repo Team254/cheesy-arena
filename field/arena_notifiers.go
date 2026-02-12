@@ -233,14 +233,21 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 	blueScoreSummary := arena.SavedMatchResult.BlueScoreSummary()
 	redRankingPoints := redScoreSummary.BonusRankingPoints
 	blueRankingPoints := blueScoreSummary.BonusRankingPoints
+	// 定義勝場產生的 RP 變數 (RedWinRP / BlueWinRP)
+	var redWinRP, blueWinRP int
+
 	switch arena.SavedMatch.Status {
 	case game.RedWonMatch:
 		redRankingPoints += 3
+		redWinRP = 3 // 紅隊勝利獲得 3 RP
 	case game.BlueWonMatch:
 		blueRankingPoints += 3
+		blueWinRP = 3 // 藍隊勝利獲得 3 RP
 	case game.TieMatch:
 		redRankingPoints++
 		blueRankingPoints++
+		redWinRP = 1 // 平手各得 1 RP
+		blueWinRP = 1
 	}
 
 	// For playoff matches, summarize the state of the series.
@@ -280,6 +287,8 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		BlueScoreSummary    *game.ScoreSummary
 		RedRankingPoints    int
 		BlueRankingPoints   int
+		RedWinRP            int // <--- 必須新增這一行
+		BlueWinRP           int // <--- 必須新增這一行
 		RedFouls            []game.Foul
 		BlueFouls           []game.Foul
 		RulesViolated       map[int]*game.Rule
@@ -301,6 +310,8 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		blueScoreSummary,
 		redRankingPoints,
 		blueRankingPoints,
+		redWinRP,  // <--- 必須新增這一行對應
+		blueWinRP, // <--- 必須新增這一行對應
 		arena.SavedMatchResult.RedScore.Fouls,
 		arena.SavedMatchResult.BlueScore.Fouls,
 		getRulesViolated(arena.SavedMatchResult.RedScore.Fouls, arena.SavedMatchResult.BlueScore.Fouls),

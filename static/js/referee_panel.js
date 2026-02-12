@@ -88,9 +88,9 @@ const handleMatchTime = function (data) {
 
 const endgameStatusNames = [
   "None",
-  "Park",
-  "Shallow",
-  "Deep",
+  "Level 1",
+  "Level 2",
+  "Level 3",
 ];
 
 // Handles a websocket message to update the realtime scoring fields.
@@ -103,6 +103,15 @@ const handleRealtimeScore = function (data) {
   
   const redScore = redRealtime.CurrentScore || redRealtime.Score || {};
   const blueScore = blueRealtime.CurrentScore || blueRealtime.Score || {};
+
+  // --- 燃料 (Fuel) 更新邏輯 ---
+  // 更新紅隊燃料數據
+  $("#redScoreSummary .fuel-teleop").text(redScore.TeleopFuelCount || 0);
+  $("#redScoreSummary .fuel-auto").text(redScore.AutoFuelCount || 0);
+
+  // 更新藍隊燃料數據
+  $("#blueScoreSummary .fuel-teleop").text(blueScore.TeleopFuelCount || 0);
+  $("#blueScoreSummary .fuel-auto").text(blueScore.AutoFuelCount || 0);
 
   // 2. 檢查 Fouls 是否有更新
   const newRedFoulsHashCode = hashObject(redScore.Fouls || []);
@@ -122,9 +131,70 @@ const handleRealtimeScore = function (data) {
             console.error("Foul list error: Received full page instead of snippet.");
         }
       });
-  }
-  
-  // ... 後續 Reef 分數更新邏輯 ...
+    }
+  // --- 3 & 4. AutoTowerLevel1 狀態更新 (優化版) ---
+  const updateAutoTowerUI = (allianceScore, containerId) => {
+      if (allianceScore.AutoTowerLevel1) {
+          for (let i = 0; i < 3; i++) {
+              const isScored = allianceScore.AutoTowerLevel1[i];
+              // 改用 containerId 下的特定 class 選擇器
+              const element = $(`${containerId} .team-${i + 1}-tower`);
+              element.text(isScored ? "✅" : "❌");
+              element.attr("data-active", isScored);
+              // 可選：直接改變顏色
+              element.css("color", isScored ? "#28a745" : "#dc3545");
+          }
+      }
+  };
+
+  // 呼叫更新
+  updateAutoTowerUI(redScore, "#redScoreSummary");
+  updateAutoTowerUI(blueScore, "#blueScoreSummary");
+
+  // --- 5. Endgame (Climb) 狀態更新 ---
+  // 對應您 HTML 中的 .team-X-endgame
+  const updateEndgameUI = (allianceScore, containerId) => {
+    if (allianceScore.EndgameStatuses) {
+      for (let i = 0; i < 3; i++) {
+        const status = allianceScore.EndgameStatuses[i]; // 0:None, 1:Lvl1, 2:Lvl2, 3:Lvl3
+        const statusText = endgameStatusNames[status] || "None";
+        $(`${containerId} .team-${i + 1}-endgame`).text(statusText);
+        
+        // 可選：根據狀態改變顏色 (例如 None 為灰色，Level 3 為綠色)
+        $(`${containerId} .team-${i + 1}-endgame`).attr("data-status", status);
+      }
+    }
+  };
+  updateEndgameUI(redScore, "#redScoreSummary");
+  updateEndgameUI(blueScore, "#blueScoreSummary");
+
+  // --- RP Status 更新邏輯 ---
+  const updateRPUI = (allianceData, containerId) => {
+      // 關鍵修正：RP 狀態通常在 Summary 欄位下，而不是 Score 欄位下
+      const summary = allianceData.Summary || allianceData.ScoreSummary || allianceData;
+
+      // 更新 Energized RP 狀態
+      const EnergizedElement = $(`${containerId} .Energized-status`);
+      const isEnergized = summary.EnergizedRankingPoint || summary.energizedRankingPoint || false;
+      EnergizedElement.text(isEnergized ? "Yes" : "No");
+      EnergizedElement.css("color", isEnergized ? "#28a745" : "inherit");
+
+      // 更新 Supercharged RP 狀態
+      const superchargedElement = $(`${containerId} .supercharged-status`);
+      const isSupercharged = summary.SuperchargedRankingPoint || summary.superchargedRankingPoint || false;
+      superchargedElement.text(isSupercharged ? "Yes" : "No");
+      superchargedElement.css("color", isSupercharged ? "#28a745" : "inherit");
+
+      // 更新 Traversal RP 狀態
+      const traversalElement = $(`${containerId} .traversal-status`);
+      const isTraversal = summary.TraversalRankingPoint || summary.traversalRankingPoint || false;
+      traversalElement.text(isTraversal ? "Yes" : "No");
+      traversalElement.css("color", isTraversal ? "#28a745" : "inherit");
+  };
+
+  // 在 handleRealtimeScore 呼叫時，傳入完整的 redRealtime 而不是只有 redScore
+  updateRPUI(redRealtime, "#redScoreSummary");
+  updateRPUI(blueRealtime, "#blueScoreSummary");
 }
 
 // Handles a websocket message to update the scoring commit status.

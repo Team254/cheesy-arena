@@ -250,19 +250,19 @@ const handleScorePosted = function (data) {
   $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.BargePoints);
   $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
   $(`#${redSide}FinalAutoBonusRankingPoint`).html(
-    data.RedScoreSummary.AutoBonusRankingPoint ? '<img src="/static/img/red_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : ' '
+    data.RedScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/red_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : ' '
   );
   $(`#${redSide}FinalAutoBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.AutoBonusRankingPoint
+    "data-checked", data.RedScoreSummary.EnergizedRankingPoint
   );
   $(`#${redSide}FinalCoralBonusRankingPoint`).html(
-    data.RedScoreSummary.CoralBonusRankingPoint ? '<img src="/static/img/red_coralRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.RedScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/red_coralRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalCoralBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.CoralBonusRankingPoint
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).html(
-    data.RedScoreSummary.BargeBonusRankingPoint ? '<img src="/static/img/red_bargeRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.RedScoreSummary.TraversalRankingPoint ? '<img src="/static/img/red_bargeRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.BargeBonusRankingPoint
@@ -297,22 +297,22 @@ const handleScorePosted = function (data) {
   $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.BargePoints);
   $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
   $(`#${blueSide}FinalAutoBonusRankingPoint`).html(
-    data.BlueScoreSummary.AutoBonusRankingPoint ? '<img src="/static/img/blue_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.BlueScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/blue_autoRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalAutoBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.AutoBonusRankingPoint
+    "data-checked", data.BlueScoreSummary.EnergizedRankingPoint
   );
   $(`#${blueSide}FinalCoralBonusRankingPoint`).html(
-    data.BlueScoreSummary.CoralBonusRankingPoint ? '<img src="/static/img/blue_coralRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.BlueScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/blue_coralRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalCoralBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.CoralBonusRankingPoint
+    "data-checked", data.BlueScoreSummary.SuperchargedRankingPoint
   );
   $(`#${blueSide}FinalBargeBonusRankingPoint`).html(
-    data.BlueScoreSummary.BargeBonusRankingPoint ? '<img src="/static/img/blue_bargeRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
+    data.BlueScoreSummary.TraversalRankingPoint ? '<img src="/static/img/blue_bargeRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalBargeBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.BargeBonusRankingPoint
+    "data-checked", data.BlueScoreSummary.TraversalRankingPoint
   );
   $(`#${blueSide}FinalRankingPoints`).html(data.BlueRankingPoints);
   $(`#${blueSide}FinalWins`).text(data.BlueWins);
