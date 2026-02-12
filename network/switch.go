@@ -194,8 +194,3 @@ func (sw *Switch) runCommand(command string) (string, error) {
 	result.ReadFrom(reader)
 	return result.String(), nil
 }
-
-// runConfigCommand 在 Fortinet 中與 runCommand 共用邏輯
-func (sw *Switch) runConfigCommand(command string) (string, error) {
-	return sw.runCommand(command)
-}

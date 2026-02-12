@@ -197,28 +197,28 @@ func (plc *ModbusPlc) GetArmorBlockStatuses() map[string]bool {
 }
 
 func (plc *ModbusPlc) GetFieldEStop() bool {
-	return !plc.inputs[fieldEStop]
+	return plc.inputs[fieldEStop]
 }
 
 func (plc *ModbusPlc) GetTeamEStops() ([3]bool, [3]bool) {
 	var redEStops, blueEStops [3]bool
-	redEStops[0] = !plc.inputs[red1EStop]
-	redEStops[1] = !plc.inputs[red2EStop]
-	redEStops[2] = !plc.inputs[red3EStop]
-	blueEStops[0] = !plc.inputs[blue1EStop]
-	blueEStops[1] = !plc.inputs[blue2EStop]
-	blueEStops[2] = !plc.inputs[blue3EStop]
+	redEStops[0] = plc.inputs[red1EStop]
+	redEStops[1] = plc.inputs[red2EStop]
+	redEStops[2] = plc.inputs[red3EStop]
+	blueEStops[0] = plc.inputs[blue1EStop]
+	blueEStops[1] = plc.inputs[blue2EStop]
+	blueEStops[2] = plc.inputs[blue3EStop]
 	return redEStops, blueEStops
 }
 
 func (plc *ModbusPlc) GetTeamAStops() ([3]bool, [3]bool) {
 	var redAStops, blueAStops [3]bool
-	redAStops[0] = !plc.inputs[red1AStop]
-	redAStops[1] = !plc.inputs[red2AStop]
-	redAStops[2] = !plc.inputs[red3AStop]
-	blueAStops[0] = !plc.inputs[blue1AStop]
-	blueAStops[1] = !plc.inputs[blue2AStop]
-	blueAStops[2] = !plc.inputs[blue3AStop]
+	redAStops[0] = plc.inputs[red1AStop]
+	redAStops[1] = plc.inputs[red2AStop]
+	redAStops[2] = plc.inputs[red3AStop]
+	blueAStops[0] = plc.inputs[blue1AStop]
+	blueAStops[1] = plc.inputs[blue2AStop]
+	blueAStops[2] = plc.inputs[blue3AStop]
 	return redAStops, blueAStops
 }
 
