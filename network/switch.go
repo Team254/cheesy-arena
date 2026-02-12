@@ -62,14 +62,14 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	defer sw.mutex.Unlock()
 	sw.Status = "CONFIGURING"
 
-	// 1. 移除舊的 DHCP Server 設定
+	// 1. Remove the old DHCP Server settings.
 	removeTeamVlansCommand := "config system dhcp server\n"
 	for vlan := 10; vlan <= 60; vlan += 10 {
 		removeTeamVlansCommand += fmt.Sprintf("delete %d\n", vlan)
 	}
 	removeTeamVlansCommand += "end\n"
 
-	// 新增：移除 Interface vlan 的指令
+	// 2. Remove Interface VLANs
 	removeTeamVlansCommand += "config system interface\n"
 	for vlan := 10; vlan <= 60; vlan += 10 {
 		removeTeamVlansCommand += fmt.Sprintf("delete \"vlan%d\"\n", vlan)
@@ -83,7 +83,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	}
 	time.Sleep(sw.configPauseDuration)
 
-	// 2. 建立新設定
+	// 2. Create new configuration
 	addTeamVlansCommand := ""
 	addTeamVlan := func(team *model.Team, vlan int) {
 		if team == nil {
@@ -139,7 +139,7 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	return nil
 }
 
-// runCommand 處理 Fortinet 的登入與分頁關閉
+// runCommand handles Fortinet login and pagination
 func (sw *Switch) runCommand(command string) (string, error) {
 	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port), 5*time.Second)
 	if err != nil {
@@ -147,8 +147,8 @@ func (sw *Switch) runCommand(command string) (string, error) {
 	}
 	defer conn.Close()
 
-	// 處理 Telnet 協商的 Helper (解決封包 463 的問題)
-	// 當收到 IAC (255) 時，根據協議簡單回覆，讓 Switch 願意說話
+	// Handle Telnet negotiation (resolve packet 463 issue)
+	// When receiving IAC (255), respond according to the protocol to make the switch willing to communicate
 	handleNegotiation := func(c net.Conn) {
 		buf := make([]byte, 3)
 		for {
@@ -157,7 +157,7 @@ func (sw *Switch) runCommand(command string) (string, error) {
 			if err != nil || n < 3 || buf[0] != 255 {
 				return
 			}
-			// 簡單邏輯：收到 DO (253) 回 WON'T (252)；收到 WILL (251) 回 DON'T (254)
+			// Simple logic: if DO (253) received, respond with WON'T (252); if WILL (251) received, respond with DON'T (254)
 			if buf[1] == 253 {
 				c.Write([]byte{255, 252, buf[2]})
 			} else if buf[1] == 251 {
@@ -166,7 +166,7 @@ func (sw *Switch) runCommand(command string) (string, error) {
 		}
 	}
 
-	// 1. 先處理握手
+	// 1. Handle handshake
 	handleNegotiation(conn)
 	time.Sleep(500 * time.Millisecond)
 
@@ -179,16 +179,16 @@ func (sw *Switch) runCommand(command string) (string, error) {
 		time.Sleep(delay)
 	}
 
-	// 2. 登入 (即使沒看到藍字也強行送出，但增加間隔)
+	// 2. Login (send even if blue text not seen, but add delay)
 	send(sw.username, 500*time.Millisecond)
 	send(sw.password, 1*time.Second)
 
-	// 3. 環境初始化
+	// 3. Environment initialization
 	send("config system console", 200*time.Millisecond)
 	send("set output standard", 200*time.Millisecond)
 	send("end", 500*time.Millisecond)
 
-	// 4. 執行配置
+	// 4. Execute configuration
 	for _, line := range strings.Split(command, "\n") {
 		if clean := strings.TrimSpace(line); clean != "" {
 			send(clean, 150*time.Millisecond)

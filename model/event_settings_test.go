@@ -13,17 +13,17 @@ import (
 )
 
 func TestEventSettingsDefaults(t *testing.T) {
-	// 使用暫存資料庫
+	// Use temporary database
 	os.Remove("test_settings.db")
 	db, err := OpenDatabase("test_settings.db")
 	assert.Nil(t, err)
 	defer os.Remove("test_settings.db")
 
-	// 1. 測試：取得設定 (如果是空的，應該要自動建立預設值)
+	// 1. Test: Get settings (should automatically create default values if empty)
 	settings, err := db.GetEventSettings()
 	assert.Nil(t, err)
 
-	// 驗證是否載入了 2026 的預設值 (來自 game package)
+	// Verify that the 2026 default values are loaded (from the game package)
 	assert.Equal(t, game.EnergizedFuelThreshold, settings.EnergizedFuelThreshold)
 	assert.Equal(t, game.SuperchargedFuelThreshold, settings.SuperchargedFuelThreshold)
 	assert.Equal(t, game.TraversalPointThreshold, settings.TraversalPointThreshold)
@@ -37,15 +37,15 @@ func TestUpdateEventSettings(t *testing.T) {
 
 	settings, _ := db.GetEventSettings()
 
-	// 2. 測試：修改並儲存設定
+	// 2. Test: Modify and save settings
 	settings.Name = "2026 Championship"
-	settings.EnergizedFuelThreshold = 999 // 修改 RP 門檻
+	settings.EnergizedFuelThreshold = 999 // Modify RP threshold
 	settings.SuperchargedFuelThreshold = 1000
 
 	err = db.UpdateEventSettings(settings)
 	assert.Nil(t, err)
 
-	// 重新讀取並驗證
+	// Reload and verify
 	newSettings, _ := db.GetEventSettings()
 	assert.Equal(t, "2026 Championship", newSettings.Name)
 	assert.Equal(t, 999, newSettings.EnergizedFuelThreshold)

@@ -17,9 +17,9 @@ type Score struct {
 }
 
 // Game-specific settings that can be changed via the settings.
-var EnergizedFuelThreshold = 100    // 獲得 Energized RP 需要的球數
-var SuperchargedFuelThreshold = 360 // 獲得 Supercharged RP 需要的球數
-var TraversalPointThreshold = 50    // 獲得 Traversal RP 需要的爬升總分
+var EnergizedFuelThreshold = 100    // Number of balls required to obtain an Energized RP
+var SuperchargedFuelThreshold = 360 // Number of balls required to obtain a Supercharged RP
+var TraversalPointThreshold = 50    // Number of tower points required to obtain a Traversal RP
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
@@ -80,15 +80,15 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 
 		rule := foul.Rule()
 		if rule != nil {
-			// 處理特殊規則 G420 (Endgame Protection)
-			// 規則: 對手犯規，我方獲得 Level 3 Climb 分數 (30分)
+			// Handle special rule G420 (Endgame Protection)
+			// Rule: If the opponent commits G420, our team gets Level 3 Climb points (30 points)
 			if rule.RuleNumber == "G420" {
 				summary.EndgameTowerPoints += 30
 			}
 		}
 	}
 
-	// 彙總 Match Points
+	// Summarize Match Points
 	summary.TotalFuelPoints = summary.AutoFuelPoints + summary.TeleopFuelPoints
 	summary.TotalTowerPoints = summary.AutoTowerPoints + summary.EndgameTowerPoints
 	summary.MatchPoints = summary.TotalFuelPoints + summary.TotalTowerPoints
@@ -97,7 +97,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 
 	// --- 4. Ranking Points (RP) Calculation ---
 
-	// A. Energized RP (基於 Fuel 數量)
+	// A. Energized RP (based on Fuel count)
 	totalFuel := score.AutoFuelCount + score.TeleopFuelCount
 	if totalFuel >= EnergizedFuelThreshold {
 		summary.EnergizedRankingPoint = true
@@ -105,21 +105,21 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 		summary.EnergizedRankingPoint = false
 	}
 
-	// B. Supercharged RP (基於更高的 Fuel 數量)
+	// B. Supercharged RP (based on higher Fuel count)
 	if totalFuel >= SuperchargedFuelThreshold {
 		summary.SuperchargedRankingPoint = true
 	} else {
 		summary.SuperchargedRankingPoint = false
 	}
 
-	// C. Traversal RP (基於 Tower 總分)
-	// 包含從 G420 獲得的額外爬升分數
+	// C. Traversal RP (based on Tower points)
+	// Includes additional climb points from G420
 	if summary.TotalTowerPoints >= TraversalPointThreshold {
 		summary.TraversalRankingPoint = true
 	}
 
 	// Check for G206 violation (Collusion for RP).
-	// 如果自己犯規 G206，取消所有 Bonus RP
+	// If our team commits G206, all Bonus RP are revoked.
 	for _, foul := range score.Fouls {
 		if foul.Rule() != nil && foul.Rule().RuleNumber == "G206" {
 			summary.EnergizedRankingPoint = false

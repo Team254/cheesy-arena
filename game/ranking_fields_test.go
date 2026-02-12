@@ -13,16 +13,16 @@ import (
 )
 
 func TestAddScoreSummary(t *testing.T) {
-	// 模擬紅隊分數 (贏家)
+	// Simulate the Red Team's score (winner)
 	redSummary := &ScoreSummary{
 		MatchPoints:        90,
 		AutoPoints:         25,
-		TotalTowerPoints:   30, // 2026 爬升分
+		TotalTowerPoints:   30, // 2026 Climb Points
 		Score:              100,
-		BonusRankingPoints: 1, // 例如拿到 Energized RP
+		BonusRankingPoints: 1, // e.g., Energized RP
 	}
 
-	// 模擬藍隊分數 (輸家)
+	// Simulate the Blue Team's score (loser)
 	blueSummary := &ScoreSummary{
 		MatchPoints:        50,
 		AutoPoints:         10,
@@ -33,37 +33,37 @@ func TestAddScoreSummary(t *testing.T) {
 
 	rankingFields := RankingFields{}
 
-	// 測試 1: 加入一場敗場 (Add a loss)
-	// 假設我們是藍隊，對手是紅隊
+	// Test 1: Add a loss (Add a loss)
+	// Assume we are the Blue Team, opponent is Red Team
 	rankingFields = RankingFields{}
 	rankingFields.AddScoreSummary(blueSummary, redSummary, false)
-	// 預期: 0 RP(輸) + 0 Bonus = 0 RP. 1 Loss. MatchPoints=50.
+	// Expected: 0 RP (loss) + 0 Bonus = 0 RP. 1 Loss. MatchPoints=50.
 	assert.Equal(t, 0, rankingFields.RankingPoints)
 	assert.Equal(t, 1, rankingFields.Losses)
 	assert.Equal(t, 50, rankingFields.MatchPoints)
 
-	// 測試 2: 加入一場勝場 (Add a win)
-	// 假設我們是紅隊，對手是藍隊
+	// Test 2: Add a win (Add a win)
+	// Assume we are the Red Team, opponent is Blue Team
 	rankingFields = RankingFields{}
 	rankingFields.AddScoreSummary(redSummary, blueSummary, false)
-	// 預期: 3 RP(贏) + 1 Bonus = 4 RP. 1 Win. MatchPoints=90.
+	// Expected: 3 RP (win) + 1 Bonus = 4 RP. 1 Win. MatchPoints=90.
 	assert.Equal(t, 4, rankingFields.RankingPoints)
 	assert.Equal(t, 1, rankingFields.Wins)
 	assert.Equal(t, 90, rankingFields.MatchPoints)
-	assert.Equal(t, 30, rankingFields.TowerPoints) // 檢查 TowerPoints 是否正確記錄
+	assert.Equal(t, 30, rankingFields.TowerPoints) // Check if TowerPoints are recorded correctly
 
-	// 測試 3: 加入一場平手 (Add a tie)
+	// Test 3: Add a tie (Add a tie)
 	rankingFields = RankingFields{}
 	tieScore := &ScoreSummary{Score: 80, MatchPoints: 80}
 	rankingFields.AddScoreSummary(tieScore, tieScore, false)
-	// 預期: 1 RP(平) = 1 RP. 1 Tie.
+	// Expected: 1 RP (tie) = 1 RP. 1 Tie.
 	assert.Equal(t, 1, rankingFields.RankingPoints)
 	assert.Equal(t, 1, rankingFields.Ties)
 
-	// 測試 4: 犯規被取消資格 (Disqualification)
+	// Test 4: Disqualification (Disqualification)
 	rankingFields = RankingFields{}
 	rankingFields.AddScoreSummary(redSummary, blueSummary, true)
-	// 預期: 0 RP. 1 DQ.
+	// Expected: 0 RP. 1 DQ.
 	assert.Equal(t, 0, rankingFields.RankingPoints)
 	assert.Equal(t, 1, rankingFields.Disqualifications)
 }

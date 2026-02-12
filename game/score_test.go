@@ -10,34 +10,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// 測試詳細的計分加總
+// Detailed scoring and summation of tests
 func TestScoreSummarize(t *testing.T) {
-	// 建立一個模擬分數
+	// Create a mock score
 	score := &Score{
-		// Auto: 2台機器人達成 Level 1 (2 * 15 = 30分)
+		// Auto: 2 robots achieved Level 1 (2 * 15 = 30 points)
 		AutoTowerLevel1: [3]bool{true, true, false},
-		// Auto: 5顆球 (5 * 1 = 5分)
+		// Auto: 5 fuel cells (5 * 1 = 5 points)
 		AutoFuelCount: 5,
 
-		// Teleop: 20顆球 (20 * 1 = 20分)
+		// Teleop: 20 fuel cells (20 * 1 = 20 points)
 		TeleopFuelCount: 20,
 
-		// Endgame: 一台 Level 3 (30分), 一台 Level 2 (20分)
+		// Endgame: One Level 3 (30 points), One Level 2 (20 points)
 		EndgameStatuses: [3]EndgameStatus{EndgameLevel3, EndgameNone, EndgameLevel2},
 	}
 
 	summary := score.Summarize(&Score{})
 
-	// 驗證 Auto 分數
+	// Verify Auto points
 	assert.Equal(t, 5, summary.AutoFuelPoints)
 	assert.Equal(t, 30, summary.AutoTowerPoints)
 	assert.Equal(t, 35, summary.AutoPoints) // 5 + 30
 
-	// 驗證 Teleop/Endgame 分數
+	// Verify Teleop/Endgame points
 	assert.Equal(t, 20, summary.TeleopFuelPoints)
 	assert.Equal(t, 50, summary.EndgameTowerPoints) // 30 + 20
 
-	// 驗證總分
+	// Verify total points
 	// Fuel Total: 5 + 20 = 25
 	// Tower Total: 30 + 50 = 80
 	// Match Total: 25 + 80 = 105
@@ -46,34 +46,34 @@ func TestScoreSummarize(t *testing.T) {
 	assert.Equal(t, 105, summary.MatchPoints)
 }
 
-// 測試 Energized RP (球數門檻)
+// Test Energized RP (fuel threshold)
 func TestEnergizedRP(t *testing.T) {
-	// 備份並修改全域設定以方便測試
+	// Backup and modify global setting for testing
 	originalEnergized := EnergizedFuelThreshold
-	EnergizedFuelThreshold = 100 // 設定只要 100 顆球就有 RP
+	EnergizedFuelThreshold = 100 // Set threshold to 100 fuel cells for RP
 	defer func() { EnergizedFuelThreshold = originalEnergized }()
 
 	score := &Score{
 		AutoFuelCount:   4,
-		TeleopFuelCount: 5, // 總共 9 顆 -> 應該沒有 RP
+		TeleopFuelCount: 5, // Total 9 fuel cells -> should not get RP
 	}
 	summary := score.Summarize(&Score{})
 	assert.False(t, summary.EnergizedRankingPoint)
 
-	score.TeleopFuelCount = 96 // 總共 100 顆 -> 應該有 RP
+	score.TeleopFuelCount = 96 // Total 100 fuel cells -> should get RP
 	summary = score.Summarize(&Score{})
 	assert.True(t, summary.EnergizedRankingPoint)
 }
 
-// 測試 Traversal RP (爬升分數門檻)
+// Test Traversal RP (climb point threshold)
 func TestTraversalRP(t *testing.T) {
-	// 備份並修改全域設定
+	// Backup and modify global setting for testing
 	originalTraversal := TraversalPointThreshold
-	TraversalPointThreshold = 50 // 設定只要 50 分就有 RP
+	TraversalPointThreshold = 50 // Set threshold to 50 points for RP
 	defer func() { TraversalPointThreshold = originalTraversal }()
 
 	score := &Score{
-		// 只有 Auto Level 1 (15分) -> 不夠
+		// Only Auto Level 1 (15 points) -> not enough
 		AutoTowerLevel1: [3]bool{true, false, false},
 	}
 	summary := score.Summarize(&Score{})
@@ -84,45 +84,45 @@ func TestTraversalRP(t *testing.T) {
 	summary = score.Summarize(&Score{})
 	assert.False(t, summary.TraversalRankingPoint)
 
-	score.EndgameStatuses[1] = EndgameLevel3 // (15 + 20 + 30 = 65分) -> 有 RP
+	score.EndgameStatuses[1] = EndgameLevel3 // (15 + 20 + 30 = 65 points) -> should get RP
 	summary = score.Summarize(&Score{})
 	assert.True(t, summary.TraversalRankingPoint)
 }
 
-// 測試 G420 (Endgame Protection) 規則
-// 如果對手犯規 G420，我方獲得 Level 3 Climb (30分)
+// Test G420 (Endgame Protection) rule
+// If the opponent commits G420, our team gets Level 3 Climb (30 points)
 func TestG420PenaltyBonus(t *testing.T) {
 	myScore := &Score{}
 
-	// 對手犯規清單
+	// Opponent foul list
 	opponentScore := &Score{
 		Fouls: []Foul{
-			{RuleId: 21, IsMajor: true}, // 對手犯了 G420
+			{RuleId: 21, IsMajor: true}, // Opponent committed G420
 		},
 	}
 
-	// 建立 Mock Rule (因為 score.go 依賴 rules.go 的 lookup)
-	// 這裡假設 rules.go 已經有正確的 G420 定義
-	// 如果實際執行時抓不到 Rule，這部分邏輯可能會被跳過，視你的 rules.go 實作而定
+	// Create Mock Rule (because score.go depends on rules.go lookup)
+	// Here we assume rules.go already has the correct G420 definition
+	// If the actual execution cannot find the Rule, this part of the logic may be skipped, depending on your rules.go implementation
 
 	summary := myScore.Summarize(opponentScore)
 
-	// 如果你的 score.go 邏輯包含 foul.Rule() 檢查，
-	// 這裡可能需要更完整的 Mock。但若是簡單檢查 RuleNumber：
+	// If your score.go logic includes foul.Rule() check,
+	// a more complete Mock might be needed. But if it's just checking RuleNumber:
 	if summary.EndgameTowerPoints == 30 {
-		// 成功獲得 30 分補償
+		// Successfully received 30 points compensation
 		assert.Equal(t, 30, summary.EndgameTowerPoints)
 	}
 }
 
-// 測試 Score.Equals (比較兩個分數是否相同)
+// Test Score.Equals (compare if two scores are the same)
 func TestScoreEquals(t *testing.T) {
 	score1 := &Score{AutoFuelCount: 10, AutoTowerLevel1: [3]bool{true, false, false}}
 	score2 := &Score{AutoFuelCount: 10, AutoTowerLevel1: [3]bool{true, false, false}}
 
 	assert.True(t, score1.Equals(score2))
 
-	// 修改一點點，應該要不相等
+	// Modify a little, should not be equal
 	score2.AutoFuelCount = 11
 	assert.False(t, score1.Equals(score2))
 
