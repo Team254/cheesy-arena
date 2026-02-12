@@ -735,6 +735,10 @@ func (arena *Arena) Update() {
 		}
 	}
 
+	// 2026 REBUILT: Update Hub Status and Game Data
+	arena.updateHubStatus()
+	arena.updateGameSpecificMessage()
+
 	// Send a match tick notification if passing an integer second threshold or if the match state changed.
 	if int(matchTimeSec) != int(arena.LastMatchTimeSec) || arena.MatchState != arena.lastMatchState {
 		arena.MatchTimeNotifier.Notify()
@@ -763,6 +767,90 @@ func (arena *Arena) Update() {
 
 	arena.LastMatchTimeSec = matchTimeSec
 	arena.lastMatchState = arena.MatchState
+}
+
+// 2026 REBUILT: Helper to determine if Red Alliance won the Auto period based on Fuel points
+func (arena *Arena) redWonAutoFuel() bool {
+	// Rule: If tied or Blue wins, Blue gets advantage (Red is Inactive in Shift 1).
+	// So Red only "wins" (causing Blue Inactive in Shift 1) if Red > Blue.
+	return arena.RedRealtimeScore.CurrentScore.AutoFuelCount > arena.BlueRealtimeScore.CurrentScore.AutoFuelCount
+}
+
+// 2026 REBUILT: Updates Hub Active/Inactive status based on match time and Auto results
+func (arena *Arena) updateHubStatus() {
+	// Default to Active (e.g., in Auto)
+	redActive := true
+	blueActive := true
+
+	if arena.MatchState == TeleopPeriod {
+		// Teleop Duration = 140s
+		// MatchTimeSec counts UP from 0 (start of match).
+		// TeleopStart = Warmup + Auto + Pause
+		teleopStartTime := float64(game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec)
+		elapsedInTeleop := arena.MatchTimeSec() - teleopStartTime
+
+		// timeLeft counts DOWN from 140 to 0
+		timeLeft := float64(game.MatchTiming.TeleopDurationSec) - elapsedInTeleop
+
+		// Timeframes based on image_7080fa.png and image_707e30.png
+		// Transition: 140 -> 130
+		// Shift 1:    130 -> 105
+		// Shift 2:    105 -> 80
+		// Shift 3:    80 -> 55
+		// Shift 4:    55 -> 30
+		// Endgame:    30 -> 0
+
+		if timeLeft <= 130 && timeLeft > 30 {
+			redWinsAuto := arena.redWonAutoFuel()
+
+			isShift1 := timeLeft > 105
+			// isShift2 := timeLeft <= 105 && timeLeft > 80 (implicitly covered by else)
+			isShift3 := timeLeft <= 80 && timeLeft > 55
+			// Shift 4 is the remainder before Endgame (55 -> 30)
+
+			if redWinsAuto {
+				// Scenario: Red Scores More in Auto
+				if isShift1 || isShift3 {
+					// Shift 1 & 3: Red Inactive, Blue Active
+					redActive = false
+					blueActive = true
+				} else {
+					// Shift 2 & 4: Red Active, Blue Inactive
+					redActive = true
+					blueActive = false
+				}
+			} else {
+				// Scenario: Blue Scores More or Tie
+				if isShift1 || isShift3 {
+					// Shift 1 & 3: Red Active, Blue Inactive
+					redActive = true
+					blueActive = false
+				} else {
+					// Shift 2 & 4: Red Inactive, Blue Active
+					redActive = false
+					blueActive = true
+				}
+			}
+		}
+	}
+
+	arena.RedRealtimeScore.CurrentScore.HubActive = redActive
+	arena.BlueRealtimeScore.CurrentScore.HubActive = blueActive
+}
+
+// 2026 REBUILT: Updates GameSpecificMessage for Driver Station ("A" or "I")
+func (arena *Arena) updateGameSpecificMessage() {
+	if arena.RedRealtimeScore.CurrentScore.HubActive {
+		arena.RedRealtimeScore.GameSpecificMessage = "A"
+	} else {
+		arena.RedRealtimeScore.GameSpecificMessage = "I"
+	}
+
+	if arena.BlueRealtimeScore.CurrentScore.HubActive {
+		arena.BlueRealtimeScore.GameSpecificMessage = "A"
+	} else {
+		arena.BlueRealtimeScore.GameSpecificMessage = "I"
+	}
 }
 
 // Checks if the endgame warning period has started and triggers the Companion event if so.
@@ -1133,23 +1221,29 @@ func (arena *Arena) handlePlcInputOutput() {
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, true)
 	}
 
-	// 2026 REBUILT: Removed obsolete Processor/Algae counting logic.
-	// Only notify if score changes manually.
+	// 2026 REBUILT: Update Hub Status and Game Data
+	arena.updateHubStatus()
+	arena.updateGameSpecificMessage()
+
+	// Only notify if score changes manually or via HubStatus change.
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
 		arena.RealtimeScoreNotifier.Notify()
 	}
 
-	// 2026 REBUILT: Temporarily set Truss Lights to ON during match.
-	// Future: Implement HUB Active/Inactive logic here based on MatchTimer.
+	// 2026 REBUILT: Control Truss Lights based on Hub Active/Inactive
+	// Active = Light ON, Inactive = Light OFF
 	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
-		warningSequenceActive, lights := trussLightWarningSequence(arena.MatchTimeSec())
-		if warningSequenceActive {
-			arena.Plc.SetTrussLights(lights, lights)
-		} else {
-			// Default to all lights on for 2026 (HUBs start Active)
-			arena.Plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
-		}
+		// Override truss lights to show Hub status
+		redActive := arena.RedRealtimeScore.CurrentScore.HubActive
+		blueActive := arena.BlueRealtimeScore.CurrentScore.HubActive
+
+		// Map Hub status to all 3 truss lights for visibility
+		redLights := [3]bool{redActive, redActive, redActive}
+		blueLights := [3]bool{blueActive, blueActive, blueActive}
+
+		arena.Plc.SetTrussLights(redLights, blueLights)
 	} else {
+		// Grace period or other states: blinking or off
 		arena.Plc.SetTrussLights(
 			[3]bool{inGracePeriod, inGracePeriod, inGracePeriod}, [3]bool{inGracePeriod, inGracePeriod, inGracePeriod},
 		)
