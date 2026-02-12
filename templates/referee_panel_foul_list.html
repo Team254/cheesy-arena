@@ -1,3 +1,4 @@
+
 {{define "referee_panel_foul_list"}}
 {{range $i, $foul := .RedFouls}}
 {{template "foul" dict "alliance" "red" "index" $i "foul" $foul "match" $.Match "rules" $.Rules}}
