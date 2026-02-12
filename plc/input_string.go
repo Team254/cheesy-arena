@@ -15,37 +15,42 @@ func _() {
 	_ = x[red2AStop-23]
 	_ = x[red3EStop-24]
 	_ = x[red3AStop-25]
-	_ = x[blue1EStop-26]
-	_ = x[blue1AStop-27]
-	_ = x[blue2EStop-28]
-	_ = x[blue2AStop-29]
-	_ = x[blue3EStop-30]
-	_ = x[blue3AStop-31]
-	_ = x[redConnected1-32]
-	_ = x[redConnected2-33]
-	_ = x[redConnected3-34]
-	_ = x[blueConnected1-35]
-	_ = x[blueConnected2-36]
-	_ = x[blueConnected3-37]
-	_ = x[inputCount-38]
+	_ = x[redConnected1-26]
+	_ = x[redConnected2-27]
+	_ = x[redConnected3-28]
+	_ = x[blue1EStop-40]
+	_ = x[blue1AStop-41]
+	_ = x[blue2EStop-42]
+	_ = x[blue2AStop-43]
+	_ = x[blue3EStop-44]
+	_ = x[blue3AStop-45]
+	_ = x[blueConnected1-46]
+	_ = x[blueConnected2-47]
+	_ = x[blueConnected3-48]
+	_ = x[inputCount-49]
 }
 
 const (
 	_input_name_0 = "fieldEStop"
-	_input_name_1 = "red1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3inputCount"
+	_input_name_1 = "red1EStopred1AStopred2EStopred2AStopred3EStopred3AStopredConnected1redConnected2redConnected3"
+	_input_name_2 = "blue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopblueConnected1blueConnected2blueConnected3inputCount"
 )
 
 var (
-	_input_index_1 = [...]uint8{0, 9, 18, 27, 36, 45, 54, 64, 74, 84, 94, 104, 114, 127, 140, 153, 167, 181, 195, 205}
+	_input_index_1 = [...]uint8{0, 9, 18, 27, 36, 45, 54, 67, 80, 93}
+	_input_index_2 = [...]uint8{0, 10, 20, 30, 40, 50, 60, 74, 88, 102, 112}
 )
 
 func (i input) String() string {
 	switch {
 	case i == 0:
 		return _input_name_0
-	case 20 <= i && i <= 38:
+	case 20 <= i && i <= 28:
 		i -= 20
 		return _input_name_1[_input_index_1[i]:_input_index_1[i+1]]
+	case 40 <= i && i <= 49:
+		i -= 40
+		return _input_name_2[_input_index_2[i]:_input_index_2[i+1]]
 	default:
 		return "input(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
