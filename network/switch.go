@@ -8,10 +8,12 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
 	"net"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
 )
 
 const (
@@ -47,7 +49,7 @@ func NewSwitch(address, password string) *Switch {
 	return &Switch{
 		address:               address,
 		port:                  switchTelnetPort,
-		username:              "admin", // 預設為 admin
+		username:              "admin",
 		password:              password,
 		configBackoffDuration: switchConfigBackoffDurationSec * time.Second,
 		configPauseDuration:   switchConfigPauseDurationSec * time.Second,
@@ -55,13 +57,12 @@ func NewSwitch(address, password string) *Switch {
 	}
 }
 
-// ConfigureTeamEthernet 針對 Fortinet 語法進行了重構
 func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	sw.mutex.Lock()
 	defer sw.mutex.Unlock()
 	sw.Status = "CONFIGURING"
 
-	// 1. 移除舊的 DHCP Server 設定 (Fortinet 刪除邏輯)
+	// 1. 移除舊的 DHCP Server 設定
 	removeTeamVlansCommand := "config system dhcp server\n"
 	for vlan := 10; vlan <= 60; vlan += 10 {
 		removeTeamVlansCommand += fmt.Sprintf("delete %d\n", vlan)
@@ -82,30 +83,32 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 			return
 		}
 		teamPartialIp := fmt.Sprintf("%d.%d", team.Id/100, team.Id%100)
-		
-		// FortiOS 指令：先設 Interface IP，再設 DHCP Server
+
 		addTeamVlansCommand += fmt.Sprintf(
 			"config system interface\n"+
 				"edit \"vlan%d\"\n"+
+				"set vlanid %d\n"+
+				"set interface \"internal\"\n"+
 				"set ip 10.%s.%d 255.255.255.0\n"+
 				"next\n"+
-			"end\n"+
-			"config system dhcp server\n"+
+				"end\n"+
+				"config system dhcp server\n"+
 				"edit %d\n"+
 				"set interface \"vlan%d\"\n"+
 				"set default-gateway 10.%s.%d\n"+
 				"set netmask 255.255.255.0\n"+
 				"config ip-range\n"+
-					"edit 1\n"+
-					"set start-ip 10.%s.20\n"+
-					"set end-ip 10.%s.199\n"+
-					"next\n"+
+				"edit 1\n"+
+				"set start-ip 10.%s.20\n"+
+				"set end-ip 10.%s.199\n"+
+				"next\n"+
 				"end\n"+
 				"next\n"+
-			"end\n",
-			vlan, teamPartialIp, switchTeamGatewayAddress, // Interface
-			vlan, vlan, teamPartialIp, switchTeamGatewayAddress, // DHCP
-			teamPartialIp, teamPartialIp, // IP Range
+				"end\n",
+			vlan, vlan,
+			teamPartialIp, switchTeamGatewayAddress,
+			vlan, vlan, teamPartialIp, switchTeamGatewayAddress,
+			teamPartialIp, teamPartialIp,
 		)
 	}
 
@@ -131,33 +134,65 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 
 // runCommand 處理 Fortinet 的登入與分頁關閉
 func (sw *Switch) runCommand(command string) (string, error) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port))
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port), 5*time.Second)
 	if err != nil {
 		return "", err
 	}
 	defer conn.Close()
 
-	writer := bufio.NewWriter(conn)
-	
-	// Fortinet 登入流程：帳號 -> 密碼 -> 關閉分頁 -> 執行指令
-	loginPayload := fmt.Sprintf("%s\n%s\n", sw.username, sw.password)
-	disablePaging := "config system console\nset output standard\nend\n"
-	
-	_, err = writer.WriteString(loginPayload + disablePaging + command + "exit\n")
-	if err != nil {
-		return "", err
-	}
-	err = writer.Flush()
-	if err != nil {
-		return "", err
+	// 處理 Telnet 協商的 Helper (解決封包 463 的問題)
+	// 當收到 IAC (255) 時，根據協議簡單回覆，讓 Switch 願意說話
+	handleNegotiation := func(c net.Conn) {
+		buf := make([]byte, 3)
+		for {
+			c.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
+			n, err := c.Read(buf)
+			if err != nil || n < 3 || buf[0] != 255 {
+				return
+			}
+			// 簡單邏輯：收到 DO (253) 回 WON'T (252)；收到 WILL (251) 回 DON'T (254)
+			if buf[1] == 253 {
+				c.Write([]byte{255, 252, buf[2]})
+			} else if buf[1] == 251 {
+				c.Write([]byte{255, 254, buf[2]})
+			}
+		}
 	}
 
-	var reader bytes.Buffer
-	_, err = reader.ReadFrom(conn)
-	if err != nil {
-		return "", err
+	// 1. 先處理握手
+	handleNegotiation(conn)
+	time.Sleep(500 * time.Millisecond)
+
+	writer := bufio.NewWriter(conn)
+	reader := bufio.NewReader(conn)
+
+	send := func(s string, delay time.Duration) {
+		writer.WriteString(s + "\r")
+		writer.Flush()
+		time.Sleep(delay)
 	}
-	return reader.String(), nil
+
+	// 2. 登入 (即使沒看到藍字也強行送出，但增加間隔)
+	send(sw.username, 500*time.Millisecond)
+	send(sw.password, 1*time.Second)
+
+	// 3. 環境初始化
+	send("config system console", 200*time.Millisecond)
+	send("set output standard", 200*time.Millisecond)
+	send("end", 500*time.Millisecond)
+
+	// 4. 執行配置
+	for _, line := range strings.Split(command, "\n") {
+		if clean := strings.TrimSpace(line); clean != "" {
+			send(clean, 150*time.Millisecond)
+		}
+	}
+	send("exit", 200*time.Millisecond)
+
+	var result bytes.Buffer
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	result.ReadFrom(reader)
+	return result.String(), nil
 }
 
 // runConfigCommand 在 Fortinet 中與 runCommand 共用邏輯
