@@ -44,6 +44,16 @@ UI for the real-time scoring interface.
           </div>
         </div>
       </div>
+      <div class="card mb-3" id="hub-status-card">
+    <div class="card-header bg-dark text-white text-center">
+      <h5 class="mb-0">Hub Status</h5>
+    </div>
+    <div class="card-body text-center p-4">
+      <div id="hub-status-indicator" class="h2 fw-bold p-3 rounded" style="transition: all 0.3s ease;">
+        HUB INITIALIZING
+      </div>
+    </div>
+  </div>
 
       <!--<div class="card border-danger">
         <div class="card-header bg-danger text-white">
@@ -136,7 +146,7 @@ UI for the real-time scoring interface.
                 <label class="btn btn-outline-secondary" for="climb_0_none">None</label>
 
                 <input type="radio" class="btn-check" name="climb_0" id="climb_0_lvl1" value="1" onchange="updateClimb(0, 1)">
-                <label class="btn btn-outline-primary" for="climb_0_lvl1">Level 1</label>
+                <label class="btn btn-outline-info" for="climb_0_lvl1">Level 1</label>
 
                 <input type="radio" class="btn-check" name="climb_0" id="climb_0_lvl2" value="2" onchange="updateClimb(0, 2)">
                 <label class="btn btn-outline-primary" for="climb_0_lvl2">Level 2</label>
@@ -153,7 +163,7 @@ UI for the real-time scoring interface.
                 <label class="btn btn-outline-secondary" for="climb_1_none">None</label>
 
                 <input type="radio" class="btn-check" name="climb_1" id="climb_1_lvl1" value="1" onchange="updateClimb(1, 1)">
-                <label class="btn btn-outline-primary" for="climb_1_lvl1">Level 1</label>
+                <label class="btn btn-outline-info" for="climb_1_lvl1">Level 1</label>
 
                 <input type="radio" class="btn-check" name="climb_1" id="climb_1_lvl2" value="2" onchange="updateClimb(1, 2)">
                 <label class="btn btn-outline-primary" for="climb_1_lvl2">Level 2 </label>
@@ -170,7 +180,7 @@ UI for the real-time scoring interface.
                 <label class="btn btn-outline-secondary" for="climb_2_none">None</label>
 
                 <input type="radio" class="btn-check" name="climb_2" id="climb_2_lvl1" value="1" onchange="updateClimb(2, 1)">
-                <label class="btn btn-outline-primary" for="climb_2_lvl1">Level 1</label>
+                <label class="btn btn-outline-info" for="climb_2_lvl1">Level 1</label>
 
                 <input type="radio" class="btn-check" name="climb_2" id="climb_2_lvl2" value="2" onchange="updateClimb(2, 2)">
                 <label class="btn btn-outline-primary" for="climb_2_lvl2">Level 2 </label>
