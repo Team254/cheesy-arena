@@ -1,13 +1,8 @@
-// Copyright 2014 Team 254. All Rights Reserved.
-// Author: pat@patfairbank.com (Patrick Fairbank)
-//
-// Client-side methods for editing a match in the match review page.
-
 const scoreTemplate = Handlebars.compile($("#scoreTemplate").html());
 const allianceResults = {};
 let matchResult;
 
-// Hijack the form submission to inject the data in JSON form so that it's easier for the server to parse.
+// 攔截表單提交，將資料轉為 JSON
 $("form").submit(function () {
   updateResults("red");
   updateResults("blue");
@@ -18,41 +13,37 @@ $("form").submit(function () {
   matchResult.BlueCards = allianceResults["blue"].cards;
   const matchResultJson = JSON.stringify(matchResult);
 
-  // Inject the JSON data into the form as hidden inputs.
   $("<input />").attr("type", "hidden").attr("name", "matchResultJson").attr("value", matchResultJson).appendTo("form");
-
   return true;
 });
 
-// Draws the match-editing form for one alliance based on the cached result data.
+// 渲染結果到頁面
 const renderResults = function (alliance) {
   const result = allianceResults[alliance];
   const scoreContent = scoreTemplate(result);
   $(`#${alliance}Score`).html(scoreContent);
 
-  // Set the values of the form fields from the JSON results data.
-  getInputElement(alliance, "AutoTroughNearCoral").val(result.score.Reef.AutoTroughNear);
-  getInputElement(alliance, "AutoTroughFarCoral").val(result.score.Reef.AutoTroughFar);
-  getInputElement(alliance, "TroughNearCoral").val(result.score.Reef.TroughNear);
-  getInputElement(alliance, "TroughFarCoral").val(result.score.Reef.TroughFar);
-  getInputElement(alliance, "BargeAlgae").val(result.score.BargeAlgae);
-  getInputElement(alliance, "ProcessorAlgae").val(result.score.ProcessorAlgae);
+  // 1. Fuel 數量
+  getInputElement(alliance, "AutoFuelCount").val(result.score.AutoFuelCount || 0);
+  getInputElement(alliance, "TeleopFuelCount").val(result.score.TeleopFuelCount || 0);
 
+  // 2. 機器人狀態 (索引 0, 1, 2)
   for (let i = 0; i < 3; i++) {
-    const i1 = i + 1;
-
-    getInputElement(alliance, `RobotsBypassed${i1}`).prop("checked", result.score.RobotsBypassed[i]);
-    getInputElement(alliance, `LeaveStatuses${i1}`).prop("checked", result.score.LeaveStatuses[i]);
-    getInputElement(alliance, `EndgameStatuses${i1}`, result.score.EndgameStatuses[i]).prop("checked", true);
-
-    for (let j = 0; j < 12; j++) {
-      getInputElement(alliance, `ReefAutoBranchesPipe${i}Branch${j}`).prop(
-        "checked", result.score.Reef.AutoBranches[i][j]
-      );
-      getInputElement(alliance, `ReefBranchesPipe${i}Branch${j}`).prop("checked", result.score.Reef.Branches[i][j]);
+    // RobotsBypassed
+    if (result.score.RobotsBypassed) {
+      getInputElement(alliance, `RobotsBypassed${i}`).prop("checked", result.score.RobotsBypassed[i]);
+    }
+    // AutoTowerLevel1
+    if (result.score.AutoTowerLevel1) {
+      getInputElement(alliance, `AutoTowerLevel1${i}`).prop("checked", result.score.AutoTowerLevel1[i]);
+    }
+    // EndgameStatuses (Radio)
+    if (result.score.EndgameStatuses) {
+      getInputElement(alliance, `EndgameStatuses${i}`, result.score.EndgameStatuses[i]).prop("checked", true);
     }
   }
 
+  // 3. 犯規列表
   if (result.score.Fouls != null) {
     $.each(result.score.Fouls, function (k, v) {
       getInputElement(alliance, `Foul${k}IsMajor`).prop("checked", v.IsMajor);
@@ -61,6 +52,7 @@ const renderResults = function (alliance) {
     });
   }
 
+  // 4. 卡片
   if (result.cards != null) {
     $.each(result.cards, function (k, v) {
       getInputElement(alliance, `Team${k}Card`, v).prop("checked", true);
@@ -68,7 +60,7 @@ const renderResults = function (alliance) {
   }
 };
 
-// Converts the current form values back into JSON structures and caches them.
+// 更新 JS 緩存結構
 const updateResults = function (alliance) {
   const result = allianceResults[alliance];
   const formData = {};
@@ -76,78 +68,58 @@ const updateResults = function (alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.RobotsBypassed = [];
-  result.score.LeaveStatuses = [];
-  result.score.Reef = {
-    AutoBranches: [],
-    Branches: [],
-    AutoTroughNear: parseInt(formData[`${alliance}AutoTroughNearCoral`]),
-    AutoTroughFar: parseInt(formData[`${alliance}AutoTroughFarCoral`]),
-    TroughNear: parseInt(formData[`${alliance}TroughNearCoral`]),
-    TroughFar: parseInt(formData[`${alliance}TroughFarCoral`]),
-  };
-  result.score.BargeAlgae = parseInt(formData[`${alliance}BargeAlgae`]);
-  result.score.ProcessorAlgae = parseInt(formData[`${alliance}ProcessorAlgae`]);
-  result.score.EndgameStatuses = [];
-  for (let i = 0; i < 3; i++) {
-    const i1 = i + 1;
+  // 初始化陣列結構
+  result.score.RobotsBypassed = [false, false, false];
+  result.score.AutoTowerLevel1 = [false, false, false];
+  result.score.EndgameStatuses = [0, 0, 0];
 
-    result.score.RobotsBypassed[i] = formData[`${alliance}RobotsBypassed${i1}`] === "on";
-    result.score.LeaveStatuses[i] = formData[`${alliance}LeaveStatuses${i1}`] === "on";
-    result.score.EndgameStatuses[i] = parseInt(formData[`${alliance}EndgameStatuses${i1}`]);
-    result.score.Reef.AutoBranches[i] = [];
-    result.score.Reef.Branches[i] = [];
-    for (let j = 0; j < 12; j++) {
-      result.score.Reef.AutoBranches[i][j] = formData[`${alliance}ReefAutoBranchesPipe${i}Branch${j}`] === "on";
-      result.score.Reef.Branches[i][j] = formData[`${alliance}ReefBranchesPipe${i}Branch${j}`] === "on";
-    }
+  // 讀取 Fuel
+  result.score.AutoFuelCount = parseInt(formData[`${alliance}AutoFuelCount`]) || 0;
+  result.score.TeleopFuelCount = parseInt(formData[`${alliance}TeleopFuelCount`]) || 0;
+
+  for (let i = 0; i < 3; i++) {
+    // 修正：這裡的索引必須與 HTML 的 {{range $i := seq 3}} 產生的 0, 1, 2 一致
+    result.score.RobotsBypassed[i] = formData[`${alliance}RobotsBypassed${i}`] === "on";
+    result.score.AutoTowerLevel1[i] = formData[`${alliance}AutoTowerLevel1${i}`] === "on";
+    result.score.EndgameStatuses[i] = parseInt(formData[`${alliance}EndgameStatuses${i}`]) || 0;
   }
 
+  // 處理犯規
   result.score.Fouls = [];
-
   for (let i = 0; formData[`${alliance}Foul${i}Index`]; i++) {
     const prefix = `${alliance}Foul${i}`;
-    const foul = {
+    result.score.Fouls.push({
       IsMajor: formData[`${prefix}IsMajor`] === "on",
-      TeamId: parseInt(formData[`${prefix}Team`]),
-      RuleId: parseInt(formData[`${prefix}RuleId`]),
-    };
-    result.score.Fouls.push(foul);
+      TeamId: parseInt(formData[`${prefix}Team`]) || 0,
+      RuleId: parseInt(formData[`${prefix}RuleId`]) || 0,
+    });
   }
 
+  // 處理卡片
   result.cards = {};
   $.each([result.team1, result.team2, result.team3], function (i, team) {
     result.cards[team] = formData[`${alliance}Team${team}Card`];
   });
 };
 
-// Appends a blank foul to the end of the list.
 const addFoul = function (alliance) {
   updateResults(alliance);
-  const result = allianceResults[alliance];
-  result.score.Fouls.push({IsMajor: false, TeamId: 0, Rule: 0});
+  allianceResults[alliance].score.Fouls.push({IsMajor: false, TeamId: 0, RuleId: 0});
   renderResults(alliance);
 };
 
-// Removes the given foul from the list.
 const deleteFoul = function (alliance, index) {
   updateResults(alliance);
-  const result = allianceResults[alliance];
-  result.score.Fouls.splice(index, 1);
+  allianceResults[alliance].score.Fouls.splice(index, 1);
   renderResults(alliance);
 };
 
-// Returns the form input element having the given parameters.
 const getInputElement = function (alliance, name, value) {
   let selector = `input[name=${alliance}${name}]`;
-  if (value !== undefined) {
-    selector += `[value=${value}]`;
-  }
+  if (value !== undefined) selector += `[value=${value}]`;
   return $(selector);
 };
 
-// Returns the form select element having the given parameters.
 const getSelectElement = function (alliance, name) {
-  const selector = `select[name=${alliance}${name}]`;
-  return $(selector);
+  return $(`select[name=${alliance}${name}]`);
 };
