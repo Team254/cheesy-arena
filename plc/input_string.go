@@ -35,8 +35,9 @@ const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3
 var _input_index = [...]uint8{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 215}
 
 func (i input) String() string {
-	if i < 0 || i >= input(len(_input_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_input_index)-1 {
 		return "input(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _input_name[_input_index[i]:_input_index[i+1]]
+	return _input_name[_input_index[idx]:_input_index[idx+1]]
 }

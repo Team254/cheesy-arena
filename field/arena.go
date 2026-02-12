@@ -1140,7 +1140,7 @@ func (arena *Arena) checkAllianceStationsReady(stations ...string) error {
 }
 
 func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
-	for _, allianceStation := range arena.AllianceStations {
+	for station, allianceStation := range arena.AllianceStations {
 		dsConn := allianceStation.DsConn
 		if dsConn != nil {
 			dsConn.Auto = auto
@@ -1151,6 +1151,20 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 			err := dsConn.update(arena)
 			if err != nil {
 				log.Printf("Unable to send driver station packet for team %d.", allianceStation.Team.Id)
+			}
+
+			// 2026: Send Game Specific Message (TCP)
+			var gameData string
+			if strings.HasPrefix(station, "R") {
+				gameData = arena.RedRealtimeScore.GameSpecificMessage
+			} else {
+				gameData = arena.BlueRealtimeScore.GameSpecificMessage
+			}
+
+			if gameData != "" {
+				if err := dsConn.sendGameDataPacket(gameData); err != nil {
+					log.Printf("Failed to send Game Data to Team %d: %v", allianceStation.Team.Id, err)
+				}
 			}
 		}
 	}
@@ -1200,10 +1214,10 @@ func (arena *Arena) handlePlcInputOutput() {
 	oldRedScore := *redScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
 	oldBlueScore := *blueScore
-	matchStartTime := arena.MatchStartTime
-	currentTime := time.Now()
-	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.TeleopGracePeriodSec*time.Second)
-	inGracePeriod := arena.MatchState == PostMatch && currentTime.Before(teleopGracePeriod) && !arena.matchAborted
+	//matchStartTime := arena.MatchStartTime
+	//currentTime := time.Now()
+	//teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.TeleopGracePeriodSec*time.Second)
+	//inGracePeriod := arena.MatchState == PostMatch && currentTime.Before(teleopGracePeriod) && !arena.matchAborted
 
 	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
@@ -1255,23 +1269,17 @@ func (arena *Arena) handlePlcInputOutput() {
 		arena.RealtimeScoreNotifier.Notify()
 	}
 
-	// 2026 REBUILT: Control Truss Lights based on Hub Active/Inactive
+	// 2026 REBUILT: Set Hub Lights based on Active status
 	// Active = Light ON, Inactive = Light OFF
+	// This replaces the old Truss Lights logic
 	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
-		// Override truss lights to show Hub status
-		redActive := arena.RedRealtimeScore.CurrentScore.HubActive
-		blueActive := arena.BlueRealtimeScore.CurrentScore.HubActive
-
-		// Map Hub status to all 3 truss lights for visibility
-		redLights := [3]bool{redActive, redActive, redActive}
-		blueLights := [3]bool{blueActive, blueActive, blueActive}
-
-		arena.Plc.SetTrussLights(redLights, blueLights)
-	} else {
-		// Grace period or other states: blinking or off
-		arena.Plc.SetTrussLights(
-			[3]bool{inGracePeriod, inGracePeriod, inGracePeriod}, [3]bool{inGracePeriod, inGracePeriod, inGracePeriod},
+		arena.Plc.SetHubLights(
+			arena.RedRealtimeScore.CurrentScore.HubActive,
+			arena.BlueRealtimeScore.CurrentScore.HubActive,
 		)
+	} else {
+		// Turn off when not playing
+		arena.Plc.SetHubLights(false, false)
 	}
 }
 
@@ -1327,27 +1335,4 @@ func (arena *Arena) positionPostMatchScoreReady(position string) bool {
 func (arena *Arena) runPeriodicTasks() {
 	arena.updateEarlyLateMessage()
 	arena.purgeDisconnectedDisplays()
-}
-
-// trussLightWarningSequence generates the sequence of truss light states during the "sonar ping" warning sound. It
-// returns true if the sequence is active, and an array of booleans indicating the state of each truss light.
-func trussLightWarningSequence(matchTimeSec float64) (bool, [3]bool) {
-	stepTimeSec := 0.2
-	sequence := []int{1, 2, 3, 2, 1, 2, 3, 0, 0, 1, 2, 3, 2, 1, 2, 3, 0, 0}
-	startTime := float64(
-		game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec +
-			game.MatchTiming.TeleopDurationSec - game.MatchTiming.WarningRemainingDurationSec,
-	)
-	lights := [3]bool{false, false, false}
-
-	if matchTimeSec < startTime {
-		// The sequence is not active yet.
-		return false, lights
-	}
-
-	step := int((matchTimeSec - startTime) / stepTimeSec)
-	if step < len(sequence) && sequence[step] > 0 {
-		lights[sequence[step]-1] = true
-	}
-	return step < len(sequence), lights
 }
