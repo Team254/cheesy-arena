@@ -130,6 +130,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	go ws.HandleNotifiers(
 		web.arena.MatchLoadNotifier,
 		web.arena.MatchTimeNotifier,
+		web.arena.MatchTimingNotifier, // <--- 新增這一行
 		web.arena.RealtimeScoreNotifier,
 		web.arena.ReloadDisplaysNotifier,
 	)

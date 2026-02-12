@@ -1,5 +1,13 @@
 // scoring_panel.js
 var websocket;
+matchTiming = {
+    AutoDurationSec: 15,
+    WarmupDurationSec: 0,
+    TeleopDurationSec: 135,
+    PauseDurationSec: 0,
+    TimeoutDurationSec: 0
+};
+
 
 // 1. 初始化連線邏輯 (自動執行)
 $(function () {
@@ -15,8 +23,11 @@ $(function () {
         websocket.send("fuel", { Adjustment: 0, Autonomous: true }); 
         console.log("Subscribed and sent initial refresh.");
         }, 
+        matchTiming: function (event) {
+            handleMatchTiming(event.data); // 這會幫 match_timing.js 填入 matchTiming 變數
+        },
         matchTime: function (event) {
-                handleMatchTime(event.data);
+            handleMatchTime(event.data);
         },
         realtimeScore: function (event) {
             handleRealtimeScore(event.data);
@@ -32,36 +43,31 @@ $(function () {
 
 // 2. 處理時間顯示與 UI 狀態切換
 function handleMatchTime(data) {
-    // 使用傳入的數據計算分秒
-    var totalSec = data.MatchTimeSec;
-    var min = Math.floor(totalSec / 60);
-    var sec = totalSec % 60;
-    $("#match_time").text(min + ":" + (sec < 10 ? "0" : "") + sec);
+    if (!matchTiming) return;
 
-    var stateText = "Pre-Match";
-    // MatchState: Auto=3, Teleop=5, PostMatch=6
-    switch(data.MatchState) {
-        case 3: 
-            stateText = "Autonomous"; 
+    translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
+        // 1. 更新倒數時間
+        $("#match_time").text(getCountdownString(countdownSec));
+        
+        // 2. 更新比賽狀態文字 (使用 translate 產生的標準文字)
+        $("#match_state").text(matchStateText);
+
+        // 3. 處理 UI 透明度切換
+        if (matchState === "AUTO_PERIOD") {
             $("#auto-panel").css("opacity", "1");
             $("#teleop-panel").css("opacity", "0.5");
-            break;
-        case 5: 
-            stateText = "Teleop"; 
+        } else if (matchState === "TELEOP_PERIOD") {
             $("#auto-panel").css("opacity", "0.5");
             $("#teleop-panel").css("opacity", "1");
-            break;
-        case 6: 
-            stateText = "Post-Match"; 
-            $("#commit_btn").prop("disabled", false).text("COMMIT SCORE");
-            break;
-        default:
-            stateText = "Pre-Match";
-            break;
-    }
-    $("#match_state").text(stateText);
-    // --- 新增：嘗試從時間包中直接同步 Hub 狀態 ---
-    // 如果後端在傳送時間時也順便帶了 Hub 狀態，這裡就能抓到
+        } else if (matchState === "POST_MATCH") {
+            // 這裡原本的邏輯正確，保留
+            if ($("#commit_btn").text().indexOf("COMMITTED") === -1) {
+                $("#commit_btn").prop("disabled", false).text("COMMIT SCORE");
+            }
+        }
+    });
+
+    // Hub 狀態同步
     if (data.HubActiveRed !== undefined) {
         updateHubUI(data.HubActiveRed, data.HubActiveBlue);
     }
