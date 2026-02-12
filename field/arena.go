@@ -101,10 +101,10 @@ type Arena struct {
 	preloadedTeams                    *[6]*model.Team
 	NextFoulId                        int
 
-	// 2026: 儲存平手時的隨機贏家 (true=Red, false=Blue)
+	// 2026: Store the random winner in a tie (true=Red, false=Blue)
 	autoTieBreakerRedWin bool
 
-	// 2026: 記錄上一次從 PLC 讀到的 Fuel 數值，用於計算增量
+	// 2026: Record the last Fuel value read from the PLC for use in calculating the increment.
 	lastRedPlcFuel  int
 	lastBluePlcFuel int
 }
@@ -1294,10 +1294,10 @@ func (arena *Arena) handlePlcInputOutput() {
 	// --- Red Alliance Scoring Logic ---
 	if redDelta > 0 {
 		if arena.MatchState == AutoPeriod {
-			// Auto 期間通常皆可得分
+			// Scoring is usually possible during the Auto phase.
 			arena.RedRealtimeScore.CurrentScore.AutoFuelCount += redDelta
 		} else if arena.MatchState == TeleopPeriod {
-			// [FIX] Teleop 期間必須 HubActive 才能得分
+			// [FIX] Teleop period requires HubActive to score
 			if arena.RedRealtimeScore.CurrentScore.HubActive {
 				arena.RedRealtimeScore.CurrentScore.TeleopFuelCount += redDelta
 			}
@@ -1309,7 +1309,7 @@ func (arena *Arena) handlePlcInputOutput() {
 		if arena.MatchState == AutoPeriod {
 			arena.BlueRealtimeScore.CurrentScore.AutoFuelCount += blueDelta
 		} else if arena.MatchState == TeleopPeriod {
-			// [FIX] Teleop 期間必須 HubActive 才能得分
+			// [FIX] Teleop period requires HubActive to score
 			if arena.BlueRealtimeScore.CurrentScore.HubActive {
 				arena.BlueRealtimeScore.CurrentScore.TeleopFuelCount += blueDelta
 			}
@@ -1317,7 +1317,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	}
 
 	// Update last known values for next iteration
-	// 注意：無論是否得分，都要更新 lastPlcFuel，確保被忽略的球不會在下一次被誤算
+	// Note: Update lastPlcFuel regardless of scoring to ensure ignored balls are not miscounted in the next iteration.
 	arena.lastRedPlcFuel = redPlcFuel
 	arena.lastBluePlcFuel = bluePlcFuel
 

@@ -1,6 +1,6 @@
 // Copyright 2026 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
-// Modified for 2026 REBUILT Game Manual 
+// Modified for 2026 REBUILT Game Manual
 //
 // Model of a game-specific rule.
 

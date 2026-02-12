@@ -11,37 +11,37 @@ import (
 )
 
 func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
-	// 初始化：雙方平手
+	// Initialization: A draw
 	redScoreSummary := &ScoreSummary{Score: 50}
 	blueScoreSummary := &ScoreSummary{Score: 50}
 
-	// 1. 總分相同 -> Tie
+	// 1. Same total score -> Tie
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 
-	// 2. 測試 Tiebreaker 1: 總分 (Score)
+	// 2. Test Tiebreaker 1: Total score (Score)
 	redScoreSummary.Score = 51
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-	redScoreSummary.Score = 50 // 還原
+	redScoreSummary.Score = 50 // Reset
 
-	// 3. 測試 Tiebreaker 2: 對手犯規數 (NumOpponentMajorFouls)
+	// 3. Test Tiebreaker 2: Opponent fouls (NumOpponentMajorFouls)
 	redScoreSummary.NumOpponentMajorFouls = 2
 	blueScoreSummary.NumOpponentMajorFouls = 1
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-	redScoreSummary.NumOpponentMajorFouls = 0 // 還原
+	redScoreSummary.NumOpponentMajorFouls = 0 // Reset
 	blueScoreSummary.NumOpponentMajorFouls = 0
 
-	// 4. 測試 Tiebreaker 3: Auto 分數 (AutoPoints)
+	// 4. Test Tiebreaker 3: Auto points (AutoPoints)
 	blueScoreSummary.AutoPoints = 20
 	redScoreSummary.AutoPoints = 10
 	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-	blueScoreSummary.AutoPoints = 10 // 還原
+	blueScoreSummary.AutoPoints = 10 // Reset
 
-	// 5. 測試 Tiebreaker 4: 爬升總分 (TotalTowerPoints) - 取代去年的 Barge
+	// 5. Test Tiebreaker 4: Total tower points (TotalTowerPoints) - Replaces last year's Barge
 	redScoreSummary.TotalTowerPoints = 30
 	blueScoreSummary.TotalTowerPoints = 20
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	// 如果連爬升分都一樣 -> Tie
+	// If total tower points are the same -> Tie
 	blueScoreSummary.TotalTowerPoints = 30
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 }

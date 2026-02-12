@@ -16,7 +16,7 @@ import (
 )
 
 func TestConfigureSwitch(t *testing.T) {
-	// 這裡的 password 會被用在 admin 的密碼
+	// The password here will be used as the admin password.
 	sw := NewSwitch("127.0.0.1", "password")
 	assert.Equal(t, "UNKNOWN", sw.Status)
 	sw.port = 9050
@@ -24,18 +24,18 @@ func TestConfigureSwitch(t *testing.T) {
 	sw.configPauseDuration = time.Millisecond
 	var command1, command2 string
 
-	// 修改為 Fortinet 的預期重置指令
+	// Modify to Fortinet's expected reset command
 	expectedResetCommand := "admin\npassword\nconfig system console\nset output standard\nend\n" +
 		"config system dhcp server\ndelete 10\ndelete 20\ndelete 30\ndelete 40\ndelete 50\ndelete 60\nend\nexit\n"
 
-	// 1. 測試：當沒有隊伍時，應該只執行移除 VLAN 的動作
+	// 1. Test: When there are no teams, only VLAN removal should be executed
 	mockTelnet(t, sw.port, &command1, &command2)
 	assert.Nil(t, sw.ConfigureTeamEthernet([6]*model.Team{nil, nil, nil, nil, nil, nil}))
 	assert.Equal(t, expectedResetCommand, command1)
 	assert.Equal(t, "", command2)
 	assert.Equal(t, "ACTIVE", sw.Status)
 
-	// 2. 測試：配置單一隊伍 (Team 254 在 Blue 2 位置，VLAN 50)
+	// 2. Test: Configure a single team (Team 254 in Blue 2 position, VLAN 50)
 	sw.port += 1
 	mockTelnet(t, sw.port, &command1, &command2)
 	assert.Nil(t, sw.ConfigureTeamEthernet([6]*model.Team{nil, nil, nil, nil, {Id: 254}, nil}))
@@ -49,7 +49,7 @@ func TestConfigureSwitch(t *testing.T) {
 		command2,
 	)
 
-	// 3. 測試：配置所有隊伍
+	// 3. Test: Configure all teams (Teams 1114, 254, 296, 1503, 1678, 1538 in positions Blue 1-6, VLANs 10-60)
 	sw.port += 1
 	mockTelnet(t, sw.port, &command1, &command2)
 	assert.Nil(
@@ -58,8 +58,8 @@ func TestConfigureSwitch(t *testing.T) {
 	)
 	assert.Equal(t, expectedResetCommand, command1)
 
-	// 注意：這裡的 command2 預期字串必須與 switch.go 輸出的循環順序完全一致
-	// 因為 Fortinet 指令比較長，這裡僅展示結構，實際執行時需確保格式符號精確
+	// Note: The expected string for command2 must match the loop order output by switch.go exactly
+	// because Fortinet commands are long, this only shows the structure, actual execution must ensure exact format
 	assert.Contains(t, command2, "edit \"vlan10\"")
 	assert.Contains(t, command2, "edit \"vlan60\"")
 	assert.Contains(t, command2, "set start-ip 10.11.14.20")
@@ -69,13 +69,13 @@ func mockTelnet(t *testing.T, port int, command1 *string, command2 *string) {
 	go func() {
 		ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 		if err != nil {
-			return // 避免測試並行時噴錯
+			return // Avoid errors during parallel tests
 		}
 		defer ln.Close()
 		*command1 = ""
 		*command2 = ""
 
-		// 模擬第一連線 (Reset)
+		// Simulate first connection (Reset)
 		conn1, err := ln.Accept()
 		if err == nil {
 			conn1.SetReadDeadline(time.Now().Add(50 * time.Millisecond))
@@ -85,7 +85,7 @@ func mockTelnet(t *testing.T, port int, command1 *string, command2 *string) {
 			conn1.Close()
 		}
 
-		// 模擬第二連線 (Config)
+		// Simulate second connection (Config)
 		conn2, err := ln.Accept()
 		if err == nil {
 			conn2.SetReadDeadline(time.Now().Add(50 * time.Millisecond))

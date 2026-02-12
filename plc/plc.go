@@ -36,8 +36,8 @@ type Plc interface {
 	GetCoilNames() []string
 
 	// 2026 Updates
-	GetFuelCounts() (int, int)        // 原 GetProcessorCounts
-	SetHubLights(red bool, blue bool) // 新增 Hub 燈號控制
+	GetFuelCounts() (int, int)        // Original GetProcessorCounts
+	SetHubLights(red bool, blue bool) // Added Hub light control
 }
 
 type ModbusPlc struct {
@@ -68,16 +68,16 @@ const (
 //go:generate stringer -type=input
 type input int
 
-// 第一個區塊：定義 Address 0
+// First block: Define Address 0
 const (
-	fieldEStop input = iota // iota = 0, 所以 fieldEStop = 0
+	fieldEStop input = iota // iota = 0, so fieldEStop = 0
 )
 
-// 第二個區塊：定義 Address 20 以後的輸入
-// 在新的 const 區塊中，iota 會重置為 0
+// Second block: Define inputs starting at Address 20
+// In a new const block, iota resets to 0
 const (
-	red1EStop      input = iota + 16 // iota = 0, 值 = 16
-	red1AStop                        // iota = 1, 值 = 21 (自動沿用 +20 的規則)
+	red1EStop      input = iota + 16 // iota = 0, value = 16
+	red1AStop                        // iota = 1, value = 21 (automatically follows +20 rule)
 	red2EStop                        // 22
 	red2AStop                        // 23
 	red3EStop                        // 24
@@ -95,8 +95,8 @@ const (
 	blueConnected2                   // 47
 	blueConnected3                   // 48
 
-	// inputCount 會自動變成最後一個數值 + 1
-	// 這裡會是 49，用來定義陣列的
+	// inputCount will automatically become the last value + 1
+	// Here it will be 49, used to define the array size
 	inputCount
 )
 
