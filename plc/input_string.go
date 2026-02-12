@@ -18,16 +18,16 @@ func _() {
 	_ = x[redConnected1-22]
 	_ = x[redConnected2-23]
 	_ = x[redConnected3-24]
-	_ = x[blue1EStop-41]
-	_ = x[blue1AStop-42]
-	_ = x[blue2EStop-43]
-	_ = x[blue2AStop-44]
-	_ = x[blue3EStop-45]
-	_ = x[blue3AStop-46]
-	_ = x[blueConnected1-47]
-	_ = x[blueConnected2-48]
-	_ = x[blueConnected3-49]
-	_ = x[inputCount-50]
+	_ = x[blue1EStop-32]
+	_ = x[blue1AStop-33]
+	_ = x[blue2EStop-34]
+	_ = x[blue2AStop-35]
+	_ = x[blue3EStop-36]
+	_ = x[blue3AStop-37]
+	_ = x[blueConnected1-38]
+	_ = x[blueConnected2-39]
+	_ = x[blueConnected3-40]
+	_ = x[inputCount-41]
 }
 
 const (
@@ -48,8 +48,8 @@ func (i input) String() string {
 	case 16 <= i && i <= 24:
 		i -= 16
 		return _input_name_1[_input_index_1[i]:_input_index_1[i+1]]
-	case 41 <= i && i <= 50:
-		i -= 41
+	case 32 <= i && i <= 41:
+		i -= 32
 		return _input_name_2[_input_index_2[i]:_input_index_2[i+1]]
 	default:
 		return "input(" + strconv.FormatInt(int64(i), 10) + ")"
