@@ -1,208 +1,226 @@
 {{/*
-Copyright 2014 Team 254. All Rights Reserved.
+Copyright 2026 Team 254. All Rights Reserved.
 Author: pat@patfairbank.com (Patrick Fairbank)
-Author: ian@yann.io (Ian Thompson)
+Modified for 2026 REBUILT Game
 
-UI for entering realtime scores.
+UI for the real-time scoring interface.
 */}}
-{{define "title"}}Scoring Panel{{end}}
-{{define "body"}}
-<header id="banner">
-  {{if .Position.ScoresAuto }}
-  <div class="banner-title">Auto</div>
-  {{else}}
-  <div class="banner-placeholder"></div>
-  {{end}}
-  <div class="screen-title">{{.Position.Title}} - <span id="matchName">&nbsp;</span></div>
-  {{if .Position.ScoresEndgame }}
-  <div class="banner-title">Endgame</div>
-  {{else}}
-  <div class="banner-placeholder"></div>
-  {{end}}
-</header>
-<main>
-  <div id="top-controls">
-    <div id="auto-controls">
-      {{if .Position.ScoresAuto}}
-      {{range $i := seq 3}}
-      {{template "teamButton" (dict "id" (printf "auto-status-%d" $i) "index" $i "class" "scoring-button" "onclick"
-      (printf "handleLeaveClick(%d);" $i))}}
-      {{end}}
-      {{end}}
-    </div>
-    <button id="commit" onclick="commitMatchScore();" ontouchstart disabled>Commit</button>
-    <div id="endgame-controls">
-      {{if .Position.ScoresEndgame}}
-      {{range $i := seq 3}}
-      {{template "teamButton" (dict "id" (printf "endgame-status-%d" $i) "index" $i "class" "scoring-teleop-button"
-      "onclick" "showEndgameDialog();")}}
-      {{end}}
-      {{end}}
-    </div>
-  </div>
-  <div id="reef-controls">
-    <svg id="reef-controls-warning" viewBox="0 0 80 70">
-      <path stroke-width="6" stroke-linejoin="round" stroke="#000000" fill="none" d="M 40,3 3,67 h 74 z"/>
-      <line x1="40" y1="23" x2="40" y2="45" stroke-width="8" stroke-linecap="round" stroke="#000000"/>
-      <circle fill="#000000" cx="40" cy="57" r="4"/>
-    </svg>
-    {{$baseIndex := .Position.LeftmostReefPole}}
-    {{range $i := seq 6}}
-    {{template "reefColumn" (dict "index" (add $baseIndex $i))}}
-    {{end}}
-  </div>
-  <div id="bottom-controls">
-    <div class="counter-wrapper">
-      {{if .Position.ScoresBarge}}
-      {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
-      {{else if and .Position.ScoresProcessor (not .PlcIsEnabled)}}
-      {{template "counter" (dict "id" "processor" "label" "Processor Algae")}}
-      {{end}}
-    </div>
-    <button id="edit-auto" onclick="toggleEditAuto();" ontouchstart disabled></button>
-    <div class="counter-wrapper">
-      {{template "counter" (dict "id" "trough" "label" "L1 Coral" "has_auto" true)}}
-    </div>
-    <button id="fouls-button" class="scoring-button" onclick="showFoulsDialog();" ontouchstart disabled>Fouls</button>
-  </div>
-  <div id="l1-total">L1 Coral Total: <span id="l1-total-count">0</span></div>
-</main>
+{{define "title"}}Scoring Panel - {{.PositionName}}{{end}}
 
-<svg id="reef-graphics" style="display:none">
-  <symbol id="coral-indicator" width="30" height="125" viewBox="0 0 30 125">
-    <rect width="30" height="80" fill="var(--coral)" display="var(--current-display)"/>
-    <g display="var(--auto-display)">
-      <rect width="30" height="20" y="85" fill="var(--coral-auto)"/>
-      <text font-size="16pt" font-weight="bold" text-anchor="middle" fill="black" x="15" y="103">A</text>
-    </g>
-  </symbol>
-
-  <symbol id="reef-column" width="120" height="600" viewBox="0 0 120 600">
-    <style>
-      .l4-coral {
-        --current-display: var(--l4-coral-display);
-        --auto-display: var(--l4-coral-auto-display);
-      }
-
-      .l3-coral {
-        --current-display: var(--l3-coral-display);
-        --auto-display: var(--l3-coral-auto-display);
-      }
-
-      .l2-coral {
-        --current-display: var(--l2-coral-display);
-        --auto-display: var(--l2-coral-auto-display);
-      }
-    </style>
-    <g stroke="var(--reef-pole)" stroke-width="12px" fill="none">
-      <path
-        d="m 60,0 v 125 a 24.142136,24.142136 112.5 0 1 -7.071068,17.07107 L 12.071068,182.92893 A 24.142136,24.142136 112.5 0 0 5,200 v 400"/>
-      <line x1="5" y1="355" x2="115" y2="245"/>
-      <line x1="5" y1="555" x2="115" y2="445"/>
-    </g>
-    <use xlink:href="#coral-indicator" class="l4-coral" x="45" y="20"/>
-    <use xlink:href="#coral-indicator" class="l3-coral" x="45" y="240" transform="rotate(45, 60, 300)"/>
-    <use xlink:href="#coral-indicator" class="l2-coral" x="45" y="440" transform="rotate(45, 60, 500)"/>
-  </symbol>
-</svg>
-
-<dialog id="endgame-dialog" onclick="closeEndgameDialogIfOutside(event);">
-  <div class="dialog-container">
-    <div class="dialog-banner">Endgame Scoring</div>
-    <div id="endgame-scoring">
-      {{range $i := seq 3}}
-      {{template "endgame-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i)}}
-      {{end}}
-    </div>
-    <button class="dialog-close" autofocus onclick="closeEndgameDialog();" ontouchstart>Close</button>
-  </div>
-</dialog>
-
-<dialog id="fouls-dialog" onclick="closeFoulsDialogIfOutside(event);">
-  <div class="dialog-container">
-    <div class="dialog-banner">Add Fouls</div>
-    <div id="foul-container">
-      {{template "foulButton" (dict "id" "foul-blue-minor" "color" "blue" "label" "Blue" "isMajor" false)}}
-      {{template "foulButton" (dict "id" "foul-red-minor" "color" "red" "label" "Red" "isMajor" false)}}
-      {{template "foulButton" (dict "id" "foul-blue-major" "color" "blue" "label" "Blue Major" "isMajor" true)}}
-      {{template "foulButton" (dict "id" "foul-red-major" "color" "red" "label" "Red Major" "isMajor" true)}}
-    </div>
-    <button class="dialog-close" autofocus onclick="closeFoulsDialog();" ontouchstart>Close</button>
-  </div>
-</dialog>
-{{end}}
-
+{{/* 新增 head 定義，解決 template "head" not defined 錯誤 */}}
 {{define "head"}}
-<link rel="manifest" href="/static/manifest/{{.PositionName}}_scoring.manifest">
-<meta name="viewport" content="width=device-width, user-scalable=no">
-<link href="/static/css/scoring_panel.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  /* 優化觸控體驗，防止雙擊放大 */
+  body {
+    touch-action: manipulation;
+    overscroll-behavior: none;
+  }
+  .btn-lg {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  /* 讓按鈕在被點擊時有明顯回饋 */
+  .btn:active {
+    transform: scale(0.98);
+  }
+</style>
 {{end}}
+
+{{define "body"}}
+<div class="container-fluid" style="margin-top: 10px;">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card mb-3">
+        <div class="card-header bg-primary text-white">
+          <h4 id="match_name_display" class="card-title mb-0">Match Name</h4>
+          <h4 class="card-title mb-0">{{.Position.Title}}</h4>
+        </div>
+        <div class="card-body">
+          <h1 id="match_time" class="display-4 text-center">0:00</h1>
+          <h3 id="match_state" class="text-center text-muted">Pre-Match</h3>
+          <hr>
+          <div class="d-grid gap-2">
+            <button class="btn btn-warning btn-lg" onclick="resetLocalState()">Resync / Reset</button>
+          </div>
+        </div>
+      </div>
+      <div class="card mb-3" id="hub-status-card">
+        <div class="card-header bg-dark text-white text-center">
+          <h5 class="mb-0">Hub Status</h5>
+        </div>
+        <div class="card-body text-center p-4">
+          <div id="hub-status-indicator" class="h2 fw-bold p-3 rounded" style="transition: all 0.3s ease;">
+            HUB INITIALIZING
+          </div>
+        </div>
+      </div>
+
+      <!--<div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">Fouls</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-danger btn-lg" onclick="addFoul(false)">
+              Minor Foul (3pts)
+            </button>
+            <button class="btn btn-danger btn-lg" onclick="addFoul(true)">
+              Major Foul (12pts)
+            </button>
+            <button class="btn btn-dark btn-sm mt-2" onclick="addSpecificFoul('G206', true)">
+              G206 (RP Violation)
+            </button>
+          </div>
+        </div>
+      </div>-->
+    <button class="btn btn-danger" onclick="window.location.href='/panels/referee?hr=false'">
+      Referee Panel
+    </button>
+    </div>
+
+
+    <div class="col-md-9">
+      <div class="card mb-3 border-info" id="auto-panel">
+        <div class="card-header bg-info text-white">
+          <h4 class="mb-0">Autonomous Period</h4>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-6">
+              <h5>Auto Fuel (1 pt)</h5>
+              <div class="input-group input-group-lg justify-content-center">
+                <button class="btn btn-danger" onclick="updateFuel(true, -1)">-</button>
+                <span class="input-group-text" style="width: 80px; justify-content: center;" id="auto_fuel_count">0</span>
+                <button class="btn btn-success" onclick="updateFuel(true, 1)">+</button>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <h5>Auto Tower (Level 1 - 10 pts)</h5>
+              <div class="d-flex justify-content-around mt-2">
+                <div class="btn-group-vertical" role="group">
+                  <span id="team_0_label" class="mb-1 fw-bold">Robot 1</span>
+                  <input type="checkbox" class="btn-check" id="auto_tower_0" autocomplete="off" onchange="updateAutoTower(0, this.checked)">
+                  <label class="btn btn-outline-primary btn-lg" for="auto_tower_0">Success</label>
+                </div>
+                <div class="btn-group-vertical" role="group">
+                  <span id="team_1_label" class="mb-1 fw-bold">Robot 2</span>
+                  <input type="checkbox" class="btn-check" id="auto_tower_1" autocomplete="off" onchange="updateAutoTower(1, this.checked)">
+                  <label class="btn btn-outline-primary btn-lg" for="auto_tower_1">Success</label>
+                </div>
+                <div class="btn-group-vertical" role="group">
+                  <span id="team_2_label" class="mb-1 fw-bold">Robot 3</span>
+                  <input type="checkbox" class="btn-check" id="auto_tower_2" autocomplete="off" onchange="updateAutoTower(2, this.checked)">
+                  <label class="btn btn-outline-primary btn-lg" for="auto_tower_2">Success</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3 border-success" id="teleop-panel">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">Teleop Period</h4>
+        </div>
+        <div class="card-body">
+          <div class="row text-center justify-content-center">
+            <div class="col-md-6">
+              <h3>Teleop Fuel (1 pt)</h3>
+              <div class="input-group input-group-lg justify-content-center mt-3" style="transform: scale(1.5);">
+                <button class="btn btn-danger" onclick="updateFuel(false, -1)">-</button>
+                <span class="input-group-text" style="width: 80px; justify-content: center;" id="teleop_fuel_count">0</span>
+                <button class="btn btn-success" onclick="updateFuel(false, 1)">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3 border-warning" id="endgame-panel">
+        <div class="card-header bg-warning text-dark">
+          <h4 class="mb-0">Endgame (Climb)</h4>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-4 border-end">
+              <h5>Robot 1</h5>
+              <div class="btn-group-vertical w-100" role="group">
+                <input type="radio" class="btn-check" name="climb_0" id="climb_0_none" value="0" checked onchange="updateClimb(0, 0)">
+                <label class="btn btn-outline-secondary" for="climb_0_none">None</label>
+
+                <input type="radio" class="btn-check" name="climb_0" id="climb_0_lvl1" value="1" onchange="updateClimb(0, 1)">
+                <label class="btn btn-outline-info" for="climb_0_lvl1">Level 1</label>
+
+                <input type="radio" class="btn-check" name="climb_0" id="climb_0_lvl2" value="2" onchange="updateClimb(0, 2)">
+                <label class="btn btn-outline-primary" for="climb_0_lvl2">Level 2</label>
+
+                <input type="radio" class="btn-check" name="climb_0" id="climb_0_lvl3" value="3" onchange="updateClimb(0, 3)">
+                <label class="btn btn-outline-success" for="climb_0_lvl3">Level 3</label>
+              </div>
+            </div>
+
+            <div class="col-md-4 border-end">
+              <h5>Robot 2</h5>
+              <div class="btn-group-vertical w-100" role="group">
+                <input type="radio" class="btn-check" name="climb_1" id="climb_1_none" value="0" checked onchange="updateClimb(1, 0)">
+                <label class="btn btn-outline-secondary" for="climb_1_none">None</label>
+
+                <input type="radio" class="btn-check" name="climb_1" id="climb_1_lvl1" value="1" onchange="updateClimb(1, 1)">
+                <label class="btn btn-outline-info" for="climb_1_lvl1">Level 1</label>
+
+                <input type="radio" class="btn-check" name="climb_1" id="climb_1_lvl2" value="2" onchange="updateClimb(1, 2)">
+                <label class="btn btn-outline-primary" for="climb_1_lvl2">Level 2 </label>
+
+                <input type="radio" class="btn-check" name="climb_1" id="climb_1_lvl3" value="3" onchange="updateClimb(1, 3)">
+                <label class="btn btn-outline-success" for="climb_1_lvl3">Level 3 </label>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <h5>Robot 3</h5>
+              <div class="btn-group-vertical w-100" role="group">
+                <input type="radio" class="btn-check" name="climb_2" id="climb_2_none" value="0" checked onchange="updateClimb(2, 0)">
+                <label class="btn btn-outline-secondary" for="climb_2_none">None</label>
+
+                <input type="radio" class="btn-check" name="climb_2" id="climb_2_lvl1" value="1" onchange="updateClimb(2, 1)">
+                <label class="btn btn-outline-info" for="climb_2_lvl1">Level 1</label>
+
+                <input type="radio" class="btn-check" name="climb_2" id="climb_2_lvl2" value="2" onchange="updateClimb(2, 2)">
+                <label class="btn btn-outline-primary" for="climb_2_lvl2">Level 2 </label>
+
+                <input type="radio" class="btn-check" name="climb_2" id="climb_2_lvl3" value="3" onchange="updateClimb(2, 3)">
+                <label class="btn btn-outline-success" for="climb_2_lvl3">Level 3 </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <button id="commit_btn" class="btn btn-primary btn-lg p-4" onclick="commitScore()" disabled>
+          <h3>WAIT FOR MATCH END</h3>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+{{end}}
+
 {{define "script"}}
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/scoring_panel.js"></script>
-{{end}}
+<script>
 
-{{define "foulButton"}}
-<button id="{{.id}}" class="foul-button {{.color}}" ontouchstart onclick="addFoul('{{.color}}', {{.isMajor}});">
-  <div class="foul-button-label">{{.label}}</div>
-  <div class="foul-button-counters">
-    <span class="fouls-local">0</span> / <span class="fouls-global">0</span>
-  </div>
-</button>
-{{end}}
+  var position = "{{.PositionName}}"; // "red_near", "blue_far", etc.
+  var alliance = "{{.Position.Alliance}}"; // "red" or "blue"
+  
 
-{{define "teamButton"}}
-<button id="{{.id}}" class="team-button team-{{.index}} {{.class}}" onclick="{{.onclick}}" ontouchstart disabled>
-  <div class="team-num"></div>
-  <div class="team-text">None</div>
-</button>
-{{end}}
 
-{{define "counter"}}
-<div id="{{.id}}" class="counter">
-  <button class="counter-decrement scoring-button" onclick="handleCounterClick('{{.id}}', -1);" ontouchstart disabled>
-    -1
-  </button>
-  <div class="counter-status">
-    {{if .has_auto}}
-    <div class="counter-main-clone">Teleop: <span class="counter-value">0</span></div>
-    <div class="counter-auto-row">Auto: <span class="counter-auto-value">0</span></div>
-    {{end}}
-    <div class="counter-value counter-main-value">0</div>
-    <div class="counter-label">{{.label}}</div>
-  </div>
-  <button class="counter-increment scoring-button" onclick="handleCounterClick('{{.id}}', 1);" ontouchstart disabled>
-    +1
-  </button>
-</div>
-{{end}}
-
-{{define "reefColumn"}}
-<div id="reef-column-{{.index}}" class="reef-column">
-  <div class="reef-column-contents">
-    {{ $index := .index }}
-    {{range $i := seq 3}}
-    <button class="reef-button scoring-button" onclick="handleReefClick({{$index}}, 5 - {{$i}})" ontouchstart
-      disabled></button>
-    {{end}}
-    <svg class="reef-image" viewBox="0 0 120 600">
-      <use xlink:href="#reef-column"/>
-    </svg>
-  </div>
-</div>
-{{end}}
-
-{{define "endgame-input"}}
-<div id="{{.id}}" class="endgame-input team-{{.index}}">
-  <div class="team-num"></div>
-  {{template "endgame-input-button" (dict "label" "Deep" "endgameState" 3 "index" .index)}}
-  {{template "endgame-input-button" (dict "label" "Shallow" "endgameState" 2 "index" .index)}}
-  {{template "endgame-input-button" (dict "label" "Park" "endgameState" 1 "index" .index)}}
-  {{template "endgame-input-button" (dict "label" "None" "endgameState" 0 "index" .index)}}
-</div>
-{{end}}
-{{define "endgame-input-button"}}
-<button class="endgame-input-button endgame-{{.endgameState}}"
-  onclick="handleEndgameClick({{.index}}, {{.endgameState}});">{{.label}}
-</button>
+  $(document).ready(function() {
+    console.log("Panel ready: " + position);
+  });
+</script>
 {{end}}

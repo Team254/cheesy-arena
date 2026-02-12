@@ -206,6 +206,35 @@ h3 {
 .control-button[data-enabled=true] {
   opacity: 1;
 }
+/* 通用 Endgame 文字樣式 */
+[class*="-endgame"] {
+    font-weight: normal;
+    transition: color 0.3s ease; /* 變色時增加平滑過渡 */
+}
+
+/* 狀態 0: None - 灰色 */
+[class*="-endgame"][data-status="0"] {
+    color: #6c757d;
+}
+
+/* 狀態 1: Level 1 - 淺藍色 */
+[class*="-endgame"][data-status="1"] {
+    color: #17a2b8;
+    font-weight: bold;
+}
+
+/* 狀態 2: Level 2 - 深藍色 (或自定義顏色) */
+[class*="-endgame"][data-status="2"] {
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* 狀態 3: Level 3 - 金黃色 (最醒目) */
+[class*="-endgame"][data-status="3"] {
+    color: #ffc107;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 193, 7, 0.3);
+}
 #volunteerButton {
   background-color: #90c;
 }

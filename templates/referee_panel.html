@@ -1,10 +1,10 @@
 {{/*
-Copyright 2023 Team 254. All Rights Reserved.
-Author: pat@patfairbank.com (Patrick Fairbank)
-
-UI for entering and tracking fouls and red/yellow cards.
+Copyright 2026 Team 254. All Rights Reserved.
+Modified for 2026 REBUILT Game
 */}}
+
 {{define "title"}}Referee Panel{{end}}
+
 {{define "body"}}
 <div id="matchName"></div>
 <div id="refereePanel">
@@ -22,16 +22,26 @@ UI for entering and tracking fouls and red/yellow cards.
     </div>
     <div id="scoringStatuses">
       <div class="scoring-status" id="redNearScoreStatus"></div>
-      <div class="scoring-status" id="redFarScoreStatus"></div>
+      <!-- <div class="scoring-status" id="redFarScoreStatus"></div> -->
       <div class="scoring-status" id="blueNearScoreStatus"></div>
-      <div class="scoring-status" id="blueFarScoreStatus"></div>
+      <!-- <div class="scoring-status" id="blueFarScoreStatus"></div> -->
     </div>
   </div>
+
   <div id="fouls">
     <div id="scoreSummary" class="headRef-dependent">
       {{template "scoreSummary" dict "id" "blueScoreSummary"}}
       {{template "scoreSummary" dict "id" "redScoreSummary"}}
     </div>
+      <div class="navigation-buttons" style="margin: 10px; display: flex; gap: 10px;">
+      <button class="btn btn-primary" onclick="window.location.href='/panels/scoring/blue_near'">
+        Blue Scoring Panel
+      </button>
+      <button class="btn btn-danger" onclick="window.location.href='/panels/scoring/red_near'">
+        Red Scoring Panel
+      </button>
+
+  </div>
     <h3>Fouls</h3>
     <div id="foulButtons">
       <div class="foul-button blue-foul" onclick="addFoul('blue', false);">Blue</div>
@@ -42,26 +52,33 @@ UI for entering and tracking fouls and red/yellow cards.
     <div id="foulList"></div>
   </div>
 </div>
+
+
 <p>Note: Team and rule assignment are optional.</p>
+
 <div id="controlButtons" class="headRef-dependent">
   <div class="control-button" id="volunteerButton" onclick="signalVolunteers();">Signal Count</div>
   <div class="control-button" id="resetButton" onclick="signalReset();">Signal Reset</div>
   <div class="control-button" id="commitButton" onclick="commitMatch();">Commit Match</div>
 </div>
 {{end}}
+
 {{define "head"}}
 <link rel="manifest" href="/static/manifest/referee.manifest">
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <link href="/static/css/referee_panel.css" rel="stylesheet">
 {{end}}
+
 {{define "script"}}
 <script src="/static/js/match_timing.js"></script>
 <script src="/static/js/referee_panel.js"></script>
 {{end}}
+
 {{define "teamCard"}}
-<div class="team-card" id="{{.alliance}}Team{{.position}}Card" data-alliance="{{.alliance}}" onclick="cycleCard(this);">
+<div class="team-card" id="{{.alliance}}Team{{.position}}Card" data-alliance="{{.alliance}}" data-position="{{.position}}" onclick="cycleCard(this);">
 </div>
 {{end}}
+
 {{define "scoreSummary"}}
 <div id="{{.id}}" class="scoreSummary">
   <div class="placeholder"></div>
@@ -69,30 +86,30 @@ UI for entering and tracking fouls and red/yellow cards.
   <div class="team-2">0</div>
   <div class="team-3">0</div>
 
-  <div class="label">Leave</div>
-  <div class="leave-symbol team-1-leave">❌</div>
-  <div class="leave-symbol team-2-leave">❌</div>
-  <div class="leave-symbol team-3-leave">❌</div>
+  <div class="label">Auto Tower L1</div>
+  <div class="tower-symbol team-1-tower" id="red-tower-0">❌</div>
+  <div class="tower-symbol team-2-tower" id="red-tower-1">❌</div>
+  <div class="tower-symbol team-3-tower" id="red-tower-2">❌</div>
 
-  <div class="label">Endgame</div>
+  <div class="label">Fuel</div>
+  <div class="wide-row">
+    <span style="color: yellow">
+      Auto: <span class="fuel-auto">0</span>
+    </span>
+    <span style="margin: 0 20px;"></span>
+    Teleop: <span class="fuel-teleop">0</span>  
+  </div>
+
+  <div class="label">Tower</div>
   <div class="team-1-endgame">None</div>
   <div class="team-2-endgame">None</div>
   <div class="team-3-endgame">None</div>
 
-  <div class="label">Coral</div>
-  <div class="wide-row">
-    <span class="coral-l1">0</span> / <span class="coral-l2">0</span> / <span class="coral-l3">0</span> /
-    <span class="coral-l4">0</span>
-    <br />
-    <span style="color: yellow">
-      <span class="coral-l1-auto">0</span> / <span class="coral-l2-auto">0</span> / <span class="coral-l3-auto">0</span> /
-      <span class="coral-l4-auto">0</span>
-    </span>
-  </div>
-
-  <div class="label">Algae</div>
-  <div class="wide-row">
-    <span class="processor">0</span> / <span class="barge">0</span>
+  <div class="label">RP Status</div>
+  <div class="wide-row" style="font-size: 0.8em;">
+    Energized: <span class="Energized-status">No</span><br/>
+    Supercharged: <span class="supercharged-status">No</span><br/>
+    Traversal: <span class="traversal-status">No</span>
   </div>
 </div>
 {{end}}

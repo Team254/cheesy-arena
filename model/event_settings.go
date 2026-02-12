@@ -1,5 +1,6 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+// Modified for 2026 REBUILT Game
 //
 // Model and datastore read/write methods for event-level configuration.
 
@@ -111,11 +112,11 @@ type EventSettings struct {
 	PauseDurationSec                 int
 	TeleopDurationSec                int
 	WarningRemainingDurationSec      int
-	AutoBonusCoralThreshold          int
-	CoralBonusPerLevelThreshold      int
-	CoralBonusCoopEnabled            bool
-	BargeBonusPointThreshold         int
-	IncludeAlgaeInBargeBonus         bool
+
+	// --- 2026 New Settings ---
+	EnergizedFuelThreshold    int
+	SuperchargedFuelThreshold int
+	TraversalPointThreshold   int
 }
 
 func (database *Database) GetEventSettings() (*EventSettings, error) {
@@ -145,11 +146,11 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		PauseDurationSec:            game.MatchTiming.PauseDurationSec,
 		TeleopDurationSec:           game.MatchTiming.TeleopDurationSec,
 		WarningRemainingDurationSec: game.MatchTiming.WarningRemainingDurationSec,
-		AutoBonusCoralThreshold:     game.AutoBonusCoralThreshold,
-		CoralBonusPerLevelThreshold: game.CoralBonusPerLevelThreshold,
-		CoralBonusCoopEnabled:       game.CoralBonusCoopEnabled,
-		BargeBonusPointThreshold:    game.BargeBonusPointThreshold,
-		IncludeAlgaeInBargeBonus:    game.IncludeAlgaeInBargeBonus,
+
+		// Initialize 2026 defaults
+		EnergizedFuelThreshold:    game.EnergizedFuelThreshold,
+		SuperchargedFuelThreshold: game.SuperchargedFuelThreshold,
+		TraversalPointThreshold:   game.TraversalPointThreshold,
 	}
 
 	if err := database.eventSettingsTable.create(&eventSettings); err != nil {

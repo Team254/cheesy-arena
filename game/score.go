@@ -7,30 +7,28 @@ package game
 
 type Score struct {
 	RobotsBypassed  [3]bool
-	LeaveStatuses   [3]bool
-	Reef            Reef
-	BargeAlgae      int
-	ProcessorAlgae  int
+	AutoTowerLevel1 [3]bool
+	AutoFuelCount   int
+	TeleopFuelCount int
 	EndgameStatuses [3]EndgameStatus
 	Fouls           []Foul
 	PlayoffDq       bool
+	HubActive       bool
 }
 
 // Game-specific settings that can be changed via the settings.
-var AutoBonusCoralThreshold = 1
-var CoralBonusPerLevelThreshold = 7
-var CoralBonusCoopEnabled = true
-var BargeBonusPointThreshold = 16
-var IncludeAlgaeInBargeBonus = false
+var EnergizedFuelThreshold = 100    // Number of balls required to obtain an Energized RP
+var SuperchargedFuelThreshold = 360 // Number of balls required to obtain a Supercharged RP
+var TraversalPointThreshold = 50    // Number of tower points required to obtain a Traversal RP
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
 
 const (
-	EndgameNone EndgameStatus = iota
-	EndgameParked
-	EndgameShallowCage
-	EndgameDeepCage
+	EndgameNone   EndgameStatus = iota // No Rung (0 pts)
+	EndgameLevel1                      // 1 Rung (10 pts)
+	EndgameLevel2                      // 2 Rung (20 pts)
+	EndgameLevel3                      // 3 Rung (30 pts)
 )
 
 // Summarize calculates and returns the summary fields used for ranking and display.
@@ -42,36 +40,37 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 		return summary
 	}
 
-	// Calculate autonomous period points.
-	for _, status := range score.LeaveStatuses {
-		if status {
-			summary.LeavePoints += 3
+	// --- 1. Autonomous Period Points ---
+	// Fuel: 1 pt per Fuel in Active Hub
+	summary.AutoFuelPoints = score.AutoFuelCount * 1
+
+	// Tower Level 1: 10 pts per Robot
+	for _, reachedL1 := range score.AutoTowerLevel1 {
+		if reachedL1 {
+			summary.AutoTowerPoints += 15
 		}
 	}
-	autoCoralPoints := score.Reef.AutoCoralPoints()
-	summary.AutoPoints = summary.LeavePoints + autoCoralPoints
 
-	summary.NumCoral = score.Reef.AutoCoralCount() + score.Reef.TeleopCoralCount()
-	summary.CoralPoints = autoCoralPoints + score.Reef.TeleopCoralPoints()
-	summary.NumAlgae = score.BargeAlgae + score.ProcessorAlgae
-	summary.AlgaePoints = 4*score.BargeAlgae + 6*score.ProcessorAlgae
+	summary.AutoPoints = summary.AutoFuelPoints + summary.AutoTowerPoints
 
-	// Calculate endgame points.
+	// --- 2. Teleop & Endgame Points ---
+	// Fuel: 1 pt per Fuel in Active Hub
+	summary.TeleopFuelPoints = score.TeleopFuelCount * 1
+
+	// Endgame Tower: Level 2 (20pts), Level 3 (30pts)
 	for _, status := range score.EndgameStatuses {
 		switch status {
-		case EndgameParked:
-			summary.BargePoints += 2
-		case EndgameShallowCage:
-			summary.BargePoints += 6
-		case EndgameDeepCage:
-			summary.BargePoints += 12
+		case EndgameLevel1:
+			summary.EndgameTowerPoints += 10
+		case EndgameLevel2:
+			summary.EndgameTowerPoints += 20
+		case EndgameLevel3:
+			summary.EndgameTowerPoints += 30
 		default:
 		}
 	}
 
-	summary.MatchPoints = summary.LeavePoints + summary.CoralPoints + summary.AlgaePoints + summary.BargePoints
-
-	// Calculate penalty points.
+	// --- 3. Penalty Points & Special Rules ---
 	for _, foul := range opponentScore.Fouls {
 		summary.FoulPoints += foul.PointValue()
 		// Store the number of major fouls since it is used to break ties in playoffs.
@@ -81,75 +80,63 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 
 		rule := foul.Rule()
 		if rule != nil {
-			// Check for the opponent fouls that automatically trigger a ranking point.
-			if rule.IsRankingPoint {
-				switch rule.RuleNumber {
-				case "G410":
-					summary.CoralBonusRankingPoint = true
-				case "G418":
-					summary.BargeBonusRankingPoint = true
-				case "G428":
-					summary.BargeBonusRankingPoint = true
-				}
+			// Handle special rule G420 (Endgame Protection)
+			// Rule: If the opponent commits G420, our team gets Level 3 Climb points (30 points)
+			if rule.RuleNumber == "G420" {
+				summary.EndgameTowerPoints += 30
 			}
 		}
 	}
 
+	// Summarize Match Points
+	summary.TotalFuelPoints = summary.AutoFuelPoints + summary.TeleopFuelPoints
+	summary.TotalTowerPoints = summary.AutoTowerPoints + summary.EndgameTowerPoints
+	summary.MatchPoints = summary.TotalFuelPoints + summary.TotalTowerPoints
+
 	summary.Score = summary.MatchPoints + summary.FoulPoints
 
-	// Calculate bonus ranking points.
-	// Autonomous bonus ranking point.
-	allRobotsLeft := true
-	for i, left := range score.LeaveStatuses {
-		if !left && !score.RobotsBypassed[i] {
-			allRobotsLeft = false
-			break
-		}
-	}
-	if allRobotsLeft && score.Reef.isAutoBonusCoralThresholdMet() {
-		summary.AutoBonusRankingPoint = true
+	// --- 4. Ranking Points (RP) Calculation ---
+
+	// A. Energized RP (based on Fuel count)
+	totalFuel := score.AutoFuelCount + score.TeleopFuelCount
+	if totalFuel >= EnergizedFuelThreshold {
+		summary.EnergizedRankingPoint = true
+	} else {
+		summary.EnergizedRankingPoint = false
 	}
 
-	// Coral bonus ranking point.
-	summary.NumCoralLevels = score.Reef.countCoralBonusSatisfiedLevels()
-	summary.NumCoralLevelsGoal = 4
-	if CoralBonusCoopEnabled {
-		summary.CoopertitionCriteriaMet = score.ProcessorAlgae >= 2
-		summary.CoopertitionBonus = summary.CoopertitionCriteriaMet && opponentScore.ProcessorAlgae >= 2
-		if summary.CoopertitionBonus {
-			summary.NumCoralLevelsGoal = 3
-		}
-	}
-	if summary.NumCoralLevels >= summary.NumCoralLevelsGoal {
-		summary.CoralBonusRankingPoint = true
+	// B. Supercharged RP (based on higher Fuel count)
+	if totalFuel >= SuperchargedFuelThreshold {
+		summary.SuperchargedRankingPoint = true
+	} else {
+		summary.SuperchargedRankingPoint = false
 	}
 
-	// Barge bonus ranking point.
-	bargePointsForBonus := summary.BargePoints
-	if IncludeAlgaeInBargeBonus {
-		bargePointsForBonus += summary.AlgaePoints
-	}
-	if bargePointsForBonus >= BargeBonusPointThreshold {
-		summary.BargeBonusRankingPoint = true
+	// C. Traversal RP (based on Tower points)
+	// Includes additional climb points from G420
+	if summary.TotalTowerPoints >= TraversalPointThreshold {
+		summary.TraversalRankingPoint = true
 	}
 
-	// Check for G206 violation.
+	// Check for G206 violation (Collusion for RP).
+	// If our team commits G206, all Bonus RP are revoked.
 	for _, foul := range score.Fouls {
 		if foul.Rule() != nil && foul.Rule().RuleNumber == "G206" {
-			summary.CoralBonusRankingPoint = false
-			summary.BargeBonusRankingPoint = false
+			summary.EnergizedRankingPoint = false
+			summary.SuperchargedRankingPoint = false
+			summary.TraversalRankingPoint = false
 			break
 		}
 	}
 
 	// Add up the bonus ranking points.
-	if summary.AutoBonusRankingPoint {
+	if summary.EnergizedRankingPoint {
 		summary.BonusRankingPoints++
 	}
-	if summary.CoralBonusRankingPoint {
+	if summary.SuperchargedRankingPoint {
 		summary.BonusRankingPoints++
 	}
-	if summary.BargeBonusRankingPoint {
+	if summary.TraversalRankingPoint {
 		summary.BonusRankingPoints++
 	}
 
@@ -159,10 +146,10 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 // Equals returns true if and only if all fields of the two scores are equal.
 func (score *Score) Equals(other *Score) bool {
 	if score.RobotsBypassed != other.RobotsBypassed ||
-		score.LeaveStatuses != other.LeaveStatuses ||
-		score.Reef != other.Reef ||
-		score.BargeAlgae != other.BargeAlgae ||
-		score.ProcessorAlgae != other.ProcessorAlgae ||
+		score.HubActive != other.HubActive ||
+		score.AutoTowerLevel1 != other.AutoTowerLevel1 ||
+		score.AutoFuelCount != other.AutoFuelCount ||
+		score.TeleopFuelCount != other.TeleopFuelCount ||
 		score.EndgameStatuses != other.EndgameStatuses ||
 		score.PlayoffDq != other.PlayoffDq ||
 		len(score.Fouls) != len(other.Fouls) {

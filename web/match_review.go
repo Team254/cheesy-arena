@@ -8,10 +8,12 @@ package web
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
+	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 )
 
 type MatchReviewListItem struct {
@@ -82,25 +84,49 @@ func (web *Web) matchReviewEditGetHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// 檢查 matchResult 是否為 nil，避免後續 Marshal 或模板渲染崩潰
+	if matchResult == nil {
+		log.Printf("Warning: MatchResult is nil for match %d", match.Id)
+		matchResult = &model.MatchResult{
+			MatchId: match.Id,
+			// 這裡可以根據 2026 年的結構初始化空的紅藍方分數
+		}
+	}
+
 	template, err := web.parseFiles("templates/edit_match_result.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+
+	// 序列化 MatchResult 供前端 JavaScript (如 Vue 或 React) 使用
 	matchResultJson, err := json.Marshal(matchResult)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
+
+	// 構建傳遞給模板的資料結構
 	data := struct {
 		*model.EventSettings
 		Match           *model.Match
+		MatchResult     *model.MatchResult // 直接傳遞物件，方便 Go 模板渲染
 		MatchResultJson string
 		IsCurrentMatch  bool
 		Rules           map[int]*game.Rule
-	}{web.arena.EventSettings, match, string(matchResultJson), isCurrent, game.GetAllRules()}
+	}{
+		EventSettings:   web.arena.EventSettings,
+		Match:           match,
+		MatchResult:     matchResult,
+		MatchResultJson: string(matchResultJson),
+		IsCurrentMatch:  isCurrent,
+		Rules:           game.GetAllRules(), // 確保 2026 規則集傳入
+	}
+
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
+		// 如果發生 500 錯誤，通常是 templates/edit_match_result.html 內部渲染邏輯有誤
+		log.Printf("Template execution error in matchReviewEditGetHandler: %v", err)
 		handleWebErr(w, err)
 		return
 	}

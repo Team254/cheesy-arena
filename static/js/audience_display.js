@@ -20,23 +20,33 @@ const sponsorTextTemplate = Handlebars.compile($("#sponsorTextTemplate").html())
 
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
 const overlayCenteringTopUp = "-130px";
-const overlayCenteringBottomHideParams = {queue: false, bottom: $("#overlayCentering").css("bottom")};
-const overlayCenteringBottomShowParams = {queue: false, bottom: "0px"};
-const overlayCenteringTopHideParams = {queue: false, top: overlayCenteringTopUp};
-const overlayCenteringTopShowParams = {queue: false, top: "50px"};
-const eventMatchInfoDown = "30px";
+const overlayCenteringBottomHideParams = { queue: false, bottom: $("#overlayCentering").css("bottom") };
+const overlayCenteringBottomShowParams = { queue: false, bottom: "0px" };
+const overlayCenteringTopHideParams = { queue: false, top: overlayCenteringTopUp };
+const overlayCenteringTopShowParams = { queue: false, top: "50px" };
+//Match 介紹條高度
+const eventMatchInfoDown = "35px";
 const eventMatchInfoUp = $("#eventMatchInfo").css("height");
-const logoUp = "20px";
+const logoUp = "0px";
 const logoDown = $("#logo").css("top");
+//score 動畫位置
 const scoreIn = $(".score").css("width");
-const scoreMid = "185px";
-const scoreOut = "370px";
-const scoreFieldsOut = "150px";
-const scoreLogoTop = "-530px";
+const scoreMid = "36vw";
+const scoreOut = "36vw";
+
+//比分數字位置
+const scoreFieldsOut = "35vw";
+const scoreLogoTop = "-500px";
 const bracketLogoTop = "-780px";
 const bracketLogoScale = 0.75;
 const timeoutDetailsIn = $("#timeoutDetails").css("width");
 const timeoutDetailsOut = "570px";
+
+const numberIn = $(".score").css("width");
+const numberOut = "30vw";
+
+//過場動畫
+let matchData = null;
 
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function (targetScreen) {
@@ -140,29 +150,128 @@ const handleMatchTime = function (data) {
   translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
     $("#matchTime").text(getCountdownString(countdownSec));
   });
+  
+ // --- 即時更新 Coopertition 邏輯 ---
+    // 根據 reversed 判斷紅藍方在哪一邊
+    const redElement = (redSide === "left") ? "#left_Hubactive" : "#right_Hubactive";
+    const blueElement = (blueSide === "left") ? "#left_Hubactive" : "#right_Hubactive";
+
+    // 判斷紅方狀態
+    $(redElement).html(
+        data.HubActiveRed === true
+        ? '<img src="/static/img/hubactive_left.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
+        : ''
+    );
+
+    // 判斷藍方狀態
+    $(blueElement).html(
+        data.HubActiveBlue === true
+        ? '<img src="/static/img/hubactive_right.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">'
+        : ''
+    );
+
+  // 3. 顯示 Shift 轉換次數與固定計時器位置
+    if (data.MatchState === 5) { // TELEOP 手動階段
+        $("#shiftCounter, #shiftTime").show();
+        
+        // 直接顯示後台傳來的數據，例如：0, 1, 2, 3, 4, 5
+        // 後端傳什麼，這裡就顯示什麼
+        $("#currentShift").text(data.CurrentShift);
+    // 直接顯示後端傳來的階段剩餘秒數，並補齊兩位數格式 (例如 :25, :05)
+        const sTime = data.ShiftTimeSec;
+        $("#shiftTime").text(":" + (sTime < 10 ? "0" : "") + sTime);
+      $("#logo").css("visibility", "hidden");
+    } 
+    else {
+        $("#shiftCounter, #shiftTime").hide();
+        $("#logo").css("visibility", "visible");
+    }
 };
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function (data) {
-  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
-  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
-
+  //$(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
+  //$(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
+  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score);
+  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score);
   let redCoral, blueCoral;
+  let redfuelgoal,bluefuelgoal;
+
+  // 定義一個取得燃料目標值的輔助函式，減少重複程式碼
+  const getFuelGoal = (summary) => (summary.EnergizedRankingPoint ? 360 : 100);
+
   if (currentMatch.Type === matchTypePlayoff) {
-    redCoral = data.Red.ScoreSummary.NumCoral;
-    blueCoral = data.Blue.ScoreSummary.NumCoral;
+      redCoral = data.Red.ScoreSummary.NumCoral;
+      blueCoral = data.Blue.ScoreSummary.NumCoral;
   } else {
-    redCoral = `${data.Red.ScoreSummary.NumCoralLevels}/${data.Red.ScoreSummary.NumCoralLevelsGoal}`;
-    blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
+      // 1. 計算紅藍兩隊的目標值
+      const redFuelGoal = getFuelGoal(data.Red.ScoreSummary);
+      const blueFuelGoal = getFuelGoal(data.Blue.ScoreSummary);
+
+      // 2. 使用樣板字面值 (Template Literals) 正確帶入變數
+      // 修正了你紅藍兩隊後綴不統一的問題（原本藍隊用 NumCoralLevelsGoal）
+      redCoral = `${data.Red.ScoreSummary.TotalFuelPoints}/${redFuelGoal}`;
+      blueCoral = `${data.Blue.ScoreSummary.TotalFuelPoints}/${blueFuelGoal}`;
   }
   $(`#${redSide}Coral`).text(redCoral);
   $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
   $(`#${blueSide}Coral`).text(blueCoral);
   $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
+
 };
 
+//撥放勝利影片
+function playWinVideo(callback, data) {
+  const videoPlayer = document.getElementById("winVideoPlayer");
+  const videoSource = document.getElementById("winVideoSource");
+
+  if (!data) {
+    console.warn("⚠️ 無法播放影片：data 為 null");
+    callback();
+    return;
+  }
+
+  // 先移除任何 onended（避免重複綁定）
+  videoPlayer.onended = null;
+  videoPlayer.pause();
+  videoPlayer.currentTime = 0;
+
+  // 重新設定 source
+  let videoFile = "";
+  if (data.RedWon && !data.BlueWon) {
+    videoFile = "/static/video/RedWinsVideo.mp4";
+  } else if (!data.RedWon && data.BlueWon) {
+    videoFile = "/static/video/BlueWinsVideo.mp4";
+  } else {
+    videoFile = "/static/video/TieVideo.mp4";
+  }
+
+  videoSource.src = videoFile;
+  videoPlayer.load();
+
+  // 顯示並準備播放
+  videoPlayer.style.display = "block";
+  videoPlayer.muted = false;
+
+  videoPlayer.onended = () => {
+    console.log("✅ 影片播放結束");
+    videoPlayer.style.display = "none";
+    callback();
+  };
+
+  videoPlayer.play()
+    .then(() => console.log("✅ 播放成功"))
+    .catch((e) => {
+      console.error("❌ 播放失敗:", e);
+      videoPlayer.style.display = "none";
+      callback();
+    });
+}
+
+//final 計分畫面
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function (data) {
+  matchData = data;
   $(`#${redSide}FinalScore`).text(data.RedScoreSummary.Score);
   $(`#${redSide}FinalAlliance`).text("Alliance " + data.Match.PlayoffRedAlliance);
   setTeamInfo(redSide, 1, data.Match.Red1, data.RedCards, data.RedRankings);
@@ -173,31 +282,25 @@ const handleScorePosted = function (data) {
   } else {
     setTeamInfo(redSide, 4, 0, data.RedCards, data.RedRankings);
   }
-  $(`#${redSide}FinalLeavePoints`).text(data.RedScoreSummary.LeavePoints);
-  $(`#${redSide}FinalCoralPoints`).text(data.RedScoreSummary.CoralPoints);
-  $(`#${redSide}FinalAlgaePoints`).text(data.RedScoreSummary.AlgaePoints);
-  $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.BargePoints);
+  $(`#${redSide}FinalLeavePoints`).text(data.RedScoreSummary.AutoFuelPoints);
+  $(`#${redSide}FinalCoralPoints`).text(data.RedScoreSummary.AutoTowerPoints);
+  $(`#${redSide}FinalAlgaePoints`).text(data.RedScoreSummary.TeleopFuelPoints);
+  $(`#${redSide}FinalBargePoints`).text(data.RedScoreSummary.EndgameTowerPoints);
   $(`#${redSide}FinalFoulPoints`).text(data.RedScoreSummary.FoulPoints);
-  $(`#${redSide}FinalCoopertitionBonus`).html(
-    data.RedScoreSummary.CoopertitionBonus ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${redSide}FinalCoopertitionBonus`).attr(
-    "data-checked", data.RedScoreSummary.CoopertitionBonus
-  );
   $(`#${redSide}FinalAutoBonusRankingPoint`).html(
-    data.RedScoreSummary.AutoBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+    data.RedScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/red_energizedRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : ' '
   );
   $(`#${redSide}FinalAutoBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.AutoBonusRankingPoint
+    "data-checked", data.RedScoreSummary.EnergizedRankingPoint
   );
   $(`#${redSide}FinalCoralBonusRankingPoint`).html(
-    data.RedScoreSummary.CoralBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+    data.RedScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/red_superRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalCoralBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.CoralBonusRankingPoint
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).html(
-    data.RedScoreSummary.BargeBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+    data.RedScoreSummary.TraversalRankingPoint ? '<img src="/static/img/red_towerRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).attr(
     "data-checked", data.RedScoreSummary.BargeBonusRankingPoint
@@ -208,6 +311,13 @@ const handleScorePosted = function (data) {
   redFinalDestination.html(data.RedDestination.replace("Advances to ", "Advances to<br>"));
   redFinalDestination.toggle(data.RedDestination !== "");
   redFinalDestination.attr("data-won", data.RedWon);
+  let redimgHtml = " ";
+  for (let i = 0; i < data.RedWinRP; i++) {
+    redimgHtml += '<img src="/static/img/red_winRP.png" style="width:60px;height:60px;margin:20px 5px;">';
+  }
+  $(`#${redSide}FinalRankingPoints`).html(redimgHtml);
+
+
 
   $(`#${blueSide}FinalScore`).text(data.BlueScoreSummary.Score);
   $(`#${blueSide}FinalAlliance`).text("Alliance " + data.Match.PlayoffBlueAlliance);
@@ -219,34 +329,28 @@ const handleScorePosted = function (data) {
   } else {
     setTeamInfo(blueSide, 4, 0, data.BlueCards, data.BlueRankings);
   }
-  $(`#${blueSide}FinalLeavePoints`).text(data.BlueScoreSummary.LeavePoints);
-  $(`#${blueSide}FinalCoralPoints`).text(data.BlueScoreSummary.CoralPoints);
-  $(`#${blueSide}FinalAlgaePoints`).text(data.BlueScoreSummary.AlgaePoints);
-  $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.BargePoints);
+  $(`#${blueSide}FinalLeavePoints`).text(data.BlueScoreSummary.AutoFuelPoints);
+  $(`#${blueSide}FinalCoralPoints`).text(data.BlueScoreSummary.AutoTowerPoints);
+  $(`#${blueSide}FinalAlgaePoints`).text(data.BlueScoreSummary.TeleopFuelPoints);
+  $(`#${blueSide}FinalBargePoints`).text(data.BlueScoreSummary.EndgameTowerPoints);
   $(`#${blueSide}FinalFoulPoints`).text(data.BlueScoreSummary.FoulPoints);
-  $(`#${blueSide}FinalCoopertitionBonus`).html(
-    data.BlueScoreSummary.CoopertitionBonus ? "&#x2714;" : "&#x2718;"
-  );
-  $(`#${blueSide}FinalCoopertitionBonus`).attr(
-    "data-checked", data.BlueScoreSummary.CoopertitionBonus
-  );
   $(`#${blueSide}FinalAutoBonusRankingPoint`).html(
-    data.BlueScoreSummary.AutoBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+    data.BlueScoreSummary.EnergizedRankingPoint ? '<img src="/static/img/blue_energizedRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalAutoBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.AutoBonusRankingPoint
+    "data-checked", data.BlueScoreSummary.EnergizedRankingPoint
   );
   $(`#${blueSide}FinalCoralBonusRankingPoint`).html(
-    data.BlueScoreSummary.CoralBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+    data.BlueScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/blue_superRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalCoralBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.CoralBonusRankingPoint
+    "data-checked", data.BlueScoreSummary.SuperchargedRankingPoint
   );
   $(`#${blueSide}FinalBargeBonusRankingPoint`).html(
-    data.BlueScoreSummary.BargeBonusRankingPoint ? "&#x2714;" : "&#x2718;"
+    data.BlueScoreSummary.TraversalRankingPoint ? '<img src="/static/img/blue_towerRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${blueSide}FinalBargeBonusRankingPoint`).attr(
-    "data-checked", data.BlueScoreSummary.BargeBonusRankingPoint
+    "data-checked", data.BlueScoreSummary.TraversalRankingPoint
   );
   $(`#${blueSide}FinalRankingPoints`).html(data.BlueRankingPoints);
   $(`#${blueSide}FinalWins`).text(data.BlueWins);
@@ -254,6 +358,11 @@ const handleScorePosted = function (data) {
   blueFinalDestination.html(data.BlueDestination.replace("Advances to ", "Advances to<br>"));
   blueFinalDestination.toggle(data.BlueDestination !== "");
   blueFinalDestination.attr("data-won", data.BlueWon);
+  let blueimgHtml = " ";
+  for (let i = 0; i < data.BlueWinRP; i++) {
+    blueimgHtml += '<img src="/static/img/blue_winRP.png" style="width:60px;height:60px;margin:20px 5px;">';
+  }
+  $(`#${blueSide}FinalRankingPoints`).html(blueimgHtml);
 
   let matchName = data.Match.LongName;
   if (data.Match.NameDetail !== "") {
@@ -272,7 +381,6 @@ const handleScorePosted = function (data) {
     $(".playoff-hidden-field").show();
     $(".playoff-only-field").hide();
   }
-  $(".coopertition-hidden-field").toggle(data.CoopertitionEnabled);
 };
 
 // Handles a websocket message to play a sound to signal match start/stop/etc.
@@ -294,7 +402,7 @@ const handleAllianceSelection = function (data) {
     $.each(alliances, function (k, v) {
       v.Index = k + 1;
     });
-    $("#allianceSelection").html(allianceSelectionTemplate({alliances: alliances, numColumns: numColumns}));
+    $("#allianceSelection").html(allianceSelectionTemplate({ alliances: alliances, numColumns: numColumns }));
   }
   if (rankedTeams) {
     let text = "";
@@ -334,31 +442,29 @@ const handleLowerThird = function (data) {
   const lowerThirdElement = $("#lowerThird");
   if (data.ShowLowerThird && !lowerThirdElement.is(":visible")) {
     lowerThirdElement.show();
-    lowerThirdElement.transition({queue: false, left: "150px"}, 750, "ease");
+    lowerThirdElement.transition({ queue: false, left: "150px" }, 750, "ease");
   } else if (!data.ShowLowerThird && lowerThirdElement.is(":visible")) {
-    lowerThirdElement.transition({queue: false, left: "-1000px"}, 1000, "ease", function () {
+    lowerThirdElement.transition({ queue: false, left: "-1000px" }, 1000, "ease", function () {
       lowerThirdElement.hide();
     });
   }
 };
 
 const transitionAllianceSelectionToBlank = function (callback) {
-  $('#allianceSelectionCentering').transition({queue: false, right: "-60em"}, 500, "ease", callback);
-  $('#allianceRankingsCentering.enabled').transition({queue: false, left: "-60em"}, 500, "ease");
+  $('#allianceSelectionCentering').transition({ queue: false, right: "-60em" }, 500, "ease", callback);
+  $('#allianceRankingsCentering.enabled').transition({ queue: false, left: "-60em" }, 500, "ease");
 };
 
 const transitionBlankToAllianceSelection = function (callback) {
   $('#allianceSelectionCentering').css("right", "-60em").show();
-  $('#allianceSelectionCentering').transition({queue: false, right: "3em"}, 500, "ease", callback);
+  $('#allianceSelectionCentering').transition({ queue: false, right: "3em" }, 500, "ease", callback);
   $('#allianceRankingsCentering.enabled').css("left", "-60em").show();
-  $('#allianceRankingsCentering.enabled').transition({queue: false, left: "3em"}, 500, "ease");
+  $('#allianceRankingsCentering.enabled').transition({ queue: false, left: "3em" }, 500, "ease");
 };
 
 const transitionBlankToBracket = function (callback) {
   transitionBlankToLogo(function () {
-    setTimeout(function () {
-      transitionLogoToBracket(callback);
-    }, 50);
+    setTimeout(function () { transitionLogoToBracket(callback); }, 50);
   });
 };
 
@@ -367,75 +473,77 @@ const transitionBlankToIntro = function (callback) {
     $(".teams").css("display", "flex");
     $(".avatars").css("display", "flex");
     $(".avatars").css("opacity", 1);
-    $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function () {
+    $(".score").transition({ queue: false, width: scoreMid }, 500, "ease", function () {
       $("#eventMatchInfo").css("display", "flex");
-      $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
+      $("#eventMatchInfo").transition({ queue: false, height: eventMatchInfoDown }, 500, "ease", callback);
     });
   });
 };
 
 const transitionBlankToLogo = function (callback) {
-  $(".blindsCenter.blank").css({rotateY: "0deg"});
-  $(".blindsCenter.full").css({rotateY: "-180deg"});
-  $(".blinds.right").transition({queue: false, right: 0}, 1000, "ease");
-  $(".blinds.left").transition({queue: false, left: 0}, 1000, "ease", function () {
+  $(".blindsCenter.blank").css({ rotateY: "0deg" });
+  $(".blindsCenter.full").css({ rotateY: "-180deg" });
+  $(".blinds.right").transition({ queue: false, right: 0 }, 1000, "ease");
+  $(".blinds.left").transition({ queue: false, left: 0 }, 1000, "ease", function () {
     $(".blinds.left").addClass("full");
     $(".blinds.right").hide();
     setTimeout(function () {
-      $(".blindsCenter.blank").transition({queue: false, rotateY: "180deg"}, 500, "ease");
-      $(".blindsCenter.full").transition({queue: false, rotateY: "0deg"}, 500, "ease", callback);
+      $(".blindsCenter.blank").transition({ queue: false, rotateY: "180deg" }, 500, "ease");
+      $(".blindsCenter.full").transition({ queue: false, rotateY: "0deg" }, 500, "ease", callback);
     }, 200);
   });
 };
 
 const transitionBlankToLogoLuma = function (callback) {
-  $(".blindsCenter.blank").css({rotateY: "180deg"});
-  $(".blindsCenter.full").transition({queue: false, rotateY: "0deg"}, 1000, "ease", callback);
+  $(".blindsCenter.blank").css({ rotateY: "180deg" });
+  $(".blindsCenter.full").transition({ queue: false, rotateY: "0deg" }, 1000, "ease", callback);
 };
 
 const transitionBlankToMatch = function (callback) {
   $("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function () {
     $(".teams").css("display", "flex");
     $(".score-fields").css("display", "flex");
-    $(".score-fields").transition({queue: false, width: scoreFieldsOut}, 500, "ease");
-    $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
-    $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function () {
+    $(".score-fields").transition({ queue: false, width: scoreFieldsOut }, 500, "ease");
+    $("#logo").transition({ queue: false, top: logoUp }, 500, "ease");
+    $(".score").transition({ queue: false, width: scoreOut }, 500, "ease", function () {
       $("#eventMatchInfo").css("display", "flex");
-      $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
-      $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
-      $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease");
-      $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
+      $("#eventMatchInfo").transition({ queue: false, height: eventMatchInfoDown }, 500, "ease", callback);
+      $(".score-number").transition({ queue: false, opacity: 1 }, 750, "ease");
+      $("#matchTime").transition({ queue: false, opacity: 1 }, 750, "ease");
+      $(".score-fields").transition({ queue: false, opacity: 1 }, 750, "ease");
     });
   });
 };
 
 const transitionBlankToScore = function (callback) {
-  transitionBlankToLogo(function () {
-    setTimeout(function () {
-      transitionLogoToScore(callback);
-    }, 50);
-  });
+// 先撥放勝利影片（playWinVideo 為你已有的函式）
+  playWinVideo(function () {
+    // 影片播放完後再執行 transitionBlankToLogo → transitionLogoToScore
+    transitionBlankToLogo(function () {
+      setTimeout(function () { transitionLogoToScore(callback); }, 50);
+    });
+  }, matchData); // matchData 是從 scorePosted 拿到的資料
 };
 
 const transitionBlankToSponsor = function (callback) {
-  $(".blindsCenter.blank").css({rotateY: "90deg"});
-  $(".blinds.right").transition({queue: false, right: 0}, 1000, "ease");
-  $(".blinds.left").transition({queue: false, left: 0}, 1000, "ease", function () {
+  $(".blindsCenter.blank").css({ rotateY: "90deg" });
+  $(".blinds.right").transition({ queue: false, right: 0 }, 1000, "ease");
+  $(".blinds.left").transition({ queue: false, left: 0 }, 1000, "ease", function () {
     $(".blinds.left").addClass("full");
     $(".blinds.right").hide();
     setTimeout(function () {
       $("#sponsor").show();
-      $("#sponsor").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+      $("#sponsor").transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
     }, 200);
   });
 };
 
 const transitionBlankToTimeout = function (callback) {
   $("#overlayCentering").transition(overlayCenteringShowParams, 500, "ease", function () {
-    $("#timeoutDetails").transition({queue: false, width: timeoutDetailsOut}, 500, "ease");
-    $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function () {
-      $(".timeout-detail").transition({queue: false, opacity: 1}, 750, "ease");
-      $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
+    $("#timeoutDetails").transition({ queue: false, width: timeoutDetailsOut }, 500, "ease");
+    $("#logo").transition({ queue: false, top: logoUp }, 500, "ease", function () {
+      $(".timeout-detail").transition({ queue: false, opacity: 1 }, 750, "ease");
+      $("#matchTime").transition({ queue: false, opacity: 1 }, 750, "ease", callback);
     });
   });
 };
@@ -447,10 +555,10 @@ const transitionBracketToBlank = function (callback) {
 };
 
 const transitionBracketToLogo = function (callback) {
-  $("#bracket").transition({queue: false, opacity: 0}, 500, "ease", function () {
+  $("#bracket").transition({ queue: false, opacity: 0 }, 500, "ease", function () {
     $("#bracket").hide();
   });
-  $(".blindsCenter.full").transition({queue: false, top: 0, scale: 1}, 625, "ease", callback);
+  $(".blindsCenter.full").transition({ queue: false, top: 0, scale: 1 }, 625, "ease", callback);
 };
 
 const transitionBracketToLogoLuma = function (callback) {
@@ -460,11 +568,11 @@ const transitionBracketToLogoLuma = function (callback) {
 };
 
 const transitionBracketToScore = function (callback) {
-  $(".blindsCenter.full").transition({queue: false, top: scoreLogoTop, scale: 1}, 1000, "ease");
-  $("#bracket").transition({queue: false, opacity: 0}, 1000, "ease", function () {
+  $(".blindsCenter.full").transition({ queue: false, top: scoreLogoTop, scale: 1 }, 1000, "ease");
+  $("#bracket").transition({ queue: false, opacity: 0 }, 1000, "ease", function () {
     $("#bracket").hide();
     $("#finalScore").show();
-    $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+    $("#finalScore").transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
   });
 };
 
@@ -475,70 +583,71 @@ const transitionBracketToSponsor = function (callback) {
 };
 
 const transitionIntroToBlank = function (callback) {
-  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease", function () {
+  $("#eventMatchInfo").transition({ queue: false, height: eventMatchInfoUp }, 500, "ease", function () {
     $("#eventMatchInfo").hide();
-    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function () {
+    $(".score").transition({ queue: false, width: scoreIn }, 500, "ease", function () {
       $(".avatars").css("opacity", 0);
       $(".avatars").hide();
       $(".teams").hide();
       $("#overlayCentering").transition(overlayCenteringHideParams, 1000, "ease", callback);
     });
+
   });
 };
 
 const transitionIntroToMatch = function (callback) {
-  $(".avatars").transition({queue: false, opacity: 0}, 500, "ease", function () {
+  $(".avatars").transition({ queue: false, opacity: 0 }, 500, "ease", function () {
     $(".avatars").hide();
   });
   $(".score-fields").css("display", "flex");
-  $(".score-fields").transition({queue: false, width: scoreFieldsOut}, 500, "ease");
-  $("#logo").transition({queue: false, top: logoUp}, 500, "ease");
-  $(".score").transition({queue: false, width: scoreOut}, 500, "ease", function () {
-    $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
-    $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
-    $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
+  $(".score-fields").transition({ queue: false, width: scoreFieldsOut }, 500, "ease");
+  $("#logo").transition({ queue: false, top: logoUp }, 500, "ease");
+  $(".score").transition({ queue: false, width: scoreOut }, 500, "ease", function () {
+    $(".score-number").transition({ queue: false, opacity: 1 }, 750, "ease");
+    $("#matchTime").transition({ queue: false, opacity: 1 }, 750, "ease", callback);
+    $(".score-fields").transition({ queue: false, opacity: 1 }, 750, "ease");
   });
 };
 
 const transitionIntroToTimeout = function (callback) {
-  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease", function () {
+  $("#eventMatchInfo").transition({ queue: false, height: eventMatchInfoUp }, 500, "ease", function () {
     $("#eventMatchInfo").hide();
-    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function () {
+    $(".score").transition({ queue: false, width: scoreIn }, 500, "ease", function () {
       $(".avatars").css("opacity", 0);
       $(".avatars").hide();
       $(".teams").hide();
-      $("#timeoutDetails").transition({queue: false, width: timeoutDetailsOut}, 500, "ease");
-      $("#logo").transition({queue: false, top: logoUp}, 500, "ease", function () {
-        $(".timeout-detail").transition({queue: false, opacity: 1}, 750, "ease");
-        $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
+      $("#timeoutDetails").transition({ queue: false, width: timeoutDetailsOut }, 500, "ease");
+      $("#logo").transition({ queue: false, top: logoUp }, 500, "ease", function () {
+        $(".timeout-detail").transition({ queue: false, opacity: 1 }, 750, "ease");
+        $("#matchTime").transition({ queue: false, opacity: 1 }, 750, "ease", callback);
       });
     });
   });
 };
 
 const transitionLogoToBlank = function (callback) {
-  $(".blindsCenter.blank").transition({queue: false, rotateY: "360deg"}, 500, "ease");
-  $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 500, "ease", function () {
+  $(".blindsCenter.blank").transition({ queue: false, rotateY: "360deg" }, 500, "ease");
+  $(".blindsCenter.full").transition({ queue: false, rotateY: "180deg" }, 500, "ease", function () {
     setTimeout(function () {
       $(".blinds.left").removeClass("full");
       $(".blinds.right").show();
-      $(".blinds.right").transition({queue: false, right: "-50%"}, 1000, "ease");
-      $(".blinds.left").transition({queue: false, left: "-50%"}, 1000, "ease", callback);
+      $(".blinds.right").transition({ queue: false, right: "-50%" }, 1000, "ease");
+      $(".blinds.left").transition({ queue: false, left: "-50%" }, 1000, "ease", callback);
     }, 200);
   });
 };
 
 const transitionLogoToBracket = function (callback) {
-  $(".blindsCenter.full").transition({queue: false, top: bracketLogoTop, scale: bracketLogoScale}, 625, "ease");
+  $(".blindsCenter.full").transition({ queue: false, top: bracketLogoTop, scale: bracketLogoScale }, 625, "ease");
   $("#bracket").show();
-  $("#bracket").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+  $("#bracket").transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
 };
 
 const transitionLogoToLogoLuma = function (callback) {
   $(".blinds.left").removeClass("full");
   $(".blinds.right").show();
-  $(".blinds.right").transition({queue: false, right: "-50%"}, 1000, "ease");
-  $(".blinds.left").transition({queue: false, left: "-50%"}, 1000, "ease", function () {
+  $(".blinds.right").transition({ queue: false, right: "-50%" }, 1000, "ease");
+  $(".blinds.left").transition({ queue: false, left: "-50%" }, 1000, "ease", function () {
     if (callback) {
       callback();
     }
@@ -546,20 +655,21 @@ const transitionLogoToLogoLuma = function (callback) {
 };
 
 const transitionLogoToScore = function (callback) {
-  $(".blindsCenter.full").transition({queue: false, top: scoreLogoTop}, 625, "ease");
+  $(".blindsCenter.full").transition({ queue: false, top: scoreLogoTop }, 625, "ease");
+
   $("#finalScore").show();
-  $("#finalScore").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+  $("#finalScore").transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
 };
 
 const transitionLogoToSponsor = function (callback) {
-  $(".blindsCenter.full").transition({queue: false, rotateY: "90deg"}, 750, "ease", function () {
+  $(".blindsCenter.full").transition({ queue: false, rotateY: "90deg" }, 750, "ease", function () {
     $("#sponsor").show();
-    $("#sponsor").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+    $("#sponsor").transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
   });
 };
 
 const transitionLogoLumaToBlank = function (callback) {
-  $(".blindsCenter.full").transition({queue: false, rotateY: "180deg"}, 1000, "ease", callback);
+  $(".blindsCenter.full").transition({ queue: false, rotateY: "180deg" }, 1000, "ease", callback);
 };
 
 const transitionLogoLumaToBracket = function (callback) {
@@ -569,8 +679,8 @@ const transitionLogoLumaToBracket = function (callback) {
 };
 
 const transitionLogoLumaToLogo = function (callback) {
-  $(".blinds.right").transition({queue: false, right: 0}, 1000, "ease");
-  $(".blinds.left").transition({queue: false, left: 0}, 1000, "ease", function () {
+  $(".blinds.right").transition({ queue: false, right: 0 }, 1000, "ease");
+  $(".blinds.left").transition({ queue: false, left: 0 }, 1000, "ease", function () {
     $(".blinds.left").addClass("full");
     $(".blinds.right").hide();
     if (callback) {
@@ -586,14 +696,14 @@ const transitionLogoLumaToScore = function (callback) {
 };
 
 const transitionMatchToBlank = function (callback) {
-  $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoUp}, 500, "ease");
-  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear");
-  $(".score-fields").transition({queue: false, opacity: 0}, 300, "ease");
-  $(".score-number").transition({queue: false, opacity: 0}, 300, "linear", function () {
+  $("#eventMatchInfo").transition({ queue: false, height: eventMatchInfoUp }, 500, "ease");
+  $("#matchTime").transition({ queue: false, opacity: 0 }, 300, "linear");
+  $(".score-fields").transition({ queue: false, opacity: 0 }, 300, "ease");
+  $(".score-number").transition({ queue: false, opacity: 0 }, 300, "linear", function () {
     $("#eventMatchInfo").hide();
-    $(".score-fields").transition({queue: false, width: 0}, 500, "ease");
-    $("#logo").transition({queue: false, top: logoDown}, 500, "ease");
-    $(".score").transition({queue: false, width: scoreIn}, 500, "ease", function () {
+    $(".score-fields").transition({ queue: false, width: 0 }, 500, "ease");
+    $("#logo").transition({ queue: false, top: logoDown }, 500, "ease");
+    $(".score").transition({ queue: false, width: scoreIn }, 500, "ease", function () {
       $(".teams").hide();
       $(".score-fields").hide();
       $("#overlayCentering").transition(overlayCenteringHideParams, 1000, "ease", callback);
@@ -602,15 +712,15 @@ const transitionMatchToBlank = function (callback) {
 };
 
 const transitionMatchToIntro = function (callback) {
-  $(".score-number").transition({queue: false, opacity: 0}, 300, "linear");
-  $(".score-fields").transition({queue: false, opacity: 0}, 300, "ease");
-  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function () {
-    $(".score-fields").transition({queue: false, width: 0}, 500, "ease");
-    $("#logo").transition({queue: false, top: logoDown}, 500, "ease");
-    $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function () {
+  $(".score-number").transition({ queue: false, opacity: 0 }, 300, "linear");
+  $(".score-fields").transition({ queue: false, opacity: 0 }, 300, "ease");
+  $("#matchTime").transition({ queue: false, opacity: 0 }, 300, "linear", function () {
+    $(".score-fields").transition({ queue: false, width: 0 }, 500, "ease");
+    $("#logo").transition({ queue: false, top: logoDown }, 500, "ease");
+    $(".score").transition({ queue: false, width: scoreMid }, 500, "ease", function () {
       $(".score-fields").hide();
       $(".avatars").css("display", "flex");
-      $(".avatars").transition({queue: false, opacity: 1}, 500, "ease", callback);
+      $(".avatars").transition({ queue: false, opacity: 1 }, 500, "ease", callback);
     });
   });
 };
@@ -622,19 +732,19 @@ const transitionScoreToBlank = function (callback) {
 };
 
 const transitionScoreToBracket = function (callback) {
-  $(".blindsCenter.full").transition({queue: false, top: bracketLogoTop, scale: bracketLogoScale}, 1000, "ease");
-  $("#finalScore").transition({queue: false, opacity: 0}, 1000, "ease", function () {
+  $(".blindsCenter.full").transition({ queue: false, top: bracketLogoTop, scale: bracketLogoScale }, 1000, "ease");
+  $("#finalScore").transition({ queue: false, opacity: 0 }, 1000, "ease", function () {
     $("#finalScore").hide();
     $("#bracket").show();
-    $("#bracket").transition({queue: false, opacity: 1}, 1000, "ease", callback);
+    $("#bracket").transition({ queue: false, opacity: 1 }, 1000, "ease", callback);
   });
 };
 
 const transitionScoreToLogo = function (callback) {
-  $("#finalScore").transition({queue: false, opacity: 0}, 500, "ease", function () {
+  $("#finalScore").transition({ queue: false, opacity: 0 }, 500, "ease", function () {
     $("#finalScore").hide();
   });
-  $(".blindsCenter.full").transition({queue: false, top: 0}, 625, "ease", callback);
+  $(".blindsCenter.full").transition({ queue: false, top: 0 }, 625, "ease", callback);
 };
 
 const transitionScoreToLogoLuma = function (callback) {
@@ -650,12 +760,12 @@ const transitionScoreToSponsor = function (callback) {
 };
 
 const transitionSponsorToBlank = function (callback) {
-  $("#sponsor").transition({queue: false, opacity: 0}, 1000, "ease", function () {
+  $("#sponsor").transition({ queue: false, opacity: 0 }, 1000, "ease", function () {
     setTimeout(function () {
       $(".blinds.left").removeClass("full");
       $(".blinds.right").show();
-      $(".blinds.right").transition({queue: false, right: "-50%"}, 1000, "ease");
-      $(".blinds.left").transition({queue: false, left: "-50%"}, 1000, "ease", callback);
+      $(".blinds.right").transition({ queue: false, right: "-50%" }, 1000, "ease");
+      $(".blinds.left").transition({ queue: false, left: "-50%" }, 1000, "ease", callback);
       $("#sponsor").hide();
     }, 200);
   });
@@ -668,8 +778,8 @@ const transitionSponsorToBracket = function (callback) {
 };
 
 const transitionSponsorToLogo = function (callback) {
-  $("#sponsor").transition({queue: false, opacity: 0}, 1000, "ease", function () {
-    $(".blindsCenter.full").transition({queue: false, rotateY: "0deg"}, 750, "ease", callback);
+  $("#sponsor").transition({ queue: false, opacity: 0 }, 1000, "ease", function () {
+    $(".blindsCenter.full").transition({ queue: false, rotateY: "0deg" }, 750, "ease", callback);
     $("#sponsor").hide();
   });
 };
@@ -681,26 +791,26 @@ const transitionSponsorToScore = function (callback) {
 };
 
 const transitionTimeoutToBlank = function (callback) {
-  $(".timeout-detail").transition({queue: false, opacity: 0}, 300, "linear");
-  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function () {
-    $("#timeoutDetails").transition({queue: false, width: timeoutDetailsIn}, 500, "ease");
-    $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function () {
+  $(".timeout-detail").transition({ queue: false, opacity: 0 }, 300, "linear");
+  $("#matchTime").transition({ queue: false, opacity: 0 }, 300, "linear", function () {
+    $("#timeoutDetails").transition({ queue: false, width: timeoutDetailsIn }, 500, "ease");
+    $("#logo").transition({ queue: false, top: logoDown }, 500, "ease", function () {
       $("#overlayCentering").transition(overlayCenteringHideParams, 1000, "ease", callback);
     });
   });
 };
 
 const transitionTimeoutToIntro = function (callback) {
-  $(".timeout-detail").transition({queue: false, opacity: 0}, 300, "linear");
-  $("#matchTime").transition({queue: false, opacity: 0}, 300, "linear", function () {
-    $("#timeoutDetails").transition({queue: false, width: timeoutDetailsIn}, 500, "ease");
-    $("#logo").transition({queue: false, top: logoDown}, 500, "ease", function () {
+  $(".timeout-detail").transition({ queue: false, opacity: 0 }, 300, "linear");
+  $("#matchTime").transition({ queue: false, opacity: 0 }, 300, "linear", function () {
+    $("#timeoutDetails").transition({ queue: false, width: timeoutDetailsIn }, 500, "ease");
+    $("#logo").transition({ queue: false, top: logoDown }, 500, "ease", function () {
       $(".avatars").css("display", "flex");
       $(".avatars").css("opacity", 1);
       $(".teams").css("display", "flex");
-      $(".score").transition({queue: false, width: scoreMid}, 500, "ease", function () {
+      $(".score").transition({ queue: false, width: scoreMid }, 500, "ease", function () {
         $("#eventMatchInfo").show();
-        $("#eventMatchInfo").transition({queue: false, height: eventMatchInfoDown}, 500, "ease", callback);
+        $("#eventMatchInfo").transition({ queue: false, height: eventMatchInfoDown }, 500, "ease", callback);
       });
     });
   });
@@ -763,6 +873,8 @@ const setTeamInfo = function (side, position, teamId, cards, rankings) {
   rankNumberElement.toggle(teamId > 0);
 };
 
+
+//程式正式開始
 $(function () {
   // Read the configuration for this display from the URL query string.
   const urlParams = new URLSearchParams(window.location.search);
@@ -788,33 +900,15 @@ $(function () {
 
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/displays/audience/websocket", {
-    allianceSelection: function (event) {
-      handleAllianceSelection(event.data);
-    },
-    audienceDisplayMode: function (event) {
-      handleAudienceDisplayMode(event.data);
-    },
-    lowerThird: function (event) {
-      handleLowerThird(event.data);
-    },
-    matchLoad: function (event) {
-      handleMatchLoad(event.data);
-    },
-    matchTime: function (event) {
-      handleMatchTime(event.data);
-    },
-    matchTiming: function (event) {
-      handleMatchTiming(event.data);
-    },
-    playSound: function (event) {
-      handlePlaySound(event.data);
-    },
-    realtimeScore: function (event) {
-      handleRealtimeScore(event.data);
-    },
-    scorePosted: function (event) {
-      handleScorePosted(event.data);
-    },
+    allianceSelection: function (event) { handleAllianceSelection(event.data); },
+    audienceDisplayMode: function (event) { handleAudienceDisplayMode(event.data); },
+    lowerThird: function (event) { handleLowerThird(event.data); },
+    matchLoad: function (event) { handleMatchLoad(event.data); },
+    matchTime: function (event) { handleMatchTime(event.data); },
+    matchTiming: function (event) { handleMatchTiming(event.data); },
+    playSound: function (event) { handlePlaySound(event.data); },
+    realtimeScore: function (event) { handleRealtimeScore(event.data); },
+    scorePosted: function (event) { handleScorePosted(event.data); },
   });
 
   // Map how to transition from one screen to another. Missing links between screens indicate that first we
