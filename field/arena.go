@@ -9,6 +9,7 @@ package field
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
@@ -99,6 +100,9 @@ type Arena struct {
 	breakDescription                  string
 	preloadedTeams                    *[6]*model.Team
 	NextFoulId                        int
+
+	// 2026: 儲存平手時的隨機贏家 (true=Red, false=Blue)
+	autoTieBreakerRedWin bool
 }
 
 type AllianceStation struct {
@@ -117,6 +121,9 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena := new(Arena)
 	arena.configureNotifiers()
 	arena.Plc = new(plc.ModbusPlc)
+
+	// Seed the random number generator for tie-breakers
+	rand.Seed(time.Now().UnixNano())
 
 	arena.AllianceStations = make(map[string]*AllianceStation)
 	arena.AllianceStations["R1"] = new(AllianceStation)
@@ -388,6 +395,11 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.ScoringPanelRegistry.resetScoreCommitted()
 	arena.Plc.ResetMatch()
 	arena.NextFoulId = 1
+
+	// 2026: Randomly decide the Auto tie-breaker winner for this match
+	// 0 -> Blue Wins (false), 1 -> Red Wins (true)
+	arena.autoTieBreakerRedWin = (rand.Intn(2) == 1)
+	log.Printf("[Arena] Match Loaded. Auto Tie Breaker: %v (True=Red, False=Blue)", arena.autoTieBreakerRedWin)
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
@@ -770,15 +782,25 @@ func (arena *Arena) Update() {
 }
 
 // 2026 REBUILT: Helper to determine if Red Alliance won the Auto period based on Fuel points
+// Returns TRUE if Red Wins, FALSE if Blue Wins.
+// If Tied, returns the pre-determined random winner for this match.
 func (arena *Arena) redWonAutoFuel() bool {
-	// Rule: If tied or Blue wins, Blue gets advantage (Red is Inactive in Shift 1).
-	// So Red only "wins" (causing Blue Inactive in Shift 1) if Red > Blue.
-	return arena.RedRealtimeScore.CurrentScore.AutoFuelCount > arena.BlueRealtimeScore.CurrentScore.AutoFuelCount
+	redFuel := arena.RedRealtimeScore.CurrentScore.AutoFuelCount
+	blueFuel := arena.BlueRealtimeScore.CurrentScore.AutoFuelCount
+
+	if redFuel > blueFuel {
+		return true
+	} else if blueFuel > redFuel {
+		return false
+	}
+
+	// Tie: Use the pre-generated random winner for this match
+	return arena.autoTieBreakerRedWin
 }
 
 // 2026 REBUILT: Updates Hub Active/Inactive status based on match time and Auto results
 func (arena *Arena) updateHubStatus() {
-	// Default to Active (e.g., in Auto)
+	// Default to Active (e.g., in Auto, Transition, Endgame)
 	redActive := true
 	blueActive := true
 
@@ -793,12 +815,12 @@ func (arena *Arena) updateHubStatus() {
 		timeLeft := float64(game.MatchTiming.TeleopDurationSec) - elapsedInTeleop
 
 		// Timeframes based on image_7080fa.png and image_707e30.png
-		// Transition: 140 -> 130
+		// Transition: 140 -> 130 (Both Active - handled by default true)
 		// Shift 1:    130 -> 105
 		// Shift 2:    105 -> 80
 		// Shift 3:    80 -> 55
 		// Shift 4:    55 -> 30
-		// Endgame:    30 -> 0
+		// Endgame:    30 -> 0 (Both Active - handled by default true)
 
 		if timeLeft <= 130 && timeLeft > 30 {
 			redWinsAuto := arena.redWonAutoFuel()
@@ -809,7 +831,8 @@ func (arena *Arena) updateHubStatus() {
 			// Shift 4 is the remainder before Endgame (55 -> 30)
 
 			if redWinsAuto {
-				// Scenario: Red Scores More in Auto
+				// Scenario: Red Scores More in Auto -> Blue Advantage
+				// Shift 1: Blue Active, Red Inactive ("B")
 				if isShift1 || isShift3 {
 					// Shift 1 & 3: Red Inactive, Blue Active
 					redActive = false
@@ -820,7 +843,8 @@ func (arena *Arena) updateHubStatus() {
 					blueActive = false
 				}
 			} else {
-				// Scenario: Blue Scores More or Tie
+				// Scenario: Blue Scores More or Tie -> Red Advantage
+				// Shift 1: Red Active, Blue Inactive ("R")
 				if isShift1 || isShift3 {
 					// Shift 1 & 3: Red Active, Blue Inactive
 					redActive = true
@@ -838,19 +862,20 @@ func (arena *Arena) updateHubStatus() {
 	arena.BlueRealtimeScore.CurrentScore.HubActive = blueActive
 }
 
-// 2026 REBUILT: Updates GameSpecificMessage for Driver Station ("A" or "I")
+// 2026 REBUILT: Updates GameSpecificMessage for Driver Station ("A" or "I" -> "R" or "B")
 func (arena *Arena) updateGameSpecificMessage() {
-	if arena.RedRealtimeScore.CurrentScore.HubActive {
-		arena.RedRealtimeScore.GameSpecificMessage = "A"
-	} else {
-		arena.RedRealtimeScore.GameSpecificMessage = "I"
+	// Rule: Send "B" if Red won Auto (meaning Blue has advantage/active first)
+	// Rule: Send "R" if Blue won Auto (meaning Red has advantage/active first)
+
+	msg := "R" // Default: Blue Won -> Red gets Active first ("R")
+	if arena.redWonAutoFuel() {
+		msg = "B" // Red Won -> Blue gets Active first ("B")
 	}
 
-	if arena.BlueRealtimeScore.CurrentScore.HubActive {
-		arena.BlueRealtimeScore.GameSpecificMessage = "A"
-	} else {
-		arena.BlueRealtimeScore.GameSpecificMessage = "I"
-	}
+	// This message is static for the duration of Teleop based on Auto results.
+	// Robots will use this char to know the schedule.
+	arena.RedRealtimeScore.GameSpecificMessage = msg
+	arena.BlueRealtimeScore.GameSpecificMessage = msg
 }
 
 // Checks if the endgame warning period has started and triggers the Companion event if so.
