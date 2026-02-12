@@ -1,5 +1,6 @@
 // Copyright 2024 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+// Modified for 2026 REBUILT Game
 //
 // Models and logic for controlling a Cypress team number / timer sign.
 
@@ -7,14 +8,15 @@ package field
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
 	"image/color"
 	"log"
 	"net"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 )
 
 // Represents a collection of team number and timer signs.
@@ -198,34 +200,36 @@ func generateInMatchTeamRearText(arena *Arena, isRed bool, countdown string) str
 		formatString = "B%03d-R%03d"
 	}
 	scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
-	scoreTotal := scoreSummary.Score - scoreSummary.BargePoints
+	scoreTotal := scoreSummary.Score // Removed BargePoints logic
 	opponentScoreSummary := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore)
-	opponentScoreTotal := opponentScoreSummary.Score - opponentScoreSummary.BargePoints
+	opponentScoreTotal := opponentScoreSummary.Score
 	allianceScores := fmt.Sprintf(formatString, scoreTotal, opponentScoreTotal)
 
-	var coralRankingPointProgress string
+	var rankingPointProgress string
+	// 2026: Changed from Coral Levels to Fuel Threshold for RP tracking
 	if arena.CurrentMatch.Type != model.Playoff {
-		coralRankingPointProgress = fmt.Sprintf("%d/%d", scoreSummary.NumCoralLevels, scoreSummary.NumCoralLevelsGoal)
+		rankingPointProgress = fmt.Sprintf("%d", scoreSummary.TotalFuelPoints)
 	}
 
-	return fmt.Sprintf("%s %s %s", countdown, allianceScores, coralRankingPointProgress)
+	return fmt.Sprintf("%s %s %s", countdown, allianceScores, rankingPointProgress)
 }
 
 // Returns the in-match rear text for the timer display for the given alliance.
+// Modified for 2026: Shows Fuel Counts
 func generateInMatchTimerRearText(arena *Arena, isRed bool) string {
-	var reef *game.Reef
+	var score *game.Score
 	if isRed {
-		reef = &arena.RedRealtimeScore.CurrentScore.Reef
+		score = &arena.RedRealtimeScore.CurrentScore
 	} else {
-		reef = &arena.BlueRealtimeScore.CurrentScore.Reef
+		score = &arena.BlueRealtimeScore.CurrentScore
 	}
 
+	// 2026 Display: Auto Fuel | Teleop Fuel | Total Fuel
 	return fmt.Sprintf(
-		"1-%02d 2-%02d 3-%02d 4-%02d",
-		reef.CountTotalCoralByLevel(game.Level1),
-		reef.CountTotalCoralByLevel(game.Level2),
-		reef.CountTotalCoralByLevel(game.Level3),
-		reef.CountTotalCoralByLevel(game.Level4),
+		"A-%02d T-%02d Tot-%02d",
+		score.AutoFuelCount,
+		score.TeleopFuelCount,
+		score.AutoFuelCount+score.TeleopFuelCount,
 	)
 }
 
