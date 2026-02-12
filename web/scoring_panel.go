@@ -223,6 +223,8 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			if args.RobotIndex >= 0 && args.RobotIndex < 3 {
 				var status game.EndgameStatus
 				switch args.Level {
+				case 1:
+					status = game.EndgameLevel1
 				case 2:
 					status = game.EndgameLevel2
 				case 3:

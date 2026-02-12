@@ -135,11 +135,14 @@ UI for the real-time scoring interface.
                 <input type="radio" class="btn-check" name="climb_0" id="climb_0_none" value="0" checked onchange="updateClimb(0, 0)">
                 <label class="btn btn-outline-secondary" for="climb_0_none">None</label>
 
+                <input type="radio" class="btn-check" name="climb_0" id="climb_0_lvl1" value="1" onchange="updateClimb(0, 1)">
+                <label class="btn btn-outline-primary" for="climb_0_lvl1">Level 1</label>
+
                 <input type="radio" class="btn-check" name="climb_0" id="climb_0_lvl2" value="2" onchange="updateClimb(0, 2)">
-                <label class="btn btn-outline-primary" for="climb_0_lvl2">Level 2 (Low)</label>
+                <label class="btn btn-outline-primary" for="climb_0_lvl2">Level 2</label>
 
                 <input type="radio" class="btn-check" name="climb_0" id="climb_0_lvl3" value="3" onchange="updateClimb(0, 3)">
-                <label class="btn btn-outline-success" for="climb_0_lvl3">Level 3 (Mid)</label>
+                <label class="btn btn-outline-success" for="climb_0_lvl3">Level 3</label>
               </div>
             </div>
 
@@ -149,11 +152,14 @@ UI for the real-time scoring interface.
                 <input type="radio" class="btn-check" name="climb_1" id="climb_1_none" value="0" checked onchange="updateClimb(1, 0)">
                 <label class="btn btn-outline-secondary" for="climb_1_none">None</label>
 
+                <input type="radio" class="btn-check" name="climb_1" id="climb_1_lvl1" value="1" onchange="updateClimb(1, 1)">
+                <label class="btn btn-outline-primary" for="climb_1_lvl1">Level 1</label>
+
                 <input type="radio" class="btn-check" name="climb_1" id="climb_1_lvl2" value="2" onchange="updateClimb(1, 2)">
-                <label class="btn btn-outline-primary" for="climb_1_lvl2">Level 2 (Low)</label>
+                <label class="btn btn-outline-primary" for="climb_1_lvl2">Level 2 </label>
 
                 <input type="radio" class="btn-check" name="climb_1" id="climb_1_lvl3" value="3" onchange="updateClimb(1, 3)">
-                <label class="btn btn-outline-success" for="climb_1_lvl3">Level 3 (Mid)</label>
+                <label class="btn btn-outline-success" for="climb_1_lvl3">Level 3 </label>
               </div>
             </div>
 
@@ -163,11 +169,14 @@ UI for the real-time scoring interface.
                 <input type="radio" class="btn-check" name="climb_2" id="climb_2_none" value="0" checked onchange="updateClimb(2, 0)">
                 <label class="btn btn-outline-secondary" for="climb_2_none">None</label>
 
+                <input type="radio" class="btn-check" name="climb_2" id="climb_2_lvl1" value="1" onchange="updateClimb(2, 1)">
+                <label class="btn btn-outline-primary" for="climb_2_lvl1">Level 1</label>
+
                 <input type="radio" class="btn-check" name="climb_2" id="climb_2_lvl2" value="2" onchange="updateClimb(2, 2)">
-                <label class="btn btn-outline-primary" for="climb_2_lvl2">Level 2 (Low)</label>
+                <label class="btn btn-outline-primary" for="climb_2_lvl2">Level 2 </label>
 
                 <input type="radio" class="btn-check" name="climb_2" id="climb_2_lvl3" value="3" onchange="updateClimb(2, 3)">
-                <label class="btn btn-outline-success" for="climb_2_lvl3">Level 3 (Mid)</label>
+                <label class="btn btn-outline-success" for="climb_2_lvl3">Level 3 </label>
               </div>
             </div>
           </div>
@@ -345,7 +354,7 @@ UI for the real-time scoring interface.
     // Sync Endgames (Optional: only if you want bidirectional sync)
     for (var i = 0; i < 3; i++) {
       var status = myScore.EndgameStatuses[i];
-      // status: 0=None, 2=Level2, 3=Level3
+      // status: 0=None, 1=Level1, 2=Level2, 3=Level3
       $(`input[name=climb_${i}][value=${status}]`).prop("checked", true);
     }
   }
