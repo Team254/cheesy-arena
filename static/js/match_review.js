@@ -1,8 +1,11 @@
+// Copyright 2026 Team 254. All Rights Reserved.
+// 2026 REBUILT Version
+
 const scoreTemplate = Handlebars.compile($("#scoreTemplate").html());
 const allianceResults = {};
 let matchResult;
 
-// 攔截表單提交，將資料轉為 JSON
+// 攔截表單提交，將資料轉為 JSON 以利伺服器解析
 $("form").submit(function () {
   updateResults("red");
   updateResults("blue");
@@ -13,33 +16,45 @@ $("form").submit(function () {
   matchResult.BlueCards = allianceResults["blue"].cards;
   const matchResultJson = JSON.stringify(matchResult);
 
+  // 注入隱藏輸入項
   $("<input />").attr("type", "hidden").attr("name", "matchResultJson").attr("value", matchResultJson).appendTo("form");
+
   return true;
 });
 
-// 渲染結果到頁面
+// 渲染特定聯盟的結果到頁面
 const renderResults = function (alliance) {
   const result = allianceResults[alliance];
   const scoreContent = scoreTemplate(result);
   $(`#${alliance}Score`).html(scoreContent);
 
-  // 1. Fuel 數量
+  // 1. Fuel 數量 (Auto/Teleop)
   getInputElement(alliance, "AutoFuelCount").val(result.score.AutoFuelCount || 0);
   getInputElement(alliance, "TeleopFuelCount").val(result.score.TeleopFuelCount || 0);
 
-  // 2. 機器人狀態 (索引 0, 1, 2)
+  // 2. 處理 3 個隊伍的狀態
+  // 注意：result.score 陣列索引為 0, 1, 2；但 HTML 欄位名稱使用 1, 2, 3 (對應 Payload)
   for (let i = 0; i < 3; i++) {
-    // RobotsBypassed
+    const htmlIdx = i + 1; 
+
+    // A. 機器人是否被 Bypassed
     if (result.score.RobotsBypassed) {
-      getInputElement(alliance, `RobotsBypassed${i}`).prop("checked", result.score.RobotsBypassed[i]);
+      getInputElement(alliance, `RobotsBypassed${htmlIdx}`).prop("checked", result.score.RobotsBypassed[i]);
     }
-    // AutoTowerLevel1
+
+    // B. Autonomous Tower Level 1
     if (result.score.AutoTowerLevel1) {
-      getInputElement(alliance, `AutoTowerLevel1${i}`).prop("checked", result.score.AutoTowerLevel1[i]);
+      getInputElement(alliance, `AutoTowerLevel1${htmlIdx}`).prop("checked", result.score.AutoTowerLevel1[i]);
     }
-    // EndgameStatuses (Radio)
+
+    // C. Endgame Status (支援含 alliance 或不含 alliance 的欄位名)
     if (result.score.EndgameStatuses) {
-      getInputElement(alliance, `EndgameStatuses${i}`, result.score.EndgameStatuses[i]).prop("checked", true);
+      let el = getInputElement(alliance, `EndgameStatuses${htmlIdx}`, result.score.EndgameStatuses[i]);
+      if (el.length === 0) { // 兼容 Payload 顯示的 EndgameStatuses1 (無 alliance 前綴)
+         $(`input[name=EndgameStatuses${htmlIdx}][value=${result.score.EndgameStatuses[i]}]`).prop("checked", true);
+      } else {
+         el.prop("checked", true);
+      }
     }
   }
 
@@ -52,15 +67,15 @@ const renderResults = function (alliance) {
     });
   }
 
-  // 4. 卡片
+  // 4. 卡片 (Cards)
   if (result.cards != null) {
-    $.each(result.cards, function (k, v) {
-      getInputElement(alliance, `Team${k}Card`, v).prop("checked", true);
+    $.each([result.team1, result.team2, result.team3], function (i, team) {
+      getInputElement(alliance, `Team${team}Card`, result.cards[team]).prop("checked", true);
     });
   }
 };
 
-// 更新 JS 緩存結構
+// 從表單更新緩存的 JSON 資料結構
 const updateResults = function (alliance) {
   const result = allianceResults[alliance];
   const formData = {};
@@ -68,20 +83,27 @@ const updateResults = function (alliance) {
     formData[v.name] = v.value;
   });
 
-  // 初始化陣列結構
+  // 初始化陣列結構 (Go 端預期長度 3)
   result.score.RobotsBypassed = [false, false, false];
   result.score.AutoTowerLevel1 = [false, false, false];
   result.score.EndgameStatuses = [0, 0, 0];
 
-  // 讀取 Fuel
+  // 讀取 Fuel Count
   result.score.AutoFuelCount = parseInt(formData[`${alliance}AutoFuelCount`]) || 0;
   result.score.TeleopFuelCount = parseInt(formData[`${alliance}TeleopFuelCount`]) || 0;
 
   for (let i = 0; i < 3; i++) {
-    // 修正：這裡的索引必須與 HTML 的 {{range $i := seq 3}} 產生的 0, 1, 2 一致
-    result.score.RobotsBypassed[i] = formData[`${alliance}RobotsBypassed${i}`] === "on";
-    result.score.AutoTowerLevel1[i] = formData[`${alliance}AutoTowerLevel1${i}`] === "on";
-    result.score.EndgameStatuses[i] = parseInt(formData[`${alliance}EndgameStatuses${i}`]) || 0;
+    const htmlIdx = i + 1; // 根據 Payload，HTML 名稱為 redRobotsBypassed1...3
+    
+    // 抓取 Bypassed
+    result.score.RobotsBypassed[i] = formData[`${alliance}RobotsBypassed${htmlIdx}`] === "on";
+    
+    // 抓取 AutoTower
+    result.score.AutoTowerLevel1[i] = formData[`${alliance}AutoTowerLevel1${htmlIdx}`] === "on";
+    
+    // 抓取 Endgame (優先抓取帶聯盟前綴的，若無則抓取不帶前綴的)
+    let endgameVal = formData[`${alliance}EndgameStatuses${htmlIdx}`] || formData[`EndgameStatuses${htmlIdx}`];
+    result.score.EndgameStatuses[i] = parseInt(endgameVal) || 0;
   }
 
   // 處理犯規
@@ -98,7 +120,7 @@ const updateResults = function (alliance) {
   // 處理卡片
   result.cards = {};
   $.each([result.team1, result.team2, result.team3], function (i, team) {
-    result.cards[team] = formData[`${alliance}Team${team}Card`];
+    result.cards[team] = formData[`${alliance}Team${team}Card`] || "";
   });
 };
 
