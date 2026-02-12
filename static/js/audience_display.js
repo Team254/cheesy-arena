@@ -210,8 +210,8 @@ const handleRealtimeScore = function (data) {
 
       // 2. 使用樣板字面值 (Template Literals) 正確帶入變數
       // 修正了你紅藍兩隊後綴不統一的問題（原本藍隊用 NumCoralLevelsGoal）
-      redCoral = `${data.Red.ScoreSummary.TeleopFuelPoints}/${redFuelGoal}`;
-      blueCoral = `${data.Blue.ScoreSummary.TeleopFuelPoints}/${blueFuelGoal}`;
+      redCoral = `${data.Red.ScoreSummary.TotalFuelPoints}/${redFuelGoal}`;
+      blueCoral = `${data.Blue.ScoreSummary.TotalFuelPoints}/${blueFuelGoal}`;
   }
   $(`#${redSide}Coral`).text(redCoral);
   $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
