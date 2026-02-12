@@ -1,3 +1,5 @@
+//2026 1/22 Cindy
+
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
@@ -181,7 +183,7 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /panels/scoring/{position}", web.scoringPanelHandler)
 	mux.HandleFunc("GET /panels/scoring/{position}/websocket", web.scoringPanelWebsocketHandler)
 	mux.HandleFunc("GET /panels/referee", web.refereePanelHandler)
-	mux.HandleFunc("GET /panels/referee/foul_list", web.refereePanelFoulListHandler)
+	// 移除了 foul_list，因為已經改用 WebSocket
 	mux.HandleFunc("GET /panels/referee/websocket", web.refereePanelWebsocketHandler)
 	mux.HandleFunc("GET /reports/csv/backups", web.backupTeamsCsvReportHandler)
 	mux.HandleFunc("GET /reports/csv/fta", web.ftaCsvReportHandler)
