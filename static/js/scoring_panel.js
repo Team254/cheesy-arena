@@ -8,6 +8,7 @@ var websocket;
 let alliance;
 let nearSide;
 let committed = false;
+let currentRealtimeScore = null; // Store current score for toggle operations
 
 // True when scoring controls in general should be available
 let scoringAvailable = false;
@@ -139,6 +140,7 @@ const resetLocalState = function () {
 // Refresh which UI controls are enabled/disabled
 const updateUIMode = function () {
   $(".scoring-button").prop('disabled', !scoringAvailable);
+  $(".scoring-auto-button").prop('disabled', !scoringAvailable); // Auto climb always available when scoring
   $(".scoring-teleop-button").prop('disabled', !(inTeleop && scoringAvailable));
   $("#commit").prop('disabled', !commitAvailable);
   $("#edit-auto").prop('disabled', !(inTeleop && scoringAvailable));
@@ -147,15 +149,17 @@ const updateUIMode = function () {
   $("#edit-auto").text(editingAuto ? "Save Auto" : "Edit Auto");
 }
 
-const endgameStatusNames = [
+const climbLevelNames = [
   "None",
-  "Park",
-  "Shallow",
-  "Deep",
+  "L1",
+  "L2",
+  "L3",
 ];
 
 // Handles a websocket message to update the realtime scoring fields.
 const handleRealtimeScore = function (data) {
+  currentRealtimeScore = data; // Store for toggle operations
+
   let realtimeScore;
   if (alliance === "red") {
     realtimeScore = data.Red;
@@ -166,37 +170,27 @@ const handleRealtimeScore = function (data) {
 
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
-    $(`#auto-status-${i1} > .team-text`).text(score.LeaveStatuses[i] ? "Leave" : "None");
-    $(`#auto-status-${i1}`).attr("data-selected", score.LeaveStatuses[i]);
-    $(`#endgame-status-${i1} > .team-text`).text(endgameStatusNames[score.EndgameStatuses[i]]);
-    $(`#endgame-status-${i1}`).attr("data-selected", endgameStatusNames[score.EndgameStatuses[i]] != "None");
-    for (let j = 0; j < endgameStatusNames.length; j++) {
-      $(`#endgame-input-${i1} .endgame-${j}`).attr("data-selected", j == score.EndgameStatuses[i]);
+
+    // Display auto climb status on auto button (top left)
+    const autoClimb = climbLevelNames[score.AutoClimbStatuses[i]];
+    $(`#auto-status-${i1} > .team-text`).text(autoClimb);
+    $(`#auto-status-${i1}`).attr("data-selected", score.AutoClimbStatuses[i] != 0);
+
+    // Display teleop climb status on endgame button (top right)
+    const teleopClimb = climbLevelNames[score.TeleopClimbStatuses[i]];
+    $(`#endgame-status-${i1} > .team-text`).text(teleopClimb);
+    $(`#endgame-status-${i1}`).attr("data-selected", score.TeleopClimbStatuses[i] != 0);
+
+    // Update teleop climb button selection in modal
+    for (let j = 0; j <= 3; j++) {
+      $(`#endgame-input-${i1} .teleop-climb-${j}`).attr("data-selected", j == score.TeleopClimbStatuses[i]);
     }
   }
 
-  for (let i = 0; i < 12; i++) {
-    const i1 = i + 1;
-    for (let j = 0; j < 3; j++) {
-      const j2 = j + 2;
-      $(`#reef-column-${i1}`).attr(`data-l${j2}-scored`, score.Reef.Branches[j][i]);
-      $(`#reef-column-${i1}`).attr(`data-l${j2}-auto-scored`, score.Reef.AutoBranches[j][i]);
-    }
-  }
-
-  const l1Total = score.Reef.TroughNear + score.Reef.TroughFar;
-  $("#l1-total-count").text(l1Total);
-  
-  $(`#barge .counter-value`).text(score.BargeAlgae);
-  $(`#processor .counter-value`).text(score.ProcessorAlgae);
-
-  if (nearSide) {
-    $(`#trough .counter-value`).text(score.Reef.TroughNear);
-    $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughNear);
-  } else {
-    $(`#trough .counter-value`).text(score.Reef.TroughFar);
-    $(`#trough .counter-auto-value`).text(score.Reef.AutoTroughFar);
-  }
+  // Update FUEL counters (only shown when PLC is not enabled)
+  $(`#autoFuel .counter-value`).text(score.AutoFuel);
+  $(`#activeFuel .counter-value`).text(score.ActiveFuel);
+  $(`#inactiveFuel .counter-value`).text(score.InactiveFuel);
 
   redFouls = data.Red.Score.Fouls || [];
   blueFouls = data.Blue.Score.Fouls || [];
@@ -211,24 +205,28 @@ const handleCounterClick = function (command, adjustment) {
   websocket.send(command, {
     Adjustment: adjustment,
     Current: true,
-    Autonomous: !inTeleop || editingAuto,
+    Autonomous: command === "autoFuel" ? true : (!inTeleop || editingAuto),
     NearSide: nearSide
   });
 }
-const handleLeaveClick = function (teamPosition) {
-  websocket.send("leave", {TeamPosition: teamPosition});
+// Toggle auto climb between None (0) and L1 (1)
+const handleAutoClimbClick = function (teamPosition) {
+  // Get current state from the score
+  let currentScore;
+  if (alliance === "red") {
+    currentScore = currentRealtimeScore.Red.Score;
+  } else {
+    currentScore = currentRealtimeScore.Blue.Score;
+  }
+
+  const currentLevel = currentScore.AutoClimbStatuses[teamPosition - 1];
+  const newLevel = currentLevel === 0 ? 1 : 0; // Toggle between None and L1
+
+  websocket.send("autoClimb", {TeamPosition: teamPosition, EndgameStatus: newLevel});
 }
-const handleEndgameClick = function (teamPosition, endgameStatus) {
-  websocket.send("endgame", {TeamPosition: teamPosition, EndgameStatus: endgameStatus});
-}
-const handleReefClick = function (reefPosition, reefLevel) {
-  websocket.send("reef", {
-    ReefPosition: reefPosition,
-    ReefLevel: reefLevel,
-    Current: !editingAuto,
-    Autonomous: !inTeleop || editingAuto,
-    NearSide: nearSide
-  });
+
+const handleTeleopClimbClick = function (teamPosition, climbLevel) {
+  websocket.send("teleopClimb", {TeamPosition: teamPosition, EndgameStatus: climbLevel});
 }
 
 // Sends a websocket message to indicate that the score for this alliance is ready.

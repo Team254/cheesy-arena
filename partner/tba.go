@@ -154,12 +154,11 @@ type TbaPublishedAward struct {
 	Awardee string `json:"awardee"`
 }
 
-var leaveMapping = map[bool]string{false: "No", true: "Yes"}
 var endGameStatusMapping = map[game.EndgameStatus]string{
-	game.EndgameNone:        "None",
-	game.EndgameParked:      "Parked",
-	game.EndgameShallowCage: "ShallowCage",
-	game.EndgameDeepCage:    "DeepCage",
+	game.EndgameNone:   "None",
+	game.EndgameLevel1: "Level1",
+	game.EndgameLevel2: "Level2",
+	game.EndgameLevel3: "Level3",
 }
 
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
@@ -409,18 +408,19 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 		return err
 	}
 
-	// Build a JSON object of TBA-format rankings.
-	breakdowns := []string{"RP", "Coop", "Match", "Auto", "Barge"}
+	// TODO: Build a JSON object of TBA-format rankings for REBUILT 2026.
+	// TBA API format is not yet known for 2026 season, so this is stubbed out.
+	breakdowns := []string{"RP", "Match", "Auto", "Endgame", "ActiveBalls"}
 	tbaRankings := make([]TbaRanking, len(rankings))
 	for i, ranking := range rankings {
 		tbaRankings[i] = TbaRanking{
 			TeamKey: getTbaTeam(ranking.TeamId),
 			Rank:    ranking.Rank,
 			RP:      float32(ranking.RankingPoints) / float32(ranking.Played),
-			Coop:    float32(ranking.CoopertitionPoints) / float32(ranking.Played),
+			Coop:    0, // Not used in REBUILT
 			Match:   float32(ranking.MatchPoints) / float32(ranking.Played),
 			Auto:    float32(ranking.AutoPoints) / float32(ranking.Played),
-			Barge:   float32(ranking.BargePoints) / float32(ranking.Played),
+			Barge:   float32(ranking.EndgamePoints) / float32(ranking.Played), // Reusing field for endgame
 			Wins:    ranking.Wins,
 			Losses:  ranking.Losses,
 			Ties:    ranking.Ties,
@@ -646,55 +646,34 @@ func createTbaScoringBreakdown(
 		opponentScoreSummary = matchResult.RedScoreSummary()
 	}
 
-	breakdown.AutoLineRobot1 = leaveMapping[score.LeaveStatuses[0]]
-	breakdown.AutoLineRobot2 = leaveMapping[score.LeaveStatuses[1]]
-	breakdown.AutoLineRobot3 = leaveMapping[score.LeaveStatuses[2]]
-	breakdown.AutoMobilityPoints = scoreSummary.LeavePoints
-	breakdown.AutoReef.BotRow = make(map[string]bool)
-	breakdown.AutoReef.MidRow = make(map[string]bool)
-	breakdown.AutoReef.TopRow = make(map[string]bool)
-	for i := 0; i < 12; i++ {
-		breakdown.AutoReef.BotRow["node"+string(rune('A'+i))] = score.Reef.AutoBranches[game.Level2][i]
-		breakdown.AutoReef.MidRow["node"+string(rune('A'+i))] = score.Reef.AutoBranches[game.Level3][i]
-		breakdown.AutoReef.TopRow["node"+string(rune('A'+i))] = score.Reef.AutoBranches[game.Level4][i]
-	}
-	breakdown.AutoReef.TbaBotRowCount = score.Reef.CountCoralByLevelAndPeriod(game.Level2, true)
-	breakdown.AutoReef.TbaMidRowCount = score.Reef.CountCoralByLevelAndPeriod(game.Level3, true)
-	breakdown.AutoReef.TbaTopRowCount = score.Reef.CountCoralByLevelAndPeriod(game.Level4, true)
-	breakdown.AutoReef.Trough = score.Reef.CountCoralByLevelAndPeriod(game.Level1, true)
-	breakdown.AutoCoralCount = score.Reef.AutoCoralCount()
-	breakdown.AutoCoralPoints = score.Reef.AutoCoralPoints()
+	// TODO: Update TBA score breakdown for REBUILT 2026.
+	// TBA API format is not yet known for 2026 season, so this is stubbed out with basic data.
+	// Auto climb status (using AutoLine fields as placeholder)
+	breakdown.AutoLineRobot1 = endGameStatusMapping[score.AutoClimbStatuses[0]]
+	breakdown.AutoLineRobot2 = endGameStatusMapping[score.AutoClimbStatuses[1]]
+	breakdown.AutoLineRobot3 = endGameStatusMapping[score.AutoClimbStatuses[2]]
+	breakdown.AutoMobilityPoints = scoreSummary.AutoClimbPoints
 	breakdown.AutoPoints = scoreSummary.AutoPoints
-	breakdown.TeleopReef.BotRow = make(map[string]bool)
-	breakdown.TeleopReef.MidRow = make(map[string]bool)
-	breakdown.TeleopReef.TopRow = make(map[string]bool)
-	for i := 0; i < 12; i++ {
-		breakdown.TeleopReef.BotRow["node"+string(rune('A'+i))] = score.Reef.Branches[game.Level2][i]
-		breakdown.TeleopReef.MidRow["node"+string(rune('A'+i))] = score.Reef.Branches[game.Level3][i]
-		breakdown.TeleopReef.TopRow["node"+string(rune('A'+i))] = score.Reef.Branches[game.Level4][i]
-	}
-	breakdown.TeleopReef.TbaBotRowCount = breakdown.AutoReef.TbaBotRowCount +
-		score.Reef.CountCoralByLevelAndPeriod(game.Level2, false)
-	breakdown.TeleopReef.TbaMidRowCount = breakdown.AutoReef.TbaMidRowCount +
-		score.Reef.CountCoralByLevelAndPeriod(game.Level3, false)
-	breakdown.TeleopReef.TbaTopRowCount = breakdown.AutoReef.TbaTopRowCount +
-		score.Reef.CountCoralByLevelAndPeriod(game.Level4, false)
-	breakdown.TeleopReef.Trough = score.Reef.CountCoralByLevelAndPeriod(game.Level1, false)
-	breakdown.TeleopCoralCount = score.Reef.TeleopCoralCount()
-	teleopCoralPoints := score.Reef.TeleopCoralPoints()
-	breakdown.TeleopCoralPoints = teleopCoralPoints
-	breakdown.NetAlgaeCount = score.BargeAlgae
-	breakdown.WallAlgaeCount = score.ProcessorAlgae
-	breakdown.AlgaePoints = scoreSummary.AlgaePoints
-	breakdown.EndGameRobot1 = endGameStatusMapping[score.EndgameStatuses[0]]
-	breakdown.EndGameRobot2 = endGameStatusMapping[score.EndgameStatuses[1]]
-	breakdown.EndGameRobot3 = endGameStatusMapping[score.EndgameStatuses[2]]
-	breakdown.EndGameBargePoints = scoreSummary.BargePoints
-	breakdown.TeleopPoints = teleopCoralPoints + scoreSummary.AlgaePoints + scoreSummary.BargePoints
-	breakdown.CoopertitionCriteriaMet = scoreSummary.CoopertitionCriteriaMet
-	breakdown.AutoBonusAchieved = scoreSummary.AutoBonusRankingPoint
-	breakdown.CoralBonusAchieved = scoreSummary.CoralBonusRankingPoint
-	breakdown.BargeBonusAchieved = scoreSummary.BargeBonusRankingPoint
+	// Teleop climb status
+	breakdown.EndGameRobot1 = endGameStatusMapping[score.TeleopClimbStatuses[0]]
+	breakdown.EndGameRobot2 = endGameStatusMapping[score.TeleopClimbStatuses[1]]
+	breakdown.EndGameRobot3 = endGameStatusMapping[score.TeleopClimbStatuses[2]]
+	breakdown.TeleopPoints = scoreSummary.ActiveFuelPoints
+
+	// REBUILT-specific fields (using old field names as placeholders)
+	breakdown.AutoCoralCount = score.AutoFuel
+	breakdown.AutoCoralPoints = scoreSummary.AutoFuelPoints
+	breakdown.TeleopCoralCount = score.ActiveFuel
+	breakdown.TeleopCoralPoints = scoreSummary.ActiveFuelPoints
+	breakdown.NetAlgaeCount = score.InactiveFuel
+	breakdown.WallAlgaeCount = scoreSummary.TotalFuel
+	breakdown.EndGameBargePoints = scoreSummary.AutoClimbPoints + scoreSummary.TeleopClimbPoints
+
+	// Ranking points
+	breakdown.AutoBonusAchieved = scoreSummary.EnergizedRankingPoint
+	breakdown.CoralBonusAchieved = scoreSummary.SuperchargedRankingPoint
+	breakdown.BargeBonusAchieved = scoreSummary.TraversalRankingPoint
+	breakdown.CoopertitionCriteriaMet = false // Not used in REBUILT
 	for _, foul := range score.Fouls {
 		if foul.IsMajor {
 			breakdown.TechFoulCount++
@@ -724,13 +703,9 @@ func createTbaScoringBreakdown(
 		breakdown.RP = ranking.RankingPoints
 	}
 
-	// Turn the breakdown struct into a map in order to be able to remove any fields that are disabled based on the
-	// event settings.
+	// Turn the breakdown struct into a map.
 	breakdownMap := make(map[string]any)
 	_ = mapstructure.Decode(breakdown, &breakdownMap)
-	if !eventSettings.CoralBonusCoopEnabled {
-		delete(breakdownMap, "coopertitionCriteriaMet")
-	}
 
 	return breakdownMap
 }

@@ -140,8 +140,8 @@ html {
   bottom: 175px;
 }
 .score-aux {
-  width: 200px;
-  height: 100px;
+  width: 250px;
+  height: 120px;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -160,6 +160,55 @@ html {
 .score-field {
   display: flex;
   flex-direction: row;
+  align-items: center;
+}
+.hub-indicator {
+  width: 25px;
+  height: 25px;
+  margin: 0 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+.hub-indicator.active {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+}
+.hub-indicator.flashing {
+  animation: hubFlash 0.5s ease-in-out infinite;
+}
+@keyframes hubFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.rp-field-aux {
+  flex-direction: row;
+  align-items: center;
+  font-size: 16px;
+  color: #fff;
+}
+.rp-label-aux {
+  font-size: 11px;
+  font-family: "FuturaLT";
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 5px;
+  width: 90px;
+}
+.rp-progress-aux {
+  width: 60px;
+  font-size: 8px;
+  font-family: "FuturaLTBold";
+  text-align: center;
+}
+.rp-progress-aux.threshold-100 {
+  color: #ff0;
+  font-weight: bold;
+}
+.rp-progress-aux.threshold-360 {
+  color: #0f0;
+  font-weight: bold;
 }
 .coral-icon {
   width: 35px;
