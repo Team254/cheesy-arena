@@ -8,9 +8,9 @@ package plc
 import "errors"
 
 type FakeModbusClient struct {
-	inputs      [32]bool
-	registers   [32]uint16
-	coils       [32]bool
+	inputs      [64]bool
+	registers   [64]uint16
+	coils       [64]bool
 	returnError bool
 }
 

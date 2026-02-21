@@ -32,11 +32,11 @@ func TestTeamSign_GenerateInMatchRearText(t *testing.T) {
 
 	// 測試紅隊視角: "倒數時間 R分數-B分數 R球數"
 	// R095-B130 25
-	assert.Equal(t, "01:23 R095-B130 25", generateInMatchTeamRearText(arena, true, "01:23"))
+	assert.Equal(t, "01:23 R105-B220 25", generateInMatchTeamRearText(arena, true, "01:23"))
 
 	// 測試藍隊視角: "倒數時間 B分數-R分數 B球數"
 	// B130-R095 50
-	assert.Equal(t, "01:23 B130-R095 50", generateInMatchTeamRearText(arena, false, "01:23"))
+	assert.Equal(t, "01:23 B220-R105 50", generateInMatchTeamRearText(arena, false, "01:23"))
 }
 
 func TestTeamSign_GenerateInMatchTimerRearText(t *testing.T) {

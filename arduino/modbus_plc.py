@@ -1,5 +1,4 @@
-#cat << 'EOF' > /home/jetson/modbus_plc.py
-#!/usr/bin/env python3
+# for example to catch this python error " cat << 'EOF' > /home/jetson/modbus_plc.py" and "!/usr/bin/env python3"
 import time
 import threading
 import Jetson.GPIO as GPIO

@@ -44,7 +44,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	// Fuel: 1 pt per Fuel in Active Hub
 	summary.AutoFuelPoints = score.AutoFuelCount * 1
 
-	// Tower Level 1: 10 pts per Robot
+	// Tower Level 1: 15 pts per Robot
 	for _, reachedL1 := range score.AutoTowerLevel1 {
 		if reachedL1 {
 			summary.AutoTowerPoints += 15

@@ -52,6 +52,7 @@ func createTestArena() *Arena {
 		CurrentMatch:      &model.Match{},
 		Plc:               &MockPlc{},
 	}
+	arena.configureNotifiers()
 	// Default timing settings
 	game.MatchTiming.WarmupDurationSec = 0
 	game.MatchTiming.AutoDurationSec = 15
@@ -200,26 +201,36 @@ func TestPlcFuelScoring_InactiveHub(t *testing.T) {
 	mockPlc := arena.Plc.(*MockPlc)
 	arena.MatchState = TeleopPeriod
 
-	// Set Hub to Inactive
-	arena.RedRealtimeScore.CurrentScore.HubActive = false
+	// --- Step 0: Setup Scenario (Red won Auto) ---
+	// Set Red as Auto winner so that during Shift 1, Red Hub becomes Inactive.
+	arena.RedRealtimeScore.CurrentScore.AutoFuelCount = 10
+	arena.BlueRealtimeScore.CurrentScore.AutoFuelCount = 0
 
-	// Try to score 5 fuel
+	// --- Step 1: Simulate Shift 1 (Red Hub should be Inactive) ---
+	// Shift 1 occurs when timeLeft is between 130s and 105s.
+	// We set the match start time to simulate that 20s of Teleop have passed (140 - 20 = 120s left).
+	teleopStartDelay := game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec
+	arena.MatchStartTime = time.Now().Add(-time.Duration(teleopStartDelay+20) * time.Second)
+
+	// Trigger logic: updateHubStatus will calculate redActive = false based on time and auto win.
 	mockPlc.RedFuelVal = 5
 	arena.handlePlcInputOutput()
 
-	// Should NOT add to score
+	// Assert: Even though PLC has 5 balls, score remains 0 because it's Red's Inactive shift.
+	// But lastRedPlcFuel MUST be updated to 5 to "consume" these balls.
 	assert.Equal(t, 0, arena.RedRealtimeScore.CurrentScore.TeleopFuelCount)
-
-	// BUT should update last value (so these 5 aren't counted later when active)
 	assert.Equal(t, 5, arena.lastRedPlcFuel)
 
-	// Set Hub to Active
-	arena.RedRealtimeScore.CurrentScore.HubActive = true
+	// --- Step 2: Simulate Shift 2 (Red Hub should be Active) ---
+	// Shift 2 occurs when timeLeft is between 105s and 80s.
+	// We simulate that 45s of Teleop have passed (140 - 45 = 95s left).
+	arena.MatchStartTime = time.Now().Add(-time.Duration(teleopStartDelay+45) * time.Second)
 
-	// Score 2 more (Total 7)
-	mockPlc.RedFuelVal = 7
+	// Trigger logic: updateHubStatus will now calculate redActive = true.
+	mockPlc.RedFuelVal = 7 // 2 more balls enter (Total 7)
 	arena.handlePlcInputOutput()
 
-	// Should only add the new 2
+	// Assert: Only the 2 new balls should be added (7 - 5 = 2).
 	assert.Equal(t, 2, arena.RedRealtimeScore.CurrentScore.TeleopFuelCount)
+	assert.Equal(t, 7, arena.lastRedPlcFuel)
 }
