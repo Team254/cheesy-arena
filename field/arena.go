@@ -518,7 +518,7 @@ func (arena *Arena) StartMatch() error {
 
 			// Save the teams that have successfully connected to the field.
 			if allianceStation.Team != nil && !allianceStation.Team.HasConnected && allianceStation.DsConn != nil &&
-			  allianceStation.DsConn.RobotLinked {
+				allianceStation.DsConn.RobotLinked {
 				allianceStation.Team.HasConnected = true
 				arena.Database.UpdateTeam(allianceStation.Team)
 			}
@@ -793,7 +793,7 @@ func (arena *Arena) checkEndgameStart(matchTimeSec float64) {
 	// Calculate the time when endgame warning should start
 	endgameStartTime := float64(
 		game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec +
-		  game.MatchTiming.TeleopDurationSec - game.MatchTiming.WarningRemainingDurationSec,
+			game.MatchTiming.TeleopDurationSec - game.MatchTiming.WarningRemainingDurationSec,
 	)
 
 	// Check if we've crossed the endgame threshold and haven't already triggered it
@@ -1050,7 +1050,7 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 		if dsConn != nil {
 			dsConn.Auto = auto
 			dsConn.Enabled = enabled && !allianceStation.EStop && !(auto && allianceStation.AStop) &&
-			  !allianceStation.Bypass
+				!allianceStation.Bypass
 			dsConn.EStop = allianceStation.EStop
 			dsConn.AStop = allianceStation.AStop
 			err := dsConn.update(arena)
@@ -1195,8 +1195,8 @@ func (arena *Arena) handlePlcInputOutput() {
 			arena.Plc.SetFieldResetLight(true)
 		}
 		scoreReady := arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted &&
-		  arena.positionPostMatchScoreReady("red_near") && arena.positionPostMatchScoreReady("red_far") &&
-		  arena.positionPostMatchScoreReady("blue_near") && arena.positionPostMatchScoreReady("blue_far")
+			arena.positionPostMatchScoreReady("red_near") && arena.positionPostMatchScoreReady("red_far") &&
+			arena.positionPostMatchScoreReady("blue_near") && arena.positionPostMatchScoreReady("blue_far")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
 
 		// Keep hub motors on for 3 seconds after the match ends.
@@ -1214,7 +1214,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	// For REBUILT: Get hub FUEL counts from PLC and route to active/inactive based on which hub is active.
 	// The PLC provides cumulative counts, so we calculate deltas from the current score totals.
 	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod ||
-	  inGracePeriod {
+		inGracePeriod {
 		redHubFuel, blueHubFuel := arena.Plc.GetHubBallCounts()
 
 		// Calculate the delta since last read using current score totals
@@ -1360,13 +1360,9 @@ func (arena *Arena) handleHubLights() {
 
 		// Set DMX colors based on hub state
 		arena.setLedHubColors(redHubActive, blueHubActive, shouldFlash, matchTimeSec)
-	} else if arena.MatchState == PreMatch {
-		// During pre-match, green for field safe
-		arena.RedHubLeds.SetColor(led.ColorGreen)
-		arena.BlueHubLeds.SetColor(led.ColorGreen)
-	} else if arena.MatchState == PostMatch {
-		// Sequence for PostMatch:
-		// 1. End of match: ColorOff
+	} else if arena.MatchState == PreMatch || arena.MatchState == PostMatch || arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout {
+		// Sequence for non-match states:
+		// 1. Initial state (PreMatch, PostMatch, Timeout): ColorOff
 		// 2. Ref signals Count (FieldVolunteers = true): ColorPurple
 		// 3. Ref signals Reset (FieldReset = true): ColorGreen
 		if arena.FieldReset {
@@ -1379,10 +1375,6 @@ func (arena *Arena) handleHubLights() {
 			arena.RedHubLeds.SetColor(led.ColorOff)
 			arena.BlueHubLeds.SetColor(led.ColorOff)
 		}
-	} else if arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout {
-		// During timeout, green for field safe
-		arena.RedHubLeds.SetColor(led.ColorGreen)
-		arena.BlueHubLeds.SetColor(led.ColorGreen)
 	} else {
 		// Default to off
 		arena.RedHubLeds.SetColor(led.ColorOff)
