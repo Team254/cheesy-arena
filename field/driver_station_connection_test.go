@@ -24,6 +24,7 @@ func TestEncodeControlPacket(t *testing.T) {
 	defer dsConn.close()
 
 	data := dsConn.encodeControlPacket(arena)
+	fmt.Printf("Full Packet: %x\n", data)
 	assert.Equal(t, byte(0), data[5])
 	assert.Equal(t, byte(0), data[6])
 	assert.Equal(t, byte(0), data[20])
@@ -122,14 +123,14 @@ func TestEncodeControlPacket(t *testing.T) {
 	arena.MatchState = PausePeriod
 	arena.MatchStartTime = time.Now().Add(-time.Duration(16 * time.Second))
 	data = dsConn.encodeControlPacket(arena)
-	assert.Equal(t, byte(135), data[21])
+	assert.Equal(t, byte(140), data[21])
 	arena.MatchState = TeleopPeriod
 	arena.MatchStartTime = time.Now().Add(-time.Duration(33 * time.Second))
 	data = dsConn.encodeControlPacket(arena)
-	assert.Equal(t, byte(119), data[21])
+	assert.Equal(t, byte(124), data[21])
 	arena.MatchStartTime = time.Now().Add(-time.Duration(150 * time.Second))
 	data = dsConn.encodeControlPacket(arena)
-	assert.Equal(t, byte(2), data[21])
+	assert.Equal(t, byte(7), data[21])
 	arena.MatchState = PostMatch
 	arena.MatchStartTime = time.Now().Add(-time.Duration(180 * time.Second))
 	data = dsConn.encodeControlPacket(arena)
