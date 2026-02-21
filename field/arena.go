@@ -1403,34 +1403,98 @@ func (arena *Arena) setLedHubColors(redHubActive, blueHubActive, shouldFlash boo
 		blueColor = led.ColorOff // Off when inactive
 	}
 
-	// Apply flashing/ramping if needed
+	// Apply flashing/ramping or chase if needed
 	if shouldFlash {
-		// Ramp: Dim over 0.5s, then brighten over 0.5s (1Hz cycle)
-		// matchTimeSec % 1.0 gives time within the current second [0.0, 1.0)
-		timeInCycle := math.Mod(matchTimeSec, 1.0)
+		// Ramp: Dim over 0.25s, then brighten over 0.25s (2Hz cycle)
+		// matchTimeSec % 0.5 gives time within the current cycle [0.0, 0.5)
+		timeInCycle := math.Mod(matchTimeSec, 0.5)
 		var multiplier float64
-		if timeInCycle < 0.5 {
-			// Dimming: 1.0 down to 0.0
-			multiplier = 1.0 - (timeInCycle / 0.5)
-		} else {
+		if timeInCycle < 0.25 {
 			// Brightening: 0.0 up to 1.0
-			multiplier = (timeInCycle - 0.5) / 0.5
+			multiplier = timeInCycle / 0.25
+		} else {
+			// Dimming: 1.0 down to 0.0
+			multiplier = 1.0 - (timeInCycle-0.25)/0.25
 		}
 
+		teleopStartSec := float64(game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec)
+		transitionEndSec := teleopStartSec + float64(game.TransitionDurationSec)
+		inTransitionEnd := matchTimeSec >= transitionEndSec-3.0 && matchTimeSec < transitionEndSec
+
 		if redHubActive {
-			redColor.R = uint8(float64(redColor.R) * multiplier)
-			redColor.G = uint8(float64(redColor.G) * multiplier)
-			redColor.B = uint8(float64(redColor.B) * multiplier)
+			applyRedFlash := true
+			if inTransitionEnd {
+				redWonAuto, _ := arena.determineAutoWinner()
+				if !redWonAuto {
+					// Red won't go inactive, so it shouldn't flash during transition end.
+					applyRedFlash = false
+				}
+			}
+			if applyRedFlash {
+				redColor = redColor.Scale(multiplier)
+			}
 		}
 		if blueHubActive {
-			blueColor.R = uint8(float64(blueColor.R) * multiplier)
-			blueColor.G = uint8(float64(blueColor.G) * multiplier)
-			blueColor.B = uint8(float64(blueColor.B) * multiplier)
+			applyBlueFlash := true
+			if inTransitionEnd {
+				redWonAuto, _ := arena.determineAutoWinner()
+				if redWonAuto {
+					// Blue won't go inactive, so it shouldn't flash during transition end.
+					applyBlueFlash = false
+				}
+			}
+			if applyBlueFlash {
+				blueColor = blueColor.Scale(multiplier)
+			}
 		}
 	}
 
-	arena.RedHubLeds.SetColor(redColor)
-	arena.BlueHubLeds.SetColor(blueColor)
+	teleopStartSec := float64(game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec)
+	transitionEndSec := teleopStartSec + float64(game.TransitionDurationSec)
+	if matchTimeSec >= teleopStartSec && matchTimeSec < transitionEndSec {
+		// During transition period, the hub that is going to go inactive in 10 seconds should be chasing
+		// for 7 seconds, then switch to pulsing for the last 3 seconds.
+		// After transition, the alliance that LOST auto has their hub active first.
+		redWonAuto, _ := arena.determineAutoWinner()
+		timeInTransition := matchTimeSec - teleopStartSec
+
+		if redWonAuto {
+			// Red won auto, so Red hub will go inactive after transition.
+			if timeInTransition < 7.0 {
+				arena.RedHubLeds.SetChase(led.ColorRed, matchTimeSec)
+			} else {
+				// Pulse for the last 3 seconds.
+				timeInCycle := math.Mod(matchTimeSec, 0.5)
+				var multiplier float64
+				if timeInCycle < 0.25 {
+					multiplier = timeInCycle / 0.25
+				} else {
+					multiplier = 1.0 - (timeInCycle-0.25)/0.25
+				}
+				arena.RedHubLeds.SetColor(led.ColorRed.Scale(multiplier))
+			}
+			arena.BlueHubLeds.SetColor(blueColor)
+		} else {
+			// Blue won auto or tie, so Blue hub will go inactive after transition.
+			arena.RedHubLeds.SetColor(redColor)
+			if timeInTransition < 7.0 {
+				arena.BlueHubLeds.SetChase(led.ColorBlue, matchTimeSec)
+			} else {
+				// Pulse for the last 3 seconds.
+				timeInCycle := math.Mod(matchTimeSec, 0.5)
+				var multiplier float64
+				if timeInCycle < 0.25 {
+					multiplier = timeInCycle / 0.25
+				} else {
+					multiplier = 1.0 - (timeInCycle-0.25)/0.25
+				}
+				arena.BlueHubLeds.SetColor(led.ColorBlue.Scale(multiplier))
+			}
+		}
+	} else {
+		arena.RedHubLeds.SetColor(redColor)
+		arena.BlueHubLeds.SetColor(blueColor)
+	}
 }
 
 func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) {

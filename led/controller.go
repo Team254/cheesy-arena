@@ -8,6 +8,7 @@ package led
 import (
 	"fmt"
 	"log"
+	"math"
 	"net"
 	"time"
 )
@@ -18,6 +19,7 @@ const (
 	sourceName        = "Cheesy Arena"
 	pixelDataOffset   = 126
 	heartbeatInterval = 1 * time.Second
+	NumSegments       = 16
 )
 
 // Color represents an RGB color value.
@@ -27,6 +29,14 @@ type Color struct {
 
 func (c Color) Equals(other Color) bool {
 	return c.R == other.R && c.G == other.G && c.B == other.B
+}
+
+func (c Color) Scale(multiplier float64) Color {
+	return Color{
+		R: uint8(float64(c.R) * multiplier),
+		G: uint8(float64(c.G) * multiplier),
+		B: uint8(float64(c.B) * multiplier),
+	}
 }
 
 // Predefined colors for different states
@@ -45,9 +55,12 @@ type Controller struct {
 	conn         net.Conn
 	color        Color
 	lastColor    Color
+	colors       [NumSegments]Color
+	lastColors   [NumSegments]Color
 	lastSend     time.Time
-	StartChannel int // Starting channel for the hub (7 channels)
+	StartChannel int // Starting channel for the hub
 	packet       []byte
+	chaseIndex   int // Current segment index for the 100% part of the chase
 }
 
 func (dmx *Controller) SetAddress(address string) error {
@@ -69,6 +82,29 @@ func (dmx *Controller) SetAddress(address string) error {
 
 func (dmx *Controller) SetColor(color Color) {
 	dmx.color = color
+	for i := 0; i < NumSegments; i++ {
+		dmx.colors[i] = color
+	}
+}
+
+func (dmx *Controller) SetChase(color Color, matchTimeSec float64) {
+	// 1 second to go through all 16 segments.
+	// matchTimeSec % 1.0 gives time within the current second [0.0, 1.0)
+	timeInCycle := math.Mod(matchTimeSec, 1.0)
+	dmx.chaseIndex = int(timeInCycle * NumSegments)
+
+	for i := 0; i < NumSegments; i++ {
+		dmx.colors[i] = ColorOff
+	}
+
+	// 33, 66, 100, 100, 100, 66, 33 chase pattern
+	dmx.colors[(dmx.chaseIndex-3+NumSegments)%NumSegments] = color.Scale(0.33)
+	dmx.colors[(dmx.chaseIndex-2+NumSegments)%NumSegments] = color.Scale(0.66)
+	dmx.colors[(dmx.chaseIndex-1+NumSegments)%NumSegments] = color
+	dmx.colors[dmx.chaseIndex] = color
+	dmx.colors[(dmx.chaseIndex+1)%NumSegments] = color
+	dmx.colors[(dmx.chaseIndex+2)%NumSegments] = color.Scale(0.66)
+	dmx.colors[(dmx.chaseIndex+3)%NumSegments] = color.Scale(0.33)
 }
 
 func (dmx *Controller) GetColor() Color {
@@ -83,8 +119,6 @@ func (dmx *Controller) Close() {
 }
 
 func (dmx *Controller) Update() {
-	color := dmx.color
-
 	if dmx.conn == nil {
 		// This controller is not configured; do nothing.
 		return
@@ -92,41 +126,45 @@ func (dmx *Controller) Update() {
 
 	// Create the template packet if it doesn't already exist.
 	if len(dmx.packet) == 0 {
-		dmx.packet = createBlankPacket(3)
+		dmx.packet = createBlankPacket(NumSegments * 3)
 	}
 
 	// Send packets if the pixel values have changed.
-	if dmx.shouldSendPacket(color) {
-		dmx.populatePacket(color, dmx.StartChannel)
+	if dmx.shouldSendPacket() {
+		dmx.populatePacket(dmx.StartChannel)
 		if err := dmx.sendPacket(dmx.Universe); err != nil {
 			log.Printf("sACN error writing data to universe %d: %v", dmx.Universe, err)
 			return
 		}
-		dmx.lastColor = color
+		dmx.lastColors = dmx.colors
 		dmx.lastSend = time.Now()
 	}
 }
 
-func (dmx *Controller) shouldSendPacket(color Color) bool {
-	if !color.Equals(dmx.lastColor) {
-		return true
+func (dmx *Controller) shouldSendPacket() bool {
+	for i := 0; i < NumSegments; i++ {
+		if !dmx.colors[i].Equals(dmx.lastColors[i]) {
+			return true
+		}
 	}
 	return time.Since(dmx.lastSend) >= heartbeatInterval
 }
 
-func (dmx *Controller) populatePacket(color Color, startChannel int) {
+func (dmx *Controller) populatePacket(startChannel int) {
 	// Clear DMX data area
 	for i := pixelDataOffset; i < len(dmx.packet); i++ {
 		dmx.packet[i] = 0
 	}
 
-	// Light mapping (3 channels):
-	// 1: Red
-	// 2: Green
-	// 3: Blue
-	dmx.packet[pixelDataOffset+startChannel-1+0] = color.R
-	dmx.packet[pixelDataOffset+startChannel-1+1] = color.G
-	dmx.packet[pixelDataOffset+startChannel-1+2] = color.B
+	// Light mapping (48 channels):
+	// 1-3: Segment 1 (R, G, B)
+	// 4-6: Segment 2 (R, G, B)
+	// ...
+	for i := 0; i < NumSegments; i++ {
+		dmx.packet[pixelDataOffset+startChannel-1+i*3+0] = dmx.colors[i].R
+		dmx.packet[pixelDataOffset+startChannel-1+i*3+1] = dmx.colors[i].G
+		dmx.packet[pixelDataOffset+startChannel-1+i*3+2] = dmx.colors[i].B
+	}
 }
 
 func (dmx *Controller) sendPacket(universe int) error {
