@@ -16,6 +16,7 @@ type MatchSound struct {
 var MatchSounds []*MatchSound
 
 func UpdateMatchSounds() {
+	teleopStart := MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec
 	MatchSounds = []*MatchSound{
 		{
 			"start",
@@ -32,8 +33,23 @@ func UpdateMatchSounds() {
 			"wav",
 			float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec),
 		},
+		// --- 新增：Hub 轉換音效 (change.wav) ---
+		// 根據時間表：2:20 -> 2:10 (過 10s 第一次轉換)
+		{"change", "wav", float64(teleopStart + 10)},
+
+		// SHIFT 1 -> SHIFT 2 (過 35s)
+		{"change", "wav", float64(teleopStart + 35)},
+
+		// SHIFT 2 -> SHIFT 3 (過 60s)
+		{"change", "wav", float64(teleopStart + 59)},
+
+		// SHIFT 3 -> SHIFT 4 (過 85s)
+		{"change", "wav", float64(teleopStart + 84)},
+
+		// SHIFT 4 -> END GAME (過 110s)
+		{"change", "wav", float64(teleopStart + 109)},
 		{
-			"warning_sonar",
+			"warning",
 			"wav",
 			float64(
 				MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec + MatchTiming.TeleopDurationSec -
