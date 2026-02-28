@@ -190,8 +190,6 @@ const handleMatchTime = function (data) {
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function (data) {
-  //$(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
-  //$(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
   $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score);
   $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score);
   let redCoral, blueCoral;
@@ -201,8 +199,8 @@ const handleRealtimeScore = function (data) {
   const getFuelGoal = (summary) => (summary.EnergizedRankingPoint ? 360 : 100);
 
   if (currentMatch.Type === matchTypePlayoff) {
-      redCoral = data.Red.ScoreSummary.NumCoral;
-      blueCoral = data.Blue.ScoreSummary.NumCoral;
+      redCoral = data.Red.ScoreSummary.TotalFuelPoints;
+      blueCoral = data.Blue.ScoreSummary.TotalFuelPoints;
   } else {
       // 1. 計算紅藍兩隊的目標值
       const redFuelGoal = getFuelGoal(data.Red.ScoreSummary);
@@ -214,9 +212,9 @@ const handleRealtimeScore = function (data) {
       blueCoral = `${data.Blue.ScoreSummary.TotalFuelPoints}/${blueFuelGoal}`;
   }
   $(`#${redSide}Coral`).text(redCoral);
-  $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
+  $(`#${redSide}Algae`).text(data.Red.ScoreSummary.TotalTowerPoints);
   $(`#${blueSide}Coral`).text(blueCoral);
-  $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
+  $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.TotalTowerPoints);
 
 };
 
@@ -297,13 +295,13 @@ const handleScorePosted = function (data) {
     data.RedScoreSummary.SuperchargedRankingPoint ? '<img src="/static/img/red_superRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalCoralBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.CoralBonusRankingPoint
+    "data-checked", data.RedScoreSummary.SuperchargedRankingPoint
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).html(
     data.RedScoreSummary.TraversalRankingPoint ? '<img src="/static/img/red_towerRP.png" alt="✔" style="width:60px;height:60px;margin:20px 5px;">' : " "
   );
   $(`#${redSide}FinalBargeBonusRankingPoint`).attr(
-    "data-checked", data.RedScoreSummary.BargeBonusRankingPoint
+    "data-checked", data.RedScoreSummary.TraversalRankingPoint
   );
   $(`#${redSide}FinalRankingPoints`).html(data.RedRankingPoints);
   $(`#${redSide}FinalWins`).text(data.RedWins);

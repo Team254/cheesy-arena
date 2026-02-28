@@ -2,7 +2,7 @@
 <div class="modal-dialog modal-xl">
   <div class="modal-content">
     <div class="modal-header" id="savedMatchResult">
-      <h4 class="modal-title">Final Results &ndash; {{.Match.LongName}}</span></h4>
+      <h4 class="modal-title">Final Results &ndash; {{.Match.LongName}}</h4>
       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     </div>
     <div class="modal-body row">
@@ -29,40 +29,38 @@
 {{end}}
 {{define "alliance_match_result"}}
 <h4>Score</h4>
-<!--
 <div class="row justify-content-center">
-  <div class="col-sm-6">Auto Leave Points</div>
-  <div class="col-sm-4">{{.summary.LeavePoints}}</div>
+  <div class="col-sm-6">Auto Fuel Points</div>
+  <div class="col-sm-4">{{.summary.AutoFuelPoints}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Coral Points</div>
-  <div class="col-sm-4">{{.summary.CoralPoints}}</div>
+  <div class="col-sm-6">Auto Tower Points</div>
+  <div class="col-sm-4">{{.summary.AutoTowerPoints}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Algae Points</div>
-  <div class="col-sm-4">{{.summary.AlgaePoints}}</div>
+  <div class="col-sm-6">Teleop Fuel Points</div>
+  <div class="col-sm-4">{{.summary.TeleopFuelPoints}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Barge Points</div>
-  <div class="col-sm-4">{{.summary.BargePoints}}</div>
+  <div class="col-sm-6">Endgame Tower Points</div>
+  <div class="col-sm-4">{{.summary.EndgameTowerPoints}}</div>
 </div>
--->
 <div class="row justify-content-center">
   <div class="col-sm-6">Foul Points</div>
   <div class="col-sm-4">{{.summary.FoulPoints}}</div>
 </div>
 {{if ne .matchType playoffMatch}}
 <div class="row justify-content-center">
-  <div class="col-sm-6">Auto Bonus RP</div>
-  <div class="col-sm-4">{{if .summary.AutoBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+  <div class="col-sm-6">Energized RP</div>
+  <div class="col-sm-4">{{if .summary.EnergizedRankingPoint}}Yes{{else}}No{{end}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Coral Bonus RP</div>
-  <div class="col-sm-4">{{if .summary.CoralBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+  <div class="col-sm-6">Supercharged RP</div>
+  <div class="col-sm-4">{{if .summary.SuperchargedRankingPoint}}Yes{{else}}No{{end}}</div>
 </div>
 <div class="row justify-content-center">
-  <div class="col-sm-6">Barge Bonus RP</div>
-  <div class="col-sm-4">{{if .summary.BargeBonusRankingPoint}}Yes{{else}}No{{end}}</div>
+  <div class="col-sm-6">Traversal RP</div>
+  <div class="col-sm-4">{{if .summary.TraversalRankingPoint}}Yes{{else}}No{{end}}</div>
 </div>
 {{end}}
 <div class="row justify-content-center mt-3">
