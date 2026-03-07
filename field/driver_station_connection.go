@@ -444,8 +444,8 @@ func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {
 	log.Printf("Handling invalid TCP connection from %v with status %d and station %d", tcpConn.RemoteAddr(), status, station)
 	var assignmentPacket [5]byte
 	assignmentPacket[0] = 0  // Packet size
-	assignmentPacket[1] = 4  // Packet size
-	assignmentPacket[2] = 31 // Packet type
+	assignmentPacket[1] = 3  // Packet size
+	assignmentPacket[2] = 25 // Packet type
 	assignmentPacket[3] = byte(station)
 	assignmentPacket[4] = byte(status)
 	_, err := tcpConn.Write(assignmentPacket[:])

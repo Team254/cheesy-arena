@@ -176,8 +176,10 @@ func TestListenForDriverStations(t *testing.T) {
 		dataSend := [5]byte{0, 3, 24, 5, 223}
 		tcpConn.Write(dataSend[:])
 		var dataReceived [5]byte
-		_, err = tcpConn.Read(dataReceived[:])
-		assert.NotNil(t, err)
+		count, err := tcpConn.Read(dataReceived[:])
+		assert.Nil(t, err)
+		assert.Equal(t, count, 5)
+		assert.Equal(t, [5]byte{0, 3, 25, 2, 0}, dataReceived)
 		tcpConn.Close()
 	}
 
