@@ -179,7 +179,7 @@ func TestListenForDriverStations(t *testing.T) {
 		count, err := tcpConn.Read(dataReceived[:])
 		assert.Nil(t, err)
 		assert.Equal(t, count, 5)
-		assert.Equal(t, [5]byte{0, 3, 25, 2, 0}, dataReceived)
+		assert.Equal(t, [5]byte{0, 3, 25, 0, 2}, dataReceived)
 		tcpConn.Close()
 	}
 
