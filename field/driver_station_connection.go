@@ -452,6 +452,7 @@ func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {
 	if err != nil {
 		log.Printf("Error sending invalid driver station assignment packet: %v", err)
 		tcpConn.Close()
+		return
 	}
 
 	buffer := make([]byte, maxTcpPacketBytes)
