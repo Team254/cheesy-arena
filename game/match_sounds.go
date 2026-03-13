@@ -33,31 +33,31 @@ func UpdateMatchSounds() {
 			float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec),
 		},
 		{
-			"shift",
+			"linear_popping",
 			"wav",
 			float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec + TransitionDurationSec),
 		},
 		{
-			"shift",
+			"linear_popping",
 			"wav",
 			float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec + TransitionDurationSec + ShiftDurationSec),
 		},
 		{
-			"shift",
+			"linear_popping",
 			"wav",
 			float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec + TransitionDurationSec + ShiftDurationSec*2),
 		},
 		{
-			"shift",
+			"linear_popping",
 			"wav",
 			float64(MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec + TransitionDurationSec + ShiftDurationSec*3),
 		},
 		{
-			"warning_sonar",
+			"match_endgame",
 			"wav",
 			float64(
 				MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec + MatchTiming.TeleopDurationSec -
-					MatchTiming.WarningRemainingDurationSec,
+				  MatchTiming.WarningRemainingDurationSec,
 			),
 		},
 		{
