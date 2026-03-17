@@ -244,7 +244,7 @@ html {
 }
 #shiftInfo {
   position: relative;
-  top: 32px;
+  top: 22px;
   height: 70px;
   display: flex;
   flex-direction: column;
@@ -264,7 +264,7 @@ html {
 }
 #matchTime {
   position: relative;
-  top: 17px;
+  top: 7px;
   height: 60px;
   color: #222;
   font-family: "FuturaLTBold";

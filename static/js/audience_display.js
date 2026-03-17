@@ -176,18 +176,34 @@ const updateShiftDisplay = function(matchTimeSec, matchState) {
   const transitionDurationSec = 10;
   const shiftDurationSec = 25;
   const teleopEndSec = 163; // teleopStartSec + teleop(140)
-
-  // Only show shift info during Teleop shifts (after transition, before end game)
-  // matchState: 5 = TELEOP_PERIOD
   const transitionEndSec = teleopStartSec + transitionDurationSec;
-  const shiftStartTime = transitionEndSec;
   const shiftEndTime = teleopEndSec - 30; // 30s is end game
 
-  if (matchState === 5 && matchTimeSec >= shiftStartTime && matchTimeSec < shiftEndTime) {
-    const postTransitionSec = matchTimeSec - transitionEndSec;
-    const shift = Math.floor(postTransitionSec / shiftDurationSec);
-    const timeInShift = postTransitionSec % shiftDurationSec;
-    const timeLeftInShift = Math.ceil(shiftDurationSec - timeInShift);
+  // Show shift info throughout Teleop (transition, shifts, end game)
+  // matchState: 5 = TELEOP_PERIOD
+  if (matchState === 5) {
+    let shift, timeLeftInShift;
+
+    if (matchTimeSec < transitionEndSec) {
+      // Transition period is shift 1
+      shift = 0;
+      timeLeftInShift = Math.ceil(transitionEndSec - matchTimeSec);
+    } else if (matchTimeSec < shiftEndTime) {
+      // 4 actual shifts are 2-5
+      const postTransitionSec = matchTimeSec - transitionEndSec;
+      shift = Math.floor(postTransitionSec / shiftDurationSec) + 1;
+      const timeInShift = postTransitionSec % shiftDurationSec;
+      timeLeftInShift = Math.ceil(shiftDurationSec - timeInShift);
+    } else if (matchTimeSec < teleopEndSec) {
+      // End game is shift 6
+      shift = 5;
+      timeLeftInShift = Math.ceil(teleopEndSec - matchTimeSec);
+    } else {
+      // Match ended, hide shift info
+      $("#logo").show();
+      $("#shiftInfo").hide();
+      return;
+    }
 
     $("#shiftNumber").text(`${shift + 1} / 6`);
     $("#shiftTime").text(`${timeLeftInShift}s`);
