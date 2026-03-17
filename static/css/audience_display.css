@@ -211,6 +211,26 @@ html {
   top: 38px;
   height: 70px;
 }
+#shiftInfo {
+  position: relative;
+  top: 32px;
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#shiftNumber {
+  color: #222;
+  font-family: "FuturaLTBold";
+  font-size: 26px;
+}
+#shiftTime {
+  color: #222;
+  font-family: "FuturaLTBold";
+  font-size: 32px;
+  margin-top: -5px;
+}
 #matchTime {
   position: relative;
   top: 17px;

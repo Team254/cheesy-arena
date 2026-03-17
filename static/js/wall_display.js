@@ -141,6 +141,9 @@ const handleMatchTime = function (data) {
     $("#matchTime").text(getCountdownString(countdownSec));
   });
 
+  // Update shift info display
+  updateShiftDisplay(data.MatchTimeSec, data.MatchState);
+
   // Update hub indicators when time changes (if we have score data)
   if (currentScoreData) {
     updateHubIndicators(currentScoreData);
@@ -163,6 +166,35 @@ const handleRealtimeScore = function (data) {
 };
 
 // Updates the hub activation indicators based on current match state and time
+const updateShiftDisplay = function(matchTimeSec, matchState) {
+  const teleopStartSec = 23; // warmup(0) + auto(20) + pause(3)
+  const transitionDurationSec = 10;
+  const shiftDurationSec = 25;
+  const teleopEndSec = 163; // teleopStartSec + teleop(140)
+
+  // Only show shift info during Teleop shifts (after transition, before end game)
+  // matchState: 5 = TELEOP_PERIOD
+  const transitionEndSec = teleopStartSec + transitionDurationSec;
+  const shiftStartTime = transitionEndSec;
+  const shiftEndTime = teleopEndSec - 30; // 30s is end game
+
+  if (matchState === 5 && matchTimeSec >= shiftStartTime && matchTimeSec < shiftEndTime) {
+    const postTransitionSec = matchTimeSec - transitionEndSec;
+    const shift = Math.floor(postTransitionSec / shiftDurationSec);
+    const timeInShift = postTransitionSec % shiftDurationSec;
+    const timeLeftInShift = Math.ceil(shiftDurationSec - timeInShift);
+
+    $("#shiftNumber").text(`${shift + 1} / 6`);
+    $("#shiftTime").text(`${timeLeftInShift}s`);
+
+    $("#logo").hide();
+    $("#shiftInfo").show();
+  } else {
+    $("#logo").show();
+    $("#shiftInfo").hide();
+  }
+};
+
 const updateHubIndicators = function(scoreData) {
   if (!currentMatchTimeData) {
     return;
