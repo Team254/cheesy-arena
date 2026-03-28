@@ -9,7 +9,9 @@ package main
 import (
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/web"
+	"github.com/Team254/cheesy-arena/network"
 	"log"
+	"flag"
 )
 
 const eventDbPath = "./event.db"
@@ -21,6 +23,9 @@ func main() {
 	if err != nil {
 		log.Fatalln("Error during startup: ", err)
 	}
+
+    flag.StringVar(&network.ServerIpAddress, "serverIP", "10.0.100.5", "Sets the FMS server IP")
+	flag.Parse();
 
 	// Start the web server in a separate goroutine.
 	web := web.NewWeb(arena)
