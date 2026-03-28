@@ -146,7 +146,7 @@ func TestSendControlPacket(t *testing.T) {
 	defer dsConn.close()
 
 	// No real way of checking this since the destination IP is remote, so settle for there being no errors.
-	err = dsConn.sendControlPacket(arena)
+	err = dsConn.sendControlPacket(arena, "")
 	assert.Nil(t, err)
 }
 

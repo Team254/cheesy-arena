@@ -52,6 +52,7 @@ type DriverStationConnection struct {
 	tcpConn                   net.Conn
 	udpConn                   net.Conn
 	log                       *TeamMatchLog
+	SentGameData              string
 
 	// WrongStation indicates if the team in the station is the incorrect team
 	// by being non-empty. If the team is in the correct station, or no team is
@@ -158,8 +159,8 @@ func (arena *Arena) listenForDsUdpPackets() {
 }
 
 // Sends a control packet to the Driver Station and checks for timeout conditions.
-func (dsConn *DriverStationConnection) update(arena *Arena) error {
-	err := dsConn.sendControlPacket(arena)
+func (dsConn *DriverStationConnection) update(arena *Arena, gameData string) error {
+	err := dsConn.sendControlPacket(arena, gameData)
 	if err != nil {
 		return err
 	}
@@ -285,7 +286,8 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 }
 
 // Builds and sends the next control packet to the Driver Station.
-func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena) error {
+func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena, gameData string) error {
+	gameDataErr := dsConn.checkGameData(gameData)
 	packet := dsConn.encodeControlPacket(arena)
 	if dsConn.udpConn != nil {
 		_, err := dsConn.udpConn.Write(packet[:])
@@ -294,7 +296,7 @@ func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena) error {
 		}
 	}
 
-	return nil
+	return gameDataErr
 }
 
 // Listens for TCP connection requests to Cheesy Arena from driver stations.
@@ -465,6 +467,20 @@ func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {
 	}
 
 	tcpConn.Close()
+}
+
+func (dsConn *DriverStationConnection) checkGameData(gameData string) error {
+	needsGameDataUpdate := dsConn.SentGameData != gameData
+	if needsGameDataUpdate {
+		err := dsConn.sendGameDataPacket(gameData)
+		if err != nil {
+			log.Printf("Error sending game data packet to Team %d: %v", dsConn.TeamId, err)
+			return err
+		} else {
+			dsConn.SentGameData = gameData
+		}
+	}
+	return nil
 }
 
 // Sends a TCP packet containing the given game data to the driver station.
