@@ -1,3 +1,5 @@
+//2026 1/22 Cindy
+
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
@@ -7,13 +9,14 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
 	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/Team254/cheesy-arena/game"
 
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
@@ -180,7 +183,7 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /panels/scoring/{position}", web.scoringPanelHandler)
 	mux.HandleFunc("GET /panels/scoring/{position}/websocket", web.scoringPanelWebsocketHandler)
 	mux.HandleFunc("GET /panels/referee", web.refereePanelHandler)
-	mux.HandleFunc("GET /panels/referee/foul_list", web.refereePanelFoulListHandler)
+	mux.HandleFunc("GET /panels/referee/foul_list", web.foulListHandler)
 	mux.HandleFunc("GET /panels/referee/websocket", web.refereePanelWebsocketHandler)
 	mux.HandleFunc("GET /reports/csv/backups", web.backupTeamsCsvReportHandler)
 	mux.HandleFunc("GET /reports/csv/fta", web.ftaCsvReportHandler)

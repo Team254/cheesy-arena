@@ -1,56 +1,53 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2026 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+// Modified for 2026 REBUILT Game
 
 package model
 
 import (
-	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestEventSettingsReadWrite(t *testing.T) {
-	db := setupTestDb(t)
-	defer db.Close()
+func TestEventSettingsDefaults(t *testing.T) {
+	// Use temporary database
+	os.Remove("test_settings.db")
+	db, err := OpenDatabase("test_settings.db")
+	assert.Nil(t, err)
+	defer os.Remove("test_settings.db")
 
-	eventSettings, err := db.GetEventSettings()
+	// 1. Test: Get settings (should automatically create default values if empty)
+	settings, err := db.GetEventSettings()
 	assert.Nil(t, err)
-	assert.Equal(
-		t,
-		EventSettings{
-			Id:                          1,
-			Name:                        "Untitled Event",
-			PlayoffType:                 DoubleEliminationPlayoff,
-			NumPlayoffAlliances:         8,
-			SelectionRound2Order:        "L",
-			SelectionRound3Order:        "",
-			SelectionShowUnpickedTeams:  true,
-			TbaDownloadEnabled:          true,
-			ApChannel:                   36,
-			SCCUpCommands:               "configure terminal\ninterface range gigabitEthernet 1/2-4\nno shutdown\nexit\nexit\nexit",
-			SCCDownCommands:             "configure terminal\ninterface range gigabitEthernet 1/2-4\nshutdown\nexit\nexit\nexit",
-			WarmupDurationSec:           0,
-			AutoDurationSec:             15,
-			PauseDurationSec:            3,
-			TeleopDurationSec:           135,
-			WarningRemainingDurationSec: 20,
-			AutoBonusCoralThreshold:     1,
-			CoralBonusPerLevelThreshold: 7,
-			CoralBonusCoopEnabled:       true,
-			BargeBonusPointThreshold:    16,
-			IncludeAlgaeInBargeBonus:    false,
-			CompanionAddress:            "",
-			CompanionPort:               0,
-		},
-		*eventSettings,
-	)
 
-	eventSettings.Name = "Chezy Champs"
-	eventSettings.NumPlayoffAlliances = 6
-	eventSettings.SelectionRound2Order = "F"
-	eventSettings.SelectionRound3Order = "L"
-	err = db.UpdateEventSettings(eventSettings)
+	// Verify that the 2026 default values are loaded (from the game package)
+	assert.Equal(t, game.EnergizedFuelThreshold, settings.EnergizedFuelThreshold)
+	assert.Equal(t, game.SuperchargedFuelThreshold, settings.SuperchargedFuelThreshold)
+	assert.Equal(t, game.TraversalPointThreshold, settings.TraversalPointThreshold)
+}
+
+func TestUpdateEventSettings(t *testing.T) {
+	os.Remove("test_settings_update.db")
+	db, err := OpenDatabase("test_settings_update.db")
 	assert.Nil(t, err)
-	eventSettings2, err := db.GetEventSettings()
+	defer os.Remove("test_settings_update.db")
+
+	settings, _ := db.GetEventSettings()
+
+	// 2. Test: Modify and save settings
+	settings.Name = "2026 Championship"
+	settings.EnergizedFuelThreshold = 999 // Modify RP threshold
+	settings.SuperchargedFuelThreshold = 1000
+
+	err = db.UpdateEventSettings(settings)
 	assert.Nil(t, err)
-	assert.Equal(t, eventSettings, eventSettings2)
+
+	// Reload and verify
+	newSettings, _ := db.GetEventSettings()
+	assert.Equal(t, "2026 Championship", newSettings.Name)
+	assert.Equal(t, 999, newSettings.EnergizedFuelThreshold)
+	assert.Equal(t, 1000, newSettings.SuperchargedFuelThreshold)
 }

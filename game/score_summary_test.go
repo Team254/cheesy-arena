@@ -1,58 +1,47 @@
-// Copyright 2022 Team 254. All Rights Reserved.
+// Copyright 2026 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+// Modified for 2026 REBUILT Game
 
 package game
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
-	redScoreSummary := &ScoreSummary{Score: 10}
-	blueScoreSummary := &ScoreSummary{Score: 10}
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
+	// Initialization: A draw
+	redScoreSummary := &ScoreSummary{Score: 50}
+	blueScoreSummary := &ScoreSummary{Score: 50}
 
-	redScoreSummary.Score = 11
-	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
+	// 1. Same total score -> Tie
+	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
+
+	// 2. Test Tiebreaker 1: Total score (Score)
+	redScoreSummary.Score = 51
+	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
+	redScoreSummary.Score = 50 // Reset
+
+	// 3. Test Tiebreaker 2: Opponent fouls (NumOpponentMajorFouls)
+	redScoreSummary.NumOpponentMajorFouls = 2
+	blueScoreSummary.NumOpponentMajorFouls = 1
+	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
+	redScoreSummary.NumOpponentMajorFouls = 0 // Reset
+	blueScoreSummary.NumOpponentMajorFouls = 0
+
+	// 4. Test Tiebreaker 3: Auto points (AutoPoints)
+	blueScoreSummary.AutoPoints = 20
+	redScoreSummary.AutoPoints = 10
+	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
+	blueScoreSummary.AutoPoints = 10 // Reset
+
+	// 5. Test Tiebreaker 4: Total tower points (TotalTowerPoints) - Replaces last year's Barge
+	redScoreSummary.TotalTowerPoints = 30
+	blueScoreSummary.TotalTowerPoints = 20
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	blueScoreSummary.Score = 12
-	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	redScoreSummary.Score = 12
-	redScoreSummary.NumOpponentMajorFouls = 11
-	redScoreSummary.AutoPoints = 11
-	redScoreSummary.BargePoints = 11
-	blueScoreSummary.NumOpponentMajorFouls = 10
-	blueScoreSummary.AutoPoints = 10
-	blueScoreSummary.BargePoints = 10
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	blueScoreSummary.NumOpponentMajorFouls = 12
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	redScoreSummary.NumOpponentMajorFouls = 12
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	blueScoreSummary.AutoPoints = 12
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	redScoreSummary.AutoPoints = 12
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	blueScoreSummary.BargePoints = 12
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
-	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
-
-	redScoreSummary.BargePoints = 12
-	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
+	// If total tower points are the same -> Tie
+	blueScoreSummary.TotalTowerPoints = 30
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 }

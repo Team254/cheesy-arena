@@ -1,7 +1,6 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
-//
-// Methods for configuring a Cisco Switch 3500-series switch for team VLANs.
+// Modified for Fortinet Switch Support
 
 package network
 
@@ -9,10 +8,12 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
 	"net"
+	"strings"
 	"sync"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
 )
 
 const (
@@ -34,6 +35,7 @@ const (
 type Switch struct {
 	address               string
 	port                  int
+	username              string // Fortinet 通常需要帳號
 	password              string
 	mutex                 sync.Mutex
 	configBackoffDuration time.Duration
@@ -41,12 +43,13 @@ type Switch struct {
 	Status                string
 }
 
-var ServerIpAddress = "10.0.100.5" // The DS will try to connect to this address only.
+var ServerIpAddress = "10.0.100.5"
 
 func NewSwitch(address, password string) *Switch {
 	return &Switch{
 		address:               address,
 		port:                  switchTelnetPort,
+		username:              "admin",
 		password:              password,
 		configBackoffDuration: switchConfigBackoffDurationSec * time.Second,
 		configPauseDuration:   switchConfigPauseDurationSec * time.Second,
@@ -54,113 +57,147 @@ func NewSwitch(address, password string) *Switch {
 	}
 }
 
-// Sets up wired networks for the given set of teams.
 func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
-	// Make sure multiple configurations aren't being set at the same time.
 	sw.mutex.Lock()
 	defer sw.mutex.Unlock()
 	sw.Status = "CONFIGURING"
 
-	// Remove old team VLANs to reset the switch state.
-	removeTeamVlansCommand := ""
+	// 1. Remove the old DHCP Server settings.
+	removeTeamVlansCommand := "config system dhcp server\n"
 	for vlan := 10; vlan <= 60; vlan += 10 {
-		removeTeamVlansCommand += fmt.Sprintf(
-			"interface Vlan%d\nno ip address\nno ip dhcp pool dhcp%d\n", vlan, vlan,
-		)
+		removeTeamVlansCommand += fmt.Sprintf("delete %d\n", vlan)
 	}
-	_, err := sw.runConfigCommand(removeTeamVlansCommand)
+	removeTeamVlansCommand += "end\n"
+
+	// 2. Remove Interface VLANs
+	removeTeamVlansCommand += "config system interface\n"
+	for vlan := 10; vlan <= 60; vlan += 10 {
+		removeTeamVlansCommand += fmt.Sprintf("delete \"vlan%d\"\n", vlan)
+	}
+	removeTeamVlansCommand += "end\n"
+
+	_, err := sw.runCommand(removeTeamVlansCommand)
 	if err != nil {
 		sw.Status = "ERROR"
 		return err
 	}
 	time.Sleep(sw.configPauseDuration)
 
-	// Create the new team VLANs.
+	// 2. Create new configuration
 	addTeamVlansCommand := ""
 	addTeamVlan := func(team *model.Team, vlan int) {
 		if team == nil {
 			return
 		}
 		teamPartialIp := fmt.Sprintf("%d.%d", team.Id/100, team.Id%100)
+
 		addTeamVlansCommand += fmt.Sprintf(
-			"ip dhcp excluded-address 10.%s.1 10.%s.19\n"+
-				"ip dhcp excluded-address 10.%s.200 10.%s.254\n"+
-				"ip dhcp pool dhcp%d\n"+
-				"network 10.%s.0 255.255.255.0\n"+
-				"default-router 10.%s.%d\n"+
-				"lease 7\n"+
-				"interface Vlan%d\nip address 10.%s.%d 255.255.255.0\n",
-			teamPartialIp,
-			teamPartialIp,
-			teamPartialIp,
-			teamPartialIp,
-			vlan,
-			teamPartialIp,
-			teamPartialIp,
-			switchTeamGatewayAddress,
-			vlan,
-			teamPartialIp,
-			switchTeamGatewayAddress,
+			"config system interface\n"+
+				"edit \"vlan%d\"\n"+
+				"set vlanid %d\n"+
+				"set interface \"internal\"\n"+
+				"set ip 10.%s.%d 255.255.255.0\n"+
+				"next\n"+
+				"end\n"+
+				"config system dhcp server\n"+
+				"edit %d\n"+
+				"set interface \"vlan%d\"\n"+
+				"set default-gateway 10.%s.%d\n"+
+				"set netmask 255.255.255.0\n"+
+				"config ip-range\n"+
+				"edit 1\n"+
+				"set start-ip 10.%s.20\n"+
+				"set end-ip 10.%s.199\n"+
+				"next\n"+
+				"end\n"+
+				"next\n"+
+				"end\n",
+			vlan, vlan,
+			teamPartialIp, switchTeamGatewayAddress,
+			vlan, vlan, teamPartialIp, switchTeamGatewayAddress,
+			teamPartialIp, teamPartialIp,
 		)
 	}
+
 	addTeamVlan(teams[0], red1Vlan)
 	addTeamVlan(teams[1], red2Vlan)
 	addTeamVlan(teams[2], red3Vlan)
 	addTeamVlan(teams[3], blue1Vlan)
 	addTeamVlan(teams[4], blue2Vlan)
 	addTeamVlan(teams[5], blue3Vlan)
+
 	if len(addTeamVlansCommand) > 0 {
-		_, err = sw.runConfigCommand(addTeamVlansCommand)
+		_, err = sw.runCommand(addTeamVlansCommand)
 		if err != nil {
 			sw.Status = "ERROR"
 			return err
 		}
 	}
 
-	// Give some time for the configuration to take before another one can be attempted.
 	time.Sleep(sw.configBackoffDuration)
-
 	sw.Status = "ACTIVE"
 	return nil
 }
 
-// Logs into the switch via Telnet and runs the given command in user exec mode. Reads the output and
-// returns it as a string.
+// runCommand handles Fortinet login and pagination
 func (sw *Switch) runCommand(command string) (string, error) {
-	// Open a Telnet connection to the switch.
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port))
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port), 5*time.Second)
 	if err != nil {
 		return "", err
 	}
 	defer conn.Close()
 
-	// Login to the AP, send the command, and log out all at once.
+	// Handle Telnet negotiation (resolve packet 463 issue)
+	// When receiving IAC (255), respond according to the protocol to make the switch willing to communicate
+	handleNegotiation := func(c net.Conn) {
+		buf := make([]byte, 3)
+		for {
+			c.SetReadDeadline(time.Now().Add(500 * time.Millisecond))
+			n, err := c.Read(buf)
+			if err != nil || n < 3 || buf[0] != 255 {
+				return
+			}
+			// Simple logic: if DO (253) received, respond with WON'T (252); if WILL (251) received, respond with DON'T (254)
+			if buf[1] == 253 {
+				c.Write([]byte{255, 252, buf[2]})
+			} else if buf[1] == 251 {
+				c.Write([]byte{255, 254, buf[2]})
+			}
+		}
+	}
+
+	// 1. Handle handshake
+	handleNegotiation(conn)
+	time.Sleep(500 * time.Millisecond)
+
 	writer := bufio.NewWriter(conn)
-	_, err = writer.WriteString(
-		fmt.Sprintf(
-			"%s\nenable\n%s\nterminal length 0\n%sexit\n", sw.password, sw.password,
-			command,
-		),
-	)
-	if err != nil {
-		return "", err
-	}
-	err = writer.Flush()
-	if err != nil {
-		return "", err
+	reader := bufio.NewReader(conn)
+
+	send := func(s string, delay time.Duration) {
+		writer.WriteString(s + "\r")
+		writer.Flush()
+		time.Sleep(delay)
 	}
 
-	// Read the response.
-	var reader bytes.Buffer
-	_, err = reader.ReadFrom(conn)
-	if err != nil {
-		return "", err
-	}
-	return reader.String(), nil
-}
+	// 2. Login (send even if blue text not seen, but add delay)
+	send(sw.username, 500*time.Millisecond)
+	send(sw.password, 1*time.Second)
 
-// Logs into the switch via Telnet and runs the given command in global configuration mode. Reads the output
-// and returns it as a string.
-func (sw *Switch) runConfigCommand(command string) (string, error) {
-	return sw.runCommand(fmt.Sprintf("config terminal\n%send\n", command))
+	// 3. Environment initialization
+	send("config system console", 200*time.Millisecond)
+	send("set output standard", 200*time.Millisecond)
+	send("end", 500*time.Millisecond)
+
+	// 4. Execute configuration
+	for _, line := range strings.Split(command, "\n") {
+		if clean := strings.TrimSpace(line); clean != "" {
+			send(clean, 150*time.Millisecond)
+		}
+	}
+	send("exit", 200*time.Millisecond)
+
+	var result bytes.Buffer
+	conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	result.ReadFrom(reader)
+	return result.String(), nil
 }

@@ -1,0 +1,20 @@
+#sudo bash -c 'cat << EOF > /etc/systemd/system/modbus-plc.service
+[Unit]
+Description=Jetson Modbus PLC Service
+# 等網路準備好再啟動
+After=network.target NetworkManager.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/jetson
+# 執行指令 (-u 代表不緩衝 Log，即時輸出)
+ExecStart=/usr/bin/python3 -u /home/jetson/modbus_plc.py
+# 如果當機或被殺掉，自動重啟
+Restart=always
+# 重啟前等待 5 秒
+RestartSec=5
+
+[Install]
+# 在多使用者模式下啟動 (標準開機模式)
+WantedBy=multi-user.target

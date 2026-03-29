@@ -1,24 +1,25 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2026 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+// Modified for 2026 REBUILT Game
 //
-// Web handlers for the referee interface.
+// Web handlers for the referee panel.
 
 package web
 
 import (
-	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"strconv"
+
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
-	"io"
-	"log"
-	"net/http"
-	"strconv"
 )
 
-// Renders the referee interface for assigning fouls.
+// Renders the referee interface.
 func (web *Web) refereePanelHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
@@ -30,9 +31,11 @@ func (web *Web) refereePanelHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 2026 Fix: 包裝 EventSettings 以符合 base.html 的預期
 	data := struct {
 		*model.EventSettings
 	}{web.arena.EventSettings}
+
 	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -40,33 +43,36 @@ func (web *Web) refereePanelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Renders a partial template for when the foul list is updated.
-func (web *Web) refereePanelFoulListHandler(w http.ResponseWriter, r *http.Request) {
-	template, err := web.parseFiles("templates/referee_panel_foul_list.html")
+// foulListHandler 負責渲染犯規清單的局部 HTML 片段
+func (web *Web) foulListHandler(w http.ResponseWriter, r *http.Request) {
+	// 只解析局部模板，不要包含 base.html
+	tmpl, err := web.parseFiles("templates/referee_panel_foul_list.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
 
+	// 準備渲染資料
 	data := struct {
-		Match     *model.Match
 		RedFouls  []game.Foul
 		BlueFouls []game.Foul
+		Match     *model.Match
 		Rules     map[int]*game.Rule
 	}{
-		web.arena.CurrentMatch,
-		web.arena.RedRealtimeScore.CurrentScore.Fouls,
-		web.arena.BlueRealtimeScore.CurrentScore.Fouls,
-		game.GetAllRules(),
+		RedFouls:  web.arena.RedRealtimeScore.CurrentScore.Fouls,
+		BlueFouls: web.arena.BlueRealtimeScore.CurrentScore.Fouls,
+		Match:     web.arena.CurrentMatch,
+		Rules:     game.GetAllRules(), // 這是關鍵：提供 2026 規則清單
 	}
-	err = template.ExecuteTemplate(w, "referee_panel_foul_list", data)
+
+	// 執行渲染，這會產生 HTML 片段傳回給 JS
+	err = tmpl.ExecuteTemplate(w, "referee_panel_foul_list", data)
 	if err != nil {
 		handleWebErr(w, err)
-		return
 	}
 }
 
-// The websocket endpoint for the refereee interface client to send control commands and receive status updates.
+// The websocket endpoint for the referee interface.
 func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
 		return
@@ -79,7 +85,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	}
 	defer ws.Close()
 
-	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
+	// 訂閱通知，當比賽狀態改變時推播給裁判面板
 	go ws.HandleNotifiers(
 		web.arena.MatchLoadNotifier,
 		web.arena.MatchTimeNotifier,
@@ -88,33 +94,35 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		web.arena.ReloadDisplaysNotifier,
 	)
 
-	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
-		messageType, data, err := ws.Read()
+		command, data, err := ws.Read()
 		if err != nil {
 			if err == io.EOF {
-				// Client has closed the connection; nothing to do here.
 				return
 			}
-			log.Println(err)
+			log.Printf("[Referee] WebSocket Read Error: %v", err)
 			return
 		}
 
-		switch messageType {
-		case "addFoul":
+		// 處理各種裁判指令
+		if command == "addFoul" {
 			args := struct {
 				Alliance string
+				RuleId   int
 				IsMajor  bool
 			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
+			if err := mapstructure.Decode(data, &args); err != nil {
+				log.Printf("[Referee] Decode Error (addFoul): %v", err)
 				continue
 			}
 
-			// Add the foul to the correct alliance's list.
-			foul := game.Foul{FoulId: web.arena.NextFoulId, IsMajor: args.IsMajor}
+			foul := game.Foul{
+				FoulId:  web.arena.NextFoulId,
+				RuleId:  args.RuleId,
+				IsMajor: args.IsMajor,
+			}
 			web.arena.NextFoulId++
+
 			if args.Alliance == "red" {
 				web.arena.RedRealtimeScore.CurrentScore.Fouls =
 					append(web.arena.RedRealtimeScore.CurrentScore.Fouls, foul)
@@ -122,37 +130,42 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				web.arena.BlueRealtimeScore.CurrentScore.Fouls =
 					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
 			}
+
+			web.arena.RedRealtimeScore.FoulsCommitted = true
+			web.arena.BlueRealtimeScore.FoulsCommitted = true
 			web.arena.RealtimeScoreNotifier.Notify()
-		case "toggleFoulType", "updateFoulTeam", "updateFoulRule", "deleteFoul":
+
+		} else if command == "deleteFoul" || command == "toggleFoulType" || command == "updateFoulTeam" || command == "updateFoulRule" {
+			// 處理犯規列表的編輯操作
 			args := struct {
 				Alliance string
 				Index    int
 				TeamId   int
 				RuleId   int
 			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
+			if err := mapstructure.Decode(data, &args); err != nil {
+				log.Printf("[Referee] Decode Error (%s): %v", command, err)
 				continue
 			}
 
-			// Find the foul in the correct alliance's list.
+			// 取得對應聯盟的犯規列表指標
 			var fouls *[]game.Foul
 			if args.Alliance == "red" {
 				fouls = &web.arena.RedRealtimeScore.CurrentScore.Fouls
 			} else {
 				fouls = &web.arena.BlueRealtimeScore.CurrentScore.Fouls
 			}
+
 			if args.Index >= 0 && args.Index < len(*fouls) {
-				switch messageType {
-				case "toggleFoulType":
-					(*fouls)[args.Index].IsMajor = !(*fouls)[args.Index].IsMajor
-					(*fouls)[args.Index].RuleId = 0
+				switch command {
 				case "deleteFoul":
 					*fouls = append((*fouls)[:args.Index], (*fouls)[args.Index+1:]...)
+				case "toggleFoulType":
+					(*fouls)[args.Index].IsMajor = !(*fouls)[args.Index].IsMajor
+					(*fouls)[args.Index].RuleId = 0 // 重置規則，因為規則通常綁定 Major/Minor
 				case "updateFoulTeam":
 					if (*fouls)[args.Index].TeamId == args.TeamId {
-						(*fouls)[args.Index].TeamId = 0
+						(*fouls)[args.Index].TeamId = 0 // Toggle off if same team clicked
 					} else {
 						(*fouls)[args.Index].TeamId = args.TeamId
 					}
@@ -161,60 +174,80 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				}
 				web.arena.RealtimeScoreNotifier.Notify()
 			}
-		case "card":
+
+		} else if command == "card" {
 			args := struct {
 				Alliance string
 				TeamId   int
 				Card     string
 			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
+			if err := mapstructure.Decode(data, &args); err != nil {
+				log.Printf("[Referee] Decode Error (card): %v", err)
 				continue
 			}
 
-			// Set the card in the correct alliance's score.
+			// 1. 取得對應聯盟的卡片 Map 指標
 			var cards map[string]string
 			if args.Alliance == "red" {
 				cards = web.arena.RedRealtimeScore.Cards
 			} else {
 				cards = web.arena.BlueRealtimeScore.Cards
 			}
+
+			// 2. 判斷比賽類型：季後賽 (Playoff) 卡片對全聯盟生效
 			if web.arena.CurrentMatch.Type == model.Playoff {
-				// Cards apply to the whole alliance in playoffs.
+				// 取得該聯盟所有隊伍 ID
+				var teamIds []int
 				if args.Alliance == "red" {
-					cards[strconv.Itoa(web.arena.CurrentMatch.Red1)] = args.Card
-					cards[strconv.Itoa(web.arena.CurrentMatch.Red2)] = args.Card
-					cards[strconv.Itoa(web.arena.CurrentMatch.Red3)] = args.Card
+					teamIds = []int{web.arena.CurrentMatch.Red1, web.arena.CurrentMatch.Red2, web.arena.CurrentMatch.Red3}
 				} else {
-					cards[strconv.Itoa(web.arena.CurrentMatch.Blue1)] = args.Card
-					cards[strconv.Itoa(web.arena.CurrentMatch.Blue2)] = args.Card
-					cards[strconv.Itoa(web.arena.CurrentMatch.Blue3)] = args.Card
+					teamIds = []int{web.arena.CurrentMatch.Blue1, web.arena.CurrentMatch.Blue2, web.arena.CurrentMatch.Blue3}
+				}
+
+				// 對聯盟內所有隊伍進行操作
+				for _, id := range teamIds {
+					if id == 0 {
+						continue
+					}
+					teamStr := strconv.Itoa(id)
+					if args.Card == "none" {
+						delete(cards, teamStr)
+					} else {
+						cards[teamStr] = args.Card
+					}
 				}
 			} else {
-				cards[strconv.Itoa(args.TeamId)] = args.Card
+				// 3. 例行賽 (Qualification)：卡片只對該隊伍生效
+				teamStr := strconv.Itoa(args.TeamId)
+				if args.Card == "none" {
+					delete(cards, teamStr)
+				} else {
+					cards[teamStr] = args.Card
+				}
 			}
+
+			// 4. 通知更新
 			web.arena.RealtimeScoreNotifier.Notify()
-		case "signalVolunteers":
+
+		} else if command == "signalVolunteers" {
 			if web.arena.MatchState != field.PostMatch {
-				// Don't allow clearing the field until the match is over.
 				continue
 			}
 			web.arena.FieldVolunteers = true
 			web.arena.AllianceStationDisplayMode = "signalCount"
 			web.arena.AllianceStationDisplayModeNotifier.Notify()
-		case "signalReset":
+
+		} else if command == "signalReset" {
 			if web.arena.MatchState != field.PostMatch {
-				// Don't allow clearing the field until the match is over.
 				continue
 			}
 			web.arena.FieldVolunteers = false
 			web.arena.FieldReset = true
 			web.arena.AllianceStationDisplayMode = "fieldReset"
 			web.arena.AllianceStationDisplayModeNotifier.Notify()
-		case "commitMatch":
+
+		} else if command == "commitMatch" {
 			if web.arena.MatchState != field.PostMatch {
-				// Don't allow committing the fouls until the match is over.
 				continue
 			}
 			web.arena.RedRealtimeScore.FoulsCommitted = true
@@ -224,8 +257,6 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.AllianceStationDisplayMode = "fieldReset"
 			web.arena.AllianceStationDisplayModeNotifier.Notify()
 			web.arena.ScoringStatusNotifier.Notify()
-		default:
-			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}
 	}
 }
