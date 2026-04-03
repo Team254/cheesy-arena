@@ -153,10 +153,6 @@ func TestSendControlPacket(t *testing.T) {
 func TestListenForDriverStations(t *testing.T) {
 	arena := setupTestArena(t)
 
-	oldSkipStationMatch := SkipStationMatch
-	SkipStationMatch = true
-	defer func() { SkipStationMatch = oldSkipStationMatch }()
-
 	oldAddress := network.ServerIpAddress
 	network.ServerIpAddress = "127.0.0.1"
 	go arena.listenForDriverStations()

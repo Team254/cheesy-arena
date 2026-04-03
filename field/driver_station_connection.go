@@ -31,8 +31,6 @@ const (
 	maxTcpPacketBytes              = 65537 // 2 for size, then 2^16-1 for data.
 )
 
-var SkipStationMatch = false
-
 type DriverStationConnection struct {
 	TeamId                    int
 	AllianceStation           string
@@ -351,7 +349,7 @@ func (arena *Arena) listenForDriverStations() {
 		// Read the team number from the IP address to check for a station mismatch.
 		stationStatus := byte(0)
 		wrongAssignedStation := ""
-		if !SkipStationMatch {
+		if arena.EventSettings.NetworkSecurityEnabled {
 			teamRe := regexp.MustCompile("\\d+\\.(\\d+)\\.(\\d+)\\.")
 			ipAddress, _, _ := net.SplitHostPort(tcpConn.RemoteAddr().String())
 			teamDigits := teamRe.FindStringSubmatch(ipAddress)
