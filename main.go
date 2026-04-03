@@ -24,8 +24,7 @@ func main() {
 		log.Fatalln("Error during startup: ", err)
 	}
 
-	flag.BoolVar(&field.SkipStationMatch, "skipStationMatch", false, "Skips station match checks (useful for testing without a switch)")
-	flag.StringVar(&network.ServerIpAddress, "serverIP", "10.0.100.5", "Sets the FMS server IP")
+	flag.StringVar(&network.ServerIpAddress, "serverIP", network.DefaultServerIpAddress, "Sets the FMS server IP")
 	flag.Parse()
 
 	// Start the web server in a separate goroutine.
