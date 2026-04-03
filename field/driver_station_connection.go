@@ -31,6 +31,8 @@ const (
 	maxTcpPacketBytes              = 65537 // 2 for size, then 2^16-1 for data.
 )
 
+var SkipStationMatch = false
+
 type DriverStationConnection struct {
 	TeamId                    int
 	AllianceStation           string
@@ -341,19 +343,24 @@ func (arena *Arena) listenForDriverStations() {
 
 		// Read the team number from the IP address to check for a station mismatch.
 		stationStatus := byte(0)
-		teamRe := regexp.MustCompile("\\d+\\.(\\d+)\\.(\\d+)\\.")
-		ipAddress, _, err := net.SplitHostPort(tcpConn.RemoteAddr().String())
-		teamDigits := teamRe.FindStringSubmatch(ipAddress)
-		teamDigit1, _ := strconv.Atoi(teamDigits[1])
-		teamDigit2, _ := strconv.Atoi(teamDigits[2])
-		stationTeamId := teamDigit1*100 + teamDigit2
 		wrongAssignedStation := ""
-		if stationTeamId != teamId {
-			wrongAssignedStation = arena.getAssignedAllianceStation(stationTeamId)
-			if wrongAssignedStation != "" {
+		if !SkipStationMatch {
+			teamRe := regexp.MustCompile("\\d+\\.(\\d+)\\.(\\d+)\\.")
+			ipAddress, _, _ := net.SplitHostPort(tcpConn.RemoteAddr().String())
+			teamDigits := teamRe.FindStringSubmatch(ipAddress)
+			teamDigit1, _ := strconv.Atoi(teamDigits[1])
+			teamDigit2, _ := strconv.Atoi(teamDigits[2])
+			stationTeamId := teamDigit1*100 + teamDigit2
+			if stationTeamId != teamId {
+				wrongAssignedStation = arena.getAssignedAllianceStation(stationTeamId)
 				// The team is supposed to be in this match, but is plugged into the wrong station.
-				log.Printf("Team %d is in incorrect station %s.", teamId, wrongAssignedStation)
-				stationStatus = 1
+				if wrongAssignedStation != "" {
+					log.Printf("Team %d is in incorrect station %s.", teamId, wrongAssignedStation)
+					stationStatus = 1
+				} else {
+					log.Printf("Team %d is in unknown station with IP address %s.", teamId, ipAddress)
+					stationStatus = 1
+				}
 			}
 		}
 
