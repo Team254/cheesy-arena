@@ -94,12 +94,19 @@ func newDriverStationConnection(
 
 // Loops indefinitely to read packets and update connection status.
 func (arena *Arena) listenForDsUdpPackets() {
-	udpAddress, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", network.ServerIpAddress, driverStationUdpReceivePort))
+	udpAddress, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", network.ServerIpAddress, driverStationUdpReceivePort))
+	if err != nil {
+		log.Printf("Error resolving driver station UDP address: %v", err)
+		log.Printf("Change IP address to %s and restart Cheesy Arena to fix.", network.ServerIpAddress)
+		return
+	}
 	listener, err := net.ListenUDP("udp4", udpAddress)
 	if err != nil {
 		log.Fatalf("Error opening driver station UDP socket: %v", err)
 	}
 	log.Printf("Listening for driver stations on UDP port %d\n", driverStationUdpReceivePort)
+
+	defer listener.Close()
 
 	data := make([]byte, 1500)
 	for {
