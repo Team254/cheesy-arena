@@ -6,12 +6,11 @@
 package field
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net"
-	"regexp"
-	"strconv"
 	"time"
 
 	"github.com/Team254/cheesy-arena/game"
@@ -61,6 +60,21 @@ type DriverStationConnection struct {
 }
 
 var allianceStationPositionMap = map[string]byte{"R1": 0, "R2": 1, "R3": 2, "B1": 3, "B2": 4, "B3": 5}
+
+func driverStationTeamIdFromRemoteAddr(addr net.Addr) (int, string, bool) {
+	ipAddress, _, err := net.SplitHostPort(addr.String())
+	if err != nil {
+		return 0, "", false
+	}
+
+	// Driver stations use team-specific 10.TE.AM.X addresses on a field network.
+	ipAddressBytes := net.ParseIP(ipAddress).To4()
+	if ipAddressBytes == nil || ipAddressBytes[0] != 10 {
+		return 0, ipAddress, false
+	}
+
+	return int(ipAddressBytes[1])*100 + int(ipAddressBytes[2]), ipAddress, true
+}
 
 // Opens a UDP connection for communicating to the driver station.
 func newDriverStationConnection(
@@ -316,10 +330,22 @@ func (arena *Arena) listenForDriverStations() {
 	}
 	defer l.Close()
 
-	log.Printf("Listening for driver stations on TCP port %d\n", driverStationTcpListenPort)
+	arena.serveDriverStations(l)
+}
+
+func (arena *Arena) serveDriverStations(listener net.Listener) {
+	if tcpAddr, ok := listener.Addr().(*net.TCPAddr); ok {
+		log.Printf("Listening for driver stations on TCP port %d\n", tcpAddr.Port)
+	} else {
+		log.Printf("Listening for driver stations on TCP address %s\n", listener.Addr())
+	}
+
 	for {
-		tcpConn, err := l.Accept()
+		tcpConn, err := listener.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return
+			}
 			log.Println("Error accepting driver station connection: ", err.Error())
 			continue
 		}
@@ -350,13 +376,8 @@ func (arena *Arena) listenForDriverStations() {
 		stationStatus := byte(0)
 		wrongAssignedStation := ""
 		if arena.EventSettings.NetworkSecurityEnabled {
-			teamRe := regexp.MustCompile("\\d+\\.(\\d+)\\.(\\d+)\\.")
-			ipAddress, _, _ := net.SplitHostPort(tcpConn.RemoteAddr().String())
-			teamDigits := teamRe.FindStringSubmatch(ipAddress)
-			teamDigit1, _ := strconv.Atoi(teamDigits[1])
-			teamDigit2, _ := strconv.Atoi(teamDigits[2])
-			stationTeamId := teamDigit1*100 + teamDigit2
-			if stationTeamId != teamId {
+			stationTeamId, ipAddress, ok := driverStationTeamIdFromRemoteAddr(tcpConn.RemoteAddr())
+			if ok && stationTeamId != teamId {
 				wrongAssignedStation = arena.getAssignedAllianceStation(stationTeamId)
 				// The team is supposed to be in this match, but is plugged into the wrong station.
 				if wrongAssignedStation != "" {
