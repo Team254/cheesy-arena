@@ -30,11 +30,13 @@ type Ranking struct {
 
 type Rankings []Ranking
 
+var RankingRandomFloat64 = rand.Float64
+
 func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentScore *ScoreSummary, disqualified bool) {
 	fields.Played += 1
 
 	// Store a random value to be used as the last tiebreaker if necessary.
-	fields.Random = rand.Float64()
+	fields.Random = RankingRandomFloat64()
 
 	if disqualified {
 		// Don't award any points.

@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var judgingShuffle = rand.Shuffle
+
 // JudgingScheduleParams contains configuration parameters for the judging schedule generation.
 type JudgingScheduleParams struct {
 	// NumJudges is the number of judge teams operating in parallel.
@@ -89,7 +91,7 @@ func BuildJudgingSchedule(database *model.Database, params JudgingScheduleParams
 	}
 
 	// Randomly shuffle the teams to avoid bias in the scheduling.
-	rand.Shuffle(
+	judgingShuffle(
 		len(teams), func(i, j int) {
 			teams[i], teams[j] = teams[j], teams[i]
 		},

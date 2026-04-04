@@ -4,7 +4,7 @@
 `main.go` is the entry point for the Go web server. Core domains live in top-level packages such as `field/`, `game/`, `network/`, `partner/`, `playoff/`, `tournament/`, and `websocket/`. Web UI assets are in `web/`, `static/`, and `templates/`. Pre-generated schedules are in `schedules/`. BoltDB data is stored in `db/` (and test fixtures in `*_test.db` files at the repo root).
 
 ## Build, Test, and Development Commands
-Use Go 1.23+ (see `go.mod`).
+See `go.mod` for what version of Go to use.
 1. `go build`
    Builds the `cheesy-arena` binary in the repo root.
 1. `./cheesy-arena`

@@ -48,7 +48,7 @@ type TeamSign struct {
 
 const (
 	teamSignAddressPrefix            = "10.0.100."
-	teamSignYear                     = 2025
+	teamSignYear                     = 2026
 	teamSignPort                     = 10011
 	teamSignPacketMagicString        = "CYPRX"
 	teamSignPacketHeaderLength       = 7

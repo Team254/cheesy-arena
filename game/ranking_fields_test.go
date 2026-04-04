@@ -11,7 +11,8 @@ import (
 )
 
 func TestAddScoreSummary(t *testing.T) {
-	rand.Seed(0)
+	randomizer := rand.New(rand.NewSource(0))
+	RankingRandomFloat64 = randomizer.Float64
 	redSummary := &ScoreSummary{
 		LeavePoints:            4,
 		AutoPoints:             30,

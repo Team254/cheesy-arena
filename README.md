@@ -44,7 +44,7 @@ on how to bypass the warning.
 
 **From source**
 
-1. Download [Go](https://golang.org/dl/) (version 1.22 or later required)
+1. Download [Go](https://golang.org/dl/) (version 1.26 or later required)
 1. Clone this GitHub repository to a location of your choice
 1. Navigate to the repository's directory in the terminal
 1. Compile the code with `go build`

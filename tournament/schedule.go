@@ -22,6 +22,8 @@ const (
 	TeamsPerMatch = 6
 )
 
+var schedulePerm = rand.Perm
+
 // Creates a random schedule for the given parameters and returns it as a list of matches.
 func BuildRandomSchedule(
 	teams []model.Team, scheduleBlocks []model.ScheduleBlock, matchType model.MatchType,
@@ -62,7 +64,7 @@ func BuildRandomSchedule(
 	}
 
 	// Generate a random permutation of the team ordering to fill into the pre-randomized schedule.
-	teamShuffle := rand.Perm(numTeams)
+	teamShuffle := schedulePerm(numTeams)
 	matches := make([]model.Match, numMatches)
 	for i, anonMatch := range anonSchedule {
 		matches[i].Type = matchType
