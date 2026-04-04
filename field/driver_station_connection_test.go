@@ -202,8 +202,7 @@ func TestListenForDriverStations(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, [5]byte{0, 3, 25, 4, 0}, dataReceived)
 
-		time.Sleep(time.Millisecond * 10)
-		dsConn := arena.AllianceStations["B2"].DsConn
+		dsConn := waitForDriverStationConnection(t, arena, "B2")
 		if assert.NotNil(t, dsConn) {
 			assert.Equal(t, 1503, dsConn.TeamId)
 			assert.Equal(t, "B2", dsConn.AllianceStation)
@@ -211,7 +210,6 @@ func TestListenForDriverStations(t *testing.T) {
 			// Check that an unknown packet type gets ignored and a status packet gets decoded.
 			dataSend = [5]byte{0, 3, 37, 0, 0}
 			tcpConn.Write(dataSend[:])
-			time.Sleep(time.Millisecond * 10)
 		}
 	}
 }
@@ -234,8 +232,7 @@ func TestListenForDriverStations_NetworkSecurityIgnoresNonFieldIp(t *testing.T) 
 		assert.Nil(t, err)
 		assert.Equal(t, [5]byte{0, 3, 25, 4, 0}, dataReceived)
 
-		time.Sleep(time.Millisecond * 10)
-		dsConn := arena.AllianceStations["B2"].DsConn
+		dsConn := waitForDriverStationConnection(t, arena, "B2")
 		if assert.NotNil(t, dsConn) {
 			assert.Equal(t, "", dsConn.WrongStation)
 		}
@@ -281,4 +278,18 @@ func startTestDriverStationServer(t *testing.T, arena *Arena) string {
 
 	go arena.serveDriverStations(listener)
 	return listener.Addr().String()
+}
+
+func waitForDriverStationConnection(t *testing.T, arena *Arena, station string) *DriverStationConnection {
+	t.Helper()
+
+	var dsConn *DriverStationConnection
+	if !assert.Eventually(t, func() bool {
+		dsConn = arena.AllianceStations[station].DsConn
+		return dsConn != nil
+	}, time.Second, 10*time.Millisecond) {
+		return nil
+	}
+
+	return dsConn
 }

@@ -453,7 +453,9 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 		if err != nil {
 			log.Printf("Error reading from connection for Team %d: %v", dsConn.TeamId, err)
 			dsConn.close()
-			arena.AllianceStations[dsConn.AllianceStation].DsConn = nil
+			if arena.AllianceStations[dsConn.AllianceStation].DsConn == dsConn {
+				arena.AllianceStations[dsConn.AllianceStation].DsConn = nil
+			}
 			break
 		}
 
