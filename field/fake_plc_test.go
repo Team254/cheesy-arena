@@ -21,11 +21,14 @@ type FakePlc struct {
 	stackLights           [4]bool
 	stackLightBuzzer      bool
 	fieldResetLight       bool
+	awardsModeLight       bool
 	cycleState            bool
-	redProcessorCount     int
-	blueProcessorCount    int
-	redTrussLights        [3]bool
-	blueTrussLights       [3]bool
+	redHubCount           int
+	blueHubCount          int
+	redHubMotor           bool
+	blueHubMotor          bool
+	redHubLight           bool
+	blueHubLight          bool
 }
 
 func (plc *FakePlc) SetAddress(address string) {
@@ -84,6 +87,24 @@ func (plc *FakePlc) SetFieldResetLight(state bool) {
 	plc.fieldResetLight = state
 }
 
+func (plc *FakePlc) SetAwardsModeLight(state bool) {
+	plc.awardsModeLight = state
+}
+
+func (plc *FakePlc) GetHubCounts() (int, int) {
+	return plc.redHubCount, plc.blueHubCount
+}
+
+func (plc *FakePlc) SetHubMotors(red, blue bool) {
+	plc.redHubMotor = red
+	plc.blueHubMotor = blue
+}
+
+func (plc *FakePlc) SetHubLights(red, blue bool) {
+	plc.redHubLight = red
+	plc.blueHubLight = blue
+}
+
 func (plc *FakePlc) GetCycleState(max, index, duration int) bool {
 	return plc.cycleState
 }
@@ -98,13 +119,4 @@ func (plc *FakePlc) GetRegisterNames() []string {
 
 func (plc *FakePlc) GetCoilNames() []string {
 	return []string{}
-}
-
-func (plc *FakePlc) GetProcessorCounts() (int, int) {
-	return plc.redProcessorCount, plc.blueProcessorCount
-}
-
-func (plc *FakePlc) SetTrussLights(redLights, blueLights [3]bool) {
-	plc.redTrussLights = redLights
-	plc.blueTrussLights = blueLights
 }

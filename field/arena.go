@@ -1074,10 +1074,11 @@ func (arena *Arena) handlePlcInputOutput() {
 	oldRedScore := *redScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
 	oldBlueScore := *blueScore
-	matchStartTime := arena.MatchStartTime
-	currentTime := time.Now()
-	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.ScoringGracePeriodSec*time.Second)
-	inGracePeriod := arena.MatchState == PostMatch && currentTime.Before(teleopGracePeriod) && !arena.matchAborted
+	// TODO: Update for 2026.
+	// matchStartTime := arena.MatchStartTime
+	// currentTime := time.Now()
+	// teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.ScoringGracePeriodSec*time.Second)
+	// inGracePeriod := arena.MatchState == PostMatch && currentTime.Before(teleopGracePeriod) && !arena.matchAborted
 
 	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
@@ -1120,49 +1121,54 @@ func (arena *Arena) handlePlcInputOutput() {
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, true)
 	}
 
+	// TODO: Update for 2026.
 	// Get all the game-specific inputs and update the score.
-	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod ||
-		inGracePeriod {
-		redScore.ProcessorAlgae, blueScore.ProcessorAlgae = arena.Plc.GetProcessorCounts()
-	}
+	/*
+		if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod ||
+			inGracePeriod {
+			redScore.ProcessorAlgae, blueScore.ProcessorAlgae = arena.Plc.GetProcessorCounts()
+		}
+	*/
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
 		arena.RealtimeScoreNotifier.Notify()
 	}
 
+	// TODO: Update for 2026.
 	// Handle the truss lights.
-	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
-		warningSequenceActive, lights := trussLightWarningSequence(arena.MatchTimeSec())
-		if warningSequenceActive {
-			arena.Plc.SetTrussLights(lights, lights)
-		} else {
-			if !game.CoralBonusCoopEnabled || arena.CurrentMatch.Type == model.Playoff {
-				// Just leave the lights on all match if co-op is not enabled for this match (or event).
-				arena.Plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
+	/*
+		if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
+			warningSequenceActive, lights := trussLightWarningSequence(arena.MatchTimeSec())
+			if warningSequenceActive {
+				arena.Plc.SetTrussLights(lights, lights)
 			} else {
-				// Set the lights to reflect co-op status.
-				if arena.RedScoreSummary().CoopertitionBonus && arena.BlueScoreSummary().CoopertitionBonus {
+				if !game.CoralBonusCoopEnabled || arena.CurrentMatch.Type == model.Playoff {
 					arena.Plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
 				} else {
-					arena.Plc.SetTrussLights(
-						[3]bool{
-							arena.RedRealtimeScore.CurrentScore.ProcessorAlgae >= 1,
-							arena.RedRealtimeScore.CurrentScore.ProcessorAlgae >= 2,
-							false,
-						},
-						[3]bool{
-							arena.BlueRealtimeScore.CurrentScore.ProcessorAlgae >= 1,
-							arena.BlueRealtimeScore.CurrentScore.ProcessorAlgae >= 2,
-							false,
-						},
-					)
+					if arena.RedScoreSummary().CoopertitionBonus && arena.BlueScoreSummary().CoopertitionBonus {
+						arena.Plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
+					} else {
+						arena.Plc.SetTrussLights(
+							[3]bool{
+								arena.RedRealtimeScore.CurrentScore.ProcessorAlgae >= 1,
+								arena.RedRealtimeScore.CurrentScore.ProcessorAlgae >= 2,
+								false,
+							},
+							[3]bool{
+								arena.BlueRealtimeScore.CurrentScore.ProcessorAlgae >= 1,
+								arena.BlueRealtimeScore.CurrentScore.ProcessorAlgae >= 2,
+								false,
+							},
+						)
+					}
 				}
 			}
+		} else {
+			arena.Plc.SetTrussLights(
+				[3]bool{inGracePeriod, inGracePeriod, inGracePeriod},
+				[3]bool{inGracePeriod, inGracePeriod, inGracePeriod},
+			)
 		}
-	} else {
-		arena.Plc.SetTrussLights(
-			[3]bool{inGracePeriod, inGracePeriod, inGracePeriod}, [3]bool{inGracePeriod, inGracePeriod, inGracePeriod},
-		)
-	}
+	*/
 }
 
 func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) {

@@ -27,12 +27,20 @@ func _() {
 	_ = x[blueConnected1-16]
 	_ = x[blueConnected2-17]
 	_ = x[blueConnected3-18]
-	_ = x[inputCount-19]
+	_ = x[redHubSensor1-19]
+	_ = x[redHubSensor2-20]
+	_ = x[redHubSensor3-21]
+	_ = x[redHubSensor4-22]
+	_ = x[blueHubSensor1-23]
+	_ = x[blueHubSensor2-24]
+	_ = x[blueHubSensor3-25]
+	_ = x[blueHubSensor4-26]
+	_ = x[inputCount-27]
 }
 
-const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3inputCount"
+const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3redHubSensor1redHubSensor2redHubSensor3redHubSensor4blueHubSensor1blueHubSensor2blueHubSensor3blueHubSensor4inputCount"
 
-var _input_index = [...]uint8{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 215}
+var _input_index = [...]uint16{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 218, 231, 244, 257, 271, 285, 299, 313, 323}
 
 func (i input) String() string {
 	idx := int(i) - 0

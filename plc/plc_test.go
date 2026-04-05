@@ -82,6 +82,14 @@ func TestPlcGetNames(t *testing.T) {
 			"blueConnected1",
 			"blueConnected2",
 			"blueConnected3",
+			"redHubSensor1",
+			"redHubSensor2",
+			"redHubSensor3",
+			"redHubSensor4",
+			"blueHubSensor1",
+			"blueHubSensor2",
+			"blueHubSensor3",
+			"blueHubSensor4",
 		},
 		plc.GetInputNames(),
 	)
@@ -90,8 +98,16 @@ func TestPlcGetNames(t *testing.T) {
 		t,
 		[]string{
 			"fieldIoConnection",
-			"redProcessor",
-			"blueProcessor",
+			"redHubTotal",
+			"blueHubTotal",
+			"redHubCount1",
+			"redHubCount2",
+			"redHubCount3",
+			"redHubCount4",
+			"blueHubCount1",
+			"blueHubCount2",
+			"blueHubCount3",
+			"blueHubCount4",
 		},
 		plc.GetRegisterNames(),
 	)
@@ -107,12 +123,11 @@ func TestPlcGetNames(t *testing.T) {
 			"stackLightBlue",
 			"stackLightBuzzer",
 			"fieldResetLight",
-			"redTrussLightOuter",
-			"redTrussLightMiddle",
-			"redTrussLightInner",
-			"blueTrussLightOuter",
-			"blueTrussLightMiddle",
-			"blueTrussLightInner",
+			"awardsModeLight",
+			"redHubMotor",
+			"blueHubMotor",
+			"redHubLight",
+			"blueHubLight",
 		},
 		plc.GetCoilNames(),
 	)
@@ -297,7 +312,7 @@ func TestPlcInputsGameSpecific(t *testing.T) {
 	plc.handler = modbus.NewTCPClientHandler("dummy")
 	plc.ioChangeNotifier = &websocket.Notifier{}
 
-	// None in 2025.
+	// None exposed in 2026.
 }
 
 func TestPlcRegisters(t *testing.T) {
@@ -344,22 +359,22 @@ func TestPlcRegistersGameSpecific(t *testing.T) {
 	plc.handler = modbus.NewTCPClientHandler("dummy")
 	plc.ioChangeNotifier = &websocket.Notifier{}
 
-	client.registers[1] = 0
-	client.registers[2] = 0
+	client.registers[redHubTotal] = 0
+	client.registers[blueHubTotal] = 0
 	plc.update()
-	redProcessor, blueProcessor := plc.GetProcessorCounts()
-	assert.Equal(t, 0, redProcessor)
-	assert.Equal(t, 0, blueProcessor)
-	client.registers[1] = 12
+	redHubCount, blueHubCount := plc.GetHubCounts()
+	assert.Equal(t, 0, redHubCount)
+	assert.Equal(t, 0, blueHubCount)
+	client.registers[redHubTotal] = 12
 	plc.update()
-	redProcessor, blueProcessor = plc.GetProcessorCounts()
-	assert.Equal(t, 12, redProcessor)
-	assert.Equal(t, 0, blueProcessor)
-	client.registers[2] = 34
+	redHubCount, blueHubCount = plc.GetHubCounts()
+	assert.Equal(t, 12, redHubCount)
+	assert.Equal(t, 0, blueHubCount)
+	client.registers[blueHubTotal] = 34
 	plc.update()
-	redProcessor, blueProcessor = plc.GetProcessorCounts()
-	assert.Equal(t, 12, redProcessor)
-	assert.Equal(t, 34, blueProcessor)
+	redHubCount, blueHubCount = plc.GetHubCounts()
+	assert.Equal(t, 12, redHubCount)
+	assert.Equal(t, 34, blueHubCount)
 }
 
 func TestPlcCoils(t *testing.T) {
@@ -376,14 +391,14 @@ func TestPlcCoils(t *testing.T) {
 	assert.Equal(t, false, client.coils[1])
 	client.registers[fieldIoConnection] = 31
 	plc.registers[fieldIoConnection] = 31
-	plc.registers[redProcessor] = 1
-	plc.registers[blueProcessor] = 2
+	plc.registers[redHubTotal] = 1
+	plc.registers[blueHubTotal] = 2
 	plc.ResetMatch()
 	plc.update()
 	assert.Equal(t, true, client.coils[1])
 	assert.Equal(t, 31, int(plc.registers[fieldIoConnection]))
-	assert.Equal(t, 0, int(plc.registers[redProcessor]))
-	assert.Equal(t, 0, int(plc.registers[blueProcessor]))
+	assert.Equal(t, 0, int(plc.registers[redHubTotal]))
+	assert.Equal(t, 0, int(plc.registers[blueHubTotal]))
 
 	plc.SetStackLights(false, false, false, false)
 	plc.update()
@@ -429,6 +444,13 @@ func TestPlcCoils(t *testing.T) {
 	plc.SetFieldResetLight(true)
 	plc.update()
 	assert.Equal(t, true, client.coils[7])
+
+	plc.SetAwardsModeLight(false)
+	plc.update()
+	assert.Equal(t, false, client.coils[8])
+	plc.SetAwardsModeLight(true)
+	plc.update()
+	assert.Equal(t, true, client.coils[8])
 }
 
 func TestPlcCoilsGameSpecific(t *testing.T) {
@@ -438,27 +460,41 @@ func TestPlcCoilsGameSpecific(t *testing.T) {
 	plc.handler = modbus.NewTCPClientHandler("dummy")
 	plc.ioChangeNotifier = &websocket.Notifier{}
 
-	plc.SetTrussLights([3]bool{false, false, false}, [3]bool{false, false, false})
+	plc.SetHubMotors(false, false)
+	plc.SetHubLights(false, false)
 	plc.update()
-	assert.Equal(t, []bool{false, false, false, false, false, false}, client.coils[8:14])
-	plc.SetTrussLights([3]bool{true, false, false}, [3]bool{false, false, false})
+	assert.Equal(t, false, client.coils[9])
+	assert.Equal(t, false, client.coils[10])
+	assert.Equal(t, false, client.coils[11])
+	assert.Equal(t, false, client.coils[12])
+
+	plc.SetHubMotors(true, false)
 	plc.update()
-	assert.Equal(t, []bool{true, false, false, false, false, false}, client.coils[8:14])
-	plc.SetTrussLights([3]bool{true, true, false}, [3]bool{false, false, false})
+	assert.Equal(t, true, client.coils[9])
+	assert.Equal(t, false, client.coils[10])
+
+	plc.SetHubMotors(true, true)
 	plc.update()
-	assert.Equal(t, []bool{true, true, false, false, false, false}, client.coils[8:14])
-	plc.SetTrussLights([3]bool{true, true, true}, [3]bool{false, false, false})
+	assert.Equal(t, true, client.coils[9])
+	assert.Equal(t, true, client.coils[10])
+
+	plc.SetHubLights(true, false)
 	plc.update()
-	assert.Equal(t, []bool{true, true, true, false, false, false}, client.coils[8:14])
-	plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, false, false})
+	assert.Equal(t, true, client.coils[11])
+	assert.Equal(t, false, client.coils[12])
+
+	plc.SetHubLights(true, true)
 	plc.update()
-	assert.Equal(t, []bool{true, true, true, true, false, false}, client.coils[8:14])
-	plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, false})
+	assert.Equal(t, true, client.coils[11])
+	assert.Equal(t, true, client.coils[12])
+
+	plc.SetHubMotors(false, false)
+	plc.SetHubLights(false, false)
 	plc.update()
-	assert.Equal(t, []bool{true, true, true, true, true, false}, client.coils[8:14])
-	plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
-	plc.update()
-	assert.Equal(t, []bool{true, true, true, true, true, true}, client.coils[8:14])
+	assert.Equal(t, false, client.coils[9])
+	assert.Equal(t, false, client.coils[10])
+	assert.Equal(t, false, client.coils[11])
+	assert.Equal(t, false, client.coils[12])
 }
 
 func TestPlcIsHealthy(t *testing.T) {
