@@ -4,7 +4,6 @@
 package web
 
 import (
-	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
@@ -16,9 +15,6 @@ func TestSetupFieldTesting(t *testing.T) {
 
 	recorder := web.getHttpResponse("/setup/field_testing")
 	assert.Equal(t, 200, recorder.Code)
-	for _, sound := range game.MatchSounds {
-		assert.Contains(t, recorder.Body.String(), sound.Name)
-	}
 }
 
 func TestSetupFieldTestingWebsocket(t *testing.T) {

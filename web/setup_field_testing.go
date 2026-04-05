@@ -33,7 +33,13 @@ func (web *Web) fieldTestingGetHandler(w http.ResponseWriter, r *http.Request) {
 		InputNames    []string
 		RegisterNames []string
 		CoilNames     []string
-	}{web.arena.EventSettings, game.MatchSounds, plc.GetInputNames(), plc.GetRegisterNames(), plc.GetCoilNames()}
+	}{
+		web.arena.EventSettings,
+		game.UniqueMatchSounds(),
+		plc.GetInputNames(),
+		plc.GetRegisterNames(),
+		plc.GetCoilNames(),
+	}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)

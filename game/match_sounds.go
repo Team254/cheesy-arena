@@ -15,6 +15,25 @@ type MatchSound struct {
 // be triggered explicitly.
 var MatchSounds []*MatchSound
 
+// UniqueMatchSounds returns the first occurrence of each sound name while preserving input order.
+func UniqueMatchSounds() []*MatchSound {
+	seen := make(map[string]struct{}, len(MatchSounds))
+	uniqueSounds := make([]*MatchSound, 0, len(MatchSounds))
+	for _, sound := range MatchSounds {
+		if sound == nil {
+			continue
+		}
+		if _, ok := seen[sound.Name]; ok {
+			continue
+		}
+
+		seen[sound.Name] = struct{}{}
+		uniqueSounds = append(uniqueSounds, sound)
+	}
+
+	return uniqueSounds
+}
+
 func UpdateMatchSounds() {
 	MatchSounds = []*MatchSound{
 		{
