@@ -497,6 +497,53 @@ func TestPlcCoilsGameSpecific(t *testing.T) {
 	assert.Equal(t, false, client.coils[12])
 }
 
+func TestPlcCoilOverrides(t *testing.T) {
+	var client FakeModbusClient
+	var plc ModbusPlc
+	plc.client = &client
+	plc.handler = modbus.NewTCPClientHandler("dummy")
+	plc.ioChangeNotifier = &websocket.Notifier{}
+
+	plc.SetFieldResetLight(false)
+	plc.SetCoilOverride(int(fieldResetLight), true)
+	plc.update()
+	assert.Equal(t, true, client.coils[fieldResetLight])
+
+	plc.ClearCoilOverride(int(fieldResetLight))
+	plc.update()
+	assert.Equal(t, false, client.coils[fieldResetLight])
+
+	plc.SetStackBuzzer(true)
+	plc.SetCoilOverride(int(stackLightBuzzer), false)
+	plc.update()
+	assert.Equal(t, false, client.coils[stackLightBuzzer])
+}
+
+func TestPlcCoilOverridesResetOnResetMatch(t *testing.T) {
+	var client FakeModbusClient
+	var plc ModbusPlc
+	plc.client = &client
+	plc.handler = modbus.NewTCPClientHandler("dummy")
+	plc.ioChangeNotifier = &websocket.Notifier{}
+
+	plc.SetCoilOverride(int(fieldResetLight), true)
+	plc.ResetMatch()
+	plc.update()
+
+	assert.Equal(t, false, client.coils[fieldResetLight])
+}
+
+func TestPlcInvalidCoilOverrideIndex(t *testing.T) {
+	var plc ModbusPlc
+
+	plc.SetCoilOverride(-1, true)
+	plc.SetCoilOverride(int(coilCount), true)
+	assert.Empty(t, plc.coilOverrides)
+
+	plc.ClearCoilOverride(int(coilCount))
+	assert.Empty(t, plc.coilOverrides)
+}
+
 func TestPlcIsHealthy(t *testing.T) {
 	var client FakeModbusClient
 	var plc ModbusPlc

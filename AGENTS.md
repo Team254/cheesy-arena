@@ -13,7 +13,7 @@ See `go.mod` for what version of Go to use.
    Runs all Go tests across packages.
 
 ## Coding Style & Naming Conventions
-Follow standard Go style: tabs for indentation, exported names in `CamelCase`, unexported in `camelCase`. Format code with `gofmt` before submitting changes. If you update a set of enum-style constants, run `go generate ./...` to refresh the generated enum string helpers. Keep package names short and domain-focused (matching existing directories like `field`, `game`, `partner`).
+Follow standard Go style: tabs for indentation, exported names in `CamelCase`, unexported in `camelCase`. Format code with `gofmt` before submitting changes. Preserve the repo's existing Go import layout when editing files: do not introduce a separate stdlib import group in files that keep all imports in a single block, even if `gofmt` would normally do so. If you update a set of enum-style constants, run `go generate ./...` to refresh the generated enum string helpers. Keep package names short and domain-focused (matching existing directories like `field`, `game`, `partner`).
 
 ## Testing Guidelines
 Tests are Go `*_test.go` files co-located with packages (for example `field/`, `game/`, `partner/`, `playoff/`). Use `go test ./...` for the full suite and `go test ./field -run TestName` to target specific areas. When adding new behavior, add or update tests in the same package and prefer table-driven tests for coverage.

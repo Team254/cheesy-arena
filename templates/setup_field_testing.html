@@ -57,7 +57,10 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
             {{range $i, $name := .CoilNames}}
             <tr>
               <td class="bg-body-tertiary">{{$name}}</td>
-              <td class="bg-body-tertiary" id="coil{{$i}}" data-plc-value="false"></td>
+              <td class="bg-body-tertiary p-1">
+                <button type="button" class="plc-coil-indicator" id="coil{{$i}}" data-coil-index="{{$i}}"
+                  data-plc-value="false" data-plc-override="auto" data-plc-override-allowed="false">false</button>
+              </td>
             </tr>
             {{end}}
           </table>

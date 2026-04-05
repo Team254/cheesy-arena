@@ -37,6 +37,8 @@ type Plc interface {
 	GetInputNames() []string
 	GetRegisterNames() []string
 	GetCoilNames() []string
+	SetCoilOverride(index int, state bool)
+	ClearCoilOverride(index int)
 }
 
 type ModbusPlc struct {
@@ -48,9 +50,11 @@ type ModbusPlc struct {
 	inputs           [inputCount]bool
 	registers        [registerCount]uint16
 	coils            [coilCount]bool
+	coilOverrides    map[int]bool
 	oldInputs        [inputCount]bool
 	oldRegisters     [registerCount]uint16
 	oldCoils         [coilCount]bool
+	oldCoilOverrides [coilCount]string
 	cycleCounter     int
 	matchResetCycles int
 }
@@ -258,6 +262,7 @@ func (plc *ModbusPlc) GetEthernetConnected() ([3]bool, [3]bool) {
 func (plc *ModbusPlc) ResetMatch() {
 	plc.coils[matchReset] = true
 	plc.matchResetCycles = 0
+	plc.coilOverrides = nil
 
 	// Clear register variables (other than fieldIoConnection) so that any values from pre-match testing don't carry
 	// over.
@@ -334,6 +339,23 @@ func (plc *ModbusPlc) GetCoilNames() []string {
 	return coilNames
 }
 
+func (plc *ModbusPlc) SetCoilOverride(index int, state bool) {
+	if index < 0 || index >= int(coilCount) {
+		return
+	}
+	if plc.coilOverrides == nil {
+		plc.coilOverrides = make(map[int]bool)
+	}
+	plc.coilOverrides[index] = state
+}
+
+func (plc *ModbusPlc) ClearCoilOverride(index int) {
+	if index < 0 || index >= int(coilCount) {
+		return
+	}
+	delete(plc.coilOverrides, index)
+}
+
 func (plc *ModbusPlc) connect() error {
 	address := fmt.Sprintf("%s:%d", plc.address, modbusPort)
 	handler := modbus.NewTCPClientHandler(address)
@@ -377,11 +399,15 @@ func (plc *ModbusPlc) update() {
 	}
 
 	// Detect any changes in input or output and notify listeners if so.
-	if plc.inputs != plc.oldInputs || plc.registers != plc.oldRegisters || plc.coils != plc.oldCoils {
+	effectiveCoils := plc.getEffectiveCoils()
+	coilOverrideStates := plc.getCoilOverrideStates()
+	if plc.inputs != plc.oldInputs || plc.registers != plc.oldRegisters || effectiveCoils != plc.oldCoils ||
+		coilOverrideStates != plc.oldCoilOverrides {
 		plc.ioChangeNotifier.Notify()
 		plc.oldInputs = plc.inputs
 		plc.oldRegisters = plc.registers
-		plc.oldCoils = plc.coils
+		plc.oldCoils = effectiveCoils
+		plc.oldCoilOverrides = coilOverrideStates
 	}
 }
 
@@ -431,7 +457,8 @@ func (plc *ModbusPlc) writeCoils() bool {
 	// Send a heartbeat to the PLC so that it can disable outputs if the connection is lost.
 	plc.coils[heartbeat] = true
 
-	coils := boolToByte(plc.coils[:])
+	effectiveCoils := plc.getEffectiveCoils()
+	coils := boolToByte(effectiveCoils[:])
 	_, err := plc.client.WriteMultipleCoils(0, uint16(len(plc.coils)), coils)
 	if err != nil {
 		log.Printf("PLC error writing coils: %v", err)
@@ -447,11 +474,39 @@ func (plc *ModbusPlc) writeCoils() bool {
 }
 
 func (plc *ModbusPlc) generateIoChangeMessage() any {
+	effectiveCoils := plc.getEffectiveCoils()
+	coilOverrideStates := plc.getCoilOverrideStates()
 	return &struct {
-		Inputs    []bool
-		Registers []uint16
-		Coils     []bool
-	}{plc.inputs[:], plc.registers[:], plc.coils[:]}
+		Inputs        []bool
+		Registers     []uint16
+		Coils         []bool
+		CoilOverrides []string
+	}{plc.inputs[:], plc.registers[:], effectiveCoils[:], coilOverrideStates[:]}
+}
+
+func (plc *ModbusPlc) getEffectiveCoils() [coilCount]bool {
+	effectiveCoils := plc.coils
+	for index, state := range plc.coilOverrides {
+		if index >= 0 && index < len(effectiveCoils) {
+			effectiveCoils[index] = state
+		}
+	}
+	return effectiveCoils
+}
+
+func (plc *ModbusPlc) getCoilOverrideStates() [coilCount]string {
+	var overrideStates [coilCount]string
+	for index := range overrideStates {
+		overrideStates[index] = "auto"
+		if state, ok := plc.coilOverrides[index]; ok {
+			if state {
+				overrideStates[index] = "on"
+			} else {
+				overrideStates[index] = "off"
+			}
+		}
+	}
+	return overrideStates
 }
 
 func byteToBool(bytes []byte, size int) []bool {

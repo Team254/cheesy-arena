@@ -120,3 +120,11 @@ func (plc *FakePlc) GetRegisterNames() []string {
 func (plc *FakePlc) GetCoilNames() []string {
 	return []string{}
 }
+
+func (plc *FakePlc) SetCoilOverride(index int, state bool) {
+	// Not needed for testing, just to satisfy the interface.
+}
+
+func (plc *FakePlc) ClearCoilOverride(index int) {
+	// Not needed for testing, just to satisfy the interface.
+}

@@ -133,11 +133,40 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
   -webkit-appearance: none;
   margin: 0;
 }
-td[data-plc-value="false"] {
+[data-plc-value="false"] {
   color: #f00;
 }
-td[data-plc-value="true"] {
+[data-plc-value="true"] {
   color: #090;
+}
+.plc-coil-indicator {
+  background-color: transparent;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 4px;
+  font: inherit;
+  min-width: 64px;
+  padding: 0.125rem 0.375rem;
+  text-align: center;
+  width: 100%;
+}
+.plc-coil-indicator[data-plc-override="on"] {
+  border-color: #0e8;
+  box-shadow: inset 0 0 0 1px rgba(0, 238, 136, 0.35);
+}
+.plc-coil-indicator[data-plc-override="off"] {
+  border-color: #e66;
+  box-shadow: inset 0 0 0 1px rgba(238, 102, 102, 0.35);
+}
+.plc-coil-indicator[data-plc-override-allowed="true"] {
+  cursor: pointer;
+}
+.plc-coil-indicator[data-plc-override-allowed="false"] {
+  cursor: default;
+  opacity: 0.75;
+}
+.plc-coil-indicator:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 1px;
 }
 .btn-game-sound {
   width: 200px;
