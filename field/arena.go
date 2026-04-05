@@ -1068,6 +1068,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	arena.AllianceStations["B1"].Ethernet = blueEthernets[0]
 	arena.AllianceStations["B2"].Ethernet = blueEthernets[1]
 	arena.AllianceStations["B3"].Ethernet = blueEthernets[2]
+	arena.Plc.SetAwardsModeLight(arena.AllianceStationDisplayMode == "logo")
 
 	// Handle in-match PLC functions.
 	redScore := &arena.RedRealtimeScore.CurrentScore

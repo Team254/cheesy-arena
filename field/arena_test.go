@@ -1012,6 +1012,16 @@ func TestPlcMatchCycleEvergreen(t *testing.T) {
 	arena.FieldReset = true
 	arena.Update()
 	assert.Equal(t, true, plc.fieldResetLight)
+
+	assert.Equal(t, false, plc.awardsModeLight)
+
+	arena.SetAllianceStationDisplayMode("logo")
+	arena.Update()
+	assert.Equal(t, true, plc.awardsModeLight)
+
+	arena.SetAllianceStationDisplayMode("match")
+	arena.Update()
+	assert.Equal(t, false, plc.awardsModeLight)
 }
 
 func TestPlcMatchCycleGameSpecificWithCoopEnabled(t *testing.T) {
