@@ -106,11 +106,11 @@ type EventSettings struct {
 	CompanionMatchAbortPage          int
 	CompanionMatchAbortRow           int
 	CompanionMatchAbortColumn        int
-	WarmupDurationSec                int
 	AutoDurationSec                  int
 	PauseDurationSec                 int
-	TeleopDurationSec                int
-	WarningRemainingDurationSec      int
+	TransitionShiftDurationSec       int
+	ShiftDurationSec                 int
+	EndgameDurationSec               int
 	AutoBonusCoralThreshold          int
 	CoralBonusPerLevelThreshold      int
 	CoralBonusCoopEnabled            bool
@@ -124,7 +124,8 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		return nil, err
 	}
 	if len(allEventSettings) == 1 {
-		return &allEventSettings[0], nil
+		eventSettings := allEventSettings[0]
+		return &eventSettings, nil
 	}
 
 	// Database record doesn't exist yet; create it now.
@@ -140,11 +141,11 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 		SCCUpCommands:               strings.Join(sccDefaultUpCommands, "\n"),
 		SCCDownCommands:             strings.Join(sccDefaultDownCommands, "\n"),
 		CompanionAddress:            "",
-		WarmupDurationSec:           game.MatchTiming.WarmupDurationSec,
 		AutoDurationSec:             game.MatchTiming.AutoDurationSec,
 		PauseDurationSec:            game.MatchTiming.PauseDurationSec,
-		TeleopDurationSec:           game.MatchTiming.TeleopDurationSec,
-		WarningRemainingDurationSec: game.MatchTiming.WarningRemainingDurationSec,
+		TransitionShiftDurationSec:  game.MatchTiming.TransitionShiftDurationSec,
+		ShiftDurationSec:            game.MatchTiming.ShiftDurationSec,
+		EndgameDurationSec:          game.MatchTiming.EndgameDurationSec,
 		AutoBonusCoralThreshold:     game.AutoBonusCoralThreshold,
 		CoralBonusPerLevelThreshold: game.CoralBonusPerLevelThreshold,
 		CoralBonusCoopEnabled:       game.CoralBonusCoopEnabled,

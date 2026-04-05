@@ -91,14 +91,12 @@ func (signs *TeamSigns) Update(arena *Arena) {
 			countdownSec = game.MatchTiming.AutoDurationSec
 		}
 	case StartMatch:
-		fallthrough
-	case WarmupPeriod:
 		countdownSec = game.MatchTiming.AutoDurationSec
 	case AutoPeriod:
-		countdownSec = game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec - matchTimeSec
+		countdownSec = game.MatchTiming.AutoDurationSec - matchTimeSec
 	case TeleopPeriod:
-		countdownSec = game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec +
-			game.MatchTiming.TeleopDurationSec + game.MatchTiming.PauseDurationSec - matchTimeSec
+		countdownSec = game.MatchTiming.AutoDurationSec + game.GetTeleopDurationSec() +
+			game.MatchTiming.PauseDurationSec - matchTimeSec
 	case TimeoutActive:
 		countdownSec = game.MatchTiming.TimeoutDurationSec - matchTimeSec
 	default:

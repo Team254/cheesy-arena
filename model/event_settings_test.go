@@ -4,6 +4,7 @@
 package model
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -28,11 +29,11 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			ApChannel:                   36,
 			SCCUpCommands:               "configure terminal\ninterface range gigabitEthernet 1/2-4\nno shutdown\nexit\nexit\nexit",
 			SCCDownCommands:             "configure terminal\ninterface range gigabitEthernet 1/2-4\nshutdown\nexit\nexit\nexit",
-			WarmupDurationSec:           0,
-			AutoDurationSec:             15,
+			AutoDurationSec:             20,
 			PauseDurationSec:            3,
-			TeleopDurationSec:           135,
-			WarningRemainingDurationSec: 20,
+			TransitionShiftDurationSec:  10,
+			ShiftDurationSec:            25,
+			EndgameDurationSec:          30,
 			AutoBonusCoralThreshold:     1,
 			CoralBonusPerLevelThreshold: 7,
 			CoralBonusCoopEnabled:       true,
@@ -43,6 +44,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 		},
 		*eventSettings,
 	)
+	assert.Equal(t, 140, game.GetTeleopDurationSec())
 
 	eventSettings.Name = "Chezy Champs"
 	eventSettings.NumPlayoffAlliances = 6

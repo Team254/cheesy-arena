@@ -42,7 +42,6 @@ type MatchState int
 const (
 	PreMatch MatchState = iota
 	StartMatch
-	WarmupPeriod
 	AutoPeriod
 	PausePeriod
 	TeleopPeriod
@@ -265,11 +264,11 @@ func (arena *Arena) LoadSettings() error {
 		companionEventConfigs,
 	)
 
-	game.MatchTiming.WarmupDurationSec = settings.WarmupDurationSec
 	game.MatchTiming.AutoDurationSec = settings.AutoDurationSec
 	game.MatchTiming.PauseDurationSec = settings.PauseDurationSec
-	game.MatchTiming.TeleopDurationSec = settings.TeleopDurationSec
-	game.MatchTiming.WarningRemainingDurationSec = settings.WarningRemainingDurationSec
+	game.MatchTiming.TransitionShiftDurationSec = settings.TransitionShiftDurationSec
+	game.MatchTiming.ShiftDurationSec = settings.ShiftDurationSec
+	game.MatchTiming.EndgameDurationSec = settings.EndgameDurationSec
 	game.UpdateMatchSounds()
 	arena.MatchTimingNotifier.Notify()
 
@@ -541,9 +540,7 @@ func (arena *Arena) AbortMatch() error {
 		return nil
 	}
 
-	if arena.MatchState != WarmupPeriod {
-		arena.PlaySound("abort")
-	}
+	arena.PlaySound("abort")
 	arena.MatchState = PostMatch
 	arena.matchAborted = true
 	arena.AudienceDisplayMode = "blank"
@@ -654,27 +651,12 @@ func (arena *Arena) Update() {
 		arena.AllianceStationDisplayModeNotifier.Notify()
 		go arena.BlackmagicClient.StartRecording()
 		go arena.CompanionClient.SendEvent(partner.EventMatchStart)
-		if game.MatchTiming.WarmupDurationSec > 0 {
-			arena.MatchState = WarmupPeriod
-			enabled = false
-			sendDsPacket = false
-		} else {
-			arena.MatchState = AutoPeriod
-			enabled = true
-			sendDsPacket = true
-		}
+		arena.MatchState = AutoPeriod
+		enabled = true
+		sendDsPacket = true
 		arena.Plc.ResetMatch()
 		arena.FieldVolunteers = false
 		arena.FieldReset = false
-	case WarmupPeriod:
-		auto = true
-		enabled = false
-		if matchTimeSec >= float64(game.MatchTiming.WarmupDurationSec) {
-			arena.MatchState = AutoPeriod
-			auto = true
-			enabled = true
-			sendDsPacket = true
-		}
 	case AutoPeriod:
 		auto = true
 		enabled = true
@@ -780,7 +762,7 @@ func (arena *Arena) checkEndgameStart(matchTimeSec float64) {
 	// Calculate the time when endgame warning should start
 	endgameStartTime := float64(
 		game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec +
-			game.MatchTiming.TeleopDurationSec - game.MatchTiming.WarningRemainingDurationSec,
+			game.GetTeleopDurationSec() - game.MatchTiming.EndgameDurationSec,
 	)
 
 	// Check if we've crossed the endgame threshold and haven't already triggered it
@@ -1094,7 +1076,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	oldBlueScore := *blueScore
 	matchStartTime := arena.MatchStartTime
 	currentTime := time.Now()
-	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.TeleopGracePeriodSec*time.Second)
+	teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.ScoringGracePeriodSec*time.Second)
 	inGracePeriod := arena.MatchState == PostMatch && currentTime.Before(teleopGracePeriod) && !arena.matchAborted
 
 	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
@@ -1243,8 +1225,8 @@ func trussLightWarningSequence(matchTimeSec float64) (bool, [3]bool) {
 	stepTimeSec := 0.2
 	sequence := []int{1, 2, 3, 2, 1, 2, 3, 0, 0, 1, 2, 3, 2, 1, 2, 3, 0, 0}
 	startTime := float64(
-		game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec +
-			game.MatchTiming.TeleopDurationSec - game.MatchTiming.WarningRemainingDurationSec,
+		game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec + game.GetTeleopDurationSec() -
+			game.MatchTiming.EndgameDurationSec,
 	)
 	lights := [3]bool{false, false, false}
 

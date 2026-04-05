@@ -484,11 +484,11 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	assert.True(t, ok)
 	_, ok = messages["eventStatus"]
 	assert.True(t, ok)
-	web.arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
+	web.arena.MatchStartTime = time.Now().Add(-3 * time.Second)
 	web.arena.Update()
-	messages = readWebsocketMultiple(t, ws, 2)
-	statusReceived, matchTime := getStatusMatchTime(t, messages)
-	assert.Equal(t, true, statusReceived)
+	var matchTime field.MatchTimeMessage
+	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
+	assert.Nil(t, err)
 	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 3, matchTime.MatchTimeSec)
 	web.arena.ScoringStatusNotifier.Notify()
@@ -512,13 +512,13 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 
 	// Check across a match state boundary.
 	web.arena.MatchStartTime = time.Now().Add(
-		-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
+		-time.Duration(game.MatchTiming.AutoDurationSec) * time.Second,
 	)
 	web.arena.Update()
-	statusReceived, matchTime = readWebsocketStatusMatchTime(t, ws)
+	statusReceived, matchTime := readWebsocketStatusMatchTime(t, ws)
 	assert.Equal(t, true, statusReceived)
 	assert.Equal(t, field.PausePeriod, matchTime.MatchState)
-	assert.Equal(t, game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec, matchTime.MatchTimeSec)
+	assert.Equal(t, game.MatchTiming.AutoDurationSec, matchTime.MatchTimeSec)
 }
 
 // Handles the status and matchTime messages arriving in either order.

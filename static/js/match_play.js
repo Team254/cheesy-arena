@@ -197,7 +197,6 @@ const handleArenaStatus = function (data) {
       $("#startTimeout").prop("disabled", false);
       break;
     case "START_MATCH":
-    case "WARMUP_PERIOD":
     case "AUTO_PERIOD":
     case "PAUSE_PERIOD":
     case "TELEOP_PERIOD":

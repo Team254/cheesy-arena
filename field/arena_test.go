@@ -125,20 +125,15 @@ func TestArenaMatchFlow(t *testing.T) {
 	arena.AllianceStations["B3"].DsConn.RobotLinked = true
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
-	assert.Equal(t, WarmupPeriod, arena.MatchState)
+	assert.Equal(t, AutoPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
 	assert.Equal(t, true, arena.RedRealtimeScore.CurrentScore.RobotsBypassed[0])
 	assert.Equal(t, false, arena.RedRealtimeScore.CurrentScore.RobotsBypassed[1])
 	assert.Equal(t, true, arena.RedRealtimeScore.CurrentScore.RobotsBypassed[2])
 	assert.Equal(t, true, arena.BlueRealtimeScore.CurrentScore.RobotsBypassed[0])
 	assert.Equal(t, true, arena.BlueRealtimeScore.CurrentScore.RobotsBypassed[1])
 	assert.Equal(t, false, arena.BlueRealtimeScore.CurrentScore.RobotsBypassed[2])
-	arena.Update()
-	assert.Equal(t, WarmupPeriod, arena.MatchState)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
-	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
@@ -148,7 +143,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
 	arena.MatchStartTime = time.Now().Add(
-		-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
+		-time.Duration(game.MatchTiming.AutoDurationSec) * time.Second,
 	)
 	arena.Update()
 	assert.Equal(t, PausePeriod, arena.MatchState)
@@ -160,7 +155,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(
-			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
+			game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
 		) * time.Second,
 	)
 	arena.Update()
@@ -201,8 +196,7 @@ func TestArenaMatchFlow(t *testing.T) {
 	// Check match end.
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(
-			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-				game.MatchTiming.TeleopDurationSec,
+			game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.GetTeleopDurationSec(),
 		) * time.Second,
 	)
 	arena.Update()
@@ -626,8 +620,7 @@ func TestArenaTimeout(t *testing.T) {
 	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(
-			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-				game.MatchTiming.TeleopDurationSec,
+			game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.GetTeleopDurationSec(),
 		) * time.Second,
 	)
 	for arena.MatchState != PostMatch {
@@ -718,8 +711,6 @@ func TestPlcEStopAStop(t *testing.T) {
 	err = arena.StartMatch()
 	assert.Nil(t, err)
 	arena.Update()
-	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
-	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
 
@@ -776,13 +767,13 @@ func TestPlcEStopAStop(t *testing.T) {
 
 	// Transition into the teleop period without any stops.
 	arena.MatchStartTime = time.Now().Add(
-		-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
+		-time.Duration(game.MatchTiming.AutoDurationSec) * time.Second,
 	)
 	arena.Update()
 	assert.Equal(t, PausePeriod, arena.MatchState)
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(
-			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
+			game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
 		) * time.Second,
 	)
 	arena.Update()
@@ -852,8 +843,7 @@ func TestPlcEStopAStop(t *testing.T) {
 	// Ensure unpressed E-stops are cleared at the end of the match.
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(
-			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-				game.MatchTiming.TeleopDurationSec,
+			game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.GetTeleopDurationSec(),
 		) * time.Second,
 	)
 	arena.Update()
@@ -887,8 +877,6 @@ func TestPlcEStopAStopWithPlcDisabled(t *testing.T) {
 	arena.AllianceStations["B3"].Bypass = true
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
-	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
-	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
 
@@ -917,8 +905,6 @@ func TestPlcFieldEStop(t *testing.T) {
 	arena.AllianceStations["B3"].Bypass = true
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
-	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
-	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 
 	plc.fieldEStop = true
@@ -940,8 +926,6 @@ func TestPlcFieldEStopWithPlcDisabled(t *testing.T) {
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].Bypass = true
 	assert.Nil(t, arena.StartMatch())
-	arena.Update()
-	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 
@@ -987,8 +971,6 @@ func TestPlcMatchCycleEvergreen(t *testing.T) {
 	// Start the match.
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
-	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
-	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 	assert.Equal(t, [4]bool{false, false, false, true}, plc.stackLights)
 	assert.Equal(t, false, plc.stackLightBuzzer)
@@ -996,8 +978,7 @@ func TestPlcMatchCycleEvergreen(t *testing.T) {
 	// End the match.
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(
-			game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-				game.MatchTiming.TeleopDurationSec,
+			game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.GetTeleopDurationSec(),
 		) * time.Second,
 	)
 	arena.Update()
@@ -1064,8 +1045,6 @@ func TestPlcMatchCycleGameSpecificWithCoopEnabled(t *testing.T) {
 	arena.Update()
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
-	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
-	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 
 	// Check the autonomous period.
@@ -1078,7 +1057,7 @@ func TestPlcMatchCycleGameSpecificWithCoopEnabled(t *testing.T) {
 
 	// Check the pause period.
 	arena.MatchStartTime = time.Now().Add(
-		-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
+		-time.Duration(game.MatchTiming.AutoDurationSec) * time.Second,
 	)
 	arena.Update()
 	assert.Equal(t, PausePeriod, arena.MatchState)
@@ -1091,7 +1070,7 @@ func TestPlcMatchCycleGameSpecificWithCoopEnabled(t *testing.T) {
 
 	// Check the teleop period.
 	durationToTeleopStart := time.Duration(
-		game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
+		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
 	) * time.Second
 	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 5000*time.Millisecond)
 	arena.Update()
@@ -1135,8 +1114,8 @@ func TestPlcMatchCycleGameSpecificWithCoopEnabled(t *testing.T) {
 
 	// Check the truss lights during the "sonar ping" warning sound.
 	durationToWarning := time.Duration(
-		game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-			game.MatchTiming.TeleopDurationSec-game.MatchTiming.WarningRemainingDurationSec,
+		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.GetTeleopDurationSec()-
+			game.MatchTiming.EndgameDurationSec,
 	) * time.Second
 	arena.MatchStartTime = time.Now().Add(-durationToWarning - 100*time.Millisecond)
 	arena.Update()
@@ -1165,8 +1144,7 @@ func TestPlcMatchCycleGameSpecificWithCoopEnabled(t *testing.T) {
 
 	// Check after the end of the match.
 	durationToTeleopEnd := time.Duration(
-		game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-			game.MatchTiming.TeleopDurationSec,
+		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.GetTeleopDurationSec(),
 	) * time.Second
 	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd + 1*time.Millisecond)
 	arena.Update()
@@ -1240,8 +1218,6 @@ func TestPlcMatchCycleGameSpecificWithCoopDisabled(t *testing.T) {
 				arena.Update()
 				assert.Nil(t, arena.StartMatch())
 				arena.Update()
-				arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
-				arena.Update()
 				assert.Equal(t, AutoPeriod, arena.MatchState)
 
 				// Check the autonomous period.
@@ -1254,7 +1230,7 @@ func TestPlcMatchCycleGameSpecificWithCoopDisabled(t *testing.T) {
 
 				// Check the pause period.
 				arena.MatchStartTime = time.Now().Add(
-					-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
+					-time.Duration(game.MatchTiming.AutoDurationSec) * time.Second,
 				)
 				arena.Update()
 				assert.Equal(t, PausePeriod, arena.MatchState)
@@ -1267,7 +1243,7 @@ func TestPlcMatchCycleGameSpecificWithCoopDisabled(t *testing.T) {
 
 				// Check the teleop period.
 				durationToTeleopStart := time.Duration(
-					game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
+					game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
 				) * time.Second
 				arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 5000*time.Millisecond)
 				arena.Update()
@@ -1303,8 +1279,8 @@ func TestPlcMatchCycleGameSpecificWithCoopDisabled(t *testing.T) {
 
 				// Check the truss lights during the "sonar ping" warning sound.
 				durationToWarning := time.Duration(
-					game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-						game.MatchTiming.TeleopDurationSec-game.MatchTiming.WarningRemainingDurationSec,
+					game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.GetTeleopDurationSec()-
+						game.MatchTiming.EndgameDurationSec,
 				) * time.Second
 				arena.MatchStartTime = time.Now().Add(-durationToWarning - 100*time.Millisecond)
 				arena.Update()
@@ -1333,8 +1309,7 @@ func TestPlcMatchCycleGameSpecificWithCoopDisabled(t *testing.T) {
 
 				// Check after the end of the match.
 				durationToTeleopEnd := time.Duration(
-					game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-						game.MatchTiming.TeleopDurationSec,
+					game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.GetTeleopDurationSec(),
 				) * time.Second
 				arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd + 1*time.Millisecond)
 				arena.Update()

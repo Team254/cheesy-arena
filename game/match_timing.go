@@ -8,31 +8,34 @@ package game
 import "time"
 
 const (
-	TeleopGracePeriodSec = 3
+	ScoringGracePeriodSec = 3
 )
 
 var MatchTiming = struct {
-	WarmupDurationSec           int
-	AutoDurationSec             int
-	PauseDurationSec            int
-	TeleopDurationSec           int
-	WarningRemainingDurationSec int
-	TimeoutDurationSec          int
-}{0, 15, 3, 135, 20, 0}
+	AutoDurationSec            int
+	PauseDurationSec           int
+	TransitionShiftDurationSec int
+	ShiftDurationSec           int
+	EndgameDurationSec         int
+	TimeoutDurationSec         int
+}{20, 3, 10, 25, 30, 0}
+
+func GetTeleopDurationSec() int {
+	return MatchTiming.TransitionShiftDurationSec + 4*MatchTiming.ShiftDurationSec + MatchTiming.EndgameDurationSec
+}
 
 func GetDurationToAutoEnd() time.Duration {
-	return time.Duration(MatchTiming.WarmupDurationSec+MatchTiming.AutoDurationSec) * time.Second
+	return time.Duration(MatchTiming.AutoDurationSec) * time.Second
 }
 
 func GetDurationToTeleopStart() time.Duration {
 	return time.Duration(
-		MatchTiming.WarmupDurationSec+MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec,
+		MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec,
 	) * time.Second
 }
 
 func GetDurationToTeleopEnd() time.Duration {
 	return time.Duration(
-		MatchTiming.WarmupDurationSec+MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec+
-			MatchTiming.TeleopDurationSec,
+		MatchTiming.AutoDurationSec+MatchTiming.PauseDurationSec+GetTeleopDurationSec(),
 	) * time.Second
 }

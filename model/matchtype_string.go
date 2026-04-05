@@ -19,8 +19,9 @@ const _MatchType_name = "TestPracticeQualificationPlayoff"
 var _MatchType_index = [...]uint8{0, 4, 12, 25, 32}
 
 func (i MatchType) String() string {
-	if i < 0 || i >= MatchType(len(_MatchType_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_MatchType_index)-1 {
 		return "MatchType(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _MatchType_name[_MatchType_index[i]:_MatchType_index[i+1]]
+	return _MatchType_name[_MatchType_index[idx]:_MatchType_index[idx+1]]
 }

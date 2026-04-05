@@ -26,7 +26,7 @@ func TestEncodeControlPacket(t *testing.T) {
 	assert.Equal(t, byte(0), data[5])
 	assert.Equal(t, byte(0), data[6])
 	assert.Equal(t, byte(0), data[20])
-	assert.Equal(t, byte(15), data[21])
+	assert.Equal(t, byte(20), data[21])
 
 	// Check the different alliance station values.
 	dsConn.AllianceStation = "R2"
@@ -115,22 +115,22 @@ func TestEncodeControlPacket(t *testing.T) {
 
 	// Check the countdown at different points during the match.
 	arena.MatchState = AutoPeriod
-	arena.MatchStartTime = time.Now().Add(-time.Duration(4 * time.Second))
+	arena.MatchStartTime = time.Now().Add(-9 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(11), data[21])
 	arena.MatchState = PausePeriod
-	arena.MatchStartTime = time.Now().Add(-time.Duration(16 * time.Second))
+	arena.MatchStartTime = time.Now().Add(-21 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
-	assert.Equal(t, byte(135), data[21])
+	assert.Equal(t, byte(140), data[21])
 	arena.MatchState = TeleopPeriod
-	arena.MatchStartTime = time.Now().Add(-time.Duration(33 * time.Second))
+	arena.MatchStartTime = time.Now().Add(-33 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
-	assert.Equal(t, byte(119), data[21])
-	arena.MatchStartTime = time.Now().Add(-time.Duration(150 * time.Second))
+	assert.Equal(t, byte(129), data[21])
+	arena.MatchStartTime = time.Now().Add(-160 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(2), data[21])
 	arena.MatchState = PostMatch
-	arena.MatchStartTime = time.Now().Add(-time.Duration(180 * time.Second))
+	arena.MatchStartTime = time.Now().Add(-180 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(0), data[21])
 }
@@ -272,9 +272,11 @@ func setupFakeTcpConnection(t *testing.T) net.Conn {
 func startTestDriverStationServer(t *testing.T, arena *Arena) string {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	assert.Nil(t, err)
-	t.Cleanup(func() {
-		listener.Close()
-	})
+	t.Cleanup(
+		func() {
+			listener.Close()
+		},
+	)
 
 	go arena.serveDriverStations(listener)
 	return listener.Addr().String()
@@ -284,10 +286,15 @@ func waitForDriverStationConnection(t *testing.T, arena *Arena, station string) 
 	t.Helper()
 
 	var dsConn *DriverStationConnection
-	if !assert.Eventually(t, func() bool {
-		dsConn = arena.AllianceStations[station].DsConn
-		return dsConn != nil
-	}, time.Second, 10*time.Millisecond) {
+	if !assert.Eventually(
+		t,
+		func() bool {
+			dsConn = arena.AllianceStations[station].DsConn
+			return dsConn != nil
+		},
+		time.Second,
+		10*time.Millisecond,
+	) {
 		return nil
 	}
 

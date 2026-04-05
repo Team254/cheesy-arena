@@ -19,8 +19,9 @@ const _register_name = "fieldIoConnectionredProcessorblueProcessorregisterCount"
 var _register_index = [...]uint8{0, 17, 29, 42, 55}
 
 func (i register) String() string {
-	if i < 0 || i >= register(len(_register_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_register_index)-1 {
 		return "register(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _register_name[_register_index[i]:_register_index[i+1]]
+	return _register_name[_register_index[idx]:_register_index[idx+1]]
 }

@@ -67,5 +67,7 @@ func TestWallDisplayWebsocket(t *testing.T) {
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)
 	web.arena.RealtimeScoreNotifier.Notify()
-	readWebsocketType(t, ws, "realtimeScore")
+	messages = readWebsocketMultiple(t, ws, 2)
+	_, ok = messages["realtimeScore"]
+	assert.True(t, ok)
 }
