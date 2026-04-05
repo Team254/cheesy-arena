@@ -123,7 +123,8 @@ func (reef *Reef) isAutoBonusCoralThresholdMet() bool {
 			}
 		}
 	}
-	return autoCoral >= AutoBonusCoralThreshold
+	// TODO: Update for 2026.
+	return autoCoral >= 1
 }
 
 // countCoralBonusSatisfiedLevels counts the number of levels that have enough Coral scored on them to satisfy the Coral
@@ -133,7 +134,8 @@ func (reef *Reef) countCoralBonusSatisfiedLevels() int {
 	for level := Level1; level < LevelCount; level++ {
 		autoCoral := reef.CountCoralByLevelAndPeriod(level, true)
 		teleopCoral := reef.CountCoralByLevelAndPeriod(level, false)
-		if autoCoral+teleopCoral >= CoralBonusPerLevelThreshold {
+		// TODO: Update for 2026.
+		if autoCoral+teleopCoral >= 7 {
 			satisfiedLevels++
 		}
 	}

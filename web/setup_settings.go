@@ -139,11 +139,9 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TransitionShiftDurationSec, _ = strconv.Atoi(r.PostFormValue("transitionShiftDurationSec"))
 	eventSettings.ShiftDurationSec, _ = strconv.Atoi(r.PostFormValue("shiftDurationSec"))
 	eventSettings.EndgameDurationSec, _ = strconv.Atoi(r.PostFormValue("endgameDurationSec"))
-	eventSettings.AutoBonusCoralThreshold, _ = strconv.Atoi(r.PostFormValue("autoBonusCoralThreshold"))
-	eventSettings.CoralBonusPerLevelThreshold, _ = strconv.Atoi(r.PostFormValue("coralBonusPerLevelThreshold"))
-	eventSettings.CoralBonusCoopEnabled = r.PostFormValue("coralBonusCoopEnabled") == "on"
-	eventSettings.BargeBonusPointThreshold, _ = strconv.Atoi(r.PostFormValue("bargeBonusPointThreshold"))
-	eventSettings.IncludeAlgaeInBargeBonus = r.PostFormValue("includeAlgaeInBargeBonus") == "on"
+	eventSettings.EnergizedBonusThreshold, _ = strconv.Atoi(r.PostFormValue("energizedBonusThreshold"))
+	eventSettings.SuperchargedBonusThreshold, _ = strconv.Atoi(r.PostFormValue("superchargedBonusThreshold"))
+	eventSettings.TraversalBonusThreshold, _ = strconv.Atoi(r.PostFormValue("traversalBonusThreshold"))
 
 	err := web.arena.Database.UpdateEventSettings(eventSettings)
 	if err != nil {

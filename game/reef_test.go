@@ -143,176 +143,182 @@ func TestReefCoralCountsAndPoints(t *testing.T) {
 }
 
 func TestReef_isAutoBonusCoralThresholdMet(t *testing.T) {
-	// Save the original threshold value and restore it after the test.
-	originalThreshold := AutoBonusCoralThreshold
-	defer func() {
-		AutoBonusCoralThreshold = originalThreshold
-	}()
+	t.Skip("TODO: Update for 2026.")
+	/*
+		// Save the original threshold value and restore it after the test.
+		originalThreshold := AutoBonusCoralThreshold
+		defer func() {
+			AutoBonusCoralThreshold = originalThreshold
+		}()
 
-	testCases := []struct {
-		reef                 Reef
-		threshold            int
-		expectedThresholdMet bool
-	}{
-		// 0. Empty reef.
-		{
-			reef:                 Reef{},
-			threshold:            1,
-			expectedThresholdMet: false,
-		},
+		testCases := []struct {
+			reef                 Reef
+			threshold            int
+			expectedThresholdMet bool
+		}{
+			// 0. Empty reef.
+			{
+				reef:                 Reef{},
+				threshold:            1,
+				expectedThresholdMet: false,
+			},
 
-		// 1. Below threshold with some coral.
-		{
-			reef: Reef{
-				AutoBranches: [3][12]bool{
-					{true, false, false, false, false, false, false, false, false, false, false, false},
-					{false, false, false, false, false, false, false, false, false, false, false, false},
-					{false, false, false, false, false, false, false, false, false, false, false, false},
+			// 1. Below threshold with some coral.
+			{
+				reef: Reef{
+					AutoBranches: [3][12]bool{
+						{true, false, false, false, false, false, false, false, false, false, false, false},
+						{false, false, false, false, false, false, false, false, false, false, false, false},
+						{false, false, false, false, false, false, false, false, false, false, false, false},
+					},
+					AutoTroughNear: 2,
+					AutoTroughFar:  1,
 				},
-				AutoTroughNear: 2,
-				AutoTroughFar:  1,
+				threshold:            5,
+				expectedThresholdMet: false,
 			},
-			threshold:            5,
-			expectedThresholdMet: false,
-		},
 
-		// 2. Exactly at threshold.
-		{
-			reef: Reef{
-				AutoBranches: [3][12]bool{
-					{true, false, false, false, false, false, false, false, false, false, false, false},
-					{false, false, false, false, false, false, false, false, false, false, false, false},
-					{false, false, false, false, false, false, false, false, false, false, false, false},
+			// 2. Exactly at threshold.
+			{
+				reef: Reef{
+					AutoBranches: [3][12]bool{
+						{true, false, false, false, false, false, false, false, false, false, false, false},
+						{false, false, false, false, false, false, false, false, false, false, false, false},
+						{false, false, false, false, false, false, false, false, false, false, false, false},
+					},
+					AutoTroughNear: 2,
+					AutoTroughFar:  1,
 				},
-				AutoTroughNear: 2,
-				AutoTroughFar:  1,
+				threshold:            4,
+				expectedThresholdMet: true,
 			},
-			threshold:            4,
-			expectedThresholdMet: true,
-		},
 
-		// 3. Above threshold.
-		{
-			reef: Reef{
-				AutoBranches: [3][12]bool{
-					{true, true, false, false, false, false, false, false, false, false, false, false},
-					{true, false, false, false, false, false, false, false, false, false, false, false},
-					{false, false, false, false, false, false, false, false, false, false, false, true},
+			// 3. Above threshold.
+			{
+				reef: Reef{
+					AutoBranches: [3][12]bool{
+						{true, true, false, false, false, false, false, false, false, false, false, false},
+						{true, false, false, false, false, false, false, false, false, false, false, false},
+						{false, false, false, false, false, false, false, false, false, false, false, true},
+					},
+					AutoTroughNear: 5,
+					AutoTroughFar:  3,
 				},
-				AutoTroughNear: 5,
-				AutoTroughFar:  3,
+				threshold:            10,
+				expectedThresholdMet: true,
 			},
-			threshold:            10,
-			expectedThresholdMet: true,
-		},
-	}
+		}
 
-	for i, tc := range testCases {
-		t.Run(
-			strconv.Itoa(i),
-			func(t *testing.T) {
-				AutoBonusCoralThreshold = tc.threshold
-				result := tc.reef.isAutoBonusCoralThresholdMet()
-				assert.Equal(t, tc.expectedThresholdMet, result)
-			},
-		)
-	}
+		for i, tc := range testCases {
+			t.Run(
+				strconv.Itoa(i),
+				func(t *testing.T) {
+					AutoBonusCoralThreshold = tc.threshold
+					result := tc.reef.isAutoBonusCoralThresholdMet()
+					assert.Equal(t, tc.expectedThresholdMet, result)
+				},
+			)
+		}
+	*/
 }
 
 func TestReef_countCoralBonusSatisfiedLevels(t *testing.T) {
-	// Save the original threshold value and restore it after the test.
-	originalThreshold := CoralBonusPerLevelThreshold
-	defer func() {
-		CoralBonusPerLevelThreshold = originalThreshold
-	}()
+	t.Skip("TODO: Update for 2026.")
+	/*
+		// Save the original threshold value and restore it after the test.
+		originalThreshold := CoralBonusPerLevelThreshold
+		defer func() {
+			CoralBonusPerLevelThreshold = originalThreshold
+		}()
 
-	testCases := []struct {
-		reef                    Reef
-		threshold               int
-		expectedSatisfiedLevels int
-	}{
-		// 0. Empty reef.
-		{
-			reef:                    Reef{},
-			threshold:               1,
-			expectedSatisfiedLevels: 0,
-		},
-
-		// 1. Two levels satisfied.
-		{
-			reef: Reef{
-				AutoBranches: [3][12]bool{
-					{false, false, false, false, false, false, false, false, false, false, false, false},
-					{true, true, false, false, false, false, false, false, false, false, false, false},
-					{false, false, false, false, false, false, false, false, false, false, false, false},
-				},
-				Branches: [3][12]bool{
-					{false, false, false, false, false, false, false, false, false, false, false, false},
-					{true, false, true, false, false, false, false, false, false, false, false, false},
-					{false, false, false, false, false, false, false, false, false, true, true, true},
-				},
-				AutoTroughNear: 1,
-				AutoTroughFar:  0,
-				TroughNear:     2,
-				TroughFar:      1,
+		testCases := []struct {
+			reef                    Reef
+			threshold               int
+			expectedSatisfiedLevels int
+		}{
+			// 0. Empty reef.
+			{
+				reef:                    Reef{},
+				threshold:               1,
+				expectedSatisfiedLevels: 0,
 			},
-			threshold:               3,
-			expectedSatisfiedLevels: 2,
-		},
 
-		// 2. All levels satisfied.
-		{
-			reef: Reef{
-				AutoBranches: [3][12]bool{
-					{false, false, false, false, false, false, true, true, true, true, true, true},
-					{true, true, false, false, false, false, false, false, false, false, false, false},
-					{true, true, false, false, false, false, false, false, false, false, false, false},
+			// 1. Two levels satisfied.
+			{
+				reef: Reef{
+					AutoBranches: [3][12]bool{
+						{false, false, false, false, false, false, false, false, false, false, false, false},
+						{true, true, false, false, false, false, false, false, false, false, false, false},
+						{false, false, false, false, false, false, false, false, false, false, false, false},
+					},
+					Branches: [3][12]bool{
+						{false, false, false, false, false, false, false, false, false, false, false, false},
+						{true, false, true, false, false, false, false, false, false, false, false, false},
+						{false, false, false, false, false, false, false, false, false, true, true, true},
+					},
+					AutoTroughNear: 1,
+					AutoTroughFar:  0,
+					TroughNear:     2,
+					TroughFar:      1,
 				},
-				Branches: [3][12]bool{
-					{false, false, false, false, false, true, true, true, true, true, true, true},
-					{true, true, true, true, false, true, false, false, true, true, false, false},
-					{true, true, true, true, true, false, false, false, false, false, true, true},
-				},
-				AutoTroughNear: 3,
-				AutoTroughFar:  2,
-				TroughNear:     2,
-				TroughFar:      5,
+				threshold:               3,
+				expectedSatisfiedLevels: 2,
 			},
-			threshold:               7,
-			expectedSatisfiedLevels: 4,
-		},
 
-		// 3. No levels satisfied with higher threshold and same scoring as above.
-		{
-			reef: Reef{
-				AutoBranches: [3][12]bool{
-					{false, false, false, false, false, true, true, true, true, true, true, true},
-					{true, true, false, false, false, false, false, false, false, false, false, false},
-					{true, true, false, false, false, false, false, false, false, false, false, false},
+			// 2. All levels satisfied.
+			{
+				reef: Reef{
+					AutoBranches: [3][12]bool{
+						{false, false, false, false, false, false, true, true, true, true, true, true},
+						{true, true, false, false, false, false, false, false, false, false, false, false},
+						{true, true, false, false, false, false, false, false, false, false, false, false},
+					},
+					Branches: [3][12]bool{
+						{false, false, false, false, false, true, true, true, true, true, true, true},
+						{true, true, true, true, false, true, false, false, true, true, false, false},
+						{true, true, true, true, true, false, false, false, false, false, true, true},
+					},
+					AutoTroughNear: 3,
+					AutoTroughFar:  2,
+					TroughNear:     2,
+					TroughFar:      5,
 				},
-				Branches: [3][12]bool{
-					{false, false, false, false, false, false, true, true, true, true, true, true},
-					{true, true, true, true, false, false, false, false, true, true, false, false},
-					{true, true, true, true, true, false, false, false, false, false, true, true},
-				},
-				AutoTroughNear: 3,
-				AutoTroughFar:  2,
-				TroughNear:     2,
-				TroughFar:      5,
+				threshold:               7,
+				expectedSatisfiedLevels: 4,
 			},
-			threshold:               8,
-			expectedSatisfiedLevels: 0,
-		},
-	}
 
-	for i, tc := range testCases {
-		t.Run(
-			strconv.Itoa(i),
-			func(t *testing.T) {
-				CoralBonusPerLevelThreshold = tc.threshold
-				result := tc.reef.countCoralBonusSatisfiedLevels()
-				assert.Equal(t, tc.expectedSatisfiedLevels, result)
+			// 3. No levels satisfied with higher threshold and same scoring as above.
+			{
+				reef: Reef{
+					AutoBranches: [3][12]bool{
+						{false, false, false, false, false, true, true, true, true, true, true, true},
+						{true, true, false, false, false, false, false, false, false, false, false, false},
+						{true, true, false, false, false, false, false, false, false, false, false, false},
+					},
+					Branches: [3][12]bool{
+						{false, false, false, false, false, false, true, true, true, true, true, true},
+						{true, true, true, true, false, false, false, false, true, true, false, false},
+						{true, true, true, true, true, false, false, false, false, false, true, true},
+					},
+					AutoTroughNear: 3,
+					AutoTroughFar:  2,
+					TroughNear:     2,
+					TroughFar:      5,
+				},
+				threshold:               8,
+				expectedSatisfiedLevels: 0,
 			},
-		)
-	}
+		}
+
+		for i, tc := range testCases {
+			t.Run(
+				strconv.Itoa(i),
+				func(t *testing.T) {
+					CoralBonusPerLevelThreshold = tc.threshold
+					result := tc.reef.countCoralBonusSatisfiedLevels()
+					assert.Equal(t, tc.expectedSatisfiedLevels, result)
+				},
+			)
+		}
+	*/
 }

@@ -628,7 +628,7 @@ func createTbaAlliance(teamIds [3]int, surrogates [3]bool, score *int, cards map
 }
 
 func createTbaScoringBreakdown(
-	eventSettings *model.EventSettings,
+	_ *model.EventSettings,
 	match *model.Match,
 	matchResult *model.MatchResult,
 	alliance string,
@@ -728,9 +728,8 @@ func createTbaScoringBreakdown(
 	// event settings.
 	breakdownMap := make(map[string]any)
 	_ = mapstructure.Decode(breakdown, &breakdownMap)
-	if !eventSettings.CoralBonusCoopEnabled {
-		delete(breakdownMap, "coopertitionCriteriaMet")
-	}
+	// TODO: Update for 2026.
+	// Keep coopertition criteria in the breakdown using the 2025 default behavior.
 
 	return breakdownMap
 }

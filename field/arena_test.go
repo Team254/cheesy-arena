@@ -1177,7 +1177,7 @@ func TestPlcMatchCycleGameSpecificWithCoopEnabled(t *testing.T) {
 }
 
 func TestPlcMatchCycleGameSpecificWithCoopDisabled(t *testing.T) {
-	t.Skip("TODO: Update for 2026")
+	t.Skip("TODO: Update for 2026.")
 	/*
 		defer func() {
 			game.CoralBonusCoopEnabled = true

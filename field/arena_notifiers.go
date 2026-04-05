@@ -315,7 +315,8 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		blueWins,
 		redDestination,
 		blueDestination,
-		game.CoralBonusCoopEnabled,
+		// TODO: Update for 2026.
+		true,
 	}
 }
 

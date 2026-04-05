@@ -111,11 +111,9 @@ type EventSettings struct {
 	TransitionShiftDurationSec       int
 	ShiftDurationSec                 int
 	EndgameDurationSec               int
-	AutoBonusCoralThreshold          int
-	CoralBonusPerLevelThreshold      int
-	CoralBonusCoopEnabled            bool
-	BargeBonusPointThreshold         int
-	IncludeAlgaeInBargeBonus         bool
+	EnergizedBonusThreshold          int
+	SuperchargedBonusThreshold       int
+	TraversalBonusThreshold          int
 }
 
 func (database *Database) GetEventSettings() (*EventSettings, error) {
@@ -130,27 +128,25 @@ func (database *Database) GetEventSettings() (*EventSettings, error) {
 
 	// Database record doesn't exist yet; create it now.
 	eventSettings := EventSettings{
-		Name:                        "Untitled Event",
-		PlayoffType:                 DoubleEliminationPlayoff,
-		NumPlayoffAlliances:         8,
-		SelectionRound2Order:        "L",
-		SelectionRound3Order:        "",
-		SelectionShowUnpickedTeams:  true,
-		TbaDownloadEnabled:          true,
-		ApChannel:                   36,
-		SCCUpCommands:               strings.Join(sccDefaultUpCommands, "\n"),
-		SCCDownCommands:             strings.Join(sccDefaultDownCommands, "\n"),
-		CompanionAddress:            "",
-		AutoDurationSec:             game.MatchTiming.AutoDurationSec,
-		PauseDurationSec:            game.MatchTiming.PauseDurationSec,
-		TransitionShiftDurationSec:  game.MatchTiming.TransitionShiftDurationSec,
-		ShiftDurationSec:            game.MatchTiming.ShiftDurationSec,
-		EndgameDurationSec:          game.MatchTiming.EndgameDurationSec,
-		AutoBonusCoralThreshold:     game.AutoBonusCoralThreshold,
-		CoralBonusPerLevelThreshold: game.CoralBonusPerLevelThreshold,
-		CoralBonusCoopEnabled:       game.CoralBonusCoopEnabled,
-		BargeBonusPointThreshold:    game.BargeBonusPointThreshold,
-		IncludeAlgaeInBargeBonus:    game.IncludeAlgaeInBargeBonus,
+		Name:                       "Untitled Event",
+		PlayoffType:                DoubleEliminationPlayoff,
+		NumPlayoffAlliances:        8,
+		SelectionRound2Order:       "L",
+		SelectionRound3Order:       "",
+		SelectionShowUnpickedTeams: true,
+		TbaDownloadEnabled:         true,
+		ApChannel:                  36,
+		SCCUpCommands:              strings.Join(sccDefaultUpCommands, "\n"),
+		SCCDownCommands:            strings.Join(sccDefaultDownCommands, "\n"),
+		CompanionAddress:           "",
+		AutoDurationSec:            game.MatchTiming.AutoDurationSec,
+		PauseDurationSec:           game.MatchTiming.PauseDurationSec,
+		TransitionShiftDurationSec: game.MatchTiming.TransitionShiftDurationSec,
+		ShiftDurationSec:           game.MatchTiming.ShiftDurationSec,
+		EndgameDurationSec:         game.MatchTiming.EndgameDurationSec,
+		EnergizedBonusThreshold:    game.EnergizedBonusThreshold,
+		SuperchargedBonusThreshold: game.SuperchargedBonusThreshold,
+		TraversalBonusThreshold:    game.TraversalBonusThreshold,
 	}
 
 	if err := database.eventSettingsTable.create(&eventSettings); err != nil {

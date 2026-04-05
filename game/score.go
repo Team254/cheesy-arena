@@ -17,11 +17,9 @@ type Score struct {
 }
 
 // Game-specific settings that can be changed via the settings.
-var AutoBonusCoralThreshold = 1
-var CoralBonusPerLevelThreshold = 7
-var CoralBonusCoopEnabled = true
-var BargeBonusPointThreshold = 16
-var IncludeAlgaeInBargeBonus = false
+var EnergizedBonusThreshold = 100
+var SuperchargedBonusThreshold = 360
+var TraversalBonusThreshold = 50
 
 // Represents the state of a robot at the end of the match.
 type EndgameStatus int
@@ -113,12 +111,11 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	// Coral bonus ranking point.
 	summary.NumCoralLevels = score.Reef.countCoralBonusSatisfiedLevels()
 	summary.NumCoralLevelsGoal = 4
-	if CoralBonusCoopEnabled {
-		summary.CoopertitionCriteriaMet = score.ProcessorAlgae >= 2
-		summary.CoopertitionBonus = summary.CoopertitionCriteriaMet && opponentScore.ProcessorAlgae >= 2
-		if summary.CoopertitionBonus {
-			summary.NumCoralLevelsGoal = 3
-		}
+	// TODO: Update for 2026.
+	summary.CoopertitionCriteriaMet = score.ProcessorAlgae >= 2
+	summary.CoopertitionBonus = summary.CoopertitionCriteriaMet && opponentScore.ProcessorAlgae >= 2
+	if summary.CoopertitionBonus {
+		summary.NumCoralLevelsGoal = 3
 	}
 	if summary.NumCoralLevels >= summary.NumCoralLevelsGoal {
 		summary.CoralBonusRankingPoint = true
@@ -126,10 +123,9 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 
 	// Barge bonus ranking point.
 	bargePointsForBonus := summary.BargePoints
-	if IncludeAlgaeInBargeBonus {
-		bargePointsForBonus += summary.AlgaePoints
-	}
-	if bargePointsForBonus >= BargeBonusPointThreshold {
+	// TODO: Update for 2026.
+	// Keep algae points excluded from the barge bonus threshold and preserve the 2025 threshold.
+	if bargePointsForBonus >= 16 {
 		summary.BargeBonusRankingPoint = true
 	}
 
