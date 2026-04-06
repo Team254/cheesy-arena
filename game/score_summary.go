@@ -6,25 +6,20 @@
 package game
 
 type ScoreSummary struct {
-	LeavePoints             int
-	AutoPoints              int
-	NumCoral                int
-	CoralPoints             int
-	NumAlgae                int
-	AlgaePoints             int
-	BargePoints             int
-	MatchPoints             int
-	FoulPoints              int
-	Score                   int
-	CoopertitionCriteriaMet bool
-	CoopertitionBonus       bool
-	NumCoralLevels          int
-	NumCoralLevelsGoal      int
-	AutoBonusRankingPoint   bool
-	CoralBonusRankingPoint  bool
-	BargeBonusRankingPoint  bool
-	BonusRankingPoints      int
-	NumOpponentMajorFouls   int
+	AutoFuelPoints                int
+	AutoTowerPoints               int
+	TeleopFuelPoints              int
+	TeleopTowerPoints             int
+	NumFuel                       int
+	NumFuelGoal                   int
+	MatchPoints                   int
+	FoulPoints                    int
+	Score                         int
+	EnergizedBonusRankingPoint    bool
+	SuperchargedBonusRankingPoint bool
+	TraversalBonusRankingPoint    bool
+	BonusRankingPoints            int
+	NumOpponentMajorFouls         int
 }
 
 type MatchStatus int
@@ -54,12 +49,14 @@ func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, apply
 		); status != TieMatch {
 			return status
 		}
-		if status := comparePoints(redScoreSummary.AutoPoints, blueScoreSummary.AutoPoints); status != TieMatch {
+		status := comparePoints(redScoreSummary.AutoFuelPoints, blueScoreSummary.AutoFuelPoints)
+		if status != TieMatch {
 			return status
 		}
-		if status := comparePoints(redScoreSummary.BargePoints, blueScoreSummary.BargePoints); status != TieMatch {
-			return status
-		}
+		return comparePoints(
+			redScoreSummary.AutoTowerPoints+redScoreSummary.TeleopTowerPoints,
+			blueScoreSummary.AutoTowerPoints+blueScoreSummary.TeleopTowerPoints,
+		)
 	}
 
 	return TieMatch

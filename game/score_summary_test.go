@@ -24,11 +24,13 @@ func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
 
 	redScoreSummary.Score = 12
 	redScoreSummary.NumOpponentMajorFouls = 11
-	redScoreSummary.AutoPoints = 11
-	redScoreSummary.BargePoints = 11
+	redScoreSummary.AutoFuelPoints = 11
+	redScoreSummary.AutoTowerPoints = 5
+	redScoreSummary.TeleopTowerPoints = 6
 	blueScoreSummary.NumOpponentMajorFouls = 10
-	blueScoreSummary.AutoPoints = 10
-	blueScoreSummary.BargePoints = 10
+	blueScoreSummary.AutoFuelPoints = 10
+	blueScoreSummary.AutoTowerPoints = 4
+	blueScoreSummary.TeleopTowerPoints = 6
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
@@ -40,19 +42,19 @@ func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	blueScoreSummary.AutoPoints = 12
+	blueScoreSummary.AutoFuelPoints = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	redScoreSummary.AutoPoints = 12
+	redScoreSummary.AutoFuelPoints = 12
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, RedWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	blueScoreSummary.BargePoints = 12
+	blueScoreSummary.TeleopTowerPoints = 8
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, BlueWonMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 
-	redScoreSummary.BargePoints = 12
+	redScoreSummary.TeleopTowerPoints = 7
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, false))
 	assert.Equal(t, TieMatch, DetermineMatchStatus(redScoreSummary, blueScoreSummary, true))
 }
