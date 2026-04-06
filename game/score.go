@@ -38,7 +38,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	}
 
 	// Calculate autonomous period points.
-	summary.AutoFuelPoints = score.Hub.GetAutoFuelCount()
+	summary.AutoFuelPoints = score.Hub.GetShiftCount(ShiftAuto, true)
 	summary.NumFuel += summary.AutoFuelPoints
 	for _, status := range score.AutoTowerStatuses {
 		if status == TowerLevel1 || status == TowerLevel2 || status == TowerLevel3 {

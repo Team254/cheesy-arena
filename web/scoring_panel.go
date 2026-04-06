@@ -167,37 +167,10 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(position, ws)
 			web.arena.ScoringStatusNotifier.Notify()
-		} else if command == "reef" {
-			args := struct {
-				ReefPosition int
-				ReefLevel    int
-				Current      bool
-				Autonomous   bool
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			if args.ReefPosition >= 1 && args.ReefPosition <= 12 && args.ReefLevel >= 2 && args.ReefLevel <= 4 {
-				level := game.Level(args.ReefLevel - 2)
-				reefIndex := args.ReefPosition - 1
-				if args.Current {
-					score.Reef.Branches[level][reefIndex] = !score.Reef.Branches[level][reefIndex]
-					scoreChanged = true
-				}
-				if args.Autonomous {
-					score.Reef.AutoBranches[level][reefIndex] = !score.Reef.AutoBranches[level][reefIndex]
-					scoreChanged = true
-				}
-				scoreChanged = true
-			}
-
 		} else if command == "endgame" {
 			args := struct {
-				TeamPosition  int
-				EndgameStatus int
+				TeamPosition       int
+				EndgameTowerStatus int
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -205,23 +178,10 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				continue
 			}
 
-			if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.EndgameStatus >= 0 && args.EndgameStatus <= 3 {
-				endgameStatus := game.EndgameStatus(args.EndgameStatus)
-				score.EndgameStatuses[args.TeamPosition-1] = endgameStatus
-				scoreChanged = true
-			}
-		} else if command == "leave" {
-			args := struct {
-				TeamPosition int
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			if args.TeamPosition >= 1 && args.TeamPosition <= 3 {
-				score.LeaveStatuses[args.TeamPosition-1] = !score.LeaveStatuses[args.TeamPosition-1]
+			if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.EndgameTowerStatus >= 0 &&
+				args.EndgameTowerStatus <= 3 {
+				endgameStatus := game.TowerStatus(args.EndgameTowerStatus)
+				score.EndgameTowerStatuses[args.TeamPosition-1] = endgameStatus
 				scoreChanged = true
 			}
 		} else if command == "addFoul" {
@@ -247,43 +207,44 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
 		} else {
-			args := struct {
-				Adjustment int
-				Current    bool
-				Autonomous bool
-				NearSide   bool
-			}{}
-			err = mapstructure.Decode(data, &args)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			switch command {
-			case "barge":
-				score.BargeAlgae = max(0, score.BargeAlgae+args.Adjustment)
-				scoreChanged = true
-			case "processor":
-				score.ProcessorAlgae = max(0, score.ProcessorAlgae+args.Adjustment)
-				scoreChanged = true
-			case "trough":
-				if args.Current {
-					if args.NearSide {
-						score.Reef.TroughNear = max(0, score.Reef.TroughNear+args.Adjustment)
-					} else {
-						score.Reef.TroughFar = max(0, score.Reef.TroughFar+args.Adjustment)
-					}
-					scoreChanged = true
-				}
-				if args.Autonomous {
-					if args.NearSide {
-						score.Reef.AutoTroughNear = max(0, score.Reef.AutoTroughNear+args.Adjustment)
-					} else {
-						score.Reef.AutoTroughFar = max(0, score.Reef.AutoTroughFar+args.Adjustment)
-					}
-					scoreChanged = true
-				}
-			}
+			// TODO: Update for 2026.
+			// args := struct {
+			// 	Adjustment int
+			// 	Current    bool
+			// 	Autonomous bool
+			// 	NearSide   bool
+			// }{}
+			// err = mapstructure.Decode(data, &args)
+			// if err != nil {
+			// 	ws.WriteError(err.Error())
+			// 	continue
+			// }
+			//
+			// switch command {
+			// case "barge":
+			// 	score.BargeAlgae = max(0, score.BargeAlgae+args.Adjustment)
+			// 	scoreChanged = true
+			// case "processor":
+			// 	score.ProcessorAlgae = max(0, score.ProcessorAlgae+args.Adjustment)
+			// 	scoreChanged = true
+			// case "trough":
+			// 	if args.Current {
+			// 		if args.NearSide {
+			// 			score.Reef.TroughNear = max(0, score.Reef.TroughNear+args.Adjustment)
+			// 		} else {
+			// 			score.Reef.TroughFar = max(0, score.Reef.TroughFar+args.Adjustment)
+			// 		}
+			// 		scoreChanged = true
+			// 	}
+			// 	if args.Autonomous {
+			// 		if args.NearSide {
+			// 			score.Reef.AutoTroughNear = max(0, score.Reef.AutoTroughNear+args.Adjustment)
+			// 		} else {
+			// 			score.Reef.AutoTroughFar = max(0, score.Reef.AutoTroughFar+args.Adjustment)
+			// 		}
+			// 		scoreChanged = true
+			// 	}
+			// }
 		}
 
 		if scoreChanged {

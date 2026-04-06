@@ -62,11 +62,6 @@ func TestHub_UpdateStateDuringExtendedPauseCountsAsTransitionShift(t *testing.T)
 	assertHubShiftCounts(t, &hub, [ShiftCount]int{5, 3, 0, 0, 0, 0, 0})
 }
 
-func TestHub_GetAutoFuelCount(t *testing.T) {
-	hub := Hub{ShiftCounts: [ShiftCount]int{9, 1, 2, 3, 4, 5, 6}}
-	assert.Equal(t, 9, hub.GetAutoFuelCount())
-}
-
 func TestHub_GetTeleopActiveFuelCount(t *testing.T) {
 	hub := Hub{
 		WonAuto:     false,
@@ -78,24 +73,31 @@ func TestHub_GetTeleopActiveFuelCount(t *testing.T) {
 	assert.Equal(t, 150, hub.GetTeleopActiveFuelCount())
 }
 
-func TestHub_getShiftActiveCount(t *testing.T) {
+func TestHub_GetShiftActiveCount(t *testing.T) {
 	hub := Hub{
 		WonAuto:     false,
 		ShiftCounts: [ShiftCount]int{1, 2, 3, 4, 5, 6, 7},
 	}
-	assert.Equal(t, 1, hub.getShiftActiveCount(ShiftAuto))
-	assert.Equal(t, 2, hub.getShiftActiveCount(ShiftTransition))
-	assert.Equal(t, 3, hub.getShiftActiveCount(Shift1))
-	assert.Equal(t, 0, hub.getShiftActiveCount(Shift2))
-	assert.Equal(t, 5, hub.getShiftActiveCount(Shift3))
-	assert.Equal(t, 0, hub.getShiftActiveCount(Shift4))
-	assert.Equal(t, 7, hub.getShiftActiveCount(ShiftEndgame))
+	assert.Equal(t, 1, hub.GetShiftCount(ShiftAuto, false))
+	assert.Equal(t, 1, hub.GetShiftCount(ShiftAuto, true))
+	assert.Equal(t, 2, hub.GetShiftCount(ShiftTransition, false))
+	assert.Equal(t, 2, hub.GetShiftCount(ShiftTransition, true))
+	assert.Equal(t, 3, hub.GetShiftCount(Shift1, false))
+	assert.Equal(t, 3, hub.GetShiftCount(Shift1, true))
+	assert.Equal(t, 4, hub.GetShiftCount(Shift2, false))
+	assert.Equal(t, 0, hub.GetShiftCount(Shift2, true))
+	assert.Equal(t, 5, hub.GetShiftCount(Shift3, false))
+	assert.Equal(t, 5, hub.GetShiftCount(Shift3, true))
+	assert.Equal(t, 6, hub.GetShiftCount(Shift4, false))
+	assert.Equal(t, 0, hub.GetShiftCount(Shift4, true))
+	assert.Equal(t, 7, hub.GetShiftCount(ShiftEndgame, false))
+	assert.Equal(t, 7, hub.GetShiftCount(ShiftEndgame, true))
 
 	hub.WonAuto = true
-	assert.Equal(t, 0, hub.getShiftActiveCount(Shift1))
-	assert.Equal(t, 4, hub.getShiftActiveCount(Shift2))
-	assert.Equal(t, 0, hub.getShiftActiveCount(Shift3))
-	assert.Equal(t, 6, hub.getShiftActiveCount(Shift4))
+	assert.Equal(t, 0, hub.GetShiftCount(Shift1, true))
+	assert.Equal(t, 4, hub.GetShiftCount(Shift2, true))
+	assert.Equal(t, 0, hub.GetShiftCount(Shift3, true))
+	assert.Equal(t, 6, hub.GetShiftCount(Shift4, true))
 }
 
 func assertHubShiftCounts(t *testing.T, hub *Hub, expectedShiftCounts [ShiftCount]int) {

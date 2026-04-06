@@ -57,7 +57,7 @@ func TestCommitMatch(t *testing.T) {
 	// Committing test match should update the stored saved match but not persist anything.
 	match := &model.Match{Id: 0, Type: model.Test, Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	matchResult := &model.MatchResult{MatchId: match.Id, RedScore: &game.Score{}, BlueScore: &game.Score{}}
-	matchResult.BlueScore.LeaveStatuses[2] = true
+	matchResult.BlueScore.EndgameTowerStatuses[2] = game.TowerLevel1
 	err := web.commitMatchScore(match, matchResult, false)
 	assert.Nil(t, err)
 	matchResult, err = web.arena.Database.GetMatchResultForMatch(match.Id)
@@ -71,7 +71,13 @@ func TestCommitMatch(t *testing.T) {
 	assert.Nil(t, web.arena.Database.CreateMatch(match))
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	matchResult.BlueScore = &game.Score{LeaveStatuses: [3]bool{true, false, false}}
+	matchResult.BlueScore = &game.Score{
+		AutoTowerStatuses: [3]game.TowerStatus{
+			game.TowerLevel1,
+			game.TowerNone,
+			game.TowerNone,
+		},
+	}
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, matchResult.PlayNumber)
@@ -80,7 +86,13 @@ func TestCommitMatch(t *testing.T) {
 
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
-	matchResult.RedScore = &game.Score{LeaveStatuses: [3]bool{true, false, true}}
+	matchResult.RedScore = &game.Score{
+		EndgameTowerStatuses: [3]game.TowerStatus{
+			game.TowerLevel2,
+			game.TowerNone,
+			game.TowerNone,
+		},
+	}
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, matchResult.PlayNumber)
@@ -126,7 +138,7 @@ func TestCommitTiebreak(t *testing.T) {
 		MatchId: match.Id,
 		// These should all be fields that aren't part of the tiebreaker.
 		RedScore: &game.Score{
-			Reef:  game.Reef{TroughFar: 1},
+			Hub:   game.Hub{ShiftCounts: [game.ShiftCount]int{0, 5}},
 			Fouls: []game.Foul{{FoulId: 1, IsMajor: false}, {FoulId: 2, IsMajor: false}},
 		},
 		BlueScore: &game.Score{
@@ -155,8 +167,8 @@ func TestCommitTiebreak(t *testing.T) {
 	assert.Equal(t, game.TieMatch, match.Status)
 
 	// Change the score to still be equal nominally but trigger the tiebreaker criteria.
-	matchResult.BlueScore.ProcessorAlgae = 1
-	matchResult.BlueScore.Fouls = []game.Foul{{FoulId: 3, IsMajor: false}, {FoulId: 4, IsMajor: true}}
+	matchResult.BlueScore.Hub = game.Hub{ShiftCounts: [game.ShiftCount]int{0, 0, 5, 0, 5}}
+	matchResult.BlueScore.Fouls = []game.Foul{{FoulId: 4, IsMajor: true}}
 
 	// Sanity check that the test scores are equal; they will need to be updated accordingly for each new game.
 	assert.Equal(
@@ -334,12 +346,24 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	ws.Write("abortMatch", nil)
 	readWebsocketType(t, ws, "audienceDisplayMode")
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
-	web.arena.RedRealtimeScore.CurrentScore.BargeAlgae = 6
-	web.arena.BlueRealtimeScore.CurrentScore.LeaveStatuses = [3]bool{true, false, true}
+	web.arena.RedRealtimeScore.CurrentScore.EndgameTowerStatuses = [3]game.TowerStatus{
+		game.TowerLevel1, game.TowerLevel2, game.TowerNone,
+	}
+	web.arena.BlueRealtimeScore.CurrentScore.AutoTowerStatuses = [3]game.TowerStatus{
+		game.TowerLevel1, game.TowerNone, game.TowerNone,
+	}
 	ws.Write("commitResults", nil)
 	readWebsocketMultiple(t, ws, 5) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
-	assert.Equal(t, 6, web.arena.SavedMatchResult.RedScore.BargeAlgae)
-	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.LeaveStatuses)
+	assert.Equal(
+		t,
+		[3]game.TowerStatus{game.TowerLevel1, game.TowerLevel2, game.TowerNone},
+		web.arena.SavedMatchResult.RedScore.EndgameTowerStatuses,
+	)
+	assert.Equal(
+		t,
+		[3]game.TowerStatus{game.TowerLevel1, game.TowerNone, game.TowerNone},
+		web.arena.SavedMatchResult.BlueScore.AutoTowerStatuses,
+	)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
 	ws.Write("discardResults", nil)
 	readWebsocketMultiple(t, ws, 4) // matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus

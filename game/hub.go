@@ -5,7 +5,9 @@
 
 package game
 
-import "time"
+import (
+	"time"
+)
 
 type Hub struct {
 	WonAuto     bool
@@ -50,32 +52,27 @@ func (hub *Hub) UpdateState(count int, matchStartTime, currentTime time.Time) {
 	hub.ShiftCounts[shift] += newFuel
 }
 
-// GetAutoFuelCount returns the number of Fuel scored during the autonomous period.
-func (hub *Hub) GetAutoFuelCount() int {
-	return hub.getShiftActiveCount(ShiftAuto)
-}
-
 // GetTeleopActiveFuelCount returns the number of Fuel scored during the teleop period when the Hub was active.
 func (hub *Hub) GetTeleopActiveFuelCount() int {
 	var count int
 	for shift := ShiftTransition; shift < ShiftCount; shift++ {
-		count += hub.getShiftActiveCount(shift)
+		count += hub.GetShiftCount(shift, true)
 	}
 	return count
 }
 
-// getShiftActiveCount returns the number of Fuel scored during the given shift if the Hub was active, or zero if the
+// GetShiftActiveCount returns the number of Fuel scored during the given shift if the Hub was active, or zero if the
 // Hub was not active.
-func (hub *Hub) getShiftActiveCount(shift Shift) int {
+func (hub *Hub) GetShiftCount(shift Shift, activeOnly bool) int {
 	switch shift {
 	case ShiftAuto, ShiftTransition, ShiftEndgame:
 		return hub.ShiftCounts[shift]
 	case Shift1, Shift3:
-		if !hub.WonAuto {
+		if !hub.WonAuto || !activeOnly {
 			return hub.ShiftCounts[shift]
 		}
 	case Shift2, Shift4:
-		if hub.WonAuto {
+		if hub.WonAuto || !activeOnly {
 			return hub.ShiftCounts[shift]
 		}
 	default:
