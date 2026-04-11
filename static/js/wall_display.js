@@ -17,7 +17,7 @@ let hasMessage = false;
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
 const eventMatchInfoDown = "30px";
 const eventMatchInfoUp = $("#eventMatchInfo").css("height");
-const logoUp = "20px";
+const logoUp = "35px";
 const logoDown = $("#logo").css("top");
 const scoreIn = $(".score").css("width");
 const scoreMid = "185px";
