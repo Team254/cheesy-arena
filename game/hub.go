@@ -64,20 +64,52 @@ func (hub *Hub) GetTeleopActiveFuelCount() int {
 // GetShiftActiveCount returns the number of Fuel scored during the given shift if the Hub was active, or zero if the
 // Hub was not active.
 func (hub *Hub) GetShiftCount(shift Shift, activeOnly bool) int {
-	switch shift {
-	case ShiftAuto, ShiftTransition, ShiftEndgame:
+	if hub.isShiftActive(shift) || !activeOnly {
 		return hub.ShiftCounts[shift]
-	case Shift1, Shift3:
-		if !hub.WonAuto || !activeOnly {
-			return hub.ShiftCounts[shift]
-		}
-	case Shift2, Shift4:
-		if hub.WonAuto || !activeOnly {
-			return hub.ShiftCounts[shift]
-		}
-	default:
 	}
 	return 0
+}
+
+// GetActiveTimeRemaining returns the amount of time remaining in the current shift if the Hub is active, or zero if the
+// Hub is not active.
+func (hub *Hub) GetActiveTimeRemaining(matchStartTime, currentTime time.Time) time.Duration {
+	shiftStartTime := matchStartTime
+	shiftEndTime := matchStartTime.Add(GetDurationToAutoEnd())
+	for _, shift := range []Shift{ShiftAuto, ShiftTransition, Shift1, Shift2, Shift3, Shift4, ShiftEndgame} {
+		if !currentTime.Before(shiftStartTime) && currentTime.Before(shiftEndTime) {
+			if hub.isShiftActive(shift) {
+				return shiftEndTime.Sub(currentTime)
+			}
+			return 0
+		}
+		shiftStartTime = shiftEndTime
+		switch shift {
+		case ShiftAuto:
+			shiftStartTime = matchStartTime.Add(GetDurationToTeleopStart())
+			shiftEndTime = shiftStartTime.Add(time.Duration(MatchTiming.TransitionShiftDurationSec) * time.Second)
+		case ShiftTransition, Shift1, Shift2, Shift3:
+			shiftEndTime = shiftEndTime.Add(time.Duration(MatchTiming.ShiftDurationSec) * time.Second)
+		case Shift4:
+			shiftEndTime = matchStartTime.Add(GetDurationToTeleopEnd())
+		default:
+			shiftEndTime = shiftStartTime
+		}
+	}
+	return 0
+}
+
+// isShiftActive returns true if the Hub is active during the given shift.
+func (hub *Hub) isShiftActive(shift Shift) bool {
+	switch shift {
+	case ShiftAuto, ShiftTransition, ShiftEndgame:
+		return true
+	case Shift1, Shift3:
+		return !hub.WonAuto
+	case Shift2, Shift4:
+		return hub.WonAuto
+	default:
+		return false
+	}
 }
 
 // getCurrentShift returns the current shift based on the match time, and a boolean indicating whether the time

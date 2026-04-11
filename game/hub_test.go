@@ -100,6 +100,50 @@ func TestHub_GetShiftActiveCount(t *testing.T) {
 	assert.Equal(t, 6, hub.GetShiftCount(Shift4, true))
 }
 
+func TestHub_GetActiveTimeRemaining(t *testing.T) {
+	testCases := []struct {
+		name      string
+		wonAuto   bool
+		timeSec   float32
+		remaining time.Duration
+	}{
+		{"before match", false, -1, 0},
+		{"auto active", false, 5.1, 14900 * time.Millisecond},
+		{"transition active", false, 30.1, 2900 * time.Millisecond},
+		{"shift 1 active after lost auto", false, 40.1, 17900 * time.Millisecond},
+		{"shift 2 inactive after lost auto", false, 60.1, 0},
+		{"shift 1 inactive after won auto", true, 40.1, 0},
+		{"shift 2 active after won auto", true, 60.1, 22900 * time.Millisecond},
+		{"endgame active", false, 160.1, 2900 * time.Millisecond},
+		{"after match", false, 166.1, 0},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			hub := Hub{WonAuto: testCase.wonAuto}
+			assert.Equal(
+				t,
+				testCase.remaining,
+				hub.GetActiveTimeRemaining(hubMatchStartTime, hubTimeAfterStart(testCase.timeSec)),
+			)
+		})
+	}
+}
+
+func TestHub_GetActiveTimeRemainingIgnoresGracePeriodsAndExtendedPause(t *testing.T) {
+	originalPauseDurationSec := MatchTiming.PauseDurationSec
+	defer func() {
+		MatchTiming.PauseDurationSec = originalPauseDurationSec
+	}()
+	MatchTiming.PauseDurationSec = ScoringGracePeriodSec + 4
+
+	hub := Hub{}
+	assert.Zero(t, hub.GetActiveTimeRemaining(hubMatchStartTime, hubTimeAfterStart(20.1)))
+	assert.Zero(t, hub.GetActiveTimeRemaining(hubMatchStartTime, hubTimeAfterStart(24.5)))
+	assert.Zero(t, hub.GetActiveTimeRemaining(hubMatchStartTime, hubTimeAfterStart(62.1)))
+	assert.Zero(t, hub.GetActiveTimeRemaining(hubMatchStartTime, hubTimeAfterStart(168.1)))
+}
+
 func assertHubShiftCounts(t *testing.T, hub *Hub, expectedShiftCounts [ShiftCount]int) {
 	for shift := ShiftAuto; shift < ShiftCount; shift++ {
 		assert.Equal(t, expectedShiftCounts[shift], hub.ShiftCounts[shift])

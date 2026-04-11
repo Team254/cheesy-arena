@@ -511,7 +511,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.MatchStartTime = time.Now().Add(-3 * time.Second)
 	web.arena.Update()
 	var matchTime field.MatchTimeMessage
-	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
+	err = mapstructure.Decode(readWebsocketMultiple(t, ws, 2)["matchTime"], &matchTime)
 	assert.Nil(t, err)
 	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 3, matchTime.MatchTimeSec)
@@ -521,7 +521,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	// Should get a tick notification when an integer second threshold is crossed.
 	web.arena.MatchStartTime = time.Now().Add(-time.Second - 10*time.Millisecond) // Crossed
 	web.arena.Update()
-	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
+	err = mapstructure.Decode(readWebsocketMultiple(t, ws, 2)["matchTime"], &matchTime)
 	assert.Nil(t, err)
 	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 1, matchTime.MatchTimeSec)
@@ -529,7 +529,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.Update()
 	web.arena.MatchStartTime = time.Now().Add(-2*time.Second - 10*time.Millisecond) // Crossed
 	web.arena.Update()
-	err = mapstructure.Decode(readWebsocketType(t, ws, "matchTime"), &matchTime)
+	err = mapstructure.Decode(readWebsocketMultiple(t, ws, 2)["matchTime"], &matchTime)
 	assert.Nil(t, err)
 	assert.Equal(t, field.AutoPeriod, matchTime.MatchState)
 	assert.Equal(t, 2, matchTime.MatchTimeSec)
@@ -547,7 +547,7 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 
 // Handles the status and matchTime messages arriving in either order.
 func readWebsocketStatusMatchTime(t *testing.T, ws *websocket.Websocket) (bool, field.MatchTimeMessage) {
-	return getStatusMatchTime(t, readWebsocketMultiple(t, ws, 2))
+	return getStatusMatchTime(t, readWebsocketMultiple(t, ws, 3))
 }
 
 func getStatusMatchTime(t *testing.T, messages map[string]any) (bool, field.MatchTimeMessage) {

@@ -8,6 +8,8 @@ package field
 import (
 	"fmt"
 	"log"
+	"math"
+	"math/rand"
 	"reflect"
 	"strings"
 	"sync"
@@ -96,6 +98,7 @@ type Arena struct {
 	breakDescription                  string
 	preloadedTeams                    *[6]*model.Team
 	NextFoulId                        int
+	redWonAuto                        bool
 }
 
 type AllianceStation struct {
@@ -385,6 +388,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.ScoringPanelRegistry.resetScoreCommitted()
 	arena.Plc.ResetMatch()
 	arena.NextFoulId = 1
+	arena.redWonAuto = false
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
@@ -623,6 +627,7 @@ func (arena *Arena) Update() {
 	enabled := false
 	sendDsPacket := false
 	matchTimeSec := arena.MatchTimeSec()
+	currentTime := time.Now()
 	switch arena.MatchState {
 	case PreMatch:
 		auto = true
@@ -666,6 +671,7 @@ func (arena *Arena) Update() {
 		auto = false
 		enabled = false
 		if matchTimeSec >= game.GetDurationToTeleopStart().Seconds() {
+			arena.handleAutoWinner()
 			arena.MatchState = TeleopPeriod
 			auto = false
 			enabled = true
@@ -732,8 +738,28 @@ func (arena *Arena) Update() {
 
 	arena.handleSounds(matchTimeSec)
 
+	oldRedScore := arena.RedRealtimeScore.CurrentScore
+	oldBlueScore := arena.BlueRealtimeScore.CurrentScore
+	oldRedHubActiveTimeRemainingSec := arena.RedRealtimeScore.HubActiveTimeRemainingSec
+	redHubActiveTimeRemaining := arena.RedRealtimeScore.CurrentScore.Hub.GetActiveTimeRemaining(
+		arena.MatchStartTime, currentTime,
+	)
+	arena.RedRealtimeScore.HubActiveTimeRemainingSec = int(math.Ceil(redHubActiveTimeRemaining.Seconds()))
+	oldBlueHubActiveTimeRemainingSec := arena.BlueRealtimeScore.HubActiveTimeRemainingSec
+	blueHubActiveTimeRemaining := arena.BlueRealtimeScore.CurrentScore.Hub.GetActiveTimeRemaining(
+		arena.MatchStartTime, currentTime,
+	)
+	arena.BlueRealtimeScore.HubActiveTimeRemainingSec = int(math.Ceil(blueHubActiveTimeRemaining.Seconds()))
+
 	// Handle field sensors/lights/actuators.
 	arena.handlePlcInputOutput()
+
+	if !oldRedScore.Equals(&arena.RedRealtimeScore.CurrentScore) ||
+		!oldBlueScore.Equals(&arena.BlueRealtimeScore.CurrentScore) ||
+		oldRedHubActiveTimeRemainingSec != arena.RedRealtimeScore.HubActiveTimeRemainingSec ||
+		oldBlueHubActiveTimeRemainingSec != arena.BlueRealtimeScore.HubActiveTimeRemainingSec {
+		arena.RealtimeScoreNotifier.Notify()
+	}
 
 	// Handle the team number / timer displays.
 	arena.TeamSigns.Update(arena)
@@ -1033,6 +1059,29 @@ func (arena *Arena) getAssignedAllianceStation(teamId int) string {
 	return ""
 }
 
+// handleAutoWinner determines which alliance "won" the autonomous period and triggers downstream effects.
+func (arena *Arena) handleAutoWinner() {
+	// Calculate auto winner and propagate the result.
+	redAutoFuel := arena.RedRealtimeScore.CurrentScore.Hub.GetShiftCount(game.ShiftAuto, true)
+	blueAutoFuel := arena.BlueRealtimeScore.CurrentScore.Hub.GetShiftCount(game.ShiftAuto, true)
+	if redAutoFuel == blueAutoFuel {
+		arena.redWonAuto = rand.Intn(2) == 1
+	} else {
+		arena.redWonAuto = redAutoFuel > blueAutoFuel
+	}
+	arena.RedRealtimeScore.CurrentScore.Hub.WonAuto = arena.redWonAuto
+	arena.BlueRealtimeScore.CurrentScore.Hub.WonAuto = !arena.redWonAuto
+
+	// Populate the game data; it'll get automatically sent to the team driver stations in the next loop.
+	gameData := "B"
+	if arena.redWonAuto {
+		gameData = "R"
+	}
+	for _, allianceStation := range arena.AllianceStations {
+		allianceStation.GameData = gameData
+	}
+}
+
 // Updates the score given new input information from the field PLC, and actuates PLC outputs accordingly.
 func (arena *Arena) handlePlcInputOutput() {
 	if !arena.Plc.IsEnabled() {
@@ -1061,11 +1110,6 @@ func (arena *Arena) handlePlcInputOutput() {
 	arena.Plc.SetAwardsModeLight(arena.AllianceStationDisplayMode == "logo")
 
 	// Handle in-match PLC functions.
-	redScore := &arena.RedRealtimeScore.CurrentScore
-	oldRedScore := *redScore
-	blueScore := &arena.BlueRealtimeScore.CurrentScore
-	oldBlueScore := *blueScore
-
 	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
 
@@ -1112,10 +1156,6 @@ func (arena *Arena) handlePlcInputOutput() {
 	redHubCount, blueHubCount := arena.Plc.GetHubCounts()
 	arena.RedRealtimeScore.CurrentScore.Hub.UpdateState(redHubCount, matchStartTime, currentTime)
 	arena.BlueRealtimeScore.CurrentScore.Hub.UpdateState(blueHubCount, matchStartTime, currentTime)
-
-	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
-		arena.RealtimeScoreNotifier.Notify()
-	}
 
 	// Run the hub motors for extra time after counting stops to help exhaust balls.
 	motorCutoff := matchStartTime.Add(
