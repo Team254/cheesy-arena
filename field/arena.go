@@ -1065,11 +1065,6 @@ func (arena *Arena) handlePlcInputOutput() {
 	oldRedScore := *redScore
 	blueScore := &arena.BlueRealtimeScore.CurrentScore
 	oldBlueScore := *blueScore
-	// TODO: Update for 2026.
-	// matchStartTime := arena.MatchStartTime
-	// currentTime := time.Now()
-	// teleopGracePeriod := matchStartTime.Add(game.GetDurationToTeleopEnd() + game.ScoringGracePeriodSec*time.Second)
-	// inGracePeriod := arena.MatchState == PostMatch && currentTime.Before(teleopGracePeriod) && !arena.matchAborted
 
 	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
 	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
@@ -1112,54 +1107,25 @@ func (arena *Arena) handlePlcInputOutput() {
 		arena.Plc.SetStackLights(!redAllianceReady, !blueAllianceReady, false, true)
 	}
 
-	// TODO: Update for 2026.
-	// Get all the game-specific inputs and update the score.
-	/*
-		if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod ||
-			inGracePeriod {
-			redScore.ProcessorAlgae, blueScore.ProcessorAlgae = arena.Plc.GetProcessorCounts()
-		}
-	*/
+	matchStartTime := arena.MatchStartTime
+	currentTime := time.Now()
+	redHubCount, blueHubCount := arena.Plc.GetHubCounts()
+	arena.RedRealtimeScore.CurrentScore.Hub.UpdateState(redHubCount, matchStartTime, currentTime)
+	arena.BlueRealtimeScore.CurrentScore.Hub.UpdateState(blueHubCount, matchStartTime, currentTime)
+
 	if !oldRedScore.Equals(redScore) || !oldBlueScore.Equals(blueScore) {
 		arena.RealtimeScoreNotifier.Notify()
 	}
 
-	// TODO: Update for 2026.
-	// Handle the truss lights.
-	/*
-		if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
-			warningSequenceActive, lights := trussLightWarningSequence(arena.MatchTimeSec())
-			if warningSequenceActive {
-				arena.Plc.SetTrussLights(lights, lights)
-			} else {
-				if !game.CoralBonusCoopEnabled || arena.CurrentMatch.Type == model.Playoff {
-					arena.Plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
-				} else {
-					if arena.RedScoreSummary().CoopertitionBonus && arena.BlueScoreSummary().CoopertitionBonus {
-						arena.Plc.SetTrussLights([3]bool{true, true, true}, [3]bool{true, true, true})
-					} else {
-						arena.Plc.SetTrussLights(
-							[3]bool{
-								arena.RedRealtimeScore.CurrentScore.ProcessorAlgae >= 1,
-								arena.RedRealtimeScore.CurrentScore.ProcessorAlgae >= 2,
-								false,
-							},
-							[3]bool{
-								arena.BlueRealtimeScore.CurrentScore.ProcessorAlgae >= 1,
-								arena.BlueRealtimeScore.CurrentScore.ProcessorAlgae >= 2,
-								false,
-							},
-						)
-					}
-				}
-			}
-		} else {
-			arena.Plc.SetTrussLights(
-				[3]bool{inGracePeriod, inGracePeriod, inGracePeriod},
-				[3]bool{inGracePeriod, inGracePeriod, inGracePeriod},
-			)
-		}
-	*/
+	// Run the hub motors for extra time after counting stops to help exhaust balls.
+	motorCutoff := matchStartTime.Add(
+		game.GetDurationToTeleopEnd() + (game.ScoringGracePeriodSec+game.MotorsOnExtraPeriodSec)*time.Second,
+	)
+	motorsOn := arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod ||
+		arena.MatchState == PostMatch && currentTime.Before(motorCutoff)
+	arena.Plc.SetHubMotors(motorsOn, motorsOn)
+
+	// TODO: Handle lights for 2026.
 }
 
 func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) {

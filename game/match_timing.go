@@ -8,7 +8,8 @@ package game
 import "time"
 
 const (
-	ScoringGracePeriodSec = 3
+	ScoringGracePeriodSec  = 3
+	MotorsOnExtraPeriodSec = 2
 )
 
 var MatchTiming = struct {
