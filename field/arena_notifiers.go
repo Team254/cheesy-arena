@@ -352,8 +352,8 @@ func (arena *Arena) generateScoringStatusMessage() any {
 
 // Constructs the data object for one alliance sent to the audience display for the realtime scoring overlay.
 func getAudienceAllianceScoreFields(
-  allianceScore *RealtimeScore,
-  allianceScoreSummary *game.ScoreSummary,
+	allianceScore *RealtimeScore,
+	allianceScoreSummary *game.ScoreSummary,
 ) *audienceAllianceScoreFields {
 	fields := new(audienceAllianceScoreFields)
 	fields.Score = &allianceScore.CurrentScore
