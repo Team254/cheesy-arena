@@ -3,6 +3,10 @@
 //
 // Client-side methods for the wall display.
 
+if (typeof DisplayShared === "undefined") {
+  $.ajax({async: false, cache: true, dataType: "script", url: "/static/js/display_shared.js"});
+}
+
 var websocket;
 let transitionMap;
 const transitionQueue = [];
@@ -13,6 +17,9 @@ let blueSide;
 let currentMatch;
 let messageText = "";
 let hasMessage = false;
+const hubActiveController = DisplayShared.createHubActiveController(function () {
+  return currentScreen;
+});
 
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
 const eventMatchInfoDown = "30px";
@@ -82,80 +89,23 @@ const executeTransitionQueue = function () {
 
 // Handles a websocket message to update the teams for the current match.
 const handleMatchLoad = function (data) {
-  currentMatch = data.Match;
-  $(`#${redSide}Team1`).text(currentMatch.Red1);
-  $(`#${redSide}Team1`).attr("data-yellow-card", data.Teams["R1"]?.YellowCard);
-  $(`#${redSide}Team2`).text(currentMatch.Red2);
-  $(`#${redSide}Team2`).attr("data-yellow-card", data.Teams["R2"]?.YellowCard);
-  $(`#${redSide}Team3`).text(currentMatch.Red3);
-  $(`#${redSide}Team3`).attr("data-yellow-card", data.Teams["R3"]?.YellowCard);
-  $(`#${redSide}Team1Avatar`).attr("src", getAvatarUrl(currentMatch.Red1));
-  $(`#${redSide}Team2Avatar`).attr("src", getAvatarUrl(currentMatch.Red2));
-  $(`#${redSide}Team3Avatar`).attr("src", getAvatarUrl(currentMatch.Red3));
-  $(`#${blueSide}Team1`).text(currentMatch.Blue1);
-  $(`#${blueSide}Team1`).attr("data-yellow-card", data.Teams["B1"]?.YellowCard);
-  $(`#${blueSide}Team2`).text(currentMatch.Blue2);
-  $(`#${blueSide}Team2`).attr("data-yellow-card", data.Teams["B2"]?.YellowCard);
-  $(`#${blueSide}Team3`).text(currentMatch.Blue3);
-  $(`#${blueSide}Team3`).attr("data-yellow-card", data.Teams["B3"]?.YellowCard);
-  $(`#${blueSide}Team1Avatar`).attr("src", getAvatarUrl(currentMatch.Blue1));
-  $(`#${blueSide}Team2Avatar`).attr("src", getAvatarUrl(currentMatch.Blue2));
-  $(`#${blueSide}Team3Avatar`).attr("src", getAvatarUrl(currentMatch.Blue3));
-
-  // Show alliance numbers if this is a playoff match.
-  if (currentMatch.Type === matchTypePlayoff) {
-    $("#" + redSide + "PlayoffAlliance").text(currentMatch.PlayoffRedAlliance);
-    $("#" + blueSide + "PlayoffAlliance").text(currentMatch.PlayoffBlueAlliance);
-    $(".playoff-alliance").show();
-
-    // Show the series status if this playoff round isn't just a single match.
-    if (data.Matchup.NumWinsToAdvance > 1) {
-      $("#" + redSide + "PlayoffAllianceWins").text(data.Matchup.RedAllianceWins);
-      $("#" + blueSide + "PlayoffAllianceWins").text(data.Matchup.BlueAllianceWins);
-      $("#playoffSeriesStatus").css("display", "flex");
-    } else {
-      $("#playoffSeriesStatus").hide();
-    }
-  } else {
-    $("#" + redSide + "PlayoffAlliance").text("");
-    $("#" + blueSide + "PlayoffAlliance").text("");
-    $(".playoff-alliance").hide();
-    $("#playoffSeriesStatus").hide();
-  }
-
-  let matchName = data.Match.LongName;
-  if (data.Match.NameDetail !== "") {
-    matchName += " &ndash; " + data.Match.NameDetail;
-  }
-  $("#matchName").html(matchName);
-  $("#timeoutNextMatchName").html(matchName);
-  $("#timeoutBreakDescription").text(data.BreakDescription);
+  currentMatch = DisplayShared.handleMatchLoad(data, redSide, blueSide);
 };
 
 // Handles a websocket message to update the match time countdown.
 const handleMatchTime = function (data) {
-  translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
-    $("#matchTime").text(getCountdownString(countdownSec));
-  });
+  DisplayShared.handleMatchTime(data);
 };
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function (data) {
-  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
-  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
-
-  let redCoral, blueCoral;
-  if (currentMatch.Type === matchTypePlayoff) {
-    redCoral = data.Red.ScoreSummary.NumCoral;
-    blueCoral = data.Blue.ScoreSummary.NumCoral;
-  } else {
-    redCoral = `${data.Red.ScoreSummary.NumCoralLevels}/${data.Red.ScoreSummary.NumCoralLevelsGoal}`;
-    blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
-  }
-  $(`#${redSide}Coral`).text(redCoral);
-  $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
-  $(`#${blueSide}Coral`).text(blueCoral);
-  $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
+  DisplayShared.handle2026RealtimeScore(
+    data,
+    currentMatch,
+    redSide,
+    blueSide,
+    hubActiveController.updateHubActiveIndicator
+  );
 };
 
 const transitionBlankToIntro = function (callback) {
@@ -187,6 +137,7 @@ const transitionBlankToMatch = function (callback) {
       $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease");
       $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
       $(".score-aux").transition({queue: false, opacity: 1}, 750, "ease");
+      hubActiveController.restartPendingHubActiveIndicators();
     });
   });
 };
@@ -225,6 +176,7 @@ const transitionIntroToMatch = function (callback) {
     $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
     $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
     $(".score-aux").transition({queue: false, opacity: 1}, 750, "ease");
+    hubActiveController.restartPendingHubActiveIndicators();
   });
 };
 
@@ -332,24 +284,13 @@ const hideMessage = function (callback) {
   });
 };
 
-const getAvatarUrl = function (teamId) {
-  return "/api/teams/" + teamId + "/avatar";
-};
-
 $(function () {
   // Read the configuration for this display from the URL query string.
   const urlParams = new URLSearchParams(window.location.search);
   document.body.style.backgroundColor = urlParams.get("background");
-  const reversed = urlParams.get("reversed");
-  if (reversed === "true") {
-    redSide = "right";
-    blueSide = "left";
-  } else {
-    redSide = "left";
-    blueSide = "right";
-  }
-  $(".reversible-left").attr("data-reversed", reversed);
-  $(".reversible-right").attr("data-reversed", reversed);
+  const sides = DisplayShared.applyDisplaySides(urlParams);
+  redSide = sides.redSide;
+  blueSide = sides.blueSide;
 
   // Adjust position and size of display contents.
   const overlayCentering = $("#overlayCentering");

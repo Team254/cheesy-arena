@@ -18,23 +18,31 @@ Display that can be shown on a screen supplemental to one with the audience disp
     <div id="overlayCentering">
       <div id="matchOverlayAux">
         <div class="score-aux reversible-left" id="leftScoreAux">
-          <div class="score-field">
-            <img class="coral-icon" src="/static/img/coral.png"/>
-            <div id="leftCoral"></div>
+          <div class="score-fuel">
+            <span id="leftFuelNumerator"></span>
+            <span id="leftFuelDenominator"></span>
           </div>
-          <div class="score-field">
-            <img class="algae-icon" src="/static/img/algae.png"/>
-            <div id="leftAlgae"></div>
+          <div class="score-hub-active" id="leftHubActive">
+            <svg width="70" height="100">
+              <circle class="progress-guide" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="2"/>
+              <circle class="active-progress" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
+                stroke-dasharray="158 158" stroke-dashoffset="5" transform="rotate(90, 35, 50)"/>
+              <text class="progress-time" x="35" y="52" text-anchor="middle" dominant-baseline="middle" fill="white"></text>
+            </svg>
           </div>
         </div>
         <div class="score-aux reversible-right" id="rightScoreAux">
-          <div class="score-field">
-            <div id="rightCoral"></div>
-            <img class="coral-icon" src="/static/img/coral.png"/>
+          <div class="score-hub-active" id="rightHubActive">
+            <svg width="70" height="100">
+              <circle class="progress-guide" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="2"/>
+              <circle class="active-progress" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
+                stroke-dasharray="158 158" stroke-dashoffset="-5" transform="rotate(90, 35, 50)"/>
+              <text class="progress-time" x="35" y="52" text-anchor="middle" dominant-baseline="middle" fill="white"></text>
+            </svg>
           </div>
-          <div class="score-field">
-            <div id="rightAlgae"></div>
-            <img class="algae-icon" src="/static/img/algae.png"/>
+          <div class="score-fuel">
+            <span id="rightFuelNumerator"></span>
+            <span id="rightFuelDenominator"></span>
           </div>
         </div>
       </div>
