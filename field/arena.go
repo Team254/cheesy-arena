@@ -740,24 +740,26 @@ func (arena *Arena) Update() {
 
 	oldRedScore := arena.RedRealtimeScore.CurrentScore
 	oldBlueScore := arena.BlueRealtimeScore.CurrentScore
-	oldRedHubActiveTimeRemainingSec := arena.RedRealtimeScore.HubActiveTimeRemainingSec
-	redHubActiveTimeRemaining := arena.RedRealtimeScore.CurrentScore.Hub.GetActiveTimeRemaining(
+	oldRedActiveRemainingSec := arena.RedRealtimeScore.ActiveRemainingSec
+	redActiveRemaining, redActiveDuration := arena.RedRealtimeScore.CurrentScore.Hub.GetActiveShiftTiming(
 		arena.MatchStartTime, currentTime,
 	)
-	arena.RedRealtimeScore.HubActiveTimeRemainingSec = int(math.Ceil(redHubActiveTimeRemaining.Seconds()))
-	oldBlueHubActiveTimeRemainingSec := arena.BlueRealtimeScore.HubActiveTimeRemainingSec
-	blueHubActiveTimeRemaining := arena.BlueRealtimeScore.CurrentScore.Hub.GetActiveTimeRemaining(
+	arena.RedRealtimeScore.ActiveRemainingSec = int(math.Ceil(redActiveRemaining.Seconds()))
+	arena.RedRealtimeScore.ActiveDurationSec = int(math.Ceil(redActiveDuration.Seconds()))
+	oldBlueActiveRemainingSec := arena.BlueRealtimeScore.ActiveRemainingSec
+	blueActiveRemaining, blueActiveDuration := arena.BlueRealtimeScore.CurrentScore.Hub.GetActiveShiftTiming(
 		arena.MatchStartTime, currentTime,
 	)
-	arena.BlueRealtimeScore.HubActiveTimeRemainingSec = int(math.Ceil(blueHubActiveTimeRemaining.Seconds()))
+	arena.BlueRealtimeScore.ActiveRemainingSec = int(math.Ceil(blueActiveRemaining.Seconds()))
+	arena.BlueRealtimeScore.ActiveDurationSec = int(math.Ceil(blueActiveDuration.Seconds()))
 
 	// Handle field sensors/lights/actuators.
 	arena.handlePlcInputOutput()
 
 	if !oldRedScore.Equals(&arena.RedRealtimeScore.CurrentScore) ||
 		!oldBlueScore.Equals(&arena.BlueRealtimeScore.CurrentScore) ||
-		oldRedHubActiveTimeRemainingSec != arena.RedRealtimeScore.HubActiveTimeRemainingSec ||
-		oldBlueHubActiveTimeRemainingSec != arena.BlueRealtimeScore.HubActiveTimeRemainingSec {
+		oldRedActiveRemainingSec != arena.RedRealtimeScore.ActiveRemainingSec ||
+		oldBlueActiveRemainingSec != arena.BlueRealtimeScore.ActiveRemainingSec {
 		arena.RealtimeScoreNotifier.Notify()
 	}
 

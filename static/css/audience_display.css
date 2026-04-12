@@ -125,38 +125,58 @@ html {
   color: #fff;
   opacity: 0;
 }
-.score-right .score-fields {
-  align-items: flex-end;
-}
 .score-fields {
   height: 100%;
   width: 0;
   display: none;
-  flex-direction: column;
-  justify-content: space-evenly;
+  flex-direction: row;
+  justify-content: flex-start;
   opacity: 0;
 }
-.score-field {
+.score-right .score-fields {
+  justify-content: flex-end;
+}
+.score-fuel {
+  width: 80px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: "FuturaLTBold";
+  color: #fff;
 }
-.coral-icon {
-  width: 35px;
-  margin: 0 12px;
+.score-fuel > span {
+  font-size: 27px;
+  line-height: 40px;
 }
-.algae-icon {
-  width: 31px;
-  margin: 0 14px;
+.score-fuel > span:last-child {
+  border-top: 2px solid rgba(255, 255, 255, 0.6);
 }
-.score-field > div {
+.score-hub-active {
+  width: 70px;
+  margin: 0 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 70px;
+}
+.progress-guide,
+.active-progress,
+.progress-time {
+  opacity: 0;
+  transition: opacity 300ms linear;
+}
+.score-hub-active[data-active=true] .progress-guide,
+.score-hub-active[data-active=true] .active-progress,
+.score-hub-active[data-active=true] .progress-time {
+  opacity: 1;
+}
+.score-hub-active[data-active=true] .progress-guide {
+  opacity: 0.35;
+}
+.progress-time {
   font-family: "FuturaLTBold";
-  font-size: 27px;
-  line-height: 27px;
-  color: #fff;
+  font-size: 23px;
+  dominant-baseline: middle;
 }
 #matchCircle {
   position: absolute;

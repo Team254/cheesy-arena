@@ -30,13 +30,30 @@ const logoUp = "35px";
 const logoDown = $("#logo").css("top");
 const scoreIn = $(".score").css("width");
 const scoreMid = "185px";
-const scoreOut = "370px";
-const scoreFieldsOut = "150px";
+const scoreOut = "400px";
+const scoreFieldsOut = "180px";
 const scoreLogoTop = "-530px";
 const bracketLogoTop = "-780px";
 const bracketLogoScale = 0.75;
 const timeoutDetailsIn = $("#timeoutDetails").css("width");
 const timeoutDetailsOut = "570px";
+
+// Game-specific constants and variables.
+const activeProgressLength = 158;
+const leftActiveProgressStartOffset = parseFloat($("#leftHubActive svg .active-progress").attr("stroke-dashoffset"));
+const rightActiveProgressStartOffset = parseFloat($("#rightHubActive svg .active-progress").attr("stroke-dashoffset"));
+const activeFadeTimeMs = 300;
+const activeDwellTimeMs = 500;
+const hubActiveStateBySide = {
+  left: {
+    active: false, lastRemainingSec: 0, lastDurationSec: 0,
+    hideTimeoutId: null, resetTimeoutId: null, animationFrameId: null, pendingRestart: false,
+  },
+  right: {
+    active: false, lastRemainingSec: 0, lastDurationSec: 0,
+    hideTimeoutId: null, resetTimeoutId: null, animationFrameId: null, pendingRestart: false,
+  },
+};
 
 // Handles a websocket message to change which screen is displayed.
 const handleAudienceDisplayMode = function (targetScreen) {
@@ -144,21 +161,136 @@ const handleMatchTime = function (data) {
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function (data) {
-  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
-  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
+  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.TeleopTowerPoints);
+  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.TeleopTowerPoints);
 
-  let redCoral, blueCoral;
-  if (currentMatch.Type === matchTypePlayoff) {
-    redCoral = data.Red.ScoreSummary.NumCoral;
-    blueCoral = data.Blue.ScoreSummary.NumCoral;
+  $(`#${redSide}FuelNumerator`).text(data.Red.ScoreSummary.NumFuel);
+  $(`#${redSide}FuelDenominator`).text(data.Red.ScoreSummary.NumFuelGoal);
+  $(`#${blueSide}FuelNumerator`).text(data.Blue.ScoreSummary.NumFuel);
+  $(`#${blueSide}FuelDenominator`).text(data.Blue.ScoreSummary.NumFuelGoal);
+  if (currentMatch && currentMatch.Type === matchTypePlayoff) {
+    $(`#${redSide}FuelDenominator`).hide();
+    $(`#${blueSide}FuelDenominator`).hide();
   } else {
-    redCoral = `${data.Red.ScoreSummary.NumCoralLevels}/${data.Red.ScoreSummary.NumCoralLevelsGoal}`;
-    blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
+    $(`#${redSide}FuelDenominator`).show();
+    $(`#${blueSide}FuelDenominator`).show();
   }
-  $(`#${redSide}Coral`).text(redCoral);
-  $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
-  $(`#${blueSide}Coral`).text(blueCoral);
-  $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
+
+  updateHubActiveIndicator(redSide, data.Red.ActiveRemainingSec, data.Red.ActiveDurationSec);
+  updateHubActiveIndicator(blueSide, data.Blue.ActiveRemainingSec, data.Blue.ActiveDurationSec);
+};
+
+const getActiveProgressStartOffset = function (side) {
+  return side === "left" ? leftActiveProgressStartOffset : rightActiveProgressStartOffset;
+};
+
+const getActiveProgressEndOffset = function (side) {
+  return side === "left" ? activeProgressLength : -activeProgressLength;
+};
+
+const getActiveProgressOffset = function (side, activeRemainingSec, activeDurationSec) {
+  const progressRatio = Math.max(0, Math.min(activeRemainingSec, activeDurationSec)) / activeDurationSec;
+  const startOffset = getActiveProgressStartOffset(side);
+  const endOffset = getActiveProgressEndOffset(side);
+  return startOffset + (1 - progressRatio) * (endOffset - startOffset);
+};
+
+const restartHubActiveAnimation = function (state, hubActiveCircle, side, activeRemainingSec, activeDurationSec) {
+  if (state.animationFrameId !== null) {
+    cancelAnimationFrame(state.animationFrameId);
+    state.animationFrameId = null;
+  }
+
+  hubActiveCircle.stop(true, true);
+  hubActiveCircle.css("transition", "none");
+  hubActiveCircle.css("stroke-dashoffset", getActiveProgressOffset(side, activeRemainingSec, activeDurationSec));
+  hubActiveCircle[0].getBoundingClientRect();
+
+  state.animationFrameId = requestAnimationFrame(function () {
+    hubActiveCircle.css("transition", `stroke-dashoffset ${activeRemainingSec * 1000}ms linear`);
+    hubActiveCircle.css("stroke-dashoffset", getActiveProgressEndOffset(side));
+    state.animationFrameId = null;
+  });
+};
+
+const restartPendingHubActiveIndicators = function () {
+  $.each(hubActiveStateBySide, function (side, state) {
+    if (!state.pendingRestart || !state.active || state.lastRemainingSec <= 0 || state.lastDurationSec <= 0) {
+      return;
+    }
+
+    const hubActiveCircle = $(`#${side}HubActive svg .active-progress`);
+    restartHubActiveAnimation(state, hubActiveCircle, side, state.lastRemainingSec, state.lastDurationSec);
+    state.pendingRestart = false;
+  });
+};
+
+const updateHubActiveIndicator = function(side, activeRemainingSec, activeDurationSec) {
+  const state = hubActiveStateBySide[side];
+  const hubActiveDiv = $(`#${side}HubActive`);
+  const hubActiveCircle = $(`#${side}HubActive svg .active-progress`);
+  const hubActiveText = $(`#${side}HubActive svg text`);
+  const wasActive = state.active;
+
+  if (state.hideTimeoutId !== null) {
+    clearTimeout(state.hideTimeoutId);
+    state.hideTimeoutId = null;
+  }
+  if (state.resetTimeoutId !== null) {
+    clearTimeout(state.resetTimeoutId);
+    state.resetTimeoutId = null;
+  }
+
+  if (activeRemainingSec > 0 && activeDurationSec > 0) {
+    const shouldRestartAnimation = !state.active ||
+      activeRemainingSec > state.lastRemainingSec ||
+      activeDurationSec !== state.lastDurationSec;
+
+    state.active = true;
+    state.pendingRestart = currentScreen !== "match";
+    hubActiveDiv.attr("data-active", true);
+    hubActiveText.text(activeRemainingSec);
+
+    if (shouldRestartAnimation) {
+      if (state.pendingRestart) {
+        hubActiveCircle.stop(true, true);
+        hubActiveCircle.css("transition", "");
+        hubActiveCircle.css("stroke-dashoffset", getActiveProgressOffset(side, activeRemainingSec, activeDurationSec));
+      } else {
+        restartHubActiveAnimation(state, hubActiveCircle, side, activeRemainingSec, activeDurationSec);
+      }
+    }
+  } else {
+    state.active = false;
+    state.pendingRestart = false;
+    hubActiveText.text(activeRemainingSec);
+    if (state.animationFrameId !== null) {
+      cancelAnimationFrame(state.animationFrameId);
+      state.animationFrameId = null;
+    }
+    if (wasActive) {
+      state.hideTimeoutId = setTimeout(function () {
+        hubActiveDiv.attr("data-active", false);
+        state.resetTimeoutId = setTimeout(function () {
+          if (!state.active) {
+            hubActiveCircle.stop(true, true);
+            hubActiveCircle.css("transition", "");
+            hubActiveCircle.css("stroke-dashoffset", getActiveProgressStartOffset(side));
+          }
+          state.resetTimeoutId = null;
+        }, activeFadeTimeMs);
+        state.hideTimeoutId = null;
+      }, activeDwellTimeMs);
+    } else {
+      hubActiveCircle.stop(true, true);
+      hubActiveCircle.css("transition", "");
+      hubActiveCircle.css("stroke-dashoffset", getActiveProgressStartOffset(side));
+      hubActiveDiv.attr("data-active", false);
+    }
+  }
+
+  state.lastRemainingSec = activeRemainingSec;
+  state.lastDurationSec = activeDurationSec;
 };
 
 // Handles a websocket message to populate the final score data.
@@ -405,6 +537,7 @@ const transitionBlankToMatch = function (callback) {
       $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
       $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease");
       $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
+      restartPendingHubActiveIndicators();
     });
   });
 };
@@ -497,6 +630,7 @@ const transitionIntroToMatch = function (callback) {
     $(".score-number").transition({queue: false, opacity: 1}, 750, "ease");
     $("#matchTime").transition({queue: false, opacity: 1}, 750, "ease", callback);
     $(".score-fields").transition({queue: false, opacity: 1}, 750, "ease");
+    restartPendingHubActiveIndicators();
   });
 };
 

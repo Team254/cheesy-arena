@@ -70,17 +70,19 @@ func (hub *Hub) GetShiftCount(shift Shift, activeOnly bool) int {
 	return 0
 }
 
-// GetActiveTimeRemaining returns the amount of time remaining in the current shift if the Hub is active, or zero if the
-// Hub is not active.
-func (hub *Hub) GetActiveTimeRemaining(matchStartTime, currentTime time.Time) time.Duration {
+// GetActiveShiftTiming returns the amount of time remaining in the current shift if the Hub is active and the duration
+// of the current shift. If the Hub is not active, the remaining time is zero. If the match is not in a valid shift,
+// both values are zero.
+func (hub *Hub) GetActiveShiftTiming(matchStartTime, currentTime time.Time) (time.Duration, time.Duration) {
 	shiftStartTime := matchStartTime
 	shiftEndTime := matchStartTime.Add(GetDurationToAutoEnd())
 	for _, shift := range []Shift{ShiftAuto, ShiftTransition, Shift1, Shift2, Shift3, Shift4, ShiftEndgame} {
+		shiftDuration := shiftEndTime.Sub(shiftStartTime)
 		if !currentTime.Before(shiftStartTime) && currentTime.Before(shiftEndTime) {
 			if hub.isShiftActive(shift) {
-				return shiftEndTime.Sub(currentTime)
+				return shiftEndTime.Sub(currentTime), shiftDuration
 			}
-			return 0
+			return 0, shiftDuration
 		}
 		shiftStartTime = shiftEndTime
 		switch shift {
@@ -95,7 +97,7 @@ func (hub *Hub) GetActiveTimeRemaining(matchStartTime, currentTime time.Time) ti
 			shiftEndTime = shiftStartTime
 		}
 	}
-	return 0
+	return 0, 0
 }
 
 // isShiftActive returns true if the Hub is active during the given shift.
