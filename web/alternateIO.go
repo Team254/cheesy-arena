@@ -9,8 +9,10 @@ import (
 	//"github.com/Team254/cheesy-arena/game"
 	//"github.com/Team254/cheesy-arena/model"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
+
 	"github.com/Team254/cheesy-arena/field"
 )
 
@@ -18,6 +20,10 @@ import (
 type RequestPayload struct {
 	Channel int  `json:"channel"`
 	State   bool `json:"state"`
+}
+type RequestPayloadPLCRegister struct {
+	Register int  `json:"register"`
+	CValue   uint16  `json:"cvalue"`
 }
 
 // Renders the field monitor display.
@@ -220,4 +226,28 @@ func (web *Web) teamStackLightGetHandler(w http.ResponseWriter, r *http.Request)
 
 	// Send the response.
 	w.Write(response)
+}
+func (web *Web) setPLCRegister(w http.ResponseWriter, r *http.Request) {
+	// Ensure the request is a POST request.
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse the request body.
+	var payload []RequestPayloadPLCRegister
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+    	http.Error(w, "Invalid request payload", http.StatusBadRequest)
+    	return
+	}
+
+	for _, item := range payload {
+    	web.arena.Plc.SetRegisterValue(item.Register, item.CValue)
+		log.Printf("Set PLC register %d to value %t", item.Register, item.CValue)
+	}
+
+	// Respond with success.
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("eStop state updated successfully."))
+
 }

@@ -45,6 +45,7 @@ type Plc interface {
 	ResetEstops()
 	GetAllCoils() ([coilCount]bool)
 	GetFieldStackLight() (bool, bool, bool, bool)
+	SetRegisterValue(index int, value uint16)
 }
 
 type ModbusPlc struct {
@@ -581,4 +582,12 @@ func (plc *ModbusPlc) GetAllCoils() [coilCount]bool {
 // Returns the state of the field stack light (red, blue, orange, green).
 func (plc *ModbusPlc) GetFieldStackLight() (bool, bool, bool, bool) {
 	return plc.coils[stackLightRed], plc.coils[stackLightBlue], plc.coils[stackLightOrange], plc.coils[stackLightGreen]
+}
+
+// Sets the value of a specific register.
+func (plc *ModbusPlc) SetRegisterValue(index int, value uint16) {
+	if index < 0 || index >= int(registerCount) {
+		return
+	}
+	plc.registers[index] = value
 }

@@ -258,8 +258,8 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /api/freezy/team_stack_light", web.teamStackLightGetHandler)
 	mux.HandleFunc("POST /freezy/upload/image", web.uploadImagePostHandler)
 	mux.HandleFunc("GET /freezy/upload", web.uploadImagePageHandler)
+	mux.HandleFunc("POST /api/freezy/register_values", web.setPLCRegister)
     
-
 	return mux
 }
 
