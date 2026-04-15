@@ -404,6 +404,36 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 			continue
 		}
 
+		// Write event code here. We need to strip any numbers off the front if it has it.
+		eventName := arena.EventSettings.TbaEventCode
+		if len(eventName) > 0 {
+			if len(eventName) > 62 {
+				eventName = eventName[:62]
+			}
+			for i, character := range eventName {
+				if character < '0' || character > '9' {
+					eventName = eventName[i:]
+					break
+				}
+			}
+			if len(eventName) > 0 {
+				eventNamePacket := make([]byte, 4+len(eventName))
+				eventNamePacket[0] = 0
+				eventNamePacket[1] = byte(len(eventName) + 2)
+				eventNamePacket[2] = 20 // Packet type for event name
+				eventNamePacket[3] = byte(len(eventName))
+				for i, character := range eventName {
+					eventNamePacket[4+i] = byte(character)
+				}
+				_, err = tcpConn.Write(eventNamePacket)
+				if err != nil {
+					log.Printf("Error sending event name packet: %v", err)
+					tcpConn.Close()
+					continue
+				}
+			}
+		}
+
 		dsConn, err := newDriverStationConnection(teamId, assignedStation, tcpConn, arena.EventSettings.UseLiteUdpPort)
 		if err != nil {
 			log.Printf("Error registering driver station connection: %v", err)

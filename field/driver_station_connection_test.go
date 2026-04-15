@@ -159,7 +159,7 @@ func TestListenForDriverStations(t *testing.T) {
 		dataSend := [5]byte{0, 3, 29, 0, 0}
 		tcpConn.Write(dataSend[:])
 		var dataReceived [100]byte
-		_, err = tcpConn.Read(dataReceived[:])
+		_, err = readTaggedTcpPacket(tcpConn, dataReceived[:])
 		assert.NotNil(t, err)
 		tcpConn.Close()
 	}
@@ -170,7 +170,7 @@ func TestListenForDriverStations(t *testing.T) {
 		dataSend := [5]byte{0, 3, 24, 5, 223}
 		tcpConn.Write(dataSend[:])
 		var dataReceived [5]byte
-		count, err := tcpConn.Read(dataReceived[:])
+		count, err := readTaggedTcpPacket(tcpConn, dataReceived[:])
 		assert.Nil(t, err)
 		assert.Equal(t, count, 5)
 		assert.Equal(t, [5]byte{0, 3, 25, 0, 2}, dataReceived)
@@ -183,13 +183,31 @@ func TestListenForDriverStations(t *testing.T) {
 	// Connect as a team in the current match with a fragmented initial packet.
 	tcpConn, err = net.Dial("tcp", serverAddress)
 	if assert.Nil(t, err) {
+		defer tcpConn.Close()
 		dataSend := [5]byte{0, 3, 24, 5, 223}
 		tcpConn.Write(dataSend[:1])
 		tcpConn.Write(dataSend[1:5])
 		var dataReceived [5]byte
-		_, err := tcpConn.Read(dataReceived[:])
+		count, err := readTaggedTcpPacket(tcpConn, dataReceived[:])
 		assert.Nil(t, err)
-		tcpConn.Close()
+		assert.Equal(t, count, 5)
+	}
+
+	// Set event name
+	arena.EventSettings.TbaEventCode = "2026CC"
+	tcpConn, err = net.Dial("tcp", serverAddress)
+	if assert.Nil(t, err) {
+		defer tcpConn.Close()
+		dataSend := [5]byte{0, 3, 24, 5, 223}
+		tcpConn.Write(dataSend[:])
+		var dataReceived [100]byte
+		_, err := readTaggedTcpPacket(tcpConn, dataReceived[:])
+		assert.Nil(t, err)
+		// Read event name
+		count, err := readTaggedTcpPacket(tcpConn, dataReceived[:])
+		assert.Nil(t, err)
+		assert.Equal(t, count, 6)
+		assert.Equal(t, []byte{0, 4, 20, 2, 67, 67}, dataReceived[:6])
 	}
 
 	tcpConn, err = net.Dial("tcp", serverAddress)
@@ -198,7 +216,7 @@ func TestListenForDriverStations(t *testing.T) {
 		dataSend := [5]byte{0, 3, 24, 5, 223}
 		tcpConn.Write(dataSend[:])
 		var dataReceived [5]byte
-		_, err = tcpConn.Read(dataReceived[:])
+		_, err = readTaggedTcpPacket(tcpConn, dataReceived[:])
 		assert.Nil(t, err)
 		assert.Equal(t, [5]byte{0, 3, 25, 4, 0}, dataReceived)
 
@@ -228,7 +246,7 @@ func TestListenForDriverStations_NetworkSecurityIgnoresNonFieldIp(t *testing.T) 
 		tcpConn.Write(dataSend[:])
 
 		var dataReceived [5]byte
-		_, err = tcpConn.Read(dataReceived[:])
+		_, err = readTaggedTcpPacket(tcpConn, dataReceived[:])
 		assert.Nil(t, err)
 		assert.Equal(t, [5]byte{0, 3, 25, 4, 0}, dataReceived)
 
