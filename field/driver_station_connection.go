@@ -405,16 +405,16 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 		}
 
 		// Write event code here. We need to strip any numbers off the front if it has it.
+		// We also need to limit to 62 characters.
 		eventName := arena.EventSettings.TbaEventCode
 		if len(eventName) > 0 {
+			trimIndex := 0
+			for trimIndex < len(eventName) && eventName[trimIndex] >= '0' && eventName[trimIndex] <= '9' {
+				trimIndex++
+			}
+			eventName = eventName[trimIndex:]
 			if len(eventName) > 62 {
 				eventName = eventName[:62]
-			}
-			for i, character := range eventName {
-				if character < '0' || character > '9' {
-					eventName = eventName[i:]
-					break
-				}
 			}
 			if len(eventName) > 0 {
 				eventNamePacket := make([]byte, 4+len(eventName))
@@ -422,9 +422,7 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 				eventNamePacket[1] = byte(len(eventName) + 2)
 				eventNamePacket[2] = 20 // Packet type for event name
 				eventNamePacket[3] = byte(len(eventName))
-				for i, character := range eventName {
-					eventNamePacket[4+i] = byte(character)
-				}
+				copy(eventNamePacket[4:], []byte(eventName))
 				_, err = tcpConn.Write(eventNamePacket)
 				if err != nil {
 					log.Printf("Error sending event name packet: %v", err)
