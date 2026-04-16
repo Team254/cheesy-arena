@@ -128,7 +128,7 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.configureNotifiers()
 	arena.Plc = new(plc.ModbusPlc)
 	arena.Esp32 = new(plc.Esp32IO)
-
+	arena.Esp32.SetPlc(arena.Plc)
 	arena.AllianceStations = make(map[string]*AllianceStation)
 	arena.AllianceStations["R1"] = new(AllianceStation)
 	arena.AllianceStations["R2"] = new(AllianceStation)
@@ -1209,6 +1209,7 @@ func (arena *Arena) handlePlcInputOutput() {
 	
 	// Only notify every 500ms
     if arena.lastPlcNotifyTime.IsZero() || time.Since(arena.lastPlcNotifyTime) >= 500*time.Millisecond {
+		//arena.Plc.SetCoilValue(1,false)
         //arena.PlcCoilsNotifier.Notify()
         //arena.Plc.IoChangeNotifier().Notify()
         arena.lastPlcNotifyTime = time.Now()

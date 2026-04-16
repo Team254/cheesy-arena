@@ -203,14 +203,14 @@ class PLCMonitor:
         if isinstance(coil_list, list):
             self._print_coils(coil_list)
 
-        # Watch Coil 1 for a falling edge (True → False) → reset
+        # Watch Coil 1 for a rising edge (False → True) → reset
         if isinstance(coil_list, list) and len(coil_list) > 1:
             current_coil1 = coil_list[1]
             prev_coils    = self.coil_state.get("Coils", [])
-            prev_coil1    = prev_coils[1] if isinstance(prev_coils, list) and len(prev_coils) > 1 else True
+            prev_coil1    = prev_coils[1] if isinstance(prev_coils, list) and len(prev_coils) > 1 else False
 
-            if current_coil1 is False and prev_coil1 is True:
-                log.info("⚠️  Coil[1] went FALSE → resetting all registers")
+            if current_coil1 is True and prev_coil1 is False:
+                log.info("⚠️  Coil[1] went TRUE → resetting all registers")
                 try:
                     loop = asyncio.get_running_loop()
                     loop.create_task(self.reset_all_registers())

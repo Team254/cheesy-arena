@@ -10,10 +10,10 @@ import (
 	//"github.com/Team254/cheesy-arena/model"
 	//"encoding/json"
 	//"net/http"
-	"time"
 	"log"
 	"net"
 	"strings"
+	"time"
 )
 
 type Esp32 interface {
@@ -27,6 +27,7 @@ type Esp32 interface {
 	SetScoreTableAddress(string) 
 	SetRedAllianceStationEstopAddress(string) 
 	SetBlueAllianceStationEstopAddress(string) 
+	SetPlc(Plc)
 }
 
 type Esp32IO struct {
@@ -36,6 +37,7 @@ type Esp32IO struct {
 	scoreTableHealthy 	bool
 	RedEstopsHealthy 	bool
 	BlueEstopsHealthy 	bool
+	Plc Plc
 }
 const LoopPeriodMs = 1000 // Define the loop period in milliseconds
 
@@ -84,6 +86,10 @@ func (esp32 *Esp32IO) SetBlueAllianceStationEstopAddress(address string) {
     }
     esp32.BlueAllianceEstopsIP = address
 	log.Printf("Blue Alliance Estops IP to: %s", esp32.BlueAllianceEstopsIP)
+}
+
+func (esp32 *Esp32IO) SetPlc(plc Plc) {
+	esp32.Plc = plc
 }
 
 // Checks if an IP address is reachable by attempting a TCP connection.
@@ -158,7 +164,7 @@ func (esp32 *Esp32IO) Run() {
 				esp32.BlueEstopsHealthy = true
 			}
 		}
-		
+		esp32.Plc.SetCoilValue(1, false)
 		startTime := time.Now()
 		time.Sleep(time.Until(startTime.Add(time.Millisecond * LoopPeriodMs)))
 	}
