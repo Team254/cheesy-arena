@@ -259,6 +259,7 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("POST /freezy/upload/image", web.uploadImagePostHandler)
 	mux.HandleFunc("GET /freezy/upload", web.uploadImagePageHandler)
 	mux.HandleFunc("POST /api/freezy/register_values", web.setPLCRegister)
+	mux.HandleFunc("GET /api/plc/websocket", web.plcWebsocketHandler)
     
 	return mux
 }
@@ -279,3 +280,4 @@ func (web *Web) parseFiles(filenames ...string) (*template.Template, error) {
 	template := template.New("").Funcs(web.templateHelpers)
 	return template.ParseFiles(paths...)
 }
+

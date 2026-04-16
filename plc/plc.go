@@ -273,6 +273,7 @@ func (plc *ModbusPlc) IsFtaReady() bool {
 
 // Resets the internal state of the PLC to start a new match.
 func (plc *ModbusPlc) ResetMatch() {
+	log.Print("Resetting PLC for new match.")
 	plc.coils[matchReset] = true
 	plc.matchResetCycles = 0
 	plc.coilOverrides = nil
@@ -481,6 +482,7 @@ func (plc *ModbusPlc) writeCoils() bool {
 	}
 
 	if plc.matchResetCycles > 5 {
+		log.Print("Clearing PLC match reset coil after short pulse.")
 		plc.coils[matchReset] = false // Only need a short pulse to reset the internal state of the PLC.
 	} else {
 		plc.matchResetCycles++

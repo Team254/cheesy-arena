@@ -12,8 +12,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-
+	"io"
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/websocket"
 )
 
 // RequestPayload represents the structure of the incoming POST data.
@@ -250,4 +251,148 @@ func (web *Web) setPLCRegister(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("eStop state updated successfully."))
 
+}
+
+func (web *Web) xplcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+    ws, err := websocket.NewWebsocket(w, r)
+    if err != nil {
+        log.Printf("Websocket upgrade error: %v", err)
+        return
+    }
+    defer ws.Close()
+
+    // Subscribe to the PLC I/O + registers notifier
+    arena := web.arena // assuming you have access to the arena/field
+    plc := arena.Plc   // adjust based on actual field/arena struct
+
+    if plc == nil || web.arena.Plc.IoChangeNotifier() == nil {
+        ws.WriteError("PLC not configured")
+        return
+    }
+
+    // Handle the notifier (sends initial state + live updates)
+    ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier())
+}
+
+// Main WebSocket handler
+func (web *Web) plcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+	ws, err := websocket.NewWebsocket(w, r)
+	if err != nil {
+		log.Printf("WebSocket upgrade error: %v", err)
+		return
+	}
+	defer ws.Close()
+
+	// Subscribe to live PLC updates (registers, inputs, coils, etc.)
+	if web.arena.Plc != nil {
+		if notifier := web.arena.Plc.IoChangeNotifier(); notifier != nil {
+			go ws.HandleNotifiers(notifier)
+		}
+	}
+
+	// Handle incoming messages (set registers)
+	for {
+		messageType, data, err := ws.Read()
+		if err != nil {
+			if err != io.EOF {
+				log.Printf("PLC WS read error: %v", err)
+			}
+			return
+		}
+
+		web.handlePLCWebSocketMessage(ws, messageType, data)
+	}
+}
+
+func (web *Web) handlePLCWebSocketMessage(ws *websocket.Websocket, messageType string, data any) {
+    switch messageType {
+
+    case "setPLCRegister", "setRegisters":
+        if messageType != "setPLCRegister" && messageType != "setRegisters" {
+		return
+		}
+
+		var payloads []RequestPayloadPLCRegister
+
+		switch v := data.(type) {
+		case []any: // Array of payloads
+			for _, item := range v {
+				if p, ok := web.parsePLCRegisterPayload(item); ok {
+					payloads = append(payloads, p)
+				}
+			}
+		default: // Single payload
+			if p, ok := web.parsePLCRegisterPayload(data); ok {
+				payloads = append(payloads, p)
+			}
+		}
+
+		if len(payloads) == 0 {
+			ws.WriteError("Invalid or empty payload")
+			return
+		}
+
+		// Apply changes exactly like your HTTP handler
+		for _, item := range payloads {
+			web.arena.Plc.SetRegisterValue(item.Register, uint16(item.CValue))  // Convert int16 → uint16
+			//log.Printf("WebSocket: Set PLC register %d to %d", item.Register, item.CValue)
+		}
+
+		// Send success back to client
+		ws.Write("plcRegisterSetSuccess", map[string]any{
+			"count":   len(payloads),
+			"success": true,
+		})
+
+    case "setInput":
+        var payloads []RequestPayload
+
+        switch v := data.(type) {
+        case []any:
+            for _, item := range v {
+                if m, ok := item.(map[string]any); ok {
+                    ch, _ := m["channel"].(float64)
+                    st, _ := m["state"].(bool)
+                    payloads = append(payloads, RequestPayload{Channel: int(ch), State: st})
+                }
+            }
+        default:
+            if m, ok := data.(map[string]any); ok {
+                ch, _ := m["channel"].(float64)
+                st, _ := m["state"].(bool)
+                payloads = append(payloads, RequestPayload{Channel: int(ch), State: st})
+            }
+        }
+
+        if len(payloads) == 0 {
+            ws.WriteError("Invalid or empty input payload")
+            return
+        }
+
+        for _, item := range payloads {
+            web.arena.Plc.SetAlternateIOStopState(item.Channel, item.State)
+        }
+
+        ws.Write("plcInputSetSuccess", map[string]any{
+            "count":   len(payloads),
+            "success": true,
+        })
+    }
+}
+	
+
+// Safe parser
+func (web *Web) parsePLCRegisterPayload(data any) (RequestPayloadPLCRegister, bool) {
+	m, ok := data.(map[string]any)
+	if !ok {
+		return RequestPayloadPLCRegister{}, false
+	}
+
+	regFloat, _ := m["register"].(float64)
+	valFloat, _ := m["cValue"].(float64)   // JSON numbers come as float64
+
+	return RequestPayloadPLCRegister{
+		Register: int(regFloat),
+		CValue:   uint16(valFloat),
+	}, true
 }
