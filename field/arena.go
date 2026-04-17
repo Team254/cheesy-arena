@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
@@ -658,7 +659,7 @@ func (arena *Arena) Update() {
 		go arena.BlackmagicClient.StartRecording()
 		go arena.CompanionClient.SendEvent(partner.EventMatchStart)
 		// Randomly choose a tie-breaker for auto (50/50 chance)
-		if time.Now().UnixNano()%2 == 0 {
+		if rand.Intn(2) == 0 {
 			arena.autoTieWinner = "red"
 		} else {
 			arena.autoTieWinner = "blue"
