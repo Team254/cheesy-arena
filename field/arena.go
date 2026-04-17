@@ -1199,8 +1199,9 @@ func (arena *Arena) handlePlcInputOutput() {
 			arena.positionPostMatchScoreReady("blue_near") && arena.positionPostMatchScoreReady("blue_far")
 		arena.Plc.SetStackLights(false, false, !scoreReady, false)
 
-		// Keep hub motors on for 3 seconds after the match ends.
-		if time.Since(arena.MatchStartTime).Seconds() <= game.GetDurationToTeleopEnd().Seconds()+3.0 && !arena.matchAborted && !arena.MatchStartTime.IsZero() {
+		// Keep hub motors on for 6 seconds after the match ends to flush remaining balls.
+		// Scoring only counts for 3 seconds (TeleopGracePeriodSec), but motors run longer.
+		if time.Since(arena.MatchStartTime).Seconds() <= game.GetDurationToTeleopEnd().Seconds()+game.HubMotorFlushPeriodSec && !arena.matchAborted && !arena.MatchStartTime.IsZero() {
 			hubMotorsOn = true
 		}
 	case AutoPeriod, PausePeriod, TeleopPeriod, WarmupPeriod:
@@ -1234,9 +1235,10 @@ func (arena *Arena) handlePlcInputOutput() {
 				if blueDelta > 0 {
 					blueScore.AutoFuel += blueDelta
 				}
-			} else if arena.MatchState == TeleopPeriod {
-				// During teleop, route to active or inactive based on which hub is currently active
-				// Include grace period after hub deactivates to account for FUEL in flight
+			} else if arena.MatchState == TeleopPeriod || inGracePeriod {
+				// During teleop or the post-match grace period, route to active or inactive
+				// based on which hub is currently active. Include grace period after hub
+				// deactivates to account for FUEL in flight.
 				// Determine who won auto to know which hub is active
 				redWonAuto, blueWonAuto := arena.determineAutoWinner()
 

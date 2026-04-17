@@ -12,6 +12,7 @@ const (
 	TransitionDurationSec    = 10 // First 10 seconds of teleop when both hubs are active (transition period)
 	ShiftDurationSec         = 25
 	HubScoringGracePeriodSec = 3  // Grace period after hub deactivates to still count FUEL as active
+	HubMotorFlushPeriodSec   = 6  // Hub motors stay on for 6 seconds after match to flush remaining balls
 	EndGameDurationSec       = 30 // Last 30 seconds of teleop when both hubs are active
 )
 
