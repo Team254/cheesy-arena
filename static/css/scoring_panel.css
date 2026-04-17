@@ -250,16 +250,11 @@ main {
 }
 
 #bottom-controls {
-  padding: 10px 1em;
+  height: 160px;
+  padding: 20px 1em;
   display: flex;
-  justify-content: space-around;
-}
-
-#l1-total {
-  margin-top: 10px;
-  color: var(--text-active);
-  font-size: 18pt;
-  font-weight: bold;
+  justify-content: center;
+  align-items: center;
 }
 
 #commit {
@@ -314,128 +309,12 @@ main {
   background-color: var(--button-bottom-selected-color);
 }
 
-.reef-image {
-  --l4-coral-display: none;
-  --l4-coral-auto-display: none;
-  --l3-coral-display: none;
-  --l3-coral-auto-display: none;
-  --l2-coral-display: none;
-  --l2-coral-auto-display: none;
-}
-
-[data-l4-scored="true"] .reef-image {
-  --l4-coral-display: auto;
-}
-
-[data-l4-auto-scored="true"] .reef-image {
-  --l4-coral-auto-display: auto;
-}
-
-[data-l3-scored="true"] .reef-image {
-  --l3-coral-display: auto;
-}
-
-[data-l3-auto-scored="true"] .reef-image {
-  --l3-coral-auto-display: auto;
-}
-
-[data-l2-scored="true"] .reef-image {
-  --l2-coral-display: auto;
-}
-
-[data-l2-auto-scored="true"] .reef-image {
-  --l2-coral-auto-display: auto;
-}
-
-#reef-controls {
-  flex: 1 1 0%;
-  contain: layout;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  gap: 10px;
-}
-
-#reef-controls-warning {
-  position: absolute;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-}
-
-[data-scoring-auto="true"][data-in-teleop="true"] #reef-controls-warning {
-  opacity: 1;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.reef-column {
-  height: 100%;
-  flex-grow: 1;
-  max-width: 200px;
-  container-type: size;
+#fuel-controls {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-.reef-column-contents {
-  contain: layout;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-@container (aspect-ratio < 0.25) {
-  .reef-column-contents {
-    aspect-ratio: 1 / 4;
-  }
-}
-
-@container (aspect-ratio >=0.25) {
-  .reef-column-contents {
-    height: 100%;
-  }
-}
-
-.reef-column .reef-image {
-  position: absolute;
-  height: 100%;
-}
-
-.reef-column:nth-of-type(-n + 3) .reef-image {
-  transform: scale(-1, 1);
-}
-
-.reef-column button {
-  width: 100%;
-  flex: 1 1 0%;
-  z-index: 1;
-  background: none;
-}
-
-.reef-column button:enabled {
-  background-color: var(--interaction-highlight);
-}
-
-#edit-auto {
-  flex: 1 1 0%;
-  border-radius: var(--button-border-radius);
-  color: var(--text-active-dark);
-  height: 100%;
-  background-color: var(--auto-action);
-  font-size: 18pt;
-  font-weight: bold;
-  padding: 0.2em;
-}
-
-#edit-auto:disabled {
-  visibility: hidden;
-}
-
-[data-scoring-auto="true"] #edit-auto {
-  background-color: var(--green-action);
-  color: var(--text-active);
+  gap: 20px;
+  padding: 20px;
 }
 
 .counter-wrapper {
@@ -445,10 +324,10 @@ main {
 }
 
 .counter {
-  height: 90px;
-  max-width: 400px;
+  height: 120px;
+  max-width: 100%;
   width: 100%;
-  margin: 0 10px;
+  margin: 0;
   border-radius: var(--button-border-radius);
   overflow: clip;
   display: flex;
@@ -467,7 +346,7 @@ main {
   flex: 1 1 0%;
   color: var(--text-active);
   background-color: var(--alliance-action);
-  font-size: 24pt;
+  font-size: 36pt;
   font-weight: bold;
   display: grid;
   place-items: center;
@@ -493,7 +372,7 @@ main {
 }
 
 .counter-label {
-  font-size: 12pt;
+  font-size: 18pt;
   padding: 0 0.2em 5px 0.2em;
 }
 
@@ -502,7 +381,7 @@ main {
 }
 
 .counter-main-value {
-  font-size: 28pt;
+  font-size: 48pt;
   transition: font-size 0.2s ease-in-out;
 }
 
@@ -547,14 +426,14 @@ main {
 }
 
 #fouls-button {
-  flex: 0.5 0.5 0%;
+  width: 300px;
   border-radius: var(--button-border-radius);
   color: var(--text-active-dark);
   height: 100%;
   background-color: var(--auto-action);
-  font-size: 18pt;
+  font-size: 24pt;
   font-weight: bold;
-  padding: 0.2em;
+  padding: 0.4em;
 }
 
 #fouls-button:disabled {
@@ -608,6 +487,33 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.climb-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.climb-input-button {
+  cursor: auto;
+  height: 80px;
+  border: none;
+  outline: none;
+  border-radius: var(--button-border-radius);
+  background-color: var(--neutral-action);
+  color: var(--text-active);
+  box-shadow: none;
+  font-size: 24pt;
+  font-weight: bold;
+}
+
+.climb-input-button:enabled:not([data-selected="true"]) {
+  box-shadow: black 0px 4px 4px;
+}
+
+.climb-input-button[data-selected="true"] {
+  background-color: var(--alliance-highlight);
 }
 
 #endgame-dialog button {

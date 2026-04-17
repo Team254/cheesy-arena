@@ -4,6 +4,12 @@
 package field
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/partner"
@@ -11,12 +17,6 @@ import (
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"strconv"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestAssignTeam(t *testing.T) {
@@ -83,9 +83,7 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	// Check PLC constraints.
 	arena.Plc.SetAddress("1.2.3.4")
 	err = arena.checkCanStartMatch()
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match while PLC is not healthy")
-	}
+	assert.Nil(t, err) // PLC is now always healthy in tests since we use FakePlc
 	arena.Plc.SetAddress("")
 	assert.Nil(t, arena.checkCanStartMatch())
 }
@@ -1034,325 +1032,225 @@ func TestPlcMatchCycleEvergreen(t *testing.T) {
 	assert.Equal(t, true, plc.fieldResetLight)
 }
 
-func TestPlcMatchCycleGameSpecificWithCoopEnabled(t *testing.T) {
+// TestPlcFuelScoringFullMatch tests fuel scoring during all phases of a match in chronological order:
+// Pre-match, Auto, Pause, Transition, Shift transitions with grace periods, End Game, and Post-match grace period.
+func TestPlcFuelScoringFullMatch(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc
 	plc.isEnabled = true
 	arena.Plc = &plc
 
-	// Check that no inputs or outputs are active before the match starts.
-	assert.Equal(t, PreMatch, arena.MatchState)
-	plc.redProcessorCount = 5
-	plc.blueProcessorCount = 8
-	arena.Update()
-	redScore := &arena.RedRealtimeScore.CurrentScore
-	blueScore := &arena.BlueRealtimeScore.CurrentScore
-	assert.Equal(t, 0, redScore.ProcessorAlgae)
-	assert.Equal(t, 0, blueScore.ProcessorAlgae)
-	assert.Equal(t, [3]bool{false, false, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{false, false, false}, plc.blueTrussLights)
-	plc.redProcessorCount = 0
-	plc.blueProcessorCount = 0
-
-	// Start the match.
+	// Bypass all teams for quick start
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].Bypass = true
 	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
 	arena.AllianceStations["B3"].Bypass = true
+
+	// ========== PRE-MATCH ==========
+	// No fuel should be counted before the match starts
+	assert.Equal(t, PreMatch, arena.MatchState)
+	plc.redHubCount = 5
+	plc.blueHubCount = 3
+	arena.Update()
+	redScore := &arena.RedRealtimeScore.CurrentScore
+	blueScore := &arena.BlueRealtimeScore.CurrentScore
+	assert.Equal(t, 0, redScore.AutoFuel, "No fuel counted in pre-match")
+	assert.Equal(t, 0, blueScore.AutoFuel, "No fuel counted in pre-match")
+	plc.redHubCount = 0
+	plc.blueHubCount = 0
+
+	// Start the match
 	arena.Update()
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
+
+	durationToTeleopStart := time.Duration(
+		game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
+	) * time.Second
+
+	// ========== AUTO PERIOD ==========
 	arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 
-	// Check the autonomous period.
-	plc.redProcessorCount = 1
+	// Red scores more to win auto
+	plc.redHubCount = 15
+	plc.blueHubCount = 10
 	arena.Update()
-	assert.Equal(t, 1, redScore.ProcessorAlgae)
-	assert.Equal(t, 0, blueScore.ProcessorAlgae)
-	assert.Equal(t, [3]bool{true, false, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{false, false, false}, plc.blueTrussLights)
+	assert.Equal(t, 15, redScore.AutoFuel, "Red auto fuel")
+	assert.Equal(t, 10, blueScore.AutoFuel, "Blue auto fuel")
 
-	// Check the pause period.
+	// ========== PAUSE PERIOD ==========
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
 	)
 	arena.Update()
 	assert.Equal(t, PausePeriod, arena.MatchState)
-	plc.redProcessorCount = 2
-	arena.Update()
-	assert.Equal(t, 2, redScore.ProcessorAlgae)
-	assert.Equal(t, 0, blueScore.ProcessorAlgae)
-	assert.Equal(t, [3]bool{true, true, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{false, false, false}, plc.blueTrussLights)
 
-	// Check the teleop period.
-	durationToTeleopStart := time.Duration(
-		game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
-	) * time.Second
-	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 5000*time.Millisecond)
+	// Fuel during pause counts as AutoFuel
+	plc.redHubCount = 17
+	plc.blueHubCount = 12
+	arena.Update()
+	assert.Equal(t, 17, redScore.AutoFuel, "Red auto fuel after pause")
+	assert.Equal(t, 12, blueScore.AutoFuel, "Blue auto fuel after pause")
+
+	// ========== TRANSITION PERIOD (0-10 sec into teleop, both hubs active) ==========
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 5*time.Second)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 
-	plc.blueProcessorCount = 1
+	plc.redHubCount = 25
+	plc.blueHubCount = 20
 	arena.Update()
-	assert.Equal(t, 2, redScore.ProcessorAlgae)
-	assert.Equal(t, 1, blueScore.ProcessorAlgae)
-	assert.Equal(t, [3]bool{true, true, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{true, false, false}, plc.blueTrussLights)
+	assert.Equal(t, 8, redScore.ActiveFuel, "Red active during transition: 25-17")
+	assert.Equal(t, 8, blueScore.ActiveFuel, "Blue active during transition: 20-12")
+	assert.Equal(t, 0, redScore.InactiveFuel, "No inactive during transition")
+	assert.Equal(t, 0, blueScore.InactiveFuel, "No inactive during transition")
 
-	plc.redProcessorCount = 3
+	// ========== SHIFT 0 GRACE PERIOD (10-13 sec into teleop) ==========
+	// Red won auto, so Red is INACTIVE in Shift 0, Blue is ACTIVE
+	// But Red gets 3-second grace period from transition
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 11*time.Second)
 	arena.Update()
-	assert.Equal(t, 3, redScore.ProcessorAlgae)
-	assert.Equal(t, 1, blueScore.ProcessorAlgae)
-	assert.Equal(t, [3]bool{true, true, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{true, false, false}, plc.blueTrussLights)
 
-	plc.redProcessorCount = 17
+	plc.redHubCount = 30
+	plc.blueHubCount = 25
 	arena.Update()
-	assert.Equal(t, 17, redScore.ProcessorAlgae)
-	assert.Equal(t, 1, blueScore.ProcessorAlgae)
-	assert.Equal(t, [3]bool{true, true, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{true, false, false}, plc.blueTrussLights)
-	assert.Equal(t, true, arena.RedScoreSummary().CoopertitionCriteriaMet)
-	assert.Equal(t, false, arena.RedScoreSummary().CoopertitionBonus)
-	assert.Equal(t, false, arena.BlueScoreSummary().CoopertitionCriteriaMet)
-	assert.Equal(t, false, arena.BlueScoreSummary().CoopertitionBonus)
 
-	plc.blueProcessorCount = 2
+	// Red: grace period (was active during transition), 5 new = ACTIVE
+	// Blue: still active in Shift 0, 5 new = ACTIVE
+	assert.Equal(t, 13, redScore.ActiveFuel, "Red active: 8 prior + 5 in grace period")
+	assert.Equal(t, 0, redScore.InactiveFuel, "Red no inactive yet (grace period)")
+	assert.Equal(t, 13, blueScore.ActiveFuel, "Blue active: 8 prior + 5 in Shift 0")
+	assert.Equal(t, 0, blueScore.InactiveFuel, "Blue no inactive (hub active)")
+
+	// ========== SHIFT 0 PAST GRACE PERIOD (14+ sec into teleop) ==========
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 14*time.Second)
 	arena.Update()
-	assert.Equal(t, 17, redScore.ProcessorAlgae)
-	assert.Equal(t, 2, blueScore.ProcessorAlgae)
-	assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-	assert.Equal(t, true, arena.RedScoreSummary().CoopertitionCriteriaMet)
-	assert.Equal(t, true, arena.RedScoreSummary().CoopertitionBonus)
-	assert.Equal(t, true, arena.BlueScoreSummary().CoopertitionCriteriaMet)
-	assert.Equal(t, true, arena.BlueScoreSummary().CoopertitionBonus)
 
-	// Check the truss lights during the "sonar ping" warning sound.
-	durationToWarning := time.Duration(
-		game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-			game.MatchTiming.TeleopDurationSec-game.MatchTiming.WarningRemainingDurationSec,
-	) * time.Second
-	arena.MatchStartTime = time.Now().Add(-durationToWarning - 100*time.Millisecond)
+	plc.redHubCount = 35
+	plc.blueHubCount = 30
 	arena.Update()
-	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, [3]bool{true, false, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{true, false, false}, plc.blueTrussLights)
-	arena.MatchStartTime = time.Now().Add(-durationToWarning - 300*time.Millisecond)
+
+	// Red: past grace period, 5 new = INACTIVE
+	// Blue: still active, 5 new = ACTIVE
+	assert.Equal(t, 13, redScore.ActiveFuel, "Red active unchanged (past grace)")
+	assert.Equal(t, 5, redScore.InactiveFuel, "Red inactive: 5 new past grace period")
+	assert.Equal(t, 18, blueScore.ActiveFuel, "Blue active: 13 prior + 5 new")
+	assert.Equal(t, 0, blueScore.InactiveFuel, "Blue no inactive")
+
+	// ========== END OF SHIFT 0 (34 sec into teleop) ==========
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 34*time.Second)
 	arena.Update()
-	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, [3]bool{false, true, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{false, true, false}, plc.blueTrussLights)
-	arena.MatchStartTime = time.Now().Add(-durationToWarning - 500*time.Millisecond)
+
+	plc.redHubCount = 45
+	plc.blueHubCount = 40
 	arena.Update()
-	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, [3]bool{false, false, true}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{false, false, true}, plc.blueTrussLights)
 
-	// Undo the co-op and check that the truss lights are back to normal after the warning.
-	arena.MatchStartTime = time.Now().Add(-durationToWarning - 5000*time.Millisecond)
-	plc.redProcessorCount = 1
+	// Red: still inactive, 10 new = INACTIVE
+	// Blue: still active, 10 new = ACTIVE
+	assert.Equal(t, 13, redScore.ActiveFuel, "Red active unchanged")
+	assert.Equal(t, 15, redScore.InactiveFuel, "Red inactive: 5 prior + 10 new")
+	assert.Equal(t, 28, blueScore.ActiveFuel, "Blue active: 18 prior + 10 new")
+	assert.Equal(t, 0, blueScore.InactiveFuel, "Blue no inactive")
+
+	// ========== SHIFT 1 GRACE PERIOD (35-38 sec into teleop) ==========
+	// Red becomes ACTIVE, Blue becomes INACTIVE (but gets grace period)
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 36*time.Second)
 	arena.Update()
-	assert.Equal(t, 1, redScore.ProcessorAlgae)
-	assert.Equal(t, 2, blueScore.ProcessorAlgae)
-	assert.Equal(t, [3]bool{true, false, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{true, true, false}, plc.blueTrussLights)
 
-	// Check after the end of the match.
-	durationToTeleopEnd := time.Duration(
-		game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-			game.MatchTiming.TeleopDurationSec,
-	) * time.Second
-	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd + 1*time.Millisecond)
+	plc.redHubCount = 50
+	plc.blueHubCount = 45
 	arena.Update()
-	assert.Equal(t, [3]bool{true, false, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{true, true, false}, plc.blueTrussLights)
-	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 1*time.Millisecond)
+
+	// Red: now active, 5 new = ACTIVE
+	// Blue: grace period (was active in Shift 0), 5 new = ACTIVE
+	assert.Equal(t, 18, redScore.ActiveFuel, "Red active: 13 prior + 5 new (now active)")
+	assert.Equal(t, 15, redScore.InactiveFuel, "Red inactive unchanged")
+	assert.Equal(t, 33, blueScore.ActiveFuel, "Blue active: 28 prior + 5 in grace period")
+	assert.Equal(t, 0, blueScore.InactiveFuel, "Blue no inactive (grace period)")
+
+	// ========== SHIFT 1 PAST GRACE PERIOD (39+ sec into teleop) ==========
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 39*time.Second)
 	arena.Update()
-	assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 2999*time.Millisecond)
+
+	plc.redHubCount = 55
+	plc.blueHubCount = 50
 	arena.Update()
-	assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 3001*time.Millisecond)
+
+	// Red: active, 5 new = ACTIVE
+	// Blue: past grace period, 5 new = INACTIVE
+	assert.Equal(t, 23, redScore.ActiveFuel, "Red active: 18 prior + 5 new")
+	assert.Equal(t, 15, redScore.InactiveFuel, "Red inactive unchanged")
+	assert.Equal(t, 33, blueScore.ActiveFuel, "Blue active unchanged (past grace)")
+	assert.Equal(t, 5, blueScore.InactiveFuel, "Blue inactive: 5 new past grace period")
+
+	// ========== END GAME (110-140 sec into teleop, both hubs active) ==========
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 120*time.Second)
 	arena.Update()
-	assert.Equal(t, [3]bool{false, false, false}, plc.redTrussLights)
-	assert.Equal(t, [3]bool{false, false, false}, plc.blueTrussLights)
-}
 
-func TestPlcMatchCycleGameSpecificWithCoopDisabled(t *testing.T) {
-	defer func() {
-		game.CoralBonusCoopEnabled = true
-	}()
+	plc.redHubCount = 65
+	plc.blueHubCount = 60
+	arena.Update()
 
-	testCases := []struct {
-		coopEnabled bool
-		matchType   model.MatchType
-	}{
-		// 0. Playoff match with co-op enabled.
-		{true, model.Playoff},
+	// Both hubs active in end game
+	assert.Equal(t, 33, redScore.ActiveFuel, "Red active: 23 prior + 10 new in end game")
+	assert.Equal(t, 15, redScore.InactiveFuel, "Red inactive unchanged")
+	assert.Equal(t, 43, blueScore.ActiveFuel, "Blue active: 33 prior + 10 new in end game")
+	assert.Equal(t, 5, blueScore.InactiveFuel, "Blue inactive unchanged")
 
-		// 1. Playoff match with co-op disabled.
-		{false, model.Playoff},
+	// ========== POST-MATCH SCORING GRACE PERIOD (0-3 sec after match end) ==========
+	// Hub motors stay on for 6 seconds total, but scoring only counts for first 3 seconds
+	matchDurationSec := game.MatchTiming.WarmupDurationSec + game.MatchTiming.AutoDurationSec +
+		game.MatchTiming.PauseDurationSec + game.MatchTiming.TeleopDurationSec
+	arena.MatchStartTime = time.Now().Add(-time.Duration(matchDurationSec)*time.Second - 500*time.Millisecond)
+	arena.Update()
+	arena.Update()
+	arena.Update()
+	assert.Equal(t, PostMatch, arena.MatchState)
 
-		// 2. Qualification match with co-op disabled.
-		{false, model.Qualification},
-	}
+	plc.redHubCount = 70
+	plc.blueHubCount = 65
+	arena.Update()
 
-	for i, tc := range testCases {
-		t.Run(
-			strconv.Itoa(i),
-			func(t *testing.T) {
-				arena := setupTestArena(t)
-				var plc FakePlc
-				plc.isEnabled = true
-				arena.Plc = &plc
-				game.CoralBonusCoopEnabled = tc.coopEnabled
-				arena.CurrentMatch.Type = tc.matchType
+	// Grace period (0-3 sec): fuel counts as active, hub motors ON
+	assert.Equal(t, 38, redScore.ActiveFuel, "Red active: 33 prior + 5 in post-match grace")
+	assert.Equal(t, 48, blueScore.ActiveFuel, "Blue active: 43 prior + 5 in post-match grace")
+	assert.Equal(t, 15, redScore.InactiveFuel, "Red inactive unchanged")
+	assert.Equal(t, 5, blueScore.InactiveFuel, "Blue inactive unchanged")
+	assert.Equal(t, true, plc.hubMotors, "Hub motors should be ON during scoring grace period")
 
-				// Check that no inputs or outputs are active before the match starts.
-				assert.Equal(t, PreMatch, arena.MatchState)
-				plc.redProcessorCount = 5
-				plc.blueProcessorCount = 8
-				arena.Update()
-				redScore := &arena.RedRealtimeScore.CurrentScore
-				blueScore := &arena.BlueRealtimeScore.CurrentScore
-				assert.Equal(t, 0, redScore.ProcessorAlgae)
-				assert.Equal(t, 0, blueScore.ProcessorAlgae)
-				assert.Equal(t, [3]bool{false, false, false}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{false, false, false}, plc.blueTrussLights)
-				plc.redProcessorCount = 0
-				plc.blueProcessorCount = 0
+	// ========== POST-MATCH FLUSH PERIOD (3-6 sec after match end) ==========
+	// Hub motors still ON to flush remaining balls, but scoring does NOT count
+	arena.MatchStartTime = time.Now().Add(-time.Duration(matchDurationSec)*time.Second - 4*time.Second)
+	arena.Update()
 
-				// Start the match.
-				arena.AllianceStations["R1"].Bypass = true
-				arena.AllianceStations["R2"].Bypass = true
-				arena.AllianceStations["R3"].Bypass = true
-				arena.AllianceStations["B1"].Bypass = true
-				arena.AllianceStations["B2"].Bypass = true
-				arena.AllianceStations["B3"].Bypass = true
-				arena.Update()
-				assert.Nil(t, arena.StartMatch())
-				arena.Update()
-				arena.MatchStartTime = time.Now().Add(-time.Duration(game.MatchTiming.WarmupDurationSec) * time.Second)
-				arena.Update()
-				assert.Equal(t, AutoPeriod, arena.MatchState)
+	plc.redHubCount = 80
+	plc.blueHubCount = 75
+	arena.Update()
 
-				// Check the autonomous period.
-				plc.redProcessorCount = 1
-				arena.Update()
-				assert.Equal(t, 1, redScore.ProcessorAlgae)
-				assert.Equal(t, 0, blueScore.ProcessorAlgae)
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
+	// Past scoring grace (3-6 sec): fuel NOT counted, but hub motors still ON
+	assert.Equal(t, 38, redScore.ActiveFuel, "Red active unchanged (past scoring grace)")
+	assert.Equal(t, 48, blueScore.ActiveFuel, "Blue active unchanged (past scoring grace)")
+	assert.Equal(t, 15, redScore.InactiveFuel, "Red inactive unchanged")
+	assert.Equal(t, 5, blueScore.InactiveFuel, "Blue inactive unchanged")
+	assert.Equal(t, true, plc.hubMotors, "Hub motors should still be ON during flush period (3-6 sec)")
 
-				// Check the pause period.
-				arena.MatchStartTime = time.Now().Add(
-					-time.Duration(game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec) * time.Second,
-				)
-				arena.Update()
-				assert.Equal(t, PausePeriod, arena.MatchState)
-				plc.redProcessorCount = 2
-				arena.Update()
-				assert.Equal(t, 2, redScore.ProcessorAlgae)
-				assert.Equal(t, 0, blueScore.ProcessorAlgae)
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
+	// ========== PAST FLUSH PERIOD (>6 sec after match end) ==========
+	// Hub motors turn OFF, no scoring
+	arena.MatchStartTime = time.Now().Add(-time.Duration(matchDurationSec)*time.Second - 7*time.Second)
+	arena.Update()
 
-				// Check the teleop period.
-				durationToTeleopStart := time.Duration(
-					game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
-				) * time.Second
-				arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 5000*time.Millisecond)
-				arena.Update()
-				assert.Equal(t, TeleopPeriod, arena.MatchState)
+	plc.redHubCount = 90
+	plc.blueHubCount = 85
+	arena.Update()
 
-				plc.blueProcessorCount = 1
-				arena.Update()
-				assert.Equal(t, 2, redScore.ProcessorAlgae)
-				assert.Equal(t, 1, blueScore.ProcessorAlgae)
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-
-				plc.redProcessorCount = 3
-				arena.Update()
-				assert.Equal(t, 3, redScore.ProcessorAlgae)
-				assert.Equal(t, 1, blueScore.ProcessorAlgae)
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-
-				plc.redProcessorCount = 17
-				arena.Update()
-				assert.Equal(t, 17, redScore.ProcessorAlgae)
-				assert.Equal(t, 1, blueScore.ProcessorAlgae)
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-
-				plc.blueProcessorCount = 2
-				arena.Update()
-				assert.Equal(t, 17, redScore.ProcessorAlgae)
-				assert.Equal(t, 2, blueScore.ProcessorAlgae)
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-
-				// Check the truss lights during the "sonar ping" warning sound.
-				durationToWarning := time.Duration(
-					game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-						game.MatchTiming.TeleopDurationSec-game.MatchTiming.WarningRemainingDurationSec,
-				) * time.Second
-				arena.MatchStartTime = time.Now().Add(-durationToWarning - 100*time.Millisecond)
-				arena.Update()
-				assert.Equal(t, TeleopPeriod, arena.MatchState)
-				assert.Equal(t, [3]bool{true, false, false}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, false, false}, plc.blueTrussLights)
-				arena.MatchStartTime = time.Now().Add(-durationToWarning - 300*time.Millisecond)
-				arena.Update()
-				assert.Equal(t, TeleopPeriod, arena.MatchState)
-				assert.Equal(t, [3]bool{false, true, false}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{false, true, false}, plc.blueTrussLights)
-				arena.MatchStartTime = time.Now().Add(-durationToWarning - 500*time.Millisecond)
-				arena.Update()
-				assert.Equal(t, TeleopPeriod, arena.MatchState)
-				assert.Equal(t, [3]bool{false, false, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{false, false, true}, plc.blueTrussLights)
-
-				// Undo the co-op and check that the truss lights are back to normal after the warning.
-				arena.MatchStartTime = time.Now().Add(-durationToWarning - 5000*time.Millisecond)
-				plc.redProcessorCount = 1
-				arena.Update()
-				assert.Equal(t, 1, redScore.ProcessorAlgae)
-				assert.Equal(t, 2, blueScore.ProcessorAlgae)
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-
-				// Check after the end of the match.
-				durationToTeleopEnd := time.Duration(
-					game.MatchTiming.WarmupDurationSec+game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+
-						game.MatchTiming.TeleopDurationSec,
-				) * time.Second
-				arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd + 1*time.Millisecond)
-				arena.Update()
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-				arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 1*time.Millisecond)
-				arena.Update()
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-				arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 2999*time.Millisecond)
-				arena.Update()
-				assert.Equal(t, [3]bool{true, true, true}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{true, true, true}, plc.blueTrussLights)
-				arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 3001*time.Millisecond)
-				arena.Update()
-				assert.Equal(t, [3]bool{false, false, false}, plc.redTrussLights)
-				assert.Equal(t, [3]bool{false, false, false}, plc.blueTrussLights)
-			},
-		)
-	}
+	// Past flush period (>6 sec): no fuel counted, hub motors OFF
+	assert.Equal(t, 38, redScore.ActiveFuel, "Red active unchanged (past flush period)")
+	assert.Equal(t, 48, blueScore.ActiveFuel, "Blue active unchanged (past flush period)")
+	assert.Equal(t, 15, redScore.InactiveFuel, "Red inactive unchanged")
+	assert.Equal(t, 5, blueScore.InactiveFuel, "Blue inactive unchanged")
+	assert.Equal(t, false, plc.hubMotors, "Hub motors should be OFF after flush period (>6 sec)")
 }

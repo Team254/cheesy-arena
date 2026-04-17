@@ -38,88 +38,55 @@ UI for manually editing the result for a match.
       </div>
       {{end}}
     </div>
-    <h6 class="fw-bold mb-2">Leave</h6>
+    <h6 class="fw-bold mb-2">Auto Climb (Level 1 only)</h6>
     <div class="row mb-3">
       {{range $i := seq 3}}
       <div class="col-lg-2">
         <label class="control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-        <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}LeaveStatuses{{$i}}">
+        <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}AutoClimbStatuses{{$i}}">
       </div>
       {{end}}
     </div>
-  </fieldset>
-  <fieldset>
-    <legend>Reef</legend>
-    <div class="row mb-2">
-      <div class="col-lg-1"></div>
-      <div class="row col-lg-11">
-        <label class="col-lg-1 control-label">A</label>
-        <label class="col-lg-1 control-label">B</label>
-        <label class="col-lg-1 control-label">C</label>
-        <label class="col-lg-1 control-label">D</label>
-        <label class="col-lg-1 control-label">E</label>
-        <label class="col-lg-1 control-label">F</label>
-        <label class="col-lg-1 control-label">G</label>
-        <label class="col-lg-1 control-label">H</label>
-        <label class="col-lg-1 control-label">I</label>
-        <label class="col-lg-1 control-label">J</label>
-        <label class="col-lg-1 control-label">K</label>
-        <label class="col-lg-1 control-label">L</label>
-      </div>
-    </div>
-    {{template "reefPipe" dict "pipe" 2 "pipeName" "Level 4"}}
-    {{template "reefPipe" dict "pipe" 1 "pipeName" "Level 3"}}
-    {{template "reefPipe" dict "pipe" 0 "pipeName" "Level 2"}}
+    <h6 class="fw-bold mb-2">Auto FUEL</h6>
     <div class="row mb-3">
-      <label class="col-lg-1 control-label">Level 1</label>
-      <label class="col-lg-1 text-end">Auto Near:</label>
-      <div class="col-lg-1">
-        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoTroughNearCoral">
-      </div>
-      <label class="col-lg-1 text-end">Auto Far:</label>
-      <div class="col-lg-1">
-        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}AutoTroughFarCoral">
-      </div>
-      <label class="col-lg-1 text-end"> Near:</label>
-      <div class="col-lg-1">
-        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TroughNearCoral">
-      </div>
-      <label class="col-lg-1 text-end"> Far:</label>
-      <div class="col-lg-1">
-        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}TroughFarCoral">
+      <div class="col-lg-2">
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}AutoFuel" min="0">
       </div>
     </div>
   </fieldset>
   <fieldset>
-    <legend>Algae</legend>
-    <div class="row">
-      <label class="col-lg-1 text-end">Barge:</label>
-      <div class="col-lg-1">
-        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}BargeAlgae">
+    <legend>Teleop FUEL</legend>
+    <h6 class="fw-bold mb-2">Active FUEL (scored while hub was active)</h6>
+    <div class="row mb-3">
+      <div class="col-lg-2">
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}ActiveFuel" min="0">
       </div>
-      <label class="col-lg-1 text-end">Processor:</label>
-      <div class="col-lg-1">
-        <input type="text" class="form-control input-sm" name="{{"{{alliance}}"}}ProcessorAlgae">
+    </div>
+    <h6 class="fw-bold mb-2">Inactive FUEL (scored while hub was inactive)</h6>
+    <div class="row mb-3">
+      <div class="col-lg-2">
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}InactiveFuel" min="0">
       </div>
     </div>
   </fieldset>
+
   <fieldset>
-    <legend>Endgame</legend>
+    <legend>Teleop Climb (TOWER)</legend>
     <div class="mb-3">
       {{range $i := seq 3}}
       <div class="row mb-2">
         <label class="col-lg-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
         <div class="col-lg-1">
-          <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="0"> None
+          <input type="radio" name="{{"{{alliance}}"}}TeleopClimbStatuses{{$i}}" value="0"> None
         </div>
         <div class="col-lg-2">
-          <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="1"> Parked
+          <input type="radio" name="{{"{{alliance}}"}}TeleopClimbStatuses{{$i}}" value="1"> Level 1
         </div>
         <div class="col-lg-2">
-          <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="2"> Shallow Cage
+          <input type="radio" name="{{"{{alliance}}"}}TeleopClimbStatuses{{$i}}" value="2"> Level 2
         </div>
         <div class="col-lg-2">
-          <input type="radio" name="{{"{{alliance}}"}}EndgameStatuses{{$i}}" value="3"> Deep Cage
+          <input type="radio" name="{{"{{alliance}}"}}TeleopClimbStatuses{{$i}}" value="3"> Level 3
         </div>
       </div>
       {{end}}
@@ -250,26 +217,4 @@ Add Foul
   renderResults("blue");
   <!-- @formatter:on -->
 </script>
-{{end}}
-{{define "reefPipe"}}
-<div class="row">
-  <label class="col-lg-1">{{.pipeName}}</label>
-  <div class="row col-lg-11">
-    {{range $i := seq 12}}
-    {{template "reefBranch" dict "pipe" $.pipe "level" (add $i -1)}}
-    {{end}}
-  </div>
-</div>
-<br/>
-{{end}}
-{{define "reefBranch"}}
-<div class="col-lg-1">
-  <input type="checkbox" class="" name="{{"{{alliance}}"}}ReefAutoBranchesPipe{{.pipe}}Branch{{.level}}"
-  id="{{"{{alliance}}"}}AutoPipe{{.pipe}}Branch{{.level}}">
-  <label for="{{"{{alliance}}"}}AutoPipe{{.pipe}}Branch{{.level}}">Auto</label>
-  <br/>
-  <input type="checkbox" class="" name="{{"{{alliance}}"}}ReefBranchesPipe{{.pipe}}Branch{{.level}}"
-  id="{{"{{alliance}}"}}Pipe{{.pipe}}Branch{{.level}}">
-  <label for="{{"{{alliance}}"}}Pipe{{.pipe}}Branch{{.level}}">Overall</label>
-</div>
 {{end}}

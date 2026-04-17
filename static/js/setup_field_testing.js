@@ -27,11 +27,20 @@ var handlePlcIoChange = function (data) {
   });
 };
 
+// Handles a websocket message to update the hub LED status.
+var handleHubLedChange = function (data) {
+  $("#hubLedRed").text("rgb(" + data.Red.R + ", " + data.Red.G + ", " + data.Red.B + ")");
+  $("#hubLedBlue").text("rgb(" + data.Blue.R + ", " + data.Blue.G + ", " + data.Blue.B + ")");
+};
+
 $(function () {
   // Set up the websocket back to the server.
   websocket = new CheesyWebsocket("/setup/field_testing/websocket", {
     plcIoChange: function (event) {
       handlePlcIoChange(event.data);
+    },
+    hubLed: function (event) {
+      handleHubLedChange(event.data);
     }
   });
 });
