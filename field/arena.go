@@ -8,6 +8,7 @@ package field
 import (
 	"fmt"
 	"log"
+	"net"
 	"reflect"
 	"strconv"
 	"strings"
@@ -98,6 +99,7 @@ type Arena struct {
 	breakDescription                  string
 	preloadedTeams                    *[6]*model.Team
 	NextFoulId                        int
+	DriverStationUdpSocket            *net.UDPConn
 }
 
 type AllianceStation struct {
@@ -792,6 +794,7 @@ func (arena *Arena) checkEndgameStart(matchTimeSec float64) {
 // Loops indefinitely to track and update the arena components.
 func (arena *Arena) Run() {
 	// Start other loops in goroutines.
+	arena.initializeUdpListener()
 	go arena.listenForDriverStations()
 	go arena.listenForDsUdpPackets()
 	go arena.accessPoint.Run()
