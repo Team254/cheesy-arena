@@ -8,6 +8,7 @@ package field
 import (
 	"fmt"
 	"log"
+	"net"
 	"reflect"
 	"strconv"
 	"strings"
@@ -98,6 +99,7 @@ type Arena struct {
 	breakDescription                  string
 	preloadedTeams                    *[6]*model.Team
 	NextFoulId                        int
+	DriverStationUdpSocket            *net.UDPConn
 }
 
 type AllianceStation struct {

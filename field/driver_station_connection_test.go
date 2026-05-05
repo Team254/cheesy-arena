@@ -265,7 +265,7 @@ func TestNewDriverStationConnection_UdpPortSelection(t *testing.T) {
 	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
 	assert.Nil(t, err)
 	defer dsConn.close()
-	assert.Contains(t, dsConn.udpConn.RemoteAddr().String(), fmt.Sprintf(":%d", driverStationUdpSendPort))
+	assert.Contains(t, dsConn.udpAddrPort.String(), fmt.Sprintf(":%d", driverStationUdpSendPort))
 
 	tcpConnLite := setupFakeTcpConnection(t)
 	defer tcpConnLite.Close()
@@ -274,7 +274,7 @@ func TestNewDriverStationConnection_UdpPortSelection(t *testing.T) {
 	dsConnLite, err := newDriverStationConnection(254, "R1", tcpConnLite, true)
 	assert.Nil(t, err)
 	defer dsConnLite.close()
-	assert.Contains(t, dsConnLite.udpConn.RemoteAddr().String(), fmt.Sprintf(":%d", driverStationUdpSendPortLite))
+	assert.Contains(t, dsConnLite.udpAddrPort.String(), fmt.Sprintf(":%d", driverStationUdpSendPortLite))
 }
 
 func setupFakeTcpConnection(t *testing.T) net.Conn {
