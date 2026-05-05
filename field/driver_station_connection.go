@@ -103,8 +103,7 @@ func newDriverStationConnection(
 	}, nil
 }
 
-// Loops indefinitely to read packets and update connection status.
-func (arena *Arena) listenForDsUdpPackets() {
+func (arena *Arena) initializeUdpListener() {
 	udpAddress, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", network.ServerIpAddress, driverStationUdpReceivePort))
 	if err != nil {
 		log.Printf("Error resolving driver station UDP address: %v", err)
@@ -117,8 +116,15 @@ func (arena *Arena) listenForDsUdpPackets() {
 	}
 	log.Printf("Listening for driver stations on UDP port %d\n", driverStationUdpReceivePort)
 	arena.DriverStationUdpSocket = listener
+}
 
-	defer listener.Close()
+// Loops indefinitely to read packets and update connection status.
+func (arena *Arena) listenForDsUdpPackets() {
+	if arena.DriverStationUdpSocket == nil {
+		return
+	}
+
+	listener := arena.DriverStationUdpSocket
 
 	data := make([]byte, 1500)
 	for {
