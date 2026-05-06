@@ -308,7 +308,7 @@ ip http secure-server
 !
 !
 ip access-list extended DS-FMS
- permit udp any eq 1145 10.0.100.0 0.0.0.255 eq 1160
+ permit udp any 10.0.100.0 0.0.0.255 eq 1160
  permit tcp any 10.0.100.0 0.0.0.255 eq 1750
  permit icmp any 10.0.100.0 0.0.0.255
  permit icmp any 10.0.0.4 0.255.255.0
