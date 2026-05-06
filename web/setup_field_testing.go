@@ -8,6 +8,7 @@ package web
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"io"
@@ -33,7 +34,17 @@ func (web *Web) fieldTestingGetHandler(w http.ResponseWriter, r *http.Request) {
 		InputNames    []string
 		RegisterNames []string
 		CoilNames     []string
-	}{web.arena.EventSettings, game.MatchSounds, plc.GetInputNames(), plc.GetRegisterNames(), plc.GetCoilNames()}
+		RedHubColor   led.Color
+		BlueHubColor  led.Color
+	}{
+		EventSettings: web.arena.EventSettings,
+		MatchSounds:   game.MatchSounds,
+		InputNames:    plc.GetInputNames(),
+		RegisterNames: plc.GetRegisterNames(),
+		CoilNames:     plc.GetCoilNames(),
+		RedHubColor:   web.arena.RedHubLeds.GetColor(),
+		BlueHubColor:  web.arena.BlueHubLeds.GetColor(),
+	}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -55,7 +66,7 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	defer ws.Close()
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
-	go ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier())
+	go ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier(), web.arena.HubLedNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {

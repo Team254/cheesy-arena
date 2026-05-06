@@ -161,6 +161,8 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /displays/queueing/websocket", web.queueingDisplayWebsocketHandler)
 	mux.HandleFunc("GET /displays/rankings", web.rankingsDisplayHandler)
 	mux.HandleFunc("GET /displays/rankings/websocket", web.rankingsDisplayWebsocketHandler)
+	mux.HandleFunc("GET /displays/team_sign_back", web.teamSignBackDisplayHandler)
+	mux.HandleFunc("GET /displays/team_sign_back/websocket", web.teamSignBackDisplayWebsocketHandler)
 	mux.HandleFunc("GET /displays/twitch", web.twitchDisplayHandler)
 	mux.HandleFunc("GET /displays/twitch/websocket", web.twitchDisplayWebsocketHandler)
 	mux.HandleFunc("GET /displays/wall", web.wallDisplayHandler)

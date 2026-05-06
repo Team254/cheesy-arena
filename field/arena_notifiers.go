@@ -7,6 +7,7 @@ package field
 
 import (
 	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
@@ -29,6 +30,7 @@ type ArenaNotifiers struct {
 	ReloadDisplaysNotifier             *websocket.Notifier
 	ScorePostedNotifier                *websocket.Notifier
 	ScoringStatusNotifier              *websocket.Notifier
+	HubLedNotifier                     *websocket.Notifier
 }
 
 type MatchTimeMessage struct {
@@ -64,6 +66,7 @@ func (arena *Arena) configureNotifiers() {
 	arena.ReloadDisplaysNotifier = websocket.NewNotifier("reload", nil)
 	arena.ScorePostedNotifier = websocket.NewNotifier("scorePosted", arena.GenerateScorePostedMessage)
 	arena.ScoringStatusNotifier = websocket.NewNotifier("scoringStatus", arena.generateScoringStatusMessage)
+	arena.HubLedNotifier = websocket.NewNotifier("hubLed", arena.generateHubLedMessage)
 }
 
 func (arena *Arena) generateAllianceSelectionMessage() any {
@@ -211,16 +214,18 @@ func (arena *Arena) generateMatchTimingMessage() any {
 
 func (arena *Arena) generateRealtimeScoreMessage() any {
 	fields := struct {
-		Red       *audienceAllianceScoreFields
-		Blue      *audienceAllianceScoreFields
-		RedCards  map[string]string
-		BlueCards map[string]string
+		Red           *audienceAllianceScoreFields
+		Blue          *audienceAllianceScoreFields
+		RedCards      map[string]string
+		BlueCards     map[string]string
+		AutoTieWinner string
 		MatchState
 	}{
 		getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary()),
 		getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary()),
 		arena.RedRealtimeScore.Cards,
 		arena.BlueRealtimeScore.Cards,
+		arena.autoTieWinner,
 		arena.MatchState,
 	}
 	return &fields
@@ -315,7 +320,7 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		blueWins,
 		redDestination,
 		blueDestination,
-		game.CoralBonusCoopEnabled,
+		false, // Coopertition not used in REBUILT
 	}
 }
 
@@ -347,7 +352,16 @@ func (arena *Arena) generateScoringStatusMessage() any {
 	}
 }
 
-// Constructs the data object for one alliance sent to the audience display for the realtime scoring overlay.
+func (arena *Arena) generateHubLedMessage() any {
+	return &struct {
+		Red  led.Color
+		Blue led.Color
+	}{
+		arena.RedHubLeds.GetColor(),
+		arena.BlueHubLeds.GetColor(),
+	}
+}
+
 func getAudienceAllianceScoreFields(
 	allianceScore *RealtimeScore,
 	allianceScoreSummary *game.ScoreSummary,
