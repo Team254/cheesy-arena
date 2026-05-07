@@ -43,7 +43,9 @@ type Switch struct {
 	Status                string
 }
 
-var ServerIpAddress = "10.0.100.5"
+const DefaultServerIpAddress = "10.0.100.5"
+
+var ServerIpAddress = DefaultServerIpAddress // The DS will try to connect to this address only.
 
 func NewSwitch(address, password string) *Switch {
 	return &Switch{

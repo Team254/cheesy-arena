@@ -6,12 +6,11 @@
 package field
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net"
-	"regexp"
-	"strconv"
 	"time"
 
 	"github.com/Team254/cheesy-arena/game"
@@ -52,6 +51,7 @@ type DriverStationConnection struct {
 	tcpConn                   net.Conn
 	udpConn                   net.Conn
 	log                       *TeamMatchLog
+	SentGameData              string
 
 	// WrongStation indicates if the team in the station is the incorrect team
 	// by being non-empty. If the team is in the correct station, or no team is
@@ -60,6 +60,21 @@ type DriverStationConnection struct {
 }
 
 var allianceStationPositionMap = map[string]byte{"R1": 0, "R2": 1, "R3": 2, "B1": 3, "B2": 4, "B3": 5}
+
+func driverStationTeamIdFromRemoteAddr(addr net.Addr) (int, string, bool) {
+	ipAddress, _, err := net.SplitHostPort(addr.String())
+	if err != nil {
+		return 0, "", false
+	}
+
+	// Driver stations use team-specific 10.TE.AM.X addresses on a field network.
+	ipAddressBytes := net.ParseIP(ipAddress).To4()
+	if ipAddressBytes == nil || ipAddressBytes[0] != 10 {
+		return 0, ipAddress, false
+	}
+
+	return int(ipAddressBytes[1])*100 + int(ipAddressBytes[2]), ipAddress, true
+}
 
 // Opens a UDP connection for communicating to the driver station.
 func newDriverStationConnection(
@@ -93,12 +108,19 @@ func newDriverStationConnection(
 
 // Loops indefinitely to read packets and update connection status.
 func (arena *Arena) listenForDsUdpPackets() {
-	udpAddress, _ := net.ResolveUDPAddr("udp4", fmt.Sprintf(":%d", driverStationUdpReceivePort))
+	udpAddress, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", network.ServerIpAddress, driverStationUdpReceivePort))
+	if err != nil {
+		log.Printf("Error resolving driver station UDP address: %v", err)
+		log.Printf("Change IP address to %s and restart Cheesy Arena to fix.", network.ServerIpAddress)
+		return
+	}
 	listener, err := net.ListenUDP("udp4", udpAddress)
 	if err != nil {
 		log.Fatalf("Error opening driver station UDP socket: %v", err)
 	}
 	log.Printf("Listening for driver stations on UDP port %d\n", driverStationUdpReceivePort)
+
+	defer listener.Close()
 
 	data := make([]byte, 1500)
 	for {
@@ -158,8 +180,8 @@ func (arena *Arena) listenForDsUdpPackets() {
 }
 
 // Sends a control packet to the Driver Station and checks for timeout conditions.
-func (dsConn *DriverStationConnection) update(arena *Arena) error {
-	err := dsConn.sendControlPacket(arena)
+func (dsConn *DriverStationConnection) update(arena *Arena, gameData string) error {
+	err := dsConn.sendControlPacket(arena, gameData)
 	if err != nil {
 		return err
 	}
@@ -285,7 +307,8 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) [22]byt
 }
 
 // Builds and sends the next control packet to the Driver Station.
-func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena) error {
+func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena, gameData string) error {
+	gameDataErr := dsConn.checkGameData(gameData)
 	packet := dsConn.encodeControlPacket(arena)
 	if dsConn.udpConn != nil {
 		_, err := dsConn.udpConn.Write(packet[:])
@@ -294,7 +317,7 @@ func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena) error {
 		}
 	}
 
-	return nil
+	return gameDataErr
 }
 
 // Listens for TCP connection requests to Cheesy Arena from driver stations.
@@ -307,10 +330,22 @@ func (arena *Arena) listenForDriverStations() {
 	}
 	defer l.Close()
 
-	log.Printf("Listening for driver stations on TCP port %d\n", driverStationTcpListenPort)
+	arena.serveDriverStations(l)
+}
+
+func (arena *Arena) serveDriverStations(listener net.Listener) {
+	if tcpAddr, ok := listener.Addr().(*net.TCPAddr); ok {
+		log.Printf("Listening for driver stations on TCP port %d\n", tcpAddr.Port)
+	} else {
+		log.Printf("Listening for driver stations on TCP address %s\n", listener.Addr())
+	}
+
 	for {
-		tcpConn, err := l.Accept()
+		tcpConn, err := listener.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return
+			}
 			log.Println("Error accepting driver station connection: ", err.Error())
 			continue
 		}
@@ -333,29 +368,25 @@ func (arena *Arena) listenForDriverStations() {
 		assignedStation := arena.getAssignedAllianceStation(teamId)
 		if assignedStation == "" {
 			log.Printf("Rejecting connection from Team %d, who is not in the current match, soon.", teamId)
-			go func() {
-				// Wait a second and then close it so it doesn't chew up bandwidth constantly trying to reconnect.
-				time.Sleep(time.Second)
-				tcpConn.Close()
-			}()
+			go handleInvalidTcpConnection(tcpConn, 2, 0)
 			continue
 		}
 
 		// Read the team number from the IP address to check for a station mismatch.
 		stationStatus := byte(0)
-		teamRe := regexp.MustCompile("\\d+\\.(\\d+)\\.(\\d+)\\.")
-		ipAddress, _, err := net.SplitHostPort(tcpConn.RemoteAddr().String())
-		teamDigits := teamRe.FindStringSubmatch(ipAddress)
-		teamDigit1, _ := strconv.Atoi(teamDigits[1])
-		teamDigit2, _ := strconv.Atoi(teamDigits[2])
-		stationTeamId := teamDigit1*100 + teamDigit2
 		wrongAssignedStation := ""
-		if stationTeamId != teamId {
-			wrongAssignedStation = arena.getAssignedAllianceStation(stationTeamId)
-			if wrongAssignedStation != "" {
+		if arena.EventSettings.NetworkSecurityEnabled {
+			stationTeamId, ipAddress, ok := driverStationTeamIdFromRemoteAddr(tcpConn.RemoteAddr())
+			if ok && stationTeamId != teamId {
+				wrongAssignedStation = arena.getAssignedAllianceStation(stationTeamId)
 				// The team is supposed to be in this match, but is plugged into the wrong station.
-				log.Printf("Team %d is in incorrect station %s.", teamId, wrongAssignedStation)
-				stationStatus = 1
+				if wrongAssignedStation != "" {
+					log.Printf("Team %d is in incorrect station %s.", teamId, wrongAssignedStation)
+					stationStatus = 1
+				} else {
+					log.Printf("Team %d is in unknown station with IP address %s.", teamId, ipAddress)
+					stationStatus = 1
+				}
 			}
 		}
 
@@ -371,6 +402,34 @@ func (arena *Arena) listenForDriverStations() {
 			log.Printf("Error sending driver station assignment packet: %v", err)
 			tcpConn.Close()
 			continue
+		}
+
+		// Write event code here. We need to strip any numbers off the front if it has it.
+		// We also need to limit to 62 characters.
+		eventName := arena.EventSettings.TbaEventCode
+		if len(eventName) > 0 {
+			trimIndex := 0
+			for trimIndex < len(eventName) && eventName[trimIndex] >= '0' && eventName[trimIndex] <= '9' {
+				trimIndex++
+			}
+			eventName = eventName[trimIndex:]
+			if len(eventName) > 62 {
+				eventName = eventName[:62]
+			}
+			if len(eventName) > 0 {
+				eventNamePacket := make([]byte, 4+len(eventName))
+				eventNamePacket[0] = 0
+				eventNamePacket[1] = byte(len(eventName) + 2)
+				eventNamePacket[2] = 20 // Packet type for event name
+				eventNamePacket[3] = byte(len(eventName))
+				copy(eventNamePacket[4:], []byte(eventName))
+				_, err = tcpConn.Write(eventNamePacket)
+				if err != nil {
+					log.Printf("Error sending event name packet: %v", err)
+					tcpConn.Close()
+					continue
+				}
+			}
 		}
 
 		dsConn, err := newDriverStationConnection(teamId, assignedStation, tcpConn, arena.EventSettings.UseLiteUdpPort)
@@ -422,7 +481,9 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 		if err != nil {
 			log.Printf("Error reading from connection for Team %d: %v", dsConn.TeamId, err)
 			dsConn.close()
-			arena.AllianceStations[dsConn.AllianceStation].DsConn = nil
+			if arena.AllianceStations[dsConn.AllianceStation].DsConn == dsConn {
+				arena.AllianceStations[dsConn.AllianceStation].DsConn = nil
+			}
 			break
 		}
 
@@ -442,6 +503,47 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 			log.Printf("Received unknown packet type %d from Team %d", packetType, dsConn.TeamId)
 		}
 	}
+}
+
+func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {
+	log.Printf("Handling invalid TCP connection from %v with status %d and station %d", tcpConn.RemoteAddr(), status, station)
+	var assignmentPacket [5]byte
+	assignmentPacket[0] = 0  // Packet size
+	assignmentPacket[1] = 3  // Packet size
+	assignmentPacket[2] = 25 // Packet type
+	assignmentPacket[3] = byte(station)
+	assignmentPacket[4] = byte(status)
+	_, err := tcpConn.Write(assignmentPacket[:])
+	if err != nil {
+		log.Printf("Error sending invalid driver station assignment packet: %v", err)
+		tcpConn.Close()
+		return
+	}
+
+	buffer := make([]byte, maxTcpPacketBytes)
+	for {
+		_, err := readTaggedTcpPacket(tcpConn, buffer)
+		if err != nil {
+			log.Printf("Error reading from connection for invalid driver station: %v", err)
+			break
+		}
+	}
+
+	tcpConn.Close()
+}
+
+func (dsConn *DriverStationConnection) checkGameData(gameData string) error {
+	needsGameDataUpdate := dsConn.SentGameData != gameData
+	if needsGameDataUpdate {
+		err := dsConn.sendGameDataPacket(gameData)
+		if err != nil {
+			log.Printf("Error sending game data packet to Team %d: %v", dsConn.TeamId, err)
+			return err
+		} else {
+			dsConn.SentGameData = gameData
+		}
+	}
+	return nil
 }
 
 // Sends a TCP packet containing the given game data to the driver station.

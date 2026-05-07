@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -147,38 +146,35 @@ func TestSendControlPacket(t *testing.T) {
 	defer dsConn.close()
 
 	// No real way of checking this since the destination IP is remote, so settle for there being no errors.
-	err = dsConn.sendControlPacket(arena)
+	err = dsConn.sendControlPacket(arena, "")
 	assert.Nil(t, err)
 }
 
 func TestListenForDriverStations(t *testing.T) {
 	arena := setupTestArena(t)
-
-	oldAddress := network.ServerIpAddress
-	network.ServerIpAddress = "127.0.0.1"
-	go arena.listenForDriverStations()
-	time.Sleep(time.Millisecond * 10)
-	network.ServerIpAddress = oldAddress // Put it back to avoid affecting other tests.
+	serverAddress := startTestDriverStationServer(t, arena)
 
 	// Connect with an invalid initial packet.
-	tcpConn, err := net.Dial("tcp", "127.0.0.1:1750")
+	tcpConn, err := net.Dial("tcp", serverAddress)
 	if assert.Nil(t, err) {
 		dataSend := [5]byte{0, 3, 29, 0, 0}
 		tcpConn.Write(dataSend[:])
 		var dataReceived [100]byte
-		_, err = tcpConn.Read(dataReceived[:])
+		_, err = readTaggedTcpPacket(tcpConn, dataReceived[:])
 		assert.NotNil(t, err)
 		tcpConn.Close()
 	}
 
 	// Connect as a team not in the current match.
-	tcpConn, err = net.Dial("tcp", "127.0.0.1:1750")
+	tcpConn, err = net.Dial("tcp", serverAddress)
 	if assert.Nil(t, err) {
 		dataSend := [5]byte{0, 3, 24, 5, 223}
 		tcpConn.Write(dataSend[:])
 		var dataReceived [5]byte
-		_, err = tcpConn.Read(dataReceived[:])
-		assert.NotNil(t, err)
+		count, err := readTaggedTcpPacket(tcpConn, dataReceived[:])
+		assert.Nil(t, err)
+		assert.Equal(t, count, 5)
+		assert.Equal(t, [5]byte{0, 3, 25, 0, 2}, dataReceived)
 		tcpConn.Close()
 	}
 
@@ -186,29 +182,46 @@ func TestListenForDriverStations(t *testing.T) {
 	arena.assignTeam(1503, "B2")
 
 	// Connect as a team in the current match with a fragmented initial packet.
-	tcpConn, err = net.Dial("tcp", "127.0.0.1:1750")
+	tcpConn, err = net.Dial("tcp", serverAddress)
 	if assert.Nil(t, err) {
+		defer tcpConn.Close()
 		dataSend := [5]byte{0, 3, 24, 5, 223}
 		tcpConn.Write(dataSend[:1])
 		tcpConn.Write(dataSend[1:5])
 		var dataReceived [5]byte
-		_, err := tcpConn.Read(dataReceived[:])
+		count, err := readTaggedTcpPacket(tcpConn, dataReceived[:])
 		assert.Nil(t, err)
-		tcpConn.Close()
+		assert.Equal(t, count, 5)
 	}
 
-	tcpConn, err = net.Dial("tcp", "127.0.0.1:1750")
+	// Set event name
+	arena.EventSettings.TbaEventCode = "2026CC"
+	tcpConn, err = net.Dial("tcp", serverAddress)
+	if assert.Nil(t, err) {
+		defer tcpConn.Close()
+		dataSend := [5]byte{0, 3, 24, 5, 223}
+		tcpConn.Write(dataSend[:])
+		var dataReceived [100]byte
+		_, err := readTaggedTcpPacket(tcpConn, dataReceived[:])
+		assert.Nil(t, err)
+		// Read event name
+		count, err := readTaggedTcpPacket(tcpConn, dataReceived[:])
+		assert.Nil(t, err)
+		assert.Equal(t, count, 6)
+		assert.Equal(t, []byte{0, 4, 20, 2, 67, 67}, dataReceived[:6])
+	}
+
+	tcpConn, err = net.Dial("tcp", serverAddress)
 	if assert.Nil(t, err) {
 		defer tcpConn.Close()
 		dataSend := [5]byte{0, 3, 24, 5, 223}
 		tcpConn.Write(dataSend[:])
 		var dataReceived [5]byte
-		_, err = tcpConn.Read(dataReceived[:])
+		_, err = readTaggedTcpPacket(tcpConn, dataReceived[:])
 		assert.Nil(t, err)
 		assert.Equal(t, [5]byte{0, 3, 25, 4, 0}, dataReceived)
 
-		time.Sleep(time.Millisecond * 10)
-		dsConn := arena.AllianceStations["B2"].DsConn
+		dsConn := waitForDriverStationConnection(t, arena, "B2")
 		if assert.NotNil(t, dsConn) {
 			assert.Equal(t, 1503, dsConn.TeamId)
 			assert.Equal(t, "B2", dsConn.AllianceStation)
@@ -216,7 +229,31 @@ func TestListenForDriverStations(t *testing.T) {
 			// Check that an unknown packet type gets ignored and a status packet gets decoded.
 			dataSend = [5]byte{0, 3, 37, 0, 0}
 			tcpConn.Write(dataSend[:])
-			time.Sleep(time.Millisecond * 10)
+		}
+	}
+}
+
+func TestListenForDriverStations_NetworkSecurityIgnoresNonFieldIp(t *testing.T) {
+	arena := setupTestArena(t)
+	arena.EventSettings.NetworkSecurityEnabled = true
+	arena.assignTeam(1503, "B2")
+	serverAddress := startTestDriverStationServer(t, arena)
+
+	tcpConn, err := net.Dial("tcp", serverAddress)
+	if assert.Nil(t, err) {
+		defer tcpConn.Close()
+
+		dataSend := [5]byte{0, 3, 24, 5, 223}
+		tcpConn.Write(dataSend[:])
+
+		var dataReceived [5]byte
+		_, err = readTaggedTcpPacket(tcpConn, dataReceived[:])
+		assert.Nil(t, err)
+		assert.Equal(t, [5]byte{0, 3, 25, 4, 0}, dataReceived)
+
+		dsConn := waitForDriverStationConnection(t, arena, "B2")
+		if assert.NotNil(t, dsConn) {
+			assert.Equal(t, "", dsConn.WrongStation)
 		}
 	}
 }
@@ -243,10 +280,35 @@ func TestNewDriverStationConnection_UdpPortSelection(t *testing.T) {
 
 func setupFakeTcpConnection(t *testing.T) net.Conn {
 	// Set up a fake TCP endpoint and connection to it.
-	l, err := net.Listen("tcp", ":9999")
+	l, err := net.Listen("tcp", "127.0.0.1:0")
 	assert.Nil(t, err)
 	defer l.Close()
-	tcpConn, err := net.Dial("tcp", "127.0.0.1:9999")
+	tcpConn, err := net.Dial("tcp", l.Addr().String())
 	assert.Nil(t, err)
 	return tcpConn
+}
+
+func startTestDriverStationServer(t *testing.T, arena *Arena) string {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	assert.Nil(t, err)
+	t.Cleanup(func() {
+		listener.Close()
+	})
+
+	go arena.serveDriverStations(listener)
+	return listener.Addr().String()
+}
+
+func waitForDriverStationConnection(t *testing.T, arena *Arena, station string) *DriverStationConnection {
+	t.Helper()
+
+	var dsConn *DriverStationConnection
+	if !assert.Eventually(t, func() bool {
+		dsConn = arena.AllianceStations[station].DsConn
+		return dsConn != nil
+	}, time.Second, 10*time.Millisecond) {
+		return nil
+	}
+
+	return dsConn
 }
