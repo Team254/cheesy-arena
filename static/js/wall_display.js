@@ -141,21 +141,23 @@ const handleMatchTime = function (data) {
 
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function (data) {
-  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.BargePoints);
-  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.BargePoints);
+  $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score);
+  $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score);
 
   let redCoral, blueCoral;
   if (currentMatch.Type === matchTypePlayoff) {
-    redCoral = data.Red.ScoreSummary.NumCoral;
-    blueCoral = data.Blue.ScoreSummary.NumCoral;
+    redCoral = data.Red.ScoreSummary.TotalFuelPoints;
+    blueCoral = data.Blue.ScoreSummary.TotalFuelPoints;
   } else {
-    redCoral = `${data.Red.ScoreSummary.NumCoralLevels}/${data.Red.ScoreSummary.NumCoralLevelsGoal}`;
-    blueCoral = `${data.Blue.ScoreSummary.NumCoralLevels}/${data.Blue.ScoreSummary.NumCoralLevelsGoal}`;
+    const redFuelGoal = data.Red.ScoreSummary.EnergizedRankingPoint ? 360 : 100;
+    const blueFuelGoal = data.Blue.ScoreSummary.EnergizedRankingPoint ? 360 : 100;
+    redCoral = `${data.Red.ScoreSummary.TotalFuelPoints}/${redFuelGoal}`;
+    blueCoral = `${data.Blue.ScoreSummary.TotalFuelPoints}/${blueFuelGoal}`;
   }
   $(`#${redSide}Coral`).text(redCoral);
-  $(`#${redSide}Algae`).text(data.Red.ScoreSummary.NumAlgae);
+  $(`#${redSide}Algae`).text(data.Red.ScoreSummary.TotalTowerPoints);
   $(`#${blueSide}Coral`).text(blueCoral);
-  $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.NumAlgae);
+  $(`#${blueSide}Algae`).text(data.Blue.ScoreSummary.TotalTowerPoints);
 };
 
 const transitionBlankToIntro = function (callback) {
