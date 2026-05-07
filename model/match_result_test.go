@@ -1,12 +1,14 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
+// Modified for 2026 REBUILT Game
 
 package model
 
 import (
+	"testing"
+
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestGetNonexistentMatchResult(t *testing.T) {
@@ -28,8 +30,10 @@ func TestMatchResultCrud(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, matchResult, matchResult2)
 
+	// 2026: Update Endgame Statuses to Level 2/3
 	matchResult.BlueScore.EndgameStatuses =
-		[3]game.EndgameStatus{game.EndgameParked, game.EndgameNone, game.EndgameShallowCage}
+		[3]game.EndgameStatus{game.EndgameLevel2, game.EndgameNone, game.EndgameLevel3}
+
 	assert.Nil(t, db.UpdateMatchResult(matchResult))
 	matchResult2, err = db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)

@@ -189,6 +189,7 @@ UI for configuring event settings.
               </div>
             </fieldset>
           </div>
+          
           <div class="tab-pane" id="game" role="tabpanel">
             <fieldset class="mb-4">
               <legend>Game-Specific</legend>
@@ -217,43 +218,31 @@ UI for configuring event settings.
                     value="{{.WarningRemainingDurationSec}}">
                 </div>
               </div>
+              
               <div class="row mb-3">
-                <label class="col-lg-6 control-label">Auto Bonus RP Coral Threshold</label>
+                <label class="col-lg-6 control-label">Energized Fuel Threshold</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" id="autoBonusCoralThreshold" name="autoBonusCoralThreshold"
-                    value="{{.AutoBonusCoralThreshold}}">
+                  <input type="text" class="form-control" id="energized_fuel_threshold" name="energized_fuel_threshold"
+                    value="{{.EnergizedFuelThreshold}}">
                 </div>
               </div>
               <div class="row mb-3">
-                <label class="col-lg-6 control-label">Coopertition Bonus Enabled</label>
-                <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="coralBonusCoopEnabled"
-                    name="coralBonusCoopEnabled" {{if .CoralBonusCoopEnabled}} checked{{end}}>
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Coral Bonus RP Per-Level Threshold</label>
+                <label class="col-lg-6 control-label">Supercharged Fuel Threshold</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" id="coralBonusPerLevelThreshold"
-                    name="coralBonusPerLevelThreshold" value="{{.CoralBonusPerLevelThreshold}}">
+                  <input type="text" class="form-control" id="supercharged_fuel_threshold" name="supercharged_fuel_threshold"
+                    value="{{.SuperchargedFuelThreshold}}">
                 </div>
               </div>
               <div class="row mb-3">
-                <label class="col-lg-6 control-label">Barge Bonus RP Point Threshold</label>
+                <label class="col-lg-6 control-label">Traversal Point Threshold</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" id="bargeBonusPointThreshold" name="bargeBonusPointThreshold"
-                    value="{{.BargeBonusPointThreshold}}">
-                </div>
-              </div>
-              <div class="row">
-                <label class="col-lg-6 control-label">Include Algae Points Towards Barge Bonus</label>
-                <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="includeAlgaeInBargeBonus"
-                    name="includeAlgaeInBargeBonus" {{if .IncludeAlgaeInBargeBonus}} checked{{end}}>
+                  <input type="text" class="form-control" id="traversal_point_threshold" name="traversal_point_threshold"
+                    value="{{.TraversalPointThreshold}}">
                 </div>
               </div>
             </fieldset>
           </div>
+
           <div class="tab-pane" id="field" role="tabpanel">
             <fieldset class="mb-4">
               <legend>Networking</legend>

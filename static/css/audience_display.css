@@ -9,42 +9,60 @@ html {
   -moz-user-select: none;
   overflow: hidden;
 }
-#overlayCentering {
-  position: absolute;
+/*Match play 顯示 */
+#overlayCentering { 
+  position:fixed;
   bottom: -210px;
   width: 100%;
-  height: 170px;
+  height: 150px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  z-index: 1;
 }
 #matchOverlayContainer {
   display: flex;
+  width: 100%;
+  height: 100%;
 }
 #matchOverlay {
   display: flex;
+  width: 100%;
   flex-direction: column;
-  border: 1px solid #222;
+  /*border: 1px solid #222;*/
   color: #222;
-  font-size: 22px;
+  font-size: 50px;
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
+}
+.Dive {
+  height: 100%;
+  margin: 0 0px;
+  background-color: #ffff;
+}
+.Reescape {
+  height: 100%;
+  margin: 0 0px;
+  background-color: #ffff;
 }
 #matchOverlayTop {
-  height: 100px;
+  height: 100%;
+  bottom: 0;
   display: flex;
 }
 .playoff-alliance {
   position: relative;
   top: 31px;
-  width: 40px;
+  width: 100px;
   height: 40px;
-  padding: 0 5px;
+  padding: 0 0px;
   z-index: -1;
   display: flex;
   align-items: center;
   background-color: #fc0;
   color: #222;
   border: 1px solid #222;
-  font-size: 15px;
+  font-size: 30px;
   font-weight: 200;
 }
 #leftPlayoffAlliance {
@@ -61,18 +79,37 @@ html {
   border-bottom-right-radius: 50%;
   border-left: none;
 }
+
+.Wrapper {
+  display: flex;
+  flex-direction: column; /* 垂直排列 */
+  align-items: center;
+  width: 38vw; /* 或指定寬度 */
+
+}
+#leftWrapper{
+  left: 0;
+}
+#rightWrapper{
+  right: 0;
+}
+/* 動畫後的隊伍號碼*/
 .teams {
-  width: 70px;
-  height: 100%;
+  width: 100%;
+  height: 32%;
   display: none;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
   background-color: #fff;
-  font-family: "FuturaLT";
-  font-size: 20px;
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
+  font-size: 25px;
   line-height: 25px;
+  border: 1px solid #000;
+
 }
+
 .teams div[data-yellow-card=true] {
   width: 90%;
   height: 32%;
@@ -82,103 +119,186 @@ html {
   align-items: center;
   background-color: #fc0;
 }
+.team {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
 #leftTeams {
   border-right: 1px solid #222;
+
 }
 #rightTeams {
   border-left: 1px solid #222;
+
 }
 .reversible-left[data-reversed=false], .reversible-right[data-reversed=true] {
-  background-color: #ff4444;
+  background-color: #831e12;
 }
 .reversible-left[data-reversed=true], .reversible-right[data-reversed=false] {
-  background-color: #2080ff;
+  background-color: #004172;
 }
+
 .score {
-  width: 0;
-  height: 100%;
+  position: relative; /* 新增這一行 */
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+  width: 0vw;
+  height: 80%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
 }
 .score-right {
   justify-content: flex-end;
 }
-.avatars {
+
+
+/*.avatars {
   min-width: 50px;
   height: 100%;
   display: none;
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
-}
+}*/
 .avatar {
   height: 25px;
 }
+
+.number {
+  width:33%;
+  display: flex;
+  flex-direction: column; /* 垂直排列 */
+  top: 10px;
+  /*justify-content: center; /* 垂直置中 */
+  align-items: center; /* 水平置中 */
+  gap: 15px; /* 兩行間距 */
+}
+#rednumber{
+  background-color: #ed1c24;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+#bluenumber{
+    background-color:#2080ff;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+
+}
+.number-score{
+  display: flex;
+  width: 30vw;
+  height: 125px;
+  flex-direction: row;
+  justify-content: space-between;
+  border: 1px solid #000;
+  background-color: #ffff;
+}
+.number span {
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;
+  font-size: 25px; /* 你可以調整大小 */
+  color: #fff;
+}
 .score-number {
-  width: 130px;
-  height: 100%;
+  width: 120px;
+  height: 40%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: "FuturaLTBold";
-  font-size: 55px;
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
+  font-size: 60px;
   color: #fff;
   opacity: 0;
 }
-.score-right .score-fields {
+.score-right .score-left {
   align-items: flex-end;
+
 }
 .score-fields {
-  height: 100%;
-  width: 0;
-  display: none;
-  flex-direction: column;
+  display: none; /* JS 會改為 flex */
+  flex-direction: row;
   justify-content: space-evenly;
-  opacity: 0;
+  align-items: center; /* 改為 center，確保所有圖標在同一水平線上 */
+  position: absolute; /* 從 fixed 改為 absolute */
+  bottom: 15px;
+  height: 60px; /* 給予固定高度，不要用 5%，避免內容撐開不一 */
 }
 .score-field {
   display: flex;
   flex-direction: row;
+  align-items: center; /* 確保圖標跟數字對齊 */
+  justify-content: center;
 }
+
 .coral-icon {
-  width: 35px;
+  width: 40px;
   margin: 0 12px;
 }
 .algae-icon {
-  width: 31px;
+  width: 35px;
   margin: 0 14px;
 }
-.score-field > div {
+/* 新增：包裹容器樣式 */
+.shift-info-wrapper {
+  position: absolute;
+  top: 5px; /* 固定在圓盤上方 */
+  width: 100%;
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center;     /* 垂直對齊 */
+  gap: 5px;                /* 數字與秒數間的微小間距 */
+}
+
+/* 調整 Shift 數字與秒數的字體 */
+#shiftCounter, #shiftTime {
+  font-family: 'Arboto Bold', sans-serif;
+  font-size: 26px; /* 稍微縮小字體以利並排 */
+  font-weight: 700;
+  color: #222;
+  white-space: nowrap; /* 避免換行 */
+}
+
+#coopetition{
+  width: 31px;
+  display: flex;
+  top: 0px;
+  margin: 0 14px;
+}
+.score-field>div {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 70px;
-  font-family: "FuturaLTBold";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
   font-size: 27px;
   line-height: 27px;
   color: #fff;
 }
 #matchCircle {
   position: absolute;
-  top: -25px;
-  border-radius: 50%;
-  width: 150px;
-  height: 150px;
-  background-color: #fff;
-  border: 1px solid #222;
+  top: 40px;
+  /*border-radius: 50%; 改成方形*/
+  width: 180px;
+  height: 125px;
+  /*background-color: #fff;
+  border: 1px solid #222;*/
 }
 #logo {
   position: relative;
-  top: 38px;
-  height: 70px;
+  top: 35px;
+  height: 50px;
 }
 #matchTime {
-  position: relative;
-  top: 17px;
-  height: 60px;
+  position: absolute;
+  bottom: 20px; /* 固定在容器底部 */
+  left: 0;
+  right: 0;
+  height: 70px;
   color: #222;
-  font-family: "FuturaLTBold";
-  font-size: 32px;
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;
+  font-size: 50px;
+  text-align: center;
   opacity: 0;
 }
 #eventMatchInfo {
@@ -187,10 +307,11 @@ html {
   justify-content: space-between;
   z-index: -1;
   align-items: flex-end;
-  padding: 0 5px;
+  padding: 0 0px;
   background-color: #444;
-  font-family: "FuturaLT";
-  font-size: 15px;
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
+  font-size: 20px;
   line-height: 30px;
   color: #fff;
 }
@@ -216,7 +337,7 @@ html {
   height: 50px;
   z-index: -1;
   padding: 0 20px;
-  display: flex;
+  display: none;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -264,7 +385,7 @@ html {
   background-size: 100%;
 }
 .blinds.background {
-  background-image: url("/static/img/endofmatch-bg.png");
+  background-image: url("/static/img/background.001.jpeg");
 }
 .blindsCenter {
   position: absolute;
@@ -302,6 +423,8 @@ html {
   top: 55px;
   height: 220px;
 }
+
+/*final 分數畫面*/
 #finalScoreCentering {
   position: fixed;
   width: 100%;
@@ -311,7 +434,7 @@ html {
   align-items: center;
 }
 #finalScore {
-  width: 1000px;
+  width: 1200px;
   display: flex;
   flex-direction: column;
   border: 2px solid #333;
@@ -327,11 +450,38 @@ html {
   line-height: 200px;
   border-bottom: 2px solid #333;
   color: #fff;
-  font-family: "FuturaLTBold";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
   font-size: 100px;
   text-align: center;
   text-shadow: 0 0 3px #333;
 }
+
+
+#winVideoPlayer{
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  z-index: 9999;
+  background:transparent;
+}
+#leftFinalScore{
+  background-color: red;
+  
+}
+#leftFinalteams{
+  background-color: red;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);}
+#rightFinalScore{
+  background-color: #2080ff;
+}
+#rightFinalteams{
+  background-color: #2080ff;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);}
 #leftFinalScore {
   padding-right: 150px;
 }
@@ -339,14 +489,15 @@ html {
   padding-left: 150px;
 }
 .final-breakdown {
-  height: 380px;
+  height: 360px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   background-color: #fff;
   color: #222;
-  font-family: "FuturaLT";
-  font-size: 24px;
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
+  font-size: 30px;
 }
 #leftFinalBreakdown {
   width: 60px;
@@ -399,7 +550,8 @@ html {
 .final-team-number {
   width: 85px;
   color: #fff;
-  font-family: "FuturaLT";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
   font-size: 32px;
   line-height: 43px;
   text-align: center;
@@ -441,6 +593,14 @@ html {
   color: #fff;
   font-size: 20px;
 }
+
+
+.final-rank-point{
+  display: flex;
+  flex-direction: row;
+}
+
+
 .final-destination {
   margin-top: 10px;
   width: 200px;
@@ -464,7 +624,8 @@ html {
   justify-content: space-between;
   align-items: center;
   padding: 0 25px;
-  font-family: "FuturaLT";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
   font-size: 28px;
   background-color: #444;
   color: #fff;
@@ -522,7 +683,8 @@ html {
   vertical-align: middle;
 }
 #sponsor h1, #sponsor h2 {
-  font-family: "FuturaLTBold";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
   margin: 0;
 }
 #sponsor h1 {
@@ -560,7 +722,8 @@ html {
   background-color: #fff;
   border: 2px solid #222;
   font-size: 2em;
-  font-family: "FuturaLT";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
 }
 .unpicked {
   width: 5.5em;
@@ -590,7 +753,8 @@ html {
   background-color: #fff;
   border: 2px solid #222;
   text-align: center;
-  font-family: "FuturaLT";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
   font-size: 2.6em;
 }
 #allianceSelectionTable tr:nth-child(even) {
@@ -598,7 +762,8 @@ html {
 }
 .alliance-cell {
   padding: 0px 20px;
-  font-family: "FuturaLT";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
   color: #999;
 }
 .selection-cell {
@@ -626,17 +791,20 @@ html {
   position: relative;
   top: 10px;
   display: none;
-  font-family: "FuturaLTBold";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
 }
 #lowerThirdBottom {
   display: none;
-  font-family: "FuturaLT";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
   font-size: 23px;
   position: relative;
   top: 5px;
 }
 #lowerThirdSingle {
   display: none;
-  font-family: "FuturaLTBold";
+  font-family: 'Arboto Bold', sans-serif;
+  font-weight: 700;  /* bold */
   line-height: 87px;
 }
