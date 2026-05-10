@@ -56,11 +56,11 @@ type DriverStationConnection struct {
 	lastRobotLinkedTime       time.Time
 	packetCount               int
 	tcpConn                   net.Conn
-	udpAddrPort               netip.AddrPort
-	newDs                     bool
 	log                       *TeamMatchLog
 	udpSendPacket             [1500]byte
 	SentGameData              string
+	udpAddrPort               netip.AddrPort
+	newDs                     bool
 
 	// WrongStation indicates if the team in the station is the incorrect team
 	// by being non-empty. If the team is in the correct station, or no team is
@@ -108,8 +108,7 @@ func newDriverStationConnection(
 	}, nil
 }
 
-// Loops indefinitely to read packets and update connection status.
-func (arena *Arena) listenForDsUdpPackets() {
+func (arena *Arena) initializeUdpListener() {
 	udpAddress, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", network.ServerIpAddress, driverStationUdpReceivePort))
 	if err != nil {
 		log.Printf("Error resolving driver station UDP address: %v", err)
@@ -121,9 +120,16 @@ func (arena *Arena) listenForDsUdpPackets() {
 		log.Fatalf("Error opening driver station UDP socket: %v", err)
 	}
 	log.Printf("Listening for driver stations on UDP port %d\n", driverStationUdpReceivePort)
-	arena.udpConnection = listener
+	arena.DriverStationUdpSocket = listener
+}
 
-	defer listener.Close()
+// Loops indefinitely to read packets and update connection status.
+func (arena *Arena) listenForDsUdpPackets() {
+	if arena.DriverStationUdpSocket == nil {
+		return
+	}
+
+	listener := arena.DriverStationUdpSocket
 
 	data := make([]byte, 1500)
 	for {
@@ -324,15 +330,17 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) []byte 
 
 // Builds and sends the next control packet to the Driver Station.
 func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena, gameData string) error {
-	// Skip if UDP listener has not been started
-	if arena.udpConnection == nil {
+	gameDataErr := dsConn.checkGameData(gameData)
+	packet := dsConn.encodeControlPacket(arena)
+
+	// Skip if UDP listener has not been started, or addr is invalid
+	if arena.DriverStationUdpSocket == nil || !dsConn.udpAddrPort.IsValid() {
 		return nil
 	}
 
-	gameDataErr := dsConn.checkGameData(gameData)
-	packet := dsConn.encodeControlPacket(arena)
-	_, err := arena.udpConnection.WriteToUDPAddrPort(packet[:], dsConn.udpAddrPort)
+	_, err := arena.DriverStationUdpSocket.WriteToUDPAddrPort(packet[:], dsConn.udpAddrPort)
 	if err != nil {
+		log.Printf("Error sending control packet to Team %d: %v", dsConn.TeamId, err)
 		return err
 	}
 

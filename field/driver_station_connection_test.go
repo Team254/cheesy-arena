@@ -4,6 +4,7 @@
 package field
 
 import (
+	"fmt"
 	"net"
 	"testing"
 	"time"
@@ -264,7 +265,7 @@ func TestNewDriverStationConnection_UdpPortSelection(t *testing.T) {
 	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, driverStationRoboRioUdpPort, false)
 	assert.Nil(t, err)
 	defer dsConn.close()
-	assert.Equal(t, uint16(driverStationRoboRioUdpPort), dsConn.udpAddrPort.Port())
+	assert.Contains(t, dsConn.udpAddrPort.String(), fmt.Sprintf(":%d", driverStationRoboRioUdpPort))
 
 	tcpConnLite := setupFakeTcpConnection(t)
 	defer tcpConnLite.Close()
@@ -273,7 +274,7 @@ func TestNewDriverStationConnection_UdpPortSelection(t *testing.T) {
 	dsConnLite, err := newDriverStationConnection(254, "R1", tcpConnLite, driverStationRoboRioUdpPortLite, false)
 	assert.Nil(t, err)
 	defer dsConnLite.close()
-	assert.Equal(t, uint16(driverStationRoboRioUdpPortLite), dsConnLite.udpAddrPort.Port())
+	assert.Contains(t, dsConnLite.udpAddrPort.String(), fmt.Sprintf(":%d", driverStationRoboRioUdpPortLite))
 }
 
 func setupFakeTcpConnection(t *testing.T) net.Conn {
