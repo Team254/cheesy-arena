@@ -65,5 +65,10 @@ func UpdateMatchSounds() {
 			"wav",
 			-1,
 		},
+		{
+			"field_reset",
+			"wav",
+			-1,
+		},
 	}
 }

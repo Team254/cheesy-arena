@@ -284,22 +284,9 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 				continue
 			}
 		case "signalVolunteers":
-			if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
-				// Don't allow clearing the field until the match is over.
-				continue
-			}
-			web.arena.FieldVolunteers = true
-			web.arena.AllianceStationDisplayMode = "signalCount"
-			web.arena.AllianceStationDisplayModeNotifier.Notify()
+			web.arena.SignalVolunteers()
 		case "signalReset":
-			if web.arena.MatchState != field.PostMatch && web.arena.MatchState != field.PreMatch {
-				// Don't allow clearing the field until the match is over.
-				continue
-			}
-			web.arena.FieldVolunteers = false
-			web.arena.FieldReset = true
-			web.arena.AllianceStationDisplayMode = "fieldReset"
-			web.arena.AllianceStationDisplayModeNotifier.Notify()
+			web.arena.SignalReset()
 		case "commitResults":
 			if web.arena.MatchState != field.PostMatch {
 				ws.WriteError("cannot commit match while it is in progress")

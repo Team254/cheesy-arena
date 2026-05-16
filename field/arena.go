@@ -1200,6 +1200,34 @@ func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) 
 	}
 }
 
+// Set the field lights and team signs to purple, if not in a match. 
+func (arena *Arena) SignalVolunteers() {
+	if arena.MatchState != PostMatch && arena.MatchState != PreMatch {
+		// Don't signal volunteers during matches.
+		return
+	}
+	arena.FieldVolunteers = true
+	arena.FieldReset = false
+	arena.AllianceStationDisplayMode = "signalCount"
+	arena.AllianceStationDisplayModeNotifier.Notify()
+}
+
+// Set the field lights and team signs to green, if not in a match.
+func (arena *Arena) SignalReset() {
+	if arena.MatchState != PostMatch && arena.MatchState != PreMatch {
+		// Don't signal reset during matches.
+		return
+	}
+	if !arena.FieldReset {
+		// Play the audio cue once, even if reset is signaled multiple times.
+		arena.PlaySound("field_reset")
+	}
+	arena.FieldVolunteers = false
+	arena.FieldReset = true
+	arena.AllianceStationDisplayMode = "fieldReset"
+	arena.AllianceStationDisplayModeNotifier.Notify()
+}
+
 func (arena *Arena) handleSounds(matchTimeSec float64) {
 	if arena.MatchState == PreMatch || arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout {
 		// Only apply this logic during a match.
