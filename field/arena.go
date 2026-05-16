@@ -1231,10 +1231,39 @@ func (arena *Arena) positionPostMatchScoreReady(position string) bool {
 	return numPanels > 0 && arena.ScoringPanelRegistry.GetNumScoreCommitted(position) >= numPanels
 }
 
+func (arena *Arena) checkForNexusLineupChanges() {
+	if !arena.EventSettings.NexusEnabled || !arena.CurrentMatch.ShouldAllowNexusSubstitution() {
+		return
+	}
+
+	if arena.MatchState != PreMatch {
+		// Only check for an updated lineup pre-match.
+		return
+	}
+
+	lineup, err := arena.NexusClient.GetLineup(arena.CurrentMatch.TbaMatchKey)
+	if err == nil {
+		if !arena.CurrentMatch.IsLineupEqual(lineup[0], lineup[1], lineup[2], lineup[3], lineup[4], lineup[5]) {
+			log.Printf("Found updated lineup from Nexus, substituting")
+			err = arena.SubstituteTeams(lineup[0], lineup[1], lineup[2], lineup[3], lineup[4], lineup[5])
+			if err == nil {
+				log.Printf(
+					"Successfully updated lineup for match %s from Nexus: %v", arena.CurrentMatch.TbaMatchKey.String(), *lineup,
+				)
+			} else {
+				log.Printf("Failed to substitute teams using Nexus lineup: %s", err.Error())
+			}
+		}
+	} else {
+		log.Printf("Failed to load lineup from Nexus: %s", err.Error())
+	}
+}
+
 // Performs any actions that need to run at the interval specified by periodicTaskPeriodSec.
 func (arena *Arena) runPeriodicTasks() {
 	arena.updateEarlyLateMessage()
 	arena.purgeDisconnectedDisplays()
+	arena.checkForNexusLineupChanges()
 }
 
 // trussLightWarningSequence generates the sequence of truss light states during the "sonar ping" warning sound. It
