@@ -27,7 +27,7 @@ const (
 	arenaLoopWarningMs       = 5
 	dsPacketPeriodMs         = 500
 	dsPacketWarningMs        = 550
-	periodicTaskPeriodSec    = 30
+	periodicTaskPeriodSec    = 15
 	matchEndScoreDwellSec    = 3
 	postTimeoutSec           = 4
 	preLoadNextMatchDelaySec = 5
