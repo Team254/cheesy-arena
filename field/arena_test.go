@@ -1356,3 +1356,71 @@ func TestPlcMatchCycleGameSpecificWithCoopDisabled(t *testing.T) {
 		)
 	}
 }
+
+func TestSignalVolunteers(t *testing.T) {
+	arena := setupTestArena(t)
+
+	// Test that SignalVolunteers only works in PreMatch and PostMatch states.
+	for _, state := range []MatchState{StartMatch, WarmupPeriod, AutoPeriod, PausePeriod, TeleopPeriod} {
+		arena.MatchState = state
+		arena.FieldVolunteers = false
+		arena.SignalVolunteers()
+		assert.False(t, arena.FieldVolunteers)
+		assert.NotEqual(t, "signalCount", arena.AllianceStationDisplayMode)
+	}
+
+	// Test SignalVolunteers in PreMatch state.
+	arena.MatchState = PreMatch
+	arena.FieldReset = true
+	arena.AllianceStationDisplayMode = "match"
+	arena.SignalVolunteers()
+	assert.True(t, arena.FieldVolunteers)
+	assert.False(t, arena.FieldReset)
+	assert.Equal(t, "signalCount", arena.AllianceStationDisplayMode)
+
+	// Test SignalVolunteers in PostMatch state.
+	arena.MatchState = PostMatch
+	arena.FieldVolunteers = false
+	arena.FieldReset = false
+	arena.AllianceStationDisplayMode = "match"
+	arena.SignalVolunteers()
+	assert.True(t, arena.FieldVolunteers)
+	assert.False(t, arena.FieldReset)
+	assert.Equal(t, "signalCount", arena.AllianceStationDisplayMode)
+}
+
+func TestSignalReset(t *testing.T) {
+	arena := setupTestArena(t)
+
+	// Test that SignalReset only works in PreMatch and PostMatch states.
+	for _, state := range []MatchState{StartMatch, WarmupPeriod, AutoPeriod, PausePeriod, TeleopPeriod} {
+		arena.MatchState = state
+		arena.FieldReset = false
+		arena.FieldVolunteers = false
+		arena.AllianceStationDisplayMode = "match"
+		arena.SignalReset()
+		assert.False(t, arena.FieldReset)
+		assert.False(t, arena.FieldVolunteers)
+		assert.NotEqual(t, "fieldReset", arena.AllianceStationDisplayMode)
+	}
+
+	// Test SignalReset in PreMatch state.
+	arena.MatchState = PreMatch
+	arena.FieldReset = false
+	arena.FieldVolunteers = true
+	arena.AllianceStationDisplayMode = "match"
+	arena.SignalReset()
+	assert.False(t, arena.FieldVolunteers)
+	assert.True(t, arena.FieldReset)
+	assert.Equal(t, "fieldReset", arena.AllianceStationDisplayMode)
+
+	// Test SignalReset in PostMatch state.
+	arena.MatchState = PostMatch
+	arena.FieldReset = false
+	arena.FieldVolunteers = true
+	arena.AllianceStationDisplayMode = "match"
+	arena.SignalReset()
+	assert.False(t, arena.FieldVolunteers)
+	assert.True(t, arena.FieldReset)
+	assert.Equal(t, "fieldReset", arena.AllianceStationDisplayMode)
+}
