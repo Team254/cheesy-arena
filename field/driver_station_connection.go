@@ -8,14 +8,13 @@ package field
 import (
 	"errors"
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
 	"io"
 	"log"
 	"net"
 	"time"
-
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
 )
 
 // FMS uses 1121 for sending UDP packets, and FMS Lite uses 1120. Using 1121
@@ -108,17 +107,21 @@ func newDriverStationConnection(
 
 // Loops indefinitely to read packets and update connection status.
 func (arena *Arena) listenForDsUdpPackets() {
-	udpAddress, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", network.ServerIpAddress, driverStationUdpReceivePort))
+	bindAddress := listenAddress(driverStationUdpReceivePort)
+	udpAddress, err := net.ResolveUDPAddr("udp4", bindAddress)
 	if err != nil {
-		log.Printf("Error resolving driver station UDP address: %v", err)
-		log.Printf("Change IP address to %s and restart Cheesy Arena to fix.", network.ServerIpAddress)
-		return
+		log.Fatalf(
+			"Error resolving driver station UDP address: %v. Use the -dev flag to unrestrict server IP address for "+
+				"development, or change IP address to %s.",
+			err,
+			network.ServerIpAddress,
+		)
 	}
 	listener, err := net.ListenUDP("udp4", udpAddress)
 	if err != nil {
 		log.Fatalf("Error opening driver station UDP socket: %v", err)
 	}
-	log.Printf("Listening for driver stations on UDP port %d\n", driverStationUdpReceivePort)
+	log.Printf("Listening for driver stations on UDP address %s\n", bindAddress)
 
 	defer listener.Close()
 
@@ -320,26 +323,32 @@ func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena, gameData 
 	return gameDataErr
 }
 
+func listenAddress(port int) string {
+	if network.DevMode {
+		return fmt.Sprintf(":%d", port)
+	}
+	return fmt.Sprintf("%s:%d", network.ServerIpAddress, port)
+}
+
 // Listens for TCP connection requests to Cheesy Arena from driver stations.
 func (arena *Arena) listenForDriverStations() {
-	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", network.ServerIpAddress, driverStationTcpListenPort))
+	bindAddress := listenAddress(driverStationTcpListenPort)
+	l, err := net.Listen("tcp", bindAddress)
 	if err != nil {
-		log.Printf("Error opening driver station TCP socket: %v", err.Error())
-		log.Printf("Change IP address to %s and restart Cheesy Arena to fix.", network.ServerIpAddress)
-		return
+		log.Fatalf(
+			"Error opening driver station TCP socket: %v. Use the -dev flag to unrestrict server IP address for "+
+				"development, or change IP address to %s.",
+			err,
+			network.ServerIpAddress,
+		)
 	}
 	defer l.Close()
 
+	log.Printf("Listening for driver stations on TCP address %s\n", bindAddress)
 	arena.serveDriverStations(l)
 }
 
 func (arena *Arena) serveDriverStations(listener net.Listener) {
-	if tcpAddr, ok := listener.Addr().(*net.TCPAddr); ok {
-		log.Printf("Listening for driver stations on TCP port %d\n", tcpAddr.Port)
-	} else {
-		log.Printf("Listening for driver stations on TCP address %s\n", listener.Addr())
-	}
-
 	for {
 		tcpConn, err := listener.Accept()
 		if err != nil {
@@ -478,7 +487,9 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 }
 
 func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {
-	log.Printf("Handling invalid TCP connection from %v with status %d and station %d", tcpConn.RemoteAddr(), status, station)
+	log.Printf(
+		"Handling invalid TCP connection from %v with status %d and station %d", tcpConn.RemoteAddr(), status, station,
+	)
 	var assignmentPacket [5]byte
 	assignmentPacket[0] = 0  // Packet size
 	assignmentPacket[1] = 3  // Packet size

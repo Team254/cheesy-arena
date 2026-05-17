@@ -16,13 +16,13 @@ const httpPort = 8080
 
 // Main entry point for the application.
 func main() {
+	flag.BoolVar(&network.DevMode, "dev", false, "Bind driver station listeners to all IP addresses for development")
+	flag.Parse()
+
 	arena, err := field.NewArena(eventDbPath)
 	if err != nil {
 		log.Fatalln("Error during startup: ", err)
 	}
-
-	flag.StringVar(&network.ServerIpAddress, "serverIP", network.DefaultServerIpAddress, "Sets the FMS server IP")
-	flag.Parse()
 
 	// Start the web server in a separate goroutine.
 	web := web.NewWeb(arena)

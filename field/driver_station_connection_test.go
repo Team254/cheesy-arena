@@ -5,13 +5,28 @@ package field
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
+	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
 	"time"
-
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/stretchr/testify/assert"
 )
+
+func TestDriverStationListenAddress(t *testing.T) {
+	oldDevMode := network.DevMode
+	t.Cleanup(
+		func() {
+			network.DevMode = oldDevMode
+		},
+	)
+
+	network.DevMode = false
+	assert.Equal(t, network.ServerIpAddress+":1750", listenAddress(1750))
+
+	network.DevMode = true
+	assert.Equal(t, ":1750", listenAddress(1750))
+}
 
 func TestEncodeControlPacket(t *testing.T) {
 	arena := setupTestArena(t)

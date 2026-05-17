@@ -10,7 +10,9 @@ See `go.mod` for what version of Go to use.
 1. `./cheesy-arena`
    Runs the server; open `http://localhost:8080` in a browser.
 1. `go test ./...`
-   Runs all Go tests across packages.
+   Runs all Go tests across packages. Should be run after making any code changes to ensure nothing is broken.
+1. `go fmt ./...`
+   Formats all Go code in the repo. Should be run after making any code changes to ensure consistent style.
 
 ## Coding Style & Naming Conventions
 Follow standard Go style: tabs for indentation, exported names in `CamelCase`, unexported in `camelCase`. Format code with `gofmt` before submitting changes. If you update a set of enum-style constants, run `go generate ./...` to refresh the generated enum string helpers. Keep package names short and domain-focused (matching existing directories like `field`, `game`, `partner`).
