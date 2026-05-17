@@ -28,7 +28,7 @@ const (
 	arenaLoopWarningMs       = 5
 	dsPacketPeriodMs         = 500
 	dsPacketWarningMs        = 550
-	periodicTaskPeriodSec    = 30
+	periodicTaskPeriodSec    = 15
 	matchEndScoreDwellSec    = 3
 	postTimeoutSec           = 4
 	preLoadNextMatchDelaySec = 5
@@ -1187,6 +1187,34 @@ func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) 
 	}
 }
 
+// Set the field lights and team signs to purple, if not in a match.
+func (arena *Arena) SignalVolunteers() {
+	if arena.MatchState != PostMatch && arena.MatchState != PreMatch {
+		// Don't signal volunteers during matches.
+		return
+	}
+	arena.FieldVolunteers = true
+	arena.FieldReset = false
+	arena.AllianceStationDisplayMode = "signalCount"
+	arena.AllianceStationDisplayModeNotifier.Notify()
+}
+
+// Set the field lights and team signs to green, if not in a match.
+func (arena *Arena) SignalReset() {
+	if arena.MatchState != PostMatch && arena.MatchState != PreMatch {
+		// Don't signal reset during matches.
+		return
+	}
+	if !arena.FieldReset {
+		// Play the audio cue once, even if reset is signaled multiple times.
+		arena.PlaySound("field_reset")
+	}
+	arena.FieldVolunteers = false
+	arena.FieldReset = true
+	arena.AllianceStationDisplayMode = "fieldReset"
+	arena.AllianceStationDisplayModeNotifier.Notify()
+}
+
 func (arena *Arena) handleSounds(matchTimeSec float64) {
 	if arena.MatchState == PreMatch || arena.MatchState == TimeoutActive || arena.MatchState == PostTimeout {
 		// Only apply this logic during a match.
@@ -1218,10 +1246,40 @@ func (arena *Arena) positionPostMatchScoreReady(position string) bool {
 	return numPanels > 0 && arena.ScoringPanelRegistry.GetNumScoreCommitted(position) >= numPanels
 }
 
+func (arena *Arena) checkForUpdatedNexusLineup() {
+	if !(arena.EventSettings.NexusEnabled && arena.CurrentMatch.ShouldAllowNexusSubstitution()) {
+		return
+	}
+
+	if arena.MatchState != PreMatch {
+		// Only check for an updated lineup pre-match.
+		return
+	}
+
+	lineup, err := arena.NexusClient.GetLineup(arena.CurrentMatch.TbaMatchKey)
+	if err != nil {
+		log.Printf("Failed to load lineup from Nexus: %s", err.Error())
+		return
+	}
+
+	if !arena.CurrentMatch.IsLineupEqual(lineup[0], lineup[1], lineup[2], lineup[3], lineup[4], lineup[5]) {
+		log.Printf("Got updated lineup from Nexus, substituting")
+		err = arena.SubstituteTeams(lineup[0], lineup[1], lineup[2], lineup[3], lineup[4], lineup[5])
+		if err != nil {
+			log.Printf("Failed to substitute teams using Nexus lineup: %s", err.Error())
+			return
+		}
+		log.Printf(
+			"Successfully updated lineup for match %s from Nexus: %v", arena.CurrentMatch.TbaMatchKey.String(), *lineup,
+		)
+	}
+}
+
 // Performs any actions that need to run at the interval specified by periodicTaskPeriodSec.
 func (arena *Arena) runPeriodicTasks() {
 	arena.updateEarlyLateMessage()
 	arena.purgeDisconnectedDisplays()
+	arena.checkForUpdatedNexusLineup()
 }
 
 // trussLightWarningSequence generates the sequence of truss light states during the "sonar ping" warning sound. It
