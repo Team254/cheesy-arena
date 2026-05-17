@@ -1002,6 +1002,9 @@ func (arena *Arena) checkCanStartMatch() error {
 		if arena.Plc.GetFieldEStop() {
 			return fmt.Errorf("cannot start match while field emergency stop is active")
 		}
+		if !arena.Plc.IsFtaReady() {
+			return fmt.Errorf("cannot start match until FTA ready switch is active")
+		}
 		for name, status := range arena.Plc.GetArmorBlockStatuses() {
 			if !status {
 				return fmt.Errorf("cannot start match while PLC ArmorBlock %q is not connected", name)

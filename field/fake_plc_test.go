@@ -18,6 +18,7 @@ type FakePlc struct {
 	blueAStops            [3]bool
 	redEthernetConnected  [3]bool
 	blueEthernetConnected [3]bool
+	ftaReady              bool
 	stackLights           [4]bool
 	stackLightBuzzer      bool
 	fieldResetLight       bool
@@ -67,6 +68,10 @@ func (plc *FakePlc) GetTeamAStops() ([3]bool, [3]bool) {
 
 func (plc *FakePlc) GetEthernetConnected() ([3]bool, [3]bool) {
 	return plc.redEthernetConnected, plc.blueEthernetConnected
+}
+
+func (plc *FakePlc) IsFtaReady() bool {
+	return plc.ftaReady
 }
 
 func (plc *FakePlc) ResetMatch() {

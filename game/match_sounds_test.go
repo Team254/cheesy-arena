@@ -25,10 +25,11 @@ func TestUniqueMatchSounds(t *testing.T) {
 			"match_result",
 			"pick_clock",
 			"pick_clock_expired",
+			"field_reset",
 		},
 		matchSoundNames(uniqueSounds),
 	)
-	assert.Len(t, uniqueSounds, 9)
+	assert.Len(t, uniqueSounds, 10)
 	assert.Same(t, MatchSounds[0], uniqueSounds[0])
 	assert.Same(t, MatchSounds[1], uniqueSounds[1])
 	assert.Same(t, MatchSounds[3], uniqueSounds[3])

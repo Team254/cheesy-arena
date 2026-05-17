@@ -87,6 +87,16 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	}
 	arena.Plc.SetAddress("")
 	assert.Nil(t, arena.checkCanStartMatch())
+
+	var plc FakePlc
+	plc.isEnabled = true
+	arena.Plc = &plc
+	err = arena.checkCanStartMatch()
+	if assert.NotNil(t, err) {
+		assert.Contains(t, err.Error(), "cannot start match until FTA ready switch is active")
+	}
+	plc.ftaReady = true
+	assert.Nil(t, arena.checkCanStartMatch())
 }
 
 func TestArenaMatchFlow(t *testing.T) {
@@ -676,6 +686,7 @@ func TestPlcEStopAStop(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc
 	plc.isEnabled = true
+	plc.ftaReady = true
 	arena.Plc = &plc
 
 	arena.Database.CreateTeam(&model.Team{Id: 254})
@@ -888,6 +899,7 @@ func TestPlcFieldEStop(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc
 	plc.isEnabled = true
+	plc.ftaReady = true
 	arena.Plc = &plc
 
 	arena.AllianceStations["R1"].Bypass = true
@@ -932,6 +944,7 @@ func TestPlcMatchCycleEvergreen(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc
 	plc.isEnabled = true
+	plc.ftaReady = true
 	arena.Plc = &plc
 
 	arena.Update()
@@ -1022,6 +1035,7 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	arena := setupTestArena(t)
 	var plc FakePlc
 	plc.isEnabled = true
+	plc.ftaReady = true
 	arena.Plc = &plc
 
 	// Hub counts should be ignored before a match has started, and motors should stay off.
@@ -1143,7 +1157,7 @@ func TestSignalVolunteers(t *testing.T) {
 	arena := setupTestArena(t)
 
 	// Test that SignalVolunteers only works in PreMatch and PostMatch states.
-	for _, state := range []MatchState{StartMatch, WarmupPeriod, AutoPeriod, PausePeriod, TeleopPeriod} {
+	for _, state := range []MatchState{StartMatch, AutoPeriod, PausePeriod, TeleopPeriod, TimeoutActive, PostTimeout} {
 		arena.MatchState = state
 		arena.FieldVolunteers = false
 		arena.SignalVolunteers()
@@ -1175,7 +1189,7 @@ func TestSignalReset(t *testing.T) {
 	arena := setupTestArena(t)
 
 	// Test that SignalReset only works in PreMatch and PostMatch states.
-	for _, state := range []MatchState{StartMatch, WarmupPeriod, AutoPeriod, PausePeriod, TeleopPeriod} {
+	for _, state := range []MatchState{StartMatch, AutoPeriod, PausePeriod, TeleopPeriod, TimeoutActive, PostTimeout} {
 		arena.MatchState = state
 		arena.FieldReset = false
 		arena.FieldVolunteers = false

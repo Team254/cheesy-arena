@@ -82,6 +82,7 @@ func TestPlcGetNames(t *testing.T) {
 			"blueConnected1",
 			"blueConnected2",
 			"blueConnected3",
+			"ftaReady",
 			"redHubSensor1",
 			"redHubSensor2",
 			"redHubSensor3",
@@ -303,6 +304,13 @@ func TestPlcInputs(t *testing.T) {
 	redConnected, blueConnected = plc.GetEthernetConnected()
 	assert.Equal(t, [3]bool{true, true, true}, redConnected)
 	assert.Equal(t, [3]bool{true, true, true}, blueConnected)
+
+	client.inputs[19] = false
+	plc.update()
+	assert.False(t, plc.IsFtaReady())
+	client.inputs[19] = true
+	plc.update()
+	assert.True(t, plc.IsFtaReady())
 }
 
 func TestPlcInputsGameSpecific(t *testing.T) {
