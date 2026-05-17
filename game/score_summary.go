@@ -11,8 +11,10 @@ type ScoreSummary struct {
 	TeleopFuelPoints              int
 	TeleopTowerPoints             int
 	NumFuel                       int
+	NumFuelPostMatch              int
 	NumFuelGoal                   int
 	MatchPoints                   int
+	PostMatchPoints               int
 	FoulPoints                    int
 	Score                         int
 	EnergizedBonusRankingPoint    bool

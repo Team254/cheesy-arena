@@ -15,6 +15,16 @@ func TestTeamSign_GenerateInMatchRearText(t *testing.T) {
 	arena := setupTestArena(t)
 	arena.RedRealtimeScore.CurrentScore = *game.TestScore1()
 	arena.BlueRealtimeScore.CurrentScore = *game.TestScore2()
+	arena.RedRealtimeScore.CurrentScore.Hub.ShiftCounts[game.ShiftPostMatch] = 5
+	arena.BlueRealtimeScore.CurrentScore.Hub.ShiftCounts[game.ShiftPostMatch] = 7
+
+	assert.Equal(t, "01:23 R103-B214 88/100", generateInMatchTeamRearText(arena, true, "01:23"))
+	assert.Equal(t, "01:23 B214-R103 114/360", generateInMatchTeamRearText(arena, false, "01:23"))
+
+	// Check that RP progress is hidden for playoff matches.
+	arena.CurrentMatch.Type = model.Playoff
+	assert.Equal(t, "00:45 R103-B214 ", generateInMatchTeamRearText(arena, true, "00:45"))
+	assert.Equal(t, "00:45 B214-R103 ", generateInMatchTeamRearText(arena, false, "00:45"))
 
 	// TODO: Update for 2026.
 	// assert.Equal(t, "01:23 R080-B162 1/4", generateInMatchTeamRearText(arena, true, "01:23"))

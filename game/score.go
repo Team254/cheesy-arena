@@ -49,6 +49,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 
 	// Calculate teleoperated period points.
 	summary.TeleopFuelPoints = score.Hub.GetTeleopActiveFuelCount()
+	summary.NumFuelPostMatch = score.Hub.GetShiftCount(ShiftPostMatch, true)
 	summary.NumFuel += summary.TeleopFuelPoints
 	for _, status := range score.EndgameTowerStatuses {
 		switch status {
@@ -64,6 +65,7 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 
 	summary.MatchPoints = summary.AutoFuelPoints + summary.AutoTowerPoints +
 		summary.TeleopFuelPoints + summary.TeleopTowerPoints
+	summary.PostMatchPoints = summary.TeleopTowerPoints + summary.NumFuelPostMatch
 
 	// Calculate penalty points.
 	for _, foul := range opponentScore.Fouls {

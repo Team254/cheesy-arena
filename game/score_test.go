@@ -20,8 +20,10 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 70, redSummary.TeleopFuelPoints)
 	assert.Equal(t, 30, redSummary.TeleopTowerPoints)
 	assert.Equal(t, 88, redSummary.NumFuel)
+	assert.Equal(t, 0, redSummary.NumFuelPostMatch)
 	assert.Equal(t, 100, redSummary.NumFuelGoal)
 	assert.Equal(t, 133, redSummary.MatchPoints)
+	assert.Equal(t, 30, redSummary.PostMatchPoints)
 	assert.Equal(t, 0, redSummary.FoulPoints)
 	assert.Equal(t, 133, redSummary.Score)
 	assert.Equal(t, false, redSummary.EnergizedBonusRankingPoint)
@@ -36,8 +38,10 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 79, blueSummary.TeleopFuelPoints)
 	assert.Equal(t, 60, blueSummary.TeleopTowerPoints)
 	assert.Equal(t, 114, blueSummary.NumFuel)
+	assert.Equal(t, 0, blueSummary.NumFuelPostMatch)
 	assert.Equal(t, 360, blueSummary.NumFuelGoal)
 	assert.Equal(t, 189, blueSummary.MatchPoints)
+	assert.Equal(t, 60, blueSummary.PostMatchPoints)
 	assert.Equal(t, 85, blueSummary.FoulPoints)
 	assert.Equal(t, 274, blueSummary.Score)
 	assert.Equal(t, true, blueSummary.EnergizedBonusRankingPoint)
@@ -63,6 +67,32 @@ func TestScoreSummary(t *testing.T) {
 	assert.NotEqual(t, 0, blueScore.Summarize(blueScore).Score)
 	blueScore.PlayoffDq = true
 	assert.Equal(t, 0, blueScore.Summarize(redScore).Score)
+}
+
+func TestScorePostMatchFuelSummary(t *testing.T) {
+	originalThreshold := EnergizedBonusThreshold
+	defer func() {
+		EnergizedBonusThreshold = originalThreshold
+	}()
+	EnergizedBonusThreshold = 100
+
+	score := Score{
+		Hub: Hub{
+			WonAuto:     false,
+			ShiftCounts: [ShiftCount]int{20, 20, 20, 0, 20, 0, 5, 15},
+		},
+		EndgameTowerStatuses: [3]TowerStatus{TowerLevel2, TowerNone, TowerNone},
+	}
+
+	summary := score.Summarize(&Score{})
+	assert.Equal(t, 80, summary.TeleopFuelPoints)
+	assert.Equal(t, 100, summary.NumFuel)
+	assert.Equal(t, 15, summary.NumFuelPostMatch)
+	assert.Equal(t, 20, summary.TeleopTowerPoints)
+	assert.Equal(t, 120, summary.MatchPoints)
+	assert.Equal(t, 35, summary.PostMatchPoints)
+	assert.Equal(t, 120, summary.Score)
+	assert.True(t, summary.EnergizedBonusRankingPoint)
 }
 
 func TestScoreEnergizedBonusRankingPoint(t *testing.T) {

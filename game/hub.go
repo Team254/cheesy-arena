@@ -25,6 +25,7 @@ const (
 	Shift3
 	Shift4
 	ShiftEndgame
+	ShiftPostMatch
 	ShiftCount
 )
 
@@ -103,7 +104,7 @@ func (hub *Hub) GetActiveShiftTiming(matchStartTime, currentTime time.Time) (tim
 // isShiftActive returns true if the Hub is active during the given shift.
 func (hub *Hub) isShiftActive(shift Shift) bool {
 	switch shift {
-	case ShiftAuto, ShiftTransition, ShiftEndgame:
+	case ShiftAuto, ShiftTransition, ShiftEndgame, ShiftPostMatch:
 		return true
 	case Shift1, Shift3:
 		return !hub.WonAuto
@@ -135,8 +136,11 @@ func (hub *Hub) getCurrentShift(matchStartTime, currentTime time.Time) (Shift, b
 	}
 
 	teleopEndTime := matchStartTime.Add(GetDurationToTeleopEnd())
-	if currentTime.Before(teleopEndTime.Add(hub.getScoringGracePeriod(ShiftEndgame))) {
+	if currentTime.Before(teleopEndTime) {
 		return ShiftEndgame, true
+	}
+	if currentTime.Before(teleopEndTime.Add(hub.getScoringGracePeriod(ShiftPostMatch))) {
+		return ShiftPostMatch, true
 	}
 
 	return ShiftCount, false

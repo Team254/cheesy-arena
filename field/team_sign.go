@@ -197,15 +197,16 @@ func generateInMatchTeamRearText(arena *Arena, isRed bool, countdown string) str
 		formatString = "B%03d-R%03d"
 	}
 	scoreSummary := realtimeScore.CurrentScore.Summarize(&opponentRealtimeScore.CurrentScore)
-	// TODO: Don't show Fuel scored during the grace period after the match ends.
-	scoreTotal := scoreSummary.Score - scoreSummary.TeleopTowerPoints
+	scoreTotal := scoreSummary.Score - scoreSummary.PostMatchPoints
 	opponentScoreSummary := opponentRealtimeScore.CurrentScore.Summarize(&realtimeScore.CurrentScore)
-	opponentScoreTotal := opponentScoreSummary.Score - opponentScoreSummary.TeleopTowerPoints
+	opponentScoreTotal := opponentScoreSummary.Score - opponentScoreSummary.PostMatchPoints
 	allianceScores := fmt.Sprintf(formatString, scoreTotal, opponentScoreTotal)
 
 	var coralRankingPointProgress string
 	if arena.CurrentMatch.Type != model.Playoff {
-		coralRankingPointProgress = fmt.Sprintf("%d/%d", scoreSummary.NumFuel, scoreSummary.NumFuelGoal)
+		coralRankingPointProgress = fmt.Sprintf(
+			"%d/%d", scoreSummary.NumFuel-scoreSummary.NumFuelPostMatch, scoreSummary.NumFuelGoal,
+		)
 	}
 
 	return fmt.Sprintf("%s %s %s", countdown, allianceScores, coralRankingPointProgress)

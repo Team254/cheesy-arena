@@ -75,12 +75,12 @@
     },
 
     handle2026RealtimeScore: function (data, currentMatch, redSide, blueSide, updateHubActiveIndicator) {
-      $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.TeleopTowerPoints);
-      $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.TeleopTowerPoints);
+      $(`#${redSide}ScoreNumber`).text(data.Red.ScoreSummary.Score - data.Red.ScoreSummary.PostMatchPoints);
+      $(`#${blueSide}ScoreNumber`).text(data.Blue.ScoreSummary.Score - data.Blue.ScoreSummary.PostMatchPoints);
 
-      $(`#${redSide}FuelNumerator`).text(data.Red.ScoreSummary.NumFuel);
+      $(`#${redSide}FuelNumerator`).text(data.Red.ScoreSummary.NumFuel - data.Red.ScoreSummary.NumFuelPostMatch);
       $(`#${redSide}FuelDenominator`).text(data.Red.ScoreSummary.NumFuelGoal);
-      $(`#${blueSide}FuelNumerator`).text(data.Blue.ScoreSummary.NumFuel);
+      $(`#${blueSide}FuelNumerator`).text(data.Blue.ScoreSummary.NumFuel - data.Blue.ScoreSummary.NumFuelPostMatch);
       $(`#${blueSide}FuelDenominator`).text(data.Blue.ScoreSummary.NumFuelGoal);
       if (currentMatch && currentMatch.Type === matchTypePlayoff) {
         $(`#${redSide}FuelDenominator`).hide();
