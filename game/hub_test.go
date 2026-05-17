@@ -27,23 +27,23 @@ func TestHub_UpdateState(t *testing.T) {
 	hub.UpdateState(4, hubMatchStartTime, hubTimeAfterStart(22.9))
 	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 0, 0, 0, 0, 0, 0})
 
-	// New Fuel is attributed to the previous shift until the grace period expires.
+	// New Fuel is attributed to the previous active shift until the grace period expires.
 	hub.UpdateState(7, hubMatchStartTime, hubTimeAfterStart(35.9))
 	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 0, 0, 0, 0, 0})
 	hub.UpdateState(10, hubMatchStartTime, hubTimeAfterStart(60.9))
 	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 0, 0, 0, 0})
 	hub.UpdateState(14, hubMatchStartTime, hubTimeAfterStart(85.9))
-	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 4, 0, 0, 0})
+	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 0, 4, 0, 0})
 	hub.UpdateState(19, hubMatchStartTime, hubTimeAfterStart(110.9))
-	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 4, 5, 0, 0})
+	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 0, 9, 0, 0})
 	hub.UpdateState(25, hubMatchStartTime, hubTimeAfterStart(135.9))
-	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 4, 5, 6, 0})
+	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 0, 9, 0, 6})
 
 	// Endgame is counted until the end-of-match grace period, after which new Fuel is ignored.
 	hub.UpdateState(32, hubMatchStartTime, hubTimeAfterStart(162.9))
-	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 4, 5, 6, 7})
+	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 0, 9, 0, 13})
 	hub.UpdateState(36, hubMatchStartTime, hubTimeAfterStart(166.1))
-	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 4, 5, 6, 7})
+	assertHubShiftCounts(t, &hub, [ShiftCount]int{4, 3, 3, 0, 9, 0, 13})
 }
 
 func TestHub_UpdateStateDuringExtendedPauseCountsAsTransitionShift(t *testing.T) {
@@ -60,6 +60,27 @@ func TestHub_UpdateStateDuringExtendedPauseCountsAsTransitionShift(t *testing.T)
 	// Even though teleop has not started yet, Fuel scored after the auto grace period is transition Fuel.
 	hub.UpdateState(8, hubMatchStartTime, hubTimeAfterStart(24.5))
 	assertHubShiftCounts(t, &hub, [ShiftCount]int{5, 3, 0, 0, 0, 0, 0})
+}
+
+func TestHub_UpdateStateDoesNotApplyGracePeriodToInactiveShift(t *testing.T) {
+	hub := Hub{WonAuto: true}
+
+	// Shift 1 is inactive after winning auto, so Fuel just after it ends should count in active Shift 2.
+	hub.UpdateState(3, hubMatchStartTime, hubTimeAfterStart(58.5))
+	assertHubShiftCounts(t, &hub, [ShiftCount]int{0, 0, 0, 3, 0, 0, 0})
+	// Shift 3 is also inactive after winning auto, so Fuel just after it ends should count in active Shift 4.
+	hub.UpdateState(7, hubMatchStartTime, hubTimeAfterStart(108.5))
+	assertHubShiftCounts(t, &hub, [ShiftCount]int{0, 0, 0, 3, 0, 4, 0})
+
+	hub = Hub{WonAuto: false}
+
+	// Shift 2 is inactive after losing auto, so Fuel just after it ends should count in active Shift 3.
+	hub.UpdateState(4, hubMatchStartTime, hubTimeAfterStart(83.5))
+	assertHubShiftCounts(t, &hub, [ShiftCount]int{0, 0, 0, 0, 4, 0, 0})
+
+	// Shift 4 is inactive after losing auto, so Fuel just after it ends should count in active endgame.
+	hub.UpdateState(9, hubMatchStartTime, hubTimeAfterStart(133.5))
+	assertHubShiftCounts(t, &hub, [ShiftCount]int{0, 0, 0, 0, 4, 0, 5})
 }
 
 func TestHub_GetTeleopActiveFuelCount(t *testing.T) {

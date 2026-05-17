@@ -35,7 +35,7 @@ func (hub *Hub) UpdateState(count int, matchStartTime, currentTime time.Time) {
 		return
 	}
 
-	shift, ok := getCurrentShift(matchStartTime, currentTime)
+	shift, ok := hub.getCurrentShift(matchStartTime, currentTime)
 	if !ok {
 		return
 	}
@@ -116,29 +116,35 @@ func (hub *Hub) isShiftActive(shift Shift) bool {
 
 // getCurrentShift returns the current shift based on the match time, and a boolean indicating whether the time
 // corresponds to a valid shift.
-func getCurrentShift(matchStartTime, currentTime time.Time) (Shift, bool) {
-	gracePeriod := time.Duration(ScoringGracePeriodSec) * time.Second
-	if currentTime.Before(matchStartTime.Add(GetDurationToAutoEnd() + gracePeriod)) {
+func (hub *Hub) getCurrentShift(matchStartTime, currentTime time.Time) (Shift, bool) {
+	if currentTime.Before(matchStartTime.Add(GetDurationToAutoEnd() + hub.getScoringGracePeriod(ShiftAuto))) {
 		return ShiftAuto, true
 	}
 
 	teleopStartTime := matchStartTime.Add(GetDurationToTeleopStart())
 	shiftEndTime := teleopStartTime.Add(time.Duration(MatchTiming.TransitionShiftDurationSec) * time.Second)
-	if currentTime.Before(shiftEndTime.Add(gracePeriod)) {
+	if currentTime.Before(shiftEndTime.Add(hub.getScoringGracePeriod(ShiftTransition))) {
 		return ShiftTransition, true
 	}
 
 	for shift := Shift1; shift <= Shift4; shift++ {
 		shiftEndTime = shiftEndTime.Add(time.Duration(MatchTiming.ShiftDurationSec) * time.Second)
-		if currentTime.Before(shiftEndTime.Add(gracePeriod)) {
+		if currentTime.Before(shiftEndTime.Add(hub.getScoringGracePeriod(shift))) {
 			return shift, true
 		}
 	}
 
 	teleopEndTime := matchStartTime.Add(GetDurationToTeleopEnd())
-	if currentTime.Before(teleopEndTime.Add(gracePeriod)) {
+	if currentTime.Before(teleopEndTime.Add(hub.getScoringGracePeriod(ShiftEndgame))) {
 		return ShiftEndgame, true
 	}
 
 	return ShiftCount, false
+}
+
+func (hub *Hub) getScoringGracePeriod(shift Shift) time.Duration {
+	if hub.isShiftActive(shift) {
+		return time.Duration(ScoringGracePeriodSec) * time.Second
+	}
+	return 0
 }
