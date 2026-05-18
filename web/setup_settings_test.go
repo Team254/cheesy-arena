@@ -5,6 +5,7 @@ package web
 
 import (
 	"bytes"
+	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
@@ -48,6 +49,52 @@ func TestSetupSettings(t *testing.T) {
 	assert.Equal(t, 24, web.arena.EventSettings.ShiftDurationSec)
 	assert.Equal(t, 32, web.arena.EventSettings.EndgameDurationSec)
 	assert.Equal(t, 140, game.GetTeleopDurationSec())
+}
+
+func TestSetupSettingsBlockedDuringMatch(t *testing.T) {
+	web := setupTestWeb(t)
+	web.arena.EventSettings.Name = "Original Event"
+	web.arena.MatchState = field.AutoPeriod
+
+	recorder := web.postHttpResponse("/setup/settings", "name=Changed Event")
+
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(
+		t, recorder.Body.String(), "Settings cannot be changed while a match is in progress or is uncommitted.",
+	)
+	assert.Equal(t, "Original Event", web.arena.EventSettings.Name)
+}
+
+func TestSetupSettingsAllowedDuringTimeoutStates(t *testing.T) {
+	for _, matchState := range []field.MatchState{field.TimeoutActive, field.PostTimeout} {
+		web := setupTestWeb(t)
+		web.arena.MatchState = matchState
+
+		recorder := web.postHttpResponse("/setup/settings", "name=Changed Event")
+
+		assert.Equal(t, 303, recorder.Code)
+		assert.Equal(t, "Changed Event", web.arena.EventSettings.Name)
+	}
+}
+
+func TestSettingsSaveAllowed(t *testing.T) {
+	testCases := []struct {
+		matchState field.MatchState
+		allowed    bool
+	}{
+		{field.PreMatch, true},
+		{field.StartMatch, false},
+		{field.AutoPeriod, false},
+		{field.PausePeriod, false},
+		{field.TeleopPeriod, false},
+		{field.PostMatch, false},
+		{field.TimeoutActive, true},
+		{field.PostTimeout, true},
+	}
+
+	for _, testCase := range testCases {
+		assert.Equal(t, testCase.allowed, settingsSaveAllowed(testCase.matchState))
+	}
 }
 
 func TestSetupSettingsDoubleElimination(t *testing.T) {

@@ -7,6 +7,8 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/model"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,8 +16,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Team254/cheesy-arena/model"
 )
 
 // Shows the event settings editing page.
@@ -30,6 +30,11 @@ func (web *Web) settingsGetHandler(w http.ResponseWriter, r *http.Request) {
 // Saves the event settings.
 func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.userIsAdmin(w, r) {
+		return
+	}
+
+	if !settingsSaveAllowed(web.arena.MatchState) {
+		web.renderSettings(w, r, "Settings cannot be changed while a match is in progress or is uncommitted.")
 		return
 	}
 
@@ -165,6 +170,10 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/setup/settings", 303)
+}
+
+func settingsSaveAllowed(matchState field.MatchState) bool {
+	return matchState == field.PreMatch || matchState == field.TimeoutActive || matchState == field.PostTimeout
 }
 
 // Sends a copy of the event database file to the client as a download.
