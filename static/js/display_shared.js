@@ -156,6 +156,45 @@
         });
       };
 
+      const resetHubActiveAnimation = function (state, hubActiveCircle, side) {
+        if (!state.active) {
+          hubActiveCircle.stop(true, true);
+          hubActiveCircle.css("transition", "");
+          hubActiveCircle.css("stroke-dashoffset", getActiveProgressStartOffset(side));
+        }
+      };
+
+      const cancelPendingHubActiveReset = function (state, hubActiveCircle) {
+        if (state.hideTimeoutId !== null) {
+          clearTimeout(state.hideTimeoutId);
+          state.hideTimeoutId = null;
+        }
+        if (state.resetTimeoutId !== null) {
+          clearTimeout(state.resetTimeoutId);
+          state.resetTimeoutId = null;
+          hubActiveCircle.off("transitionend.hubActiveReset");
+        }
+      };
+
+      const scheduleHubActiveReset = function (state, hubActiveCircle, side) {
+        const reset = function () {
+          if (state.resetTimeoutId !== null) {
+            clearTimeout(state.resetTimeoutId);
+          }
+          hubActiveCircle.off("transitionend.hubActiveReset");
+          resetHubActiveAnimation(state, hubActiveCircle, side);
+          state.resetTimeoutId = null;
+        };
+
+        hubActiveCircle.off("transitionend.hubActiveReset");
+        hubActiveCircle.on("transitionend.hubActiveReset", function (event) {
+          if (event.originalEvent.propertyName === "opacity") {
+            reset();
+          }
+        });
+        state.resetTimeoutId = setTimeout(reset, activeFadeTimeMs + 100);
+      };
+
       return {
         restartPendingHubActiveIndicators: function () {
           $.each(hubActiveStateBySide, function (side, state) {
@@ -177,20 +216,12 @@
           const hubActiveText = $(`#${side}HubActive svg text`);
           const wasActive = state.active;
 
-          if (state.hideTimeoutId !== null) {
-            clearTimeout(state.hideTimeoutId);
-            state.hideTimeoutId = null;
-          }
-          if (state.resetTimeoutId !== null) {
-            clearTimeout(state.resetTimeoutId);
-            state.resetTimeoutId = null;
-          }
-
           if (activeRemainingSec > 0 && activeDurationSec > 0) {
             const shouldRestartAnimation = !state.active ||
               activeRemainingSec > state.lastRemainingSec ||
               activeDurationSec !== state.lastDurationSec;
 
+            cancelPendingHubActiveReset(state, hubActiveCircle);
             state.active = true;
             state.activeUntilTimeMs = Date.now() + activeRemainingSec * 1000;
             state.pendingRestart = getCurrentScreen() !== "match";
@@ -218,20 +249,11 @@
             if (wasActive) {
               state.hideTimeoutId = setTimeout(function () {
                 hubActiveDiv.attr("data-active", false);
-                state.resetTimeoutId = setTimeout(function () {
-                  if (!state.active) {
-                    hubActiveCircle.stop(true, true);
-                    hubActiveCircle.css("transition", "");
-                    hubActiveCircle.css("stroke-dashoffset", getActiveProgressStartOffset(side));
-                  }
-                  state.resetTimeoutId = null;
-                }, activeFadeTimeMs);
+                scheduleHubActiveReset(state, hubActiveCircle, side);
                 state.hideTimeoutId = null;
               }, activeDwellTimeMs);
-            } else {
-              hubActiveCircle.stop(true, true);
-              hubActiveCircle.css("transition", "");
-              hubActiveCircle.css("stroke-dashoffset", getActiveProgressStartOffset(side));
+            } else if (state.hideTimeoutId === null && state.resetTimeoutId === null) {
+              resetHubActiveAnimation(state, hubActiveCircle, side);
               hubActiveDiv.attr("data-active", false);
             }
           }
