@@ -660,8 +660,10 @@ func createTbaScoringBreakdown(
 	breakdown.HubScore.Shift3Points = score.Hub.GetShiftCount(game.Shift3, true)
 	breakdown.HubScore.Shift4Count = score.Hub.GetShiftCount(game.Shift4, false)
 	breakdown.HubScore.Shift4Points = score.Hub.GetShiftCount(game.Shift4, true)
-	breakdown.HubScore.EndgameCount = score.Hub.GetShiftCount(game.ShiftEndgame, false)
-	breakdown.HubScore.EndgamePoints = score.Hub.GetShiftCount(game.ShiftEndgame, true)
+	breakdown.HubScore.EndgameCount = score.Hub.GetShiftCount(game.ShiftEndgame, false) +
+		score.Hub.GetShiftCount(game.ShiftPostMatch, false)
+	breakdown.HubScore.EndgamePoints = score.Hub.GetShiftCount(game.ShiftEndgame, true) +
+		score.Hub.GetShiftCount(game.ShiftPostMatch, true)
 	breakdown.HubScore.TeleopCount = breakdown.HubScore.TransitionCount + breakdown.HubScore.Shift1Count +
 		breakdown.HubScore.Shift2Count + breakdown.HubScore.Shift3Count + breakdown.HubScore.Shift4Count +
 		breakdown.HubScore.EndgameCount

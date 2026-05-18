@@ -57,7 +57,7 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), ">QF4-3<")
 	assert.Contains(t, recorder.Body.String(), ">133<") // The red score
-	assert.Contains(t, recorder.Body.String(), ">274<") // The blue score
+	assert.Contains(t, recorder.Body.String(), ">289<") // The blue score
 
 	// Check response for non-existent match.
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", 12345))
@@ -67,6 +67,10 @@ func TestMatchReviewEditExistingResult(t *testing.T) {
 	recorder = web.getHttpResponse(fmt.Sprintf("/match_review/%d/edit", match.Id))
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), " Quarterfinal 4-3 ")
+	assert.Contains(t, recorder.Body.String(), "AutoTowerStatuses")
+	assert.Contains(t, recorder.Body.String(), "HubShiftCount7")
+	assert.Contains(t, recorder.Body.String(), "EndgameTowerStatuses")
+	assert.NotContains(t, recorder.Body.String(), "Reef")
 
 	// Update the score to something else.
 	postBody := fmt.Sprintf(

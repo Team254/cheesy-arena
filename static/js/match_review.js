@@ -7,6 +7,9 @@ const scoreTemplate = Handlebars.compile($("#scoreTemplate").html());
 const allianceResults = {};
 let matchResult;
 
+const NUM_ROBOTS = 3;
+const NUM_HUB_SHIFTS = 8;
+
 // Hijack the form submission to inject the data in JSON form so that it's easier for the server to parse.
 $("form").submit(function () {
   updateResults("red");
@@ -27,30 +30,21 @@ $("form").submit(function () {
 // Draws the match-editing form for one alliance based on the cached result data.
 const renderResults = function (alliance) {
   const result = allianceResults[alliance];
+  result.score = normalizeScore(result.score);
   const scoreContent = scoreTemplate(result);
   $(`#${alliance}Score`).html(scoreContent);
 
   // Set the values of the form fields from the JSON results data.
-  getInputElement(alliance, "AutoTroughNearCoral").val(result.score.Reef.AutoTroughNear);
-  getInputElement(alliance, "AutoTroughFarCoral").val(result.score.Reef.AutoTroughFar);
-  getInputElement(alliance, "TroughNearCoral").val(result.score.Reef.TroughNear);
-  getInputElement(alliance, "TroughFarCoral").val(result.score.Reef.TroughFar);
-  getInputElement(alliance, "BargeAlgae").val(result.score.BargeAlgae);
-  getInputElement(alliance, "ProcessorAlgae").val(result.score.ProcessorAlgae);
+  getInputElement(alliance, "HubWonAuto").prop("checked", result.score.Hub.WonAuto);
+  for (let i = 0; i < NUM_HUB_SHIFTS; i++) {
+    getInputElement(alliance, `HubShiftCount${i}`).val(result.score.Hub.ShiftCounts[i]);
+  }
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < NUM_ROBOTS; i++) {
     const i1 = i + 1;
 
-    getInputElement(alliance, `RobotsBypassed${i1}`).prop("checked", result.score.RobotsBypassed[i]);
-    getInputElement(alliance, `LeaveStatuses${i1}`).prop("checked", result.score.LeaveStatuses[i]);
-    getInputElement(alliance, `EndgameStatuses${i1}`, result.score.EndgameStatuses[i]).prop("checked", true);
-
-    for (let j = 0; j < 12; j++) {
-      getInputElement(alliance, `ReefAutoBranchesPipe${i}Branch${j}`).prop(
-        "checked", result.score.Reef.AutoBranches[i][j]
-      );
-      getInputElement(alliance, `ReefBranchesPipe${i}Branch${j}`).prop("checked", result.score.Reef.Branches[i][j]);
-    }
+    getInputElement(alliance, `AutoTowerStatuses${i1}`, result.score.AutoTowerStatuses[i]).prop("checked", true);
+    getInputElement(alliance, `EndgameTowerStatuses${i1}`, result.score.EndgameTowerStatuses[i]).prop("checked", true);
   }
 
   if (result.score.Fouls != null) {
@@ -76,31 +70,20 @@ const updateResults = function (alliance) {
     formData[v.name] = v.value;
   });
 
-  result.score.RobotsBypassed = [];
-  result.score.LeaveStatuses = [];
-  result.score.Reef = {
-    AutoBranches: [],
-    Branches: [],
-    AutoTroughNear: parseInt(formData[`${alliance}AutoTroughNearCoral`]),
-    AutoTroughFar: parseInt(formData[`${alliance}AutoTroughFarCoral`]),
-    TroughNear: parseInt(formData[`${alliance}TroughNearCoral`]),
-    TroughFar: parseInt(formData[`${alliance}TroughFarCoral`]),
+  result.score.AutoTowerStatuses = [];
+  result.score.Hub = {
+    WonAuto: formData[`${alliance}HubWonAuto`] === "on",
+    ShiftCounts: [],
   };
-  result.score.BargeAlgae = parseInt(formData[`${alliance}BargeAlgae`]);
-  result.score.ProcessorAlgae = parseInt(formData[`${alliance}ProcessorAlgae`]);
-  result.score.EndgameStatuses = [];
-  for (let i = 0; i < 3; i++) {
+  result.score.EndgameTowerStatuses = [];
+  for (let i = 0; i < NUM_HUB_SHIFTS; i++) {
+    result.score.Hub.ShiftCounts[i] = parseFormInt(formData[`${alliance}HubShiftCount${i}`]);
+  }
+  for (let i = 0; i < NUM_ROBOTS; i++) {
     const i1 = i + 1;
 
-    result.score.RobotsBypassed[i] = formData[`${alliance}RobotsBypassed${i1}`] === "on";
-    result.score.LeaveStatuses[i] = formData[`${alliance}LeaveStatuses${i1}`] === "on";
-    result.score.EndgameStatuses[i] = parseInt(formData[`${alliance}EndgameStatuses${i1}`]);
-    result.score.Reef.AutoBranches[i] = [];
-    result.score.Reef.Branches[i] = [];
-    for (let j = 0; j < 12; j++) {
-      result.score.Reef.AutoBranches[i][j] = formData[`${alliance}ReefAutoBranchesPipe${i}Branch${j}`] === "on";
-      result.score.Reef.Branches[i][j] = formData[`${alliance}ReefBranchesPipe${i}Branch${j}`] === "on";
-    }
+    result.score.AutoTowerStatuses[i] = parseFormInt(formData[`${alliance}AutoTowerStatuses${i1}`]);
+    result.score.EndgameTowerStatuses[i] = parseFormInt(formData[`${alliance}EndgameTowerStatuses${i1}`]);
   }
 
   result.score.Fouls = [];
@@ -109,8 +92,8 @@ const updateResults = function (alliance) {
     const prefix = `${alliance}Foul${i}`;
     const foul = {
       IsMajor: formData[`${prefix}IsMajor`] === "on",
-      TeamId: parseInt(formData[`${prefix}Team`]),
-      RuleId: parseInt(formData[`${prefix}RuleId`]),
+      TeamId: parseFormInt(formData[`${prefix}Team`]),
+      RuleId: parseFormInt(formData[`${prefix}RuleId`]),
     };
     result.score.Fouls.push(foul);
   }
@@ -125,7 +108,7 @@ const updateResults = function (alliance) {
 const addFoul = function (alliance) {
   updateResults(alliance);
   const result = allianceResults[alliance];
-  result.score.Fouls.push({IsMajor: false, TeamId: 0, Rule: 0});
+  result.score.Fouls.push({IsMajor: false, TeamId: 0, RuleId: 0});
   renderResults(alliance);
 };
 
@@ -150,4 +133,33 @@ const getInputElement = function (alliance, name, value) {
 const getSelectElement = function (alliance, name) {
   const selector = `select[name=${alliance}${name}]`;
   return $(selector);
+};
+
+const normalizeScore = function (score) {
+  score = score || {};
+  score.AutoTowerStatuses = normalizeArray(score.AutoTowerStatuses, NUM_ROBOTS, 0);
+  score.EndgameTowerStatuses = normalizeArray(score.EndgameTowerStatuses, NUM_ROBOTS, 0);
+  score.Hub = score.Hub || {};
+  score.Hub.WonAuto = !!score.Hub.WonAuto;
+  score.Hub.ShiftCounts = normalizeArray(score.Hub.ShiftCounts, NUM_HUB_SHIFTS, 0);
+  score.Fouls = score.Fouls || [];
+  return score;
+};
+
+const normalizeArray = function (array, length, defaultValue) {
+  array = array || [];
+  for (let i = 0; i < length; i++) {
+    if (array[i] === undefined || array[i] === null) {
+      array[i] = defaultValue;
+    }
+  }
+  return array;
+};
+
+const parseFormInt = function (value) {
+  const parsed = parseInt(value, 10);
+  if (isNaN(parsed)) {
+    return 0;
+  }
+  return parsed;
 };

@@ -34,16 +34,16 @@ func TestScoreSummary(t *testing.T) {
 
 	blueSummary := blueScore.Summarize(redScore)
 	assert.Equal(t, 35, blueSummary.AutoFuelPoints)
-	assert.Equal(t, 15, blueSummary.AutoTowerPoints)
+	assert.Equal(t, 30, blueSummary.AutoTowerPoints)
 	assert.Equal(t, 79, blueSummary.TeleopFuelPoints)
 	assert.Equal(t, 60, blueSummary.TeleopTowerPoints)
 	assert.Equal(t, 114, blueSummary.NumFuel)
 	assert.Equal(t, 0, blueSummary.NumFuelPostMatch)
 	assert.Equal(t, 360, blueSummary.NumFuelGoal)
-	assert.Equal(t, 189, blueSummary.MatchPoints)
+	assert.Equal(t, 204, blueSummary.MatchPoints)
 	assert.Equal(t, 60, blueSummary.PostMatchPoints)
 	assert.Equal(t, 85, blueSummary.FoulPoints)
-	assert.Equal(t, 274, blueSummary.Score)
+	assert.Equal(t, 289, blueSummary.Score)
 	assert.Equal(t, true, blueSummary.EnergizedBonusRankingPoint)
 	assert.Equal(t, false, blueSummary.SuperchargedBonusRankingPoint)
 	assert.Equal(t, true, blueSummary.TraversalBonusRankingPoint)
@@ -67,6 +67,33 @@ func TestScoreSummary(t *testing.T) {
 	assert.NotEqual(t, 0, blueScore.Summarize(blueScore).Score)
 	blueScore.PlayoffDq = true
 	assert.Equal(t, 0, blueScore.Summarize(redScore).Score)
+}
+
+func TestScoreAutonomousTowerPoints(t *testing.T) {
+	testCases := []struct {
+		name                string
+		autoTowerStatuses   [3]TowerStatus
+		expectedTowerPoints int
+	}{
+		{"none", [3]TowerStatus{TowerNone, TowerNone, TowerNone}, 0},
+		{"level 1 counts", [3]TowerStatus{TowerLevel1, TowerNone, TowerNone}, 15},
+		{"level 2 and 3 satisfy level 1", [3]TowerStatus{TowerLevel2, TowerLevel3, TowerNone}, 30},
+		{"two eligible robots count", [3]TowerStatus{TowerLevel1, TowerLevel2, TowerNone}, 30},
+		{"three eligible robots capped at two", [3]TowerStatus{TowerLevel1, TowerLevel2, TowerLevel3}, 30},
+	}
+
+	for _, tc := range testCases {
+		t.Run(
+			tc.name,
+			func(t *testing.T) {
+				score := Score{AutoTowerStatuses: tc.autoTowerStatuses}
+				summary := score.Summarize(&Score{})
+				assert.Equal(t, tc.expectedTowerPoints, summary.AutoTowerPoints)
+				assert.Equal(t, tc.expectedTowerPoints, summary.MatchPoints)
+				assert.Equal(t, tc.expectedTowerPoints, summary.Score)
+			},
+		)
+	}
 }
 
 func TestScorePostMatchFuelSummary(t *testing.T) {
@@ -183,7 +210,7 @@ func TestScoreTraversalBonusRankingPoint(t *testing.T) {
 			expectedBonusAwarded: false,
 		},
 
-		// 1. Only one robot counts and at Level 1 only.
+		// 1. Any tower level satisfies the Level 1 auto criterion.
 		{
 			autoTowerStatuses:    [3]TowerStatus{TowerLevel1, TowerLevel3, TowerLevel2},
 			endgameTowerStatuses: [3]TowerStatus{TowerNone, TowerNone, TowerNone},
