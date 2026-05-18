@@ -11,8 +11,9 @@ UI for manually editing the result for a match.
     <form method="POST">
       <fieldset>
         <legend>Edit {{.Match.LongName}} Results</legend>
-        <div id="redScore"></div>
-        <div id="blueScore"></div>
+        {{range $alliance := .Alliances}}
+        {{template "allianceScore" $alliance}}
+        {{end}}
         <div class="row">
           <div class="text-center col-lg-12">
             <a href="{{if .IsCurrentMatch}}/match_play{{else}}/match_review{{end}}">
@@ -25,165 +26,46 @@ UI for manually editing the result for a match.
     </form>
   </div>
 </div>
-<div id="scoreTemplate" style="display: none;">
-  <div class="card card-body bg-{{"{{alliance}}"}} mb-3">
-  <fieldset>
-    <legend>Autonomous</legend>
-    <h6 class="fw-bold mb-2">Tower</h6>
-    <div class="mb-3">
-      {{template "towerStatusRows" dict "field" "AutoTowerStatuses"}}
-    </div>
-    <h6 class="fw-bold mb-2">Hub</h6>
-    <div class="row mb-3">
-      <label class="col-lg-2 control-label">Won Auto?</label>
-      <div class="col-lg-2">
-        <input type="checkbox" class="ms-3" name="{{"{{alliance}}"}}HubWonAuto">
-      </div>
-    </div>
-  </fieldset>
-  <fieldset>
-    <legend>Fuel</legend>
-    <div class="row mb-3">
-      <label class="col-lg-1 text-end">Auto:</label>
-      <div class="col-lg-1">
-        <input type="number" class="form-control input-sm" name="{{"{{alliance}}"}}HubShiftCount0" min="0">
-      </div>
-      <label class="col-lg-1 text-end">Transition:</label>
-      <div class="col-lg-1">
-        <input type="number" class="form-control input-sm" name="{{"{{alliance}}"}}HubShiftCount1" min="0">
-      </div>
-      <label class="col-lg-1 text-end">Shift 1:</label>
-      <div class="col-lg-1">
-        <input type="number" class="form-control input-sm" name="{{"{{alliance}}"}}HubShiftCount2" min="0">
-      </div>
-      <label class="col-lg-1 text-end">Shift 2:</label>
-      <div class="col-lg-1">
-        <input type="number" class="form-control input-sm" name="{{"{{alliance}}"}}HubShiftCount3" min="0">
-      </div>
-    </div>
-    <div class="row mb-3">
-      <label class="col-lg-1 text-end">Shift 3:</label>
-      <div class="col-lg-1">
-        <input type="number" class="form-control input-sm" name="{{"{{alliance}}"}}HubShiftCount4" min="0">
-      </div>
-      <label class="col-lg-1 text-end">Shift 4:</label>
-      <div class="col-lg-1">
-        <input type="number" class="form-control input-sm" name="{{"{{alliance}}"}}HubShiftCount5" min="0">
-      </div>
-      <label class="col-lg-1 text-end">Endgame:</label>
-      <div class="col-lg-1">
-        <input type="number" class="form-control input-sm" name="{{"{{alliance}}"}}HubShiftCount6" min="0">
-      </div>
-      <label class="col-lg-1 text-end">Post-Match:</label>
-      <div class="col-lg-1">
-        <input type="number" class="form-control input-sm" name="{{"{{alliance}}"}}HubShiftCount7" min="0">
-      </div>
-    </div>
-  </fieldset>
-  <fieldset>
-    <legend>Endgame</legend>
-    <div class="mb-3">
-      {{template "towerStatusRows" dict "field" "EndgameTowerStatuses"}}
-    </div>
-  </fieldset>
-  <fieldset>
-    <legend>Fouls</legend>
-    {{"{{#each score.Fouls}}"}}
-    <input type="hidden" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Index"
-    value="{{"{{@index}}"}}">
-    <div class="card card-body bg-dark-{{"{{../alliance}}"}} mb-2">
-    <button type="button" class="btn-close" onclick="deleteFoul('{{"{{../alliance}}"}}', {{"{{@index}}"}});">
-    </button>
+<template id="foulTemplate">
+  <div class="card card-body mb-2">
+    <input type="hidden" data-foul-field="index">
+    <button type="button" class="btn-close" data-foul-action="delete"></button>
     <br/>
     <div class="row mb-3">
       <label class="col-lg-2 control-label">Is Major?</label>
       <div class="col-lg-3">
-        <input type="checkbox" class="input-sm" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}IsMajor">
+        <input type="checkbox" data-foul-field="isMajor">
       </div>
     </div>
     <div class="row mb-3">
       <label class="col-lg-2 control-label">Team</label>
       <div class="col-lg-8">
-        <div class="row">
-          <div class="col-lg-2">
-            <label>
-              <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team1}}"}}">
-              Team {{"{{../team1}}"}}
-            </label>
-          </div>
-          <div class="col-lg-2">
-            <label>
-              <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team2}}"}}">
-              Team {{"{{../team2}}"}}
-            </label>
-          </div>
-          <div class="col-lg-2">
-            <label>
-              <input type="radio" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}Team" value="{{"{{../team3}}"}}">
-              Team {{"{{../team3}}"}}
-            </label>
-          </div>
-        </div>
+        <div class="row" data-foul-teams></div>
       </div>
     </div>
     <div class="row mb-3">
       <label class="col-lg-2 control-label">Rule</label>
       <div class="col-lg-9">
-        <select class="form-control" name="{{"{{../alliance}}"}}Foul{{"{{@index}}"}}RuleId">
-        {{range $rule := .Rules}}
-        <option value="{{$rule.Id}}">{{$rule.RuleNumber}}
-          [{{if $rule.IsRankingPoint}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul + RP
-          {{else}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul{{end}}]: {{$rule.Description}}
-        </option>
-        {{end}}
+        <select class="form-control" data-foul-field="ruleId">
+          {{range $rule := .Rules}}
+          <option value="{{$rule.Id}}">{{$rule.RuleNumber}}
+            [{{if $rule.IsRankingPoint}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul + RP
+            {{else}}{{if $rule.IsMajor}}Major{{else}}Minor{{end}} Foul{{end}}]: {{$rule.Description}}
+          </option>
+          {{end}}
         </select>
       </div>
     </div>
-</div>
-{{"{{/each}}"}}
-<button type="button" class="btn btn-secondary btn-sm" onclick="addFoul('{{"{{alliance}}"}}');">
-Add Foul
-</button>
-<br/><br/>
-</fieldset>
-<fieldset>
-  <legend>Cards</legend>
-  {{range $i := seq 3}}
-  <div class="row mb-3">
-    <label class="col-lg-2 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-    <div class="col-lg-8">
-      <div class="row">
-        <div class="col-lg-2">
-          <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="" checked>
-            None
-          </label>
-        </div>
-        <div class="col-lg-2">
-          <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="yellow">
-            Yellow
-          </label>
-        </div>
-        <div class="col-lg-2">
-          <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="red">
-            Red
-          </label>
-        </div>
-        <div class="col-lg-2">
-          <label>
-            <input type="radio" name="{{"{{alliance}}"}}Team{{"{{team"}}{{$i}}{{"}}"}}Card" value="dq">
-            DQ
-          </label>
-        </div>
-      </div>
-    </div>
   </div>
-  {{end}}
-</fieldset>
-</div>
-</div>
+</template>
+<template id="foulTeamOptionTemplate">
+  <div class="col-lg-2">
+    <label>
+      <input type="radio" data-foul-field="team">
+      <span data-foul-team-label></span>
+    </label>
+  </div>
+</template>
 {{end}}
 {{define "script"}}
 <script src="/static/js/match_review.js"></script>
@@ -193,41 +75,155 @@ Add Foul
   matchResult = jQuery.parseJSON('{{.MatchResultJson}}');
   allianceResults["red"] = {
     alliance: "red",
-    team1: {{.Match.Red1}},
-    team2: {{.Match.Red2}},
-    team3: {{.Match.Red3}},
+    teams: [{{.Match.Red1}}, {{.Match.Red2}}, {{.Match.Red3}}],
     score: matchResult.RedScore,
     cards: matchResult.RedCards,
   };
   allianceResults["blue"] = {
     alliance: "blue",
-    team1: {{.Match.Blue1}},
-    team2: {{.Match.Blue2}},
-    team3: {{.Match.Blue3}},
+    teams: [{{.Match.Blue1}}, {{.Match.Blue2}}, {{.Match.Blue3}}],
     score: matchResult.BlueScore,
     cards: matchResult.BlueCards,
   };
   renderResults("red");
   renderResults("blue");
+  refreshScoreSummaries();
   <!-- @formatter:on -->
 </script>
 {{end}}
-{{define "towerStatusRows"}}
-{{range $i := seq 3}}
-<div class="row mb-2">
-  <label class="col-lg-1 control-label">Team {{"{{team"}}{{$i}}{{"}}"}}</label>
-  <div class="col-lg-2">
-    <input type="radio" name="{{"{{alliance}}"}}{{$.field}}{{$i}}" value="0"> None
+{{define "allianceScore"}}
+<div id="{{.Alliance}}Score" data-alliance="{{.Alliance}}">
+  <div class="card card-body bg-{{.Alliance}} mb-3">
+    <fieldset>
+      <legend>Autonomous</legend>
+      <h6 class="fw-bold mb-2">Tower</h6>
+      <div class="mb-3">
+        {{template "towerStatusRows" dict "alliance" .Alliance "teams" .Teams "field" "AutoTowerStatuses"}}
+      </div>
+      <h6 class="fw-bold mb-2">Hub</h6>
+      <div class="row mb-3">
+        <label class="col-lg-2 control-label">Won Auto?</label>
+        <div class="col-lg-2">
+          <input type="checkbox" class="ms-3" name="{{.Alliance}}HubWonAuto">
+        </div>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Fuel</legend>
+      <div class="row mb-3">
+        {{template "hubShiftCount" dict "alliance" .Alliance "shift" 0 "label" "Auto"}}
+        {{template "hubShiftCount" dict "alliance" .Alliance "shift" 1 "label" "Transition"}}
+        {{template "hubShiftCount" dict "alliance" .Alliance "shift" 2 "label" "Shift 1"}}
+        {{template "hubShiftCount" dict "alliance" .Alliance "shift" 3 "label" "Shift 2"}}
+      </div>
+      <div class="row mb-3">
+        {{template "hubShiftCount" dict "alliance" .Alliance "shift" 4 "label" "Shift 3"}}
+        {{template "hubShiftCount" dict "alliance" .Alliance "shift" 5 "label" "Shift 4"}}
+        {{template "hubShiftCount" dict "alliance" .Alliance "shift" 6 "label" "Endgame"}}
+        {{template "hubShiftCount" dict "alliance" .Alliance "shift" 7 "label" "Post-Match"}}
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Endgame</legend>
+      <div class="mb-3">
+        {{template "towerStatusRows" dict "alliance" .Alliance "teams" .Teams "field" "EndgameTowerStatuses"}}
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Fouls</legend>
+      <div id="{{.Alliance}}Fouls"></div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="addFoul('{{.Alliance}}');">Add Foul</button>
+      <br/><br/>
+    </fieldset>
+    <fieldset>
+      <legend>Cards</legend>
+      {{range $team := .Teams}}
+      <div class="row mb-3">
+        <label class="col-lg-2 control-label">Team {{$team}}</label>
+        <div class="col-lg-8">
+          <div class="row">
+            {{template "cardRadio" dict "alliance" $.Alliance "team" $team "value" "" "label" "None" "checked" true}}
+            {{template "cardRadio" dict "alliance" $.Alliance "team" $team "value" "yellow" "label" "Yellow"}}
+            {{template "cardRadio" dict "alliance" $.Alliance "team" $team "value" "red" "label" "Red"}}
+            {{template "cardRadio" dict "alliance" $.Alliance "team" $team "value" "dq" "label" "DQ"}}
+          </div>
+        </div>
+      </div>
+      {{end}}
+    </fieldset>
   </div>
-  <div class="col-lg-2">
-    <input type="radio" name="{{"{{alliance}}"}}{{$.field}}{{$i}}" value="1"> Level 1
-  </div>
-  <div class="col-lg-2">
-    <input type="radio" name="{{"{{alliance}}"}}{{$.field}}{{$i}}" value="2"> Level 2
-  </div>
-  <div class="col-lg-2">
-    <input type="radio" name="{{"{{alliance}}"}}{{$.field}}{{$i}}" value="3"> Level 3
-  </div>
+  {{template "scoreSummaryCard" .}}
 </div>
 {{end}}
+{{define "hubShiftCount"}}
+<label class="col-lg-1 text-end">{{.label}}:</label>
+<div class="col-lg-1">
+  <input type="number" class="form-control input-sm" name="{{.alliance}}HubShiftCount{{.shift}}" min="0">
+</div>
+{{end}}
+{{define "towerStatusRows"}}
+{{range $i, $team := .teams}}
+{{$teamIndex := add $i 1}}
+<div class="row mb-2">
+  <label class="col-lg-1 control-label">Team {{$team}}</label>
+  {{template "towerStatusRadio" dict "alliance" $.alliance "field" $.field "index" $teamIndex "value" 0 "label" "None"}}
+  {{template "towerStatusRadio" dict "alliance" $.alliance "field" $.field "index" $teamIndex "value" 1 "label" "Level 1"}}
+  {{template "towerStatusRadio" dict "alliance" $.alliance "field" $.field "index" $teamIndex "value" 2 "label" "Level 2"}}
+  {{template "towerStatusRadio" dict "alliance" $.alliance "field" $.field "index" $teamIndex "value" 3 "label" "Level 3"}}
+</div>
+{{end}}
+{{end}}
+{{define "towerStatusRadio"}}
+<div class="col-lg-2">
+  <input type="radio" name="{{.alliance}}{{.field}}{{.index}}" value="{{.value}}"> {{.label}}
+</div>
+{{end}}
+{{define "cardRadio"}}
+<div class="col-lg-2">
+  <label>
+    <input type="radio" name="{{.alliance}}Team{{.team}}Card" value="{{.value}}"{{if .checked}} checked{{end}}>
+    {{.label}}
+  </label>
+</div>
+{{end}}
+{{define "scoreSummaryCard"}}
+<div class="card card-body bg-{{.Alliance}} mb-3" id="{{.Alliance}}Summary">
+  <h5 class="card-title">Score Summary</h5>
+  <table class="table table-sm mb-0 score-summary-table score-summary-table-{{.Alliance}}">
+    <tbody>
+      <tr>
+        {{template "summaryField" dict "label" "Score" "field" "Score" "value" .Summary.Score}}
+        {{template "summaryField" dict "label" "Auto Fuel" "field" "AutoFuelPoints" "value" .Summary.AutoFuelPoints}}
+      </tr>
+      <tr>
+        {{template "summaryField" dict "label" "Auto Tower" "field" "AutoTowerPoints" "value" .Summary.AutoTowerPoints}}
+        {{template "summaryField" dict "label" "Teleop Fuel" "field" "TeleopFuelPoints" "value" .Summary.TeleopFuelPoints}}
+      </tr>
+      <tr>
+        {{template "summaryField" dict "label" "Teleop Tower" "field" "TeleopTowerPoints" "value" .Summary.TeleopTowerPoints}}
+        {{template "summaryField" dict "label" "Foul" "field" "FoulPoints" "value" .Summary.FoulPoints}}
+      </tr>
+      {{if .ShowRankingPoints}}
+      <tr>
+        {{template "rankingPointSummaryField" dict "label" "Energized Bonus" "field" "EnergizedBonusRankingPoint" "value" .Summary.EnergizedBonusRankingPoint}}
+        {{template "rankingPointSummaryField" dict "label" "Supercharged Bonus" "field" "SuperchargedBonusRankingPoint" "value" .Summary.SuperchargedBonusRankingPoint}}
+      </tr>
+      <tr>
+        {{template "rankingPointSummaryField" dict "label" "Traversal Bonus" "field" "TraversalBonusRankingPoint" "value" .Summary.TraversalBonusRankingPoint}}
+        {{template "summaryField" dict "label" "Ranking Points" "field" "BonusRankingPoints" "value" .Summary.BonusRankingPoints}}
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}
+{{define "summaryField"}}
+<th scope="row">{{.label}}</th>
+<td class="text-end font-monospace" data-summary-field="{{.field}}">{{.value}}</td>
+{{end}}
+{{define "rankingPointSummaryField"}}
+<th scope="row">{{.label}}</th>
+<td class="text-end" data-summary-field="{{.field}}">
+  {{if .value}}<span class="score-summary-rp text-success">&#x2611;</span>{{else}}<span class="score-summary-rp text-danger">&#x2612;</span>{{end}}
+</td>
 {{end}}

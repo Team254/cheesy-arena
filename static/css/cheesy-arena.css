@@ -45,6 +45,53 @@
 .bg-green {
   background-color: #132 !important;
 }
+.score-summary-table {
+  color: #fff;
+}
+.score-summary-table th, .score-summary-table td {
+  border-color: rgba(255, 255, 255, 0.18);
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+.score-summary-table th {
+  font-weight: 600;
+  width: 35%;
+}
+.score-summary-table td {
+  width: 15%;
+}
+.score-summary-table-red tr:nth-child(odd) > * {
+  background-color: #4a2525;
+}
+.score-summary-table-red tr:nth-child(even) > * {
+  background-color: #3a1d1d;
+}
+.score-summary-table-blue tr:nth-child(odd) > * {
+  background-color: #203657;
+}
+.score-summary-table-blue tr:nth-child(even) > * {
+  background-color: #172743;
+}
+.score-summary-rp {
+  display: inline-block;
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1;
+  min-width: 1.4rem;
+  text-align: center;
+}
+.match-review-rps {
+  display: inline-flex;
+  gap: 0.125rem;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+.match-review-rp {
+  display: inline-block;
+  font-size: 1.05rem;
+  line-height: 1;
+  min-width: 1.05rem;
+}
 .col-no-padding {
   padding-left: 0;
   padding-right: 0;
