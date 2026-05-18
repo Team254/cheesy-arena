@@ -346,10 +346,8 @@ func (arena *Arena) generateScoringStatusMessage() any {
 	}{
 		arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted,
 		map[string]positionStatus{
-			"red_near":  getStatusForPosition("red_near"),
-			"red_far":   getStatusForPosition("red_far"),
-			"blue_near": getStatusForPosition("blue_near"),
-			"blue_far":  getStatusForPosition("blue_far"),
+			"red":  getStatusForPosition("red"),
+			"blue": getStatusForPosition("blue"),
 		},
 	}
 }

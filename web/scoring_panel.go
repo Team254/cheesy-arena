@@ -15,60 +15,21 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
 )
 
 type ScoringPosition struct {
-	Title            string
-	Alliance         string
-	NearSide         bool
-	ScoresAuto       bool
-	ScoresEndgame    bool
-	ScoresBarge      bool
-	ScoresProcessor  bool
-	LeftmostReefPole int
+	Title    string
+	Alliance string
 }
 
 var positionParameters = map[string]ScoringPosition{
-	"red_near": {
-		Title:            "Red Near",
-		Alliance:         "red",
-		NearSide:         true,
-		ScoresAuto:       true,
-		ScoresEndgame:    true,
-		ScoresBarge:      true,
-		ScoresProcessor:  false,
-		LeftmostReefPole: 6,
+	"red": {
+		Title:    "Red",
+		Alliance: "red",
 	},
-	"red_far": {
-		Title:            "Red Far",
-		Alliance:         "red",
-		NearSide:         false,
-		ScoresAuto:       false,
-		ScoresEndgame:    false,
-		ScoresBarge:      false,
-		ScoresProcessor:  true,
-		LeftmostReefPole: 0,
-	},
-	"blue_near": {
-		Title:            "Blue Near",
-		Alliance:         "blue",
-		NearSide:         true,
-		ScoresAuto:       false,
-		ScoresEndgame:    false,
-		ScoresBarge:      false,
-		ScoresProcessor:  true,
-		LeftmostReefPole: 0,
-	},
-	"blue_far": {
-		Title:            "Blue Far",
-		Alliance:         "blue",
-		NearSide:         false,
-		ScoresAuto:       true,
-		ScoresEndgame:    true,
-		ScoresBarge:      true,
-		ScoresProcessor:  false,
-		LeftmostReefPole: 6,
+	"blue": {
+		Title:    "Blue",
+		Alliance: "blue",
 	},
 }
 
@@ -92,10 +53,9 @@ func (web *Web) scoringPanelHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data := struct {
 		*model.EventSettings
-		PlcIsEnabled bool
 		PositionName string
 		Position     ScoringPosition
-	}{web.arena.EventSettings, web.arena.Plc.IsEnabled(), position, parameters}
+	}{web.arena.EventSettings, position, parameters}
 	err = template.ExecuteTemplate(w, "base_no_navbar", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -110,14 +70,14 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	position := r.PathValue("position")
-	if position != "red_near" && position != "red_far" && position != "blue_near" && position != "blue_far" {
+	parameters, ok := positionParameters[position]
+	if !ok {
 		handleWebErr(w, fmt.Errorf("Invalid position '%s'.", position))
 		return
 	}
-	alliance := strings.Split(position, "_")[0]
 
 	var realtimeScore **field.RealtimeScore
-	if alliance == "red" {
+	if parameters.Alliance == "red" {
 		realtimeScore = &web.arena.RedRealtimeScore
 	} else {
 		realtimeScore = &web.arena.BlueRealtimeScore
@@ -167,6 +127,23 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(position, ws)
 			web.arena.ScoringStatusNotifier.Notify()
+		} else if command == "autoTower" {
+			args := struct {
+				TeamPosition    int
+				AutoTowerStatus int
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				ws.WriteError(err.Error())
+				continue
+			}
+
+			if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.AutoTowerStatus >= 0 &&
+				args.AutoTowerStatus <= 3 {
+				autoTowerStatus := game.TowerStatus(args.AutoTowerStatus)
+				score.AutoTowerStatuses[args.TeamPosition-1] = autoTowerStatus
+				scoreChanged = true
+			}
 		} else if command == "endgame" {
 			args := struct {
 				TeamPosition       int
@@ -206,45 +183,6 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
-		} else {
-			// TODO: Update for 2026.
-			// args := struct {
-			// 	Adjustment int
-			// 	Current    bool
-			// 	Autonomous bool
-			// 	NearSide   bool
-			// }{}
-			// err = mapstructure.Decode(data, &args)
-			// if err != nil {
-			// 	ws.WriteError(err.Error())
-			// 	continue
-			// }
-			//
-			// switch command {
-			// case "barge":
-			// 	score.BargeAlgae = max(0, score.BargeAlgae+args.Adjustment)
-			// 	scoreChanged = true
-			// case "processor":
-			// 	score.ProcessorAlgae = max(0, score.ProcessorAlgae+args.Adjustment)
-			// 	scoreChanged = true
-			// case "trough":
-			// 	if args.Current {
-			// 		if args.NearSide {
-			// 			score.Reef.TroughNear = max(0, score.Reef.TroughNear+args.Adjustment)
-			// 		} else {
-			// 			score.Reef.TroughFar = max(0, score.Reef.TroughFar+args.Adjustment)
-			// 		}
-			// 		scoreChanged = true
-			// 	}
-			// 	if args.Autonomous {
-			// 		if args.NearSide {
-			// 			score.Reef.AutoTroughNear = max(0, score.Reef.AutoTroughNear+args.Adjustment)
-			// 		} else {
-			// 			score.Reef.AutoTroughFar = max(0, score.Reef.AutoTroughFar+args.Adjustment)
-			// 		}
-			// 		scoreChanged = true
-			// 	}
-			// }
 		}
 
 		if scoreChanged {

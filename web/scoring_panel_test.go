@@ -19,13 +19,9 @@ func TestScoringPanel(t *testing.T) {
 	recorder := web.getHttpResponse("/panels/scoring/invalidposition")
 	assert.Equal(t, 500, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Invalid position")
-	recorder = web.getHttpResponse("/panels/scoring/red_near")
+	recorder = web.getHttpResponse("/panels/scoring/red")
 	assert.Equal(t, 200, recorder.Code)
-	recorder = web.getHttpResponse("/panels/scoring/red_far")
-	assert.Equal(t, 200, recorder.Code)
-	recorder = web.getHttpResponse("/panels/scoring/blue_near")
-	assert.Equal(t, 200, recorder.Code)
-	recorder = web.getHttpResponse("/panels/scoring/blue_far")
+	recorder = web.getHttpResponse("/panels/scoring/blue")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Scoring Panel - Untitled Event - Cheesy Arena")
 }
@@ -37,18 +33,18 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	defer server.Close()
 	_, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/blorpy/websocket", nil)
 	assert.NotNil(t, err)
-	redConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/red_near/websocket", nil)
+	redConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/red/websocket", nil)
 	assert.Nil(t, err)
 	defer redConn.Close()
 	redWs := websocket.NewTestWebsocket(redConn)
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("red_near"))
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumPanels("blue_near"))
-	blueConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/blue_near/websocket", nil)
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("red"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumPanels("blue"))
+	blueConn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/panels/scoring/blue/websocket", nil)
 	assert.Nil(t, err)
 	defer blueConn.Close()
 	blueWs := websocket.NewTestWebsocket(blueConn)
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("red_near"))
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("blue_near"))
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("red"))
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumPanels("blue"))
 
 	// Should get a few status updates right after connection.
 	readWebsocketType(t, redWs, "resetLocalState")
@@ -59,6 +55,45 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "matchLoad")
 	readWebsocketType(t, blueWs, "matchTime")
 	readWebsocketType(t, blueWs, "realtimeScore")
+
+	// Send some auto tower scoring commands.
+	autoData := struct {
+		TeamPosition    int
+		AutoTowerStatus int
+	}{}
+	assert.Equal(
+		t,
+		[3]game.TowerStatus{game.TowerNone, game.TowerNone, game.TowerNone},
+		web.arena.RedRealtimeScore.CurrentScore.AutoTowerStatuses,
+	)
+	assert.Equal(
+		t,
+		[3]game.TowerStatus{game.TowerNone, game.TowerNone, game.TowerNone},
+		web.arena.BlueRealtimeScore.CurrentScore.AutoTowerStatuses,
+	)
+	autoData.TeamPosition = 1
+	autoData.AutoTowerStatus = 1
+	redWs.Write("autoTower", autoData)
+	autoData.TeamPosition = 2
+	autoData.AutoTowerStatus = 3
+	blueWs.Write("autoTower", autoData)
+	autoData.TeamPosition = 3
+	autoData.AutoTowerStatus = 2
+	redWs.Write("autoTower", autoData)
+	for i := 0; i < 3; i++ {
+		readWebsocketType(t, redWs, "realtimeScore")
+		readWebsocketType(t, blueWs, "realtimeScore")
+	}
+	assert.Equal(
+		t,
+		[3]game.TowerStatus{game.TowerLevel1, game.TowerNone, game.TowerLevel2},
+		web.arena.RedRealtimeScore.CurrentScore.AutoTowerStatuses,
+	)
+	assert.Equal(
+		t,
+		[3]game.TowerStatus{game.TowerNone, game.TowerLevel3, game.TowerNone},
+		web.arena.BlueRealtimeScore.CurrentScore.AutoTowerStatuses,
+	)
 
 	// Send some endgame scoring commands.
 	endgameData := struct {
@@ -130,6 +165,9 @@ func TestScoringPanelWebsocket(t *testing.T) {
 
 	// Test that some invalid commands do nothing and don't result in score change notifications.
 	redWs.Write("invalid", nil)
+	autoData.TeamPosition = 1
+	autoData.AutoTowerStatus = 4
+	redWs.Write("autoTower", autoData)
 	endgameData.TeamPosition = 1
 	endgameData.EndgameTowerStatus = 4
 	blueWs.Write("endgame", endgameData)
@@ -139,14 +177,14 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, redWs, "error")
 	blueWs.Write("commitMatch", nil)
 	readWebsocketType(t, blueWs, "error")
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red_near"))
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue_near"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue"))
 	web.arena.MatchState = field.PostMatch
 	redWs.Write("commitMatch", nil)
 	blueWs.Write("commitMatch", nil)
 	time.Sleep(time.Millisecond * 10) // Allow some time for the commands to be processed.
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red_near"))
-	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue_near"))
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red"))
+	assert.Equal(t, 1, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue"))
 
 	// Load another match to reset the results.
 	web.arena.ResetMatch()
@@ -157,6 +195,6 @@ func TestScoringPanelWebsocket(t *testing.T) {
 	readWebsocketType(t, blueWs, "realtimeScore")
 	assert.Equal(t, field.NewRealtimeScore(), web.arena.RedRealtimeScore)
 	assert.Equal(t, field.NewRealtimeScore(), web.arena.BlueRealtimeScore)
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red_near"))
-	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue_near"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("red"))
+	assert.Equal(t, 0, web.arena.ScoringPanelRegistry.GetNumScoreCommitted("blue"))
 }

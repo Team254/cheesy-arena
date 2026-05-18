@@ -346,10 +346,8 @@ const handleScoringStatus = function (data) {
     }
   }
   $("#refereeScoreStatus").attr("data-ready", data.RefereeScoreReady);
-  updateScoreStatus(data, "red_near", "#redNearScoreStatus", "Red Near");
-  updateScoreStatus(data, "red_far", "#redFarScoreStatus", "Red Far");
-  updateScoreStatus(data, "blue_near", "#blueNearScoreStatus", "Blue Near");
-  updateScoreStatus(data, "blue_far", "#blueFarScoreStatus", "Blue Far");
+  updateScoreStatus(data, "red", "#redScoreStatus", "Red");
+  updateScoreStatus(data, "blue", "#blueScoreStatus", "Blue");
 };
 
 // Helper function to update a badge that shows scoring panel commit status.
