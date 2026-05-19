@@ -519,7 +519,7 @@ UI for configuring event settings.
                 <div class="col-lg-6">
                   <div class="input-group">
                     <input type="text" class="form-control" id="nexusAutoQueueKeyInput" name="nexusAutoQueueKey" value="{{.NexusAutoQueueKey}}">
-                    <a class="btn btn-outline-primary" {{if .TbaEventCode}}href="{{.NexusBaseUrl}}/event/{{.TbaEventCode}}/auto-queue?fms=true"{{end}} target="_blank" rel="opener">Generate</a>
+                    {{if .TbaEventCode}}<a class="btn btn-outline-primary" href="{{.NexusBaseUrl}}/event/{{.TbaEventCode}}/auto-queue?fms=true" target="_blank" rel="opener">Generate</a>{{end}}
                   </div>
                 </div>
               </div>
