@@ -15,7 +15,7 @@ UI for configuring event settings.
   {{end}}
   <div class="col-lg-8">
     <div class="card card-body bg-body-tertiary">
-      <form method="POST">
+      <form id="settingsForm" method="POST">
         <ul class="nav nav-underline mb-3" id="settingsTabs" role="tablist">
           <li class="nav-item">
             <button class="nav-link" id="event-tab" data-bs-toggle="tab" data-bs-target="#event" role="tab">
@@ -505,7 +505,9 @@ UI for configuring event settings.
                   <input type="checkbox" id="nexusEnabled" name="nexusEnabled" {{if .NexusEnabled}} checked{{end}}>
                 </div>
               </div>
-              <p><b>Nexus AutoQueue</b>: The queuing status in Nexus can be automatically updated when match scores are committed. An AutoQueue key is required to use this feature- contact support@frc.nexus for details.</p>
+              <p><b>Nexus AutoQueue</b>: The queuing status in Nexus can be automatically updated when match scores are
+                committed. To generate an AutoQueue key, the TBA event key must be set and you must log in with a Nexus
+                account that has the lead queuer role.</p>
               <div class="row mb-3">
                 <label class="col-lg-8 control-label" for="nexusAutoQueueEnabled">Enable Nexus AutoQueue</label>
                 <div class="col-lg-1 checkbox">
@@ -515,7 +517,10 @@ UI for configuring event settings.
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Nexus AutoQueue key</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" name="nexusAutoQueueKey" value="{{.NexusAutoQueueKey}}">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="nexusAutoQueueKeyInput" name="nexusAutoQueueKey" value="{{.NexusAutoQueueKey}}">
+                    <a class="btn btn-outline-primary" {{if .TbaEventCode}}href="{{.NexusBaseUrl}}/event/{{.TbaEventCode}}/auto-queue?fms=true"{{end}} target="_blank" rel="opener">Generate</a>
+                  </div>
                 </div>
               </div>
             </fieldset>
@@ -813,6 +818,17 @@ UI for configuring event settings.
         }
       });
     });
+  });
+
+  // Handle Nexus AutoQueue key generation.
+  window.addEventListener('message', (event) => {
+    if(event.origin !== '{{.NexusBaseUrl}}') return;
+
+    const key = event.data;
+    if(key) {
+      $('#nexusAutoQueueKeyInput').val(key);
+      $('#settingsForm').submit();
+    }
   });
 </script>
 {{end}}

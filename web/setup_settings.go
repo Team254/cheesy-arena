@@ -422,7 +422,8 @@ func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMess
 	data := struct {
 		*model.EventSettings
 		ErrorMessage string
-	}{web.arena.EventSettings, errorMessage}
+		NexusBaseUrl string
+	}{web.arena.EventSettings, errorMessage, web.arena.NexusClient.BaseUrl}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
