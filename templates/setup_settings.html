@@ -499,10 +499,23 @@ UI for configuring event settings.
                 configure it on the publishing tab.</p>
               <p>When enabled, Nexus is the source of truth for lineups and they can not
                 be overridden by the scorekeeper. To make changes, update the lineup in Nexus or disable this setting.</p>
-              <div class="row mb-3">
-                <label class="col-lg-8 control-label" for="nexusEnabled">Enable pulling lineup from Nexus</label>
+              <div class="row mb-5">
+                <label class="col-lg-8 control-label" for="nexusEnabled">Enable Nexus lineups</label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="nexusEnabled" name="nexusEnabled" {{if .NexusEnabled}} checked{{end}}>
+                </div>
+              </div>
+              <p><b>Nexus AutoQueue</b>: The queuing status in Nexus can be automatically updated when match scores are committed. An AutoQueue key is required to use this feature- contact support@frc.nexus for details.</p>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label" for="nexusAutoQueueEnabled">Enable Nexus AutoQueue</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="nexusAutoQueueEnabled" name="nexusAutoQueueEnabled" {{if .NexusAutoQueueEnabled}} checked{{end}}>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Nexus AutoQueue key</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="nexusAutoQueueKey" value="{{.NexusAutoQueueKey}}">
                 </div>
               </div>
             </fieldset>

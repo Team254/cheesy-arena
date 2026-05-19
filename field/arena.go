@@ -208,7 +208,7 @@ func (arena *Arena) LoadSettings() error {
 	)
 	arena.Plc.SetAddress(settings.PlcAddress)
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
-	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
+	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode, settings.NexusAutoQueueKey)
 	arena.BlackmagicClient = partner.NewBlackmagicClient(settings.BlackmagicAddresses)
 
 	// Initialize Companion client with event configurations
