@@ -525,6 +525,13 @@ func (arena *Arena) StartMatch() error {
 		}
 
 		arena.MatchState = StartMatch
+
+		if arena.EventSettings.NexusAutoQueueEnabled {
+			// Asynchronously notify Nexus that the match has started.
+			go func() {
+				arena.NexusClient.MatchStarted(arena.CurrentMatch.LongName, arena.CurrentMatch.TypeOrder)
+			}()
+		}
 	}
 	return err
 }
@@ -589,6 +596,13 @@ func (arena *Arena) StartTimeout(description string, durationSec int) error {
 	arena.LastMatchTimeSec = -1
 	arena.AllianceStationDisplayMode = "timeout"
 	arena.AllianceStationDisplayModeNotifier.Notify()
+
+	if arena.EventSettings.NexusAutoQueueEnabled {
+		// Asynchronously notify Nexus that a break has started.
+		go func() {
+			arena.NexusClient.BreakStarted(durationSec)
+		}()
+	}
 
 	return nil
 }
@@ -725,6 +739,14 @@ func (arena *Arena) Update() {
 	case TimeoutActive:
 		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
 			arena.MatchState = PostTimeout
+
+			if arena.EventSettings.NexusAutoQueueEnabled {
+				// Asynchronously notify Nexus that a break has ended.
+				go func() {
+					arena.NexusClient.BreakEnded()
+				}()
+			}
+
 			go func() {
 				// Leave the timer on the screen briefly at the end of the timeout period.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
