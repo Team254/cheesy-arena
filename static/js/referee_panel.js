@@ -94,9 +94,7 @@ var handleMatchLoad = function (data) {
 
 // Handles a websocket message to update the match status.
 const handleMatchTime = function (data) {
-  const enabled = matchStates[data.MatchState] === "POST_MATCH";
-  $(".control-button").attr("data-enabled", enabled);
-  $(".control-button").prop("disabled", !enabled);
+  $(".control-button").attr("data-enabled", matchStates[data.MatchState] === "POST_MATCH");
 };
 
 const endgameStatusNames = [
