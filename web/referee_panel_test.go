@@ -4,13 +4,14 @@
 package web
 
 import (
+	"testing"
+	"time"
+
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestRefereePanel(t *testing.T) {
@@ -157,7 +158,8 @@ func TestRefereePanelWebsocket(t *testing.T) {
 		assert.Equal(t, "yellow", web.arena.BlueRealtimeScore.Cards["1681"])
 	}
 
-	// Test field reset and match committing.
+	// Test field reset.
+	web.arena.CurrentMatch.Type = model.Test
 	web.arena.MatchState = field.PostMatch
 	ws.Write("signalReset", nil)
 	time.Sleep(time.Millisecond * 10)
@@ -165,13 +167,13 @@ func TestRefereePanelWebsocket(t *testing.T) {
 	assert.False(t, web.arena.RedRealtimeScore.FoulsCommitted)
 	assert.False(t, web.arena.BlueRealtimeScore.FoulsCommitted)
 	web.arena.AllianceStationDisplayMode = "logo"
-	ws.Write("commitMatch", nil)
-	readWebsocketType(t, ws, "scoringStatus")
-	assert.Equal(t, "fieldReset", web.arena.AllianceStationDisplayMode)
-	assert.True(t, web.arena.RedRealtimeScore.FoulsCommitted)
-	assert.True(t, web.arena.BlueRealtimeScore.FoulsCommitted)
 
-	// Should refresh the page when the next match is loaded.
-	web.arena.MatchLoadNotifier.Notify()
-	readWebsocketType(t, ws, "matchLoad")
+	// Test commit, post, and load next match.
+	ws.Write("commitAndPost", nil)
+	readWebsocketType(t, ws, "scoringStatus")
+	messages := readWebsocketMultiple(t, ws, 3)
+	assert.NotNil(t, messages["realtimeScore"])
+	assert.NotNil(t, messages["scoringStatus"])
+	assert.NotNil(t, messages["matchLoad"])
+	assert.Equal(t, "score", web.arena.AudienceDisplayMode)
 }
