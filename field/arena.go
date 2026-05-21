@@ -546,8 +546,7 @@ func (arena *Arena) AbortMatch() error {
 	}
 	arena.MatchState = PostMatch
 	arena.matchAborted = true
-	arena.AudienceDisplayMode = "blank"
-	arena.AudienceDisplayModeNotifier.Notify()
+	arena.SetAudienceDisplayMode("blank")
 	go arena.BlackmagicClient.StopRecording()
 	go arena.CompanionClient.SendEvent(partner.EventMatchAbort)
 	return nil
@@ -648,10 +647,8 @@ func (arena *Arena) Update() {
 		arena.MatchStartTime = time.Now()
 		arena.LastMatchTimeSec = -1
 		auto = true
-		arena.AudienceDisplayMode = "match"
-		arena.AudienceDisplayModeNotifier.Notify()
-		arena.AllianceStationDisplayMode = "match"
-		arena.AllianceStationDisplayModeNotifier.Notify()
+		arena.SetAudienceDisplayMode("match")
+		arena.SetAllianceStationDisplayMode("match")
 		go arena.BlackmagicClient.StartRecording()
 		go arena.CompanionClient.SendEvent(partner.EventMatchStart)
 		if game.MatchTiming.WarmupDurationSec > 0 {
@@ -713,8 +710,7 @@ func (arena *Arena) Update() {
 			go func() {
 				// Leave the scores on the screen briefly at the end of the match.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
-				arena.AudienceDisplayMode = "blank"
-				arena.AudienceDisplayModeNotifier.Notify()
+				arena.SetAudienceDisplayMode("blank")
 			}()
 			go func() {
 				// Configure the network in advance for the next match after a delay.
@@ -728,10 +724,8 @@ func (arena *Arena) Update() {
 			go func() {
 				// Leave the timer on the screen briefly at the end of the timeout period.
 				time.Sleep(time.Second * matchEndScoreDwellSec)
-				arena.AudienceDisplayMode = "blank"
-				arena.AudienceDisplayModeNotifier.Notify()
-				arena.AllianceStationDisplayMode = "logo"
-				arena.AllianceStationDisplayModeNotifier.Notify()
+				arena.SetAudienceDisplayMode("intro")
+				arena.SetAllianceStationDisplayMode("match")
 			}()
 		}
 	case PostTimeout:
@@ -1293,6 +1287,47 @@ func (arena *Arena) runPeriodicTasks() {
 	arena.updateEarlyLateMessage()
 	arena.purgeDisconnectedDisplays()
 	arena.checkForUpdatedNexusLineup()
+}
+
+// Handles audience display automation from after score post to next match intro.
+func (arena *Arena) AutomateAudienceDisplay() {
+	// Show the score for 20 seconds before moving on.
+	time.Sleep(20 * time.Second)
+	if arena.AudienceDisplayMode != "score" {
+		return
+	}
+
+	if arena.CurrentMatch.Type == model.Playoff {
+		time.Sleep(10 * time.Second)
+		isFinals := strings.Contains(arena.CurrentMatch.LongName, "Final") || strings.Contains(arena.CurrentMatch.LongName, "Overtime")
+		if !isFinals {
+			arena.SetAudienceDisplayMode("bracket")
+			time.Sleep(20 * time.Second)
+			if arena.AudienceDisplayMode != "bracket" {
+				return
+			}
+		}
+	}
+
+	if arena.MatchState == TimeoutActive {
+		arena.SetAudienceDisplayMode("timeout")
+		arena.SetAllianceStationDisplayMode("timeout")
+		return
+	}
+
+	if arena.CurrentMatch.Type == model.Test {
+		// No next match loaded, show the score for longer and then go into awards mode.
+		time.Sleep(40 * time.Second)
+		if arena.AudienceDisplayMode != "score" {
+			return
+		}
+
+		arena.SetAudienceDisplayMode("logoLuma")
+		arena.SetAllianceStationDisplayMode("logo")
+		return
+	}
+
+	arena.SetAudienceDisplayMode("intro")
 }
 
 // trussLightWarningSequence generates the sequence of truss light states during the "sonar ping" warning sound. It

@@ -7,8 +7,6 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/field"
-	"github.com/Team254/cheesy-arena/model"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -16,6 +14,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/model"
 )
 
 // Shows the event settings editing page.
@@ -84,6 +85,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TbaEventCode = r.PostFormValue("tbaEventCode")
 	eventSettings.TbaSecretId = r.PostFormValue("tbaSecretId")
 	eventSettings.TbaSecret = r.PostFormValue("tbaSecret")
+	eventSettings.AutoAudienceDisplayEnabled = r.PostFormValue("autoAudienceDisplayEnabled") == "on"
 	eventSettings.NexusEnabled = r.PostFormValue("nexusEnabled") == "on"
 	eventSettings.NetworkSecurityEnabled = r.PostFormValue("networkSecurityEnabled") == "on"
 	eventSettings.ApAddress = r.PostFormValue("apAddress")
