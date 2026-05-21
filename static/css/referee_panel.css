@@ -215,6 +215,9 @@ h3 {
 #commitButton {
   background-color: #26c;
 }
+#commitButton.disabled {
+  background-color: #666;
+}
 
 #scoreSummary {
   width: 100%;
