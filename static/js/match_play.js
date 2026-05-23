@@ -59,7 +59,7 @@ const signalReset = function () {
 };
 
 // Sends a websocket message to commit and post the match score, and load the next match.
-const commitResults = function () {
+const commitAndPost = function () {
   websocket.send("commitAndPost");
 };
 
@@ -102,7 +102,7 @@ const confirmCommit = function () {
     $("#confirmCommitNotReady").css("display", scoreIsReady ? "none" : "block");
     $("#confirmCommitResults").modal("show");
   } else {
-    commitResults();
+    commitAndPost();
   }
 };
 
