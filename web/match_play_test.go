@@ -327,8 +327,8 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	ws.Write("startMatch", nil)
 	readWebsocketType(t, ws, "eventStatus")
 	assert.Equal(t, field.StartMatch, web.arena.MatchState)
-	ws.Write("commitResults", nil)
-	assert.Contains(t, readWebsocketError(t, ws), "cannot commit match while it is in progress")
+	ws.Write("commitAndPost", nil)
+	assert.Contains(t, readWebsocketError(t, ws), "Cannot commit match while it is in progress.")
 	ws.Write("discardResults", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "cannot reset match while it is in progress")
 	ws.Write("abortMatch", nil)
@@ -336,8 +336,8 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	assert.Equal(t, field.PostMatch, web.arena.MatchState)
 	web.arena.RedRealtimeScore.CurrentScore.BargeAlgae = 6
 	web.arena.BlueRealtimeScore.CurrentScore.LeaveStatuses = [3]bool{true, false, true}
-	ws.Write("commitResults", nil)
-	readWebsocketMultiple(t, ws, 5) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
+	ws.Write("commitAndPost", nil)
+	readWebsocketMultiple(t, ws, 6) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus, audienceDisplayMode
 	assert.Equal(t, 6, web.arena.SavedMatchResult.RedScore.BargeAlgae)
 	assert.Equal(t, [3]bool{true, false, true}, web.arena.SavedMatchResult.BlueScore.LeaveStatuses)
 	assert.Equal(t, field.PreMatch, web.arena.MatchState)
