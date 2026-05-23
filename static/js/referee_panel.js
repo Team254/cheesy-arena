@@ -167,9 +167,7 @@ const handleScoringStatus = function (data) {
   updateScoreStatus(data, "blue_near", "#blueNearScoreStatus", "Blue Near");
   updateScoreStatus(data, "blue_far", "#blueFarScoreStatus", "Blue Far");
 
-  scoreIsReady = Object.values(data.PositionStatuses)
-      .map(status => status.Ready)
-      .every(ready => ready);
+  scoreIsReady = Object.values(data.PositionStatuses).every(status => status.Ready);
 
   // Make the button visually distinct if not all refs have committed.
   // HR can still press the button with confirm model.
