@@ -1290,7 +1290,7 @@ func (arena *Arena) runPeriodicTasks() {
 }
 
 // Handles audience display automation from after score post to next match intro.
-func (arena *Arena) AutomateAudienceDisplay() {
+func (arena *Arena) AutomateAudienceDisplay(postedMatch *model.Match) {
 	// Show the score for 20 seconds before moving on.
 	time.Sleep(20 * time.Second)
 	if arena.AudienceDisplayMode != "score" {
@@ -1299,7 +1299,7 @@ func (arena *Arena) AutomateAudienceDisplay() {
 
 	if arena.CurrentMatch.Type == model.Playoff {
 		time.Sleep(10 * time.Second)
-		isFinals := strings.Contains(arena.CurrentMatch.LongName, "Final") || strings.Contains(arena.CurrentMatch.LongName, "Overtime")
+		isFinals := strings.Contains(postedMatch.LongName, "Final") || strings.Contains(postedMatch.LongName, "Overtime")
 		if !isFinals {
 			arena.SetAudienceDisplayMode("bracket")
 			time.Sleep(20 * time.Second)

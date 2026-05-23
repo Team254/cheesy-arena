@@ -359,7 +359,7 @@ func (web *Web) commitPostAndLoadNextMatch() error {
 
 	web.arena.SetAudienceDisplayMode("score")
 	if web.arena.EventSettings.AutoAudienceDisplayEnabled {
-		go web.arena.AutomateAudienceDisplay()
+		go web.arena.AutomateAudienceDisplay(web.arena.CurrentMatch)
 	}
 
 	err = web.arena.ResetMatch()
