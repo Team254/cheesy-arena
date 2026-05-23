@@ -5,6 +5,10 @@ package web
 
 import (
 	"bytes"
+	"log"
+	"testing"
+	"time"
+
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
@@ -13,9 +17,6 @@ import (
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
-	"log"
-	"testing"
-	"time"
 )
 
 func TestMatchPlay(t *testing.T) {
@@ -314,6 +315,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	assert.Equal(t, false, web.arena.AllianceStations["R3"].Bypass)
 
 	// Go through match flow.
+	web.arena.AudienceDisplayMode = "intro"
 	ws.Write("abortMatch", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "cannot abort match")
 	ws.Write("startMatch", nil)
@@ -467,6 +469,8 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	// Should get a few status updates right after connection.
 	readWebsocketMultiple(t, ws, 10)
 
+	web.arena.AudienceDisplayMode = "intro"
+	web.arena.AllianceStationDisplayMode = "blank"
 	web.arena.AllianceStations["R1"].Bypass = true
 	web.arena.AllianceStations["R2"].Bypass = true
 	web.arena.AllianceStations["R3"].Bypass = true
