@@ -209,23 +209,11 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.BlueRealtimeScore.FoulsCommitted = true
 			web.arena.ScoringStatusNotifier.Notify()
 
-			err = web.commitCurrentMatchScore()
+			err = web.commitPostAndLoadNextMatch()
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
 			}
-			err = web.arena.ResetMatch()
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-			err = web.arena.LoadNextMatch(true)
-			if err != nil {
-				ws.WriteError(err.Error())
-				continue
-			}
-
-			web.arena.SetAudienceDisplayMode("score")
 		default:
 			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}
