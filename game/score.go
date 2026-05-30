@@ -78,22 +78,6 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 		if foul.IsMajor {
 			summary.NumOpponentMajorFouls++
 		}
-
-		// TODO: Update for 2026.
-		// rule := foul.Rule()
-		// if rule != nil {
-		// 	// Check for the opponent fouls that automatically trigger a ranking point.
-		// 	if rule.IsRankingPoint {
-		// 		switch rule.RuleNumber {
-		// 		case "G410":
-		// 			summary.CoralBonusRankingPoint = true
-		// 		case "G418":
-		// 			summary.BargeBonusRankingPoint = true
-		// 		case "G428":
-		// 			summary.BargeBonusRankingPoint = true
-		// 		}
-		// 	}
-		// }
 	}
 
 	summary.Score = summary.MatchPoints + summary.FoulPoints
