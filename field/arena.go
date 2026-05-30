@@ -35,6 +35,7 @@ const (
 	scheduledBreakDelaySec   = 5
 	earlyLateThresholdMin    = 2.5
 	MaxMatchGapMin           = 20
+	hubLightWarningSec       = 3
 )
 
 // Progression of match states.
@@ -1169,7 +1170,48 @@ func (arena *Arena) handlePlcInputOutput() {
 		arena.MatchState == PostMatch && currentTime.Before(motorCutoff)
 	arena.Plc.SetHubMotors(motorsOn, motorsOn)
 
-	// TODO: Handle lights for 2026.
+	redHubLight, blueHubLight := arena.getHubLightStates(currentTime)
+	arena.Plc.SetHubLights(redHubLight, blueHubLight)
+}
+
+func (arena *Arena) getHubLightStates(currentTime time.Time) (bool, bool) {
+	switch arena.MatchState {
+	case AutoPeriod, PausePeriod:
+		return true, true
+	case TeleopPeriod:
+		redHub := &arena.RedRealtimeScore.CurrentScore.Hub
+		blueHub := &arena.BlueRealtimeScore.CurrentScore.Hub
+		shift, _, _, ok := redHub.GetCurrentShiftTiming(arena.MatchStartTime, currentTime)
+		if !ok {
+			return false, false
+		}
+
+		blinkOn := arena.Plc.GetCycleState(2, 0, 5)
+		if shift == game.ShiftTransition {
+			if redHub.WonAuto {
+				return blinkOn, true
+			}
+			if blueHub.WonAuto {
+				return true, blinkOn
+			}
+			return true, true
+		}
+
+		warningDuration := time.Duration(hubLightWarningSec) * time.Second
+		redActiveRemaining, _ := redHub.GetActiveShiftTiming(arena.MatchStartTime, currentTime)
+		blueActiveRemaining, _ := blueHub.GetActiveShiftTiming(arena.MatchStartTime, currentTime)
+		redLight := redActiveRemaining > 0
+		blueLight := blueActiveRemaining > 0
+		if redLight && redActiveRemaining <= warningDuration {
+			redLight = blinkOn
+		}
+		if blueLight && blueActiveRemaining <= warningDuration {
+			blueLight = blinkOn
+		}
+		return redLight, blueLight
+	default:
+		return false, false
+	}
 }
 
 func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) {
@@ -1282,27 +1324,4 @@ func (arena *Arena) runPeriodicTasks() {
 	arena.updateEarlyLateMessage()
 	arena.purgeDisconnectedDisplays()
 	arena.checkForUpdatedNexusLineup()
-}
-
-// trussLightWarningSequence generates the sequence of truss light states during the "sonar ping" warning sound. It
-// returns true if the sequence is active, and an array of booleans indicating the state of each truss light.
-func trussLightWarningSequence(matchTimeSec float64) (bool, [3]bool) {
-	stepTimeSec := 0.2
-	sequence := []int{1, 2, 3, 2, 1, 2, 3, 0, 0, 1, 2, 3, 2, 1, 2, 3, 0, 0}
-	startTime := float64(
-		game.MatchTiming.AutoDurationSec + game.MatchTiming.PauseDurationSec + game.GetTeleopDurationSec() -
-			game.MatchTiming.EndgameDurationSec,
-	)
-	lights := [3]bool{false, false, false}
-
-	if matchTimeSec < startTime {
-		// The sequence is not active yet.
-		return false, lights
-	}
-
-	step := int((matchTimeSec - startTime) / stepTimeSec)
-	if step < len(sequence) && sequence[step] > 0 {
-		lights[sequence[step]-1] = true
-	}
-	return step < len(sequence), lights
 }

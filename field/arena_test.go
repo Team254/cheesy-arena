@@ -1029,6 +1029,10 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	plc.isEnabled = true
 	plc.ftaReady = true
 	arena.Plc = &plc
+	assertHubLights := func(red, blue bool) {
+		assert.Equal(t, red, plc.redHubLight)
+		assert.Equal(t, blue, plc.blueHubLight)
+	}
 
 	// Hub counts should be ignored before a match has started, and motors should stay off.
 	assert.Equal(t, PreMatch, arena.MatchState)
@@ -1039,6 +1043,7 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	assert.Equal(t, game.Hub{}, arena.BlueRealtimeScore.CurrentScore.Hub)
 	assert.False(t, plc.redHubMotor)
 	assert.False(t, plc.blueHubMotor)
+	assertHubLights(false, false)
 	plc.redHubCount = 0
 	plc.blueHubCount = 0
 
@@ -1054,6 +1059,7 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	assert.Equal(t, AutoPeriod, arena.MatchState)
 	assert.True(t, plc.redHubMotor)
 	assert.True(t, plc.blueHubMotor)
+	assertHubLights(true, true)
 
 	redHub := &arena.RedRealtimeScore.CurrentScore.Hub
 	blueHub := &arena.BlueRealtimeScore.CurrentScore.Hub
@@ -1077,12 +1083,22 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	assert.Equal(t, PausePeriod, arena.MatchState)
 	assert.True(t, plc.redHubMotor)
 	assert.True(t, plc.blueHubMotor)
+	assertHubLights(true, true)
 
+	plc.cycleState = true
 	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.True(t, plc.redHubMotor)
 	assert.True(t, plc.blueHubMotor)
+	assert.True(t, redHub.WonAuto)
+	assert.False(t, blueHub.WonAuto)
+	assertHubLights(true, true)
+
+	plc.cycleState = false
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - time.Millisecond)
+	arena.Update()
+	assertHubLights(false, true)
 
 	arena.MatchStartTime = time.Now().Add(-durationToTeleopStart - 5*time.Second)
 	plc.redHubCount = 5
@@ -1091,6 +1107,24 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
 	assert.Equal(t, [game.ShiftCount]int{3, 2, 0, 0, 0, 0, 0}, redHub.ShiftCounts)
 	assert.Equal(t, [game.ShiftCount]int{1, 1, 0, 0, 0, 0, 0}, blueHub.ShiftCounts)
+	assertHubLights(false, true)
+
+	arena.MatchStartTime = time.Now().Add(
+		-(durationToTeleopStart +
+			time.Duration(game.MatchTiming.TransitionShiftDurationSec+game.MatchTiming.ShiftDurationSec)*time.Second -
+			2*time.Second),
+	)
+	arena.Update()
+	assertHubLights(false, false)
+
+	plc.cycleState = true
+	arena.MatchStartTime = time.Now().Add(
+		-(durationToTeleopStart +
+			time.Duration(game.MatchTiming.TransitionShiftDurationSec+game.MatchTiming.ShiftDurationSec)*time.Second -
+			2*time.Second),
+	)
+	arena.Update()
+	assertHubLights(false, true)
 
 	// Subsequent teleop shifts should bucket counts by the configured shift timing.
 	arena.MatchStartTime = time.Now().Add(
@@ -1103,6 +1137,7 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	arena.Update()
 	assert.Equal(t, [game.ShiftCount]int{3, 2, 3, 0, 0, 0, 0}, redHub.ShiftCounts)
 	assert.Equal(t, [game.ShiftCount]int{1, 1, 2, 0, 0, 0, 0}, blueHub.ShiftCounts)
+	assertHubLights(false, true)
 
 	arena.MatchStartTime = time.Now().Add(
 		-(durationToTeleopStart +
@@ -1114,10 +1149,22 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	arena.Update()
 	assert.Equal(t, [game.ShiftCount]int{3, 2, 3, 1, 0, 0, 0}, redHub.ShiftCounts)
 	assert.Equal(t, [game.ShiftCount]int{1, 1, 2, 3, 0, 0, 0}, blueHub.ShiftCounts)
+	assertHubLights(true, false)
 
 	durationToTeleopEnd := time.Duration(
 		game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec+game.GetTeleopDurationSec(),
 	) * time.Second
+
+	plc.cycleState = false
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd + 2*time.Second)
+	arena.Update()
+	assert.Equal(t, TeleopPeriod, arena.MatchState)
+	assertHubLights(false, false)
+
+	plc.cycleState = true
+	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd + 2*time.Second)
+	arena.Update()
+	assertHubLights(true, true)
 
 	// Motors stay on briefly after the match to exhaust remaining Fuel.
 	arena.MatchStartTime = time.Now().Add(-durationToTeleopEnd - 1*time.Second)
@@ -1125,6 +1172,7 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	assert.Equal(t, PostMatch, arena.MatchState)
 	assert.True(t, plc.redHubMotor)
 	assert.True(t, plc.blueHubMotor)
+	assertHubLights(false, false)
 
 	arena.MatchStartTime = time.Now().Add(
 		-durationToTeleopEnd -
@@ -1134,6 +1182,7 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	arena.Update()
 	assert.True(t, plc.redHubMotor)
 	assert.True(t, plc.blueHubMotor)
+	assertHubLights(false, false)
 
 	arena.MatchStartTime = time.Now().Add(
 		-durationToTeleopEnd -
@@ -1143,6 +1192,7 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	arena.Update()
 	assert.False(t, plc.redHubMotor)
 	assert.False(t, plc.blueHubMotor)
+	assertHubLights(false, false)
 }
 
 func TestSignalVolunteers(t *testing.T) {
