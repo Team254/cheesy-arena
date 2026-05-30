@@ -86,12 +86,17 @@ const handleMatchTime = function (data) {
   $(".control-button").attr("data-enabled", matchStates[data.MatchState] === "POST_MATCH");
 };
 
-const endgameStatusNames = [
+const towerStatusNames = [
   "None",
-  "Park",
-  "Shallow",
-  "Deep",
+  "Level 1",
+  "Level 2",
+  "Level 3",
 ];
+
+const setTowerStatus = function (selector, status) {
+  $(selector).text(towerStatusNames[status]);
+  $(selector).attr("data-status", status);
+};
 
 // Handles a websocket message to update the realtime scoring fields.
 const handleRealtimeScore = function (data) {
@@ -117,32 +122,13 @@ const handleRealtimeScore = function (data) {
       score = data.Blue.Score;
     }
 
-    let l1_total = score.Reef.TroughNear + score.Reef.TroughFar;
-    let l2_total = score.Reef.Branches[0].filter(Boolean).length;
-    let l3_total = score.Reef.Branches[1].filter(Boolean).length;
-    let l4_total = score.Reef.Branches[2].filter(Boolean).length;
-    let l1_auto_total = score.Reef.AutoTroughNear + score.Reef.AutoTroughFar;
-    let l2_auto_total = score.Reef.AutoBranches[0].filter(Boolean).length;
-    let l3_auto_total = score.Reef.AutoBranches[1].filter(Boolean).length;
-    let l4_auto_total = score.Reef.AutoBranches[2].filter(Boolean).length;
-
     let scoreRoot = `${alliance}ScoreSummary`;
-    $(`#${scoreRoot} .team-1-leave`).text(score.LeaveStatuses[0] ? "✓" : "❌");
-    $(`#${scoreRoot} .team-2-leave`).text(score.LeaveStatuses[1] ? "✓" : "❌");
-    $(`#${scoreRoot} .team-3-leave`).text(score.LeaveStatuses[2] ? "✓" : "❌");
-    $(`#${scoreRoot} .team-1-endgame`).text(endgameStatusNames[score.EndgameStatuses[0]]);
-    $(`#${scoreRoot} .team-2-endgame`).text(endgameStatusNames[score.EndgameStatuses[1]]);
-    $(`#${scoreRoot} .team-3-endgame`).text(endgameStatusNames[score.EndgameStatuses[2]]);
-    $(`#${scoreRoot} .coral-l1`).text(l1_total);
-    $(`#${scoreRoot} .coral-l2`).text(l2_total);
-    $(`#${scoreRoot} .coral-l3`).text(l3_total);
-    $(`#${scoreRoot} .coral-l4`).text(l4_total);
-    $(`#${scoreRoot} .coral-l1-auto`).text(l1_auto_total);
-    $(`#${scoreRoot} .coral-l2-auto`).text(l2_auto_total);
-    $(`#${scoreRoot} .coral-l3-auto`).text(l3_auto_total);
-    $(`#${scoreRoot} .coral-l4-auto`).text(l4_auto_total);
-    $(`#${scoreRoot} .processor`).text(score.ProcessorAlgae);
-    $(`#${scoreRoot} .barge`).text(score.BargeAlgae);
+    setTowerStatus(`#${scoreRoot} .team-1-auto-tower`, score.AutoTowerStatuses[0]);
+    setTowerStatus(`#${scoreRoot} .team-2-auto-tower`, score.AutoTowerStatuses[1]);
+    setTowerStatus(`#${scoreRoot} .team-3-auto-tower`, score.AutoTowerStatuses[2]);
+    setTowerStatus(`#${scoreRoot} .team-1-endgame-tower`, score.EndgameTowerStatuses[0]);
+    setTowerStatus(`#${scoreRoot} .team-2-endgame-tower`, score.EndgameTowerStatuses[1]);
+    setTowerStatus(`#${scoreRoot} .team-3-endgame-tower`, score.EndgameTowerStatuses[2]);
   }
 }
 

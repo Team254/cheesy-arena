@@ -19,6 +19,11 @@ func TestRefereePanel(t *testing.T) {
 	recorder := web.getHttpResponse("/panels/referee")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Referee Panel - Untitled Event - Cheesy Arena")
+	assert.Contains(t, recorder.Body.String(), "Auto Tower")
+	assert.Contains(t, recorder.Body.String(), "Endgame Tower")
+	assert.NotContains(t, recorder.Body.String(), "Leave")
+	assert.NotContains(t, recorder.Body.String(), "Coral")
+	assert.NotContains(t, recorder.Body.String(), "Algae")
 }
 
 func TestRefereePanelWebsocket(t *testing.T) {
