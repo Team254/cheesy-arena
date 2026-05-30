@@ -196,6 +196,41 @@ func TestHub_GetActiveShiftTiming(t *testing.T) {
 	}
 }
 
+func TestHub_GetCurrentShiftTiming(t *testing.T) {
+	testCases := []struct {
+		name          string
+		timeSec       float32
+		shift         Shift
+		remaining     time.Duration
+		shiftDuration time.Duration
+		ok            bool
+	}{
+		{"before match", -1, ShiftCount, 0, 0, false},
+		{"auto", 5.1, ShiftAuto, 14900 * time.Millisecond, 20 * time.Second, true},
+		{"transition", 30.1, ShiftTransition, 2900 * time.Millisecond, 10 * time.Second, true},
+		{"shift 1", 40.1, Shift1, 17900 * time.Millisecond, 25 * time.Second, true},
+		{"shift 2", 60.1, Shift2, 22900 * time.Millisecond, 25 * time.Second, true},
+		{"endgame", 160.1, ShiftEndgame, 2900 * time.Millisecond, 30 * time.Second, true},
+		{"after match", 166.1, ShiftCount, 0, 0, false},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(
+			testCase.name, func(t *testing.T) {
+				hub := Hub{}
+				shift, remaining, shiftDuration, ok := hub.GetCurrentShiftTiming(
+					hubMatchStartTime,
+					hubTimeAfterStart(testCase.timeSec),
+				)
+				assert.Equal(t, testCase.shift, shift)
+				assert.Equal(t, testCase.remaining, remaining)
+				assert.Equal(t, testCase.shiftDuration, shiftDuration)
+				assert.Equal(t, testCase.ok, ok)
+			},
+		)
+	}
+}
+
 func TestHub_GetActiveShiftTimingIgnoresGracePeriodsAndExtendedPause(t *testing.T) {
 	originalPauseDurationSec := MatchTiming.PauseDurationSec
 	defer func() {

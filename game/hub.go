@@ -71,19 +71,15 @@ func (hub *Hub) GetShiftCount(shift Shift, activeOnly bool) int {
 	return 0
 }
 
-// GetActiveShiftTiming returns the amount of time remaining in the current shift if the Hub is active and the duration
-// of the current shift. If the Hub is not active, the remaining time is zero. If the match is not in a valid shift,
-// both values are zero.
-func (hub *Hub) GetActiveShiftTiming(matchStartTime, currentTime time.Time) (time.Duration, time.Duration) {
+// GetCurrentShiftTiming returns the current Hub shift, the amount of time remaining in it, and its duration. If the
+// match is not in a valid shift, both durations are zero and the ok return value is false.
+func (hub *Hub) GetCurrentShiftTiming(matchStartTime, currentTime time.Time) (Shift, time.Duration, time.Duration, bool) {
 	shiftStartTime := matchStartTime
 	shiftEndTime := matchStartTime.Add(GetDurationToAutoEnd())
 	for _, shift := range []Shift{ShiftAuto, ShiftTransition, Shift1, Shift2, Shift3, Shift4, ShiftEndgame} {
 		shiftDuration := shiftEndTime.Sub(shiftStartTime)
 		if !currentTime.Before(shiftStartTime) && currentTime.Before(shiftEndTime) {
-			if hub.isShiftActive(shift) {
-				return shiftEndTime.Sub(currentTime), shiftDuration
-			}
-			return 0, shiftDuration
+			return shift, shiftEndTime.Sub(currentTime), shiftDuration, true
 		}
 		shiftStartTime = shiftEndTime
 		switch shift {
@@ -98,7 +94,21 @@ func (hub *Hub) GetActiveShiftTiming(matchStartTime, currentTime time.Time) (tim
 			shiftEndTime = shiftStartTime
 		}
 	}
-	return 0, 0
+	return ShiftCount, 0, 0, false
+}
+
+// GetActiveShiftTiming returns the amount of time remaining in the current shift if the Hub is active and the duration
+// of the current shift. If the Hub is not active, the remaining time is zero. If the match is not in a valid shift,
+// both values are zero.
+func (hub *Hub) GetActiveShiftTiming(matchStartTime, currentTime time.Time) (time.Duration, time.Duration) {
+	shift, remaining, shiftDuration, ok := hub.GetCurrentShiftTiming(matchStartTime, currentTime)
+	if !ok {
+		return 0, 0
+	}
+	if hub.isShiftActive(shift) {
+		return remaining, shiftDuration
+	}
+	return 0, shiftDuration
 }
 
 // isShiftActive returns true if the Hub is active during the given shift.
