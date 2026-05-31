@@ -32,12 +32,16 @@ var deleteFoul = function (alliance, index) {
   websocket.send("deleteFoul", {Alliance: alliance, Index: index});
 };
 
-// Cycles through no card, yellow card, and red card.
+// Cycles through the card options for the selected team.
 var cycleCard = function (cardButton) {
-  var newCard = "";
-  if ($(cardButton).attr("data-card") === "") {
+  const currentCard = $(cardButton).attr("data-card");
+  const hasOldYellowCard = $(cardButton).attr("data-old-yellow-card") === "true";
+  let newCard = "";
+  if (currentCard === "" && hasOldYellowCard) {
+    newCard = "red";
+  } else if (currentCard === "") {
     newCard = "yellow";
-  } else if ($(cardButton).attr("data-card") === "yellow") {
+  } else if (currentCard === "yellow") {
     newCard = "red";
   }
   websocket.send(
