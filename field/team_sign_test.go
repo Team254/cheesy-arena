@@ -222,12 +222,12 @@ func TestTeamSign_Timer(t *testing.T) {
 	sign := TeamSign{isTimer: true}
 
 	// Should do nothing if no address is set.
-	sign.update(arena, nil, true, "12:34", "Rear Text")
+	sign.update(arena, "", true, "12:34", "Rear Text")
 	assert.Equal(t, [128]byte{}, sign.packetData)
 
 	// Check some basics about the data but don't unit-test the whole packet.
 	sign.SetId(56)
-	sign.update(arena, nil, true, "12:34", "Rear Text")
+	sign.update(arena, "", true, "12:34", "Rear Text")
 	assert.Equal(t, "CYPRX", string(sign.packetData[0:5]))
 	assert.Equal(t, 56, int(sign.packetData[5]))
 	assert.Equal(t, 0x04, int(sign.packetData[6]))
@@ -276,12 +276,12 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	sign := &TeamSign{isTimer: false}
 
 	// Should do nothing if no address is set.
-	sign.update(arena, allianceStation, true, "12:34", "Rear Text")
+	sign.update(arena, "R1", true, "12:34", "Rear Text")
 	assert.Equal(t, [128]byte{}, sign.packetData)
 
 	// Check some basics about the data but don't unit-test the whole packet.
 	sign.SetId(53)
-	sign.update(arena, allianceStation, true, "12:34", "Rear Text")
+	sign.update(arena, "R1", true, "12:34", "Rear Text")
 	assert.Equal(t, "CYPRX", string(sign.packetData[0:5]))
 	assert.Equal(t, 53, int(sign.packetData[5]))
 	assert.Equal(t, 0x04, int(sign.packetData[6]))
@@ -293,7 +293,7 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 
 	assertSign := func(isRed bool, expectedFrontText string, expectedFrontColor color.RGBA, expectedRearText string) {
 		frontText, frontColor, rearText := sign.generateTeamNumberTexts(
-			arena, allianceStation, isRed, "12:34", "Rear Text",
+			arena, "R1", isRed, "12:34", "Rear Text",
 		)
 		assert.Equal(t, expectedFrontText, frontText)
 		assert.Equal(t, expectedRearText, rearText)
@@ -309,29 +309,38 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assertSign(true, "  254", greenColor, "254       Connect PC")
 	assertSign(false, "  254", greenColor, "254       Connect PC")
 	arena.FieldReset = false
-	assertSign(true, "  254", redColor, "254       Connect PC")
-	assertSign(false, "  254", blueColor, "254       Connect PC")
+	assertSign(true, "  254", greenColor, "254       Connect PC")
+	assertSign(false, "  254", greenColor, "254       Connect PC")
 
 	// Check through pre-match sequence.
 	allianceStation.Ethernet = true
-	assertSign(true, "  254", redColor, "254         Start DS")
+	assertSign(true, "  254", greenColor, "254         Start DS")
 	allianceStation.DsConn = &DriverStationConnection{}
-	assertSign(true, "  254", redColor, "254         No Radio")
+	assertSign(true, "  254", greenColor, "254         No Radio")
 	allianceStation.DsConn.WrongStation = "R1"
-	assertSign(true, "  254", redColor, "254     Move Station")
+	assertSign(true, "  254", greenColor, "254     Move Station")
 	allianceStation.DsConn.WrongStation = ""
 	allianceStation.DsConn.RadioLinked = true
-	assertSign(true, "  254", redColor, "254           No Rio")
+	assertSign(true, "  254", greenColor, "254           No Rio")
 	allianceStation.DsConn.RioLinked = true
-	assertSign(true, "  254", redColor, "254          No Code")
+	assertSign(true, "  254", greenColor, "254          No Code")
 	allianceStation.DsConn.RobotLinked = true
 	assertSign(true, "  254", redColor, "254            Ready")
+
+	arena.FieldReset = true
+	assertSign(true, "  254", redColor, "254            Ready")
+	arena.FieldReset = false
+	assertSign(true, "  254", redColor, "254            Ready")
+	allianceStation.DsConn.RobotLinked = false
+	assertSign(true, "  254", greenColor, "254          No Code")
+	allianceStation.DsConn.RobotLinked = true
 	allianceStation.Bypass = true
 	assertSign(true, "  254", redColor, "254         Bypassed")
 
 	// Check that timeout mode has no effect on the team sign.
 	arena.MatchState = TimeoutActive
 	assertSign(true, "  254", redColor, "254         Bypassed")
+	arena.FieldReset = false
 
 	// Check E-stop and A-stop.
 	arena.MatchState = AutoPeriod
@@ -347,6 +356,10 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assertSign(false, "  254", orangeColor, "254           E-STOP")
 	arena.MatchState = PostMatch
 	assertSign(false, "  254", orangeColor, "254           E-STOP")
+	allianceStation.EStop = false
+	arena.FieldReset = true
+	assertSign(false, "  254", greenColor, "Rear Text")
+	allianceStation.EStop = true
 
 	// Test preloading the team for the next match.
 	sign.nextMatchTeamId = 1503
@@ -356,7 +369,7 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	allianceStation.Ethernet = false
 	arena.MatchState = PreMatch
 	arena.assignTeam(1503, "R1")
-	assertSign(false, " 1503", blueColor, "1503      Connect PC")
+	assertSign(false, " 1503", greenColor, "1503      Connect PC")
 
 	// Check blank mode.
 	arena.AllianceStationDisplayMode = "blank"

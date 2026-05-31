@@ -114,14 +114,14 @@ func (signs *TeamSigns) Update(arena *Arena) {
 	blueInMatchTeamRearText := generateInMatchTeamRearText(arena, false, rearCountdown, currentTime)
 	blueInMatchTimerRearText := generateInMatchTimerRearText(arena, false, rearCountdown)
 
-	signs.Red1.update(arena, arena.AllianceStations["R1"], true, countdown, redInMatchTeamRearText)
-	signs.Red2.update(arena, arena.AllianceStations["R2"], true, countdown, redInMatchTeamRearText)
-	signs.Red3.update(arena, arena.AllianceStations["R3"], true, countdown, redInMatchTeamRearText)
-	signs.RedTimer.update(arena, nil, true, countdown, redInMatchTimerRearText)
-	signs.Blue1.update(arena, arena.AllianceStations["B1"], false, countdown, blueInMatchTeamRearText)
-	signs.Blue2.update(arena, arena.AllianceStations["B2"], false, countdown, blueInMatchTeamRearText)
-	signs.Blue3.update(arena, arena.AllianceStations["B3"], false, countdown, blueInMatchTeamRearText)
-	signs.BlueTimer.update(arena, nil, false, countdown, blueInMatchTimerRearText)
+	signs.Red1.update(arena, "R1", true, countdown, redInMatchTeamRearText)
+	signs.Red2.update(arena, "R2", true, countdown, redInMatchTeamRearText)
+	signs.Red3.update(arena, "R3", true, countdown, redInMatchTeamRearText)
+	signs.RedTimer.update(arena, "", true, countdown, redInMatchTimerRearText)
+	signs.Blue1.update(arena, "B1", false, countdown, blueInMatchTeamRearText)
+	signs.Blue2.update(arena, "B2", false, countdown, blueInMatchTeamRearText)
+	signs.Blue3.update(arena, "B3", false, countdown, blueInMatchTeamRearText)
+	signs.BlueTimer.update(arena, "", false, countdown, blueInMatchTimerRearText)
 }
 
 // Sets the team numbers for the next match on all signs.
@@ -166,9 +166,7 @@ func (sign *TeamSign) SetId(id int) {
 }
 
 // Updates the sign's internal state with the latest data and sends packets to the sign if anything has changed.
-func (sign *TeamSign) update(
-	arena *Arena, allianceStation *AllianceStation, isRed bool, countdown, inMatchRearText string,
-) {
+func (sign *TeamSign) update(arena *Arena, station string, isRed bool, countdown, inMatchRearText string) {
 	if sign.address == 0 {
 		// Don't do anything if there is no sign configured in this position.
 		return
@@ -178,7 +176,7 @@ func (sign *TeamSign) update(
 		sign.frontText, sign.frontColor, sign.rearText = generateTimerTexts(arena, countdown, inMatchRearText)
 	} else {
 		sign.frontText, sign.frontColor, sign.rearText = sign.generateTeamNumberTexts(
-			arena, allianceStation, isRed, countdown, inMatchRearText,
+			arena, station, isRed, countdown, inMatchRearText,
 		)
 	}
 
@@ -307,7 +305,7 @@ func generateTimerTexts(arena *Arena, countdown, inMatchRearText string) (string
 		frontText = "SAFE "
 		frontColor = greenColor
 	} else if arena.FieldVolunteers && arena.MatchState != TimeoutActive {
-		frontText = "count"
+		frontText = "CLEAn"
 		frontColor = purpleColor
 	} else {
 		frontText = countdown
@@ -321,8 +319,9 @@ func generateTimerTexts(arena *Arena, countdown, inMatchRearText string) (string
 
 // Returns the front text, front color, and rear text to display on the sign for the given alliance station.
 func (sign *TeamSign) generateTeamNumberTexts(
-	arena *Arena, allianceStation *AllianceStation, isRed bool, countdown, inMatchRearText string,
+	arena *Arena, station string, isRed bool, countdown, inMatchRearText string,
 ) (string, color.RGBA, string) {
+	allianceStation := arena.AllianceStations[station]
 	allianceColor := redColor
 	if !isRed {
 		allianceColor = blueColor
@@ -348,6 +347,12 @@ func (sign *TeamSign) generateTeamNumberTexts(
 			frontColor = orangeColor
 		} else if allianceStation.AStop && arena.MatchState == AutoPeriod {
 			frontColor = blinkColor(orangeColor)
+		} else if arena.MatchState == PreMatch {
+			if station != "" && arena.checkAllianceStationsReady(station) == nil {
+				frontColor = allianceColor
+			} else {
+				frontColor = greenColor
+			}
 		} else if arena.FieldReset {
 			frontColor = greenColor
 		} else if arena.FieldVolunteers {
