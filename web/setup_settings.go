@@ -33,8 +33,12 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	activeSettingsTab := settingsTabFromRequest(r)
 	if !settingsSaveAllowed(web.arena.MatchState) {
-		web.renderSettings(w, r, "Settings cannot be changed while a match is in progress or is uncommitted.")
+		web.renderSettingsWithStatus(
+			w, r, "Settings cannot be changed while a match is in progress or is uncommitted.", activeSettingsTab,
+			http.StatusOK,
+		)
 		return
 	}
 
@@ -53,7 +57,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		playoffType = model.SingleEliminationPlayoff
 		numAlliances, _ = strconv.Atoi(r.PostFormValue("numPlayoffAlliances"))
 		if numAlliances < 2 || numAlliances > 16 {
-			web.renderSettings(w, r, "Number of alliances must be between 2 and 16.")
+			web.renderSettingsWithStatus(w, r, "Number of alliances must be between 2 and 16.", activeSettingsTab, http.StatusOK)
 			return
 		}
 	} else {
@@ -67,8 +71,9 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if len(alliances) > 0 {
-			web.renderSettings(
-				w, r, "Cannot change playoff type or size after alliance selection has been finalized.",
+			web.renderSettingsWithStatus(
+				w, r, "Cannot change playoff type or size after alliance selection has been finalized.", activeSettingsTab,
+				http.StatusOK,
 			)
 			return
 		}
@@ -170,11 +175,20 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#"+activeSettingsTab, 303)
 }
 
 func settingsSaveAllowed(matchState field.MatchState) bool {
 	return matchState == field.PreMatch || matchState == field.TimeoutActive || matchState == field.PostTimeout
+}
+
+func settingsTabFromRequest(r *http.Request) string {
+	switch r.PostFormValue("activeSettingsTab") {
+	case "event", "game", "field", "publishing", "automation":
+		return r.PostFormValue("activeSettingsTab")
+	default:
+		return "event"
+	}
 }
 
 // Sends a copy of the event database file to the client as a download.
@@ -323,15 +337,17 @@ func (web *Web) settingsPublishAlliancesHandler(w http.ResponseWriter, r *http.R
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.PublishAlliances(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish alliances: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish alliances: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 // Publishes the awards to the web.
@@ -343,15 +359,17 @@ func (web *Web) settingsPublishAwardsHandler(w http.ResponseWriter, r *http.Requ
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.PublishAwards(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish awards: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish awards: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 // Publishes the match schedule and results to the web.
@@ -363,20 +381,24 @@ func (web *Web) settingsPublishMatchesHandler(w http.ResponseWriter, r *http.Req
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.DeletePublishedMatches()
 		if err != nil {
-			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to delete published matches: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 		err = web.arena.TbaClient.PublishMatches(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish matches: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 // Publishes the standings to the web.
@@ -388,15 +410,17 @@ func (web *Web) settingsPublishRankingsHandler(w http.ResponseWriter, r *http.Re
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.PublishRankings(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish rankings: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish rankings: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 // Publishes the team list to the web.
@@ -408,18 +432,26 @@ func (web *Web) settingsPublishTeamsHandler(w http.ResponseWriter, r *http.Reque
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.PublishTeams(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish teams: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish teams: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string) {
+	web.renderSettingsWithStatus(w, r, errorMessage, "event", http.StatusOK)
+}
+
+func (web *Web) renderSettingsWithStatus(
+	w http.ResponseWriter, r *http.Request, errorMessage string, activeSettingsTab string, statusCode int,
+) {
 	template, err := web.parseFiles("templates/setup_settings.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -427,8 +459,12 @@ func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMess
 	}
 	data := struct {
 		*model.EventSettings
-		ErrorMessage string
-	}{web.arena.EventSettings, errorMessage}
+		ErrorMessage      string
+		ActiveSettingsTab string
+	}{web.arena.EventSettings, errorMessage, activeSettingsTab}
+	if statusCode != http.StatusOK {
+		w.WriteHeader(statusCode)
+	}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)
