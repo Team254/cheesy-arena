@@ -66,6 +66,7 @@ type EventSettings struct {
 	SCCUpCommands                    string
 	SCCDownCommands                  string
 	PlcAddress                       string
+	LedControllerAddress             string
 	AdminPassword                    string
 	TeamSignRed1Id                   int
 	TeamSignRed2Id                   int

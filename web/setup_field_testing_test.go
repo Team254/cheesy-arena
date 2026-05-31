@@ -5,11 +5,13 @@ package web
 
 import (
 	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 type plcIoChangeMessage struct {
@@ -24,6 +26,9 @@ func TestSetupFieldTesting(t *testing.T) {
 
 	recorder := web.getHttpResponse("/setup/field_testing")
 	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "LED Lighting")
+	assert.Contains(t, recorder.Body.String(), "Red Hub")
+	assert.Contains(t, recorder.Body.String(), "Blue Hub")
 }
 
 func TestSetupFieldTestingWebsocket(t *testing.T) {
@@ -150,6 +155,68 @@ func TestSetupFieldTestingWebsocketSetPlcCoilOverrideInvalidArgs(t *testing.T) {
 
 	ws.Write("setPlcCoilOverride", map[string]any{"Index": 8, "Override": "invalid"})
 	assert.Equal(t, "Invalid coil override state 'invalid'.", readWebsocketError(t, ws))
+}
+
+func TestSetupFieldTestingWebsocketSetLedMode(t *testing.T) {
+	web := setupTestWeb(t)
+
+	server, wsUrl := web.startTestServer()
+	defer server.Close()
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/setup/field_testing/websocket", nil)
+	assert.Nil(t, err)
+	defer conn.Close()
+	ws := websocket.NewTestWebsocket(conn)
+
+	readWebsocketMultiple(t, ws, 2)
+
+	ws.Write("setLedMode", map[string]any{"RedMode": led.PurpleMode, "BlueMode": led.GreenMode})
+	assert.Eventually(t, func() bool {
+		redMode, blueMode := web.arena.Leds.GetModes()
+		return redMode == led.PurpleMode && blueMode == led.GreenMode
+	}, time.Second, 10*time.Millisecond)
+}
+
+func TestSetupFieldTestingWebsocketSetLedModeDisallowedStates(t *testing.T) {
+	web := setupTestWeb(t)
+
+	server, wsUrl := web.startTestServer()
+	defer server.Close()
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/setup/field_testing/websocket", nil)
+	assert.Nil(t, err)
+	defer conn.Close()
+	ws := websocket.NewTestWebsocket(conn)
+
+	readWebsocketMultiple(t, ws, 2)
+
+	for _, matchState := range []field.MatchState{
+		field.StartMatch,
+		field.AutoPeriod,
+		field.PausePeriod,
+		field.TeleopPeriod,
+	} {
+		web.arena.MatchState = matchState
+		ws.Write("setLedMode", map[string]any{"RedMode": led.PurpleMode, "BlueMode": led.GreenMode})
+		assert.Equal(t, fieldTestingLedModeDisabledMessage, readWebsocketError(t, ws))
+	}
+}
+
+func TestSetupFieldTestingWebsocketSetLedModeInvalidArgs(t *testing.T) {
+	web := setupTestWeb(t)
+
+	server, wsUrl := web.startTestServer()
+	defer server.Close()
+	conn, _, err := gorillawebsocket.DefaultDialer.Dial(wsUrl+"/setup/field_testing/websocket", nil)
+	assert.Nil(t, err)
+	defer conn.Close()
+	ws := websocket.NewTestWebsocket(conn)
+
+	readWebsocketMultiple(t, ws, 2)
+
+	ws.Write("setLedMode", map[string]any{"RedMode": 999, "BlueMode": led.GreenMode})
+	assert.Equal(t, "Invalid LED mode '999'.", readWebsocketError(t, ws))
+
+	ws.Write("setLedMode", map[string]any{"RedMode": led.PurpleMode, "BlueMode": 999})
+	assert.Equal(t, "Invalid LED mode '999'.", readWebsocketError(t, ws))
 }
 
 func readPlcIoChangeMessage(t *testing.T, ws *websocket.Websocket) plcIoChangeMessage {

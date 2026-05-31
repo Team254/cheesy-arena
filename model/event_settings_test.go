@@ -29,6 +29,7 @@ func TestEventSettingsReadWrite(t *testing.T) {
 			ApChannel:                  36,
 			SCCUpCommands:              "configure terminal\ninterface range gigabitEthernet 1/2-4\nno shutdown\nexit\nexit\nexit",
 			SCCDownCommands:            "configure terminal\ninterface range gigabitEthernet 1/2-4\nshutdown\nexit\nexit\nexit",
+			LedControllerAddress:       "",
 			AutoDurationSec:            20,
 			PauseDurationSec:           3,
 			TransitionShiftDurationSec: 10,

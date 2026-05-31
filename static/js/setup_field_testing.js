@@ -13,6 +13,14 @@ var playSound = function (sound) {
   websocket.send("playSound", sound);
 };
 
+// Sends a websocket message to set the selected LED test mode.
+var setLedMode = function () {
+  websocket.send("setLedMode", {
+    RedMode: parseInt($("input[name=redLedMode]:checked").val(), 10),
+    BlueMode: parseInt($("input[name=blueLedMode]:checked").val(), 10)
+  });
+};
+
 var setPlcCoilOverride = function (index, override) {
   websocket.send("setPlcCoilOverride", { Index: index, Override: override });
 };

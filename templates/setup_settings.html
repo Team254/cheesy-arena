@@ -420,11 +420,23 @@ UI for configuring event settings.
                     value="{{if gt .TeamSignBlueTimerId 0}}{{.TeamSignBlueTimerId}}{{end}}" placeholder="54">
                 </div>
               </div>
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>LED Lighting</legend>
               <div class="row mb-3">
-                <legend>Driver Station Lite Mode</legend>
-                <p>When enabled, the Driver Station software will prompt teams to allow Cheesy Arena to connect rather
-                  than automatically connecting, and will preserve the ability to use the spacebar for robot
-                  disablement. Consider enabling this setting when physical E-Stop buttons are not present.</p>
+                <label class="col-lg-6 control-label">LED Controller Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="ledControllerAddress"
+                    value="{{.LedControllerAddress}}" placeholder="10.0.100.60">
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Driver Station Lite Mode</legend>
+              <p>When enabled, the Driver Station software will prompt teams to allow Cheesy Arena to connect rather
+                than automatically connecting, and will preserve the ability to use the spacebar for robot
+                disablement. Consider enabling this setting when physical E-Stop buttons are not present.</p>
+              <div class="row mb-3">
                 <label class="col-lg-8 control-label" for="useLiteUdpPort"> Lite Mode </label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="useLiteUdpPort" name="useLiteUdpPort"

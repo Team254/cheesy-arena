@@ -7,6 +7,13 @@ package field
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
+	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/playoff"
+	"github.com/Team254/cheesy-arena/plc"
 	"log"
 	"math"
 	"math/rand"
@@ -14,13 +21,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
-	"github.com/Team254/cheesy-arena/partner"
-	"github.com/Team254/cheesy-arena/playoff"
-	"github.com/Team254/cheesy-arena/plc"
 )
 
 const (
@@ -35,7 +35,6 @@ const (
 	scheduledBreakDelaySec   = 5
 	earlyLateThresholdMin    = 2.5
 	MaxMatchGapMin           = 20
-	hubLightWarningSec       = 3
 )
 
 // Progression of match states.
@@ -67,6 +66,7 @@ type Arena struct {
 	AllianceStations map[string]*AllianceStation
 	Displays         map[string]*Display
 	TeamSigns        *TeamSigns
+	Leds             *led.Controller
 	ScoringPanelRegistry
 	ArenaNotifiers
 	MatchState
@@ -131,6 +131,7 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.Displays = make(map[string]*Display)
 
 	arena.TeamSigns = NewTeamSigns()
+	arena.Leds = led.NewController()
 
 	var err error
 	arena.Database, err = model.OpenDatabase(dbPath)
@@ -209,6 +210,9 @@ func (arena *Arena) LoadSettings() error {
 		sccDownCommands,
 	)
 	arena.Plc.SetAddress(settings.PlcAddress)
+	if err = arena.Leds.SetAddress(settings.LedControllerAddress); err != nil {
+		return err
+	}
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
 	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
 	arena.BlackmagicClient = partner.NewBlackmagicClient(settings.BlackmagicAddresses)
@@ -390,6 +394,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.Plc.ResetMatch()
 	arena.NextFoulId = 1
 	arena.redWonAuto = false
+	arena.Leds.SetMode(led.OffMode, led.OffMode)
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
@@ -659,14 +664,8 @@ func (arena *Arena) Update() {
 		if matchTimeSec >= game.GetDurationToAutoEnd().Seconds() {
 			auto = false
 			sendDsPacket = true
-			if game.MatchTiming.PauseDurationSec > 0 {
-				arena.MatchState = PausePeriod
-				enabled = false
-			} else {
-				arena.MatchState = TeleopPeriod
-				enabled = true
-				go arena.CompanionClient.SendEvent(partner.EventTeleopStart)
-			}
+			arena.MatchState = PausePeriod
+			enabled = false
 		}
 	case PausePeriod:
 		auto = false
@@ -753,6 +752,8 @@ func (arena *Arena) Update() {
 	)
 	arena.BlueRealtimeScore.ActiveRemainingSec = int(math.Ceil(blueActiveRemaining.Seconds()))
 	arena.BlueRealtimeScore.ActiveDurationSec = int(math.Ceil(blueActiveDuration.Seconds()))
+
+	arena.updateHubLeds(currentTime)
 
 	// Handle field sensors/lights/actuators.
 	arena.handlePlcInputOutput()
@@ -1241,6 +1242,7 @@ func (arena *Arena) SignalVolunteers() {
 	arena.FieldReset = false
 	arena.AllianceStationDisplayMode = "signalCount"
 	arena.AllianceStationDisplayModeNotifier.Notify()
+	arena.Leds.SetMode(led.PurpleMode, led.PurpleMode)
 }
 
 // Set the field lights and team signs to green, if not in a match.
@@ -1257,6 +1259,7 @@ func (arena *Arena) SignalReset() {
 	arena.FieldReset = true
 	arena.AllianceStationDisplayMode = "fieldReset"
 	arena.AllianceStationDisplayModeNotifier.Notify()
+	arena.Leds.SetMode(led.GreenMode, led.GreenMode)
 }
 
 func (arena *Arena) handleSounds(matchTimeSec float64) {
