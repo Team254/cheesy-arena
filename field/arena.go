@@ -97,6 +97,7 @@ type Arena struct {
 	matchAborted                      bool
 	soundsPlayed                      map[*game.MatchSound]struct{}
 	breakDescription                  string
+	breakNextMatchName                string
 	preloadedTeams                    *[6]*model.Team
 	NextFoulId                        int
 	redWonAuto                        bool
@@ -571,6 +572,22 @@ func (arena *Arena) ResetMatch() error {
 
 // Starts a timeout of the given duration.
 func (arena *Arena) StartTimeout(description string, durationSec int) error {
+	return arena.startTimeout(description, arena.currentMatchDisplayName(), durationSec)
+}
+
+// Starts an ad-hoc timeout of the given duration.
+func (arena *Arena) StartAdHocTimeout(description string, nextMatchName string, durationSec int) error {
+	return arena.startTimeout(description, nextMatchName, durationSec)
+}
+
+// Sets the text shown on timeout displays.
+func (arena *Arena) SetTimeoutDisplay(description string, nextMatchName string) {
+	arena.breakDescription = description
+	arena.breakNextMatchName = nextMatchName
+	arena.MatchLoadNotifier.Notify()
+}
+
+func (arena *Arena) startTimeout(description string, nextMatchName string, durationSec int) error {
 	if arena.MatchState != PreMatch {
 		return fmt.Errorf("cannot start timeout while there is a match still in progress or with results pending")
 	}
@@ -580,6 +597,7 @@ func (arena *Arena) StartTimeout(description string, durationSec int) error {
 	arena.soundsPlayed = make(map[*game.MatchSound]struct{})
 	arena.MatchTimingNotifier.Notify()
 	arena.breakDescription = description
+	arena.breakNextMatchName = nextMatchName
 	arena.MatchLoadNotifier.Notify()
 	arena.MatchState = TimeoutActive
 	arena.MatchStartTime = time.Now()
@@ -588,6 +606,17 @@ func (arena *Arena) StartTimeout(description string, durationSec int) error {
 	arena.AllianceStationDisplayModeNotifier.Notify()
 
 	return nil
+}
+
+func (arena *Arena) currentMatchDisplayName() string {
+	if arena.CurrentMatch == nil {
+		return ""
+	}
+	name := arena.CurrentMatch.LongName
+	if arena.CurrentMatch.NameDetail != "" {
+		name += " - " + arena.CurrentMatch.NameDetail
+	}
+	return name
 }
 
 // Updates the audience display screen.

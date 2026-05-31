@@ -7,18 +7,17 @@ package web
 
 import (
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"sort"
-	"time"
-
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
+	"io"
+	"log"
+	"net/http"
+	"sort"
+	"time"
 )
 
 type MatchPlayListItem struct {
@@ -28,6 +27,8 @@ type MatchPlayListItem struct {
 	Status     game.MatchStatus
 	ColorClass string
 }
+
+const defaultTimeoutDescription = "Field Break"
 
 type MatchPlayList []MatchPlayListItem
 
@@ -333,16 +334,46 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			}
 			web.arena.SetAllianceStationDisplayMode(mode)
 		case "startTimeout":
-			durationSec, ok := data.(float64)
-			if !ok {
-				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
-				continue
+			var timeoutSettings struct {
+				Description   string
+				NextMatchName string
+				DurationSec   float64
 			}
-			err = web.arena.StartTimeout("Timeout", int(durationSec))
+			durationSec, ok := data.(float64)
+			if ok {
+				timeoutSettings.Description = defaultTimeoutDescription
+				timeoutSettings.DurationSec = durationSec
+			} else {
+				err = mapstructure.Decode(data, &timeoutSettings)
+				if err != nil || timeoutSettings.DurationSec == 0 {
+					ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+					continue
+				}
+				if timeoutSettings.Description == "" {
+					timeoutSettings.Description = defaultTimeoutDescription
+				}
+			}
+			err = web.arena.StartAdHocTimeout(
+				timeoutSettings.Description, timeoutSettings.NextMatchName, int(timeoutSettings.DurationSec),
+			)
 			if err != nil {
 				ws.WriteError(err.Error())
 				continue
 			}
+		case "setTimeoutDisplay":
+			var timeoutSettings struct {
+				Description   string
+				NextMatchName string
+			}
+			err = mapstructure.Decode(data, &timeoutSettings)
+			if err != nil {
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			if timeoutSettings.Description == "" {
+				timeoutSettings.Description = defaultTimeoutDescription
+			}
+			web.arena.SetTimeoutDisplay(timeoutSettings.Description, timeoutSettings.NextMatchName)
 		case "setTestMatchName":
 			if web.arena.CurrentMatch.Type != model.Test {
 				// Don't allow changing the name of a non-test match.

@@ -590,6 +590,22 @@ func TestArenaTimeout(t *testing.T) {
 	assert.Equal(t, timeoutDurationSec, game.MatchTiming.TimeoutDurationSec)
 	assert.Equal(t, TimeoutActive, arena.MatchState)
 	assert.Equal(t, "Break 1", arena.breakDescription)
+	assert.Equal(t, "Test Match", arena.breakNextMatchName)
+	arena.MatchStartTime = time.Now().Add(-time.Duration(timeoutDurationSec) * time.Second)
+	arena.Update()
+	assert.Equal(t, PostTimeout, arena.MatchState)
+	arena.MatchStartTime = time.Now().Add(-time.Duration(timeoutDurationSec+postTimeoutSec) * time.Second)
+	arena.Update()
+	assert.Equal(t, PreMatch, arena.MatchState)
+
+	// Test ad-hoc timeout display text.
+	timeoutDurationSec = 14
+	assert.Nil(t, arena.StartAdHocTimeout("Repair Break", "", timeoutDurationSec))
+	assert.Equal(t, "Repair Break", arena.breakDescription)
+	assert.Equal(t, "", arena.breakNextMatchName)
+	arena.SetTimeoutDisplay("Inspection Break", "Practice 1")
+	assert.Equal(t, "Inspection Break", arena.breakDescription)
+	assert.Equal(t, "Practice 1", arena.breakNextMatchName)
 	arena.MatchStartTime = time.Now().Add(-time.Duration(timeoutDurationSec) * time.Second)
 	arena.Update()
 	assert.Equal(t, PostTimeout, arena.MatchState)

@@ -376,6 +376,22 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	ws.Write("setAllianceStationDisplay", "logo")
 	readWebsocketType(t, ws, "allianceStationDisplayMode")
 	assert.Equal(t, "logo", web.arena.AllianceStationDisplayMode)
+
+	// Test changing timeout display text.
+	ws.Write("setTimeoutDisplay", map[string]string{"Description": "Lunch Break", "NextMatchName": "Practice 2"})
+	message := readWebsocketType(t, ws, "matchLoad").(map[string]any)
+	assert.Equal(t, "Lunch Break", message["BreakDescription"])
+	assert.Equal(t, "Practice 2", message["BreakNextMatchName"])
+
+	ws.Write(
+		"startTimeout",
+		map[string]any{"Description": "Repair Break", "NextMatchName": "", "DurationSec": float64(90)},
+	)
+	messages := readWebsocketTypes(t, ws, 3, "matchTiming", "matchLoad", "allianceStationDisplayMode")
+	message = messages["matchLoad"].(map[string]any)
+	assert.Equal(t, field.TimeoutActive, web.arena.MatchState)
+	assert.Equal(t, "Repair Break", message["BreakDescription"])
+	assert.Equal(t, "", message["BreakNextMatchName"])
 }
 
 func TestMatchPlayWebsocketLoadMatch(t *testing.T) {

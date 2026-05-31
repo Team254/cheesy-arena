@@ -63,7 +63,12 @@
         matchName += " &ndash; " + data.Match.NameDetail;
       }
       $("#matchName").html(matchName);
-      $("#timeoutNextMatchName").html(matchName);
+      const timeoutNextMatchName = data.BreakNextMatchName || "";
+      const timeoutDetailOpacity = $("#timeoutBreakDescription").css("opacity");
+      $("#timeoutNextMatch").toggle(timeoutNextMatchName !== "").css(
+        "opacity", timeoutNextMatchName === "" ? 0 : timeoutDetailOpacity
+      );
+      $("#timeoutNextMatchName").text(timeoutNextMatchName);
       $("#timeoutBreakDescription").text(data.BreakDescription);
       return currentMatch;
     },

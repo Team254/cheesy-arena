@@ -99,7 +99,19 @@ const startTimeout = function () {
   if (duration.length > 1) {
     durationSec = durationSec * 60 + parseFloat(duration[1]);
   }
-  websocket.send("startTimeout", durationSec);
+  websocket.send("startTimeout", {
+    Description: $("#timeoutDescription").val(),
+    NextMatchName: $("#timeoutNextMatchText").val(),
+    DurationSec: durationSec,
+  });
+};
+
+// Sends a websocket message to update timeout display text.
+const setTimeoutDisplay = function () {
+  websocket.send("setTimeoutDisplay", {
+    Description: $("#timeoutDescription").val(),
+    NextMatchName: $("#timeoutNextMatchText").val(),
+  });
 };
 
 const confirmCommit = function () {
@@ -289,6 +301,8 @@ const handleMatchLoad = function (data) {
 
   $("#matchName").text(data.Match.LongName);
   $("#testMatchName").val(data.Match.LongName);
+  $("#timeoutDescription").val(data.BreakDescription || "Field Break");
+  $("#timeoutNextMatchText").val(data.BreakNextMatchName || "");
   $("#testMatchSettings").toggle(data.Match.Type === matchTypeTest);
   $.each(data.Teams, function (station, team) {
     const teamId = $(`#status${station} .team-number`);

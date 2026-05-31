@@ -178,13 +178,20 @@ UI for controlling match play and viewing team connection and field status.
             </label>
           </div>
           <h6 class="mt-4">Timeout</h6>
-          <input type="text" id="timeoutDuration" size="4" value="8:00"/>
-          <button type="button" id="startTimeout" class="btn btn-primary btn-sm" onclick="startTimeout();">
-            Start
-          </button>
+          <div class="mb-1">
+            <input type="text" id="timeoutDuration" size="4" value="8:00"/>
+            <button type="button" id="startTimeout" class="btn btn-primary btn-sm" onclick="startTimeout();">
+              Start
+            </button>
+          </div>
+          <div class="mb-1">
+            <input type="text" id="timeoutDescription" size="16" value="Field Break" onblur="setTimeoutDisplay();"/>
+          </div>
+          <div>
+            <input type="text" id="timeoutNextMatchText" size="16" placeholder="Next Up" onblur="setTimeoutDisplay();"/>
+          </div>
+          <h6 class="mt-3">Match Name</h6>
           <div id="testMatchSettings">
-            <br/><br/>
-            <p>Match Name</p>
             <input type="text" id="testMatchName" size="16" onblur="setTestMatchName();"/>
           </div>
         </div>

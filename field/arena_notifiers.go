@@ -185,15 +185,16 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		!(arena.EventSettings.NexusEnabled && arena.CurrentMatch.ShouldAllowNexusSubstitution())
 
 	return &struct {
-		Match             *model.Match
-		AllowSubstitution bool
-		IsReplay          bool
-		Teams             map[string]*model.Team
-		Rankings          map[string]int
-		Matchup           *playoff.Matchup
-		RedOffFieldTeams  []*model.Team
-		BlueOffFieldTeams []*model.Team
-		BreakDescription  string
+		Match              *model.Match
+		AllowSubstitution  bool
+		IsReplay           bool
+		Teams              map[string]*model.Team
+		Rankings           map[string]int
+		Matchup            *playoff.Matchup
+		RedOffFieldTeams   []*model.Team
+		BlueOffFieldTeams  []*model.Team
+		BreakDescription   string
+		BreakNextMatchName string
 	}{
 		arena.CurrentMatch,
 		allowManualSubstitution,
@@ -204,6 +205,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		redOffFieldTeams,
 		blueOffFieldTeams,
 		arena.breakDescription,
+		arena.breakNextMatchName,
 	}
 }
 
