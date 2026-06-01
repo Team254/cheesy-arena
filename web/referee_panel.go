@@ -196,22 +196,9 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
 		case "signalVolunteers":
-			if web.arena.MatchState != field.PostMatch {
-				// Don't allow clearing the field until the match is over.
-				continue
-			}
-			web.arena.FieldVolunteers = true
-			web.arena.AllianceStationDisplayMode = "signalCount"
-			web.arena.AllianceStationDisplayModeNotifier.Notify()
+			web.arena.SignalVolunteers()
 		case "signalReset":
-			if web.arena.MatchState != field.PostMatch {
-				// Don't allow clearing the field until the match is over.
-				continue
-			}
-			web.arena.FieldVolunteers = false
-			web.arena.FieldReset = true
-			web.arena.AllianceStationDisplayMode = "fieldReset"
-			web.arena.AllianceStationDisplayModeNotifier.Notify()
+			web.arena.SignalReset()
 		case "commitMatch":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow committing the fouls until the match is over.
