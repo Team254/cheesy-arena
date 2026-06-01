@@ -416,6 +416,7 @@ dialog::backdrop {
 #foul-container .foul-button {
   height: 120px;
   width: 300px;
+  color: var(--text-active);
 }
 
 .foul-button.red {
