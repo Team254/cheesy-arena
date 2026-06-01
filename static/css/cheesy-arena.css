@@ -45,6 +45,9 @@
 .bg-green {
   background-color: #132 !important;
 }
+.bg-tie {
+  background-color: #474d53 !important;
+}
 .score-summary-table {
   color: #fff;
 }

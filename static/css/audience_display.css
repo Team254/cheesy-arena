@@ -84,11 +84,55 @@
   align-items: center;
 }
 #finalScore {
+  position: relative;
   width: 1000px;
   display: flex;
   flex-direction: column;
   border: 2px solid #333;
   opacity: 0;
+}
+#finalResultIndicators {
+  position: absolute;
+  top: -63px;
+  left: 0;
+  right: 0;
+  height: 63px;
+  display: flex;
+  pointer-events: none;
+}
+.final-result-indicator-slot {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+.final-result-indicator-slot:first-child {
+  padding-right: 150px;
+}
+.final-result-indicator-slot:last-child {
+  padding-left: 150px;
+}
+.final-result-indicator {
+  min-width: 270px;
+  height: 63px;
+  padding: 0 36px;
+  border: 2px solid #333;
+  border-radius: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background-color: #fc3;
+  color: #222;
+  font-family: "FuturaLTBold";
+  font-size: 36px;
+  line-height: 63px;
+  text-align: center;
+}
+.final-result-indicator[data-result=tie] {
+  background-color: #999;
+}
+.final-result-indicator[data-result=winner], .final-result-indicator[data-result=tie] {
+  display: flex;
 }
 .final-score-row {
   display: flex;

@@ -111,8 +111,25 @@ const handleRealtimeScore = function (data) {
   );
 };
 
+const setFinalResultIndicator = function (side, label, result) {
+  const indicator = $(`#${side}FinalResultIndicator`);
+  indicator.text(label);
+  indicator.attr("data-result", result);
+};
+
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function (data) {
+  if (data.RedWon) {
+    setFinalResultIndicator(redSide, "WINNER", "winner");
+    setFinalResultIndicator(blueSide, "", "");
+  } else if (data.BlueWon) {
+    setFinalResultIndicator(redSide, "", "");
+    setFinalResultIndicator(blueSide, "WINNER", "winner");
+  } else {
+    setFinalResultIndicator(redSide, "TIE", "tie");
+    setFinalResultIndicator(blueSide, "TIE", "tie");
+  }
+
   $(`#${redSide}FinalScore`).text(data.RedScoreSummary.Score);
   $(`#${redSide}FinalAlliance`).text("Alliance " + data.Match.PlayoffRedAlliance);
   setTeamInfo(redSide, 1, data.Match.Red1, data.RedCards, data.RedRankings);

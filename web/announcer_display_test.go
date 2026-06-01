@@ -4,6 +4,7 @@
 package web
 
 import (
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
@@ -33,12 +34,24 @@ func TestAnnouncerDisplayMatchLoad(t *testing.T) {
 
 func TestAnnouncerDisplayScorePosted(t *testing.T) {
 	web := setupTestWeb(t)
-	match := model.Match{Type: model.Qualification, LongName: "Qual 17"}
-	web.arena.SavedMatch = &match
+	for _, test := range []struct {
+		status game.MatchStatus
+		winner string
+		class  string
+	}{
+		{game.RedWonMatch, "Red", "bg-danger"},
+		{game.BlueWonMatch, "Blue", "bg-primary"},
+		{game.TieMatch, "Tie", "bg-tie"},
+	} {
+		match := model.Match{Type: model.Qualification, LongName: "Qual 17", Status: test.status}
+		web.arena.SavedMatch = &match
 
-	recorder := web.getHttpResponse("/displays/announcer/score_posted")
-	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Qual 17")
+		recorder := web.getHttpResponse("/displays/announcer/score_posted")
+		assert.Equal(t, 200, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "Qual 17")
+		assert.Contains(t, recorder.Body.String(), "Winner: "+test.winner)
+		assert.Contains(t, recorder.Body.String(), test.class)
+	}
 }
 
 func TestAnnouncerDisplayWebsocket(t *testing.T) {

@@ -6,6 +6,11 @@
       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     </div>
     <div class="modal-body row">
+      <div class="col-sm-12 mb-3 text-center">
+        <span class="badge fs-5 {{if .RedWon}}bg-danger{{else if .BlueWon}}bg-primary{{else}}bg-tie{{end}}">
+          Winner: {{if .RedWon}}Red{{else if .BlueWon}}Blue{{else}}Tie{{end}}
+        </span>
+      </div>
       <div class="col-sm-6">
         <div class="card card-body bg-red">
           {{template "alliance_match_result" dict "summary" .RedScoreSummary "fouls" .RedFouls "cards" .RedCards
