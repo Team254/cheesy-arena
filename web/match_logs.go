@@ -28,24 +28,30 @@ type MatchLogsListItem struct {
 }
 
 type MatchLogRow struct {
-	MatchTimeSec      float64
-	PacketType        int
-	TeamId            int
-	AllianceStation   string
-	DsLinked          bool
-	RadioLinked       bool
-	RioLinked         bool
-	RobotLinked       bool
-	Auto              bool
-	Enabled           bool
-	EmergencyStop     bool
-	AutonomousStop    bool
-	BatteryVoltage    float64
-	MissedPacketCount int
-	DsRobotTripTimeMs int
-	TxRate            float64
-	RxRate            float64
-	SignalNoiseRatio  int
+	MatchTimeSec          float64
+	PacketType            int
+	TeamId                int
+	AllianceStation       string
+	DsLinked              bool
+	RadioLinked           bool
+	RioLinked             bool
+	RobotLinked           bool
+	Auto                  bool
+	Enabled               bool
+	EmergencyStop         bool
+	AutonomousStop        bool
+	BatteryVoltage        float64
+	MissedPacketCount     int
+	DsRobotTripTimeMs     int
+	TxRate                float64
+	RxRate                float64
+	SignalNoiseRatio      int
+	EthernetConnected     bool
+	DsReportedStatusValid bool
+	DsReportedAuto        bool
+	DsReportedTeleop      bool
+	DsReportedDisabled    bool
+	DsReportedEnabled     bool
 }
 
 type MatchLog struct {
@@ -167,7 +173,6 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 	case "B3":
 		logs.TeamId = match.Blue3
 	}
-	headerMap := make(map[string]int)
 	// rows []MatchLogRow
 	// Load a csv file.
 	if logs.TeamId == 0 {
@@ -206,6 +211,7 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 			}
 
 			// Add mapping: Column/property name --> record index
+			headerMap := make(map[string]int)
 			for i, v := range header {
 				headerMap[v] = i
 			}
@@ -221,33 +227,32 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 			}
 			for i, record := range records {
 				var curRow MatchLogRow
-				curRow.MatchTimeSec, _ = strconv.ParseFloat(record[headerMap["matchTimeSec"]], 64)
-				curRow.PacketType, _ = strconv.Atoi(record[headerMap["packetType"]])
-				curRow.TeamId, _ = strconv.Atoi(record[headerMap["teamId"]])
-				curRow.AllianceStation = record[headerMap["allianceStation"]]
-				curRow.DsLinked, _ = strconv.ParseBool(record[headerMap["dsLinked"]])
-				curRow.RadioLinked, _ = strconv.ParseBool(record[headerMap["radioLinked"]])
-				curRow.RioLinked, _ = strconv.ParseBool(record[headerMap["rioLinked"]])
-				curRow.RobotLinked, _ = strconv.ParseBool(record[headerMap["robotLinked"]])
-				curRow.Auto, _ = strconv.ParseBool(record[headerMap["auto"]])
-				curRow.Enabled, _ = strconv.ParseBool(record[headerMap["enabled"]])
-				curRow.EmergencyStop, _ = strconv.ParseBool(record[headerMap["emergencyStop"]])
-				curRow.AutonomousStop, _ = strconv.ParseBool(record[headerMap["autonomousStop"]])
-				curRow.BatteryVoltage, _ = strconv.ParseFloat(record[headerMap["batteryVoltage"]], 64)
-				curRow.MissedPacketCount, _ = strconv.Atoi(record[headerMap["missedPacketCount"]])
-				curRow.DsRobotTripTimeMs, _ = strconv.Atoi(record[headerMap["dsRobotTripTimeMs"]])
-				if len(headerMap) > 13 {
+				curRow.MatchTimeSec = parseOptionalFloat(record, headerMap, "matchTimeSec", 0)
+				curRow.PacketType = parseOptionalInt(record, headerMap, "packetType", 0)
+				curRow.TeamId = parseOptionalInt(record, headerMap, "teamId", 0)
+				curRow.AllianceStation = parseOptionalString(record, headerMap, "allianceStation", "")
+				curRow.DsLinked = parseOptionalBool(record, headerMap, "dsLinked", false)
+				curRow.RadioLinked = parseOptionalBool(record, headerMap, "radioLinked", false)
+				curRow.RioLinked = parseOptionalBool(record, headerMap, "rioLinked", false)
+				curRow.RobotLinked = parseOptionalBool(record, headerMap, "robotLinked", false)
+				curRow.Auto = parseOptionalBool(record, headerMap, "auto", false)
+				curRow.Enabled = parseOptionalBool(record, headerMap, "enabled", false)
+				curRow.EmergencyStop = parseOptionalBool(record, headerMap, "emergencyStop", false)
+				curRow.AutonomousStop = parseOptionalBool(record, headerMap, "autonomousStop", false)
+				curRow.BatteryVoltage = parseOptionalFloat(record, headerMap, "batteryVoltage", 0)
+				curRow.MissedPacketCount = parseOptionalInt(record, headerMap, "missedPacketCount", 0)
+				curRow.DsRobotTripTimeMs = parseOptionalInt(record, headerMap, "dsRobotTripTimeMs", 0)
+				curRow.TxRate = parseOptionalFloat(record, headerMap, "txRate", -1)
+				curRow.RxRate = parseOptionalFloat(record, headerMap, "rxRate", -1)
+				curRow.SignalNoiseRatio = parseOptionalInt(record, headerMap, "signalNoiseRatio", -1)
+				curRow.EthernetConnected = parseOptionalBool(record, headerMap, "ethernetConnected", false)
+				curRow.DsReportedStatusValid = parseOptionalBool(record, headerMap, "dsReportedStatusValid", false)
+				curRow.DsReportedAuto = parseOptionalBool(record, headerMap, "dsReportedAuto", false)
+				curRow.DsReportedTeleop = parseOptionalBool(record, headerMap, "dsReportedTeleop", false)
+				curRow.DsReportedDisabled = parseOptionalBool(record, headerMap, "dsReportedDisabled", false)
+				curRow.DsReportedEnabled = parseOptionalBool(record, headerMap, "dsReportedEnabled", false)
 
-					curRow.TxRate, _ = strconv.ParseFloat(record[headerMap["txRate"]], 64)
-					curRow.RxRate, _ = strconv.ParseFloat(record[headerMap["rxRate"]], 64)
-					curRow.SignalNoiseRatio, _ = strconv.Atoi(record[headerMap["signalNoiseRatio"]])
-				} else {
-					curRow.TxRate = -1
-					curRow.RxRate = -1
-					curRow.SignalNoiseRatio = -1
-				}
-
-				// Create new person and add to persons array
+				// Store the parsed row in the same position as the CSV record.
 				curlog.Rows[i] = curRow
 			}
 
@@ -259,6 +264,54 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 		}
 	}
 	return match, &logs, false, nil
+}
+
+// parseOptionalString returns a CSV value by column name, or a default for legacy files that lack the column.
+func parseOptionalString(record []string, headerMap map[string]int, columnName string, defaultValue string) string {
+	index, ok := headerMap[columnName]
+	if !ok || index >= len(record) {
+		return defaultValue
+	}
+	return record[index]
+}
+
+// parseOptionalBool parses a bool CSV value by column name, preserving the default for missing or malformed values.
+func parseOptionalBool(record []string, headerMap map[string]int, columnName string, defaultValue bool) bool {
+	valueString := parseOptionalString(record, headerMap, columnName, "")
+	if valueString == "" {
+		return defaultValue
+	}
+	value, err := strconv.ParseBool(valueString)
+	if err != nil {
+		return defaultValue
+	}
+	return value
+}
+
+// parseOptionalFloat parses a float CSV value by column name, preserving the default for missing or malformed values.
+func parseOptionalFloat(record []string, headerMap map[string]int, columnName string, defaultValue float64) float64 {
+	valueString := parseOptionalString(record, headerMap, columnName, "")
+	if valueString == "" {
+		return defaultValue
+	}
+	value, err := strconv.ParseFloat(valueString, 64)
+	if err != nil {
+		return defaultValue
+	}
+	return value
+}
+
+// parseOptionalInt parses an int CSV value by column name, preserving the default for missing or malformed values.
+func parseOptionalInt(record []string, headerMap map[string]int, columnName string, defaultValue int) int {
+	valueString := parseOptionalString(record, headerMap, columnName, "")
+	if valueString == "" {
+		return defaultValue
+	}
+	value, err := strconv.Atoi(valueString)
+	if err != nil {
+		return defaultValue
+	}
+	return value
 }
 
 // Constructs the list of matches to display in the match Logs interface.

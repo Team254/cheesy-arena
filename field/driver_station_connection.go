@@ -43,13 +43,17 @@ type DriverStationConnection struct {
 	BatteryVoltage            float64
 	DsRobotTripTimeMs         int
 	MissedPacketCount         int
+	DsReportedStatusValid     bool
+	DsReportedAuto            bool
+	DsReportedTeleop          bool
+	DsReportedDisabled        bool
+	DsReportedEnabled         bool
 	SecondsSinceLastRobotLink float64
 	lastPacketTime            time.Time
 	lastRobotLinkedTime       time.Time
 	packetCount               int
 	tcpConn                   net.Conn
 	udpConn                   net.Conn
-	log                       *TeamMatchLog
 	SentGameData              string
 
 	// WrongStation indicates if the team in the station is the incorrect team
@@ -210,11 +214,6 @@ func (dsConn *DriverStationConnection) update(arena *Arena, gameData string) err
 }
 
 func (dsConn *DriverStationConnection) close() {
-	if dsConn.log != nil {
-		if err := dsConn.log.Close(); err != nil {
-			log.Printf("Error closing match log for Team %d: %v", dsConn.TeamId, err)
-		}
-	}
 	if dsConn.udpConn != nil {
 		if err := dsConn.udpConn.Close(); err != nil {
 			log.Printf("Error closing UDP connection for Team %d: %v", dsConn.TeamId, err)
@@ -225,15 +224,6 @@ func (dsConn *DriverStationConnection) close() {
 			log.Printf("Error closing TCP connection for Team %d: %v", dsConn.TeamId, err)
 		}
 	}
-}
-
-// Called at the start of the match to allow for driver station initialization.
-func (dsConn *DriverStationConnection) signalMatchStart(match *model.Match, wifiStatus *network.TeamWifiStatus) error {
-	// Zero out missed packet count and begin logging.
-	dsConn.MissedPacketCount = 0
-	var err error
-	dsConn.log, err = NewTeamMatchLog(dsConn.TeamId, match, wifiStatus)
-	return err
 }
 
 // Serializes the control information into a packet.
@@ -465,7 +455,12 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 			closeTcpConn(tcpConn, "driver station registration error")
 			continue
 		}
-		arena.AllianceStations[assignedStation].DsConn = dsConn
+		allianceStation := arena.AllianceStations[assignedStation]
+		if previousDsConn := allianceStation.DsConn; previousDsConn != nil {
+			dsConn.copyDsReportedStatus(previousDsConn)
+			previousDsConn.close()
+		}
+		allianceStation.DsConn = dsConn
 
 		if wrongAssignedStation != "" {
 			dsConn.WrongStation = wrongAssignedStation
@@ -506,7 +501,7 @@ func readTaggedTcpPacket(tcpConn net.Conn, buffer []byte) (int, error) {
 func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 	buffer := make([]byte, maxTcpPacketBytes)
 	for {
-		_, err := readTaggedTcpPacket(dsConn.tcpConn, buffer)
+		count, err := readTaggedTcpPacket(dsConn.tcpConn, buffer)
 		if err != nil {
 			log.Printf("Error reading from connection for Team %d: %v", dsConn.TeamId, err)
 			dsConn.close()
@@ -522,16 +517,36 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 			// DS keepalive packet; do nothing.
 			continue
 		case 22:
-			// Robot log packet. Just use to trigger fms log
-			// Create a log entry if the match is in progress.
-			matchTimeSec := arena.MatchTimeSec()
-			if matchTimeSec > 0 && dsConn.log != nil {
-				dsConn.log.LogDsPacket(matchTimeSec, packetType, dsConn)
-			}
+			dsConn.parseDsLogPacket(buffer[:count])
 		default:
 			log.Printf("Received unknown packet type %d from Team %d", packetType, dsConn.TeamId)
 		}
 	}
+}
+
+// copyDsReportedStatus preserves the last DS-reported mode bits when the same team reconnects mid-match.
+func (dsConn *DriverStationConnection) copyDsReportedStatus(previousDsConn *DriverStationConnection) {
+	dsConn.DsReportedStatusValid = previousDsConn.DsReportedStatusValid
+	dsConn.DsReportedAuto = previousDsConn.DsReportedAuto
+	dsConn.DsReportedTeleop = previousDsConn.DsReportedTeleop
+	dsConn.DsReportedDisabled = previousDsConn.DsReportedDisabled
+	dsConn.DsReportedEnabled = previousDsConn.DsReportedEnabled
+}
+
+// parseDsLogPacket updates DS-reported mode and enable state from a driver station TCP log packet.
+func (dsConn *DriverStationConnection) parseDsLogPacket(packet []byte) {
+	if len(packet) < 8 {
+		log.Printf("Received DS log packet with insufficient length from Team %d: %d", dsConn.TeamId, len(packet))
+		return
+	}
+
+	// Packet type 22 carries the DS-side robot status byte at offset 7.
+	statusByte := packet[7]
+	dsConn.DsReportedStatusValid = true
+	dsConn.DsReportedTeleop = statusByte&0x20 != 0
+	dsConn.DsReportedAuto = statusByte&0x10 != 0
+	dsConn.DsReportedDisabled = statusByte&0x08 != 0
+	dsConn.DsReportedEnabled = !dsConn.DsReportedDisabled
 }
 
 func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {

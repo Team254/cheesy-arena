@@ -28,6 +28,7 @@ const (
 	arenaLoopWarningMs       = 5
 	dsPacketPeriodMs         = 500
 	dsPacketWarningMs        = 550
+	teamLogPeriodMs          = 500
 	periodicTaskPeriodSec    = 15
 	matchEndScoreDwellSec    = 3
 	postTimeoutSec           = 4
@@ -77,6 +78,7 @@ type Arena struct {
 	RedRealtimeScore                  *RealtimeScore
 	BlueRealtimeScore                 *RealtimeScore
 	lastDsPacketTime                  time.Time
+	lastTeamLogTime                   time.Time
 	lastPeriodicTaskTime              time.Time
 	EventStatus                       EventStatus
 	FieldVolunteers                   bool
@@ -104,15 +106,16 @@ type Arena struct {
 }
 
 type AllianceStation struct {
-	DsConn     *DriverStationConnection
-	Ethernet   bool
-	AStop      bool
-	EStop      bool
-	Bypass     bool
-	Team       *model.Team
-	WifiStatus network.TeamWifiStatus
-	aStopReset bool
-	GameData   string
+	DsConn       *DriverStationConnection
+	TeamMatchLog *TeamMatchLog
+	Ethernet     bool
+	AStop        bool
+	EStop        bool
+	Bypass       bool
+	Team         *model.Team
+	WifiStatus   network.TeamWifiStatus
+	aStopReset   bool
+	GameData     string
 }
 
 // Creates the arena and sets it to its initial state.
@@ -509,13 +512,15 @@ func (arena *Arena) StartMatch() error {
 		}
 		arena.updateCycleTime(arena.CurrentMatch.StartedAt)
 
-		// Save the missed packet count to subtract it from the running count.
 		for _, allianceStation := range arena.AllianceStations {
-			if allianceStation.DsConn != nil {
-				err = allianceStation.DsConn.signalMatchStart(arena.CurrentMatch, &allianceStation.WifiStatus)
+			if allianceStation.Team != nil {
+				err = allianceStation.startTeamMatchLog(arena.CurrentMatch)
 				if err != nil {
 					log.Println(err)
 				}
+			}
+			if allianceStation.DsConn != nil {
+				allianceStation.DsConn.MissedPacketCount = 0
 			}
 
 			// Save the teams that have successfully connected to the field.
@@ -525,6 +530,8 @@ func (arena *Arena) StartMatch() error {
 				arena.Database.UpdateTeam(allianceStation.Team)
 			}
 		}
+
+		arena.lastTeamLogTime = time.Time{}
 
 		arena.MatchState = StartMatch
 	}
@@ -561,6 +568,7 @@ func (arena *Arena) ResetMatch() error {
 	if arena.MatchState != TimeoutActive {
 		arena.MatchState = PreMatch
 	}
+	arena.closeTeamMatchLogs()
 	arena.matchAborted = false
 	arena.AllianceStations["R1"].Bypass = false
 	arena.AllianceStations["R2"].Bypass = false
@@ -789,6 +797,9 @@ func (arena *Arena) Update() {
 	// Handle field sensors/lights/actuators.
 	arena.handlePlcInputOutput()
 
+	// Log after PLC input so each sample includes the latest physical DS Ethernet state.
+	arena.logTeamSnapshots()
+
 	if !oldRedScore.Equals(&arena.RedRealtimeScore.CurrentScore) ||
 		!oldBlueScore.Equals(&arena.BlueRealtimeScore.CurrentScore) ||
 		oldRedActiveRemainingSec != arena.RedRealtimeScore.ActiveRemainingSec ||
@@ -820,6 +831,27 @@ func (arena *Arena) checkEndgameStart(matchTimeSec float64) {
 	if matchTimeSec >= endgameStartTime && arena.LastMatchTimeSec < endgameStartTime {
 		go arena.CompanionClient.SendEvent(partner.EventEndgameStart)
 	}
+}
+
+// logTeamSnapshots records one row per station-owned team log at the configured cadence while a match is active.
+func (arena *Arena) logTeamSnapshots() {
+	matchTimeSec := arena.MatchTimeSec()
+	if matchTimeSec <= 0 {
+		return
+	}
+
+	msSinceLastTeamLog := int(time.Since(arena.lastTeamLogTime).Seconds() * 1000)
+	if arena.lastTeamLogTime.After(time.Time{}) && msSinceLastTeamLog < teamLogPeriodMs {
+		return
+	}
+
+	// Logs are owned by stations, not DS TCP connections, so disconnected stations still get outage rows.
+	for stationId, allianceStation := range arena.AllianceStations {
+		if allianceStation.TeamMatchLog != nil {
+			allianceStation.TeamMatchLog.LogStationSnapshot(matchTimeSec, allianceStation, stationId)
+		}
+	}
+	arena.lastTeamLogTime = time.Now()
 }
 
 // Loops indefinitely to track and update the arena components.
@@ -872,6 +904,40 @@ func (arena *Arena) validateTeams(teamIds ...int) error {
 	return nil
 }
 
+// startTeamMatchLog opens a fresh persisted log for the station's assigned team at match start.
+func (allianceStation *AllianceStation) startTeamMatchLog(match *model.Match) error {
+	if allianceStation.TeamMatchLog != nil {
+		// A previous log can exist after an aborted start or replay; close it before replacing the handle.
+		allianceStation.TeamMatchLog.Close()
+		allianceStation.TeamMatchLog = nil
+	}
+	if allianceStation.Team == nil {
+		return nil
+	}
+
+	teamMatchLog, err := NewTeamMatchLog(allianceStation.Team.Id, match, &allianceStation.WifiStatus)
+	if err != nil {
+		return err
+	}
+	allianceStation.TeamMatchLog = teamMatchLog
+	return nil
+}
+
+// closeTeamMatchLog closes the station-owned match log, if one is active.
+func (allianceStation *AllianceStation) closeTeamMatchLog() {
+	if allianceStation.TeamMatchLog != nil {
+		allianceStation.TeamMatchLog.Close()
+		allianceStation.TeamMatchLog = nil
+	}
+}
+
+// closeTeamMatchLogs closes all station-owned match logs when match ownership is ending.
+func (arena *Arena) closeTeamMatchLogs() {
+	for _, allianceStation := range arena.AllianceStations {
+		allianceStation.closeTeamMatchLog()
+	}
+}
+
 // Loads a team into an alliance station, cleaning up the previous team there if there is one.
 func (arena *Arena) assignTeam(teamId int, station string) error {
 	// Reject invalid station values.
@@ -892,6 +958,7 @@ func (arena *Arena) assignTeam(teamId int, station string) error {
 		arena.AllianceStations[station].Team = nil
 		arena.AllianceStations[station].DsConn = nil
 	}
+	arena.AllianceStations[station].closeTeamMatchLog()
 
 	// Leave the station empty if the team number is zero.
 	if teamId == 0 {

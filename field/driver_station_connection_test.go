@@ -164,6 +164,24 @@ func TestSendControlPacket(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestParseDsLogPacketUpdatesDsReportedStatus(t *testing.T) {
+	dsConn := &DriverStationConnection{TeamId: 254}
+
+	dsConn.parseDsLogPacket([]byte{0, 6, 22, 0, 0, 12, 128, 0x30})
+	assert.True(t, dsConn.DsReportedStatusValid)
+	assert.True(t, dsConn.DsReportedAuto)
+	assert.True(t, dsConn.DsReportedTeleop)
+	assert.False(t, dsConn.DsReportedDisabled)
+	assert.True(t, dsConn.DsReportedEnabled)
+
+	dsConn.parseDsLogPacket([]byte{0, 6, 22, 0, 0, 12, 128, 0x08})
+	assert.True(t, dsConn.DsReportedStatusValid)
+	assert.False(t, dsConn.DsReportedAuto)
+	assert.False(t, dsConn.DsReportedTeleop)
+	assert.True(t, dsConn.DsReportedDisabled)
+	assert.False(t, dsConn.DsReportedEnabled)
+}
+
 func TestListenForDriverStations(t *testing.T) {
 	arena := setupTestArena(t)
 	serverAddress := startTestDriverStationServer(t, arena)

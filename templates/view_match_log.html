@@ -29,6 +29,10 @@ Page showing the logs of a single match for a single team.
     </div>
 
     <div style="position: relative; height:30vh;">
+      <canvas id="mode_chart_{{$logs.StartTime}}"></canvas>
+    </div>
+
+    <div style="position: relative; height:30vh;">
       <canvas id="voltage_chart_{{$logs.StartTime}}"></canvas>
     </div>
 
@@ -47,9 +51,11 @@ Page showing the logs of a single match for a single team.
     <script>
       <!-- @formatter:off -->
         const ctx_link_{{$logs.StartTime}} = document.getElementById("link_chart_{{$logs.StartTime}}");
+        const ctx_mode_{{$logs.StartTime}} = document.getElementById("mode_chart_{{$logs.StartTime}}");
         const ctx_voltage_{{$logs.StartTime}} = document.getElementById("voltage_chart_{{$logs.StartTime}}");
         const ctx_latency_{{$logs.StartTime}} = document.getElementById("latency_chart_{{$logs.StartTime}}");
-        const ctx_missed_packets_{{$logs.StartTime}} = document.getElementById("missed_packets_chart_{{$logs.StartTime}}");
+        const ctx_missed_packets_{{$logs.StartTime}} =
+          document.getElementById("missed_packets_chart_{{$logs.StartTime}}");
         const ctx_snr_{{$logs.StartTime}} = document.getElementById("snr_chart_{{$logs.StartTime}}");
 
         new Chart(ctx_link_{{$logs.StartTime}}, {
@@ -105,6 +111,17 @@ Page showing the logs of a single match for a single team.
                   color: 'rgb(75, 192, 192)'
                 }
               },
+              y5: {
+                type: 'category',
+                labels: [true, false],
+                offset: true,
+                position: 'left',
+                stack: 'demo',
+                stackWeight: 1,
+                border: {
+                  color: 'rgb(128, 128, 128)'
+                }
+              },
             }
           },
           data: {
@@ -119,7 +136,9 @@ Page showing the logs of a single match for a single team.
               },
               {
                 label: 'Radio Linked',
-                data: [{{range $row := $logs.Rows}}{{if $row.DsLinked}}{{$row.RadioLinked}}{{else}}false{{end}},{{end}}],
+                data: [
+                  {{range $row := $logs.Rows}}{{if $row.DsLinked}}{{$row.RadioLinked}}{{else}}false{{end}},{{end}}
+                ],
                 fill: false,
                 borderColor: 'rgb(75, 75, 192)',
                 tension: 0.1,
@@ -127,7 +146,11 @@ Page showing the logs of a single match for a single team.
               },
               {
                 label: 'Rio Linked',
-                data: [{{range $row := $logs.Rows}}{{if and $row.DsLinked $row.RadioLinked}}{{$row.RioLinked}}{{else}}false{{end}},{{end}}],
+                data: [
+                  {{range $row := $logs.Rows}}
+                    {{if and $row.DsLinked $row.RadioLinked}}{{$row.RioLinked}}{{else}}false{{end}},
+                  {{end}}
+                ],
                 fill: false,
                 borderColor: 'rgb(192, 192, 75)',
                 tension: 0.1,
@@ -135,11 +158,85 @@ Page showing the logs of a single match for a single team.
               },
               {
                 label: 'Robot Linked',
-                data: [{{range $row := $logs.Rows}}{{if and $row.DsLinked $row.RadioLinked $row.RioLinked}}{{$row.RobotLinked}}{{else}}false{{end}},{{end}}],
+                data: [
+                  {{range $row := $logs.Rows}}
+                    {{if and $row.DsLinked $row.RadioLinked $row.RioLinked}}{{$row.RobotLinked}}{{else}}false{{end}},
+                  {{end}}
+                ],
                 fill: false,
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.1,
                 yAxisID: 'y4',
+              },
+              {
+                label: 'Ethernet Connected',
+                data: [{{range $row := $logs.Rows}}{{$row.EthernetConnected}},{{end}}],
+                fill: false,
+                borderColor: 'rgb(128, 128, 128)',
+                tension: 0.1,
+                yAxisID: 'y5',
+              }
+            ]
+          }
+        });
+
+        new Chart(ctx_mode_{{$logs.StartTime}}, {
+          type: 'line',
+          options: {
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: "Mode / Enable"
+              }
+            },
+            scales: {
+              y: {
+                type: 'category',
+                labels: [true, false]
+              }
+            }
+          },
+          data: {
+            labels: [{{range $row := $logs.Rows}}{{printf "%.2f" $row.MatchTimeSec}},{{end}}],
+            datasets:[
+              {
+                label: 'Arena Auto',
+                data: [{{range $row := $logs.Rows}}{{$row.Auto}},{{end}}],
+                fill: false,
+                borderColor: 'rgb(192, 75, 75)',
+                tension: 0.1
+              },
+              {
+                label: 'DS Auto',
+                data: [
+                  {{range $row := $logs.Rows}}
+                    {{if $row.DsReportedStatusValid}}{{$row.DsReportedAuto}}{{else}}null{{end}},
+                  {{end}}
+                ],
+                fill: false,
+                borderColor: 'rgb(192, 75, 75)',
+                borderDash: [6, 4],
+                tension: 0.1
+              },
+              {
+                label: 'Arena Enabled',
+                data: [{{range $row := $logs.Rows}}{{$row.Enabled}},{{end}}],
+                fill: false,
+                borderColor: 'rgb(75, 75, 192)',
+                tension: 0.1
+              },
+              {
+                label: 'DS Enabled',
+                data: [
+                  {{range $row := $logs.Rows}}
+                    {{if $row.DsReportedStatusValid}}{{$row.DsReportedEnabled}}{{else}}null{{end}},
+                  {{end}}
+                ],
+                fill: false,
+                borderColor: 'rgb(75, 75, 192)',
+                borderDash: [6, 4],
+                tension: 0.1
               }
             ]
           }
@@ -243,11 +340,14 @@ Page showing the logs of a single match for a single team.
         <tr>
           <th>Match Time</th>
           <th>DS Linked</th>
+          <th>Ethernet</th>
           <th>Radio Linked</th>
           <th>Rio Linked</th>
           <th>Robot Linked</th>
           <th>Mode</th>
           <th>Enabled</th>
+          <th>DS Mode</th>
+          <th>DS Enabled</th>
           <th class="nowrap">E-Stop</th>
           <th class="nowrap">A-Stop</th>
           <th>Voltage</th>
@@ -265,11 +365,20 @@ Page showing the logs of a single match for a single team.
             {{printf "%.2f" $row.MatchTimeSec}}
           </td>
           <td>{{$row.DsLinked}}</td>
+          <td>{{$row.EthernetConnected}}</td>
           <td>{{if $row.DsLinked}}{{$row.RadioLinked}}{{else}}*****{{end}}</td>
           <td>{{if and $row.DsLinked $row.RadioLinked}}{{$row.RioLinked}}{{else}}*****{{end}}</td>
           <td>{{if and $row.DsLinked $row.RadioLinked $row.RioLinked}}{{$row.RobotLinked}}{{else}}*****{{end}}</td>
           <td>{{if $row.Auto}}Auto{{else}}Telop{{end}}</td>
           <td>{{$row.Enabled}}</td>
+          <td>
+            {{if $row.DsReportedStatusValid}}
+              {{if $row.DsReportedAuto}}Auto{{else if $row.DsReportedTeleop}}Telop{{else}}*****{{end}}
+            {{else}}
+              *****
+            {{end}}
+          </td>
+          <td>{{if $row.DsReportedStatusValid}}{{$row.DsReportedEnabled}}{{else}}*****{{end}}</td>
           <td>{{$row.EmergencyStop}}</td>
           <td>{{$row.AutonomousStop}}</td>
           <td>{{printf "%.3f" $row.BatteryVoltage}}</td>
