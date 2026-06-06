@@ -129,6 +129,9 @@ const handleScorePosted = function (data) {
     setFinalResultIndicator(redSide, "TIE", "tie");
     setFinalResultIndicator(blueSide, "TIE", "tie");
   }
+  const tiebreakReason = data.TiebreakReason || "";
+  $("#finalTiebreakReason").text(tiebreakReason);
+  $("#finalTiebreakReason").attr("data-visible", tiebreakReason !== "");
 
   $(`#${redSide}FinalScore`).text(data.RedScoreSummary.Score);
   $(`#${redSide}FinalAlliance`).text("Alliance " + data.Match.PlayoffRedAlliance);

@@ -38,10 +38,14 @@ func (t MatchStatus) Get() MatchStatus {
 	return t
 }
 
-// Determines the winner of the match given the score summaries for both alliances.
-func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, applyPlayoffTiebreakers bool) MatchStatus {
+// Determines the winner of the match given the score summaries for both alliances, and returns a display string
+// indicating the playoff tiebreaker criterion used if the primary score is tied.
+func DetermineMatchStatus(
+	redScoreSummary, blueScoreSummary *ScoreSummary,
+	applyPlayoffTiebreakers bool,
+) (MatchStatus, string) {
 	if status := comparePoints(redScoreSummary.Score, blueScoreSummary.Score); status != TieMatch {
-		return status
+		return status, ""
 	}
 
 	if applyPlayoffTiebreakers {
@@ -49,19 +53,22 @@ func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, apply
 		if status := comparePoints(
 			redScoreSummary.NumOpponentMajorFouls, blueScoreSummary.NumOpponentMajorFouls,
 		); status != TieMatch {
-			return status
+			return status, "TIEBREAK: MAJOR FOULS"
 		}
 		status := comparePoints(redScoreSummary.AutoFuelPoints, blueScoreSummary.AutoFuelPoints)
 		if status != TieMatch {
-			return status
+			return status, "TIEBREAK: AUTO FUEL"
 		}
-		return comparePoints(
+		if status = comparePoints(
 			redScoreSummary.AutoTowerPoints+redScoreSummary.TeleopTowerPoints,
 			blueScoreSummary.AutoTowerPoints+blueScoreSummary.TeleopTowerPoints,
-		)
+		); status != TieMatch {
+			return status, "TIEBREAK: TOWER POINTS"
+		}
+		return TieMatch, "TRUE TIE"
 	}
 
-	return TieMatch
+	return TieMatch, ""
 }
 
 // Helper method to compare the red and blue alliance point totals and return the appropriate MatchStatus.

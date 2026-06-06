@@ -112,7 +112,7 @@
 .final-result-indicator-slot:last-child {
   padding-left: 150px;
 }
-.final-result-indicator {
+.final-result-indicator, #finalTiebreakReason {
   min-width: 270px;
   height: 63px;
   padding: 0 36px;
@@ -128,10 +128,22 @@
   line-height: 63px;
   text-align: center;
 }
+#finalTiebreakReason {
+  position: absolute;
+  bottom: -63px;
+  left: 0;
+  right: 0;
+  width: fit-content;
+  margin: 0 auto;
+  pointer-events: none;
+}
 .final-result-indicator[data-result=tie] {
   background-color: #999;
 }
 .final-result-indicator[data-result=winner], .final-result-indicator[data-result=tie] {
+  display: flex;
+}
+#finalTiebreakReason[data-visible=true] {
   display: flex;
 }
 .final-score-row {

@@ -237,6 +237,9 @@ func (arena *Arena) generateRealtimeScoreMessage() any {
 func (arena *Arena) GenerateScorePostedMessage() any {
 	redScoreSummary := arena.SavedMatchResult.RedScoreSummary()
 	blueScoreSummary := arena.SavedMatchResult.BlueScoreSummary()
+	_, tiebreakReason := game.DetermineMatchStatus(
+		redScoreSummary, blueScoreSummary, arena.SavedMatch.UseTiebreakCriteria,
+	)
 	redRankingPoints := redScoreSummary.BonusRankingPoints
 	blueRankingPoints := blueScoreSummary.BonusRankingPoints
 	switch arena.SavedMatch.Status {
@@ -297,6 +300,7 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		BlueOffFieldTeamIds []int
 		RedWon              bool
 		BlueWon             bool
+		TiebreakReason      string
 		RedWins             int
 		BlueWins            int
 		RedDestination      string
@@ -318,6 +322,7 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		blueOffFieldTeamIds,
 		arena.SavedMatch.Status == game.RedWonMatch,
 		arena.SavedMatch.Status == game.BlueWonMatch,
+		tiebreakReason,
 		redWins,
 		blueWins,
 		redDestination,

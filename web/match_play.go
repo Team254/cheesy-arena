@@ -405,7 +405,7 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 	match.ScoreCommittedAt = time.Now()
 	redScoreSummary := matchResult.RedScoreSummary()
 	blueScoreSummary := matchResult.BlueScoreSummary()
-	match.Status = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, match.UseTiebreakCriteria)
+	match.Status, _ = game.DetermineMatchStatus(redScoreSummary, blueScoreSummary, match.UseTiebreakCriteria)
 
 	if match.Type != model.Test {
 		if matchResult.PlayNumber == 0 {
