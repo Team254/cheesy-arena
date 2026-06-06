@@ -73,7 +73,7 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier(), web.arena.ArenaStatusNotifier)
@@ -94,7 +94,7 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		case "playSound":
 			sound, ok := data.(string)
 			if !ok {
-				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				writeWebsocketError(ws, fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
 			web.arena.PlaySoundNotifier.NotifyWithMessage(sound)
@@ -150,7 +150,7 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 
 			web.arena.Leds.SetMode(args.RedMode, args.BlueMode)
 		default:
-			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			writeWebsocketError(ws, fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue
 		}
 	}

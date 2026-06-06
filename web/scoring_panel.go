@@ -88,14 +88,14 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 	web.arena.ScoringPanelRegistry.RegisterPanel(position, ws)
 	web.arena.ScoringStatusNotifier.Notify()
 	defer web.arena.ScoringStatusNotifier.Notify()
 	defer web.arena.ScoringPanelRegistry.UnregisterPanel(position, ws)
 
 	// Instruct panel to clear any local state in case this is a reconnect
-	ws.Write("resetLocalState", nil)
+	writeWebsocketMessage(ws, "resetLocalState", nil)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(
@@ -122,7 +122,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		if command == "commitMatch" {
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow committing the score until the match is over.
-				ws.WriteError("Cannot commit score: Match is not over.")
+				writeWebsocketError(ws, "Cannot commit score: Match is not over.")
 				continue
 			}
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(position, ws)
@@ -134,7 +134,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 
@@ -151,7 +151,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 
@@ -168,7 +168,7 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 

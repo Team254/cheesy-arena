@@ -15,6 +15,7 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/mitchellh/mapstructure"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -312,12 +313,7 @@ func (client *TbaClient) PublishTeams(database *model.Database) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
-	}
-	return nil
+	return checkTbaPostResponse(resp)
 }
 
 // Uploads the qualification and playoff match schedule and results to The Blue Alliance.
@@ -350,10 +346,16 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 			}
 			if matchResult != nil {
 				scoreBreakdown = make(map[string]map[string]any)
-				scoreBreakdown["red"] = createTbaScoringBreakdown(eventSettings, &match, matchResult, "red")
-				scoreBreakdown["blue"] = createTbaScoringBreakdown(eventSettings, &match, matchResult, "blue")
+				scoreBreakdown["red"], err = createTbaScoringBreakdown(eventSettings, &match, matchResult, "red")
+				if err != nil {
+					return err
+				}
+				scoreBreakdown["blue"], err = createTbaScoringBreakdown(eventSettings, &match, matchResult, "blue")
+				if err != nil {
+					return err
+				}
 				redScoreValue := scoreBreakdown["red"]["totalPoints"].(int)
-				blueScoreValue, _ := scoreBreakdown["blue"]["totalPoints"].(int)
+				blueScoreValue := scoreBreakdown["blue"]["totalPoints"].(int)
 				redScore = &redScoreValue
 				blueScore = &blueScoreValue
 				redCards = matchResult.RedCards
@@ -393,12 +395,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
-	}
-	return nil
+	return checkTbaPostResponse(resp)
 }
 
 // Uploads the team standings to The Blue Alliance.
@@ -435,12 +432,7 @@ func (client *TbaClient) PublishRankings(database *model.Database) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
-	}
-	return nil
+	return checkTbaPostResponse(resp)
 }
 
 // Uploads the alliances selection results to The Blue Alliance.
@@ -466,10 +458,8 @@ func (client *TbaClient) PublishAlliances(database *model.Database) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
+	if err := checkTbaPostResponse(resp); err != nil {
+		return err
 	}
 
 	// Also set the playoff type so that TBA renders the correct bracket.
@@ -485,13 +475,7 @@ func (client *TbaClient) PublishAlliances(database *model.Database) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
-	}
-
-	return nil
+	return checkTbaPostResponse(resp)
 }
 
 // Uploads the awards to The Blue Alliance.
@@ -517,12 +501,7 @@ func (client *TbaClient) PublishAwards(database *model.Database) error {
 	if err != nil {
 		return err
 	}
-	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
-	}
-	return nil
+	return checkTbaPostResponse(resp)
 }
 
 // Clears out the existing match data on The Blue Alliance for the event.
@@ -531,10 +510,24 @@ func (client *TbaClient) DeletePublishedMatches() error {
 	if err != nil {
 		return err
 	}
+	return checkTbaPostResponse(resp)
+}
+
+func checkTbaPostResponse(resp *http.Response) error {
 	if resp.StatusCode != 200 {
-		defer resp.Body.Close()
-		body, _ := io.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
+		closeErr := resp.Body.Close()
+		if err != nil {
+			return fmt.Errorf("Got status code %d from TBA and failed to read response body: %w", resp.StatusCode, err)
+		}
+		if closeErr != nil {
+			return fmt.Errorf("Got status code %d from TBA: %s; failed to close response body: %w",
+				resp.StatusCode, body, closeErr)
+		}
 		return fmt.Errorf("Got status code %d from TBA: %s", resp.StatusCode, body)
+	}
+	if err := resp.Body.Close(); err != nil {
+		return fmt.Errorf("Failed to close TBA response body: %w", err)
 	}
 	return nil
 }
@@ -596,10 +589,19 @@ func (client *TbaClient) postRequest(resource string, action string, body []byte
 	response, err := httpClient.Do(request)
 	if client.BaseUrl == tbaBaseUrl && err == nil && response.StatusCode == 200 {
 		// Send a non-blocking ping to track usage.
-		pingRequest, _ := http.NewRequest(
+		pingRequest, pingErr := http.NewRequest(
 			"POST", fmt.Sprintf("https://cheesyarena.com/events/%s/%s", client.eventCode, resource), nil,
 		)
-		_, _ = httpClient.Do(pingRequest)
+		if pingErr != nil {
+			log.Printf("Failed to create TBA usage ping request: %v", pingErr)
+		} else {
+			pingResponse, pingErr := httpClient.Do(pingRequest)
+			if pingErr != nil {
+				log.Printf("Failed to send TBA usage ping: %v", pingErr)
+			} else if err := pingResponse.Body.Close(); err != nil {
+				log.Printf("Failed to close TBA usage ping response body: %v", err)
+			}
+		}
 	}
 	return response, err
 }
@@ -630,7 +632,7 @@ func createTbaScoringBreakdown(
 	match *model.Match,
 	matchResult *model.MatchResult,
 	alliance string,
-) map[string]any {
+) (map[string]any, error) {
 	var breakdown TbaScoreBreakdown
 	var score *game.Score
 	var scoreSummary, opponentScoreSummary *game.ScoreSummary
@@ -707,6 +709,9 @@ func createTbaScoringBreakdown(
 	// Turn the breakdown struct into a map in order to be able to remove any fields that are disabled based on the
 	// event settings (none in 2026).
 	breakdownMap := make(map[string]any)
-	_ = mapstructure.Decode(breakdown, &breakdownMap)
-	return breakdownMap
+	if err := mapstructure.Decode(breakdown, &breakdownMap); err != nil {
+		return nil, err
+	}
+
+	return breakdownMap, nil
 }

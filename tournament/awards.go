@@ -18,7 +18,11 @@ func CreateOrUpdateAward(database *model.Database, award *model.Award, createInt
 	}
 	var team *model.Team
 	if award.TeamId > 0 {
-		team, _ = database.GetTeamById(award.TeamId)
+		var err error
+		team, err = database.GetTeamById(award.TeamId)
+		if err != nil {
+			return err
+		}
 		if team == nil {
 			return fmt.Errorf("Team %d is not present at this event.", award.TeamId)
 		}

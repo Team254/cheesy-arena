@@ -79,6 +79,6 @@ func (log *TeamMatchLog) LogDsPacket(matchTimeSec float64, packetType int, dsCon
 	)
 }
 
-func (log *TeamMatchLog) Close() {
-	log.logFile.Close()
+func (log *TeamMatchLog) Close() error {
+	return log.logFile.Close()
 }

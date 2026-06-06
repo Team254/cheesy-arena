@@ -137,7 +137,9 @@ func (signs *TeamSigns) SetNextMatchTeams(teams [6]int) {
 // Sets the IP address of the sign.
 func (sign *TeamSign) SetId(id int) {
 	if sign.udpConn != nil {
-		_ = sign.udpConn.Close()
+		if err := sign.udpConn.Close(); err != nil {
+			log.Printf("Failed to close team sign connection: %v", err)
+		}
 	}
 	sign.address = byte(id)
 	if id == 0 {
@@ -157,7 +159,11 @@ func (sign *TeamSign) SetId(id int) {
 		log.Printf("Failed to configure team sign: invalid IP address: %s", ipAddress)
 		return
 	}
-	address, _ := strconv.Atoi(addressParts[3])
+	address, err := strconv.Atoi(addressParts[3])
+	if err != nil {
+		log.Printf("Failed to configure team sign: invalid IP address: %s", ipAddress)
+		return
+	}
 	sign.address = byte(address)
 
 	// Reset the sign's state to ensure that the next packet sent will update the sign.

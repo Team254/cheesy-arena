@@ -123,11 +123,19 @@ func (arena *Arena) listenForDsUdpPackets() {
 	}
 	log.Printf("Listening for driver stations on UDP address %s\n", bindAddress)
 
-	defer listener.Close()
+	defer func() {
+		if err := listener.Close(); err != nil {
+			log.Printf("Error closing driver station UDP listener: %v", err)
+		}
+	}()
 
 	data := make([]byte, 1500)
 	for {
-		count, _ := listener.Read(data[:])
+		count, err := listener.Read(data[:])
+		if err != nil {
+			log.Printf("Error reading driver station UDP packet: %v", err)
+			continue
+		}
 		if count < 8 {
 			log.Printf("Received packet with insufficient length: %d", count)
 			continue
@@ -203,13 +211,19 @@ func (dsConn *DriverStationConnection) update(arena *Arena, gameData string) err
 
 func (dsConn *DriverStationConnection) close() {
 	if dsConn.log != nil {
-		dsConn.log.Close()
+		if err := dsConn.log.Close(); err != nil {
+			log.Printf("Error closing match log for Team %d: %v", dsConn.TeamId, err)
+		}
 	}
 	if dsConn.udpConn != nil {
-		dsConn.udpConn.Close()
+		if err := dsConn.udpConn.Close(); err != nil {
+			log.Printf("Error closing UDP connection for Team %d: %v", dsConn.TeamId, err)
+		}
 	}
 	if dsConn.tcpConn != nil {
-		dsConn.tcpConn.Close()
+		if err := dsConn.tcpConn.Close(); err != nil {
+			log.Printf("Error closing TCP connection for Team %d: %v", dsConn.TeamId, err)
+		}
 	}
 }
 
@@ -342,7 +356,11 @@ func (arena *Arena) listenForDriverStations() {
 			network.ServerIpAddress,
 		)
 	}
-	defer l.Close()
+	defer func() {
+		if err := l.Close(); err != nil {
+			log.Printf("Error closing driver station TCP listener: %v", err)
+		}
+	}()
 
 	log.Printf("Listening for driver stations on TCP address %s\n", bindAddress)
 	arena.serveDriverStations(l)
@@ -368,7 +386,7 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 		}
 		if !(packet[0] == 0 && packet[1] == 3 && packet[2] == 24) {
 			log.Printf("Invalid initial packet received: %v", packet)
-			tcpConn.Close()
+			closeTcpConn(tcpConn, "invalid initial packet")
 			continue
 		}
 		teamId := int(packet[3])<<8 + int(packet[4])
@@ -409,7 +427,7 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 		_, err = tcpConn.Write(assignmentPacket[:])
 		if err != nil {
 			log.Printf("Error sending driver station assignment packet: %v", err)
-			tcpConn.Close()
+			closeTcpConn(tcpConn, "driver station assignment packet error")
 			continue
 		}
 
@@ -435,7 +453,7 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 				_, err = tcpConn.Write(eventNamePacket)
 				if err != nil {
 					log.Printf("Error sending event name packet: %v", err)
-					tcpConn.Close()
+					closeTcpConn(tcpConn, "event name packet error")
 					continue
 				}
 			}
@@ -444,7 +462,7 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 		dsConn, err := newDriverStationConnection(teamId, assignedStation, tcpConn, arena.EventSettings.UseLiteUdpPort)
 		if err != nil {
 			log.Printf("Error registering driver station connection: %v", err)
-			tcpConn.Close()
+			closeTcpConn(tcpConn, "driver station registration error")
 			continue
 		}
 		arena.AllianceStations[assignedStation].DsConn = dsConn
@@ -463,7 +481,9 @@ func readTaggedTcpPacket(tcpConn net.Conn, buffer []byte) (int, error) {
 		return 0, fmt.Errorf("buffer too small to read TCP packet")
 	}
 
-	tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationTcpLinkTimeoutSec))
+	if err := tcpConn.SetReadDeadline(time.Now().Add(time.Second * driverStationTcpLinkTimeoutSec)); err != nil {
+		return 0, err
+	}
 	_, err := io.ReadFull(tcpConn, buffer[:2])
 	if err != nil {
 		return 0, err
@@ -527,7 +547,7 @@ func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {
 	_, err := tcpConn.Write(assignmentPacket[:])
 	if err != nil {
 		log.Printf("Error sending invalid driver station assignment packet: %v", err)
-		tcpConn.Close()
+		closeTcpConn(tcpConn, "invalid driver station assignment packet error")
 		return
 	}
 
@@ -540,7 +560,13 @@ func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {
 		}
 	}
 
-	tcpConn.Close()
+	closeTcpConn(tcpConn, "invalid driver station connection")
+}
+
+func closeTcpConn(tcpConn net.Conn, context string) {
+	if err := tcpConn.Close(); err != nil {
+		log.Printf("Error closing TCP connection after %s: %v", context, err)
+	}
 }
 
 func (dsConn *DriverStationConnection) checkGameData(gameData string) error {

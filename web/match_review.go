@@ -227,7 +227,10 @@ func (web *Web) getMatchResultFromRequest(r *http.Request) (*model.Match, *model
 		return web.arena.CurrentMatch, web.getCurrentMatchResult(), true, nil
 	}
 
-	matchId, _ := strconv.Atoi(r.PathValue("matchId"))
+	matchId, err := strconv.Atoi(r.PathValue("matchId"))
+	if err != nil {
+		return nil, nil, false, err
+	}
 	match, err := web.arena.Database.GetMatchById(matchId)
 	if err != nil {
 		return nil, nil, false, err

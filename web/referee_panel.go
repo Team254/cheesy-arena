@@ -77,7 +77,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(
@@ -108,7 +108,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 
@@ -132,7 +132,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 
@@ -169,7 +169,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 
@@ -212,7 +212,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.AllianceStationDisplayModeNotifier.Notify()
 			web.arena.ScoringStatusNotifier.Notify()
 		default:
-			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			writeWebsocketError(ws, fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}
 	}
 }

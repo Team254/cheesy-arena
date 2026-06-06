@@ -93,7 +93,9 @@ func (web *Web) ServeWebInterface(port int) {
 	log.Printf("Serving HTTP requests on port %d", port)
 
 	// Start Server
-	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+		log.Printf("HTTP server error: %v", err)
+	}
 }
 
 // Serves the root page of Cheesy Arena.

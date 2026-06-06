@@ -435,7 +435,9 @@ func (arena *Arena) LoadNextMatch(startScheduledBreak bool) error {
 		if scheduledBreak != nil {
 			go func() {
 				time.Sleep(time.Second * scheduledBreakDelaySec)
-				_ = arena.StartTimeout(scheduledBreak.Description, scheduledBreak.DurationSec)
+				if err := arena.StartTimeout(scheduledBreak.Description, scheduledBreak.DurationSec); err != nil {
+					log.Printf("Failed to start scheduled break timeout before match %d: %v", nextMatch.Id, err)
+				}
 			}()
 		}
 	}

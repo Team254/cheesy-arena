@@ -58,7 +58,7 @@ func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *ht
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(
@@ -92,7 +92,7 @@ func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *ht
 				}{}
 				err = mapstructure.Decode(data, &args)
 				if err != nil {
-					ws.WriteError(err.Error())
+					writeWebsocketError(ws, err.Error())
 					continue
 				}
 
@@ -100,17 +100,17 @@ func (web *Web) fieldMonitorDisplayWebsocketHandler(w http.ResponseWriter, r *ht
 					if allianceStation.Team != nil {
 						allianceStation.Team.FtaNotes = args.Notes
 						if err := web.arena.Database.UpdateTeam(allianceStation.Team); err != nil {
-							ws.WriteError(err.Error())
+							writeWebsocketError(ws, err.Error())
 						}
 						web.arena.ArenaStatusNotifier.Notify()
 					} else {
-						ws.WriteError("No team present")
+						writeWebsocketError(ws, "No team present")
 					}
 				} else {
-					ws.WriteError("Invalid alliance station")
+					writeWebsocketError(ws, "Invalid alliance station")
 				}
 			} else {
-				ws.WriteError("Must be in FTA mode to update team notes")
+				writeWebsocketError(ws, "Must be in FTA mode to update team notes")
 			}
 		}
 	}

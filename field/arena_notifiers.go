@@ -10,6 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
+	"log"
 	"strconv"
 )
 
@@ -150,7 +151,11 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		}
 	}
 
-	matchResult, _ := arena.Database.GetMatchResultForMatch(arena.CurrentMatch.Id)
+	matchResult, err := arena.Database.GetMatchResultForMatch(arena.CurrentMatch.Id)
+	if err != nil {
+		log.Printf("Failed to get match result for match %d while generating match load message: %v",
+			arena.CurrentMatch.Id, err)
+	}
 	isReplay := matchResult != nil
 
 	var matchup *playoff.Matchup
@@ -159,14 +164,24 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 	if arena.CurrentMatch.Type == model.Playoff {
 		matchGroup := arena.PlayoffTournament.MatchGroups()[arena.CurrentMatch.PlayoffMatchGroupId]
 		matchup, _ = matchGroup.(*playoff.Matchup)
-		redOffFieldTeamIds, blueOffFieldTeamIds, _ := arena.Database.GetOffFieldTeamIds(arena.CurrentMatch)
+		redOffFieldTeamIds, blueOffFieldTeamIds, err := arena.Database.GetOffFieldTeamIds(arena.CurrentMatch)
+		if err != nil {
+			log.Printf("Failed to get off-field teams for match %d while generating match load message: %v",
+				arena.CurrentMatch.Id, err)
+		}
 		for _, teamId := range redOffFieldTeamIds {
-			team, _ := arena.Database.GetTeamById(teamId)
+			team, err := arena.Database.GetTeamById(teamId)
+			if err != nil {
+				log.Printf("Failed to get red off-field team %d while generating match load message: %v", teamId, err)
+			}
 			redOffFieldTeams = append(redOffFieldTeams, team)
 			allTeamIds = append(allTeamIds, teamId)
 		}
 		for _, teamId := range blueOffFieldTeamIds {
-			team, _ := arena.Database.GetTeamById(teamId)
+			team, err := arena.Database.GetTeamById(teamId)
+			if err != nil {
+				log.Printf("Failed to get blue off-field team %d while generating match load message: %v", teamId, err)
+			}
 			blueOffFieldTeams = append(blueOffFieldTeams, team)
 			allTeamIds = append(allTeamIds, teamId)
 		}
@@ -174,7 +189,10 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 
 	rankings := make(map[string]int)
 	for _, teamId := range allTeamIds {
-		ranking, _ := arena.Database.GetRankingForTeam(teamId)
+		ranking, err := arena.Database.GetRankingForTeam(teamId)
+		if err != nil {
+			log.Printf("Failed to get ranking for team %d while generating match load message: %v", teamId, err)
+		}
 		if ranking != nil {
 			rankings[strconv.Itoa(teamId)] = ranking.Rank
 		}
@@ -265,7 +283,12 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 			redDestination = matchup.RedAllianceDestination()
 			blueDestination = matchup.BlueAllianceDestination()
 		}
-		redOffFieldTeamIds, blueOffFieldTeamIds, _ = arena.Database.GetOffFieldTeamIds(arena.SavedMatch)
+		var err error
+		redOffFieldTeamIds, blueOffFieldTeamIds, err = arena.Database.GetOffFieldTeamIds(arena.SavedMatch)
+		if err != nil {
+			log.Printf("Failed to get off-field teams for match %d while generating score posted message: %v",
+				arena.SavedMatch.Id, err)
+		}
 	}
 
 	redRankings := map[int]*game.Ranking{

@@ -114,12 +114,13 @@ func (database *Database) Backup(eventName, reason string) error {
 	if err != nil {
 		return err
 	}
-	defer dest.Close()
 
-	if err = database.WriteBackup(dest); err != nil {
+	err = database.WriteBackup(dest)
+	closeErr := dest.Close()
+	if err != nil {
 		return err
 	}
-	return nil
+	return closeErr
 }
 
 // Takes a snapshot of Bolt database and writes it to the given writer.

@@ -136,7 +136,10 @@ func (web *Web) matchLogsViewGetHandler(w http.ResponseWriter, r *http.Request) 
 
 // Load the match logs for the match referenced in the HTTP query string.
 func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLogs, bool, error) {
-	matchId, _ := strconv.Atoi(r.PathValue("matchId"))
+	matchId, err := strconv.Atoi(r.PathValue("matchId"))
+	if err != nil {
+		return nil, nil, false, err
+	}
 	stationId := r.PathValue("stationId")
 	match, err := web.arena.Database.GetMatchById(matchId)
 
@@ -171,67 +174,89 @@ func (web *Web) getMatchLogFromRequest(r *http.Request) (*model.Match, *MatchLog
 		return nil, nil, false, nil
 	}
 	var files []string
-	files, _ = filepath.Glob(
+	files, err = filepath.Glob(
 		filepath.Join(".", "static", "logs", "*_*_Match_"+match.ShortName+"_"+strconv.Itoa(logs.TeamId)+".csv"),
 	)
+	if err != nil {
+		return nil, nil, false, err
+	}
 	if len(files) == 0 {
 		return match, &logs, false, nil
 	}
 
 	for _, filename := range files {
-		f, _ := os.Open(filename)
-		defer f.Close()
-		// Create a new reader.
-		reader := csv.NewReader(f)
+		err := func() (err error) {
+			f, err := os.Open(filename)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				if closeErr := f.Close(); err == nil && closeErr != nil {
+					err = closeErr
+				}
+			}()
 
-		// Read row
-		header, _ := reader.Read()
+			// Create a new reader.
+			reader := csv.NewReader(f)
 
-		// Add mapping: Column/property name --> record index
-		for i, v := range header {
-			headerMap[v] = i
-		}
-		records, _ := reader.ReadAll()
-
-		var curlog = MatchLog{
-			Filename:  filename,
-			StartTime: filename[12:26],
-			Rows:      make([]MatchLogRow, len(records)),
-		}
-		for i, record := range records {
-			var curRow MatchLogRow
-			curRow.MatchTimeSec, _ = strconv.ParseFloat(record[headerMap["matchTimeSec"]], 64)
-			curRow.PacketType, _ = strconv.Atoi(record[headerMap["packetType"]])
-			curRow.TeamId, _ = strconv.Atoi(record[headerMap["teamId"]])
-			curRow.AllianceStation = record[headerMap["allianceStation"]]
-			curRow.DsLinked, _ = strconv.ParseBool(record[headerMap["dsLinked"]])
-			curRow.RadioLinked, _ = strconv.ParseBool(record[headerMap["radioLinked"]])
-			curRow.RioLinked, _ = strconv.ParseBool(record[headerMap["rioLinked"]])
-			curRow.RobotLinked, _ = strconv.ParseBool(record[headerMap["robotLinked"]])
-			curRow.Auto, _ = strconv.ParseBool(record[headerMap["auto"]])
-			curRow.Enabled, _ = strconv.ParseBool(record[headerMap["enabled"]])
-			curRow.EmergencyStop, _ = strconv.ParseBool(record[headerMap["emergencyStop"]])
-			curRow.AutonomousStop, _ = strconv.ParseBool(record[headerMap["autonomousStop"]])
-			curRow.BatteryVoltage, _ = strconv.ParseFloat(record[headerMap["batteryVoltage"]], 64)
-			curRow.MissedPacketCount, _ = strconv.Atoi(record[headerMap["missedPacketCount"]])
-			curRow.DsRobotTripTimeMs, _ = strconv.Atoi(record[headerMap["dsRobotTripTimeMs"]])
-			if len(headerMap) > 13 {
-
-				curRow.TxRate, _ = strconv.ParseFloat(record[headerMap["txRate"]], 64)
-				curRow.RxRate, _ = strconv.ParseFloat(record[headerMap["rxRate"]], 64)
-				curRow.SignalNoiseRatio, _ = strconv.Atoi(record[headerMap["signalNoiseRatio"]])
-			} else {
-				curRow.TxRate = -1
-				curRow.RxRate = -1
-				curRow.SignalNoiseRatio = -1
+			// Read row
+			header, err := reader.Read()
+			if err != nil {
+				return err
 			}
 
-			// Create new person and add to persons array
-			curlog.Rows[i] = curRow
+			// Add mapping: Column/property name --> record index
+			for i, v := range header {
+				headerMap[v] = i
+			}
+			records, err := reader.ReadAll()
+			if err != nil {
+				return err
+			}
+
+			var curlog = MatchLog{
+				Filename:  filename,
+				StartTime: filename[12:26],
+				Rows:      make([]MatchLogRow, len(records)),
+			}
+			for i, record := range records {
+				var curRow MatchLogRow
+				curRow.MatchTimeSec, _ = strconv.ParseFloat(record[headerMap["matchTimeSec"]], 64)
+				curRow.PacketType, _ = strconv.Atoi(record[headerMap["packetType"]])
+				curRow.TeamId, _ = strconv.Atoi(record[headerMap["teamId"]])
+				curRow.AllianceStation = record[headerMap["allianceStation"]]
+				curRow.DsLinked, _ = strconv.ParseBool(record[headerMap["dsLinked"]])
+				curRow.RadioLinked, _ = strconv.ParseBool(record[headerMap["radioLinked"]])
+				curRow.RioLinked, _ = strconv.ParseBool(record[headerMap["rioLinked"]])
+				curRow.RobotLinked, _ = strconv.ParseBool(record[headerMap["robotLinked"]])
+				curRow.Auto, _ = strconv.ParseBool(record[headerMap["auto"]])
+				curRow.Enabled, _ = strconv.ParseBool(record[headerMap["enabled"]])
+				curRow.EmergencyStop, _ = strconv.ParseBool(record[headerMap["emergencyStop"]])
+				curRow.AutonomousStop, _ = strconv.ParseBool(record[headerMap["autonomousStop"]])
+				curRow.BatteryVoltage, _ = strconv.ParseFloat(record[headerMap["batteryVoltage"]], 64)
+				curRow.MissedPacketCount, _ = strconv.Atoi(record[headerMap["missedPacketCount"]])
+				curRow.DsRobotTripTimeMs, _ = strconv.Atoi(record[headerMap["dsRobotTripTimeMs"]])
+				if len(headerMap) > 13 {
+
+					curRow.TxRate, _ = strconv.ParseFloat(record[headerMap["txRate"]], 64)
+					curRow.RxRate, _ = strconv.ParseFloat(record[headerMap["rxRate"]], 64)
+					curRow.SignalNoiseRatio, _ = strconv.Atoi(record[headerMap["signalNoiseRatio"]])
+				} else {
+					curRow.TxRate = -1
+					curRow.RxRate = -1
+					curRow.SignalNoiseRatio = -1
+				}
+
+				// Create new person and add to persons array
+				curlog.Rows[i] = curRow
+			}
+
+			logs.Logs = append(logs.Logs, curlog)
+			return nil
+		}()
+		if err != nil {
+			return nil, nil, false, err
 		}
-
-		logs.Logs = append(logs.Logs, curlog)
-
 	}
 	return match, &logs, false, nil
 }
