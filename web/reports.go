@@ -70,7 +70,7 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 
 	// Render table header row.
@@ -232,7 +232,7 @@ func (web *Web) backupsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	colWidths := map[string]float64{"Rank": 13, "Called": 22, "Team": 22, "RP": 23}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 
 	// Render table header row.
@@ -282,7 +282,7 @@ const (
 )
 
 func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.SetLineWidth(1)
 
 	eventName := web.arena.EventSettings.Name
@@ -315,7 +315,7 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func drawCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, allianceNumber int, text string) {
+func drawCoupon(pdf *reportPdf, eventName string, x float64, y float64, allianceNumber int, text string) {
 	pdf.SetTextColor(0, 0, 0)
 	drawPdfLogo(pdf, x, y, cImgWidth)
 
@@ -327,7 +327,7 @@ func drawCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, alliance
 	drawEventWatermark(pdf, x, y, eventName)
 }
 
-func drawEventWatermark(pdf gofpdf.Pdf, x float64, y float64, name string) {
+func drawEventWatermark(pdf *reportPdf, x float64, y float64, name string) {
 	pdf.SetFont("Arial", "B", 11)
 	pdf.SetTextColor(200, 200, 200)
 	textWidth := pdf.GetStringWidth(name)
@@ -345,7 +345,7 @@ func drawEventWatermark(pdf gofpdf.Pdf, x float64, y float64, name string) {
 	pdf.TransformEnd()
 }
 
-func drawCenteredText(pdf gofpdf.Pdf, txt string, x float64, y float64) {
+func drawCenteredText(pdf *reportPdf, txt string, x float64, y float64) {
 	width := pdf.GetStringWidth(txt)
 	pdf.Text(x-(width/2), y, txt)
 }
@@ -430,7 +430,7 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 	colWidths := map[string]float64{"Time": 35, "Match": 40, "Team": 20}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 
 	// Render table header row.
@@ -588,7 +588,7 @@ func (web *Web) teamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	rowHeight := 6.5
 	lineHeight := 5.0
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
@@ -723,7 +723,7 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 	rowHeight := 6.5
 	lineHeight := 5.0
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
@@ -750,12 +750,13 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 			}
 			allianceHeight += teamRowHeight
 		}
+		allianceStatusText := fmt.Sprintf("Alliance %d\n%s", alliance.Id, allianceStatuses[alliance.Id])
 		numAllianceStatusesRows := len(pdf.SplitLines([]byte(allianceStatuses[alliance.Id]), colWidths["Alliance"]))
 		drawMultiLineCell(
 			pdf, colWidths["Alliance"],
 			allianceHeight,
 			lineHeight,
-			fmt.Sprintf("Alliance %d\n%s", alliance.Id, allianceStatuses[alliance.Id]),
+			allianceStatusText,
 			"C",
 			numAllianceStatusesRows+1,
 		)
@@ -843,7 +844,7 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	colWidths := map[string]float64{"Time": 30, "Time2": 22, "Match": 15, "Diff": 20}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 
 	// Render table header row.
@@ -972,7 +973,7 @@ func (web *Web) judgingSchedulePdfReportHandler(w http.ResponseWriter, r *http.R
 	}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 
 	// Table 1: Sorted by team.
 	pdf.AddPage()
@@ -1080,7 +1081,7 @@ func (web *Web) judgingSchedulePdfReportHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
-func addTimeGeneratedFooter(pdf *gofpdf.Fpdf) {
+func addTimeGeneratedFooter(pdf *reportPdf) {
 	footerText := fmt.Sprintf(
 		"Report generated at %s on %s", time.Now().Format("3:04:05 PM"), time.Now().Format("Mon Jan 2 2006"),
 	)
@@ -1089,7 +1090,7 @@ func addTimeGeneratedFooter(pdf *gofpdf.Fpdf) {
 }
 
 // Draws a bordered cell with multiple lines of text vertically centered.
-func drawMultiLineCell(pdf *gofpdf.Fpdf, width, height, lineHeight float64, text, align string, numTextLines int) {
+func drawMultiLineCell(pdf *reportPdf, width, height, lineHeight float64, text, align string, numTextLines int) {
 	startX, startY := pdf.GetXY()
 	pdf.Rect(startX, startY, width, height, "")
 

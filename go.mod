@@ -4,6 +4,7 @@ go 1.26.0
 
 require (
 	github.com/dchest/uniuri v1.2.0
+	github.com/flopp/go-findfont v0.1.0
 	github.com/goburrow/modbus v0.1.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
