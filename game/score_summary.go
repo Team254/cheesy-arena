@@ -17,6 +17,7 @@ type ScoreSummary struct {
 	PostMatchPoints               int
 	FoulPoints                    int
 	Score                         int
+	PlayoffDq                     bool
 	EnergizedBonusRankingPoint    bool
 	SuperchargedBonusRankingPoint bool
 	TraversalBonusRankingPoint    bool
@@ -44,6 +45,13 @@ func DetermineMatchStatus(
 	redScoreSummary, blueScoreSummary *ScoreSummary,
 	applyPlayoffTiebreakers bool,
 ) (MatchStatus, string) {
+	if redScoreSummary.PlayoffDq != blueScoreSummary.PlayoffDq {
+		if redScoreSummary.PlayoffDq {
+			return BlueWonMatch, ""
+		}
+		return RedWonMatch, ""
+	}
+
 	if status := comparePoints(redScoreSummary.Score, blueScoreSummary.Score); status != TieMatch {
 		return status, ""
 	}

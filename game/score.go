@@ -31,6 +31,7 @@ const (
 // Summarize calculates and returns the summary fields used for ranking and display.
 func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	summary := new(ScoreSummary)
+	summary.PlayoffDq = score.PlayoffDq
 
 	// Leave the score at zero if the alliance was disqualified.
 	if score.PlayoffDq {

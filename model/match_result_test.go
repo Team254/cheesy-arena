@@ -69,3 +69,22 @@ func TestGetMatchResultForMatch(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, matchResult2, matchResult4)
 }
+
+func TestCorrectPlayoffScoreResetsDqState(t *testing.T) {
+	matchResult := NewMatchResult()
+	matchResult.RedScore.PlayoffDq = true
+	matchResult.BlueScore.PlayoffDq = true
+	matchResult.RedCards = map[string]string{"1": "red"}
+	matchResult.BlueCards = map[string]string{}
+
+	matchResult.CorrectPlayoffScore()
+	assert.Equal(t, true, matchResult.RedScore.PlayoffDq)
+	assert.Equal(t, false, matchResult.BlueScore.PlayoffDq)
+
+	matchResult.RedCards = map[string]string{}
+	matchResult.BlueCards = map[string]string{"4": "dq"}
+
+	matchResult.CorrectPlayoffScore()
+	assert.Equal(t, false, matchResult.RedScore.PlayoffDq)
+	assert.Equal(t, true, matchResult.BlueScore.PlayoffDq)
+}

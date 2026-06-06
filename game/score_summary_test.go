@@ -69,4 +69,19 @@ func TestScoreSummaryDetermineMatchStatus(t *testing.T) {
 	redScoreSummary.TeleopTowerPoints = 7
 	assertMatchStatus(TieMatch, "", redScoreSummary, blueScoreSummary, false)
 	assertMatchStatus(TieMatch, "TRUE TIE", redScoreSummary, blueScoreSummary, true)
+
+	redScoreSummary = &ScoreSummary{Score: 0, PlayoffDq: true}
+	blueScoreSummary = &ScoreSummary{Score: 0}
+	assertMatchStatus(BlueWonMatch, "", redScoreSummary, blueScoreSummary, false)
+	assertMatchStatus(BlueWonMatch, "", redScoreSummary, blueScoreSummary, true)
+
+	redScoreSummary = &ScoreSummary{Score: 0}
+	blueScoreSummary = &ScoreSummary{Score: 0, PlayoffDq: true}
+	assertMatchStatus(RedWonMatch, "", redScoreSummary, blueScoreSummary, false)
+	assertMatchStatus(RedWonMatch, "", redScoreSummary, blueScoreSummary, true)
+
+	redScoreSummary = &ScoreSummary{Score: 0, PlayoffDq: true}
+	blueScoreSummary = &ScoreSummary{Score: 0, PlayoffDq: true}
+	assertMatchStatus(TieMatch, "", redScoreSummary, blueScoreSummary, false)
+	assertMatchStatus(TieMatch, "TRUE TIE", redScoreSummary, blueScoreSummary, true)
 }

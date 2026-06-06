@@ -4,10 +4,9 @@
 package game
 
 import (
+	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestScoreSummary(t *testing.T) {
@@ -26,6 +25,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 30, redSummary.PostMatchPoints)
 	assert.Equal(t, 0, redSummary.FoulPoints)
 	assert.Equal(t, 133, redSummary.Score)
+	assert.Equal(t, false, redSummary.PlayoffDq)
 	assert.Equal(t, false, redSummary.EnergizedBonusRankingPoint)
 	assert.Equal(t, false, redSummary.SuperchargedBonusRankingPoint)
 	assert.Equal(t, false, redSummary.TraversalBonusRankingPoint)
@@ -44,6 +44,7 @@ func TestScoreSummary(t *testing.T) {
 	assert.Equal(t, 60, blueSummary.PostMatchPoints)
 	assert.Equal(t, 85, blueSummary.FoulPoints)
 	assert.Equal(t, 289, blueSummary.Score)
+	assert.Equal(t, false, blueSummary.PlayoffDq)
 	assert.Equal(t, true, blueSummary.EnergizedBonusRankingPoint)
 	assert.Equal(t, false, blueSummary.SuperchargedBonusRankingPoint)
 	assert.Equal(t, true, blueSummary.TraversalBonusRankingPoint)
@@ -63,10 +64,14 @@ func TestScoreSummary(t *testing.T) {
 
 	// Test playoff disqualification.
 	redScore.PlayoffDq = true
-	assert.Equal(t, 0, redScore.Summarize(blueScore).Score)
+	redSummary = redScore.Summarize(blueScore)
+	assert.Equal(t, 0, redSummary.Score)
+	assert.Equal(t, true, redSummary.PlayoffDq)
 	assert.NotEqual(t, 0, blueScore.Summarize(blueScore).Score)
 	blueScore.PlayoffDq = true
-	assert.Equal(t, 0, blueScore.Summarize(redScore).Score)
+	blueSummary = blueScore.Summarize(redScore)
+	assert.Equal(t, 0, blueSummary.Score)
+	assert.Equal(t, true, blueSummary.PlayoffDq)
 }
 
 func TestScoreAutonomousTowerPoints(t *testing.T) {

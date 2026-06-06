@@ -276,6 +276,24 @@ func TestCommitCards(t *testing.T) {
 	assert.Nil(t, web.commitMatchScore(match, matchResult, true))
 	assert.NotEqual(t, 0, matchResult.RedScoreSummary().Score)
 	assert.Equal(t, 0, matchResult.BlueScoreSummary().Score)
+
+	// Check that a red card in playoffs forces a loss even if both alliances score 0.
+	matchResult = model.NewMatchResult()
+	matchResult.MatchId = match.Id
+	matchResult.MatchType = match.Type
+	matchResult.RedCards = map[string]string{"1": "red"}
+	assert.Nil(t, web.commitMatchScore(match, matchResult, true))
+	match, _ = web.arena.Database.GetMatchById(match.Id)
+	assert.Equal(t, game.BlueWonMatch, match.Status)
+
+	// Check that a DQ in playoffs forces a loss even if both alliances score 0.
+	matchResult = model.NewMatchResult()
+	matchResult.MatchId = match.Id
+	matchResult.MatchType = match.Type
+	matchResult.BlueCards = map[string]string{"4": "dq"}
+	assert.Nil(t, web.commitMatchScore(match, matchResult, true))
+	match, _ = web.arena.Database.GetMatchById(match.Id)
+	assert.Equal(t, game.RedWonMatch, match.Status)
 }
 
 func TestMatchPlayWebsocketCommands(t *testing.T) {
