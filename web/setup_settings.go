@@ -54,16 +54,43 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	var playoffType model.PlayoffType
 	numAlliances := 0
-	if r.PostFormValue("playoffType") == "SingleEliminationPlayoff" {
+	playoffTypeValue := r.PostFormValue("playoffType")
+	playoffTypeProvided := playoffTypeValue != ""
+	if playoffTypeValue == "" && eventSettings.PlayoffType == model.SingleEliminationPlayoff {
+		playoffTypeValue = "SingleEliminationPlayoff"
+	}
+	if playoffTypeValue == "SingleEliminationPlayoff" || playoffTypeValue == "single" {
 		playoffType = model.SingleEliminationPlayoff
-		numAlliances, _ = strconv.Atoi(r.PostFormValue("numPlayoffAlliances"))
+		if r.PostFormValue("numPlayoffAlliances") == "" {
+			if playoffTypeProvided {
+				numAlliances = 0
+			} else {
+				numAlliances = eventSettings.NumPlayoffAlliances
+			}
+		} else {
+			numAlliances, _ = strconv.Atoi(r.PostFormValue("numPlayoffAlliances"))
+		}
 		if numAlliances < 2 || numAlliances > 16 {
 			web.renderSettingsWithStatus(w, r, "Number of alliances must be between 2 and 16.", activeSettingsTab, http.StatusOK)
 			return
 		}
 	} else {
 		playoffType = model.DoubleEliminationPlayoff
-		numAlliances = 8
+		if r.PostFormValue("numPlayoffAlliances") == "" {
+			if eventSettings.PlayoffType == model.DoubleEliminationPlayoff {
+				numAlliances = eventSettings.NumPlayoffAlliances
+			} else {
+				numAlliances = 8
+			}
+		} else {
+			numAlliances, _ = strconv.Atoi(r.PostFormValue("numPlayoffAlliances"))
+		}
+		if numAlliances != 4 && numAlliances != 8 {
+			web.renderSettingsWithStatus(
+				w, r, "Number of alliances for double elimination must be 4 or 8.", activeSettingsTab, http.StatusOK,
+			)
+			return
+		}
 	}
 	if eventSettings.PlayoffType != playoffType || eventSettings.NumPlayoffAlliances != numAlliances {
 		alliances, err := web.arena.Database.GetAllAlliances()
