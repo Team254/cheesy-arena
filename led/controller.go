@@ -8,28 +8,41 @@ package led
 import (
 	"fmt"
 	"net"
+	"time"
 )
 
 const (
-	port              = 5568
-	sourceName        = "Cheesy Arena"
-	pixelDataOffset   = 126
-	redStripUniverse  = 1
-	blueStripUniverse = 2
+	port                 = 5568
+	sourceName           = "Cheesy Arena"
+	pixelDataOffset      = 126
+	channelsPerPixel     = 3
+	universeChannelCount = 512
+	channelsPerFixture   = channelsPerPixel * pixelsPerFixture
 )
 
 type Controller struct {
-	redStrip  strip
-	blueStrip strip
+	redZone   zone
+	blueZone  zone
 	conn      net.Conn
+	fixtures  fixtureLayout
+	universes map[int]*universe
 	packet    []byte
 }
 
-// NewController creates a controller with both alliance LED strips off.
+type universe struct {
+	currentData    [universeChannelCount]byte
+	oldData        [universeChannelCount]byte
+	lastPacketTime time.Time
+	sequence       byte
+}
+
+// NewController creates a controller with both alliance LED zones off.
 func NewController() *Controller {
 	return &Controller{
-		redStrip:  strip{currentMode: OffMode},
-		blueStrip: strip{currentMode: OffMode},
+		redZone:   zone{currentMode: OffMode},
+		blueZone:  zone{currentMode: OffMode},
+		fixtures:  defaultFixtureLayout,
+		universes: map[int]*universe{},
 	}
 }
 
@@ -53,19 +66,19 @@ func (controller *Controller) SetAddress(address string) error {
 // SetMode sets the current LED sequence mode and resets the intra-sequence counter to the beginning if the new mode
 // is different from the current mode.
 func (controller *Controller) SetMode(redMode, blueMode Mode) {
-	if redMode != controller.redStrip.currentMode {
-		controller.redStrip.currentMode = redMode
-		controller.redStrip.counter = 0
+	if redMode != controller.redZone.currentMode {
+		controller.redZone.currentMode = redMode
+		controller.redZone.counter = 0
 	}
-	if blueMode != controller.blueStrip.currentMode {
-		controller.blueStrip.currentMode = blueMode
-		controller.blueStrip.counter = 0
+	if blueMode != controller.blueZone.currentMode {
+		controller.blueZone.currentMode = blueMode
+		controller.blueZone.counter = 0
 	}
 }
 
 // GetModes returns the current mode for each alliance side.
 func (controller *Controller) GetModes() (Mode, Mode) {
-	return controller.redStrip.currentMode, controller.blueStrip.currentMode
+	return controller.redZone.currentMode, controller.blueZone.currentMode
 }
 
 // Update advances the pixel values through the current sequence and sends a packet if necessary. Should be called from
@@ -76,35 +89,82 @@ func (controller *Controller) Update() error {
 		return nil
 	}
 
-	controller.redStrip.updatePixels()
-	controller.blueStrip.updatePixels()
+	controller.redZone.updatePixels()
+	controller.blueZone.updatePixels()
 
 	// Create the template packet if it doesn't already exist.
 	if len(controller.packet) == 0 {
-		controller.packet = createBlankPacket(numPixels)
+		controller.packet = createBlankPacket(universeChannelCount)
 	}
 
-	// Send packets if the pixel values have changed.
-	if controller.redStrip.shouldSendPacket() {
-		controller.redStrip.populatePacketPixels(controller.packet[pixelDataOffset:])
-		if err := controller.sendPacket(redStripUniverse); err != nil {
-			return err
-		}
+	for _, universe := range controller.universes {
+		universe.currentData = [universeChannelCount]byte{}
 	}
-	if controller.blueStrip.shouldSendPacket() {
-		controller.blueStrip.populatePacketPixels(controller.packet[pixelDataOffset:])
-		if err := controller.sendPacket(blueStripUniverse); err != nil {
-			return err
+
+	if err := controller.populateFixtureData(&controller.redZone, controller.fixtures.red); err != nil {
+		return err
+	}
+	if err := controller.populateFixtureData(&controller.blueZone, controller.fixtures.blue); err != nil {
+		return err
+	}
+
+	for dmxUniverse, universe := range controller.universes {
+		if universe.shouldSendPacket() {
+			if err := controller.sendPacket(dmxUniverse, universe); err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
 
+func (controller *Controller) populateFixtureData(zone *zone, fixtures []fixture) error {
+	for i, fixture := range fixtures {
+		if fixture.universe <= 0 {
+			return fmt.Errorf("invalid universe %d for fixture %d", fixture.universe, fixture.id)
+		}
+
+		startIndex := fixture.startAddress - 1
+		if startIndex < 0 || startIndex+channelsPerFixture > universeChannelCount {
+			return fmt.Errorf("invalid start address %d for fixture %d", fixture.startAddress, fixture.id)
+		}
+
+		universeData, ok := controller.universes[fixture.universe]
+		if !ok {
+			universeData = &universe{}
+			controller.universes[fixture.universe] = universeData
+		}
+
+		pixelStart := i * pixelsPerFixture
+		for j := 0; j < pixelsPerFixture; j++ {
+			pixel := zone.pixels[pixelStart+j]
+			channelStart := startIndex + j*channelsPerPixel
+			universeData.currentData[channelStart] = pixel.R
+			universeData.currentData[channelStart+1] = pixel.G
+			universeData.currentData[channelStart+2] = pixel.B
+		}
+	}
+	return nil
+}
+
+// shouldSendPacket returns true if the universe data has changed or it has been too long since the last packet was sent.
+func (universe *universe) shouldSendPacket() bool {
+	if universe.lastPacketTime.IsZero() || time.Since(universe.lastPacketTime) >= heartbeatInterval {
+		return true
+	}
+	return universe.currentData != universe.oldData
+}
+
+func (universe *universe) markSent() {
+	universe.oldData = universe.currentData
+	universe.lastPacketTime = time.Now()
+}
+
 // createBlankPacket constructs the structure of an E1.31 data packet that can be re-used indefinitely by updating the
 // pixel data and re-sending it.
-func createBlankPacket(numPixels int) []byte {
-	size := pixelDataOffset + 3*numPixels
+func createBlankPacket(channelCount int) []byte {
+	size := pixelDataOffset + channelCount
 	packet := make([]byte, size)
 
 	// Preamble size
@@ -198,7 +258,7 @@ func createBlankPacket(numPixels int) []byte {
 	packet[122] = 0x01
 
 	// Property value count
-	count := 1 + 3*numPixels
+	count := 1 + channelCount
 	packet[123] = byte(count >> 8)
 	packet[124] = byte(count & 0xff)
 
@@ -210,16 +270,19 @@ func createBlankPacket(numPixels int) []byte {
 }
 
 // sendPacket sends the current packet buffer to the given DMX universe.
-func (controller *Controller) sendPacket(dmxUniverse int) error {
+func (controller *Controller) sendPacket(dmxUniverse int, universe *universe) error {
 	// Update non-static packet fields.
-	controller.packet[111]++
+	universe.sequence++
+	controller.packet[111] = universe.sequence
 	controller.packet[113] = byte(dmxUniverse >> 8)
 	controller.packet[114] = byte(dmxUniverse & 0xff)
+	copy(controller.packet[pixelDataOffset:], universe.currentData[:])
 
 	_, err := controller.conn.Write(controller.packet)
 	if err != nil {
 		return err
 	}
 
+	universe.markSent()
 	return nil
 }

@@ -46,16 +46,16 @@ func TestControllerUpdateSendsSacnPackets(t *testing.T) {
 
 	assert.Nil(t, controller.Update())
 
-	if assert.Len(t, conn.writes, 2) {
-		redPacket := conn.writes[0]
-		bluePacket := conn.writes[1]
-		assert.Equal(t, byte(100), redPacket[108])
-		assert.Equal(t, byte(redStripUniverse), redPacket[114])
-		assert.Equal(t, byte(blueStripUniverse), bluePacket[114])
-		assert.Equal(t, byte(0), redPacket[123])
-		assert.Equal(t, byte(1+3*numPixels), redPacket[124])
-		assert.Equal(t, []byte{255, 0, 0}, redPacket[pixelDataOffset:pixelDataOffset+3])
-		assert.Equal(t, []byte{0, 0, 255}, bluePacket[pixelDataOffset:pixelDataOffset+3])
+	if assert.Len(t, conn.writes, 1) {
+		packet := conn.writes[0]
+		assert.Equal(t, byte(100), packet[108])
+		assert.Equal(t, byte(1), packet[114])
+		assert.Equal(t, byte(2), packet[123])
+		assert.Equal(t, byte(1), packet[124])
+		assert.Equal(t, []byte{255, 0, 0}, packet[dmxOffset(1):dmxOffset(1)+3])
+		assert.Equal(t, []byte{255, 0, 0}, packet[dmxOffset(49):dmxOffset(49)+3])
+		assert.Equal(t, []byte{0, 0, 255}, packet[dmxOffset(193):dmxOffset(193)+3])
+		assert.Equal(t, []byte{0, 0, 255}, packet[dmxOffset(337):dmxOffset(337)+3])
 	}
 }
 
@@ -66,54 +66,90 @@ func TestControllerUpdateSendsOnChangeAndHeartbeat(t *testing.T) {
 	controller.SetMode(RedMode, BlueMode)
 
 	assert.Nil(t, controller.Update())
-	assert.Len(t, conn.writes, 2)
+	assert.Len(t, conn.writes, 1)
 
 	assert.Nil(t, controller.Update())
-	assert.Len(t, conn.writes, 2)
+	assert.Len(t, conn.writes, 1)
 
-	controller.redStrip.lastPacketTime = time.Now().Add(-heartbeatInterval)
-	controller.blueStrip.lastPacketTime = time.Now().Add(-heartbeatInterval)
+	controller.universes[1].lastPacketTime = time.Now().Add(-heartbeatInterval)
 	assert.Nil(t, controller.Update())
-	assert.Len(t, conn.writes, 4)
+	assert.Len(t, conn.writes, 2)
 
 	controller.SetMode(OffMode, BlueMode)
 	assert.Nil(t, controller.Update())
-	assert.Len(t, conn.writes, 5)
+	assert.Len(t, conn.writes, 3)
+}
+
+func TestControllerUpdateSupportsMultipleUniverses(t *testing.T) {
+	conn := &fakeConn{}
+	controller := NewController()
+	controller.conn = conn
+	controller.fixtures = fixtureLayout{
+		red:  []fixture{{redGoalSide1Bot, 1, 1}},
+		blue: []fixture{{blueGoalSide1Bot, 2, 1}},
+	}
+	controller.SetMode(RedMode, BlueMode)
+
+	assert.Nil(t, controller.Update())
+
+	if assert.Len(t, conn.writes, 2) {
+		universe1Packet := packetByUniverse(conn.writes, 1)
+		universe2Packet := packetByUniverse(conn.writes, 2)
+		if assert.NotNil(t, universe1Packet) {
+			assert.Equal(t, []byte{255, 0, 0}, universe1Packet[dmxOffset(1):dmxOffset(1)+3])
+		}
+		if assert.NotNil(t, universe2Packet) {
+			assert.Equal(t, []byte{0, 0, 255}, universe2Packet[dmxOffset(1):dmxOffset(1)+3])
+		}
+	}
 }
 
 func TestStartupModeFillsSidesInFmsOrder(t *testing.T) {
 	controller := NewController()
 	controller.SetMode(RedStartupMode, OffMode)
 
-	controller.redStrip.counter = 50
-	controller.redStrip.updatePixels()
+	controller.redZone.counter = 50
+	controller.redZone.updatePixels()
 
-	assert.Equal(t, Red, controller.redStrip.pixels[3])
-	assert.Equal(t, Red, controller.redStrip.pixels[4])
-	assert.NotEqual(t, Black, controller.redStrip.pixels[16])
-	assert.Equal(t, Black, controller.redStrip.pixels[32])
-	assert.NotEqual(t, Black, controller.redStrip.pixels[55])
+	assert.Equal(t, Red, controller.redZone.pixels[3])
+	assert.Equal(t, Red, controller.redZone.pixels[4])
+	assert.NotEqual(t, Black, controller.redZone.pixels[16])
+	assert.Equal(t, Black, controller.redZone.pixels[32])
+	assert.NotEqual(t, Black, controller.redZone.pixels[55])
 }
 
 func TestAdvantageModeSweepsInOppositeDirectionsBySide(t *testing.T) {
 	controller := NewController()
 	controller.SetMode(RedAdvantageMode, OffMode)
 
-	controller.redStrip.counter = advantageStepCycle
-	controller.redStrip.updatePixels()
+	controller.redZone.counter = advantageStepCycle
+	controller.redZone.updatePixels()
 
-	assert.Equal(t, White, controller.redStrip.pixels[0])
-	assert.Equal(t, White, controller.redStrip.pixels[31])
+	assert.Equal(t, White, controller.redZone.pixels[0])
+	assert.Equal(t, White, controller.redZone.pixels[31])
 }
 
 func TestPulseModeScalesAllianceColor(t *testing.T) {
 	controller := NewController()
 	controller.SetMode(RedPulseMode, OffMode)
 
-	controller.redStrip.updatePixels()
-	assert.Equal(t, Black, controller.redStrip.pixels[0])
+	controller.redZone.updatePixels()
+	assert.Equal(t, Black, controller.redZone.pixels[0])
 
-	controller.redStrip.counter = pulseHalfPeriod
-	controller.redStrip.updatePixels()
-	assert.Equal(t, Red, controller.redStrip.pixels[0])
+	controller.redZone.counter = pulseHalfPeriod
+	controller.redZone.updatePixels()
+	assert.Equal(t, Red, controller.redZone.pixels[0])
+}
+
+func dmxOffset(startAddress int) int {
+	return pixelDataOffset + startAddress - 1
+}
+
+func packetByUniverse(packets [][]byte, universe int) []byte {
+	for _, packet := range packets {
+		if int(packet[113])<<8|int(packet[114]) == universe {
+			return packet
+		}
+	}
+	return nil
 }
