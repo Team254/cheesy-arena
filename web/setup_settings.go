@@ -7,15 +7,16 @@ package web
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/field"
+	"github.com/Team254/cheesy-arena/model"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/Team254/cheesy-arena/model"
 )
 
 // Shows the event settings editing page.
@@ -33,6 +34,15 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	activeSettingsTab := settingsTabFromRequest(r)
+	if !settingsSaveAllowed(web.arena.MatchState) {
+		web.renderSettingsWithStatus(
+			w, r, "Settings cannot be changed while a match is in progress or is uncommitted.", activeSettingsTab,
+			http.StatusOK,
+		)
+		return
+	}
+
 	eventSettings := web.arena.EventSettings
 
 	previousEventName := eventSettings.Name
@@ -44,16 +54,43 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	var playoffType model.PlayoffType
 	numAlliances := 0
-	if r.PostFormValue("playoffType") == "SingleEliminationPlayoff" {
+	playoffTypeValue := r.PostFormValue("playoffType")
+	playoffTypeProvided := playoffTypeValue != ""
+	if playoffTypeValue == "" && eventSettings.PlayoffType == model.SingleEliminationPlayoff {
+		playoffTypeValue = "SingleEliminationPlayoff"
+	}
+	if playoffTypeValue == "SingleEliminationPlayoff" || playoffTypeValue == "single" {
 		playoffType = model.SingleEliminationPlayoff
-		numAlliances, _ = strconv.Atoi(r.PostFormValue("numPlayoffAlliances"))
+		if r.PostFormValue("numPlayoffAlliances") == "" {
+			if playoffTypeProvided {
+				numAlliances = 0
+			} else {
+				numAlliances = eventSettings.NumPlayoffAlliances
+			}
+		} else {
+			numAlliances, _ = strconv.Atoi(r.PostFormValue("numPlayoffAlliances"))
+		}
 		if numAlliances < 2 || numAlliances > 16 {
-			web.renderSettings(w, r, "Number of alliances must be between 2 and 16.")
+			web.renderSettingsWithStatus(w, r, "Number of alliances must be between 2 and 16.", activeSettingsTab, http.StatusOK)
 			return
 		}
 	} else {
 		playoffType = model.DoubleEliminationPlayoff
-		numAlliances = 8
+		if r.PostFormValue("numPlayoffAlliances") == "" {
+			if eventSettings.PlayoffType == model.DoubleEliminationPlayoff {
+				numAlliances = eventSettings.NumPlayoffAlliances
+			} else {
+				numAlliances = 8
+			}
+		} else {
+			numAlliances, _ = strconv.Atoi(r.PostFormValue("numPlayoffAlliances"))
+		}
+		if numAlliances != 4 && numAlliances != 8 {
+			web.renderSettingsWithStatus(
+				w, r, "Number of alliances for double elimination must be 4 or 8.", activeSettingsTab, http.StatusOK,
+			)
+			return
+		}
 	}
 	if eventSettings.PlayoffType != playoffType || eventSettings.NumPlayoffAlliances != numAlliances {
 		alliances, err := web.arena.Database.GetAllAlliances()
@@ -62,8 +99,9 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if len(alliances) > 0 {
-			web.renderSettings(
-				w, r, "Cannot change playoff type or size after alliance selection has been finalized.",
+			web.renderSettingsWithStatus(
+				w, r, "Cannot change playoff type or size after alliance selection has been finalized.", activeSettingsTab,
+				http.StatusOK,
 			)
 			return
 		}
@@ -94,6 +132,7 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.SCCUpCommands = r.PostFormValue("sccUpCommands")
 	eventSettings.SCCDownCommands = r.PostFormValue("sccDownCommands")
 	eventSettings.PlcAddress = r.PostFormValue("plcAddress")
+	eventSettings.LedControllerAddress = r.PostFormValue("ledControllerAddress")
 	eventSettings.AdminPassword = r.PostFormValue("adminPassword")
 	eventSettings.TeamSignRed1Id, _ = strconv.Atoi(r.PostFormValue("teamSignRed1Id"))
 	eventSettings.TeamSignRed2Id, _ = strconv.Atoi(r.PostFormValue("teamSignRed2Id"))
@@ -134,16 +173,14 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.CompanionMatchAbortPage, _ = strconv.Atoi(r.PostFormValue("companionMatchAbortPage"))
 	eventSettings.CompanionMatchAbortRow, _ = strconv.Atoi(r.PostFormValue("companionMatchAbortRow"))
 	eventSettings.CompanionMatchAbortColumn, _ = strconv.Atoi(r.PostFormValue("companionMatchAbortColumn"))
-	eventSettings.WarmupDurationSec, _ = strconv.Atoi(r.PostFormValue("warmupDurationSec"))
 	eventSettings.AutoDurationSec, _ = strconv.Atoi(r.PostFormValue("autoDurationSec"))
 	eventSettings.PauseDurationSec, _ = strconv.Atoi(r.PostFormValue("pauseDurationSec"))
-	eventSettings.TeleopDurationSec, _ = strconv.Atoi(r.PostFormValue("teleopDurationSec"))
-	eventSettings.WarningRemainingDurationSec, _ = strconv.Atoi(r.PostFormValue("warningRemainingDurationSec"))
-	eventSettings.AutoBonusCoralThreshold, _ = strconv.Atoi(r.PostFormValue("autoBonusCoralThreshold"))
-	eventSettings.CoralBonusPerLevelThreshold, _ = strconv.Atoi(r.PostFormValue("coralBonusPerLevelThreshold"))
-	eventSettings.CoralBonusCoopEnabled = r.PostFormValue("coralBonusCoopEnabled") == "on"
-	eventSettings.BargeBonusPointThreshold, _ = strconv.Atoi(r.PostFormValue("bargeBonusPointThreshold"))
-	eventSettings.IncludeAlgaeInBargeBonus = r.PostFormValue("includeAlgaeInBargeBonus") == "on"
+	eventSettings.TransitionShiftDurationSec, _ = strconv.Atoi(r.PostFormValue("transitionShiftDurationSec"))
+	eventSettings.ShiftDurationSec, _ = strconv.Atoi(r.PostFormValue("shiftDurationSec"))
+	eventSettings.EndgameDurationSec, _ = strconv.Atoi(r.PostFormValue("endgameDurationSec"))
+	eventSettings.EnergizedBonusThreshold, _ = strconv.Atoi(r.PostFormValue("energizedBonusThreshold"))
+	eventSettings.SuperchargedBonusThreshold, _ = strconv.Atoi(r.PostFormValue("superchargedBonusThreshold"))
+	eventSettings.TraversalBonusThreshold, _ = strconv.Atoi(r.PostFormValue("traversalBonusThreshold"))
 
 	err := web.arena.Database.UpdateEventSettings(eventSettings)
 	if err != nil {
@@ -166,7 +203,20 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#"+activeSettingsTab, 303)
+}
+
+func settingsSaveAllowed(matchState field.MatchState) bool {
+	return matchState == field.PreMatch || matchState == field.TimeoutActive || matchState == field.PostTimeout
+}
+
+func settingsTabFromRequest(r *http.Request) string {
+	switch r.PostFormValue("activeSettingsTab") {
+	case "event", "game", "field", "publishing", "automation":
+		return r.PostFormValue("activeSettingsTab")
+	default:
+		return "event"
+	}
 }
 
 // Sends a copy of the event database file to the client as a download.
@@ -204,15 +254,24 @@ func (web *Web) restoreDbHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
-	defer tempFile.Close()
 	tempFilePath := tempFile.Name()
-	defer os.Remove(tempFilePath)
+	defer func() {
+		if tempFilePath == "" {
+			return
+		}
+		if err := os.Remove(tempFilePath); err != nil {
+			log.Printf("Failed to remove temporary uploaded database file %s: %v", tempFilePath, err)
+		}
+	}()
 	_, err = io.Copy(tempFile, file)
 	if err != nil {
 		handleWebErr(w, err)
 		return
 	}
-	tempFile.Close()
+	if err = tempFile.Close(); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 	tempDb, err := model.OpenDatabase(tempFilePath)
 	if err != nil {
 		web.renderSettings(
@@ -220,7 +279,10 @@ func (web *Web) restoreDbHandler(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-	tempDb.Close()
+	if err = tempDb.Close(); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 
 	// Back up the current database.
 	err = web.arena.Database.Backup(web.arena.EventSettings.Name, "pre_restore")
@@ -230,7 +292,10 @@ func (web *Web) restoreDbHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Replace the current database with the new one.
-	web.arena.Database.Close()
+	if err = web.arena.Database.Close(); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 	err = os.Remove(web.arena.Database.Path)
 	if err != nil {
 		handleWebErr(w, err)
@@ -241,6 +306,7 @@ func (web *Web) restoreDbHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+	tempFilePath = ""
 	web.arena.Database, err = model.OpenDatabase(web.arena.Database.Path)
 	if err != nil {
 		handleWebErr(w, err)
@@ -315,15 +381,17 @@ func (web *Web) settingsPublishAlliancesHandler(w http.ResponseWriter, r *http.R
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.PublishAlliances(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish alliances: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish alliances: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 // Publishes the awards to the web.
@@ -335,15 +403,17 @@ func (web *Web) settingsPublishAwardsHandler(w http.ResponseWriter, r *http.Requ
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.PublishAwards(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish awards: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish awards: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 // Publishes the match schedule and results to the web.
@@ -355,20 +425,24 @@ func (web *Web) settingsPublishMatchesHandler(w http.ResponseWriter, r *http.Req
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.DeletePublishedMatches()
 		if err != nil {
-			http.Error(w, "Failed to delete published matches: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to delete published matches: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 		err = web.arena.TbaClient.PublishMatches(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish matches: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish matches: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 // Publishes the standings to the web.
@@ -380,15 +454,17 @@ func (web *Web) settingsPublishRankingsHandler(w http.ResponseWriter, r *http.Re
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.PublishRankings(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish rankings: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish rankings: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 // Publishes the team list to the web.
@@ -400,18 +476,26 @@ func (web *Web) settingsPublishTeamsHandler(w http.ResponseWriter, r *http.Reque
 	if web.arena.EventSettings.TbaPublishingEnabled {
 		err := web.arena.TbaClient.PublishTeams(web.arena.Database)
 		if err != nil {
-			http.Error(w, "Failed to publish teams: "+err.Error(), 500)
+			web.renderSettingsWithStatus(
+				w, r, "Failed to publish teams: "+err.Error(), "publishing", http.StatusInternalServerError,
+			)
 			return
 		}
 	} else {
-		http.Error(w, "TBA publishing is not enabled", 500)
+		web.renderSettingsWithStatus(w, r, "TBA publishing is not enabled", "publishing", http.StatusInternalServerError)
 		return
 	}
 
-	http.Redirect(w, r, "/setup/settings", 303)
+	http.Redirect(w, r, "/setup/settings#publishing", 303)
 }
 
 func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMessage string) {
+	web.renderSettingsWithStatus(w, r, errorMessage, "event", http.StatusOK)
+}
+
+func (web *Web) renderSettingsWithStatus(
+	w http.ResponseWriter, r *http.Request, errorMessage string, activeSettingsTab string, statusCode int,
+) {
 	template, err := web.parseFiles("templates/setup_settings.html", "templates/base.html")
 	if err != nil {
 		handleWebErr(w, err)
@@ -419,8 +503,12 @@ func (web *Web) renderSettings(w http.ResponseWriter, r *http.Request, errorMess
 	}
 	data := struct {
 		*model.EventSettings
-		ErrorMessage string
-	}{web.arena.EventSettings, errorMessage}
+		ErrorMessage      string
+		ActiveSettingsTab string
+	}{web.arena.EventSettings, errorMessage, activeSettingsTab}
+	if statusCode != http.StatusOK {
+		w.WriteHeader(statusCode)
+	}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {
 		handleWebErr(w, err)

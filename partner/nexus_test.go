@@ -24,6 +24,8 @@ func TestGetLineup(t *testing.T) {
 					w.Write([]byte("{\"blue\":[\"104\",\"\",\"106\"]}"))
 				} else if strings.Contains(r.URL.String(), "/api/v1/event/my_event_code/match/p3/lineups") {
 					w.Write([]byte("{}"))
+				} else if strings.Contains(r.URL.String(), "/api/v1/event/my_event_code/match/p4/lineups") {
+					w.Write([]byte("{\"red\":[\"abc\",\"102\",\"103\"],\"blue\":[\"104\",\"105\",\"106\"]}"))
 				} else {
 					http.Error(w, "Match not found", 404)
 				}
@@ -59,4 +61,9 @@ func TestGetLineup(t *testing.T) {
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "Lineup not yet submitted")
 	}
+
+	tbaMatchKey = model.TbaMatchKey{CompLevel: "p", SetNumber: 0, MatchNumber: 4}
+	lineup, err = client.GetLineup(tbaMatchKey)
+	assert.Nil(t, lineup)
+	assert.NotNil(t, err)
 }

@@ -147,9 +147,17 @@ func (ap *AccessPoint) ConfigureTeamWifi(teams [6]*model.Team) error {
 	if err != nil {
 		return err
 	}
-	defer httpResponse.Body.Close()
+	defer func() {
+		if err := httpResponse.Body.Close(); err != nil {
+			log.Printf("Failed to close access point configuration response body: %v", err)
+		}
+	}()
 	if httpResponse.StatusCode/100 != 2 {
-		body, _ := io.ReadAll(httpResponse.Body)
+		body, err := io.ReadAll(httpResponse.Body)
+		if err != nil {
+			return fmt.Errorf("access point returned status %d and failed to read response body: %w",
+				httpResponse.StatusCode, err)
+		}
 		return fmt.Errorf("access point returned status %d: %s", httpResponse.StatusCode, string(body))
 	}
 
@@ -178,9 +186,18 @@ func (ap *AccessPoint) updateMonitoring() error {
 		ap.Status = "ERROR"
 		return fmt.Errorf("failed to fetch access point status: %v", err)
 	}
+	defer func() {
+		if err := httpResponse.Body.Close(); err != nil {
+			log.Printf("Failed to close access point status response body: %v", err)
+		}
+	}()
 	if httpResponse.StatusCode/100 != 2 {
 		ap.Status = "ERROR"
-		body, _ := io.ReadAll(httpResponse.Body)
+		body, err := io.ReadAll(httpResponse.Body)
+		if err != nil {
+			return fmt.Errorf("access point returned status %d and failed to read response body: %w",
+				httpResponse.StatusCode, err)
+		}
 		return fmt.Errorf("access point returned status %d: %s", httpResponse.StatusCode, string(body))
 	}
 
@@ -248,7 +265,11 @@ func updateTeamWifiStatus(teamWifiStatus *TeamWifiStatus, stationStatus *station
 		teamWifiStatus.SignalNoiseRatio = 0
 		teamWifiStatus.ConnectionQuality = 0
 	} else {
-		teamWifiStatus.TeamId, _ = strconv.Atoi(stationStatus.Ssid)
+		var err error
+		teamWifiStatus.TeamId, err = strconv.Atoi(stationStatus.Ssid)
+		if err != nil {
+			log.Printf("Failed to parse access point station SSID %q as team ID: %v", stationStatus.Ssid, err)
+		}
 		teamWifiStatus.RadioLinked = stationStatus.IsLinked
 		teamWifiStatus.MBits = stationStatus.BandwidthUsedMbps
 		teamWifiStatus.RxRate = stationStatus.RxRateMbps

@@ -66,16 +66,142 @@ func TestDoubleEliminationInitial(t *testing.T) {
 	)
 }
 
+func TestDoubleEliminationFourAllianceInitial(t *testing.T) {
+	finalMatchup, breakSpecs, err := newDoubleEliminationBracket(4)
+	assert.Nil(t, err)
+
+	assert.Equal(t, []breakSpec{
+		{3, 900, "Field Break"},
+		{5, 900, "Awards Break"},
+		{6, 900, "Awards Break"},
+		{7, 900, "Awards Break"},
+		{8, 900, "Awards Break *"},
+	}, breakSpecs)
+
+	matchSpecs, err := collectMatchSpecs(finalMatchup)
+	assert.Nil(t, err)
+	if assert.Equal(t, 11, len(matchSpecs)) {
+		assertMatchSpecs(
+			t,
+			matchSpecs,
+			[]expectedMatchSpec{
+				{"Match 1", "M1", "Round 1 Upper", 1, "M1", true, false, "sf", 1, 1},
+				{"Match 2", "M2", "Round 1 Upper", 2, "M2", true, false, "sf", 2, 1},
+				{"Match 3", "M3", "Round 2 Upper", 3, "M3", true, false, "sf", 3, 1},
+				{"Match 4", "M4", "Round 2 Lower", 4, "M4", true, false, "sf", 4, 1},
+				{"Match 5", "M5", "Round 3 Lower", 5, "M5", true, false, "sf", 5, 1},
+				{"Final 1", "F1", "", 6, "F", false, false, "f", 1, 1},
+				{"Final 2", "F2", "", 7, "F", false, false, "f", 1, 2},
+				{"Final 3", "F3", "", 8, "F", false, false, "f", 1, 3},
+				{"Overtime 1", "O1", "", 9, "F", true, true, "f", 1, 4},
+				{"Overtime 2", "O2", "", 10, "F", true, true, "f", 1, 5},
+				{"Overtime 3", "O3", "", 11, "F", true, true, "f", 1, 6},
+			},
+		)
+	}
+
+	finalMatchup.update(map[int]playoffMatchResult{})
+	assertMatchSpecAlliances(
+		t,
+		matchSpecs[0:2],
+		[]expectedAlliances{
+			{1, 4},
+			{2, 3},
+		},
+	)
+	for i := 2; i < 11; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	matchGroups, err := collectMatchGroups(finalMatchup)
+	assert.Nil(t, err)
+	assertMatchGroups(t, matchGroups, "M1", "M2", "M3", "M4", "M5", "F")
+}
+
 func TestDoubleEliminationErrors(t *testing.T) {
 	_, _, err := newDoubleEliminationBracket(7)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "double-elimination bracket must have exactly 8 alliances", err.Error())
+		assert.Equal(t, "double-elimination bracket must have exactly 4 or 8 alliances", err.Error())
 	}
 
 	_, _, err = newDoubleEliminationBracket(9)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "double-elimination bracket must have exactly 8 alliances", err.Error())
+		assert.Equal(t, "double-elimination bracket must have exactly 4 or 8 alliances", err.Error())
 	}
+}
+
+func TestDoubleEliminationFourAllianceProgression(t *testing.T) {
+	playoffTournament, err := NewPlayoffTournament(model.DoubleEliminationPlayoff, 4)
+	assert.Nil(t, err)
+	finalMatchup := playoffTournament.FinalMatchup()
+	matchSpecs := playoffTournament.matchSpecs
+	matchGroups := playoffTournament.MatchGroups()
+	playoffMatchResults := map[int]playoffMatchResult{}
+
+	playoffMatchResults[1] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[2:4], []expectedAlliances{{1, 0}, {4, 0}})
+	for i := 4; i < 11; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+	assertMatchupOutcome(
+		t, matchGroups["M1"], "Advances to Match 3 &ndash; Round 2 Upper", "Advances to Match 4 &ndash; Round 2 Lower",
+	)
+
+	playoffMatchResults[2] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[2:4], []expectedAlliances{{1, 3}, {4, 2}})
+
+	// Reverse a previous outcome.
+	playoffMatchResults[2] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[2:4], []expectedAlliances{{1, 2}, {4, 3}})
+	for i := 4; i < 11; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{0, 0}})
+	}
+
+	playoffMatchResults[3] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[4:5], []expectedAlliances{{1, 0}})
+	for i := 5; i < 11; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{2, 0}})
+	}
+	assertMatchupOutcome(
+		t, matchGroups["M3"], "Advances to Match 5 &ndash; Round 3 Lower", "Advances to Final 1",
+	)
+
+	playoffMatchResults[4] = playoffMatchResult{game.RedWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[4:5], []expectedAlliances{{1, 4}})
+	for i := 5; i < 11; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{2, 0}})
+	}
+
+	playoffMatchResults[5] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	for i := 5; i < 11; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{2, 4}})
+	}
+	assertMatchupOutcome(t, matchGroups["M5"], "Eliminated", "Advances to Final 1")
+
+	// Unscore the previous match.
+	delete(playoffMatchResults, 5)
+	finalMatchup.update(playoffMatchResults)
+	assertMatchSpecAlliances(t, matchSpecs[4:5], []expectedAlliances{{1, 4}})
+	for i := 5; i < 11; i++ {
+		assertMatchSpecAlliances(t, matchSpecs[i:i+1], []expectedAlliances{{2, 0}})
+	}
+	assertMatchupOutcome(t, matchGroups["M5"], "", "")
+
+	playoffMatchResults[5] = playoffMatchResult{game.BlueWonMatch}
+	playoffMatchResults[6] = playoffMatchResult{game.BlueWonMatch}
+	playoffMatchResults[7] = playoffMatchResult{game.RedWonMatch}
+	playoffMatchResults[8] = playoffMatchResult{game.BlueWonMatch}
+	finalMatchup.update(playoffMatchResults)
+	assert.True(t, finalMatchup.IsComplete())
+	assert.Equal(t, 4, finalMatchup.WinningAllianceId())
+	assert.Equal(t, 2, finalMatchup.LosingAllianceId())
+	assertMatchupOutcome(t, matchGroups["F"], "Tournament Finalist", "Tournament Winner")
 }
 
 func TestDoubleEliminationProgression(t *testing.T) {

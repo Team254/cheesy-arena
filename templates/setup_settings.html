@@ -15,7 +15,8 @@ UI for configuring event settings.
   {{end}}
   <div class="col-lg-8">
     <div class="card card-body bg-body-tertiary">
-      <form method="POST">
+      <form method="POST" action="/setup/settings">
+        <input type="hidden" id="activeSettingsTab" name="activeSettingsTab" value="{{.ActiveSettingsTab}}">
         <ul class="nav nav-underline mb-3" id="settingsTabs" role="tablist">
           <li class="nav-item">
             <button class="nav-link" id="event-tab" data-bs-toggle="tab" data-bs-target="#event" role="tab">
@@ -64,7 +65,7 @@ UI for configuring event settings.
                       <input type="radio" name="playoffType" value="DoubleEliminationPlayoff"
                         onclick="updateNumPlayoffAlliances(true);"
                         {{if eq .PlayoffType 0}}checked{{end}}>
-                      Double-Elimination (8 alliances)
+                      Double-Elimination (4 or 8 alliances)
                     </label>
                   </div>
                   <div class="radio">
@@ -80,8 +81,7 @@ UI for configuring event settings.
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Number of Alliances</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" name="numPlayoffAlliances" value="{{.NumPlayoffAlliances}}"
-                    {{if eq .PlayoffType 0}}disabled{{end}}>
+                  <input type="text" class="form-control" name="numPlayoffAlliances" value="{{.NumPlayoffAlliances}}">
                 </div>
               </div>
               <div class="row mb-3">
@@ -205,51 +205,43 @@ UI for configuring event settings.
                 </div>
               </div>
               <div class="row mb-3">
-                <label class="col-lg-6 control-label">Teleoperated Period Duration<br/>(seconds)</label>
+                <label class="col-lg-6 control-label">Transition Shift Duration<br/>(seconds)</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" name="teleopDurationSec" value="{{.TeleopDurationSec}}">
+                  <input type="text" class="form-control" name="transitionShiftDurationSec"
+                    value="{{.TransitionShiftDurationSec}}">
                 </div>
               </div>
               <div class="row mb-3">
-                <label class="col-lg-6 control-label">Warning Remaining Duration<br/>(seconds)</label>
+                <label class="col-lg-6 control-label">Shift Duration<br/>(seconds)</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" name="warningRemainingDurationSec"
-                    value="{{.WarningRemainingDurationSec}}">
+                  <input type="text" class="form-control" name="shiftDurationSec" value="{{.ShiftDurationSec}}">
                 </div>
               </div>
               <div class="row mb-3">
-                <label class="col-lg-6 control-label">Auto Bonus RP Coral Threshold</label>
+                <label class="col-lg-6 control-label">Endgame Duration<br/>(seconds)</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" id="autoBonusCoralThreshold" name="autoBonusCoralThreshold"
-                    value="{{.AutoBonusCoralThreshold}}">
+                  <input type="text" class="form-control" name="endgameDurationSec" value="{{.EndgameDurationSec}}">
                 </div>
               </div>
               <div class="row mb-3">
-                <label class="col-lg-6 control-label">Coopertition Bonus Enabled</label>
-                <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="coralBonusCoopEnabled"
-                    name="coralBonusCoopEnabled" {{if .CoralBonusCoopEnabled}} checked{{end}}>
+                <label class="col-lg-6 control-label">Energized Bonus RP Fuel Threshold</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" id="energizedBonusThreshold" name="energizedBonusThreshold"
+                    value="{{.EnergizedBonusThreshold}}">
                 </div>
               </div>
               <div class="row mb-3">
-                <label class="col-lg-6 control-label">Coral Bonus RP Per-Level Threshold</label>
+                <label class="col-lg-6 control-label">Supercharged Bonus RP Fuel Threshold</label>
                 <div class="col-lg-6">
-                  <input type="text" class="form-control" id="coralBonusPerLevelThreshold"
-                    name="coralBonusPerLevelThreshold" value="{{.CoralBonusPerLevelThreshold}}">
-                </div>
-              </div>
-              <div class="row mb-3">
-                <label class="col-lg-6 control-label">Barge Bonus RP Point Threshold</label>
-                <div class="col-lg-6">
-                  <input type="text" class="form-control" id="bargeBonusPointThreshold" name="bargeBonusPointThreshold"
-                    value="{{.BargeBonusPointThreshold}}">
+                  <input type="text" class="form-control" id="superchargedBonusThreshold"
+                    name="superchargedBonusThreshold" value="{{.SuperchargedBonusThreshold}}">
                 </div>
               </div>
               <div class="row">
-                <label class="col-lg-6 control-label">Include Algae Points Towards Barge Bonus</label>
-                <div class="col-lg-1 checkbox">
-                  <input type="checkbox" id="includeAlgaeInBargeBonus"
-                    name="includeAlgaeInBargeBonus" {{if .IncludeAlgaeInBargeBonus}} checked{{end}}>
+                <label class="col-lg-6 control-label">Traversal Bonus RP Point Threshold</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" id="traversalBonusThreshold" name="traversalBonusThreshold"
+                    value="{{.TraversalBonusThreshold}}">
                 </div>
               </div>
             </fieldset>
@@ -428,11 +420,23 @@ UI for configuring event settings.
                     value="{{if gt .TeamSignBlueTimerId 0}}{{.TeamSignBlueTimerId}}{{end}}" placeholder="54">
                 </div>
               </div>
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>LED Lighting</legend>
               <div class="row mb-3">
-                <legend>Driver Station Lite Mode</legend>
-                <p>When enabled, the Driver Station software will prompt teams to allow Cheesy Arena to connect rather
-                  than automatically connecting, and will preserve the ability to use the spacebar for robot
-                  disablement. Consider enabling this setting when physical E-Stop buttons are not present.</p>
+                <label class="col-lg-6 control-label">LED Controller Address</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="ledControllerAddress"
+                    value="{{.LedControllerAddress}}" placeholder="10.0.100.60">
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Driver Station Lite Mode</legend>
+              <p>When enabled, the Driver Station software will prompt teams to allow Cheesy Arena to connect rather
+                than automatically connecting, and will preserve the ability to use the spacebar for robot
+                disablement. Consider enabling this setting when physical E-Stop buttons are not present.</p>
+              <div class="row mb-3">
                 <label class="col-lg-8 control-label" for="useLiteUdpPort"> Lite Mode </label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="useLiteUdpPort" name="useLiteUdpPort"
@@ -495,8 +499,10 @@ UI for configuring event settings.
           <div class="tab-pane" id="automation" role="tabpanel">
             <fieldset class="mb-4">
               <legend>Nexus</legend>
-              <p>Automatically populates practice and playoff match lineups from Nexus. Uses the same event code as TBA;
-                configure it above if enabling.</p>
+              <p>Automatically populate practice and playoff match lineups from Nexus. Uses the same event code as TBA-
+                configure it on the publishing tab.</p>
+              <p>When enabled, Nexus is the source of truth for lineups and they can not
+                be overridden by the scorekeeper. To make changes, update the lineup in Nexus or disable this setting.</p>
               <div class="row mb-3">
                 <label class="col-lg-8 control-label" for="nexusEnabled">Enable pulling lineup from Nexus</label>
                 <div class="col-lg-1 checkbox">
@@ -772,18 +778,17 @@ UI for configuring event settings.
 <script>
   updateNumPlayoffAlliances = function (isDoubleElimination) {
     const numPlayoffAlliances = $("input[name=numPlayoffAlliances]");
-    numPlayoffAlliances.prop("disabled", isDoubleElimination);
-    if (isDoubleElimination) {
-      numPlayoffAlliances.val(8);
-    }
+    numPlayoffAlliances.prop("disabled", false);
   };
 
   // Handle initial tab selection based on URL fragment.
   document.addEventListener("DOMContentLoaded", function () {
     let hash = window.location.hash;
     if (!hash) {
-      hash = "#event";
+      hash = "#{{.ActiveSettingsTab}}";
     }
+    const activeSettingsTab = document.getElementById("activeSettingsTab");
+    activeSettingsTab.value = hash.substring(1);
     const tabTrigger = document.querySelector(`[data-bs-target="${hash}"]`);
     const tab = new bootstrap.Tab(tabTrigger);
     tab.show();
@@ -794,6 +799,7 @@ UI for configuring event settings.
       tabLink.addEventListener("shown.bs.tab", function (event) {
         const target = event.target.getAttribute("data-bs-target");
         if (target) {
+          activeSettingsTab.value = target.substring(1);
           history.replaceState(null, "", target);
         }
       });

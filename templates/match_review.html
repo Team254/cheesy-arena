@@ -51,8 +51,22 @@ UI for listing matches and their results.
             <td class="bg-{{$m.ColorClass}} text-center blue-text">
               {{index $m.BlueTeams 0}}, {{index $m.BlueTeams 1}}, {{index $m.BlueTeams 2}}
             </td>
-            <td class="bg-{{$m.ColorClass}} text-center red-text">{{if $m.IsComplete}}{{$m.RedScore}}{{end}}</td>
-            <td class="bg-{{$m.ColorClass}} text-center blue-text">{{if $m.IsComplete}}{{$m.BlueScore}}{{end}}</td>
+            <td class="bg-{{$m.ColorClass}} text-center red-text">
+              {{if $m.IsComplete}}
+              {{$m.RedScore}}
+              {{if ne $type playoffMatch}}
+              {{template "rankingPointSymbols" $m.RedSummary}}
+              {{end}}
+              {{end}}
+            </td>
+            <td class="bg-{{$m.ColorClass}} text-center blue-text">
+              {{if $m.IsComplete}}
+              {{$m.BlueScore}}
+              {{if ne $type playoffMatch}}
+              {{template "rankingPointSymbols" $m.BlueSummary}}
+              {{end}}
+              {{end}}
+            </td>
             <td class="bg-{{$m.ColorClass}} text-center nowrap">
               <a href="/match_review/{{$m.Id}}/edit"><b class="btn btn-primary btn-sm">Edit</b></a>
             </td>
@@ -66,4 +80,14 @@ UI for listing matches and their results.
 </div>
 {{end}}
 {{define "script"}}
+{{end}}
+{{define "rankingPointSymbols"}}
+<span class="match-review-rps nowrap" title="Energized, Supercharged, Traversal bonus RPs">
+  <span class="match-review-rp" title="Energized Bonus">{{template "rankingPointSymbol" .EnergizedBonusRankingPoint}}</span>
+  <span class="match-review-rp" title="Supercharged Bonus">{{template "rankingPointSymbol" .SuperchargedBonusRankingPoint}}</span>
+  <span class="match-review-rp" title="Traversal Bonus">{{template "rankingPointSymbol" .TraversalBonusRankingPoint}}</span>
+</span>
+{{end}}
+{{define "rankingPointSymbol"}}
+{{if .}}<span class="text-success">&#x2611;</span>{{else}}<span class="text-danger">&#x2612;</span>{{end}}
 {{end}}

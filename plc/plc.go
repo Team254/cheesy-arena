@@ -25,16 +25,21 @@ type Plc interface {
 	GetTeamEStops() ([3]bool, [3]bool)
 	GetTeamAStops() ([3]bool, [3]bool)
 	GetEthernetConnected() ([3]bool, [3]bool)
+	IsFtaReady() bool
 	ResetMatch()
 	SetStackLights(red, blue, orange, green bool)
 	SetStackBuzzer(state bool)
 	SetFieldResetLight(state bool)
+	SetAwardsModeLight(state bool)
+	GetHubCounts() (int, int)
+	SetHubMotors(red, blue bool)
+	SetHubLights(red, blue bool)
 	GetCycleState(max, index, duration int) bool
 	GetInputNames() []string
 	GetRegisterNames() []string
 	GetCoilNames() []string
-	GetProcessorCounts() (int, int)
-	SetTrussLights(redLights, blueLights [3]bool)
+	SetCoilOverride(index int, state bool)
+	ClearCoilOverride(index int)
 }
 
 type ModbusPlc struct {
@@ -46,9 +51,11 @@ type ModbusPlc struct {
 	inputs           [inputCount]bool
 	registers        [registerCount]uint16
 	coils            [coilCount]bool
+	coilOverrides    map[int]bool
 	oldInputs        [inputCount]bool
 	oldRegisters     [registerCount]uint16
 	oldCoils         [coilCount]bool
+	oldCoilOverrides [coilCount]string
 	cycleCounter     int
 	matchResetCycles int
 }
@@ -62,7 +69,7 @@ const (
 
 // Discrete inputs
 //
-//go:generate stringer -type=input
+//go:generate go run golang.org/x/tools/cmd/stringer@v0.43.0 -type=input
 type input int
 
 const (
@@ -85,24 +92,41 @@ const (
 	blueConnected1
 	blueConnected2
 	blueConnected3
+	ftaReady
+	redHubSensor1
+	redHubSensor2
+	redHubSensor3
+	redHubSensor4
+	blueHubSensor1
+	blueHubSensor2
+	blueHubSensor3
+	blueHubSensor4
 	inputCount
 )
 
 // 16-bit registers
 //
-//go:generate stringer -type=register
+//go:generate go run golang.org/x/tools/cmd/stringer@v0.43.0 -type=register
 type register int
 
 const (
 	fieldIoConnection register = iota
-	redProcessor
-	blueProcessor
+	redHubTotal
+	blueHubTotal
+	redHubCount1
+	redHubCount2
+	redHubCount3
+	redHubCount4
+	blueHubCount1
+	blueHubCount2
+	blueHubCount3
+	blueHubCount4
 	registerCount
 )
 
 // Coils
 //
-//go:generate stringer -type=coil
+//go:generate go run golang.org/x/tools/cmd/stringer@v0.43.0 -type=coil
 type coil int
 
 const (
@@ -114,18 +138,17 @@ const (
 	stackLightBlue
 	stackLightBuzzer
 	fieldResetLight
-	redTrussLightOuter
-	redTrussLightMiddle
-	redTrussLightInner
-	blueTrussLightOuter
-	blueTrussLightMiddle
-	blueTrussLightInner
+	awardsModeLight
+	redHubMotor
+	blueHubMotor
+	redHubLight
+	blueHubLight
 	coilCount
 )
 
 // Bitmask for decoding fieldIoConnection into individual ArmorBlock connection statuses.
 //
-//go:generate stringer -type=armorBlock
+//go:generate go run golang.org/x/tools/cmd/stringer@v0.43.0 -type=armorBlock
 type armorBlock int
 
 const (
@@ -237,10 +260,16 @@ func (plc *ModbusPlc) GetEthernetConnected() ([3]bool, [3]bool) {
 		}
 }
 
+// Returns true if the FTA ready dead-man switch is active.
+func (plc *ModbusPlc) IsFtaReady() bool {
+	return plc.inputs[ftaReady]
+}
+
 // Resets the internal state of the PLC to start a new match.
 func (plc *ModbusPlc) ResetMatch() {
 	plc.coils[matchReset] = true
 	plc.matchResetCycles = 0
+	plc.coilOverrides = nil
 
 	// Clear register variables (other than fieldIoConnection) so that any values from pre-match testing don't carry
 	// over.
@@ -265,6 +294,28 @@ func (plc *ModbusPlc) SetStackBuzzer(state bool) {
 // Sets the on/off state of the field reset light.
 func (plc *ModbusPlc) SetFieldResetLight(state bool) {
 	plc.coils[fieldResetLight] = state
+}
+
+// Sets the on/off state of the awards mode lighting.
+func (plc *ModbusPlc) SetAwardsModeLight(state bool) {
+	plc.coils[awardsModeLight] = state
+}
+
+// Returns the red and blue Hub counts, respectively.
+func (plc *ModbusPlc) GetHubCounts() (int, int) {
+	return int(plc.registers[redHubTotal]), int(plc.registers[blueHubTotal])
+}
+
+// Sets the on/off state of the red and blue Hub motors.
+func (plc *ModbusPlc) SetHubMotors(red, blue bool) {
+	plc.coils[redHubMotor] = red
+	plc.coils[blueHubMotor] = blue
+}
+
+// Sets the on/off state of the red and blue Hub lights.
+func (plc *ModbusPlc) SetHubLights(red, blue bool) {
+	plc.coils[redHubLight] = red
+	plc.coils[blueHubLight] = blue
 }
 
 func (plc *ModbusPlc) GetCycleState(max, index, duration int) bool {
@@ -295,20 +346,21 @@ func (plc *ModbusPlc) GetCoilNames() []string {
 	return coilNames
 }
 
-// Returns the red and blue processor counts, respectively.
-func (plc *ModbusPlc) GetProcessorCounts() (int, int) {
-	return int(plc.registers[redProcessor]), int(plc.registers[blueProcessor])
+func (plc *ModbusPlc) SetCoilOverride(index int, state bool) {
+	if index < 0 || index >= int(coilCount) {
+		return
+	}
+	if plc.coilOverrides == nil {
+		plc.coilOverrides = make(map[int]bool)
+	}
+	plc.coilOverrides[index] = state
 }
 
-// Sets the state of the red and blue truss lights. Each array represents the outer, middle, and inner lights,
-// respectively.
-func (plc *ModbusPlc) SetTrussLights(redLights, blueLights [3]bool) {
-	plc.coils[redTrussLightOuter] = redLights[0]
-	plc.coils[redTrussLightMiddle] = redLights[1]
-	plc.coils[redTrussLightInner] = redLights[2]
-	plc.coils[blueTrussLightOuter] = blueLights[0]
-	plc.coils[blueTrussLightMiddle] = blueLights[1]
-	plc.coils[blueTrussLightInner] = blueLights[2]
+func (plc *ModbusPlc) ClearCoilOverride(index int) {
+	if index < 0 || index >= int(coilCount) {
+		return
+	}
+	delete(plc.coilOverrides, index)
 }
 
 func (plc *ModbusPlc) connect() error {
@@ -330,7 +382,9 @@ func (plc *ModbusPlc) connect() error {
 
 func (plc *ModbusPlc) resetConnection() {
 	if plc.handler != nil {
-		plc.handler.Close()
+		if err := plc.handler.Close(); err != nil {
+			log.Printf("PLC error closing connection: %v", err)
+		}
 		plc.handler = nil
 	}
 }
@@ -354,11 +408,15 @@ func (plc *ModbusPlc) update() {
 	}
 
 	// Detect any changes in input or output and notify listeners if so.
-	if plc.inputs != plc.oldInputs || plc.registers != plc.oldRegisters || plc.coils != plc.oldCoils {
+	effectiveCoils := plc.getEffectiveCoils()
+	coilOverrideStates := plc.getCoilOverrideStates()
+	if plc.inputs != plc.oldInputs || plc.registers != plc.oldRegisters || effectiveCoils != plc.oldCoils ||
+		coilOverrideStates != plc.oldCoilOverrides {
 		plc.ioChangeNotifier.Notify()
 		plc.oldInputs = plc.inputs
 		plc.oldRegisters = plc.registers
-		plc.oldCoils = plc.coils
+		plc.oldCoils = effectiveCoils
+		plc.oldCoilOverrides = coilOverrideStates
 	}
 }
 
@@ -408,7 +466,8 @@ func (plc *ModbusPlc) writeCoils() bool {
 	// Send a heartbeat to the PLC so that it can disable outputs if the connection is lost.
 	plc.coils[heartbeat] = true
 
-	coils := boolToByte(plc.coils[:])
+	effectiveCoils := plc.getEffectiveCoils()
+	coils := boolToByte(effectiveCoils[:])
 	_, err := plc.client.WriteMultipleCoils(0, uint16(len(plc.coils)), coils)
 	if err != nil {
 		log.Printf("PLC error writing coils: %v", err)
@@ -424,11 +483,39 @@ func (plc *ModbusPlc) writeCoils() bool {
 }
 
 func (plc *ModbusPlc) generateIoChangeMessage() any {
+	effectiveCoils := plc.getEffectiveCoils()
+	coilOverrideStates := plc.getCoilOverrideStates()
 	return &struct {
-		Inputs    []bool
-		Registers []uint16
-		Coils     []bool
-	}{plc.inputs[:], plc.registers[:], plc.coils[:]}
+		Inputs        []bool
+		Registers     []uint16
+		Coils         []bool
+		CoilOverrides []string
+	}{plc.inputs[:], plc.registers[:], effectiveCoils[:], coilOverrideStates[:]}
+}
+
+func (plc *ModbusPlc) getEffectiveCoils() [coilCount]bool {
+	effectiveCoils := plc.coils
+	for index, state := range plc.coilOverrides {
+		if index >= 0 && index < len(effectiveCoils) {
+			effectiveCoils[index] = state
+		}
+	}
+	return effectiveCoils
+}
+
+func (plc *ModbusPlc) getCoilOverrideStates() [coilCount]string {
+	var overrideStates [coilCount]string
+	for index := range overrideStates {
+		overrideStates[index] = "auto"
+		if state, ok := plc.coilOverrides[index]; ok {
+			if state {
+				overrideStates[index] = "on"
+			} else {
+				overrideStates[index] = "off"
+			}
+		}
+	}
+	return overrideStates
 }
 
 func byteToBool(bytes []byte, size int) []bool {

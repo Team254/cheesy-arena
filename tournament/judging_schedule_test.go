@@ -12,7 +12,9 @@ import (
 )
 
 func TestBuildJudgingSchedule(t *testing.T) {
-	rand.Seed(0)
+	randomizer := rand.New(rand.NewSource(0))
+	schedulePerm = randomizer.Perm
+	judgingShuffle = randomizer.Shuffle
 	database := setupTestDb(t)
 
 	// Test error when judging slots already exist.
@@ -108,7 +110,8 @@ func TestBuildJudgingSchedule(t *testing.T) {
 }
 
 func TestBuildJudgingScheduleMissingTeamMatches(t *testing.T) {
-	rand.Seed(0)
+	randomizer := rand.New(rand.NewSource(0))
+	judgingShuffle = randomizer.Shuffle
 	database := setupTestDb(t)
 
 	for i := 1; i <= 6; i++ {
@@ -185,7 +188,8 @@ func TestGetNextSlotForTeamAfterLastMatch(t *testing.T) {
 }
 
 func TestBuildJudgingScheduleAllowsEndDuringBreak(t *testing.T) {
-	rand.Seed(0)
+	randomizer := rand.New(rand.NewSource(0))
+	judgingShuffle = randomizer.Shuffle
 	database := setupTestDb(t)
 
 	assert.Nil(t, database.CreateTeam(&model.Team{Id: 1}))

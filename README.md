@@ -44,7 +44,7 @@ on how to bypass the warning.
 
 **From source**
 
-1. Download [Go](https://golang.org/dl/) (version 1.22 or later required)
+1. Download [Go](https://golang.org/dl/) (version 1.26 or later required)
 1. Clone this GitHub repository to a location of your choice
 1. Navigate to the repository's directory in the terminal
 1. Compile the code with `go build`
@@ -57,7 +57,8 @@ When running Cheesy Arena on a playing field with robots, set the IP address of 
 10.0.100.5. By a convention baked into the FRC Driver Station software, driver stations will broadcast their presence on
 the network to this hardcoded address so that the FMS does not need to discover them by some other method.
 
-When running Cheesy Arena without robots for testing or development, any IP address can be used.
+When running Cheesy Arena without robots for testing or development, pass the `-dev` flag to bind driver station
+listeners to any local IP address.
 
 ## Under the hood
 

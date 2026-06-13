@@ -56,7 +56,11 @@ func (client *BlackmagicClient) sendCommand(command string) {
 			log.Printf("Failed to connect to Blackmagic device at %s: %v", address, err)
 			continue
 		}
-		defer conn.Close()
+		defer func(conn net.Conn, address string) {
+			if err := conn.Close(); err != nil {
+				log.Printf("Failed to close connection to Blackmagic device at %s: %v", address, err)
+			}
+		}(conn, address)
 		_, err = fmt.Fprint(conn, command+"\n")
 		if err != nil {
 			log.Printf("Failed to send '%s' command to Blackmagic device at %s: %v", command, address, err)

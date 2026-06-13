@@ -28,8 +28,8 @@ func TestMatchResultCrud(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, matchResult, matchResult2)
 
-	matchResult.BlueScore.EndgameStatuses =
-		[3]game.EndgameStatus{game.EndgameParked, game.EndgameNone, game.EndgameShallowCage}
+	matchResult.BlueScore.EndgameTowerStatuses =
+		[3]game.TowerStatus{game.TowerLevel1, game.TowerNone, game.TowerLevel2}
 	assert.Nil(t, db.UpdateMatchResult(matchResult))
 	matchResult2, err = db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)
@@ -68,4 +68,23 @@ func TestGetMatchResultForMatch(t *testing.T) {
 	matchResult4, err := db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)
 	assert.Equal(t, matchResult2, matchResult4)
+}
+
+func TestCorrectPlayoffScoreResetsDqState(t *testing.T) {
+	matchResult := NewMatchResult()
+	matchResult.RedScore.PlayoffDq = true
+	matchResult.BlueScore.PlayoffDq = true
+	matchResult.RedCards = map[string]string{"1": "red"}
+	matchResult.BlueCards = map[string]string{}
+
+	matchResult.CorrectPlayoffScore()
+	assert.Equal(t, true, matchResult.RedScore.PlayoffDq)
+	assert.Equal(t, false, matchResult.BlueScore.PlayoffDq)
+
+	matchResult.RedCards = map[string]string{}
+	matchResult.BlueCards = map[string]string{"4": "dq"}
+
+	matchResult.CorrectPlayoffScore()
+	assert.Equal(t, false, matchResult.RedScore.PlayoffDq)
+	assert.Equal(t, true, matchResult.BlueScore.PlayoffDq)
 }

@@ -18,6 +18,31 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
       </p>
       {{end}}
     </div>
+    <div class="card card-body bg-body-tertiary mt-3">
+      <legend>LED Lighting</legend>
+      <div class="row">
+        <div class="col">
+          <h6>Red Hub</h6>
+          {{range $mode, $name := .LedModeNames}}
+          <div class="form-check">
+            <input class="form-check-input led-mode" type="radio" name="redLedMode" id="redLedMode{{$mode}}"
+              value="{{$mode}}" onchange="setLedMode();" {{if eq $mode $.RedLedMode}}checked{{end}}>
+            <label class="form-check-label" for="redLedMode{{$mode}}">{{$name}}</label>
+          </div>
+          {{end}}
+        </div>
+        <div class="col">
+          <h6>Blue Hub</h6>
+          {{range $mode, $name := .LedModeNames}}
+          <div class="form-check">
+            <input class="form-check-input led-mode" type="radio" name="blueLedMode" id="blueLedMode{{$mode}}"
+              value="{{$mode}}" onchange="setLedMode();" {{if eq $mode $.BlueLedMode}}checked{{end}}>
+            <label class="form-check-label" for="blueLedMode{{$mode}}">{{$name}}</label>
+          </div>
+          {{end}}
+        </div>
+      </div>
+    </div>
   </div>
   <div class="col-lg-8">
     <div class="card card-body bg-body-tertiary">
@@ -57,7 +82,10 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
             {{range $i, $name := .CoilNames}}
             <tr>
               <td class="bg-body-tertiary">{{$name}}</td>
-              <td class="bg-body-tertiary" id="coil{{$i}}" data-plc-value="false"></td>
+              <td class="bg-body-tertiary p-1">
+                <button type="button" class="plc-coil-indicator" id="coil{{$i}}" data-coil-index="{{$i}}"
+                  data-plc-value="false" data-plc-override="auto" data-plc-override-allowed="false">false</button>
+              </td>
             </tr>
             {{end}}
           </table>

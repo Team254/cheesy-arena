@@ -18,14 +18,18 @@ type FakePlc struct {
 	blueAStops            [3]bool
 	redEthernetConnected  [3]bool
 	blueEthernetConnected [3]bool
+	ftaReady              bool
 	stackLights           [4]bool
 	stackLightBuzzer      bool
 	fieldResetLight       bool
+	awardsModeLight       bool
 	cycleState            bool
-	redProcessorCount     int
-	blueProcessorCount    int
-	redTrussLights        [3]bool
-	blueTrussLights       [3]bool
+	redHubCount           int
+	blueHubCount          int
+	redHubMotor           bool
+	blueHubMotor          bool
+	redHubLight           bool
+	blueHubLight          bool
 }
 
 func (plc *FakePlc) SetAddress(address string) {
@@ -66,6 +70,10 @@ func (plc *FakePlc) GetEthernetConnected() ([3]bool, [3]bool) {
 	return plc.redEthernetConnected, plc.blueEthernetConnected
 }
 
+func (plc *FakePlc) IsFtaReady() bool {
+	return plc.ftaReady
+}
+
 func (plc *FakePlc) ResetMatch() {
 }
 
@@ -84,6 +92,24 @@ func (plc *FakePlc) SetFieldResetLight(state bool) {
 	plc.fieldResetLight = state
 }
 
+func (plc *FakePlc) SetAwardsModeLight(state bool) {
+	plc.awardsModeLight = state
+}
+
+func (plc *FakePlc) GetHubCounts() (int, int) {
+	return plc.redHubCount, plc.blueHubCount
+}
+
+func (plc *FakePlc) SetHubMotors(red, blue bool) {
+	plc.redHubMotor = red
+	plc.blueHubMotor = blue
+}
+
+func (plc *FakePlc) SetHubLights(red, blue bool) {
+	plc.redHubLight = red
+	plc.blueHubLight = blue
+}
+
 func (plc *FakePlc) GetCycleState(max, index, duration int) bool {
 	return plc.cycleState
 }
@@ -100,11 +126,10 @@ func (plc *FakePlc) GetCoilNames() []string {
 	return []string{}
 }
 
-func (plc *FakePlc) GetProcessorCounts() (int, int) {
-	return plc.redProcessorCount, plc.blueProcessorCount
+func (plc *FakePlc) SetCoilOverride(index int, state bool) {
+	// Not needed for testing, just to satisfy the interface.
 }
 
-func (plc *FakePlc) SetTrussLights(redLights, blueLights [3]bool) {
-	plc.redTrussLights = redLights
-	plc.blueTrussLights = blueLights
+func (plc *FakePlc) ClearCoilOverride(index int) {
+	// Not needed for testing, just to satisfy the interface.
 }

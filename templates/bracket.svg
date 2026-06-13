@@ -22,6 +22,7 @@
     }
 
     .bracket_double #bgdouble,
+    .bracket_double4 #bgdouble4,
     .bracket_16 #bg16,
     .bracket_8 #bg8,
     .bracket_4 #bg4,
@@ -218,6 +219,16 @@
 
     .bracket_double #match_F {transform: translate(1598px, 417px);}
 
+    .bracket_double4 #match_M1 {transform: translate(220px, 250px);}
+    .bracket_double4 #match_M2 {transform: translate(220px, 610px);}
+
+    .bracket_double4 #match_M3 {transform: translate(600px, 330px);}
+    .bracket_double4 #match_M4 {transform: translate(600px, 690px);}
+
+    .bracket_double4 #match_M5 {transform: translate(980px, 610px);}
+
+    .bracket_double4 #match_F {transform: translate(1360px, 450px);}
+
 
     .bracket_16 #match_EF1 {transform: translate(94px, 158px);}
     .bracket_16 #match_EF2 {transform: translate(94px, 348px);}
@@ -260,6 +271,11 @@
         <polyline class="separator" points="390,530 650,530 650,490 1520,490" stroke-dasharray="10,5" />
         <text class="bracket_name" transform="translate(1285 475)">Upper Bracket</text>
         <text class="bracket_name" transform="translate(1285 520)">Lower Bracket</text>
+      {{else if eq .BracketType "double4"}}
+        <rect id="bgdouble4" x="180" y="115" width="1500" height="900"/>
+        <polyline class="separator" points="560,560 1280,560" stroke-dasharray="10,5" />
+        <text class="bracket_name" transform="translate(1070 545)">Upper Bracket</text>
+        <text class="bracket_name" transform="translate(1070 590)">Lower Bracket</text>
       {{else}}
         <rect id="bg16" x="70" y="115" width="1780" height="900"/>
         <rect id="bg8" x="417.12" y="115" width="1085.759" height="900"/>
@@ -343,6 +359,39 @@
           </g>
         </g>
       </g>
+    {{else if eq .BracketType "double4"}}
+      <g id="connectors_doubleelim">
+        <g id="connectors_evergreen">
+          <polyline points="425,310 540,310 540,386 600,386"/>
+          <polyline points="425,698 480,698 480,451 600,451"/>
+          <polyline class="loser" points="425,360 510,360 510,746 600,746"/>
+          <polyline class="loser" points="425,720 480,720 480,811 600,811"/>
+          <polyline points="805,418 1320,418 1320,506 1360,506"/>
+          <polyline class="loser" points="805,448 920,448 920,666 980,666"/>
+          <polyline points="805,778 940,778 940,731 980,731"/>
+          <polyline points="1185,698 1320,698 1320,571 1360,571"/>
+        </g>
+        <g id="connectors_temporary">
+          <g id="connector_M1"{{if (index .Matchups "M1").IsActive}} class="active"{{end}}>
+            <text transform="translate(482 305)">W</text>
+            <text transform="translate(485 355)" class="loser">L</text>
+          </g>
+          <g id="connectors_M2"{{if (index .Matchups "M2").IsActive}} class="active"{{end}}>
+            <text transform="translate(450 690)">W</text>
+            <text transform="translate(453 740)" class="loser">L</text>
+          </g>
+          <g id="connectors_M3"{{if (index .Matchups "M3").IsActive}} class="active"{{end}}>
+            <text transform="translate(882 409)">W</text>
+            <text transform="translate(885 469)" class="loser">L</text>
+          </g>
+          <g id="connectors_M4"{{if (index .Matchups "M4").IsActive}} class="active"{{end}}>
+            <text transform="translate(900 770)">W</text>
+          </g>
+          <g id="connectors_M5"{{if (index .Matchups "M5").IsActive}} class="active"{{end}}>
+            <text transform="translate(1280 690)">W</text>
+          </g>
+        </g>
+      </g>
     {{else}}
       <g id="connectors_standardbracket">
         {{if index .Matchups "EF1"}}<polyline class="cb16 st8" points="139,247 325,247 325,342 456,342"/>{{end}}
@@ -386,6 +435,12 @@
         <text x="1405" y="975">Round 5</text>
         <text x="1702" y="975">Finals</text>
         <text id="finals_subtitle" x="1802" y="434">Best-of-3</text>
+      {{else if eq .BracketType "double4"}}
+        <text x="322" y="975">Round 1</text>
+        <text x="702" y="975">Round 2</text>
+        <text x="1082" y="975">Round 3</text>
+        <text x="1462" y="975">Finals</text>
+        <text id="finals_subtitle" x="1565" y="465">Best-of-3</text>
       {{else}}
         <line id="label_underline" x1="663" y1="371" x2="1257" y2="371"/>
         <text id="l_r16" transform="translate(198.7197 964.415)" class="label_16">Round of 16</text>
