@@ -88,12 +88,12 @@ var handleMatchLoad = function (data) {
   setTeamCard("blue", 2, data.Teams["B2"]);
   setTeamCard("blue", 3, data.Teams["B3"]);
 
-  $("#redScoreSummary .team-1").text(data.Teams["R1"]?.Id);
-  $("#redScoreSummary .team-2").text(data.Teams["R2"]?.Id);
-  $("#redScoreSummary .team-3").text(data.Teams["R3"]?.Id);
-  $("#blueScoreSummary .team-1").text(data.Teams["B1"]?.Id);
-  $("#blueScoreSummary .team-2").text(data.Teams["B2"]?.Id);
-  $("#blueScoreSummary .team-3").text(data.Teams["B3"]?.Id);
+  $("#redScoreSummary .team-1").text(data.Teams["R1"]?.Id || "");
+  $("#redScoreSummary .team-2").text(data.Teams["R2"]?.Id || "");
+  $("#redScoreSummary .team-3").text(data.Teams["R3"]?.Id || "");
+  $("#blueScoreSummary .team-1").text(data.Teams["B1"]?.Id || "");
+  $("#blueScoreSummary .team-2").text(data.Teams["B2"]?.Id || "");
+  $("#blueScoreSummary .team-3").text(data.Teams["B3"]?.Id || "");
 };
 
 // Handles a websocket message to update the match status.

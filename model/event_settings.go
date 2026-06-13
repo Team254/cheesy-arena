@@ -51,6 +51,7 @@ type EventSettings struct {
 	TbaEventCode                     string
 	TbaSecretId                      string
 	TbaSecret                        string
+	AutoAudienceDisplayEnabled       bool
 	NexusEnabled                     bool
 	NetworkSecurityEnabled           bool
 	ApAddress                        string

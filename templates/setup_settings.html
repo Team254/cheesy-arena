@@ -498,6 +498,16 @@ UI for configuring event settings.
           </div>
           <div class="tab-pane" id="automation" role="tabpanel">
             <fieldset class="mb-4">
+              <legend>Audience display</legend>
+              <p>Automatically advance audience display to the next match preview after scores are posted.</p>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label" for="autoAudienceDisplayEnabled">Enabled automated audience display</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" name="autoAudienceDisplayEnabled" {{if .AutoAudienceDisplayEnabled}} checked{{end}}>
+                </div>
+              </div>
+            </fieldset>
+            <fieldset class="mb-4">
               <legend>Nexus</legend>
               <p>Automatically populate practice and playoff match lineups from Nexus. Uses the same event code as TBA-
                 configure it on the publishing tab.</p>

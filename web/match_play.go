@@ -380,7 +380,7 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 
 func (web *Web) commitPostAndLoadNextMatch() error {
 	if web.arena.MatchState != field.PostMatch {
-		return fmt.Errorf("Cannot commit match while it is in progress.")
+		return fmt.Errorf("cannot commit match while it is in progress")
 	}
 
 	err := web.commitCurrentMatchScore()
@@ -389,6 +389,9 @@ func (web *Web) commitPostAndLoadNextMatch() error {
 	}
 
 	web.arena.SetAudienceDisplayMode("score")
+	if web.arena.EventSettings.AutoAudienceDisplayEnabled {
+		go web.arena.AutomateAudienceDisplay(web.arena.CurrentMatch)
+	}
 
 	err = web.arena.ResetMatch()
 	if err != nil {

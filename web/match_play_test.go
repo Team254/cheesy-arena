@@ -344,6 +344,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	assert.Equal(t, false, web.arena.AllianceStations["R3"].Bypass)
 
 	// Go through match flow.
+	web.arena.AudienceDisplayMode = "intro"
 	ws.Write("abortMatch", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "cannot abort match")
 	ws.Write("startMatch", nil)
@@ -527,6 +528,8 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	// Should get a few status updates right after connection.
 	readWebsocketMultiple(t, ws, 10)
 
+	web.arena.AudienceDisplayMode = "intro"
+	web.arena.AllianceStationDisplayMode = "blank"
 	web.arena.AllianceStations["R1"].Bypass = true
 	web.arena.AllianceStations["R2"].Bypass = true
 	web.arena.AllianceStations["R3"].Bypass = true
