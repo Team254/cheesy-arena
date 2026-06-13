@@ -104,6 +104,11 @@ func newDriverStationConnection(
 	}
 	log.Printf("Driver station for Team %d connected from %s\n", teamId, ipAddress)
 
+	udpAddr, err := netip.ParseAddr(ipAddress)
+	if err != nil {
+		return nil, err
+	}
+
 	return &DriverStationConnection{
 		TeamId:          teamId,
 		AllianceStation: allianceStation,
