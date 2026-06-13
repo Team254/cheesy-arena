@@ -8,15 +8,16 @@ package field
 import (
 	"errors"
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
 	"io"
 	"log"
 	"net"
 	"net/netip"
 	"strconv"
 	"time"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
 )
 
 // For the old NI DS, tags 24 and 25 are used for the initial connection.
@@ -60,11 +61,8 @@ type DriverStationConnection struct {
 	lastRobotLinkedTime       time.Time
 	packetCount               int
 	tcpConn                   net.Conn
-<<<<<<< HEAD
 	log                       *TeamMatchLog
 	udpSendPacket             [1500]byte
-=======
->>>>>>> team254/main
 	SentGameData              string
 	udpAddrPort               netip.AddrPort
 	newDs                     bool
@@ -382,7 +380,6 @@ func (arena *Arena) listenForDriverStations() {
 }
 
 func (arena *Arena) serveDriverStations(listener net.Listener) {
-<<<<<<< HEAD
 	if tcpAddr, ok := listener.Addr().(*net.TCPAddr); ok {
 		log.Printf("Listening for driver stations on TCP port %d\n", tcpAddr.Port)
 	} else {
@@ -390,8 +387,6 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 	}
 	fullPacket := make([]byte, 1500)
 
-=======
->>>>>>> team254/main
 	for {
 		tcpConn, err := listener.Accept()
 		if err != nil {
@@ -624,12 +619,6 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 	}
 }
 
-<<<<<<< HEAD
-func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int, isNewDs bool) {
-	log.Printf("Handling invalid TCP connection from %v with status %d and station %d", tcpConn.RemoteAddr(), status, station)
-	var assignmentPacket [8]byte
-	sendLength := 8
-=======
 // copyDsReportedStatus preserves the last DS-reported mode bits when the same team reconnects mid-match.
 func (dsConn *DriverStationConnection) copyDsReportedStatus(previousDsConn *DriverStationConnection) {
 	dsConn.DsReportedStatusValid = previousDsConn.DsReportedStatusValid
@@ -655,12 +644,11 @@ func (dsConn *DriverStationConnection) parseDsLogPacket(packet []byte) {
 	dsConn.DsReportedEnabled = !dsConn.DsReportedDisabled
 }
 
-func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {
-	log.Printf(
-		"Handling invalid TCP connection from %v with status %d and station %d", tcpConn.RemoteAddr(), status, station,
-	)
-	var assignmentPacket [5]byte
->>>>>>> team254/main
+func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int, isNewDs bool) {
+	log.Printf("Handling invalid TCP connection from %v with status %d and station %d", tcpConn.RemoteAddr(), status, station)
+	var assignmentPacket [8]byte
+	sendLength := 8
+
 	assignmentPacket[0] = 0  // Packet size
 	assignmentPacket[1] = 6  // Packet size
 	assignmentPacket[2] = 31 // Packet type
@@ -677,12 +665,8 @@ func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int) {
 	_, err := tcpConn.Write(assignmentPacket[:sendLength])
 	if err != nil {
 		log.Printf("Error sending invalid driver station assignment packet: %v", err)
-<<<<<<< HEAD
-		tcpConn.Close()
-=======
 		closeTcpConn(tcpConn, "invalid driver station assignment packet error")
 		return
->>>>>>> team254/main
 	}
 
 	buffer := make([]byte, maxTcpPacketBytes)
