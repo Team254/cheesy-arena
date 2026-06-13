@@ -80,7 +80,7 @@ func driverStationTeamIdFromRemoteAddr(addr net.Addr) (int, string, bool) {
 	return int(ipAddressBytes[1])*100 + int(ipAddressBytes[2]), ipAddress, true
 }
 
-// Opens a UDP connection for communicating to the driver station.
+// Creates a driver station object to represent a new inbound connection.
 func newDriverStationConnection(
 	teamId int,
 	allianceStation string,
@@ -97,12 +97,16 @@ func newDriverStationConnection(
 	if useLiteUdpPort {
 		udpSendPort = driverStationUdpSendPortLite
 	}
+	udpAddr, err := netip.ParseAddr(ipAddress)
+	if err != nil {
+		return nil, err
+	}
 
 	return &DriverStationConnection{
 		TeamId:          teamId,
 		AllianceStation: allianceStation,
 		tcpConn:         tcpConn,
-		udpAddrPort:     netip.MustParseAddrPort(fmt.Sprintf("%s:%d", ipAddress, udpSendPort)),
+		udpAddrPort:     netip.AddrPortFrom(udpAddr, uint16(udpSendPort)),
 	}, nil
 }
 

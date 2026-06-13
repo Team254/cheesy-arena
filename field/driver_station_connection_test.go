@@ -310,6 +310,25 @@ func TestNewDriverStationConnection_UdpPortSelection(t *testing.T) {
 	assert.Contains(t, dsConnLite.udpAddrPort.String(), fmt.Sprintf(":%d", driverStationUdpSendPortLite))
 }
 
+func TestNewDriverStationConnection_Ipv6Address(t *testing.T) {
+	clientConn, serverConn := net.Pipe()
+	defer serverConn.Close()
+	tcpConn := fakeRemoteAddrConn{
+		Conn: clientConn,
+		remoteAddr: &net.TCPAddr{
+			IP:   net.ParseIP("::1"),
+			Port: 1750,
+		},
+	}
+	defer tcpConn.Close()
+
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
+	assert.Nil(t, err)
+	defer dsConn.close()
+	assert.Equal(t, "::1", dsConn.udpAddrPort.Addr().String())
+	assert.Equal(t, uint16(driverStationUdpSendPort), dsConn.udpAddrPort.Port())
+}
+
 func setupFakeTcpConnection(t *testing.T) net.Conn {
 	// Set up a fake TCP endpoint and connection to it.
 	l, err := net.Listen("tcp", "127.0.0.1:0")
@@ -318,6 +337,15 @@ func setupFakeTcpConnection(t *testing.T) net.Conn {
 	tcpConn, err := net.Dial("tcp", l.Addr().String())
 	assert.Nil(t, err)
 	return tcpConn
+}
+
+type fakeRemoteAddrConn struct {
+	net.Conn
+	remoteAddr net.Addr
+}
+
+func (conn fakeRemoteAddrConn) RemoteAddr() net.Addr {
+	return conn.remoteAddr
 }
 
 func startTestDriverStationServer(t *testing.T, arena *Arena) string {
