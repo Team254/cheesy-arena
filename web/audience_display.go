@@ -34,7 +34,7 @@ func (web *Web) audienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 		MatchSounds []*game.MatchSound
-	}{web.arena.EventSettings, game.MatchSounds}
+	}{web.arena.EventSettings, game.UniqueMatchSounds()}
 	err = template.ExecuteTemplate(w, "audience_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
@@ -56,7 +56,7 @@ func (web *Web) audienceDisplayWebsocketHandler(w http.ResponseWriter, r *http.R
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
 	ws.HandleNotifiers(

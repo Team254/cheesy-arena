@@ -59,7 +59,7 @@ func TestWallDisplayWebsocket(t *testing.T) {
 	web.arena.StartMatch()
 	web.arena.Update()
 	web.arena.Update()
-	messages := readWebsocketMultiple(t, ws, 2)
+	messages := readWebsocketMultiple(t, ws, 3)
 	screen, ok := messages["audienceDisplayMode"]
 	if assert.True(t, ok) {
 		assert.Equal(t, "match", screen)

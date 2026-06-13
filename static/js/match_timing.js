@@ -12,15 +12,18 @@ const matchTypePlayoff = 3;
 const matchStates = {
   0: "PRE_MATCH",
   1: "START_MATCH",
-  2: "WARMUP_PERIOD",
-  3: "AUTO_PERIOD",
-  4: "PAUSE_PERIOD",
-  5: "TELEOP_PERIOD",
-  6: "POST_MATCH",
-  7: "TIMEOUT_ACTIVE",
-  8: "POST_TIMEOUT"
+  2: "AUTO_PERIOD",
+  3: "PAUSE_PERIOD",
+  4: "TELEOP_PERIOD",
+  5: "POST_MATCH",
+  6: "TIMEOUT_ACTIVE",
+  7: "POST_TIMEOUT"
 };
 let matchTiming;
+
+const getTeleopDurationSec = function () {
+  return matchTiming.TransitionShiftDurationSec + 4 * matchTiming.ShiftDurationSec + matchTiming.EndgameDurationSec;
+};
 
 // Handles a websocket message containing the length of each period in the match.
 const handleMatchTiming = function (data) {
@@ -36,9 +39,6 @@ const translateMatchTime = function (data, callback) {
       matchStateText = "PRE-MATCH";
       break;
     case "START_MATCH":
-    case "WARMUP_PERIOD":
-      matchStateText = "WARMUP";
-      break;
     case "AUTO_PERIOD":
       matchStateText = "AUTONOMOUS";
       break;
@@ -64,13 +64,11 @@ const getCountdown = function (matchState, matchTimeSec) {
   switch (matchStates[matchState]) {
     case "PRE_MATCH":
     case "START_MATCH":
-    case "WARMUP_PERIOD":
       return matchTiming.AutoDurationSec;
     case "AUTO_PERIOD":
-      return matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec - matchTimeSec;
+      return matchTiming.AutoDurationSec - matchTimeSec;
     case "TELEOP_PERIOD":
-      return matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec + matchTiming.TeleopDurationSec +
-        matchTiming.PauseDurationSec - matchTimeSec;
+      return matchTiming.AutoDurationSec + getTeleopDurationSec() + matchTiming.PauseDurationSec - matchTimeSec;
     case "TIMEOUT_ACTIVE":
       return matchTiming.TimeoutDurationSec - matchTimeSec;
     default:

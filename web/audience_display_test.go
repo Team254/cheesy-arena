@@ -4,6 +4,8 @@
 package web
 
 import (
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
@@ -25,6 +27,7 @@ func TestAudienceDisplay(t *testing.T) {
 	)
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Audience Display - Untitled Event - Cheesy Arena")
+	assert.Contains(t, recorder.Body.String(), "finalTiebreakReason")
 }
 
 func TestAudienceDisplayWebsocket(t *testing.T) {
@@ -60,7 +63,7 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	web.arena.StartMatch()
 	web.arena.Update()
 	web.arena.Update()
-	messages := readWebsocketMultiple(t, ws, 3)
+	messages := readWebsocketMultiple(t, ws, 4)
 	screen, ok := messages["audienceDisplayMode"]
 	if assert.True(t, ok) {
 		assert.Equal(t, "match", screen)
@@ -71,10 +74,26 @@ func TestAudienceDisplayWebsocket(t *testing.T) {
 	}
 	_, ok = messages["matchTime"]
 	assert.True(t, ok)
+	_, ok = messages["realtimeScore"]
+	assert.True(t, ok)
 	web.arena.RealtimeScoreNotifier.Notify()
 	readWebsocketType(t, ws, "realtimeScore")
+	web.arena.SavedMatch = &model.Match{
+		Status:              game.RedWonMatch,
+		UseTiebreakCriteria: true,
+	}
+	web.arena.SavedMatchResult = &model.MatchResult{
+		RedScore: &game.Score{},
+		BlueScore: &game.Score{
+			AutoTowerStatuses: [3]game.TowerStatus{game.TowerLevel1},
+			Fouls:             []game.Foul{{FoulId: 1, IsMajor: true}},
+		},
+		RedCards:  map[string]string{},
+		BlueCards: map[string]string{},
+	}
 	web.arena.ScorePostedNotifier.Notify()
-	readWebsocketType(t, ws, "scorePosted")
+	scorePosted := readWebsocketType(t, ws, "scorePosted").(map[string]any)
+	assert.Equal(t, "TIEBREAK: MAJOR FOULS", scorePosted["TiebreakReason"])
 
 	// Test other overlays.
 	web.arena.AllianceSelectionNotifier.Notify()

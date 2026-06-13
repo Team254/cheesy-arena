@@ -11,12 +11,84 @@ import (
 )
 
 // Creates a double-elimination bracket and returns the root matchup comprising the tournament finals along with
-// scheduled breaks. Only supports having exactly eight alliances.
+// scheduled breaks. Only supports having exactly four or eight alliances.
 func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error) {
-	if numAlliances != 8 {
-		return nil, nil, fmt.Errorf("double-elimination bracket must have exactly 8 alliances")
+	switch numAlliances {
+	case 4:
+		return newFourAllianceDoubleEliminationBracket()
+	case 8:
+		return newEightAllianceDoubleEliminationBracket()
+	default:
+		return nil, nil, fmt.Errorf("double-elimination bracket must have exactly 4 or 8 alliances")
+	}
+}
+
+// Creates a four-alliance double-elimination bracket.
+func newFourAllianceDoubleEliminationBracket() (*Matchup, []breakSpec, error) {
+	// Define Round 1 matches.
+	m1 := Matchup{
+		id:                 "M1",
+		NumWinsToAdvance:   1,
+		redAllianceSource:  allianceSelectionSource{1},
+		blueAllianceSource: allianceSelectionSource{4},
+		matchSpecs:         newDoubleEliminationMatch(1, "Round 1 Upper", 540),
+	}
+	m2 := Matchup{
+		id:                 "M2",
+		NumWinsToAdvance:   1,
+		redAllianceSource:  allianceSelectionSource{2},
+		blueAllianceSource: allianceSelectionSource{3},
+		matchSpecs:         newDoubleEliminationMatch(2, "Round 1 Upper", 540),
 	}
 
+	// Define Round 2 matches.
+	m3 := Matchup{
+		id:                 "M3",
+		NumWinsToAdvance:   1,
+		redAllianceSource:  matchupSource{matchup: &m1, useWinner: true},
+		blueAllianceSource: matchupSource{matchup: &m2, useWinner: true},
+		matchSpecs:         newDoubleEliminationMatch(3, "Round 2 Upper", 540),
+	}
+	m4 := Matchup{
+		id:                 "M4",
+		NumWinsToAdvance:   1,
+		redAllianceSource:  matchupSource{matchup: &m1, useWinner: false},
+		blueAllianceSource: matchupSource{matchup: &m2, useWinner: false},
+		matchSpecs:         newDoubleEliminationMatch(4, "Round 2 Lower", 540),
+	}
+
+	// Define Round 3 matches.
+	m5 := Matchup{
+		id:                 "M5",
+		NumWinsToAdvance:   1,
+		redAllianceSource:  matchupSource{matchup: &m3, useWinner: false},
+		blueAllianceSource: matchupSource{matchup: &m4, useWinner: true},
+		matchSpecs:         newDoubleEliminationMatch(5, "Round 3 Lower", 300),
+	}
+
+	// Define final matches.
+	final := Matchup{
+		id:                 "F",
+		NumWinsToAdvance:   2,
+		redAllianceSource:  matchupSource{matchup: &m3, useWinner: true},
+		blueAllianceSource: matchupSource{matchup: &m5, useWinner: true},
+		matchSpecs:         newFinalMatches(6),
+	}
+
+	// Define scheduled breaks.
+	breakSpecs := []breakSpec{
+		{3, 900, "Field Break"},
+		{5, 900, "Awards Break"},
+		{6, 900, "Awards Break"},
+		{7, 900, "Awards Break"},
+		{8, 900, "Awards Break *"},
+	}
+
+	return &final, breakSpecs, nil
+}
+
+// Creates an eight-alliance double-elimination bracket.
+func newEightAllianceDoubleEliminationBracket() (*Matchup, []breakSpec, error) {
 	// Define Round 1 matches.
 	m1 := Matchup{
 		id:                 "M1",
@@ -134,7 +206,7 @@ func newDoubleEliminationBracket(numAlliances int) (*Matchup, []breakSpec, error
 		{13, 900, "Awards Break"},
 		{14, 900, "Awards Break"},
 		{15, 900, "Awards Break"},
-		{16, 900, "Awards Break"},
+		{16, 900, "Awards Break *"},
 	}
 
 	return &final, breakSpecs, nil

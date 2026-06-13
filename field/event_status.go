@@ -8,6 +8,7 @@ package field
 import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
+	"log"
 	"math"
 	"time"
 )
@@ -82,7 +83,11 @@ func (arena *Arena) getEarlyLateMessage() string {
 		minutesLate = currentMatch.StartedAt.Sub(currentMatch.Time).Minutes()
 	} else {
 		// We need to check the adjacent matches to accurately determine lateness.
-		matches, _ := arena.Database.GetMatchesByType(currentMatch.Type, false)
+		matches, err := arena.Database.GetMatchesByType(currentMatch.Type, false)
+		if err != nil {
+			log.Printf("Failed to get matches while calculating early/late message: %v", err)
+			return ""
+		}
 
 		previousMatchIndex := -1
 		nextMatchIndex := len(matches)

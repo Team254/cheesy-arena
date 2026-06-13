@@ -246,7 +246,10 @@ func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Reque
 	for _, team := range teams {
 		if len(team.WpaKey) == 0 || generateAllKeys {
 			team.WpaKey = uniuri.NewLen(wpaKeyLength)
-			web.arena.Database.UpdateTeam(&team)
+			if err := web.arena.Database.UpdateTeam(&team); err != nil {
+				handleWebErr(w, err)
+				return
+			}
 		}
 	}
 
@@ -256,7 +259,10 @@ func (web *Web) teamsGenerateWpaKeysHandler(w http.ResponseWriter, r *http.Reque
 // Returns the current TBA team data download progress.
 func (web *Web) teamsUpdateProgressBarHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
-	_, _ = w.Write([]byte(fmt.Sprintf("%.0f", progressPercentage)))
+	if _, err := w.Write([]byte(fmt.Sprintf("%.0f", progressPercentage))); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }
 
 func (web *Web) renderTeams(w http.ResponseWriter, r *http.Request, showErrorMessage bool) {

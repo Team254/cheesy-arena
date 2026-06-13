@@ -27,16 +27,26 @@ func _() {
 	_ = x[blueConnected1-16]
 	_ = x[blueConnected2-17]
 	_ = x[blueConnected3-18]
-	_ = x[inputCount-19]
+	_ = x[ftaReady-19]
+	_ = x[redHubSensor1-20]
+	_ = x[redHubSensor2-21]
+	_ = x[redHubSensor3-22]
+	_ = x[redHubSensor4-23]
+	_ = x[blueHubSensor1-24]
+	_ = x[blueHubSensor2-25]
+	_ = x[blueHubSensor3-26]
+	_ = x[blueHubSensor4-27]
+	_ = x[inputCount-28]
 }
 
-const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3inputCount"
+const _input_name = "fieldEStopred1EStopred1AStopred2EStopred2AStopred3EStopred3AStopblue1EStopblue1AStopblue2EStopblue2AStopblue3EStopblue3AStopredConnected1redConnected2redConnected3blueConnected1blueConnected2blueConnected3ftaReadyredHubSensor1redHubSensor2redHubSensor3redHubSensor4blueHubSensor1blueHubSensor2blueHubSensor3blueHubSensor4inputCount"
 
-var _input_index = [...]uint8{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 215}
+var _input_index = [...]uint16{0, 10, 19, 28, 37, 46, 55, 64, 74, 84, 94, 104, 114, 124, 137, 150, 163, 177, 191, 205, 213, 226, 239, 252, 265, 279, 293, 307, 321, 331}
 
 func (i input) String() string {
-	if i < 0 || i >= input(len(_input_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_input_index)-1 {
 		return "input(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _input_name[_input_index[i]:_input_index[i+1]]
+	return _input_name[_input_index[idx]:_input_index[idx+1]]
 }

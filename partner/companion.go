@@ -85,7 +85,11 @@ func (client *CompanionClient) sendCommand(command string) {
 		log.Printf("Failed to connect to Companion at %s: %v", address, err)
 		return
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.Printf("Failed to close Companion connection at %s: %v", address, err)
+		}
+	}()
 
 	_, err = fmt.Fprint(conn, command)
 	if err != nil {
