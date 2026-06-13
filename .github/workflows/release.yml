@@ -7,7 +7,7 @@ jobs:
   create_release:
     runs-on: ubuntu-latest
     env:
-      ASSET_FILES: LICENSE README.md access_point_config.tar.gz fix_avatar_colors_for_overlay font schedules static
+      ASSET_FILES: LICENSE README.md fix_avatar_colors_for_overlay font schedules static
         switch_config.txt templates tunnel
     steps:
       - name: Install Go
