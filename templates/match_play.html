@@ -57,11 +57,7 @@ UI for controlling match play and viewing team connection and field status.
       </button>
       <button type="button" id="commitResults" class="btn btn-primary btn-match-play ms-1"
         onclick="confirmCommit();" disabled>
-        Commit Results
-      </button>
-      <button type="button" id="showFinalScore" class="btn btn-info btn-match-play ms-1"
-        onclick="showFinalScore();" disabled>
-        Show Final Score
+        Commit &amp; Post
       </button>
     </div>
     <div class="row justify-content-center mt-1">
@@ -218,8 +214,8 @@ UI for controlling match play and viewing team connection and field status.
       <div class="modal-footer">
         <form class="form-horizontal" action="/setup/teams/clear" method="POST">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-danger" onclick="commitResults();" data-bs-dismiss="modal">
-            Commit Results
+          <button type="button" class="btn btn-danger" onclick="commitAndPost();" data-bs-dismiss="modal">
+            Commit &amp; post
           </button>
         </form>
       </div>

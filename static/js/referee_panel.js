@@ -6,6 +6,7 @@
 var websocket;
 let redFoulsHashCode = 0;
 let blueFoulsHashCode = 0;
+let scoreIsReady = false;
 
 // Sends the foul to the server to add it to the list.
 const addFoul = function (alliance, isMajor) {
@@ -61,9 +62,19 @@ var signalReset = function () {
   websocket.send("signalReset");
 };
 
-// Signals the scorekeeper that foul entry is complete for this match.
-var commitMatch = function () {
-  websocket.send("commitMatch");
+// Shows confirmation modal if not all scores are ready, otherwise directly commits and posts.
+var confirmCommit = function () {
+  if (scoreIsReady) {
+    commitAndPost();
+    return;
+  }
+
+  $("#confirmCommit").modal("show");
+};
+
+// Commits the score and posts results to the audience.
+var commitAndPost = function () {
+  websocket.send("commitAndPost");
 };
 
 // Handles a websocket message to update the teams for the current match.
@@ -77,12 +88,12 @@ var handleMatchLoad = function (data) {
   setTeamCard("blue", 2, data.Teams["B2"]);
   setTeamCard("blue", 3, data.Teams["B3"]);
 
-  $("#redScoreSummary .team-1").text(data.Teams["R1"].Id);
-  $("#redScoreSummary .team-2").text(data.Teams["R2"].Id);
-  $("#redScoreSummary .team-3").text(data.Teams["R3"].Id);
-  $("#blueScoreSummary .team-1").text(data.Teams["B1"].Id);
-  $("#blueScoreSummary .team-2").text(data.Teams["B2"].Id);
-  $("#blueScoreSummary .team-3").text(data.Teams["B3"].Id);
+  $("#redScoreSummary .team-1").text(data.Teams["R1"]?.Id);
+  $("#redScoreSummary .team-2").text(data.Teams["R2"]?.Id);
+  $("#redScoreSummary .team-3").text(data.Teams["R3"]?.Id);
+  $("#blueScoreSummary .team-1").text(data.Teams["B1"]?.Id);
+  $("#blueScoreSummary .team-2").text(data.Teams["B2"]?.Id);
+  $("#blueScoreSummary .team-3").text(data.Teams["B3"]?.Id);
 };
 
 // Handles a websocket message to update the match status.
@@ -143,6 +154,16 @@ const handleScoringStatus = function (data) {
   }
   updateScoreStatus(data, "red", "#redScoreStatus", "Red");
   updateScoreStatus(data, "blue", "#blueScoreStatus", "Blue");
+
+  scoreIsReady = Object.values(data.PositionStatuses).every(status => status.Ready);
+
+  // Make the button visually distinct if not all refs have committed.
+  // HR can still press the button with confirm modal.
+  if (scoreIsReady) {
+    $("#commitButton").removeClass("disabled");
+  } else {
+    $("#commitButton").addClass("disabled");
+  }
 }
 
 // Helper function to update a badge that shows scoring panel commit status.

@@ -357,7 +357,7 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	ws.Write("startMatch", nil)
 	readWebsocketType(t, ws, "eventStatus")
 	assert.Equal(t, field.StartMatch, web.arena.MatchState)
-	ws.Write("commitResults", nil)
+	ws.Write("commitAndPost", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "cannot commit match while it is in progress")
 	ws.Write("discardResults", nil)
 	assert.Contains(t, readWebsocketError(t, ws), "cannot reset match while it is in progress")
@@ -370,8 +370,10 @@ func TestMatchPlayWebsocketCommands(t *testing.T) {
 	web.arena.BlueRealtimeScore.CurrentScore.AutoTowerStatuses = [3]game.TowerStatus{
 		game.TowerLevel1, game.TowerNone, game.TowerNone,
 	}
-	ws.Write("commitResults", nil)
-	readWebsocketMultiple(t, ws, 5) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus
+	ws.Write("commitAndPost", nil)
+	readWebsocketMultiple(
+		t, ws, 6,
+	) // scorePosted, matchLoad, realtimeScore, allianceStationDisplayMode, scoringStatus, audienceDisplayMode
 	assert.Equal(
 		t,
 		[3]game.TowerStatus{game.TowerLevel1, game.TowerLevel2, game.TowerNone},
@@ -533,7 +535,9 @@ func TestMatchPlayWebsocketNotifications(t *testing.T) {
 	web.arena.AllianceStations["B3"].Bypass = true
 	assert.Nil(t, web.arena.StartMatch())
 	web.arena.Update()
-	messages := readWebsocketTypes(t, ws, 8, "matchTime", "audienceDisplayMode", "allianceStationDisplayMode", "eventStatus")
+	messages := readWebsocketTypes(
+		t, ws, 8, "matchTime", "audienceDisplayMode", "allianceStationDisplayMode", "eventStatus",
+	)
 	_, ok := messages["matchTime"]
 	assert.True(t, ok)
 	_, ok = messages["audienceDisplayMode"]

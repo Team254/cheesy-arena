@@ -288,22 +288,8 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			web.arena.SignalVolunteers()
 		case "signalReset":
 			web.arena.SignalReset()
-		case "commitResults":
-			if web.arena.MatchState != field.PostMatch {
-				writeWebsocketError(ws, "cannot commit match while it is in progress")
-				continue
-			}
-			err = web.commitCurrentMatchScore()
-			if err != nil {
-				writeWebsocketError(ws, err.Error())
-				continue
-			}
-			err = web.arena.ResetMatch()
-			if err != nil {
-				writeWebsocketError(ws, err.Error())
-				continue
-			}
-			err = web.arena.LoadNextMatch(true)
+		case "commitAndPost":
+			err = web.commitPostAndLoadNextMatch()
 			if err != nil {
 				writeWebsocketError(ws, err.Error())
 				continue
@@ -390,6 +376,26 @@ func (web *Web) matchPlayWebsocketHandler(w http.ResponseWriter, r *http.Request
 			writeWebsocketError(ws, fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}
 	}
+}
+
+func (web *Web) commitPostAndLoadNextMatch() error {
+	if web.arena.MatchState != field.PostMatch {
+		return fmt.Errorf("Cannot commit match while it is in progress.")
+	}
+
+	err := web.commitCurrentMatchScore()
+	if err != nil {
+		return err
+	}
+
+	web.arena.SetAudienceDisplayMode("score")
+
+	err = web.arena.ResetMatch()
+	if err != nil {
+		return err
+	}
+
+	return web.arena.LoadNextMatch(true)
 }
 
 // Saves the given match and result to the database, supplanting any previous result for the match.
