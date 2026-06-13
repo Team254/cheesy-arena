@@ -28,8 +28,8 @@ import (
 // UDP port for the FMS to reply to.
 const (
 	driverStationTcpListenPort      = 1750
-	driverStationRoboRioUdpPortLite = 1120
 	driverStationRoboRioUdpPort     = 1121
+	driverStationRoboRioUdpPortLite = 1120
 	driverStationUdpReceivePort     = 1160
 	driverStationTcpLinkTimeoutSec  = 5
 	driverStationUdpLinkTimeoutSec  = 1
