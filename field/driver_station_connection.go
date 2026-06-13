@@ -61,7 +61,6 @@ type DriverStationConnection struct {
 	lastRobotLinkedTime       time.Time
 	packetCount               int
 	tcpConn                   net.Conn
-	log                       *TeamMatchLog
 	udpSendPacket             [1500]byte
 	SentGameData              string
 	udpAddrPort               netip.AddrPort
