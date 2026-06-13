@@ -211,7 +211,7 @@ func (web *Web) arenaWebsocketApiHandler(w http.ResponseWriter, r *http.Request)
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
 	ws.HandleNotifiers(web.arena.MatchTimingNotifier, web.arena.MatchLoadNotifier, web.arena.MatchTimeNotifier)
@@ -294,7 +294,9 @@ func (web *Web) generateBracketSvg(w io.Writer, activeMatch *model.Match) error 
 
 	bracketType := "double"
 	numAlliances := web.arena.EventSettings.NumPlayoffAlliances
-	if web.arena.EventSettings.PlayoffType == model.SingleEliminationPlayoff {
+	if web.arena.EventSettings.PlayoffType == model.DoubleEliminationPlayoff && numAlliances == 4 {
+		bracketType = "double4"
+	} else if web.arena.EventSettings.PlayoffType == model.SingleEliminationPlayoff {
 		if numAlliances > 8 {
 			bracketType = "16"
 		} else if numAlliances > 4 {

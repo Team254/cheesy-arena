@@ -21,10 +21,8 @@ UI for entering and tracking fouls and red/yellow cards.
       {{end}}
     </div>
     <div id="scoringStatuses">
-      <div class="scoring-status" id="redNearScoreStatus"></div>
-      <div class="scoring-status" id="redFarScoreStatus"></div>
-      <div class="scoring-status" id="blueNearScoreStatus"></div>
-      <div class="scoring-status" id="blueFarScoreStatus"></div>
+      <div class="scoring-status" id="redScoreStatus"></div>
+      <div class="scoring-status" id="blueScoreStatus"></div>
     </div>
   </div>
   <div id="fouls">
@@ -46,7 +44,28 @@ UI for entering and tracking fouls and red/yellow cards.
 <div id="controlButtons" class="headRef-dependent">
   <div class="control-button" id="volunteerButton" onclick="signalVolunteers();">Signal Count</div>
   <div class="control-button" id="resetButton" onclick="signalReset();">Signal Reset</div>
-  <div class="control-button" id="commitButton" onclick="commitMatch();">Commit Match</div>
+  <div class="control-button" id="commitButton" onclick="confirmCommit();">Commit & Post</div>
+</div>
+<div id="confirmCommit" class="modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="confirmDisableTitle">Scores not committed</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to commit and post without all scoring tablets having committed?
+      </div>
+      <div class="modal-footer">
+        <form class="form-horizontal">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary ms-2" onclick="commitAndPost();" data-bs-dismiss="modal">
+            Commit & Post
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 {{end}}
 {{define "head"}}
@@ -69,30 +88,14 @@ UI for entering and tracking fouls and red/yellow cards.
   <div class="team-2">0</div>
   <div class="team-3">0</div>
 
-  <div class="label">Leave</div>
-  <div class="leave-symbol team-1-leave">❌</div>
-  <div class="leave-symbol team-2-leave">❌</div>
-  <div class="leave-symbol team-3-leave">❌</div>
+  <div class="label">Auto Tower</div>
+  <div class="tower-status team-1-auto-tower" data-status="0">None</div>
+  <div class="tower-status team-2-auto-tower" data-status="0">None</div>
+  <div class="tower-status team-3-auto-tower" data-status="0">None</div>
 
-  <div class="label">Endgame</div>
-  <div class="team-1-endgame">None</div>
-  <div class="team-2-endgame">None</div>
-  <div class="team-3-endgame">None</div>
-
-  <div class="label">Coral</div>
-  <div class="wide-row">
-    <span class="coral-l1">0</span> / <span class="coral-l2">0</span> / <span class="coral-l3">0</span> /
-    <span class="coral-l4">0</span>
-    <br />
-    <span style="color: yellow">
-      <span class="coral-l1-auto">0</span> / <span class="coral-l2-auto">0</span> / <span class="coral-l3-auto">0</span> /
-      <span class="coral-l4-auto">0</span>
-    </span>
-  </div>
-
-  <div class="label">Algae</div>
-  <div class="wide-row">
-    <span class="processor">0</span> / <span class="barge">0</span>
-  </div>
+  <div class="label">Endgame Tower</div>
+  <div class="tower-status team-1-endgame-tower" data-status="0">None</div>
+  <div class="tower-status team-2-endgame-tower" data-status="0">None</div>
+  <div class="tower-status team-3-endgame-tower" data-status="0">None</div>
 </div>
 {{end}}

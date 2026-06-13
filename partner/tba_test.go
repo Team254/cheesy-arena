@@ -168,6 +168,19 @@ func TestPublishingErrors(t *testing.T) {
 	assert.NotNil(t, client.PublishAlliances(database))
 }
 
+func TestCheckTbaPostResponseClosesBody(t *testing.T) {
+	body := &closeTrackingBody{Reader: strings.NewReader("ok")}
+	err := checkTbaPostResponse(&http.Response{StatusCode: 200, Body: body})
+	assert.Nil(t, err)
+	assert.True(t, body.closed)
+
+	body = &closeTrackingBody{Reader: strings.NewReader("oh noes")}
+	err = checkTbaPostResponse(&http.Response{StatusCode: 500, Body: body})
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "Got status code 500 from TBA: oh noes")
+	assert.True(t, body.closed)
+}
+
 func TestPublishAwards(t *testing.T) {
 	database := setupTestDb(t)
 
@@ -199,4 +212,14 @@ func TestPublishAwards(t *testing.T) {
 
 func setupTestDb(t *testing.T) *model.Database {
 	return model.SetupTestDb(t)
+}
+
+type closeTrackingBody struct {
+	*strings.Reader
+	closed bool
+}
+
+func (body *closeTrackingBody) Close() error {
+	body.closed = true
+	return nil
 }

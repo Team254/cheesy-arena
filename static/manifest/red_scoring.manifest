@@ -1,5 +1,5 @@
 {
-  "name": "Red Near Scoring",
+  "name": "Red Scoring",
   "icons": [
     {
       "src": "/static/img/panel-icon.png",
@@ -7,8 +7,8 @@
       "sizes": "512x512"
     }
   ],
-  "scope": "/panels/scoring/red_near",
-  "start_url": "/panels/scoring/red_near",
+  "scope": "/panels/scoring/red",
+  "start_url": "/panels/scoring/red",
   "display": "standalone",
   "orientation": "landscape"
 }

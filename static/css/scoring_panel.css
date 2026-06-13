@@ -85,13 +85,6 @@
   --interaction-highlight: #abaeb21a;
 }
 
-:root {
-  /* Game-specific color scheme */
-  --coral: var(--gray-100);
-  --coral-auto: var(--auto-action);
-  --reef-pole: var(--purple-400);
-}
-
 /* Specialize color scheme for the current alliance */
 :root [data-alliance="red"] {
   --alliance-action: var(--red-action);
@@ -227,39 +220,48 @@ header:has(.banner-title) {
 main {
   width: 100%;
   flex: 1;
-  padding-bottom: 10px;
+  padding: 12px 18px 18px 18px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
 }
 
-#top-controls {
-  height: 90px;
-  padding: 10px 0;
+#tower-controls {
+  flex: 1 1 0%;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
 }
 
-#auto-controls,
-#endgame-controls {
-  height: 100%;
-  flex: 3 3 0%;
-  padding: 0em 1em;
+.tower-section {
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tower-section h1 {
+  margin: 0;
+  color: var(--text-active);
+  font-size: 20pt;
+  font-weight: bold;
+}
+
+.tower-team-controls {
+  flex: 1 1 0%;
+  min-height: 0;
   display: flex;
   justify-content: space-evenly;
-  gap: 1em;
+  gap: 18px;
 }
 
-#bottom-controls {
-  padding: 10px 1em;
+#panel-actions {
+  height: 88px;
   display: flex;
-  justify-content: space-around;
-}
-
-#l1-total {
-  margin-top: 10px;
-  color: var(--text-active);
-  font-size: 18pt;
-  font-weight: bold;
+  gap: 18px;
+  justify-content: center;
 }
 
 #commit {
@@ -277,277 +279,63 @@ main {
   visibility: hidden;
 }
 
-.team-button {
+.tower-input {
   border-radius: var(--button-border-radius);
   color: var(--text-active);
   overflow: clip;
   flex: 1 1 0%;
   height: 100%;
-  font-size: 16pt;
-
-  --button-top-color: var(--alliance-action);
-  --button-bottom-default-color: var(--neutral-action);
-  --button-bottom-selected-color: var(--alliance-highlight);
-}
-
-.team-button:disabled {
-  --button-top-color: var(--alliance-inactive);
-  --button-bottom-default-color: var(--neutral-inactive);
-  --button-bottom-selected-color: var(--alliance-highlight);
-}
-
-.team-button .team-num {
-  height: 50%;
-  align-content: center;
-  padding: 0 0.2em;
-  background-color: var(--button-top-color);
-}
-
-.team-button .team-text {
-  height: 50%;
-  align-content: center;
-  padding: 0 0.2em;
-  background-color: var(--button-bottom-default-color);
-}
-
-.team-button[data-selected="true"] .team-text {
-  background-color: var(--button-bottom-selected-color);
-}
-
-.reef-image {
-  --l4-coral-display: none;
-  --l4-coral-auto-display: none;
-  --l3-coral-display: none;
-  --l3-coral-auto-display: none;
-  --l2-coral-display: none;
-  --l2-coral-auto-display: none;
-}
-
-[data-l4-scored="true"] .reef-image {
-  --l4-coral-display: auto;
-}
-
-[data-l4-auto-scored="true"] .reef-image {
-  --l4-coral-auto-display: auto;
-}
-
-[data-l3-scored="true"] .reef-image {
-  --l3-coral-display: auto;
-}
-
-[data-l3-auto-scored="true"] .reef-image {
-  --l3-coral-auto-display: auto;
-}
-
-[data-l2-scored="true"] .reef-image {
-  --l2-coral-display: auto;
-}
-
-[data-l2-auto-scored="true"] .reef-image {
-  --l2-coral-auto-display: auto;
-}
-
-#reef-controls {
-  flex: 1 1 0%;
-  contain: layout;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  gap: 10px;
-}
-
-#reef-controls-warning {
-  position: absolute;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-}
-
-[data-scoring-auto="true"][data-in-teleop="true"] #reef-controls-warning {
-  opacity: 1;
-  transition: opacity 0.2s ease-in-out;
-}
-
-.reef-column {
-  height: 100%;
-  flex-grow: 1;
-  max-width: 200px;
-  container-type: size;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-.reef-column-contents {
-  contain: layout;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-@container (aspect-ratio < 0.25) {
-  .reef-column-contents {
-    aspect-ratio: 1 / 4;
-  }
-}
-
-@container (aspect-ratio >=0.25) {
-  .reef-column-contents {
-    height: 100%;
-  }
-}
-
-.reef-column .reef-image {
-  position: absolute;
-  height: 100%;
-}
-
-.reef-column:nth-of-type(-n + 3) .reef-image {
-  transform: scale(-1, 1);
-}
-
-.reef-column button {
-  width: 100%;
-  flex: 1 1 0%;
-  z-index: 1;
-  background: none;
-}
-
-.reef-column button:enabled {
-  background-color: var(--interaction-highlight);
-}
-
-#edit-auto {
-  flex: 1 1 0%;
-  border-radius: var(--button-border-radius);
-  color: var(--text-active-dark);
-  height: 100%;
-  background-color: var(--auto-action);
-  font-size: 18pt;
-  font-weight: bold;
-  padding: 0.2em;
-}
-
-#edit-auto:disabled {
-  visibility: hidden;
-}
-
-[data-scoring-auto="true"] #edit-auto {
-  background-color: var(--green-action);
-  color: var(--text-active);
-}
-
-.counter-wrapper {
-  flex: 3 3 0%;
-  display: flex;
-  justify-content: center;
-}
-
-.counter {
-  height: 90px;
-  max-width: 400px;
-  width: 100%;
-  margin: 0 10px;
-  border-radius: var(--button-border-radius);
-  overflow: clip;
-  display: flex;
-}
-
-.counter:has(button:enabled) {
-  color: var(--text-active-dark);
-  box-shadow: black 0px 4px 4px;
-}
-
-.counter:not(:has(button:enabled)) {
-  color: var(--text-inactive-dark);
-}
-
-.counter button {
-  flex: 1 1 0%;
-  color: var(--text-active);
+  gap: 8px;
   background-color: var(--alliance-action);
-  font-size: 24pt;
+  padding: 8px;
+}
+
+.tower-input .team-num {
+  flex: 1 1 0%;
+  min-height: 38px;
+  align-content: center;
+  padding: 0 0.2em;
+  border-radius: var(--button-border-radius);
+  background-color: var(--alliance-highlight);
+  color: var(--text-active);
+  font-size: clamp(20pt, 6vh, 36pt);
   font-weight: bold;
-  display: grid;
-  place-items: center;
-  z-index: 1;
-  padding: 0.2em;
 }
 
-.counter button:enabled:not(:active) {
-  box-shadow: black 0px 0px 4px;
+.tower-input-button {
+  flex: 1 1 0%;
+  min-height: 0;
+  align-content: center;
+  border-radius: var(--button-border-radius);
+  padding: 0 0.2em;
+  background-color: var(--neutral-action);
+  color: var(--text-active);
+  font-size: clamp(14pt, 3.8vh, 24pt);
+  font-weight: bold;
 }
 
-.counter button:disabled {
+.tower-input-button:disabled {
+  background-color: var(--neutral-inactive);
+  color: var(--text-inactive);
+}
+
+.tower-input:has(.tower-input-button:disabled) {
+  background-color: var(--alliance-inactive);
+}
+
+.tower-input:has(.tower-input-button:disabled) .team-num {
   background-color: var(--alliance-inactive);
   color: var(--text-inactive);
 }
 
-.counter-status {
-  flex: 2 2 0%;
-  background-color: #fff;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.counter-label {
-  font-size: 12pt;
-  padding: 0 0.2em 5px 0.2em;
-}
-
-.counter-value {
-  font-weight: bold;
-}
-
-.counter-main-value {
-  font-size: 28pt;
-  transition: font-size 0.2s ease-in-out;
-}
-
-.counter-main-clone {
-  font-size: 0;
-  transition: font-size 0.2s ease-in-out;
-}
-
-.counter-auto-value {
-  font-size: 12pt;
-  transition: font-size 0.2s ease-in-out;
-  font-weight: bold;
-}
-
-.counter-auto-row {
-  background-color: var(--auto-inactive);
-  color: var(--text-inactive-dark);
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.1em;
-  font-size: 12pt;
-  transition: font-size 0.2s ease-in-out;
-}
-
-[data-scoring-auto="true"] .counter-auto-row,
-[data-scoring-auto="true"] .counter-status:has(.counter-auto-row) .counter-main-value {
-  font-size: 0pt;
-}
-[data-scoring-auto="true"] .counter-auto-value {
-  font-size: 28pt;
-}
-[data-scoring-auto="true"] .counter-main-clone {
-  font-size: 12pt;
-}
-
-.counter:has(button:enabled) .counter-auto-row {
-  background-color: var(--auto-action);
-  color: var(--text-active-dark);
-  box-shadow: black 0px 0px 2px;
+.tower-input-button[data-selected="true"] {
+  background-color: var(--alliance-highlight);
 }
 
 #fouls-button {
-  flex: 0.5 0.5 0%;
+  flex: 1 1 0%;
   border-radius: var(--button-border-radius);
   color: var(--text-active-dark);
   height: 100%;
@@ -572,6 +360,12 @@ dialog {
   background-color: var(--alliance-overlay-background);
 }
 
+#fouls-dialog {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
 .dialog-container {
   max-width: 700px;
   width: 80vw;
@@ -592,41 +386,6 @@ dialog::backdrop {
   font-weight: bold;
   background-color: var(--alliance-banner);
   color: var(--text-active-dark);
-}
-
-#endgame-scoring {
-  padding: 20px;
-  display: flex;
-  gap: 20px;
-}
-
-.endgame-input {
-  flex: 1 1 0%;
-  padding: 10px;
-  background-color: var(--alliance-action);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-#endgame-dialog button {
-  cursor: auto;
-  height: 68px;
-  border: none;
-  outline: none;
-  border-radius: var(--button-border-radius);
-  background-color: var(--neutral-action);
-  color: var(--text-active);
-  box-shadow: none;
-}
-
-#endgame-dialog button:enabled:not([data-selected="true"]) {
-  box-shadow: black 0px 4px 4px;
-}
-
-#endgame-dialog button[data-selected="true"] {
-  background-color: var(--alliance-highlight);
 }
 
 .dialog-close {
@@ -657,6 +416,7 @@ dialog::backdrop {
 #foul-container .foul-button {
   height: 120px;
   width: 300px;
+  color: var(--text-active);
 }
 
 .foul-button.red {

@@ -45,7 +45,10 @@ func (web *Web) rankingsCsvReportHandler(w http.ResponseWriter, r *http.Request)
 
 	// Strip out carriage returns to ensure consistent behavior across platforms.
 	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
-	w.Write(cleaned)
+	if _, err := w.Write(cleaned); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }
 
 // Generates a PDF-formatted report of the qualification rankings.
@@ -58,20 +61,19 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 
 	// The widths of the table columns in mm, stored here so that they can be referenced for each row.
 	colWidths := map[string]float64{
-		"Rank":   13,
-		"Team":   20,
-		"RP":     20,
-		"Coop":   20,
-		"Match":  20,
-		"Auto":   20,
-		"Barge":  20,
-		"W-L-T":  22,
-		"DQ":     20,
-		"Played": 20,
+		"Rank":      13,
+		"Team":      20,
+		"RP":        24,
+		"Match":     24,
+		"Auto Fuel": 24,
+		"Tower":     24,
+		"W-L-T":     26,
+		"DQ":        20,
+		"Played":    20,
 	}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 
 	// Render table header row.
@@ -81,10 +83,9 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 	pdf.CellFormat(colWidths["Rank"], rowHeight, "Rank", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Team"], rowHeight, "Team", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["RP"], rowHeight, "RP", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Coop"], rowHeight, "Coop", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Match"], rowHeight, "Match", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Auto"], rowHeight, "Auto", "1", 0, "C", true, 0, "")
-	pdf.CellFormat(colWidths["Barge"], rowHeight, "Barge", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Auto Fuel"], rowHeight, "Auto Fuel", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidths["Tower"], rowHeight, "Tower", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["W-L-T"], rowHeight, "W-L-T", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["DQ"], rowHeight, "DQ", "1", 0, "C", true, 0, "")
 	pdf.CellFormat(colWidths["Played"], rowHeight, "Played", "1", 1, "C", true, 0, "")
@@ -95,12 +96,11 @@ func (web *Web) rankingsPdfReportHandler(w http.ResponseWriter, r *http.Request)
 		pdf.SetFont("Arial", "", 10)
 		pdf.CellFormat(colWidths["Team"], rowHeight, strconv.Itoa(ranking.TeamId), "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["RP"], rowHeight, strconv.Itoa(ranking.RankingPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(
-			colWidths["Coop"], rowHeight, strconv.Itoa(ranking.CoopertitionPoints), "1", 0, "C", false, 0, "",
-		)
 		pdf.CellFormat(colWidths["Match"], rowHeight, strconv.Itoa(ranking.MatchPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Auto"], rowHeight, strconv.Itoa(ranking.AutoPoints), "1", 0, "C", false, 0, "")
-		pdf.CellFormat(colWidths["Barge"], rowHeight, strconv.Itoa(ranking.BargePoints), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(
+			colWidths["Auto Fuel"], rowHeight, strconv.Itoa(ranking.AutoFuelPoints), "1", 0, "C", false, 0, "",
+		)
+		pdf.CellFormat(colWidths["Tower"], rowHeight, strconv.Itoa(ranking.TowerPoints), "1", 0, "C", false, 0, "")
 		record := fmt.Sprintf("%d-%d-%d", ranking.Wins, ranking.Losses, ranking.Ties)
 		pdf.CellFormat(colWidths["W-L-T"], rowHeight, record, "1", 0, "C", false, 0, "")
 		pdf.CellFormat(colWidths["DQ"], rowHeight, strconv.Itoa(ranking.Disqualifications), "1", 0, "C", false, 0, "")
@@ -213,7 +213,10 @@ func (web *Web) backupTeamsCsvReportHandler(w http.ResponseWriter, r *http.Reque
 
 	// Strip out carriage returns to ensure consistent behavior across platforms.
 	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
-	w.Write(cleaned)
+	if _, err := w.Write(cleaned); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }
 
 // Generates a PDF-formatted report of the backup teams.
@@ -235,7 +238,7 @@ func (web *Web) backupsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	colWidths := map[string]float64{"Rank": 13, "Called": 22, "Team": 22, "RP": 23}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 
 	// Render table header row.
@@ -285,7 +288,7 @@ const (
 )
 
 func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.SetLineWidth(1)
 
 	eventName := web.arena.EventSettings.Name
@@ -318,7 +321,7 @@ func (web *Web) couponsPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func drawCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, allianceNumber int, text string) {
+func drawCoupon(pdf *reportPdf, eventName string, x float64, y float64, allianceNumber int, text string) {
 	pdf.SetTextColor(0, 0, 0)
 	drawPdfLogo(pdf, x, y, cImgWidth)
 
@@ -330,7 +333,7 @@ func drawCoupon(pdf gofpdf.Pdf, eventName string, x float64, y float64, alliance
 	drawEventWatermark(pdf, x, y, eventName)
 }
 
-func drawEventWatermark(pdf gofpdf.Pdf, x float64, y float64, name string) {
+func drawEventWatermark(pdf *reportPdf, x float64, y float64, name string) {
 	pdf.SetFont("Arial", "B", 11)
 	pdf.SetTextColor(200, 200, 200)
 	textWidth := pdf.GetStringWidth(name)
@@ -348,7 +351,7 @@ func drawEventWatermark(pdf gofpdf.Pdf, x float64, y float64, name string) {
 	pdf.TransformEnd()
 }
 
-func drawCenteredText(pdf gofpdf.Pdf, txt string, x float64, y float64) {
+func drawCenteredText(pdf *reportPdf, txt string, x float64, y float64) {
 	width := pdf.GetStringWidth(txt)
 	pdf.Text(x-(width/2), y, txt)
 }
@@ -397,7 +400,10 @@ func (web *Web) scheduleCsvReportHandler(w http.ResponseWriter, r *http.Request)
 
 	// Strip out carriage returns to ensure consistent behavior across platforms.
 	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
-	w.Write(cleaned)
+	if _, err := w.Write(cleaned); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }
 
 // Generates a PDF-formatted report of the match schedule.
@@ -433,7 +439,7 @@ func (web *Web) schedulePdfReportHandler(w http.ResponseWriter, r *http.Request)
 	colWidths := map[string]float64{"Time": 35, "Match": 40, "Team": 20}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 
 	// Render table header row.
@@ -568,7 +574,10 @@ func (web *Web) teamsCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Strip out carriage returns to ensure consistent behavior across platforms.
 	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
-	w.Write(cleaned)
+	if _, err := w.Write(cleaned); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }
 
 // Generates a PDF-formatted report of the team list.
@@ -591,7 +600,7 @@ func (web *Web) teamsPdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	rowHeight := 6.5
 	lineHeight := 5.0
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
@@ -726,7 +735,7 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 	rowHeight := 6.5
 	lineHeight := 5.0
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 	pdf.SetFont("Arial", "B", 10)
 	pdf.SetFillColor(220, 220, 220)
@@ -753,12 +762,13 @@ func (web *Web) alliancesPdfReportHandler(w http.ResponseWriter, r *http.Request
 			}
 			allianceHeight += teamRowHeight
 		}
+		allianceStatusText := fmt.Sprintf("Alliance %d\n%s", alliance.Id, allianceStatuses[alliance.Id])
 		numAllianceStatusesRows := len(pdf.SplitLines([]byte(allianceStatuses[alliance.Id]), colWidths["Alliance"]))
 		drawMultiLineCell(
 			pdf, colWidths["Alliance"],
 			allianceHeight,
 			lineHeight,
-			fmt.Sprintf("Alliance %d\n%s", alliance.Id, allianceStatuses[alliance.Id]),
+			allianceStatusText,
 			"C",
 			numAllianceStatusesRows+1,
 		)
@@ -816,7 +826,10 @@ func (web *Web) bracketPdfReportHandler(w http.ResponseWriter, r *http.Request) 
 
 	// Strip out carriage returns to ensure consistent behavior across platforms.
 	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
-	w.Write(cleaned)
+	if _, err := w.Write(cleaned); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }
 
 // Returns the text to display if a team is a surrogate.
@@ -846,7 +859,7 @@ func (web *Web) cyclePdfReportHandler(w http.ResponseWriter, r *http.Request) {
 	colWidths := map[string]float64{"Time": 30, "Time2": 22, "Match": 15, "Diff": 20}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 	pdf.AddPage()
 
 	// Render table header row.
@@ -956,7 +969,10 @@ func (web *Web) ftaCsvReportHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Strip out carriage returns to ensure consistent behavior across platforms.
 	cleaned := bytes.ReplaceAll(buf.Bytes(), []byte("\r"), []byte(""))
-	w.Write(cleaned)
+	if _, err := w.Write(cleaned); err != nil {
+		handleWebErr(w, err)
+		return
+	}
 }
 
 // Generates a PDF-formatted report of the judging schedule.
@@ -975,7 +991,7 @@ func (web *Web) judgingSchedulePdfReportHandler(w http.ResponseWriter, r *http.R
 	}
 	rowHeight := 6.5
 
-	pdf := gofpdf.New("P", "mm", "Letter", "font")
+	pdf := newReportPdf()
 
 	// Table 1: Sorted by team.
 	pdf.AddPage()
@@ -1083,7 +1099,7 @@ func (web *Web) judgingSchedulePdfReportHandler(w http.ResponseWriter, r *http.R
 	}
 }
 
-func addTimeGeneratedFooter(pdf *gofpdf.Fpdf) {
+func addTimeGeneratedFooter(pdf *reportPdf) {
 	footerText := fmt.Sprintf(
 		"Report generated at %s on %s", time.Now().Format("3:04:05 PM"), time.Now().Format("Mon Jan 2 2006"),
 	)
@@ -1092,7 +1108,7 @@ func addTimeGeneratedFooter(pdf *gofpdf.Fpdf) {
 }
 
 // Draws a bordered cell with multiple lines of text vertically centered.
-func drawMultiLineCell(pdf *gofpdf.Fpdf, width, height, lineHeight float64, text, align string, numTextLines int) {
+func drawMultiLineCell(pdf *reportPdf, width, height, lineHeight float64, text, align string, numTextLines int) {
 	startX, startY := pdf.GetXY()
 	pdf.Rect(startX, startY, width, height, "")
 

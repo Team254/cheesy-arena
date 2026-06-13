@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/google/uuid"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -82,7 +83,10 @@ func (web *Web) getUserSessionFromCookie(r *http.Request) *model.UserSession {
 	if err != nil {
 		return nil
 	}
-	session, _ := web.arena.Database.GetUserSessionByToken(token.Value)
+	session, err := web.arena.Database.GetUserSessionByToken(token.Value)
+	if err != nil {
+		log.Printf("Failed to get user session by token: %v", err)
+	}
 	return session
 }
 

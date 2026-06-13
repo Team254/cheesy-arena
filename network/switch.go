@@ -41,9 +41,10 @@ type Switch struct {
 	Status                string
 }
 
-const DefaultServerIpAddress = "10.0.100.5"
+const ServerIpAddress = "10.0.100.5" // The DS will try to connect to this address only.
 
-var ServerIpAddress = DefaultServerIpAddress // The DS will try to connect to this address only.
+// DevMode allows driver station listeners to bind to all local IP addresses.
+var DevMode = false
 
 func NewSwitch(address, password string) *Switch {
 	return &Switch{

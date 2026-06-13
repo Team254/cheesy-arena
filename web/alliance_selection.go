@@ -256,8 +256,15 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 
 	// Load the first playoff match.
 	matches, err := web.arena.Database.GetMatchesByType(model.Playoff, false)
-	if err == nil && len(matches) > 0 {
-		_ = web.arena.LoadMatch(&matches[0])
+	if err != nil {
+		web.renderAllianceSelection(w, r, fmt.Sprintf("Failed to load playoff matches: %s", err.Error()))
+		return
+	}
+	if len(matches) > 0 {
+		if err = web.arena.LoadMatch(&matches[0]); err != nil {
+			web.renderAllianceSelection(w, r, fmt.Sprintf("Failed to load playoff match: %s", err.Error()))
+			return
+		}
 	}
 
 	http.Redirect(w, r, "/match_play", 303)
@@ -274,7 +281,7 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.AllianceSelectionNotifier, web.arena.AudienceDisplayModeNotifier)
@@ -296,7 +303,7 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 			if timeLimitSec, ok := data.(float64); ok {
 				allianceSelectionTimeLimitSec = int(timeLimitSec)
 			} else {
-				ws.WriteError("Invalid time limit value.")
+				writeWebsocketError(ws, "Invalid time limit value.")
 			}
 		case "startTimer":
 			if allianceSelectionTicker != nil {
@@ -348,12 +355,12 @@ func (web *Web) allianceSelectionWebsocketHandler(w http.ResponseWriter, r *http
 		case "setAudienceDisplay":
 			mode, ok := data.(string)
 			if !ok {
-				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				writeWebsocketError(ws, fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
 			web.arena.SetAudienceDisplayMode(mode)
 		default:
-			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			writeWebsocketError(ws, fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}
 	}
 }

@@ -10,7 +10,6 @@ Display shown on the audience screen overlayed over the video.
     <title>Audience Display - {{.EventSettings.Name}} - Cheesy Arena </title>
     <link rel="shortcut icon" href="/static/img/favicon.ico">
     <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css"/>
-    <link rel="stylesheet" href="/static/css/lib/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/static/css/cheesy-arena.css"/>
     <link rel="stylesheet" href="/static/css/audience_display.css"/>
   </head>
@@ -32,13 +31,17 @@ Display shown on the audience screen overlayed over the video.
                 <img class="avatar" id="leftTeam3Avatar" src=""/>
               </div>
               <div class="score-fields">
-                <div class="score-field">
-                  <img class="coral-icon" src="/static/img/coral.png"/>
-                  <div id="leftCoral"></div>
+                <div class="score-fuel">
+                  <span id="leftFuelNumerator"></span>
+                  <span id="leftFuelDenominator"></span>
                 </div>
-                <div class="score-field">
-                  <img class="algae-icon" src="/static/img/algae.png"/>
-                  <div id="leftAlgae"></div>
+                <div class="score-hub-active" id="leftHubActive">
+                  <svg width="70" height="100">
+                    <circle class="progress-guide" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="2"/>
+                    <circle class="active-progress" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
+                      stroke-dasharray="158 158" stroke-dashoffset="5" transform="rotate(90, 35, 50)"/>
+                    <text class="progress-time" x="35" y="52" text-anchor="middle" dominant-baseline="middle" fill="white"></text>
+                  </svg>
                 </div>
               </div>
               <div class="score-number" id="leftScoreNumber"></div>
@@ -46,13 +49,17 @@ Display shown on the audience screen overlayed over the video.
             <div class="score score-right reversible-right">
               <div class="score-number" id="rightScoreNumber"></div>
               <div class="score-fields">
-                <div class="score-field">
-                  <div id="rightCoral"></div>
-                  <img class="coral-icon" src="/static/img/coral.png"/>
+                <div class="score-hub-active" id="rightHubActive">
+                  <svg width="70" height="100">
+                    <circle class="progress-guide" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="2"/>
+                    <circle class="active-progress" cx="35" cy="50" r="25" fill="none" stroke="white" stroke-width="5"
+                      stroke-dasharray="158 158" stroke-dashoffset="-5" transform="rotate(90, 35, 50)"/>
+                    <text class="progress-time" x="35" y="52" text-anchor="middle" dominant-baseline="middle" fill="white"></text>
+                  </svg>
                 </div>
-                <div class="score-field">
-                  <div id="rightAlgae"></div>
-                  <img class="algae-icon" src="/static/img/algae.png"/>
+                <div class="score-fuel">
+                  <span id="rightFuelNumerator"></span>
+                  <span id="rightFuelDenominator"></span>
                 </div>
               </div>
               <div class="avatars">
@@ -101,6 +108,14 @@ Display shown on the audience screen overlayed over the video.
       </div>
       <div id="finalScoreCentering">
         <div id="finalScore">
+          <div id="finalResultIndicators">
+            <div class="final-result-indicator-slot">
+              <div class="final-result-indicator" id="leftFinalResultIndicator"></div>
+            </div>
+            <div class="final-result-indicator-slot">
+              <div class="final-result-indicator" id="rightFinalResultIndicator"></div>
+            </div>
+          </div>
           <div class="final-score-row">
             <div class="final-score reversible-left" id="leftFinalScore"></div>
             <div class="final-score reversible-right" id="rightFinalScore"></div>
@@ -128,16 +143,15 @@ Display shown on the audience screen overlayed over the video.
               </div>
             </div>
             <div class="final-breakdown" id="leftFinalBreakdown">
-              <div id="leftFinalLeavePoints"></div>
-              <div id="leftFinalCoralPoints"></div>
-              <div id="leftFinalAlgaePoints"></div>
-              <div id="leftFinalBargePoints"></div>
+              <div id="leftFinalAutoFuelPoints"></div>
+              <div id="leftFinalAutoTowerPoints"></div>
+              <div id="leftFinalTeleopFuelPoints"></div>
+              <div id="leftFinalTeleopTowerPoints"></div>
               <div id="leftFinalFoulPoints"></div>
               <div class="playoff-hidden-field">
-                <div class="coopertition-hidden-field" id="leftFinalCoopertitionBonus"></div>
-                <div id="leftFinalAutoBonusRankingPoint"></div>
-                <div id="leftFinalCoralBonusRankingPoint"></div>
-                <div id="leftFinalBargeBonusRankingPoint"></div>
+                <div id="leftFinalEnergizedBonusRankingPoint"></div>
+                <div id="leftFinalSuperchargedBonusRankingPoint"></div>
+                <div id="leftFinalTraversalBonusRankingPoint"></div>
                 <div id="leftFinalRankingPoints"></div>
               </div>
               <div class="playoff-only-field">
@@ -146,16 +160,15 @@ Display shown on the audience screen overlayed over the video.
               </div>
             </div>
             <div class="final-breakdown" id="centerFinalBreakdown">
-              <div>Leave</div>
-              <div>Coral</div>
-              <div>Algae</div>
-              <div>Barge</div>
+              <div>Auto Fuel</div>
+              <div>Auto Tower</div>
+              <div>Teleop Fuel</div>
+              <div>Teleop Tower</div>
               <div>Foul</div>
               <div class="playoff-hidden-field">
-                <div class="coopertition-hidden-field">Coopertition Bonus</div>
-                <div>Auto Bonus</div>
-                <div>Coral Bonus</div>
-                <div>Barge Bonus</div>
+                <div>Energized Bonus</div>
+                <div>Supercharged Bonus</div>
+                <div>Traversal Bonus</div>
                 <div>Ranking Points</div>
               </div>
               <div class="playoff-only-field">
@@ -164,16 +177,15 @@ Display shown on the audience screen overlayed over the video.
               </div>
             </div>
             <div class="final-breakdown" id="rightFinalBreakdown">
-              <div id="rightFinalLeavePoints"></div>
-              <div id="rightFinalCoralPoints"></div>
-              <div id="rightFinalAlgaePoints"></div>
-              <div id="rightFinalBargePoints"></div>
+              <div id="rightFinalAutoFuelPoints"></div>
+              <div id="rightFinalAutoTowerPoints"></div>
+              <div id="rightFinalTeleopFuelPoints"></div>
+              <div id="rightFinalTeleopTowerPoints"></div>
               <div id="rightFinalFoulPoints"></div>
               <div class="playoff-hidden-field">
-                <div class="coopertition-hidden-field" id="rightFinalCoopertitionBonus"></div>
-                <div id="rightFinalAutoBonusRankingPoint"></div>
-                <div id="rightFinalCoralBonusRankingPoint"></div>
-                <div id="rightFinalBargeBonusRankingPoint"></div>
+                <div id="rightFinalEnergizedBonusRankingPoint"></div>
+                <div id="rightFinalSuperchargedBonusRankingPoint"></div>
+                <div id="rightFinalTraversalBonusRankingPoint"></div>
                 <div id="rightFinalRankingPoints"></div>
               </div>
               <div class="playoff-only-field">
@@ -207,6 +219,7 @@ Display shown on the audience screen overlayed over the video.
             <div class="final-footer">{{.EventSettings.Name}}</div>
             <div class="final-footer" id="finalMatchName">&nbsp;</div>
           </div>
+          <div id="finalTiebreakReason"></div>
         </div>
       </div>
       <div id="bracket">

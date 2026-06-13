@@ -53,7 +53,8 @@ func TestMalformedSchedule(t *testing.T) {
 }
 
 func TestScheduleTeams(t *testing.T) {
-	rand.Seed(0)
+	randomizer := rand.New(rand.NewSource(0))
+	schedulePerm = randomizer.Perm
 
 	numTeams := 18
 	teams := make([]model.Team, numTeams)
@@ -76,7 +77,8 @@ func TestScheduleTeams(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Check with qualification matches.
-	rand.Seed(0)
+	randomizer = rand.New(rand.NewSource(0))
+	schedulePerm = randomizer.Perm
 	scheduleBlocks = []model.ScheduleBlock{{0, model.Qualification, time.Unix(0, 0).UTC(), 6, 60}}
 	matches, err = BuildRandomSchedule(teams, scheduleBlocks, model.Qualification)
 	assert.Nil(t, err)
@@ -106,7 +108,8 @@ func TestScheduleTiming(t *testing.T) {
 }
 
 func TestScheduleSurrogates(t *testing.T) {
-	rand.Seed(0)
+	randomizer := rand.New(rand.NewSource(0))
+	schedulePerm = randomizer.Perm
 
 	numTeams := 38
 	teams := make([]model.Team, numTeams)

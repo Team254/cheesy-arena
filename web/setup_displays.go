@@ -49,7 +49,7 @@ func (web *Web) displaysWebsocketHandler(w http.ResponseWriter, r *http.Request)
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.DisplayConfigurationNotifier)
@@ -71,24 +71,24 @@ func (web *Web) displaysWebsocketHandler(w http.ResponseWriter, r *http.Request)
 			var displayConfig field.DisplayConfiguration
 			err = mapstructure.Decode(data, &displayConfig)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 			if err = web.arena.UpdateDisplay(displayConfig); err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 		case "reloadDisplay":
 			displayId, ok := data.(string)
 			if !ok {
-				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				writeWebsocketError(ws, fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
 			web.arena.ReloadDisplaysNotifier.NotifyWithMessage(displayId)
 		case "reloadAllDisplays":
 			web.arena.ReloadDisplaysNotifier.Notify()
 		default:
-			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			writeWebsocketError(ws, fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}
 	}
 }
