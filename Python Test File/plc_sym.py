@@ -351,7 +351,8 @@ async def main(host: str, port: int) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="PLC Coil Monitor — 8-key counter")
-    parser.add_argument("--host", default="10.0.100.5", help="Arena server host (default: 10.0.100.5)")
+    #parser.add_argument("--host", default="10.0.100.5", help="Arena server host (default: 10.0.100.5)")
+    parser.add_argument("--host", default="localhost", help="Arena server host (default: 10.0.100.5)")
     parser.add_argument("--port", default=8080, type=int,  help="Arena server port (default: 8080)")
     args = parser.parse_args()
 
