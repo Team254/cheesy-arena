@@ -223,7 +223,7 @@ const updateScoreStatus = function (data, position, element, displayName) {
 const setTeamCard = function (alliance, position, team) {
   const cardButton = $(`#${alliance}${position}Card`);
   if (team === null) {
-    cardButton.text(0);
+    cardButton.text("-");
     cardButton.attr("data-team", 0)
     cardButton.attr("data-old-yellow-card", "");
   } else {
