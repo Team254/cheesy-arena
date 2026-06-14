@@ -38,7 +38,7 @@ func TestEncodeControlPacket(t *testing.T) {
 	assert.Nil(t, err)
 	defer dsConn.close()
 
-	data := dsConn.encodeControlPacket(arena)
+	data := dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(0), data[5])
 	assert.Equal(t, byte(0), data[6])
 	assert.Equal(t, byte(0), data[20])
@@ -46,108 +46,108 @@ func TestEncodeControlPacket(t *testing.T) {
 
 	// Check the different alliance station values.
 	dsConn.AllianceStation = "R2"
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(1), data[5])
 	dsConn.AllianceStation = "R3"
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(2), data[5])
 	dsConn.AllianceStation = "B1"
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(3), data[5])
 	dsConn.AllianceStation = "B2"
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(4), data[5])
 	dsConn.AllianceStation = "B3"
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(5), data[5])
 
 	// Check packet count rollover.
 	dsConn.packetCount = 255
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(0), data[0])
 	assert.Equal(t, byte(255), data[1])
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(1), data[0])
 	assert.Equal(t, byte(0), data[1])
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(1), data[0])
 	assert.Equal(t, byte(1), data[1])
 	dsConn.packetCount = 65535
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(255), data[0])
 	assert.Equal(t, byte(255), data[1])
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(0), data[0])
 	assert.Equal(t, byte(0), data[1])
 
 	// Check different robot statuses.
 	dsConn.Auto = true
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(2), data[3])
 
 	dsConn.Enabled = true
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(6), data[3])
 
 	dsConn.Auto = false
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(4), data[3])
 
 	dsConn.EStop = true
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(132), data[3])
 
 	dsConn.AStop = true
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(196), data[3])
 
 	// Check different match types.
 	arena.CurrentMatch.Type = model.Practice
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(1), data[6])
 	arena.CurrentMatch.Type = model.Qualification
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(2), data[6])
 	arena.CurrentMatch.Type = model.Playoff
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(3), data[6])
 
 	// Check match numbers.
 	arena.CurrentMatch.Type = model.Practice
 	arena.CurrentMatch.TypeOrder = 42
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(0), data[7])
 	assert.Equal(t, byte(42), data[8])
 	arena.CurrentMatch.Type = model.Qualification
 	arena.CurrentMatch.TypeOrder = 258
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(1), data[7])
 	assert.Equal(t, byte(2), data[8])
 	arena.CurrentMatch.Type = model.Playoff
 	arena.CurrentMatch.TypeOrder = 13
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(0), data[7])
 	assert.Equal(t, byte(13), data[8])
 
 	// Check the countdown at different points during the match.
 	arena.MatchState = AutoPeriod
 	arena.MatchStartTime = time.Now().Add(-9 * time.Second)
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(11), data[21])
 	arena.MatchState = PausePeriod
 	arena.MatchStartTime = time.Now().Add(-21 * time.Second)
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(140), data[21])
 	arena.MatchState = TeleopPeriod
 	arena.MatchStartTime = time.Now().Add(-33 * time.Second)
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(129), data[21])
 	arena.MatchStartTime = time.Now().Add(-160 * time.Second)
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(2), data[21])
 	arena.MatchState = PostMatch
 	arena.MatchStartTime = time.Now().Add(-180 * time.Second)
-	data = dsConn.encodeControlPacket(arena)
+	data = dsConn.encodeControlPacket(arena, "")
 	assert.Equal(t, byte(0), data[21])
 }
 

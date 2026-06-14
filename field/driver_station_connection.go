@@ -235,7 +235,7 @@ func (dsConn *DriverStationConnection) close() {
 }
 
 // Serializes the control information into a packet.
-func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) []byte {
+func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena, gameData string) []byte {
 	packet := dsConn.udpSendPacket
 	packetLength := 22
 
@@ -318,12 +318,12 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) []byte 
 
 	// We need to include game data in the new ds packet
 	if dsConn.newDs {
-		gameDataLen := min(len(dsConn.SentGameData), 8)
+		gameDataLen := min(len(gameData), 8)
 		if gameDataLen > 0 {
 			packet[22] = byte(gameDataLen) + 1 // Length of the tag data, including the tag byte
 			packet[23] = 32                    // Tag 32 is for game data
 			for i := range gameDataLen {
-				packet[24+i] = dsConn.SentGameData[i]
+				packet[24+i] = gameData[i]
 			}
 			packetLength += 2 + gameDataLen
 		}
@@ -338,7 +338,7 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena) []byte 
 // Builds and sends the next control packet to the Driver Station.
 func (dsConn *DriverStationConnection) sendControlPacket(arena *Arena, gameData string) error {
 	gameDataErr := dsConn.checkGameData(gameData)
-	packet := dsConn.encodeControlPacket(arena)
+	packet := dsConn.encodeControlPacket(arena, gameData)
 
 	// Skip if UDP listener has not been started, or addr is invalid
 	if arena.DriverStationUdpSocket == nil || !dsConn.udpAddrPort.IsValid() {
