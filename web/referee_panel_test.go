@@ -52,6 +52,7 @@ func TestRefereePanelWebsocket(t *testing.T) {
 	ws.Write("addFoul", addFoulData)
 	addFoulData.Alliance = "blue"
 	ws.Write("addFoul", addFoulData)
+	readWebsocketType(t, ws, "arenaStatus")
 	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "realtimeScore")
 	readWebsocketType(t, ws, "realtimeScore")

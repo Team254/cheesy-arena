@@ -87,6 +87,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		web.arena.RealtimeScoreNotifier,
 		web.arena.ScoringStatusNotifier,
 		web.arena.ReloadDisplaysNotifier,
+		web.arena.ArenaStatusNotifier,
 	)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
@@ -196,6 +197,17 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				cards[strconv.Itoa(args.TeamId)] = args.Card
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
+		case "toggleBypass":
+			station, ok := data.(string)
+			if !ok {
+				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			err = web.arena.ToggleBypass(station)
+			if err != nil {
+				writeWebsocketError(ws, err.Error())
+				continue
+			}
 		case "signalVolunteers":
 			web.arena.SignalVolunteers()
 		case "signalReset":

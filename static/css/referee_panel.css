@@ -57,6 +57,12 @@ h3 {
 #blueCards {
   background-color: #223;
 }
+.team-card.enabled-status {
+  background-color: #198754;
+}
+.team-card.bypassed-status {
+  background-color: #dc3545;
+}
 .team-card {
   margin: 0.5vw 0;
   width: 10vw;

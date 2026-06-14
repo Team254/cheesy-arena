@@ -7,6 +7,7 @@ var websocket;
 let redFoulsHashCode = 0;
 let blueFoulsHashCode = 0;
 let scoreIsReady = false;
+let isPostMatch = false;
 
 // Sends the foul to the server to add it to the list.
 const addFoul = function (alliance, isMajor) {
@@ -35,22 +36,44 @@ var deleteFoul = function (alliance, index) {
 
 // Cycles through the card options for the selected team.
 var cycleCard = function (cardButton) {
-  const currentCard = $(cardButton).attr("data-card");
-  const hasOldYellowCard = $(cardButton).attr("data-old-yellow-card") === "true";
-  let newCard = "";
-  if (currentCard === "" && hasOldYellowCard) {
-    newCard = "red";
-  } else if (currentCard === "") {
-    newCard = "yellow";
-  } else if (currentCard === "yellow") {
-    newCard = "red";
+  if(isPostMatch) {
+    // Cycle card.
+    const currentCard = $(cardButton).attr("data-card");
+    const hasOldYellowCard = $(cardButton).attr("data-old-yellow-card") === "true";
+    let newCard = "";
+    if (currentCard === "" && hasOldYellowCard) {
+      newCard = "red";
+    } else if (currentCard === "") {
+      newCard = "yellow";
+    } else if (currentCard === "yellow") {
+      newCard = "red";
+    }
+    websocket.send(
+      "card",
+      {Alliance: $(cardButton).attr("data-alliance"), TeamId: parseInt($(cardButton).attr("data-team")), Card: newCard}
+    );
+    $(cardButton).attr("data-card", newCard);
+    return;
   }
-  websocket.send(
-    "card",
-    {Alliance: $(cardButton).attr("data-alliance"), TeamId: parseInt($(cardButton).attr("data-team")), Card: newCard}
-  );
-  $(cardButton).attr("data-card", newCard);
+
+  // Toggle bypass.
+  const isDisabled = $(cardButton).hasClass("bypassed-status");
+  const team = $(cardButton).attr("data-team");
+  $("#confirmBypassTitle").text(`${isDisabled ? "Enable" : "Disable"} ${team}?`);
+  $("#confirmBypassAction").text(isDisabled ? "Enable" : "Disable")
+  $("#confirmBypass").attr("data-station", $(cardButton).attr("data-station")?.toUpperCase());
+
+  if(team === "0") {
+    toggleBypass();
+  } else {
+    $("#confirmBypass").modal("show");
+  }
 };
+
+const toggleBypass = function() {
+  const station = $("#confirmBypass").attr("data-station");
+  websocket.send("toggleBypass", station);
+}
 
 // Sends a websocket message to signal to the volunteers that they may enter the field.
 var signalVolunteers = function () {
@@ -98,7 +121,15 @@ var handleMatchLoad = function (data) {
 
 // Handles a websocket message to update the match status.
 const handleMatchTime = function (data) {
-  $(".control-button").attr("data-enabled", matchStates[data.MatchState] === "POST_MATCH");
+  isPostMatch = matchStates[data.MatchState] === "POST_MATCH";
+  $(".control-button").attr("data-enabled", isPostMatch);
+
+  let title = "Red/Yellow Cards";
+  if(!isPostMatch) {
+    title = matchStates[data.MatchState] === "PRE_MATCH" ? "Bypass" : "Disable";
+  }
+
+  $("#teamTitle").text(title)
 };
 
 const towerStatusNames = [
@@ -166,6 +197,21 @@ const handleScoringStatus = function (data) {
   }
 }
 
+const handleArenaStatus = function (data) {
+  setTeamBypassedStatus("red1", data.AllianceStations["R1"]?.Bypass);
+  setTeamBypassedStatus("red2", data.AllianceStations["R2"]?.Bypass);
+  setTeamBypassedStatus("red3", data.AllianceStations["R3"]?.Bypass);
+  setTeamBypassedStatus("blue1", data.AllianceStations["B1"]?.Bypass);
+  setTeamBypassedStatus("blue2", data.AllianceStations["B2"]?.Bypass);
+  setTeamBypassedStatus("blue3", data.AllianceStations["B3"]?.Bypass);
+};
+
+const setTeamBypassedStatus = function (station, bypassed) {
+  const cardButton = $(`#${station}Card`);
+  cardButton.toggleClass("enabled-status", !bypassed && !isPostMatch);
+  cardButton.toggleClass("bypassed-status", bypassed && !isPostMatch);
+}
+
 // Helper function to update a badge that shows scoring panel commit status.
 const updateScoreStatus = function (data, position, element, displayName) {
   const status = data.PositionStatuses[position];
@@ -176,7 +222,7 @@ const updateScoreStatus = function (data, position, element, displayName) {
 
 // Populates the red/yellow card button for a given team.
 const setTeamCard = function (alliance, position, team) {
-  const cardButton = $(`#${alliance}Team${position}Card`);
+  const cardButton = $(`#${alliance}${position}Card`);
   if (team === null) {
     cardButton.text(0);
     cardButton.attr("data-team", 0)
@@ -217,6 +263,9 @@ $(function () {
     },
     scoringStatus: function (event) {
       handleScoringStatus(event.data);
+    },
+    arenaStatus: function (event) {
+      handleArenaStatus(event.data);
     },
   });
 });
