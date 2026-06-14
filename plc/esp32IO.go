@@ -164,7 +164,7 @@ func (esp32 *Esp32IO) Run() {
 				esp32.BlueEstopsHealthy = true
 			}
 		}
-		esp32.Plc.SetCoilValue(1, false)
+		esp32.Plc.ResetMatchReset()
 		startTime := time.Now()
 		time.Sleep(time.Until(startTime.Add(time.Millisecond * LoopPeriodMs)))
 	}

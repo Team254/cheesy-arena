@@ -47,6 +47,7 @@ type Plc interface {
 	GetFieldStackLight() (bool, bool, bool, bool)
 	SetRegisterValue(index int, value uint16)
 	SetCoilValue(index int, value bool)
+	ResetMatchReset()
 }
 
 type ModbusPlc struct {
@@ -601,4 +602,12 @@ func (plc *ModbusPlc) SetCoilValue(index int, value bool) {
 		return
 	}
 	plc.coils[index] = value
+}
+
+func (plc *ModbusPlc) ResetMatchReset() {
+	if plc.matchResetCycles > 5 {
+		plc.coils[matchReset] = false // Only need a short pulse to reset the internal state of the PLC.
+	} else {
+		plc.matchResetCycles++
+	}
 }

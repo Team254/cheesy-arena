@@ -165,3 +165,15 @@ func (plc *FakePlc) GetAllCoils() [13]bool {
 func (plc *FakePlc) GetFieldStackLight() (bool, bool, bool, bool) {
 	return plc.stackLights[0], plc.stackLights[1], plc.stackLights[2], plc.stackLights[3]
 }
+
+func (plc *FakePlc) SetCoilValue(index int, value bool) {
+	// Not needed for testing, just to satisfy the interface.
+}
+
+func (plc *FakePlc) SetRegisterValue(index int, value uint16) {
+	// Not needed for testing, just to satisfy the interface.
+
+}
+func (plc *FakePlc) ResetMatchReset(){
+	// Not needed for testing, just to satisfy the interface.a
+}
