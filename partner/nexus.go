@@ -13,6 +13,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
@@ -164,7 +165,7 @@ func (client *NexusClient) postAutoQueueRequest(body autoQueueEvent) (*autoQueue
 	}
 
 	url := fmt.Sprintf("%s/api/v1/event/%s/auto-queue?key=%s", client.BaseUrl, client.eventCode, client.autoQueueKey)
-	httpClient := &http.Client{}
+	httpClient := &http.Client{Timeout: 30 * time.Second}
 	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonBody))
 	if err != nil {
 		return nil, err

@@ -537,7 +537,7 @@ func (arena *Arena) StartMatch() error {
 
 		arena.MatchState = StartMatch
 
-		if arena.EventSettings.NexusAutoQueueEnabled {
+		if arena.EventSettings.NexusAutoQueueEnabled && arena.CurrentMatch.Type != model.Test {
 			go arena.NexusClient.MatchStarted(arena.CurrentMatch.LongName, arena.CurrentMatch.TypeOrder)
 		}
 	}
