@@ -1351,6 +1351,15 @@ func (arena *Arena) getHubLightStates(currentTime time.Time) (bool, bool) {
 	}
 }
 
+func (arena *Arena) ToggleBypass(station string) error {
+	if _, ok := arena.AllianceStations[station]; !ok {
+		return fmt.Errorf("Invalid alliance station '%s'.", station)
+	}
+	arena.AllianceStations[station].Bypass = !arena.AllianceStations[station].Bypass
+	arena.ArenaStatusNotifier.Notify()
+	return nil
+}
+
 func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) {
 	allianceStation := arena.AllianceStations[station]
 	if eStopState {
