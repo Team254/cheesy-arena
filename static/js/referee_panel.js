@@ -6,6 +6,7 @@
 var websocket;
 let redFoulsHashCode = 0;
 let blueFoulsHashCode = 0;
+let scoreIsReady = false;
 
 // Sends the foul to the server to add it to the list.
 const addFoul = function (alliance, isMajor) {
@@ -32,12 +33,16 @@ var deleteFoul = function (alliance, index) {
   websocket.send("deleteFoul", {Alliance: alliance, Index: index});
 };
 
-// Cycles through no card, yellow card, and red card.
+// Cycles through the card options for the selected team.
 var cycleCard = function (cardButton) {
-  var newCard = "";
-  if ($(cardButton).attr("data-card") === "") {
+  const currentCard = $(cardButton).attr("data-card");
+  const hasOldYellowCard = $(cardButton).attr("data-old-yellow-card") === "true";
+  let newCard = "";
+  if (currentCard === "" && hasOldYellowCard) {
+    newCard = "red";
+  } else if (currentCard === "") {
     newCard = "yellow";
-  } else if ($(cardButton).attr("data-card") === "yellow") {
+  } else if (currentCard === "yellow") {
     newCard = "red";
   }
   websocket.send(
@@ -57,9 +62,19 @@ var signalReset = function () {
   websocket.send("signalReset");
 };
 
-// Signals the scorekeeper that foul entry is complete for this match.
-var commitMatch = function () {
-  websocket.send("commitMatch");
+// Shows confirmation modal if not all scores are ready, otherwise directly commits and posts.
+var confirmCommit = function () {
+  if (scoreIsReady) {
+    commitAndPost();
+    return;
+  }
+
+  $("#confirmCommit").modal("show");
+};
+
+// Commits the score and posts results to the audience.
+var commitAndPost = function () {
+  websocket.send("commitAndPost");
 };
 
 // Handles a websocket message to update the teams for the current match.
@@ -73,12 +88,12 @@ var handleMatchLoad = function (data) {
   setTeamCard("blue", 2, data.Teams["B2"]);
   setTeamCard("blue", 3, data.Teams["B3"]);
 
-  $("#redScoreSummary .team-1").text(data.Teams["R1"].Id);
-  $("#redScoreSummary .team-2").text(data.Teams["R2"].Id);
-  $("#redScoreSummary .team-3").text(data.Teams["R3"].Id);
-  $("#blueScoreSummary .team-1").text(data.Teams["B1"].Id);
-  $("#blueScoreSummary .team-2").text(data.Teams["B2"].Id);
-  $("#blueScoreSummary .team-3").text(data.Teams["B3"].Id);
+  $("#redScoreSummary .team-1").text(data.Teams["R1"]?.Id || "");
+  $("#redScoreSummary .team-2").text(data.Teams["R2"]?.Id || "");
+  $("#redScoreSummary .team-3").text(data.Teams["R3"]?.Id || "");
+  $("#blueScoreSummary .team-1").text(data.Teams["B1"]?.Id || "");
+  $("#blueScoreSummary .team-2").text(data.Teams["B2"]?.Id || "");
+  $("#blueScoreSummary .team-3").text(data.Teams["B3"]?.Id || "");
 };
 
 // Handles a websocket message to update the match status.
@@ -86,12 +101,17 @@ const handleMatchTime = function (data) {
   $(".control-button").attr("data-enabled", matchStates[data.MatchState] === "POST_MATCH");
 };
 
-const endgameStatusNames = [
+const towerStatusNames = [
   "None",
-  "Park",
-  "Shallow",
-  "Deep",
+  "Level 1",
+  "Level 2",
+  "Level 3",
 ];
+
+const setTowerStatus = function (selector, status) {
+  $(selector).text(towerStatusNames[status]);
+  $(selector).attr("data-status", status);
+};
 
 // Handles a websocket message to update the realtime scoring fields.
 const handleRealtimeScore = function (data) {
@@ -117,32 +137,13 @@ const handleRealtimeScore = function (data) {
       score = data.Blue.Score;
     }
 
-    let l1_total = score.Reef.TroughNear + score.Reef.TroughFar;
-    let l2_total = score.Reef.Branches[0].filter(Boolean).length;
-    let l3_total = score.Reef.Branches[1].filter(Boolean).length;
-    let l4_total = score.Reef.Branches[2].filter(Boolean).length;
-    let l1_auto_total = score.Reef.AutoTroughNear + score.Reef.AutoTroughFar;
-    let l2_auto_total = score.Reef.AutoBranches[0].filter(Boolean).length;
-    let l3_auto_total = score.Reef.AutoBranches[1].filter(Boolean).length;
-    let l4_auto_total = score.Reef.AutoBranches[2].filter(Boolean).length;
-
     let scoreRoot = `${alliance}ScoreSummary`;
-    $(`#${scoreRoot} .team-1-leave`).text(score.LeaveStatuses[0] ? "✓" : "❌");
-    $(`#${scoreRoot} .team-2-leave`).text(score.LeaveStatuses[1] ? "✓" : "❌");
-    $(`#${scoreRoot} .team-3-leave`).text(score.LeaveStatuses[2] ? "✓" : "❌");
-    $(`#${scoreRoot} .team-1-endgame`).text(endgameStatusNames[score.EndgameStatuses[0]]);
-    $(`#${scoreRoot} .team-2-endgame`).text(endgameStatusNames[score.EndgameStatuses[1]]);
-    $(`#${scoreRoot} .team-3-endgame`).text(endgameStatusNames[score.EndgameStatuses[2]]);
-    $(`#${scoreRoot} .coral-l1`).text(l1_total);
-    $(`#${scoreRoot} .coral-l2`).text(l2_total);
-    $(`#${scoreRoot} .coral-l3`).text(l3_total);
-    $(`#${scoreRoot} .coral-l4`).text(l4_total);
-    $(`#${scoreRoot} .coral-l1-auto`).text(l1_auto_total);
-    $(`#${scoreRoot} .coral-l2-auto`).text(l2_auto_total);
-    $(`#${scoreRoot} .coral-l3-auto`).text(l3_auto_total);
-    $(`#${scoreRoot} .coral-l4-auto`).text(l4_auto_total);
-    $(`#${scoreRoot} .processor`).text(score.ProcessorAlgae);
-    $(`#${scoreRoot} .barge`).text(score.BargeAlgae);
+    setTowerStatus(`#${scoreRoot} .team-1-auto-tower`, score.AutoTowerStatuses[0]);
+    setTowerStatus(`#${scoreRoot} .team-2-auto-tower`, score.AutoTowerStatuses[1]);
+    setTowerStatus(`#${scoreRoot} .team-3-auto-tower`, score.AutoTowerStatuses[2]);
+    setTowerStatus(`#${scoreRoot} .team-1-endgame-tower`, score.EndgameTowerStatuses[0]);
+    setTowerStatus(`#${scoreRoot} .team-2-endgame-tower`, score.EndgameTowerStatuses[1]);
+    setTowerStatus(`#${scoreRoot} .team-3-endgame-tower`, score.EndgameTowerStatuses[2]);
   }
 }
 
@@ -151,10 +152,18 @@ const handleScoringStatus = function (data) {
   if (data.RefereeScoreReady) {
     $("#commitButton").attr("data-enabled", false);
   }
-  updateScoreStatus(data, "red_near", "#redNearScoreStatus", "Red Near");
-  updateScoreStatus(data, "red_far", "#redFarScoreStatus", "Red Far");
-  updateScoreStatus(data, "blue_near", "#blueNearScoreStatus", "Blue Near");
-  updateScoreStatus(data, "blue_far", "#blueFarScoreStatus", "Blue Far");
+  updateScoreStatus(data, "red", "#redScoreStatus", "Red");
+  updateScoreStatus(data, "blue", "#blueScoreStatus", "Blue");
+
+  scoreIsReady = Object.values(data.PositionStatuses).every(status => status.Ready);
+
+  // Make the button visually distinct if not all refs have committed.
+  // HR can still press the button with confirm modal.
+  if (scoreIsReady) {
+    $("#commitButton").removeClass("disabled");
+  } else {
+    $("#commitButton").addClass("disabled");
+  }
 }
 
 // Helper function to update a badge that shows scoring panel commit status.

@@ -215,13 +215,16 @@ h3 {
 #commitButton {
   background-color: #26c;
 }
+#commitButton.disabled {
+  background-color: #666;
+}
 
 #scoreSummary {
   width: 100%;
   display: flex;
-  gap: 2vw;
-  padding: 1vw 7vw;
-  justify-content: space-evenly;
+  gap: 1vw;
+  padding: 0.8vw 1vw;
+  justify-content: center;
   text-align: center;
 }
 #scoreSummary[data-hr="false"] {
@@ -230,7 +233,10 @@ h3 {
 
 #scoreSummary > div {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 7.5vw repeat(3, 5.2vw);
+  column-gap: 0.35vw;
+  row-gap: 0.25vw;
+  align-items: center;
 }
 
 #scoreSummary .placeholder {
@@ -243,5 +249,30 @@ h3 {
 
 #scoreSummary .label {
   text-align: right;
-  padding: 0 0.2vw;
+  padding-right: 0.35vw;
+}
+
+#scoreSummary .tower-status {
+  min-width: 4.8vw;
+  padding: 0.05vw 0.2vw;
+  border-radius: 0.25vw;
+  color: #fff;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+#scoreSummary .tower-status[data-status="0"] {
+  background-color: #555;
+}
+
+#scoreSummary .tower-status[data-status="1"] {
+  background-color: #c1a313;
+}
+
+#scoreSummary .tower-status[data-status="2"] {
+  background-color: #286fbd;
+}
+
+#scoreSummary .tower-status[data-status="3"] {
+  background-color: #2a8c55;
 }

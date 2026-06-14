@@ -189,3 +189,18 @@ func TestBracketSvgApiDoubleElimination(t *testing.T) {
 	assert.Equal(t, "image/svg+xml", recorder.Header()["Content-Type"][0])
 	assert.Contains(t, recorder.Body.String(), "Best-of-3")
 }
+
+func TestBracketSvgApiFourAllianceDoubleElimination(t *testing.T) {
+	web := setupTestWeb(t)
+	web.arena.EventSettings.PlayoffType = model.DoubleEliminationPlayoff
+	web.arena.EventSettings.NumPlayoffAlliances = 4
+	tournament.CreateTestAlliances(web.arena.Database, 4)
+	web.arena.CreatePlayoffTournament()
+
+	recorder := web.getHttpResponse("/api/bracket/svg")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Equal(t, "image/svg+xml", recorder.Header()["Content-Type"][0])
+	assert.Contains(t, recorder.Body.String(), "bracket_double4")
+	assert.Contains(t, recorder.Body.String(), "match_M5")
+	assert.Contains(t, recorder.Body.String(), "Finals")
+}

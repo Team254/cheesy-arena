@@ -47,7 +47,7 @@ func (web *Web) allianceStationDisplayWebsocketHandler(w http.ResponseWriter, r 
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client.
 	ws.HandleNotifiers(

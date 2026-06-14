@@ -75,6 +75,7 @@ func (matchResult *MatchResult) BlueScoreSummary() *game.ScoreSummary {
 // Checks the score for disqualifications or a tie and adjusts it appropriately.
 func (matchResult *MatchResult) CorrectPlayoffScore() {
 	matchResult.RedScore.PlayoffDq = false
+	matchResult.BlueScore.PlayoffDq = false
 	for _, card := range matchResult.RedCards {
 		if card == "red" || card == "dq" {
 			matchResult.RedScore.PlayoffDq = true

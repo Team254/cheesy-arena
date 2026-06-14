@@ -6,25 +6,23 @@
 package game
 
 type ScoreSummary struct {
-	LeavePoints             int
-	AutoPoints              int
-	NumCoral                int
-	CoralPoints             int
-	NumAlgae                int
-	AlgaePoints             int
-	BargePoints             int
-	MatchPoints             int
-	FoulPoints              int
-	Score                   int
-	CoopertitionCriteriaMet bool
-	CoopertitionBonus       bool
-	NumCoralLevels          int
-	NumCoralLevelsGoal      int
-	AutoBonusRankingPoint   bool
-	CoralBonusRankingPoint  bool
-	BargeBonusRankingPoint  bool
-	BonusRankingPoints      int
-	NumOpponentMajorFouls   int
+	AutoFuelPoints                int
+	AutoTowerPoints               int
+	TeleopFuelPoints              int
+	TeleopTowerPoints             int
+	NumFuel                       int
+	NumFuelPostMatch              int
+	NumFuelGoal                   int
+	MatchPoints                   int
+	PostMatchPoints               int
+	FoulPoints                    int
+	Score                         int
+	PlayoffDq                     bool
+	EnergizedBonusRankingPoint    bool
+	SuperchargedBonusRankingPoint bool
+	TraversalBonusRankingPoint    bool
+	BonusRankingPoints            int
+	NumOpponentMajorFouls         int
 }
 
 type MatchStatus int
@@ -41,10 +39,21 @@ func (t MatchStatus) Get() MatchStatus {
 	return t
 }
 
-// Determines the winner of the match given the score summaries for both alliances.
-func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, applyPlayoffTiebreakers bool) MatchStatus {
+// Determines the winner of the match given the score summaries for both alliances, and returns a display string
+// indicating the playoff tiebreaker criterion used if the primary score is tied.
+func DetermineMatchStatus(
+	redScoreSummary, blueScoreSummary *ScoreSummary,
+	applyPlayoffTiebreakers bool,
+) (MatchStatus, string) {
+	if redScoreSummary.PlayoffDq != blueScoreSummary.PlayoffDq {
+		if redScoreSummary.PlayoffDq {
+			return BlueWonMatch, ""
+		}
+		return RedWonMatch, ""
+	}
+
 	if status := comparePoints(redScoreSummary.Score, blueScoreSummary.Score); status != TieMatch {
-		return status
+		return status, ""
 	}
 
 	if applyPlayoffTiebreakers {
@@ -52,17 +61,22 @@ func DetermineMatchStatus(redScoreSummary, blueScoreSummary *ScoreSummary, apply
 		if status := comparePoints(
 			redScoreSummary.NumOpponentMajorFouls, blueScoreSummary.NumOpponentMajorFouls,
 		); status != TieMatch {
-			return status
+			return status, "TIEBREAK: MAJOR FOULS"
 		}
-		if status := comparePoints(redScoreSummary.AutoPoints, blueScoreSummary.AutoPoints); status != TieMatch {
-			return status
+		status := comparePoints(redScoreSummary.AutoFuelPoints, blueScoreSummary.AutoFuelPoints)
+		if status != TieMatch {
+			return status, "TIEBREAK: AUTO FUEL"
 		}
-		if status := comparePoints(redScoreSummary.BargePoints, blueScoreSummary.BargePoints); status != TieMatch {
-			return status
+		if status = comparePoints(
+			redScoreSummary.AutoTowerPoints+redScoreSummary.TeleopTowerPoints,
+			blueScoreSummary.AutoTowerPoints+blueScoreSummary.TeleopTowerPoints,
+		); status != TieMatch {
+			return status, "TIEBREAK: TOWER POINTS"
 		}
+		return TieMatch, "TRUE TIE"
 	}
 
-	return TieMatch
+	return TieMatch, ""
 }
 
 // Helper method to compare the red and blue alliance point totals and return the appropriate MatchStatus.

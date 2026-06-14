@@ -16,22 +16,22 @@ func _() {
 	_ = x[stackLightBlue-5]
 	_ = x[stackLightBuzzer-6]
 	_ = x[fieldResetLight-7]
-	_ = x[redTrussLightOuter-8]
-	_ = x[redTrussLightMiddle-9]
-	_ = x[redTrussLightInner-10]
-	_ = x[blueTrussLightOuter-11]
-	_ = x[blueTrussLightMiddle-12]
-	_ = x[blueTrussLightInner-13]
-	_ = x[coilCount-14]
+	_ = x[awardsModeLight-8]
+	_ = x[redHubMotor-9]
+	_ = x[blueHubMotor-10]
+	_ = x[redHubLight-11]
+	_ = x[blueHubLight-12]
+	_ = x[coilCount-13]
 }
 
-const _coil_name = "heartbeatmatchResetstackLightGreenstackLightOrangestackLightRedstackLightBluestackLightBuzzerfieldResetLightredTrussLightOuterredTrussLightMiddleredTrussLightInnerblueTrussLightOuterblueTrussLightMiddleblueTrussLightInnercoilCount"
+const _coil_name = "heartbeatmatchResetstackLightGreenstackLightOrangestackLightRedstackLightBluestackLightBuzzerfieldResetLightawardsModeLightredHubMotorblueHubMotorredHubLightblueHubLightcoilCount"
 
-var _coil_index = [...]uint8{0, 9, 19, 34, 50, 63, 77, 93, 108, 126, 145, 163, 182, 202, 221, 230}
+var _coil_index = [...]uint8{0, 9, 19, 34, 50, 63, 77, 93, 108, 123, 134, 146, 157, 169, 178}
 
 func (i coil) String() string {
-	if i < 0 || i >= coil(len(_coil_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_coil_index)-1 {
 		return "coil(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _coil_name[_coil_index[i]:_coil_index[i+1]]
+	return _coil_name[_coil_index[idx]:_coil_index[idx+1]]
 }

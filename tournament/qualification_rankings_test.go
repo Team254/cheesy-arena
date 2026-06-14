@@ -13,7 +13,8 @@ import (
 )
 
 func TestCalculateRankings(t *testing.T) {
-	rand.Seed(1)
+	randomizer := rand.New(rand.NewSource(1))
+	game.RankingRandomFloat64 = randomizer.Float64
 	database := setupTestDb(t)
 
 	setupMatchResultsForRankings(database)

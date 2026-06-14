@@ -95,12 +95,18 @@ func (client *NexusClient) GetLineup(tbaMatchKey model.TbaMatchKey) (*[6]int, er
 	}
 
 	var lineup [6]int
-	lineup[0], _ = strconv.Atoi(nexusLineup.Red[0])
-	lineup[1], _ = strconv.Atoi(nexusLineup.Red[1])
-	lineup[2], _ = strconv.Atoi(nexusLineup.Red[2])
-	lineup[3], _ = strconv.Atoi(nexusLineup.Blue[0])
-	lineup[4], _ = strconv.Atoi(nexusLineup.Blue[1])
-	lineup[5], _ = strconv.Atoi(nexusLineup.Blue[2])
+	for i, teamString := range []string{
+		nexusLineup.Red[0], nexusLineup.Red[1], nexusLineup.Red[2],
+		nexusLineup.Blue[0], nexusLineup.Blue[1], nexusLineup.Blue[2],
+	} {
+		if teamString == "" {
+			continue
+		}
+		lineup[i], err = strconv.Atoi(teamString)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// Check that at least one spot is filled with a valid team number; otherwise return an error.
 	for _, team := range lineup {

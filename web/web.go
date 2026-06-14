@@ -93,7 +93,9 @@ func (web *Web) ServeWebInterface(port int) {
 	log.Printf("Serving HTTP requests on port %d", port)
 
 	// Start Server
-	http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
+		log.Printf("HTTP server error: %v", err)
+	}
 }
 
 // Serves the root page of Cheesy Arena.
@@ -177,6 +179,7 @@ func (web *Web) newHandler() http.Handler {
 	mux.HandleFunc("GET /match_review", web.matchReviewHandler)
 	mux.HandleFunc("GET /match_review/{matchId}/edit", web.matchReviewEditGetHandler)
 	mux.HandleFunc("POST /match_review/{matchId}/edit", web.matchReviewEditPostHandler)
+	mux.HandleFunc("POST /match_review/{matchId}/summary", web.matchReviewSummaryPostHandler)
 	mux.HandleFunc("GET /panels/scoring/{position}", web.scoringPanelHandler)
 	mux.HandleFunc("GET /panels/scoring/{position}/websocket", web.scoringPanelWebsocketHandler)
 	mux.HandleFunc("GET /panels/referee", web.refereePanelHandler)

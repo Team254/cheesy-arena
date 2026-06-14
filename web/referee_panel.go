@@ -7,15 +7,16 @@ package web
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"strconv"
+
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
-	"io"
-	"log"
-	"net/http"
-	"strconv"
 )
 
 // Renders the referee interface for assigning fouls.
@@ -77,7 +78,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		handleWebErr(w, err)
 		return
 	}
-	defer ws.Close()
+	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(
@@ -108,7 +109,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 
@@ -132,7 +133,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 
@@ -169,7 +170,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
-				ws.WriteError(err.Error())
+				writeWebsocketError(ws, err.Error())
 				continue
 			}
 
@@ -199,20 +200,22 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			web.arena.SignalVolunteers()
 		case "signalReset":
 			web.arena.SignalReset()
-		case "commitMatch":
+		case "commitAndPost":
 			if web.arena.MatchState != field.PostMatch {
 				// Don't allow committing the fouls until the match is over.
 				continue
 			}
 			web.arena.RedRealtimeScore.FoulsCommitted = true
 			web.arena.BlueRealtimeScore.FoulsCommitted = true
-			web.arena.FieldVolunteers = false
-			web.arena.FieldReset = true
-			web.arena.AllianceStationDisplayMode = "fieldReset"
-			web.arena.AllianceStationDisplayModeNotifier.Notify()
 			web.arena.ScoringStatusNotifier.Notify()
+
+			err = web.commitPostAndLoadNextMatch()
+			if err != nil {
+				writeWebsocketError(ws, err.Error())
+				continue
+			}
 		default:
-			ws.WriteError(fmt.Sprintf("Invalid message type '%s'.", messageType))
+			writeWebsocketError(ws, fmt.Sprintf("Invalid message type '%s'.", messageType))
 		}
 	}
 }

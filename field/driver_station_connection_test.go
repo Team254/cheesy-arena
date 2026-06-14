@@ -5,13 +5,28 @@ package field
 
 import (
 	"fmt"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
+	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
 	"time"
-
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/stretchr/testify/assert"
 )
+
+func TestDriverStationListenAddress(t *testing.T) {
+	oldDevMode := network.DevMode
+	t.Cleanup(
+		func() {
+			network.DevMode = oldDevMode
+		},
+	)
+
+	network.DevMode = false
+	assert.Equal(t, network.ServerIpAddress+":1750", listenAddress(1750))
+
+	network.DevMode = true
+	assert.Equal(t, ":1750", listenAddress(1750))
+}
 
 func TestEncodeControlPacket(t *testing.T) {
 	arena := setupTestArena(t)
@@ -26,7 +41,7 @@ func TestEncodeControlPacket(t *testing.T) {
 	assert.Equal(t, byte(0), data[5])
 	assert.Equal(t, byte(0), data[6])
 	assert.Equal(t, byte(0), data[20])
-	assert.Equal(t, byte(15), data[21])
+	assert.Equal(t, byte(20), data[21])
 
 	// Check the different alliance station values.
 	dsConn.AllianceStation = "R2"
@@ -115,22 +130,22 @@ func TestEncodeControlPacket(t *testing.T) {
 
 	// Check the countdown at different points during the match.
 	arena.MatchState = AutoPeriod
-	arena.MatchStartTime = time.Now().Add(-time.Duration(4 * time.Second))
+	arena.MatchStartTime = time.Now().Add(-9 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(11), data[21])
 	arena.MatchState = PausePeriod
-	arena.MatchStartTime = time.Now().Add(-time.Duration(16 * time.Second))
+	arena.MatchStartTime = time.Now().Add(-21 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
-	assert.Equal(t, byte(135), data[21])
+	assert.Equal(t, byte(140), data[21])
 	arena.MatchState = TeleopPeriod
-	arena.MatchStartTime = time.Now().Add(-time.Duration(33 * time.Second))
+	arena.MatchStartTime = time.Now().Add(-33 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
-	assert.Equal(t, byte(119), data[21])
-	arena.MatchStartTime = time.Now().Add(-time.Duration(150 * time.Second))
+	assert.Equal(t, byte(129), data[21])
+	arena.MatchStartTime = time.Now().Add(-160 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(2), data[21])
 	arena.MatchState = PostMatch
-	arena.MatchStartTime = time.Now().Add(-time.Duration(180 * time.Second))
+	arena.MatchStartTime = time.Now().Add(-180 * time.Second)
 	data = dsConn.encodeControlPacket(arena)
 	assert.Equal(t, byte(0), data[21])
 }
@@ -147,6 +162,24 @@ func TestSendControlPacket(t *testing.T) {
 	// No real way of checking this since the destination IP is remote, so settle for there being no errors.
 	err = dsConn.sendControlPacket(arena, "")
 	assert.Nil(t, err)
+}
+
+func TestParseDsLogPacketUpdatesDsReportedStatus(t *testing.T) {
+	dsConn := &DriverStationConnection{TeamId: 254}
+
+	dsConn.parseDsLogPacket([]byte{0, 6, 22, 0, 0, 12, 128, 0x30})
+	assert.True(t, dsConn.DsReportedStatusValid)
+	assert.True(t, dsConn.DsReportedAuto)
+	assert.True(t, dsConn.DsReportedTeleop)
+	assert.False(t, dsConn.DsReportedDisabled)
+	assert.True(t, dsConn.DsReportedEnabled)
+
+	dsConn.parseDsLogPacket([]byte{0, 6, 22, 0, 0, 12, 128, 0x08})
+	assert.True(t, dsConn.DsReportedStatusValid)
+	assert.False(t, dsConn.DsReportedAuto)
+	assert.False(t, dsConn.DsReportedTeleop)
+	assert.True(t, dsConn.DsReportedDisabled)
+	assert.False(t, dsConn.DsReportedEnabled)
 }
 
 func TestListenForDriverStations(t *testing.T) {
@@ -265,7 +298,7 @@ func TestNewDriverStationConnection_UdpPortSelection(t *testing.T) {
 	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
 	assert.Nil(t, err)
 	defer dsConn.close()
-	assert.Contains(t, dsConn.udpConn.RemoteAddr().String(), fmt.Sprintf(":%d", driverStationUdpSendPort))
+	assert.Contains(t, dsConn.udpAddrPort.String(), fmt.Sprintf(":%d", driverStationUdpSendPort))
 
 	tcpConnLite := setupFakeTcpConnection(t)
 	defer tcpConnLite.Close()
@@ -274,7 +307,26 @@ func TestNewDriverStationConnection_UdpPortSelection(t *testing.T) {
 	dsConnLite, err := newDriverStationConnection(254, "R1", tcpConnLite, true)
 	assert.Nil(t, err)
 	defer dsConnLite.close()
-	assert.Contains(t, dsConnLite.udpConn.RemoteAddr().String(), fmt.Sprintf(":%d", driverStationUdpSendPortLite))
+	assert.Contains(t, dsConnLite.udpAddrPort.String(), fmt.Sprintf(":%d", driverStationUdpSendPortLite))
+}
+
+func TestNewDriverStationConnection_Ipv6Address(t *testing.T) {
+	clientConn, serverConn := net.Pipe()
+	defer serverConn.Close()
+	tcpConn := fakeRemoteAddrConn{
+		Conn: clientConn,
+		remoteAddr: &net.TCPAddr{
+			IP:   net.ParseIP("::1"),
+			Port: 1750,
+		},
+	}
+	defer tcpConn.Close()
+
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
+	assert.Nil(t, err)
+	defer dsConn.close()
+	assert.Equal(t, "::1", dsConn.udpAddrPort.Addr().String())
+	assert.Equal(t, uint16(driverStationUdpSendPort), dsConn.udpAddrPort.Port())
 }
 
 func setupFakeTcpConnection(t *testing.T) net.Conn {
@@ -287,12 +339,23 @@ func setupFakeTcpConnection(t *testing.T) net.Conn {
 	return tcpConn
 }
 
+type fakeRemoteAddrConn struct {
+	net.Conn
+	remoteAddr net.Addr
+}
+
+func (conn fakeRemoteAddrConn) RemoteAddr() net.Addr {
+	return conn.remoteAddr
+}
+
 func startTestDriverStationServer(t *testing.T, arena *Arena) string {
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	assert.Nil(t, err)
-	t.Cleanup(func() {
-		listener.Close()
-	})
+	t.Cleanup(
+		func() {
+			listener.Close()
+		},
+	)
 
 	go arena.serveDriverStations(listener)
 	return listener.Addr().String()
@@ -302,10 +365,15 @@ func waitForDriverStationConnection(t *testing.T, arena *Arena, station string) 
 	t.Helper()
 
 	var dsConn *DriverStationConnection
-	if !assert.Eventually(t, func() bool {
-		dsConn = arena.AllianceStations[station].DsConn
-		return dsConn != nil
-	}, time.Second, 10*time.Millisecond) {
+	if !assert.Eventually(
+		t,
+		func() bool {
+			dsConn = arena.AllianceStations[station].DsConn
+			return dsConn != nil
+		},
+		time.Second,
+		10*time.Millisecond,
+	) {
 		return nil
 	}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
+	"log"
 	"strconv"
 )
 
@@ -37,8 +38,10 @@ type MatchTimeMessage struct {
 }
 
 type audienceAllianceScoreFields struct {
-	Score        *game.Score
-	ScoreSummary *game.ScoreSummary
+	Score              *game.Score
+	ScoreSummary       *game.ScoreSummary
+	ActiveRemainingSec int
+	ActiveDurationSec  int
 }
 
 // Instantiates notifiers and configures their message producing methods.
@@ -148,7 +151,11 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		}
 	}
 
-	matchResult, _ := arena.Database.GetMatchResultForMatch(arena.CurrentMatch.Id)
+	matchResult, err := arena.Database.GetMatchResultForMatch(arena.CurrentMatch.Id)
+	if err != nil {
+		log.Printf("Failed to get match result for match %d while generating match load message: %v",
+			arena.CurrentMatch.Id, err)
+	}
 	isReplay := matchResult != nil
 
 	var matchup *playoff.Matchup
@@ -157,14 +164,24 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 	if arena.CurrentMatch.Type == model.Playoff {
 		matchGroup := arena.PlayoffTournament.MatchGroups()[arena.CurrentMatch.PlayoffMatchGroupId]
 		matchup, _ = matchGroup.(*playoff.Matchup)
-		redOffFieldTeamIds, blueOffFieldTeamIds, _ := arena.Database.GetOffFieldTeamIds(arena.CurrentMatch)
+		redOffFieldTeamIds, blueOffFieldTeamIds, err := arena.Database.GetOffFieldTeamIds(arena.CurrentMatch)
+		if err != nil {
+			log.Printf("Failed to get off-field teams for match %d while generating match load message: %v",
+				arena.CurrentMatch.Id, err)
+		}
 		for _, teamId := range redOffFieldTeamIds {
-			team, _ := arena.Database.GetTeamById(teamId)
+			team, err := arena.Database.GetTeamById(teamId)
+			if err != nil {
+				log.Printf("Failed to get red off-field team %d while generating match load message: %v", teamId, err)
+			}
 			redOffFieldTeams = append(redOffFieldTeams, team)
 			allTeamIds = append(allTeamIds, teamId)
 		}
 		for _, teamId := range blueOffFieldTeamIds {
-			team, _ := arena.Database.GetTeamById(teamId)
+			team, err := arena.Database.GetTeamById(teamId)
+			if err != nil {
+				log.Printf("Failed to get blue off-field team %d while generating match load message: %v", teamId, err)
+			}
 			blueOffFieldTeams = append(blueOffFieldTeams, team)
 			allTeamIds = append(allTeamIds, teamId)
 		}
@@ -172,7 +189,10 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 
 	rankings := make(map[string]int)
 	for _, teamId := range allTeamIds {
-		ranking, _ := arena.Database.GetRankingForTeam(teamId)
+		ranking, err := arena.Database.GetRankingForTeam(teamId)
+		if err != nil {
+			log.Printf("Failed to get ranking for team %d while generating match load message: %v", teamId, err)
+		}
 		if ranking != nil {
 			rankings[strconv.Itoa(teamId)] = ranking.Rank
 		}
@@ -183,15 +203,16 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		!(arena.EventSettings.NexusEnabled && arena.CurrentMatch.ShouldAllowNexusSubstitution())
 
 	return &struct {
-		Match             *model.Match
-		AllowSubstitution bool
-		IsReplay          bool
-		Teams             map[string]*model.Team
-		Rankings          map[string]int
-		Matchup           *playoff.Matchup
-		RedOffFieldTeams  []*model.Team
-		BlueOffFieldTeams []*model.Team
-		BreakDescription  string
+		Match              *model.Match
+		AllowSubstitution  bool
+		IsReplay           bool
+		Teams              map[string]*model.Team
+		Rankings           map[string]int
+		Matchup            *playoff.Matchup
+		RedOffFieldTeams   []*model.Team
+		BlueOffFieldTeams  []*model.Team
+		BreakDescription   string
+		BreakNextMatchName string
 	}{
 		arena.CurrentMatch,
 		allowManualSubstitution,
@@ -202,6 +223,7 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		redOffFieldTeams,
 		blueOffFieldTeams,
 		arena.breakDescription,
+		arena.breakNextMatchName,
 	}
 }
 
@@ -233,6 +255,9 @@ func (arena *Arena) generateRealtimeScoreMessage() any {
 func (arena *Arena) GenerateScorePostedMessage() any {
 	redScoreSummary := arena.SavedMatchResult.RedScoreSummary()
 	blueScoreSummary := arena.SavedMatchResult.BlueScoreSummary()
+	_, tiebreakReason := game.DetermineMatchStatus(
+		redScoreSummary, blueScoreSummary, arena.SavedMatch.UseTiebreakCriteria,
+	)
 	redRankingPoints := redScoreSummary.BonusRankingPoints
 	blueRankingPoints := blueScoreSummary.BonusRankingPoints
 	switch arena.SavedMatch.Status {
@@ -258,7 +283,12 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 			redDestination = matchup.RedAllianceDestination()
 			blueDestination = matchup.BlueAllianceDestination()
 		}
-		redOffFieldTeamIds, blueOffFieldTeamIds, _ = arena.Database.GetOffFieldTeamIds(arena.SavedMatch)
+		var err error
+		redOffFieldTeamIds, blueOffFieldTeamIds, err = arena.Database.GetOffFieldTeamIds(arena.SavedMatch)
+		if err != nil {
+			log.Printf("Failed to get off-field teams for match %d while generating score posted message: %v",
+				arena.SavedMatch.Id, err)
+		}
 	}
 
 	redRankings := map[int]*game.Ranking{
@@ -293,11 +323,11 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		BlueOffFieldTeamIds []int
 		RedWon              bool
 		BlueWon             bool
+		TiebreakReason      string
 		RedWins             int
 		BlueWins            int
 		RedDestination      string
 		BlueDestination     string
-		CoopertitionEnabled bool
 	}{
 		arena.SavedMatch,
 		redScoreSummary,
@@ -315,11 +345,11 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		blueOffFieldTeamIds,
 		arena.SavedMatch.Status == game.RedWonMatch,
 		arena.SavedMatch.Status == game.BlueWonMatch,
+		tiebreakReason,
 		redWins,
 		blueWins,
 		redDestination,
 		blueDestination,
-		game.CoralBonusCoopEnabled,
 	}
 }
 
@@ -343,10 +373,8 @@ func (arena *Arena) generateScoringStatusMessage() any {
 	}{
 		arena.RedRealtimeScore.FoulsCommitted && arena.BlueRealtimeScore.FoulsCommitted,
 		map[string]positionStatus{
-			"red_near":  getStatusForPosition("red_near"),
-			"red_far":   getStatusForPosition("red_far"),
-			"blue_near": getStatusForPosition("blue_near"),
-			"blue_far":  getStatusForPosition("blue_far"),
+			"red":  getStatusForPosition("red"),
+			"blue": getStatusForPosition("blue"),
 		},
 	}
 }
@@ -359,6 +387,8 @@ func getAudienceAllianceScoreFields(
 	fields := new(audienceAllianceScoreFields)
 	fields.Score = &allianceScore.CurrentScore
 	fields.ScoreSummary = allianceScoreSummary
+	fields.ActiveRemainingSec = allianceScore.ActiveRemainingSec
+	fields.ActiveDurationSec = allianceScore.ActiveDurationSec
 	return fields
 }
 
