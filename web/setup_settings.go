@@ -508,7 +508,7 @@ func (web *Web) renderSettingsWithStatus(
 		*model.EventSettings
 		ErrorMessage      string
 		ActiveSettingsTab string
-		NexusBaseUrl string
+		NexusBaseUrl      string
 	}{web.arena.EventSettings, errorMessage, activeSettingsTab, web.arena.NexusClient.BaseUrl}
 	if statusCode != http.StatusOK {
 		w.WriteHeader(statusCode)
