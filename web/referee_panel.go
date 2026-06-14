@@ -200,7 +200,7 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		case "toggleBypass":
 			station, ok := data.(string)
 			if !ok {
-				ws.WriteError(fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				writeWebsocketError(ws, fmt.Sprintf("Failed to parse '%s' message.", messageType))
 				continue
 			}
 			err = web.arena.ToggleBypass(station)
