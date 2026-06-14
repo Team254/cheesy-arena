@@ -149,6 +149,7 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 
 			web.arena.Leds.SetMode(args.RedMode, args.BlueMode)
+			web.arena.LedChangeNotifier.Notify()
 		default:
 			writeWebsocketError(ws, fmt.Sprintf("Invalid message type '%s'.", messageType))
 			continue

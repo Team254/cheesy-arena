@@ -285,7 +285,7 @@ func (web *Web) plcWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	// Subscribe to live PLC updates (registers, inputs, coils, etc.)
 	if web.arena.Plc != nil {
 		if notifier := web.arena.Plc.IoChangeNotifier(); notifier != nil {
-			go ws.HandleNotifiers(notifier)
+			go ws.HandleNotifiers(notifier, web.arena.LedChangeNotifier)
 		}
 	}
 
