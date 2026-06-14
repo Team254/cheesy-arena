@@ -5,12 +5,13 @@ package field
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
-	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDriverStationListenAddress(t *testing.T) {
@@ -322,11 +323,11 @@ func TestNewDriverStationConnection_Ipv6Address(t *testing.T) {
 	}
 	defer tcpConn.Close()
 
-	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, false)
+	dsConn, err := newDriverStationConnection(254, "R1", tcpConn, driverStationRoboRioUdpPort, false)
 	assert.Nil(t, err)
 	defer dsConn.close()
 	assert.Equal(t, "::1", dsConn.udpAddrPort.Addr().String())
-	assert.Equal(t, uint16(driverStationUdpSendPort), dsConn.udpAddrPort.Port())
+	assert.Equal(t, uint16(driverStationRoboRioUdpPort), dsConn.udpAddrPort.Port())
 }
 
 func setupFakeTcpConnection(t *testing.T) net.Conn {
