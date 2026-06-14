@@ -1312,7 +1312,7 @@ func (arena *Arena) getHubLightStates(currentTime time.Time) (bool, bool) {
 	}
 }
 
-func (arena *Arena) ToggleBypass(station string) (error) {
+func (arena *Arena) ToggleBypass(station string) error {
 	if _, ok := arena.AllianceStations[station]; !ok {
 		return fmt.Errorf("Invalid alliance station '%s'.", station)
 	}
