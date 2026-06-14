@@ -119,14 +119,14 @@ func TestDoubleEliminationFourAllianceInitial(t *testing.T) {
 }
 
 func TestDoubleEliminationErrors(t *testing.T) {
-	_, _, err := newDoubleEliminationBracket(7)
+	_, _, err := newDoubleEliminationBracket(3)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "double-elimination bracket must have exactly 4 or 8 alliances", err.Error())
+		assert.Equal(t, "double-elimination bracket must have exactly 4 to 8 alliances", err.Error())
 	}
 
 	_, _, err = newDoubleEliminationBracket(9)
 	if assert.NotNil(t, err) {
-		assert.Equal(t, "double-elimination bracket must have exactly 4 or 8 alliances", err.Error())
+		assert.Equal(t, "double-elimination bracket must have exactly 4 to 8 alliances", err.Error())
 	}
 }
 

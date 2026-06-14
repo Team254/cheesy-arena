@@ -23,6 +23,9 @@
 
     .bracket_double #bgdouble,
     .bracket_double4 #bgdouble4,
+    .bracket_double5 #bgdouble5,
+    .bracket_double6 #bgdouble6,
+    .bracket_double7 #bgdouble7,
     .bracket_16 #bg16,
     .bracket_8 #bg8,
     .bracket_4 #bg4,
@@ -229,6 +232,51 @@
 
     .bracket_double4 #match_F {transform: translate(1360px, 450px);}
 
+    .bracket_double5 #match_M1 {transform: translate(114px, 158px);}
+    .bracket_double5 #match_M2 {transform: translate(114px, 380px);}
+
+    .bracket_double5 #match_M3 {transform: translate(412px, 126px);}
+    .bracket_double5 #match_M4 {transform: translate(412px, 538px);}
+    .bracket_double5 #match_M6 {transform: translate(1006px, 694px);}
+
+    .bracket_double5 #match_M5 {transform: translate(1006px, 301px);}
+
+    .bracket_double5 #match_M7 {transform: translate(1302px, 599px);}
+
+    .bracket_double5 #match_F {transform: translate(1598px, 417px);}
+
+    .bracket_double6 #match_M1 {transform: translate(114px, 190px);}
+    .bracket_double6 #match_M2 {transform: translate(114px, 380px);}
+    .bracket_double6 #match_M3 {transform: translate(412px, 158px);}
+    .bracket_double6 #match_M4 {transform: translate(412px, 348px);}
+
+    .bracket_double6 #match_M5 {transform: translate(709px, 504px);}
+    .bracket_double6 #match_M6 {transform: translate(709px, 694px);}
+
+    .bracket_double6 #match_M7 {transform: translate(1006px, 301px);}
+    .bracket_double6 #match_M8 {transform: translate(1006px, 599px);}
+
+    .bracket_double6 #match_M9 {transform: translate(1302px, 567px);}
+
+    .bracket_double6 #match_F {transform: translate(1598px, 417px);}
+
+    .bracket_double7 #match_M1 {transform: translate(114px, 158px);}
+    .bracket_double7 #match_M2 {transform: translate(114px, 348px);}
+    .bracket_double7 #match_M3 {transform: translate(114px, 538px);}
+    .bracket_double7 #match_M7 {transform: translate(709px, 694px);}
+
+    .bracket_double7 #match_M4 {transform: translate(412px, 158px);}
+    .bracket_double7 #match_M5 {transform: translate(412px, 348px);}
+    .bracket_double7 #match_M8 {transform: translate(709px, 504px);}
+    .bracket_double7 #match_M6 {transform: translate(412px, 538px);}
+
+    .bracket_double7 #match_M10 {transform: translate(1006px, 599px);}
+    .bracket_double7 #match_M11 {transform: translate(1302px, 567px);}
+
+    .bracket_double7 #match_M9 {transform: translate(1006px, 301px);}
+
+    .bracket_double7 #match_F {transform: translate(1598px, 417px);}
+
 
     .bracket_16 #match_EF1 {transform: translate(94px, 158px);}
     .bracket_16 #match_EF2 {transform: translate(94px, 348px);}
@@ -268,6 +316,21 @@
     <g id="background">
       {{if eq .BracketType "double"}}
         <rect id="bgdouble" x="70" y="115" width="1780" height="900"/>
+        <polyline class="separator" points="390,530 650,530 650,490 1520,490" stroke-dasharray="10,5" />
+        <text class="bracket_name" transform="translate(1285 475)">Upper Bracket</text>
+        <text class="bracket_name" transform="translate(1285 520)">Lower Bracket</text>
+      {{else if eq .BracketType "double7"}}
+        <rect id="bgdouble7" x="70" y="115" width="1780" height="900"/>
+        <polyline class="separator" points="390,530 650,530 650,490 1520,490" stroke-dasharray="10,5" />
+        <text class="bracket_name" transform="translate(1285 475)">Upper Bracket</text>
+        <text class="bracket_name" transform="translate(1285 520)">Lower Bracket</text>
+      {{else if eq .BracketType "double6"}}
+        <rect id="bgdouble6" x="70" y="115" width="1780" height="900"/>
+        <polyline class="separator" points="390,530 650,530 650,490 1520,490" stroke-dasharray="10,5" />
+        <text class="bracket_name" transform="translate(1285 475)">Upper Bracket</text>
+        <text class="bracket_name" transform="translate(1285 520)">Lower Bracket</text>
+      {{else if eq .BracketType "double5"}}
+        <rect id="bgdouble5" x="70" y="115" width="1780" height="900"/>
         <polyline class="separator" points="390,530 650,530 650,490 1520,490" stroke-dasharray="10,5" />
         <text class="bracket_name" transform="translate(1285 475)">Upper Bracket</text>
         <text class="bracket_name" transform="translate(1285 520)">Lower Bracket</text>
@@ -359,6 +422,184 @@
           </g>
         </g>
       </g>
+    {{else if eq .BracketType "double7"}}
+      <g id="connectors_doubleelim">
+        <g id="connectors_evergreen">
+          <polyline points="1211,390 1546,390 1546,656 1507,656"/>
+          <line x1="1598" y1="506" x2="1545" y2="506"/>
+          <line x1="1211" y1="688" x2="1302" y2="688"/>
+          <polyline points="914,783 959,783 959,593 914,593"/>
+          <line x1="1006" y1="688" x2="959" y2="688"/>
+          <line x1="617" y1="627" x2="709" y2="627"/>
+          <polyline points="617,247 703,247 703,437 617,437"/>
+          <polyline points="1006,390 861,390 861,336 704,336"/>
+        </g>
+        <g id="connectors_temporary">
+          <g id="connector_M1"{{if (index .Matchups "M1").IsActive}} class="active"{{end}}>
+            <polyline class="loser" points="411,593 367,593 367,247"/>
+            <polyline points="319,247 367,247 367,214 411,214"/>
+            <text transform="translate(342.9489 228.3672)">W</text>
+            <text transform="translate(347.4327 269.9525)" class="loser">L</text>
+          </g>
+          <g id="connectors_M2"{{if (index .Matchups "M2").IsActive}} class="active"{{end}}>
+            <polyline class="loser" points="411,662 367,662 367,437"/>
+            <polyline points="319,437 367,437 367,283 411,283"/>
+            <text transform="translate(342.9489 420.848)">W</text>
+            <text transform="translate(347.4327 462.4333)" class="loser">L</text>
+          </g>
+          <g id="connectors_M3"{{if (index .Matchups "M3").IsActive}} class="active"{{end}}>
+            <polyline class="loser" points="411,786 367,786 367,627"/>
+            <polyline points="319,627 367,627 367,404 411,404"/>
+            <text transform="translate(342.9489 610.848)">W</text>
+            <text transform="translate(347.4327 652.4332)" class="loser">L</text>
+          </g>
+          <g id="connectors_M4"{{if (index .Matchups "M4").IsActive}} class="active"{{end}}>
+            <polyline class="loser" points="411,853 367,853 367,817"/>
+            <polyline points="319,817 367,817 367,473 411,473"/>
+            <text transform="translate(342.9489 800.848)">W</text>
+            <text transform="translate(347.4327 842.4332)" class="loser">L</text>
+          </g>
+          <g id="connectors_M5"{{if (index .Matchups "M5").IsActive}} class="active"{{end}}>
+            <text transform="translate(665.9388 616.8822)">W</text>
+          </g>
+          <g id="connectors_M6"{{if (index .Matchups "M6").IsActive}} class="active"{{end}}>
+            <text transform="translate(667.1932 808.262)">W</text>
+          </g>
+          <g id="connectors_M7"{{if (index .Matchups "M7").IsActive}} class="active"{{end}}>
+            <text transform="translate(668.4441 239.1465)">W</text>
+            <text transform="translate(644.3726 276.7044)" class="loser">L</text>
+            <polyline class="loser" points="660,636 660,748 728,748"/>
+            <line class="loser" x1="660" y1="447" x2="660" y2="618"/>
+            <line class="loser" x1="660" y1="248" x2="660" y2="427"/>
+          </g>
+          <g id="connectors_M8"{{if (index .Matchups "M8").IsActive}} class="active"{{end}}>
+            <text transform="translate(668.566 429.1972)">W</text>
+            <text transform="translate(643.3726 469.2499)" class="loser">L</text>
+            <polyline class="loser" points="660,438 660,561 728,561"/>
+          </g>
+          <g id="connectors_M9"{{if (index .Matchups "M9").IsActive}} class="active"{{end}}>
+            <text transform="translate(966.4487 773.8822)">W</text>
+          </g>
+          <g id="connectors_M10"{{if (index .Matchups "M10").IsActive}} class="active"{{end}}>
+            <text transform="translate(941.2606 585.4622)">W</text>
+          </g>
+          <g id="connectors_M11"{{if (index .Matchups "M11").IsActive}} class="active"{{end}}>
+            <text transform="translate(1263.0288 382.2166)">W</text>
+            <text transform="translate(1239.3726 418.7044)" class="loser">L</text>
+            <polyline  class="loser" points="1256,391 1256,625 1323,625"/>
+          </g>
+        </g>
+      </g>
+    {{else if eq .BracketType "double6"}}
+      <g id="connectors_doubleelim">
+        <g id="connectors_evergreen">
+          <line x1="317" y1="279" x2="410" y2="279"/>
+          <line x1="317" y1="469" x2="410" y2="469"/>
+          <polyline points="1211,390 1546,390 1546,656 1507,656"/>
+          <line x1="1598" y1="506" x2="1545" y2="506"/>
+          <line x1="1211" y1="688" x2="1302" y2="688"/>
+          <polyline points="914,783 959,783 959,593 914,593"/>
+          <line x1="1006" y1="688" x2="959" y2="688"/>
+          <!--<line x1="617" y1="627" x2="709" y2="627"/>
+              <line x1="617" y1="817" x2="709" y2="817"/>-->
+          <polyline points="617,247 703,247 703,437 617,437"/>
+          <polyline points="1006,390 861,390 861,336 704,336"/>
+        </g>
+        <g id="connectors_temporary">
+          <g id="connector_M1"{{if (index .Matchups "M1").IsActive}} class="active"{{end}}>
+            <line class="loser" x1="367" y1="279" x2="367" y2="450"/>
+            <polyline class="loser" points="367,480 367,745 720,745 "/>
+            <text transform="translate(350 270)">W</text>
+            <text transform="translate(347 320)" class="loser">L</text>
+          </g>
+          <g id="connectors_M2"{{if (index .Matchups "M2").IsActive}} class="active"{{end}}>
+            <polyline class="loser" points="367,469 367,820 720,820 "/>
+            <text transform="translate(350 460)">W</text>
+            <text transform="translate(347 600)" class="loser">L</text>text>
+          </g>
+          <g id="connectors_M3"{{if (index .Matchups "M3").IsActive}} class="active"{{end}}>
+            <line class="loser" x1="667" y1="247" x2="667" y2="425"/>
+            <polyline class="loser" points="667,450 667,630 720,630 "/>
+            <text transform="translate(660 235)">W</text>
+            <text transform="translate(647 320)" class="loser">L</text>
+          </g>
+          <g id="connectors_M4"{{if (index .Matchups "M4").IsActive}} class="active"{{end}}>
+            <polyline class="loser" points="667,437 667,815 720,815 "/>
+            <text transform="translate(660 425)">W</text>
+            <text transform="translate(647 600)" class="loser">L</text>
+          </g>
+          <g id="connectors_M5"{{if (index .Matchups "M5").IsActive}} class="active"{{end}}>
+            <text transform="translate(941.2606 585.4622)">W</text>
+          </g>
+          <g id="connectors_M6"{{if (index .Matchups "M6").IsActive}} class="active"{{end}}>
+            <text transform="translate(966.4487 773.8822)">W</text>
+          </g>
+          <g id="connectors_M7"{{if (index .Matchups "M7").IsActive}} class="active"{{end}}>
+            <text transform="translate(1263.0288 382.2166)">W</text>
+            <text transform="translate(1239.3726 418.7044)" class="loser">L</text>
+            <polyline  class="loser" points="1256,391 1256,625 1323,625"/>
+          </g>
+          <g id="connectors_M8"{{if (index .Matchups "M8").IsActive}} class="active"{{end}}>
+            <text transform="translate(1223.2803 681.0883)">W</text>
+          </g>
+          <g id="connectors_M9"{{if (index .Matchups "M9").IsActive}} class="active"{{end}}>
+            <text transform="translate(1562.4487 647.8822)">W</text>
+          </g>
+        </g>
+      </g>
+    {{else if eq .BracketType "double5"}}
+      <g id="connectors_doubleelim">
+        <g id="connectors_evergreen">
+          
+          <line x1="317" y1="247" x2="410" y2="247"/>
+          <polyline points="1211,390 1546,390 1546,688 1300,688"/>
+          <line x1="1598" y1="506" x2="1545" y2="506"/>
+          <polyline points="1205,783 1259,783 1259,720 "/>
+          <line x1="1306" y1="720" x2="1259" y2="720"/>
+          <polyline points="617,627 670,627 670,810 1020,810"/>
+          <!--<line x1="617" y1="627" x2="709" y2="627"/>
+              <line x1="617" y1="817" x2="709" y2="817"/>-->
+          <polyline points="617,247 703,247 703,470 317,470"/>
+          <polyline points="1006,390 861,390 861,336 704,336"/>
+        </g>
+        <g id="connectors_temporary">
+          <g id="connector_M1"{{if (index .Matchups "M1").IsActive}} class="active"{{end}}>
+            <line class="loser" x1="367" y1="245" x2="367" y2="450"/>
+            <polyline class="loser" points="367,480 367,665 430,665 "/>
+            <text transform="translate(370 240)">W</text>
+            <text transform="translate(347 350)" class="loser">L</text>
+          </g>
+          <g id="connectors_M2"{{if (index .Matchups "M2").IsActive}} class="active"{{end}}>
+            <polyline class="loser" points="367,470 367,600 420,600 "/>
+            <text transform="translate(370 460)">W</text>
+            <text transform="translate(347 550)" class="loser">L</text>text>
+          </g>
+          <g id="connectors_M3"{{if (index .Matchups "M3").IsActive}} class="active"{{end}}>
+            <line class="loser" x1="647" y1="248" x2="647" y2="460"/>
+            <polyline class="loser" points="647,485 647,745 1020,745"/>
+            <text transform="translate(660 230)">W</text>
+            <text transform="translate(655 300)" class="loser">L</text>
+          </g>
+          <g id="connectors_M4"{{if (index .Matchups "M4").IsActive}} class="active"{{end}}>
+            <polyline class="loser" points="647,625 647,800 "/>
+            <text transform="translate(660 615)">W</text>
+            <text transform="translate(635 715)" class="loser">L</text>
+            <text transform="translate(640 800)" class="loser">X</text>
+          </g>
+          <g id="connectors_M5"{{if (index .Matchups "M5").IsActive}} class="active"{{end}}>
+            <polyline class="loser" points="1250,390 1250,660 1300,660"/>
+            <text transform="translate(1300 380)">W</text>
+          </g>
+          <g id="connectors_M6"{{if (index .Matchups "M6").IsActive}} class="active"{{end}}>
+            <text transform="translate(1266.4487 773.8822)">W</text>
+          </g>
+          <g id="connectors_M7"{{if (index .Matchups "M7").IsActive}} class="active"{{end}}>
+            <!--<text transform="translate(1263.0288 382.2166)">W</text>
+            <text transform="translate(1239.3726 418.7044)" class="loser">L</text>
+            <polyline  class="loser" points="1256,391 1256,625 1323,625"/>-->
+          </g>
+        </g>
+      </g>
     {{else if eq .BracketType "double4"}}
       <g id="connectors_doubleelim">
         <g id="connectors_evergreen">
@@ -433,6 +674,30 @@
         <text x="813" y="975">Round 3</text>
         <text x="1109" y="975">Round 4</text>
         <text x="1405" y="975">Round 5</text>
+        <text x="1702" y="975">Finals</text>
+        <text id="finals_subtitle" x="1802" y="434">Best-of-3</text>
+      {{else if eq .BracketType "double7"}}
+        <text x="219" y="975">Round 1</text>
+        <text x="516" y="975">Round 2</text>
+        <text x="813" y="975">Round 3</text>
+        <text x="1109" y="975">Round 4</text>
+        <text x="1405" y="975">Round 5</text>
+        <text x="1702" y="975">Finals</text>
+        <text id="finals_subtitle" x="1802" y="434">Best-of-3</text>
+      {{else if eq .BracketType "double6"}}
+        <text x="219" y="975">Round 1</text>
+        <text x="516" y="975">Round 2</text>
+        <text x="813" y="975">Round 3</text>
+        <text x="1109" y="975">Round 4</text>
+        <text x="1405" y="975">Round 5</text>
+        <text x="1702" y="975">Finals</text>
+        <text id="finals_subtitle" x="1802" y="434">Best-of-3</text>
+      {{else if eq .BracketType "double5"}}
+        <text x="219" y="975">Round 1</text>
+        <text x="516" y="975">Round 2</text>
+        <text x="1109" y="975">Round 3</text>
+        <text x="1405" y="975">Round 4</text>
+        <!--<text x="1405" y="975">Round 5</text>-->
         <text x="1702" y="975">Finals</text>
         <text id="finals_subtitle" x="1802" y="434">Best-of-3</text>
       {{else if eq .BracketType "double4"}}

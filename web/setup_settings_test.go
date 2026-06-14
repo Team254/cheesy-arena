@@ -115,7 +115,7 @@ func TestSetupSettingsDoubleElimination(t *testing.T) {
 
 	recorder = web.postHttpResponse("/setup/settings", "playoffType=DoubleEliminationPlayoff&numPlayoffAlliances=3")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Number of alliances for double elimination must be 4 or 8.")
+	assert.Contains(t, recorder.Body.String(), "Number of alliances for double elimination must be 4 to 8.")
 	assert.Equal(t, 4, web.arena.EventSettings.NumPlayoffAlliances)
 }
 
@@ -129,7 +129,7 @@ func TestSetupSettingsInvalidValues(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "must be between 2 and 16")
 
 	recorder = web.postHttpResponse("/setup/settings", "playoffType=DoubleEliminationPlayoff&numPlayoffAlliances=3")
-	assert.Contains(t, recorder.Body.String(), "must be 4 or 8")
+	assert.Contains(t, recorder.Body.String(), "must be 4 to 8")
 
 	// Changing the playoff type after alliance selection is finalized.
 	assert.Nil(t, web.arena.Database.CreateAlliance(&model.Alliance{Id: 1}))

@@ -85,9 +85,9 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			numAlliances, _ = strconv.Atoi(r.PostFormValue("numPlayoffAlliances"))
 		}
-		if numAlliances != 4 && numAlliances != 8 {
+		if numAlliances < 4 || numAlliances > 8 {
 			web.renderSettingsWithStatus(
-				w, r, "Number of alliances for double elimination must be 4 or 8.", activeSettingsTab, http.StatusOK,
+				w, r, "Number of alliances for double elimination must be 4 to 8.", activeSettingsTab, http.StatusOK,
 			)
 			return
 		}
