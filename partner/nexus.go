@@ -9,14 +9,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
-
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
 )
 
 const nexusBaseUrl = "https://frc.nexus"
