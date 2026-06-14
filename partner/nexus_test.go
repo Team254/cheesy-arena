@@ -4,12 +4,13 @@
 package partner
 
 import (
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetLineup(t *testing.T) {
