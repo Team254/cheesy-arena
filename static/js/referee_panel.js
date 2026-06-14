@@ -208,7 +208,6 @@ const handleArenaStatus = function (data) {
 
 const setTeamBypassedStatus = function (station, bypassed) {
   const cardButton = $(`#${station}Card`);
-  cardButton.toggleClass("enabled-status", !bypassed && !isPostMatch);
   cardButton.toggleClass("bypassed-status", bypassed && !isPostMatch);
 }
 
