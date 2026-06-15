@@ -22,8 +22,16 @@ func (arena *Arena) updateHubLeds(currentTime time.Time) {
 	switch arena.MatchState {
 	case AutoPeriod:
 		arena.Leds.SetMode(led.RedStartupMode, led.BlueStartupMode)
+		currentRed, currentBlue := arena.Leds.GetModes()
+		if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
+			arena.LedChangeNotifier.Notify()
+		}
 	case PausePeriod:
 		arena.Leds.SetMode(led.RedMode, led.BlueMode)
+		currentRed, currentBlue := arena.Leds.GetModes()
+		if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
+			arena.LedChangeNotifier.Notify()
+		}
 	case TeleopPeriod:
 		arena.updateTeleopHubLeds(currentTime)
 	case PostMatch:
@@ -31,9 +39,17 @@ func (arena *Arena) updateHubLeds(currentTime time.Time) {
 			// Set the Hub LEDs to white at the end of the match, and then turn them off when the referees are supposed
 			// to assess tower climbs.
 			arena.Leds.SetMode(led.WhiteMode, led.WhiteMode)
+			currentRed, currentBlue := arena.Leds.GetModes()
+				if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
+					arena.LedChangeNotifier.Notify()
+				}
 			go func() {
 				time.Sleep(hubLightScoringAssessmentSec * time.Second)
 				arena.Leds.SetMode(led.OffMode, led.OffMode)
+				currentRed, currentBlue := arena.Leds.GetModes()
+					if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
+						arena.LedChangeNotifier.Notify()
+					}
 			}()
 		}
 	}
@@ -102,4 +118,8 @@ func (arena *Arena) updateTeleopHubLeds(currentTime time.Time) {
 		}
 	}
 	arena.Leds.SetMode(redMode, blueMode)
+	currentRed, currentBlue := arena.Leds.GetModes()
+		if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
+			arena.LedChangeNotifier.Notify()
+		}
 }
