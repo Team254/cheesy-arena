@@ -40,16 +40,16 @@ func (arena *Arena) updateHubLeds(currentTime time.Time) {
 			// to assess tower climbs.
 			arena.Leds.SetMode(led.WhiteMode, led.WhiteMode)
 			currentRed, currentBlue := arena.Leds.GetModes()
-			if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
-				arena.LedChangeNotifier.Notify()
-			}
+				if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
+					arena.LedChangeNotifier.Notify()
+				}
 			go func() {
 				time.Sleep(hubLightScoringAssessmentSec * time.Second)
 				arena.Leds.SetMode(led.OffMode, led.OffMode)
 				currentRed, currentBlue := arena.Leds.GetModes()
-				if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
-					arena.LedChangeNotifier.Notify()
-				}
+					if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
+						arena.LedChangeNotifier.Notify()
+					}
 			}()
 		}
 	}
@@ -119,7 +119,7 @@ func (arena *Arena) updateTeleopHubLeds(currentTime time.Time) {
 	}
 	arena.Leds.SetMode(redMode, blueMode)
 	currentRed, currentBlue := arena.Leds.GetModes()
-	if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
-		arena.LedChangeNotifier.Notify()
-	}
+		if currentRed != arena.lastRedLedMode || currentBlue != arena.lastBlueLedMode {
+			arena.LedChangeNotifier.Notify()
+		}
 }

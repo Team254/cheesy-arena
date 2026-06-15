@@ -76,7 +76,7 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 	defer closeWebsocket(ws)
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
-	go ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier(), web.arena.ArenaStatusNotifier)
+	go ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier(), web.arena.ArenaStatusNotifier, web.arena.LedChangeNotifier)
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {
