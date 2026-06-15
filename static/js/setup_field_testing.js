@@ -75,6 +75,12 @@ var handleArenaStatus = function (data) {
   updateCoilOverrideTooltips();
 };
 
+// Handles a websocket message to update the LED mode selection.
+var handLEDModeChange = function (data) {
+  $("input[name=redLedMode][value=" + data.RedMode + "]").prop("checked", true);
+  $("input[name=blueLedMode][value=" + data.BlueMode + "]").prop("checked", true);
+}
+
 $(function () {
   updateCoilOverrideTooltips();
 
@@ -95,6 +101,9 @@ $(function () {
     },
     arenaStatus: function (event) {
       handleArenaStatus(event.data);
+    },
+    setLedMode: function (event) {
+      handLEDModeChange(event.data);
     }
   });
 });

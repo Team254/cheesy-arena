@@ -105,6 +105,8 @@ type Arena struct {
 	NextFoulId                        int
 	DriverStationUdpSocket            *net.UDPConn
 	redWonAuto                        bool
+	lastRedLedMode                    led.Mode
+	lastBlueLedMode                   led.Mode
 }
 
 type AllianceStation struct {
@@ -400,7 +402,7 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.Plc.ResetMatch()
 	arena.NextFoulId = 1
 	arena.redWonAuto = false
-	arena.Leds.SetMode(led.OffMode, led.OffMode)
+	arena.SetLedMode(led.OffMode, led.OffMode)
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
@@ -1348,7 +1350,7 @@ func (arena *Arena) SignalVolunteers() {
 	arena.FieldReset = false
 	arena.AllianceStationDisplayMode = "signalCount"
 	arena.AllianceStationDisplayModeNotifier.Notify()
-	arena.Leds.SetMode(led.PurpleMode, led.PurpleMode)
+	arena.SetLedMode(led.PurpleMode, led.PurpleMode)
 }
 
 // Set the field lights and team signs to green, if not in a match.
@@ -1365,7 +1367,7 @@ func (arena *Arena) SignalReset() {
 	arena.FieldReset = true
 	arena.AllianceStationDisplayMode = "fieldReset"
 	arena.AllianceStationDisplayModeNotifier.Notify()
-	arena.Leds.SetMode(led.GreenMode, led.GreenMode)
+	arena.SetLedMode(led.GreenMode, led.GreenMode)
 }
 
 func (arena *Arena) handleSounds(matchTimeSec float64) {
