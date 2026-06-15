@@ -137,7 +137,7 @@ func TestSetupFieldTestingWebsocketSetPlcCoilOverrideDisallowedStates(t *testing
 	} {
 		web.arena.MatchState = matchState
 		ws.Write("setPlcCoilOverride", map[string]any{"Index": 8, "Override": "on"})
-		assert.Equal(t, fieldTestingOverrideDisabledMessage, readWebsocketError(t, ws))
+		assert.Equal(t, fieldTestingOverrideDisabledMessage, readFieldTestingWebsocketError(t, ws))
 	}
 }
 
@@ -154,7 +154,7 @@ func TestSetupFieldTestingWebsocketSetPlcCoilOverrideInvalidArgs(t *testing.T) {
 	readWebsocketMultiple(t, ws, 2)
 
 	ws.Write("setPlcCoilOverride", map[string]any{"Index": 8, "Override": "invalid"})
-	assert.Equal(t, "Invalid coil override state 'invalid'.", readWebsocketError(t, ws))
+	assert.Equal(t, "Invalid coil override state 'invalid'.", readFieldTestingWebsocketError(t, ws))
 }
 
 func TestSetupFieldTestingWebsocketSetLedMode(t *testing.T) {
@@ -196,7 +196,7 @@ func TestSetupFieldTestingWebsocketSetLedModeDisallowedStates(t *testing.T) {
 	} {
 		web.arena.MatchState = matchState
 		ws.Write("setLedMode", map[string]any{"RedMode": led.PurpleMode, "BlueMode": led.GreenMode})
-		assert.Equal(t, fieldTestingLedModeDisabledMessage, readWebsocketError(t, ws))
+		assert.Equal(t, fieldTestingLedModeDisabledMessage, readFieldTestingWebsocketError(t, ws))
 	}
 }
 
@@ -213,14 +213,44 @@ func TestSetupFieldTestingWebsocketSetLedModeInvalidArgs(t *testing.T) {
 	readWebsocketMultiple(t, ws, 2)
 
 	ws.Write("setLedMode", map[string]any{"RedMode": 999, "BlueMode": led.GreenMode})
-	assert.Equal(t, "Invalid LED mode '999'.", readWebsocketError(t, ws))
+	assert.Equal(t, "Invalid LED mode '999'.", readFieldTestingWebsocketError(t, ws))
 
 	ws.Write("setLedMode", map[string]any{"RedMode": led.PurpleMode, "BlueMode": 999})
-	assert.Equal(t, "Invalid LED mode '999'.", readWebsocketError(t, ws))
+	assert.Equal(t, "Invalid LED mode '999'.", readFieldTestingWebsocketError(t, ws))
 }
 
 func readPlcIoChangeMessage(t *testing.T, ws *websocket.Websocket) plcIoChangeMessage {
-	var message plcIoChangeMessage
-	assert.Nil(t, mapstructure.Decode(readWebsocketType(t, ws, "plcIoChange"), &message))
-	return message
+	for i := 0; i < 5; i++ {
+		messageType, data, err := ws.ReadWithTimeout(time.Second)
+		if !assert.Nil(t, err) {
+			return plcIoChangeMessage{}
+		}
+		if messageType != "plcIoChange" {
+			continue
+		}
+
+		var message plcIoChangeMessage
+		assert.Nil(t, mapstructure.Decode(data, &message))
+		return message
+	}
+
+	assert.Fail(t, "Timed out waiting for plcIoChange websocket message")
+	return plcIoChangeMessage{}
+}
+
+func readFieldTestingWebsocketError(t *testing.T, ws *websocket.Websocket) string {
+	for i := 0; i < 5; i++ {
+		messageType, data, err := ws.ReadWithTimeout(time.Second)
+		if !assert.Nil(t, err) {
+			return "error"
+		}
+		if messageType != "error" {
+			continue
+		}
+
+		return data.(string)
+	}
+
+	assert.Fail(t, "Timed out waiting for error websocket message")
+	return "error"
 }
