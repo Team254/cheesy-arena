@@ -119,6 +119,8 @@ func (web *Web) settingsPostHandler(w http.ResponseWriter, r *http.Request) {
 	eventSettings.TbaSecret = r.PostFormValue("tbaSecret")
 	eventSettings.AutoAudienceDisplayEnabled = r.PostFormValue("autoAudienceDisplayEnabled") == "on"
 	eventSettings.NexusEnabled = r.PostFormValue("nexusEnabled") == "on"
+	eventSettings.NexusAutoQueueEnabled = r.PostFormValue("nexusAutoQueueEnabled") == "on"
+	eventSettings.NexusAutoQueueKey = r.PostFormValue("nexusAutoQueueKey")
 	eventSettings.NetworkSecurityEnabled = r.PostFormValue("networkSecurityEnabled") == "on"
 	eventSettings.ApAddress = r.PostFormValue("apAddress")
 	eventSettings.ApPassword = r.PostFormValue("apPassword")
@@ -507,7 +509,8 @@ func (web *Web) renderSettingsWithStatus(
 		*model.EventSettings
 		ErrorMessage      string
 		ActiveSettingsTab string
-	}{web.arena.EventSettings, errorMessage, activeSettingsTab}
+		NexusBaseUrl      string
+	}{web.arena.EventSettings, errorMessage, activeSettingsTab, web.arena.NexusClient.BaseUrl}
 	if statusCode != http.StatusOK {
 		w.WriteHeader(statusCode)
 	}

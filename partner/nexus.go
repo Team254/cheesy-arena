@@ -1,26 +1,31 @@
 // Copyright 2023 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Methods for pulling match lineups from Nexus for FRC.
+// Methods for interfacing with the Nexus for FRC API.
 
 package partner
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 const nexusBaseUrl = "https://frc.nexus"
 const nexusApiKey = "Vn6D9y80kQcNijDItKOJHg8yYEk"
 
 type NexusClient struct {
-	BaseUrl   string
-	apiKey    string
-	eventCode string
+	BaseUrl      string
+	apiKey       string
+	autoQueueKey string
+	eventCode    string
 }
 
 type nexusLineup struct {
@@ -28,8 +33,37 @@ type nexusLineup struct {
 	Blue [3]string `json:"blue"`
 }
 
-func NewNexusClient(eventCode string) *NexusClient {
-	return &NexusClient{BaseUrl: nexusBaseUrl, apiKey: nexusApiKey, eventCode: eventCode}
+type matchWinner string
+
+const (
+	Red  matchWinner = "red"
+	Blue matchWinner = "blue"
+	Tie  matchWinner = "tie"
+)
+
+type autoQueueEventType string
+
+const (
+	PostScores autoQueueEventType = "post-scores"
+	MatchStart autoQueueEventType = "match-start"
+	BreakStart autoQueueEventType = "break-start"
+	BreakEnd   autoQueueEventType = "break-end"
+)
+
+type autoQueueEvent struct {
+	Event       autoQueueEventType `json:"event"`
+	MatchName   string             `json:"match"`
+	MatchNumber int                `json:"matchNumber"`
+	Winner      matchWinner        `json:"winner"`
+	DurationSec int                `json:"duration"`
+}
+
+type autoQueueResponse struct {
+	StatusText string `json:"response"`
+}
+
+func NewNexusClient(eventCode string, autoQueueKey string) *NexusClient {
+	return &NexusClient{BaseUrl: nexusBaseUrl, apiKey: nexusApiKey, autoQueueKey: autoQueueKey, eventCode: eventCode}
 }
 
 // Gets the team lineup for a given match from the Nexus API. Returns nil and an error if the lineup is not available.
@@ -81,6 +115,85 @@ func (client *NexusClient) GetLineup(tbaMatchKey model.TbaMatchKey) (*[6]int, er
 		}
 	}
 	return nil, fmt.Errorf("Lineup not yet submitted")
+}
+
+// Notifies Nexus that this match has been completed and updates the queuing status.
+func (client *NexusClient) AutoQueue(matchName string, typeOrder int, matchStatus game.MatchStatus) error {
+	var winner matchWinner
+	switch matchStatus {
+	case game.RedWonMatch:
+		winner = Red
+	case game.BlueWonMatch:
+		winner = Blue
+	case game.TieMatch:
+		winner = Tie
+	}
+
+	_, err := client.postAutoQueueRequest(autoQueueEvent{Event: "post-scores", MatchName: matchName, MatchNumber: typeOrder, Winner: winner})
+	return err
+}
+
+// Notifies Nexus that the match has started.
+func (client *NexusClient) MatchStarted(matchName string, typeOrder int) error {
+	_, err := client.postAutoQueueRequest(autoQueueEvent{Event: "match-start", MatchName: matchName, MatchNumber: typeOrder})
+	return err
+}
+
+// Notifies Nexus that a field break has started.
+func (client *NexusClient) BreakStarted(durationSec int) error {
+	_, err := client.postAutoQueueRequest(autoQueueEvent{Event: "break-start", DurationSec: durationSec})
+	return err
+}
+
+// Notifies Nexus that a field break has ended.
+func (client *NexusClient) BreakEnded() error {
+	_, err := client.postAutoQueueRequest(autoQueueEvent{Event: "break-end"})
+	return err
+}
+
+// Sends a POST request to the Nexus AutoQueue API.
+func (client *NexusClient) postAutoQueueRequest(body autoQueueEvent) (*autoQueueResponse, error) {
+	if client.autoQueueKey == "" {
+		log.Printf("Nexus AutoQueue error: AutoQueue is enabled but \"Nexus AutoQueue key\" setting is not set")
+		return nil, fmt.Errorf("Nexus AutoQueue error: AutoQueue is enabled but \"Nexus AutoQueue key\" setting is not set")
+	}
+
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+
+	url := fmt.Sprintf("%s/api/v1/event/%s/auto-queue?key=%s", client.BaseUrl, client.eventCode, client.autoQueueKey)
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonBody))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var jsonResponse autoQueueResponse
+	err = json.Unmarshal(respBody, &jsonResponse)
+	if err != nil {
+		log.Printf("Nexus AutoQueue error: %s", string(respBody))
+		return nil, fmt.Errorf("Unable to parse Nexus AutoQueue response: %d, %s", resp.StatusCode, string(respBody))
+	}
+
+	if resp.StatusCode != 200 {
+		log.Printf("Nexus AutoQueue error: %d, %s", resp.StatusCode, jsonResponse.StatusText)
+		return nil, fmt.Errorf("Error calling Nexus AutoQueue API: %d, %s", resp.StatusCode, jsonResponse.StatusText)
+	}
+
+	return &jsonResponse, err
 }
 
 // Sends a GET request to the Nexus API.

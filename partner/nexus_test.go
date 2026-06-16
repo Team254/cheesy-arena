@@ -33,7 +33,7 @@ func TestGetLineup(t *testing.T) {
 		),
 	)
 	defer nexusServer.Close()
-	client := NewNexusClient("my_event_code")
+	client := NewNexusClient("my_event_code", "auto_queue_key")
 	client.BaseUrl = nexusServer.URL
 
 	tbaMatchKey := model.TbaMatchKey{CompLevel: "p", SetNumber: 0, MatchNumber: 1}

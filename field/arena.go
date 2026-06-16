@@ -220,7 +220,7 @@ func (arena *Arena) LoadSettings() error {
 		return err
 	}
 	arena.TbaClient = partner.NewTbaClient(settings.TbaEventCode, settings.TbaSecretId, settings.TbaSecret)
-	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode)
+	arena.NexusClient = partner.NewNexusClient(settings.TbaEventCode, settings.NexusAutoQueueKey)
 	arena.BlackmagicClient = partner.NewBlackmagicClient(settings.BlackmagicAddresses)
 
 	// Initialize Companion client with event configurations
@@ -536,6 +536,10 @@ func (arena *Arena) StartMatch() error {
 		arena.lastTeamLogTime = time.Time{}
 
 		arena.MatchState = StartMatch
+
+		if arena.EventSettings.NexusAutoQueueEnabled && arena.CurrentMatch.Type != model.Test {
+			go arena.NexusClient.MatchStarted(arena.CurrentMatch.LongName, arena.CurrentMatch.TypeOrder)
+		}
 	}
 	return err
 }
@@ -615,6 +619,10 @@ func (arena *Arena) startTimeout(description string, nextMatchName string, durat
 	arena.LastMatchTimeSec = -1
 	arena.AllianceStationDisplayMode = "timeout"
 	arena.AllianceStationDisplayModeNotifier.Notify()
+
+	if arena.EventSettings.NexusAutoQueueEnabled {
+		go arena.NexusClient.BreakStarted(durationSec)
+	}
 
 	return nil
 }
@@ -740,6 +748,11 @@ func (arena *Arena) Update() {
 	case TimeoutActive:
 		if matchTimeSec >= float64(game.MatchTiming.TimeoutDurationSec) {
 			arena.MatchState = PostTimeout
+
+			if arena.EventSettings.NexusAutoQueueEnabled {
+				go arena.NexusClient.BreakEnded()
+			}
+
 			go func() {
 				// Leave the timer on the screen briefly at the end of the timeout period.
 				time.Sleep(time.Second * matchEndScoreDwellSec)

@@ -557,7 +557,7 @@ func TestLoadTeamsFromNexus(t *testing.T) {
 		),
 	)
 	defer nexusServer.Close()
-	arena.NexusClient = partner.NewNexusClient("my_event_code")
+	arena.NexusClient = partner.NewNexusClient("my_event_code", "auto_queue_key")
 	arena.NexusClient.BaseUrl = nexusServer.URL
 	arena.EventSettings.NexusEnabled = true
 

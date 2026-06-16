@@ -53,6 +53,8 @@ type EventSettings struct {
 	TbaSecret                        string
 	AutoAudienceDisplayEnabled       bool
 	NexusEnabled                     bool
+	NexusAutoQueueEnabled            bool
+	NexusAutoQueueKey                string
 	NetworkSecurityEnabled           bool
 	ApAddress                        string
 	ApPassword                       string

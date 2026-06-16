@@ -503,6 +503,13 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 			}()
 		}
 
+		if web.arena.EventSettings.NexusAutoQueueEnabled && !isMatchReviewEdit {
+			// Trigger Nexus AutoQueue asynchronously, ignoring errors.
+			go func() {
+				web.arena.NexusClient.AutoQueue(match.LongName, match.TypeOrder, match.Status)
+			}()
+		}
+
 		// Back up the database, but don't error out if it fails.
 		err = web.arena.Database.Backup(
 			web.arena.EventSettings.Name, fmt.Sprintf("post_%s_match_%s", match.Type, match.ShortName),
