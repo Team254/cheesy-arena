@@ -384,13 +384,6 @@ func (arena *Arena) generateScoringStatusMessage() any {
 func (arena *Arena) generateLedModeMessage() interface{} {
 	redMode, blueMode := arena.Leds.GetModes()
 
-	log.Printf("Generating LED mode message with RedMode=%d and BlueMode=%d", redMode, blueMode)
-
-	// Only notify if mode has actually changed
-	if redMode == arena.lastRedLedMode && blueMode == arena.lastBlueLedMode {
-		// return nil      // Return nil to suppress the notification
-	}
-
 	arena.lastRedLedMode = redMode
 	arena.lastBlueLedMode = blueMode
 
