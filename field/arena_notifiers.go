@@ -30,7 +30,7 @@ type ArenaNotifiers struct {
 	ReloadDisplaysNotifier             *websocket.Notifier
 	ScorePostedNotifier                *websocket.Notifier
 	ScoringStatusNotifier              *websocket.Notifier
-	LedChangeNotifier 				   *websocket.Notifier
+	LedChangeNotifier                  *websocket.Notifier
 }
 
 type MatchTimeMessage struct {
@@ -382,22 +382,22 @@ func (arena *Arena) generateScoringStatusMessage() any {
 }
 
 func (arena *Arena) generateLedModeMessage() interface{} {
-    redMode, blueMode := arena.Leds.GetModes()
+	redMode, blueMode := arena.Leds.GetModes()
 
 	log.Printf("Generating LED mode message with RedMode=%d and BlueMode=%d", redMode, blueMode)
 
-    // Only notify if mode has actually changed
-    if redMode == arena.lastRedLedMode && blueMode == arena.lastBlueLedMode {
-       // return nil      // Return nil to suppress the notification
-    }
+	// Only notify if mode has actually changed
+	if redMode == arena.lastRedLedMode && blueMode == arena.lastBlueLedMode {
+		// return nil      // Return nil to suppress the notification
+	}
 
-    arena.lastRedLedMode  = redMode
-    arena.lastBlueLedMode = blueMode
+	arena.lastRedLedMode = redMode
+	arena.lastBlueLedMode = blueMode
 
-    return map[string]interface{}{
-        "RedMode":  redMode,
-        "BlueMode": blueMode,
-    }
+	return map[string]interface{}{
+		"RedMode":  redMode,
+		"BlueMode": blueMode,
+	}
 }
 
 // Constructs the data object for one alliance sent to the audience display for the realtime scoring overlay.
