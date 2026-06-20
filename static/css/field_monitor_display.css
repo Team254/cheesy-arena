@@ -47,6 +47,12 @@ body {
   align-items: center;
   font-size: 4vw;
 }
+#matchStateAllianceStation[data-active-alliance="red"] {
+  color: #f44;
+}
+#matchStateAllianceStation[data-active-alliance="blue"] {
+  color: #2080ff;
+}
 #matchStatusRow{
   display: flex;
 }

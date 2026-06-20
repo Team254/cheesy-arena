@@ -7,6 +7,8 @@ let websocket;
 let currentMatchId;
 let redSide;
 let blueSide;
+let latestRealtimeScore;
+let matchTimeRemainingSec;
 const lowBatteryThreshold = 8;
 const highBtuThreshold = 7.0;
 
@@ -163,15 +165,49 @@ const handleArenaStatus = function (data) {
 // Handles a websocket message to update the match time countdown.
 const handleMatchTime = function (data) {
   translateMatchTime(data, function (matchState, matchStateText, countdownSec) {
+    matchTimeRemainingSec = countdownSec;
     $("#matchState").text(matchStateText);
     $("#matchTime").text(countdownSec);
     $("#matchTimeAllianceStation").text(countdownSec);
-    if (matchStateText === "PRE-MATCH" | matchStateText === "POST-MATCH") {
+    updateAllianceStationMatchState();
+    if (matchStateText === "PRE-MATCH" || matchStateText === "POST-MATCH") {
       $(".ds-dependent").attr("data-preMatch", "true");
     } else {
       $(".ds-dependent").attr("data-preMatch", "false");
     }
   });
+};
+
+const updateAllianceStationMatchState = function () {
+  if (!latestRealtimeScore) {
+    return;
+  }
+
+  const redActiveRemainingSec = latestRealtimeScore.Red.ActiveRemainingSec;
+  const blueActiveRemainingSec = latestRealtimeScore.Blue.ActiveRemainingSec;
+  let matchStateText = latestRealtimeScore.MatchState;
+  let activeAlliance = "";
+
+  if (latestRealtimeScore.MatchState === 2) {
+    matchStateText = "Auto";
+  } else if (latestRealtimeScore.MatchState === 4) {
+    const redActive = redActiveRemainingSec > 0;
+    const blueActive = blueActiveRemainingSec > 0;
+    if (redActive && blueActive) {
+      const activeRemainingSec = Math.max(redActiveRemainingSec, blueActiveRemainingSec);
+      matchStateText = matchTimeRemainingSec === activeRemainingSec ? "End Game" : "Transition";
+    } else if (redActive) {
+      matchStateText = "Red Active";
+      activeAlliance = "red";
+    } else if (blueActive) {
+      matchStateText = "Blue Active";
+      activeAlliance = "blue";
+    }
+  }
+
+  $("#matchStateAllianceStation")
+    .attr("data-active-alliance", activeAlliance)
+    .text(matchStateText);
 };
 
 // Handles a websocket message to play a sound to signal match start/stop/etc.
@@ -184,21 +220,23 @@ const handlePlaySound = function(sound) {
   $("#sound-" + sound)[0].play();
 };
 
-
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function (data, reversed) {
+  latestRealtimeScore = data;
+  const activeRemainingSec = Math.max(data.Red.ActiveRemainingSec, data.Blue.ActiveRemainingSec);
+  updateAllianceStationMatchState();
+  $("#activeRemainingSecAllianceStation").text(activeRemainingSec);
 
-    if (reversed === "true") {
-      $("#rightScore").text(data.Red.ScoreSummary.Score);
-      $("#leftScore").text(data.Blue.ScoreSummary.Score);
-      $("#rightScoreAllianceDisplay").text(data.Blue.ScoreSummary.Score);
-      $("#leftScoreAllianceDisplay").text(data.Red.ScoreSummary.Score);
-    } else {
-      $("#rightScore").text(data.Blue.ScoreSummary.Score);
-      $("#leftScore").text(data.Red.ScoreSummary.Score);
-      $("#rightScoreAllianceDisplay").text(data.Red.ScoreSummary.Score);
-      $("#leftScoreAllianceDisplay").text(data.Blue.ScoreSummary.Score);
-
+  if (reversed === "true") {
+    $("#rightScore").text(data.Red.ScoreSummary.Score);
+    $("#leftScore").text(data.Blue.ScoreSummary.Score);
+    $("#rightScoreAllianceDisplay").text(data.Blue.ScoreSummary.Score);
+    $("#leftScoreAllianceDisplay").text(data.Red.ScoreSummary.Score);
+  } else {
+    $("#rightScore").text(data.Blue.ScoreSummary.Score);
+    $("#leftScore").text(data.Red.ScoreSummary.Score);
+    $("#rightScoreAllianceDisplay").text(data.Red.ScoreSummary.Score);
+    $("#leftScoreAllianceDisplay").text(data.Blue.ScoreSummary.Score);
   }
 };
 
@@ -234,41 +272,14 @@ const editFtaNotes = function (element) {
 
 $(function () {
   // Read the configuration for this display from the URL query string.
-  var urlParams = new URLSearchParams(window.location.search);
-  var reversed = urlParams.get("reversed") === "true"; // Initialize reversed variable
-  var isds = urlParams.get("ds"); 
-  updateSides(reversed);
-
-  // Add event listener to Flip button
-  $(".left-position, .right-position").click(function() {
-    if (isds === "true") {
-      return;
-    }
-    reversed = !reversed; // Toggle reversed state
-    updateSides(reversed);
-
-    // Update the data-reversed attribute for visual updates
-    $(".reversible-left").attr("data-reversed", reversed);
-    $(".reversible-right").attr("data-reversed", reversed);
-
-    // Optional: Persist state to the URL (if needed)
-    const newUrl = new URL(window.location);
-    newUrl.searchParams.set("reversed", reversed);
-    window.history.replaceState({}, "", newUrl);
-  });
-  
-  function updateSides(isReversed) {
-    if (isReversed) {
-      redSide = "right";
-      blueSide = "left";
-    } else {
-      redSide = "left";
-      blueSide = "right";
-    }
-
-    // Update the DOM to reflect the new sides
-    $(".reversible-left").attr("data-reversed", isReversed);
-    $(".reversible-right").attr("data-reversed", isReversed);
+  const urlParams = new URLSearchParams(window.location.search);
+  const reversed = urlParams.get("reversed");
+  if (reversed === "true") {
+    redSide = "right";
+    blueSide = "left";
+  } else {
+    redSide = "left";
+    blueSide = "right";
   }
 
   //Read if display to be used in a Driver Station, ignore FTA flag if so.
