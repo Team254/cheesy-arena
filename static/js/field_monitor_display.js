@@ -223,9 +223,23 @@ const handlePlaySound = function(sound) {
 // Handles a websocket message to update the match score.
 const handleRealtimeScore = function (data, reversed) {
   latestRealtimeScore = data;
+  const allianceScore = reversed === "true" ? data.Blue : data.Red;
   const activeRemainingSec = Math.max(data.Red.ActiveRemainingSec, data.Blue.ActiveRemainingSec);
   updateAllianceStationMatchState();
   $("#activeRemainingSecAllianceStation").text(activeRemainingSec);
+  $("#fuelNumeratorAllianceStation").text(
+    allianceScore.ScoreSummary.NumFuel - allianceScore.ScoreSummary.NumFuelPostMatch
+  );
+  $("#fuelDenominatorAllianceStation").text(allianceScore.ScoreSummary.NumFuelGoal);
+
+  const autoWinnerElement = $("#autoWinnerAllianceStation");
+  if (data.Red.Score.Hub.WonAuto) {
+    autoWinnerElement.attr("data-alliance", "red").text("Red Won Auto").prop("hidden", false);
+  } else if (data.Blue.Score.Hub.WonAuto) {
+    autoWinnerElement.attr("data-alliance", "blue").text("Blue Won Auto").prop("hidden", false);
+  } else {
+    autoWinnerElement.attr("data-alliance", "").text("").prop("hidden", true);
+  }
 
   if (reversed === "true") {
     $("#rightScore").text(data.Red.ScoreSummary.Score);

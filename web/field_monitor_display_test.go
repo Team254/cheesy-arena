@@ -20,6 +20,9 @@ func TestFieldMonitorDisplay(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "Field Monitor - Untitled Event - Cheesy Arena")
 	assert.Contains(t, recorder.Body.String(), "matchStateAllianceStation")
 	assert.Contains(t, recorder.Body.String(), "activeRemainingSecAllianceStation")
+	assert.Contains(t, recorder.Body.String(), "fuelNumeratorAllianceStation")
+	assert.Contains(t, recorder.Body.String(), "fuelDenominatorAllianceStation")
+	assert.Contains(t, recorder.Body.String(), "autoWinnerAllianceStation")
 }
 
 func TestFieldMonitorDisplayWebsocket(t *testing.T) {
