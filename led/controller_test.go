@@ -4,15 +4,16 @@
 package led
 
 import (
+	"errors"
+	"github.com/stretchr/testify/assert"
 	"net"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
 type fakeConn struct {
 	writes [][]byte
+	err    error
 }
 
 func (conn *fakeConn) Read(_ []byte) (int, error)         { return 0, nil }
@@ -27,6 +28,9 @@ func (conn *fakeConn) Write(packet []byte) (int, error) {
 	packetCopy := make([]byte, len(packet))
 	copy(packetCopy, packet)
 	conn.writes = append(conn.writes, packetCopy)
+	if conn.err != nil {
+		return 0, conn.err
+	}
 	return len(packet), nil
 }
 
@@ -77,6 +81,28 @@ func TestControllerUpdateSendsOnChangeAndHeartbeat(t *testing.T) {
 
 	controller.SetMode(OffMode, BlueMode)
 	assert.Nil(t, controller.Update())
+	assert.Len(t, conn.writes, 3)
+}
+
+func TestControllerUpdateThrottlesAfterWriteError(t *testing.T) {
+	writeErr := errors.New("broken pipe")
+	conn := &fakeConn{err: writeErr}
+	controller := NewController()
+	controller.conn = conn
+	controller.SetMode(RedMode, BlueMode)
+
+	assert.Equal(t, writeErr, controller.Update())
+	assert.Len(t, conn.writes, 1)
+
+	assert.Nil(t, controller.Update())
+	assert.Len(t, conn.writes, 1)
+
+	controller.universes[1].lastPacketTime = time.Now().Add(-heartbeatInterval)
+	assert.Equal(t, writeErr, controller.Update())
+	assert.Len(t, conn.writes, 2)
+
+	controller.SetMode(OffMode, BlueMode)
+	assert.Equal(t, writeErr, controller.Update())
 	assert.Len(t, conn.writes, 3)
 }
 

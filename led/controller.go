@@ -153,7 +153,7 @@ func (controller *Controller) populateFixtureData(zone *zone, fixtures []fixture
 	return nil
 }
 
-// shouldSendPacket returns true if the universe data has changed or it has been too long since the last packet was sent.
+// shouldSendPacket returns true if the universe data has changed or it has been too long since the last packet attempt.
 func (universe *universe) shouldSendPacket() bool {
 	if universe.lastPacketTime.IsZero() || time.Since(universe.lastPacketTime) >= heartbeatInterval {
 		return true
@@ -284,10 +284,10 @@ func (controller *Controller) sendPacket(dmxUniverse int, universe *universe) er
 	copy(controller.packet[pixelDataOffset:], universe.currentData[:])
 
 	_, err := controller.conn.Write(controller.packet)
+	universe.markSent()
 	if err != nil {
 		return err
 	}
 
-	universe.markSent()
 	return nil
 }
