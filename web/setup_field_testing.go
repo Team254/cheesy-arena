@@ -16,6 +16,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 const (
@@ -77,6 +78,22 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 
 	// Subscribe the websocket to the notifiers whose messages will be passed on to the client, in a separate goroutine.
 	go ws.HandleNotifiers(web.arena.Plc.IoChangeNotifier(), web.arena.ArenaStatusNotifier)
+
+	// Stream the LED status to the client periodically.
+	go func() {
+		ticker := time.NewTicker(100 * time.Millisecond)
+		defer ticker.Stop()
+		for range ticker.C {
+			redPixels, bluePixels := web.arena.Leds.GetPixels()
+			err := ws.Write("ledStatus", map[string]interface{}{
+				"Red":  redPixels,
+				"Blue": bluePixels,
+			})
+			if err != nil {
+				return
+			}
+		}
+	}()
 
 	// Loop, waiting for commands and responding to them, until the client closes the connection.
 	for {

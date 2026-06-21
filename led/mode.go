@@ -20,6 +20,7 @@ const (
 	BlueStartupMode
 	RedAdvantageMode
 	BlueAdvantageMode
+	RainbowMode
 )
 
 var ModeNames = map[Mode]string{
@@ -35,6 +36,7 @@ var ModeNames = map[Mode]string{
 	BlueStartupMode:   "Blue Startup",
 	RedAdvantageMode:  "Red Advantage",
 	BlueAdvantageMode: "Blue Advantage",
+	RainbowMode:       "Rainbow",
 }
 
 // Returns the solid color associated with the given mode.

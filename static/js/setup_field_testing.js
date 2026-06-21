@@ -75,6 +75,45 @@ var handleArenaStatus = function (data) {
   updateCoilOverrideTooltips();
 };
 
+var ledContainers = {};
+
+var handleLedStatus = function (data) {
+  var renderPixels = function(containerId, pixels) {
+    if (!ledContainers[containerId]) {
+      var container = $("#" + containerId);
+      container.css({"display": "flex", "flex-direction": "column", "gap": "4px"});
+      var boxes = [];
+      for (var i = 0; i < 4; i++) {
+        var row = $("<div></div>").css({"display": "flex", "flex-direction": "row", "gap": "2px"});
+        for (var j = 0; j < 8; j++) {
+          var box = $("<div></div>").css({
+            "width": "12px",
+            "height": "12px",
+            "background-color": "black",
+            "border": "1px solid #333"
+          });
+          boxes.push(box);
+          row.append(box);
+        }
+        container.append(row);
+      }
+      ledContainers[containerId] = boxes;
+    }
+    
+    var boxes = ledContainers[containerId];
+    for (var i = 0; i < 4; i++) {
+      for (var j = 0; j < 8; j++) {
+        var pixelIndex = i * 16 + j;
+        var color = pixels[pixelIndex];
+        boxes[i * 8 + j].css("background-color", "rgb(" + color.R + "," + color.G + "," + color.B + ")");
+      }
+    }
+  };
+  
+  renderPixels("redHubPixels", data.Red);
+  renderPixels("blueHubPixels", data.Blue);
+};
+
 $(function () {
   updateCoilOverrideTooltips();
 
@@ -95,6 +134,9 @@ $(function () {
     },
     arenaStatus: function (event) {
       handleArenaStatus(event.data);
+    },
+    ledStatus: function (event) {
+      handleLedStatus(event.data);
     }
   });
 });

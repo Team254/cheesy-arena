@@ -53,6 +53,8 @@ func (zone *zone) updatePixels() {
 		zone.updateAdvantageMode(Red, zone.counter)
 	case BlueAdvantageMode:
 		zone.updateAdvantageMode(Blue, zone.counter)
+	case RainbowMode:
+		zone.updateRainbowMode(zone.counter)
 	default:
 		zone.updateSingleColorMode(Black)
 	}
@@ -179,5 +181,48 @@ func (zone *zone) sweepFixture(start, counter int, direction fillDirection) {
 		}
 		brightness := 1 - float64(trail)/float64(pixelsPerFixture)
 		zone.pixels[start+pixel] = White.Scale(brightness)
+	}
+}
+
+// updateRainbowMode renders a rotating rainbow pattern counter-clockwise.
+func (zone *zone) updateRainbowMode(counter int) {
+	logicalPixels := numSides * pixelsPerFixture
+
+	for i := 0; i < logicalPixels; i++ {
+		pos := (i - (counter / 2)) % logicalPixels
+		if pos < 0 {
+			pos += logicalPixels
+		}
+
+		h := float64(pos) / float64(logicalPixels) * 6
+		idx := int(h)
+		f := h - float64(idx)
+
+		q := byte(255 * (1 - f))
+		t := byte(255 * f)
+
+		var color Color
+		switch idx % 6 {
+		case 0:
+			color = Color{255, t, 0}
+		case 1:
+			color = Color{q, 255, 0}
+		case 2:
+			color = Color{0, 255, t}
+		case 3:
+			color = Color{0, q, 255}
+		case 4:
+			color = Color{t, 0, 255}
+		case 5:
+			color = Color{255, 0, q}
+		}
+
+		side := i/pixelsPerFixture + 1
+		pixel := i % pixelsPerFixture
+
+		for fixture := 0; fixture < fixturesPerSide; fixture++ {
+			start := ((side-1)*fixturesPerSide + fixture) * pixelsPerFixture
+			zone.pixels[start+pixel] = color
+		}
 	}
 }
