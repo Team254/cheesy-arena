@@ -81,6 +81,11 @@ func (controller *Controller) GetModes() (Mode, Mode) {
 	return controller.redZone.currentMode, controller.blueZone.currentMode
 }
 
+// GetPixels returns the current RGB color arrays for the red and blue zones.
+func (controller *Controller) GetPixels() ([64]Color, [64]Color) {
+	return controller.redZone.pixels, controller.blueZone.pixels
+}
+
 // Update advances the pixel values through the current sequence and sends a packet if necessary. Should be called from
 // a timed loop.
 func (controller *Controller) Update() error {

@@ -30,6 +30,10 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
             <label class="form-check-label" for="redLedMode{{$mode}}">{{$name}}</label>
           </div>
           {{end}}
+          <div class="mt-3">
+            <h6 class="text-muted">Live Status</h6>
+            <div id="redHubPixels"></div>
+          </div>
         </div>
         <div class="col">
           <h6>Blue Hub</h6>
@@ -40,6 +44,10 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
             <label class="form-check-label" for="blueLedMode{{$mode}}">{{$name}}</label>
           </div>
           {{end}}
+          <div class="mt-3">
+            <h6 class="text-muted">Live Status</h6>
+            <div id="blueHubPixels"></div>
+          </div>
         </div>
       </div>
     </div>
