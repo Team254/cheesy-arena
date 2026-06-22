@@ -23,13 +23,15 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
       <div class="row">
         <div class="col">
           <h6>Red Hub</h6>
-          {{range $mode, $name := .LedModeNames}}
-          <div class="form-check">
-            <input class="form-check-input led-mode" type="radio" name="redLedMode" id="redLedMode{{$mode}}"
-              value="{{$mode}}" onchange="setLedMode();" {{if eq $mode $.RedLedMode}}checked{{end}}>
-            <label class="form-check-label" for="redLedMode{{$mode}}">{{$name}}</label>
+          <div class="form-group">
+            <span class="d-inline-block w-100 led-mode-wrapper" tabindex="0">
+              <select class="form-select led-mode" name="redLedMode" id="redLedModeSelect" onchange="setLedMode();">
+                {{range $mode, $name := .LedModeNames}}
+                <option value="{{$mode}}" {{if eq $mode $.RedLedMode}}selected{{end}}>{{$name}}</option>
+                {{end}}
+              </select>
+            </span>
           </div>
-          {{end}}
           <div class="mt-3">
             <h6 class="text-muted">Live Status</h6>
             <div id="redHubPixels"></div>
@@ -37,13 +39,15 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
         </div>
         <div class="col">
           <h6>Blue Hub</h6>
-          {{range $mode, $name := .LedModeNames}}
-          <div class="form-check">
-            <input class="form-check-input led-mode" type="radio" name="blueLedMode" id="blueLedMode{{$mode}}"
-              value="{{$mode}}" onchange="setLedMode();" {{if eq $mode $.BlueLedMode}}checked{{end}}>
-            <label class="form-check-label" for="blueLedMode{{$mode}}">{{$name}}</label>
+          <div class="form-group">
+            <span class="d-inline-block w-100 led-mode-wrapper" tabindex="0">
+              <select class="form-select led-mode" name="blueLedMode" id="blueLedModeSelect" onchange="setLedMode();">
+                {{range $mode, $name := .LedModeNames}}
+                <option value="{{$mode}}" {{if eq $mode $.BlueLedMode}}selected{{end}}>{{$name}}</option>
+                {{end}}
+              </select>
+            </span>
           </div>
-          {{end}}
           <div class="mt-3">
             <h6 class="text-muted">Live Status</h6>
             <div id="blueHubPixels"></div>

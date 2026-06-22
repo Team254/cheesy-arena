@@ -94,8 +94,8 @@ func (controller *Controller) Update() error {
 		return nil
 	}
 
-	controller.redZone.updatePixels()
-	controller.blueZone.updatePixels()
+	controller.redZone.updatePixels(Red)
+	controller.blueZone.updatePixels(Blue)
 
 	// Create the template packet if it doesn't already exist.
 	if len(controller.packet) == 0 {

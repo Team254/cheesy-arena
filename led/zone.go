@@ -37,7 +37,7 @@ type zone struct {
 }
 
 // updatePixels calculates the current pixel values depending on the mode and elapsed counter cycles.
-func (zone *zone) updatePixels() {
+func (zone *zone) updatePixels(baseColor Color) {
 	switch zone.currentMode {
 	case RedMode, BlueMode, GreenMode, PurpleMode, WhiteMode, OffMode:
 		zone.updateSingleColorMode(colorForMode(zone.currentMode))
@@ -49,12 +49,15 @@ func (zone *zone) updatePixels() {
 		zone.updateStartupMode(Red, zone.counter)
 	case BlueStartupMode:
 		zone.updateStartupMode(Blue, zone.counter)
+
 	case RedAdvantageMode:
 		zone.updateAdvantageMode(Red, zone.counter)
 	case BlueAdvantageMode:
 		zone.updateAdvantageMode(Blue, zone.counter)
 	case RainbowMode:
 		zone.updateRainbowMode(zone.counter)
+	case Side1TestMode, Side2TestMode, Side3TestMode, Side4TestMode:
+		zone.updateSideTestMode(int(zone.currentMode-Side1TestMode)+1, baseColor)
 	default:
 		zone.updateSingleColorMode(Black)
 	}
@@ -224,5 +227,14 @@ func (zone *zone) updateRainbowMode(counter int) {
 			start := ((side-1)*fixturesPerSide + fixture) * pixelsPerFixture
 			zone.pixels[start+pixel] = color
 		}
+	}
+}
+
+func (zone *zone) updateSideTestMode(sideToTest int, color Color) {
+	zone.updateSingleColorMode(Black)
+	startIndex := (sideToTest - 1) * fixturesPerSide * pixelsPerFixture
+	endIndex := startIndex + (fixturesPerSide * pixelsPerFixture)
+	for i := startIndex; i < endIndex; i++ {
+		zone.pixels[i] = color
 	}
 }

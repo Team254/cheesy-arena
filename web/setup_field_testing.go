@@ -85,9 +85,18 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 		defer ticker.Stop()
 		for range ticker.C {
 			redPixels, bluePixels := web.arena.Leds.GetPixels()
-			err := ws.Write("ledStatus", map[string]interface{}{
-				"Red":  redPixels,
-				"Blue": bluePixels,
+			redMode, blueMode := web.arena.Leds.GetModes()
+			type ledStatusPayload struct {
+				Red      [64]led.Color
+				Blue     [64]led.Color
+				RedMode  led.Mode
+				BlueMode led.Mode
+			}
+			err := ws.Write("ledStatus", ledStatusPayload{
+				Red:      redPixels,
+				Blue:     bluePixels,
+				RedMode:  redMode,
+				BlueMode: blueMode,
 			})
 			if err != nil {
 				return

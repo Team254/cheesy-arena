@@ -21,6 +21,10 @@ const (
 	RedAdvantageMode
 	BlueAdvantageMode
 	RainbowMode
+	Side1TestMode
+	Side2TestMode
+	Side3TestMode
+	Side4TestMode
 )
 
 var ModeNames = map[Mode]string{
@@ -37,6 +41,10 @@ var ModeNames = map[Mode]string{
 	RedAdvantageMode:  "Red Advantage",
 	BlueAdvantageMode: "Blue Advantage",
 	RainbowMode:       "Rainbow",
+	Side1TestMode:     "Test: Facing Driver Station",
+	Side2TestMode:     "Test: Facing Audience",
+	Side3TestMode:     "Test: Facing Center",
+	Side4TestMode:     "Test: Facing Scoring Table",
 }
 
 // Returns the solid color associated with the given mode.

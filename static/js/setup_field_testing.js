@@ -7,6 +7,7 @@ var websocket;
 var plcOverrideAllowed = false;
 var allowedOverrideMatchStates = [0, 5, 6, 7];
 var disabledOverrideTooltipText = "Cannot override coil while match is in progress.";
+var disabledLedTooltipText = "Cannot override LED Lighting while match is in progress.";
 
 // Sends a websocket message to play a given game sound on the audience display.
 var playSound = function (sound) {
@@ -16,8 +17,8 @@ var playSound = function (sound) {
 // Sends a websocket message to set the selected LED test mode.
 var setLedMode = function () {
   websocket.send("setLedMode", {
-    RedMode: parseInt($("input[name=redLedMode]:checked").val(), 10),
-    BlueMode: parseInt($("input[name=blueLedMode]:checked").val(), 10)
+    RedMode: parseInt(modeSelects["red"].val(), 10),
+    BlueMode: parseInt(modeSelects["blue"].val(), 10)
   });
 };
 
@@ -51,6 +52,19 @@ var updateCoilOverrideTooltips = function () {
   });
 };
 
+var updateLedOverrideTooltips = function () {
+  $(".led-mode-wrapper").each(function (_index, element) {
+    const tooltip = bootstrap.Tooltip.getInstance(element);
+    if (plcOverrideAllowed) {
+      if (tooltip) {
+        tooltip.dispose();
+      }
+    } else if (!tooltip) {
+      new bootstrap.Tooltip(element, { title: disabledLedTooltipText });
+    }
+  });
+};
+
 // Handles a websocket message to update the PLC IO status.
 var handlePlcIoChange = function (data) {
   $.each(data.Inputs, function (index, input) {
@@ -73,9 +87,15 @@ var handlePlcIoChange = function (data) {
 var handleArenaStatus = function (data) {
   plcOverrideAllowed = allowedOverrideMatchStates.includes(data.MatchState);
   updateCoilOverrideTooltips();
+  updateLedOverrideTooltips();
+  
+  modeSelects["red"].prop("disabled", !plcOverrideAllowed);
+  modeSelects["blue"].prop("disabled", !plcOverrideAllowed);
 };
 
 var ledContainers = {};
+var modeSelects = {};
+var lastServerModes = {};
 
 var handleLedStatus = function (data) {
   var renderPixels = function(containerId, pixels) {
@@ -112,10 +132,24 @@ var handleLedStatus = function (data) {
   
   renderPixels("redHubPixels", data.Red);
   renderPixels("blueHubPixels", data.Blue);
+  
+  var syncModeSelect = function(alliance, mode) {
+    if (lastServerModes[alliance] !== mode) {
+      modeSelects[alliance].val(mode);
+      lastServerModes[alliance] = mode;
+    }
+  };
+  
+  syncModeSelect("red", data.RedMode);
+  syncModeSelect("blue", data.BlueMode);
 };
 
 $(function () {
+  modeSelects["red"] = $("select[name=redLedMode]");
+  modeSelects["blue"] = $("select[name=blueLedMode]");
+  
   updateCoilOverrideTooltips();
+  updateLedOverrideTooltips();
 
   $(document).on("click", ".plc-coil-indicator", function (event) {
     if (!plcOverrideAllowed) {
