@@ -134,7 +134,7 @@ var handleLedStatus = function (data) {
   renderPixels("blueHubPixels", data.Blue);
   
   var syncModeSelect = function(alliance, mode) {
-    if (lastServerModes[alliance] !== mode) {
+    if (lastServerModes[alliance] !== mode || modeSelects[alliance].val() != mode) {
       modeSelects[alliance].val(mode);
       lastServerModes[alliance] = mode;
     }
