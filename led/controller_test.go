@@ -135,7 +135,7 @@ func TestStartupModeFillsSidesInFmsOrder(t *testing.T) {
 	controller.SetMode(RedStartupMode, OffMode)
 
 	controller.redZone.counter = 50
-	controller.redZone.updatePixels()
+	controller.redZone.updatePixels(Red)
 
 	assert.Equal(t, Red, controller.redZone.pixels[3])
 	assert.Equal(t, Red, controller.redZone.pixels[4])
@@ -149,7 +149,7 @@ func TestAdvantageModeSweepsInOppositeDirectionsBySide(t *testing.T) {
 	controller.SetMode(RedAdvantageMode, OffMode)
 
 	controller.redZone.counter = advantageStepCycle
-	controller.redZone.updatePixels()
+	controller.redZone.updatePixels(Red)
 
 	assert.Equal(t, White, controller.redZone.pixels[0])
 	assert.Equal(t, White, controller.redZone.pixels[31])
@@ -159,11 +159,11 @@ func TestPulseModeScalesAllianceColor(t *testing.T) {
 	controller := NewController()
 	controller.SetMode(RedPulseMode, OffMode)
 
-	controller.redZone.updatePixels()
+	controller.redZone.updatePixels(Red)
 	assert.Equal(t, Black, controller.redZone.pixels[0])
 
 	controller.redZone.counter = pulseHalfPeriod
-	controller.redZone.updatePixels()
+	controller.redZone.updatePixels(Red)
 	assert.Equal(t, Red, controller.redZone.pixels[0])
 }
 
