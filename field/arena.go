@@ -113,6 +113,7 @@ type AllianceStation struct {
 	Ethernet     bool
 	AStop        bool
 	EStop        bool
+	RefEStop     bool
 	Bypass       bool
 	Team         *model.Team
 	WifiStatus   network.TeamWifiStatus
@@ -960,6 +961,12 @@ func (arena *Arena) assignTeam(teamId int, station string) error {
 	// Force the A-stop to be reset by the new team if it is already pressed (if the PLC is enabled).
 	arena.AllianceStations[station].aStopReset = !arena.Plc.IsEnabled()
 
+	if !arena.Plc.IsEnabled() {
+		// If we're not on PLC, force the E-Stop to be reset
+		arena.AllianceStations[station].RefEStop = false
+		arena.AllianceStations[station].EStop = false
+	}
+
 	// Do nothing if the station is already assigned to the requested team.
 	dsConn := arena.AllianceStations[station].DsConn
 	if dsConn != nil && dsConn.TeamId == teamId {
@@ -1154,6 +1161,7 @@ func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
 			dsConn.Enabled = enabled && !allianceStation.EStop && !(auto && allianceStation.AStop) &&
 				!allianceStation.Bypass
 			dsConn.EStop = allianceStation.EStop
+			dsConn.RefEStop = allianceStation.RefEStop
 			dsConn.AStop = allianceStation.AStop
 			err := dsConn.update(arena, allianceStation.GameData)
 			if err != nil {
@@ -1334,6 +1342,16 @@ func (arena *Arena) ToggleBypass(station string) error {
 	return nil
 }
 
+func (arena *Arena) SetRefEStop(station string) error {
+	if _, ok := arena.AllianceStations[station]; !ok {
+		return fmt.Errorf("Invalid alliance station '%s'.", station)
+	}
+	arena.AllianceStations[station].EStop = true
+	arena.AllianceStations[station].RefEStop = true
+	arena.ArenaStatusNotifier.Notify()
+	return nil
+}
+
 func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) {
 	allianceStation := arena.AllianceStations[station]
 	if eStopState {
@@ -1341,6 +1359,7 @@ func (arena *Arena) handleTeamStop(station string, eStopState, aStopState bool) 
 	} else if arena.MatchTimeSec() == 0 {
 		// Keep the E-stop latched until the match is over.
 		allianceStation.EStop = false
+		allianceStation.RefEStop = false
 	}
 	if aStopState {
 		allianceStation.AStop = true

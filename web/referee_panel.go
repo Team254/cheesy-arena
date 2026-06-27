@@ -208,6 +208,17 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				writeWebsocketError(ws, err.Error())
 				continue
 			}
+		case "refEStop":
+			station, ok := data.(string)
+			if !ok {
+				writeWebsocketError(ws, fmt.Sprintf("Failed to parse '%s' message.", messageType))
+				continue
+			}
+			err = web.arena.SetRefEStop(station)
+			if err != nil {
+				writeWebsocketError(ws, err.Error())
+				continue
+			}
 		case "signalVolunteers":
 			web.arena.SignalVolunteers()
 		case "signalReset":

@@ -42,6 +42,7 @@ type DriverStationConnection struct {
 	Auto                      bool
 	Enabled                   bool
 	EStop                     bool
+	RefEStop                  bool
 	AStop                     bool
 	DsLinked                  bool
 	RadioLinked               bool
@@ -252,6 +253,11 @@ func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena, gameDat
 	}
 	if dsConn.Enabled {
 		packet[3] |= 0x04
+	}
+	if dsConn.newDs {
+		if dsConn.RefEStop {
+			packet[3] |= 0x20
+		}
 	}
 	if dsConn.EStop {
 		packet[3] |= 0x80
