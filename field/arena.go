@@ -809,6 +809,10 @@ func (arena *Arena) Update() {
 
 	arena.updateHubLeds(currentTime)
 
+	// Drive the tablet hub color displays. This is intentionally separate from handlePlcInputOutput() below, since
+	// it must keep working even when no physical PLC is connected.
+	arena.updateHubDisplayColors(currentTime)
+
 	// Handle field sensors/lights/actuators.
 	arena.handlePlcInputOutput()
 
@@ -1108,7 +1112,7 @@ func (arena *Arena) checkCanStartMatch() error {
 		return fmt.Errorf("cannot start match while there is a match still in progress or with results pending")
 	}
 
-	err := arena.checkAllianceStationsReady("R1", "R2", "R3", "B1", "B2", "B3")
+	err := arena.checkAllianceStationsReady("R1", "R2", "B1", "B2")
 	if err != nil {
 		return err
 	}
@@ -1205,6 +1209,35 @@ func (arena *Arena) handleAutoWinner() {
 	}
 }
 
+// updateHubDisplayColors drives the tablet hub color displays based on match state and shift timing. Unlike the
+// physical PLC-driven hub lights/motors, this must run unconditionally -- it's a pure software indicator and must
+// not depend on whether a physical PLC is connected/enabled.
+func (arena *Arena) updateHubDisplayColors(currentTime time.Time) {
+	switch arena.MatchState {
+	case PreMatch, TimeoutActive, PostTimeout:
+		// Outside of a match, leave the color under the control of SignalVolunteers()/SignalReset(), except to
+		// reset it to off once all teams become ready.
+		redAllianceReady := arena.checkAllianceStationsReady("R1", "R2") == nil
+		blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2") == nil
+		if redAllianceReady && blueAllianceReady {
+			arena.SetHubColor("red", HubOff)
+			arena.SetHubColor("blue", HubOff)
+		}
+	case AutoPeriod, PausePeriod, TeleopPeriod:
+		redHubLight, blueHubLight := arena.getHubLightStates(currentTime)
+		if redHubLight {
+			arena.SetHubColor("red", HubRed)
+		} else {
+			arena.SetHubColor("red", HubOff)
+		}
+		if blueHubLight {
+			arena.SetHubColor("blue", HubBlue)
+		} else {
+			arena.SetHubColor("blue", HubOff)
+		}
+	}
+}
+
 // Updates the score given new input information from the field PLC, and actuates PLC outputs accordingly.
 func (arena *Arena) handlePlcInputOutput() {
 	if !arena.Plc.IsEnabled() {
@@ -1233,8 +1266,8 @@ func (arena *Arena) handlePlcInputOutput() {
 	arena.Plc.SetAwardsModeLight(arena.AllianceStationDisplayMode == "logo")
 
 	// Handle in-match PLC functions.
-	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2", "R3") == nil
-	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2", "B3") == nil
+	redAllianceReady := arena.checkAllianceStationsReady("R1", "R2") == nil
+	blueAllianceReady := arena.checkAllianceStationsReady("B1", "B2") == nil
 
 	// Handle the evergreen PLC functions: stack lights, stack buzzer, and field reset light.
 	switch arena.MatchState {
@@ -1257,8 +1290,6 @@ func (arena *Arena) handlePlcInputOutput() {
 			arena.FieldVolunteers = false
 			arena.FieldReset = false
 			arena.Plc.SetFieldResetLight(false)
-			arena.SetHubColor("red", HubOff)
-			arena.SetHubColor("blue", HubOff)
 			if arena.CurrentMatch.FieldReadyAt.IsZero() {
 				arena.CurrentMatch.FieldReadyAt = time.Now()
 			}
@@ -1291,21 +1322,6 @@ func (arena *Arena) handlePlcInputOutput() {
 
 	redHubLight, blueHubLight := arena.getHubLightStates(currentTime)
 	arena.Plc.SetHubLights(redHubLight, blueHubLight)
-
-	// Drive the tablet hub displays the same way as the physical LEDs, but only during actual match play; outside
-	// of a match, leave the color under the control of SignalVolunteers()/SignalReset().
-	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
-		if redHubLight {
-			arena.SetHubColor("red", HubRed)
-		} else {
-			arena.SetHubColor("red", HubOff)
-		}
-		if blueHubLight {
-			arena.SetHubColor("blue", HubBlue)
-		} else {
-			arena.SetHubColor("blue", HubOff)
-		}
-	}
 }
 
 func (arena *Arena) getHubLightStates(currentTime time.Time) (bool, bool) {

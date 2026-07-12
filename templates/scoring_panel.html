@@ -15,38 +15,40 @@ UI for entering realtime scores.
     <section class="tower-section" id="auto-section">
       <h1>Auto Park</h1>
       <div class="tower-row">
-      <div class="tower-team-controls" id="auto-controls">
-      {{range $i := seq 2}}
-      {{template "tower-input" (dict "id" (printf "auto-input-%d" $i) "index" $i "handler" "handleAutoTowerClick")}}
-      {{end}}
-      </div>
-      <div class="manual-controls auto-manual-block">
-        <div class="tower-input manual">
-          <button class="manual-button scoring-tower-button" ontouchstart onclick="addManualFuelShift(0, 1);">+</button>
-          <button class="manual-button scoring-tower-button" ontouchstart onclick="addManualFuelShift(0, -1);">-</button>
+        <div class="tower-team-controls" id="auto-controls">
+        {{range $i := seq 2}}
+        {{template "tower-input" (dict "id" (printf "auto-input-%d" $i) "index" $i "handler" "handleAutoTowerClick")}}
+        {{end}}
         </div>
-        <div class="fuel-totals">
-          <div class="auto-fuel-total">Auto: 0</div>
-          <div class="manual-fuel-total">Manual: 0</div>
+        <div class="manual-controls auto-manual-block">
+          <div class="tower-input manual">
+            <button class="manual-button scoring-tower-button" ontouchstart onclick="addManualFuelShift(0, 1);">+</button>
+            <button class="manual-button scoring-tower-button" ontouchstart onclick="addManualFuelShift(0, -1);">-</button>
+          </div>
+          <div class="fuel-totals">
+            <div class="auto-fuel-total">Auto: 0</div>
+            <div class="manual-fuel-total">Manual: 0</div>
+          </div>
         </div>
       </div>
     </section>
     <section class="tower-section" id="endgame-section">
       <h1>Endgame Park</h1>
       <div class="tower-row">
-      <div class="tower-team-controls" id="endgame-controls">
-      {{range $i := seq 2}}
-      {{template "tower-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i "handler" "handleEndgameClick")}}
-      {{end}}
-      </div>
-      <div class="manual-controls endgame-manual-block">
-        <div class="tower-input manual">
-          <button class="manual-button scoring-tower-button" ontouchstart onclick="addManualFuelShift(6, 1);">+</button>
-          <button class="manual-button scoring-tower-button" ontouchstart onclick="addManualFuelShift(6, -1);">-</button>
+        <div class="tower-team-controls" id="endgame-controls">
+        {{range $i := seq 2}}
+        {{template "tower-input" (dict "id" (printf "endgame-input-%d" $i) "index" $i "handler" "handleEndgameClick")}}
+        {{end}}
         </div>
-        <div class="fuel-totals">
-          <div class="auto-fuel-total">Auto: 0</div>
-          <div class="manual-fuel-total">Manual: 0</div>
+        <div class="manual-controls endgame-manual-block">
+          <div class="tower-input manual">
+            <button class="manual-button scoring-tower-button" ontouchstart onclick="addManualFuelShift(6, 1);">+</button>
+            <button class="manual-button scoring-tower-button" ontouchstart onclick="addManualFuelShift(6, -1);">-</button>
+          </div>
+          <div class="fuel-totals">
+            <div class="auto-fuel-total">Auto: 0</div>
+            <div class="manual-fuel-total">Manual: 0</div>
+          </div>
         </div>
       </div>
     </section>
@@ -54,7 +56,6 @@ UI for entering realtime scores.
   <div id="panel-actions">
     <button id="commit" onclick="commitMatchScore();" ontouchstart disabled>Commit</button>
     <button id="fouls-button" class="scoring-button" onclick="showFoulsDialog();" ontouchstart disabled>Fouls</button>
-    
   </div>
 </main>
 

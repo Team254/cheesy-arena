@@ -4,6 +4,12 @@
 package field
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
@@ -12,11 +18,6 @@ import (
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestAssignTeam(t *testing.T) {
@@ -70,14 +71,8 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	}
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].Bypass = true
-	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
-	err = arena.checkCanStartMatch()
-	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match until all robots are connected or bypassed")
-	}
-	arena.AllianceStations["B3"].Bypass = true
 	assert.Nil(t, arena.checkCanStartMatch())
 
 	// Check PLC constraints.
@@ -129,10 +124,8 @@ func TestArenaMatchFlow(t *testing.T) {
 	// Check match start, autonomous and transition to teleop.
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].DsConn.RobotLinked = true
-	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
-	arena.AllianceStations["B3"].DsConn.RobotLinked = true
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
@@ -386,16 +379,14 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	}
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].Bypass = true
-	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
-	arena.AllianceStations["B3"].Bypass = true
-	arena.AllianceStations["B3"].EStop = true
+	arena.AllianceStations["B1"].EStop = true
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "while an emergency stop is active")
 	}
-	arena.AllianceStations["B3"].EStop = false
+	arena.AllianceStations["B1"].EStop = false
 	err = arena.StartMatch()
 	assert.Nil(t, err)
 }
