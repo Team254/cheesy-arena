@@ -22,13 +22,11 @@ Display shown on the audience screen overlayed over the video.
             <div class="teams" id="leftTeams">
               <div id="leftTeam1"></div>
               <div id="leftTeam2"></div>
-              <div id="leftTeam3"></div>
             </div>
             <div class="score reversible-left">
               <div class="avatars">
                 <img class="avatar" id="leftTeam1Avatar" src=""/>
                 <img class="avatar" id="leftTeam2Avatar" src=""/>
-                <img class="avatar" id="leftTeam3Avatar" src=""/>
               </div>
               <div class="score-fields">
                 <div class="score-fuel">
@@ -65,13 +63,11 @@ Display shown on the audience screen overlayed over the video.
               <div class="avatars">
                 <img class="avatar" id="rightTeam1Avatar" src=""/>
                 <img class="avatar" id="rightTeam2Avatar" src=""/>
-                <img class="avatar" id="rightTeam3Avatar" src=""/>
               </div>
             </div>
             <div class="teams" id="rightTeams">
               <div id="rightTeam1"></div>
               <div id="rightTeam2"></div>
-              <div id="rightTeam3"></div>
             </div>
           </div>
           <div id="eventMatchInfo">
@@ -124,7 +120,7 @@ Display shown on the audience screen overlayed over the video.
             <div class="final-breakdown final-breakdown-teams">
               <div class="final-teams reversible-left">
                 <div class="final-alliance playoff-only-field" id="leftFinalAlliance"></div>
-                {{range $i := seq 4}}
+                {{range $i := seq 2}}
                 <div class="final-team-row">
                   <img class="final-team-avatar" id="leftFinalTeam{{$i}}Avatar" src=""/>
                   <div class="final-team-number" id="leftFinalTeam{{$i}}"></div>
@@ -196,7 +192,7 @@ Display shown on the audience screen overlayed over the video.
             <div class="final-breakdown final-breakdown-teams">
               <div class="final-teams reversible-right">
                 <div class="final-alliance playoff-only-field" id="rightFinalAlliance"></div>
-                {{range $i := seq 4}}
+                {{range $i := seq 2}}
                 <div class="final-team-row">
                   <img class="final-team-avatar" id="rightFinalTeam{{$i}}Avatar" src=""/>
                   <div class="final-team-number" id="rightFinalTeam{{$i}}"></div>

@@ -13,7 +13,7 @@ Base template used by most pages to include common resources and optionally rend
   <body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container">
-        <a class="navbar-brand" href="/">Cheesy Arena</a>
+        <a class="navbar-brand" href="/">FRC Summer Camp</a>
         <ul class="navbar-nav me-auto">
           <li class="nav-item dropdown">
             <a href="#" class="nav-link" data-bs-toggle="dropdown" role="button">Setup</a>
@@ -98,6 +98,8 @@ Base template used by most pages to include common resources and optionally rend
               <a class="dropdown-item" href="/displays/field_monitor?ds=true&reversed=true">Field Monitor (Blue DS)</a>
               <a class="dropdown-item" href="/displays/field_monitor?ds=true&reversed=false">Field Monitor (Red DS)</a>
               <a class="dropdown-item" href="/displays/logo">Logo</a>
+              <a class="dropdown-item" href="/displays/hub">Hub</a>
+              
               <a class="dropdown-item" href="/displays/queueing">Queueing</a>
               <a class="dropdown-item" href="/displays/rankings">Standings</a>
               <a class="dropdown-item" href="/displays/wall">Wall</a>
@@ -106,10 +108,8 @@ Base template used by most pages to include common resources and optionally rend
               <div class="dropdown-header">Alliance Station</div>
               <a class="dropdown-item" href="/displays/alliance_station?station=R1">Red 1</a>
               <a class="dropdown-item" href="/displays/alliance_station?station=R2">Red 2</a>
-              <a class="dropdown-item" href="/displays/alliance_station?station=R3">Red 3</a>
               <a class="dropdown-item" href="/displays/alliance_station?station=B1">Blue 1</a>
               <a class="dropdown-item" href="/displays/alliance_station?station=B2">Blue 2</a>
-              <a class="dropdown-item" href="/displays/alliance_station?station=B3">Blue 3</a>
               <a class="dropdown-item" href="/displays/alliance_station?station=N2">Clock</a>
               <a class="dropdown-item" href="/displays/alliance_station?station=N3">Red Score</a>
               <a class="dropdown-item" href="/displays/alliance_station?station=N1">Blue Score</a>
@@ -130,7 +130,7 @@ Base template used by most pages to include common resources and optionally rend
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h4 class="modal-title">About Cheesy Arena</h4>
+            <h4 class="modal-title">About FRC 6998 2026th Season Summer Camp</h4>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
@@ -168,7 +168,7 @@ Base template used by most pages to include common resources and optionally rend
 {{end}}
 
 {{define "head_common"}}
-<title>{{template "title" .}} - {{.EventSettings.Name}} - Cheesy Arena</title>
+<title>{{template "title" .}} - {{.EventSettings.Name}} - FRC Summer Camp</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="shortcut icon" href="/static/img/favicon.ico">

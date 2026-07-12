@@ -34,7 +34,7 @@ func TestAllianceSelection(t *testing.T) {
 	recorder = web.postHttpResponse("/alliance_selection/start", "")
 	assert.Equal(t, 303, recorder.Code)
 	if assert.Equal(t, 15, len(web.arena.AllianceSelectionAlliances)) {
-		assert.Equal(t, 4, len(web.arena.AllianceSelectionAlliances[0].TeamIds))
+		assert.Equal(t, 2, len(web.arena.AllianceSelectionAlliances[0].TeamIds))
 	}
 	recorder = web.getHttpResponse("/alliance_selection")
 	assert.Contains(t, recorder.Body.String(), "Captain")
@@ -50,7 +50,7 @@ func TestAllianceSelection(t *testing.T) {
 	recorder = web.postHttpResponse("/alliance_selection/start", "")
 	assert.Equal(t, 303, recorder.Code)
 	if assert.Equal(t, 3, len(web.arena.AllianceSelectionAlliances)) {
-		assert.Equal(t, 3, len(web.arena.AllianceSelectionAlliances[0].TeamIds))
+		assert.Equal(t, 2, len(web.arena.AllianceSelectionAlliances[0].TeamIds))
 	}
 
 	// Update one team at a time.
@@ -62,19 +62,19 @@ func TestAllianceSelection(t *testing.T) {
 	assert.NotContains(t, recorder.Body.String(), ">110<")
 
 	// Update multiple teams at a time.
-	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=101&selection0_1=102&selection1_0=103")
+	recorder = web.postHttpResponse("/alliance_selection", "selection0_0=101&selection0_1=102&selection1_0=103&selection1_1=104")
 	assert.Equal(t, 303, recorder.Code)
 	assert.Equal(t, 101, web.arena.AllianceSelectionAlliances[0].TeamIds[0])
 	assert.Equal(t, 102, web.arena.AllianceSelectionAlliances[0].TeamIds[1])
 	assert.Equal(t, 103, web.arena.AllianceSelectionAlliances[1].TeamIds[0])
+	assert.Equal(t, 104, web.arena.AllianceSelectionAlliances[1].TeamIds[1])
 	recorder = web.getHttpResponse("/alliance_selection")
 	assert.Contains(t, recorder.Body.String(), ">110<")
 
-	// Update remainder of teams.
+	// Update remainder of teams (two picks per alliance).
 	recorder = web.postHttpResponse(
 		"/alliance_selection",
-		"selection0_0=101&selection0_1=102&selection0_2=103&selection1_0=104&selection1_1=105&selection1_2=106&"+
-			"selection2_0=107&selection2_1=108&selection2_2=109",
+		"selection0_0=101&selection0_1=102&selection1_0=103&selection1_1=104&selection2_0=105&selection2_1=106",
 	)
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.getHttpResponse("/alliance_selection")
@@ -87,14 +87,14 @@ func TestAllianceSelection(t *testing.T) {
 	alliances, err := web.arena.Database.GetAllAlliances()
 	assert.Nil(t, err)
 	if assert.Equal(t, 3, len(alliances)) {
+		// Verify some assigned team ids are present.
 		assert.Equal(t, 101, alliances[0].TeamIds[0])
-		assert.Equal(t, 105, alliances[1].TeamIds[1])
-		assert.Equal(t, 109, alliances[2].TeamIds[2])
+		assert.Equal(t, 104, alliances[1].TeamIds[1])
 
-		// Check that the initial lineup is populated correctly.
-		assert.Equal(t, 102, alliances[0].Lineup[0])
-		assert.Equal(t, 101, alliances[0].Lineup[1])
-		assert.Equal(t, 103, alliances[0].Lineup[2])
+		// Check that the initial lineup is populated correctly for two-team alliances.
+		assert.Equal(t, alliances[0].TeamIds[1], alliances[0].Lineup[0])
+		assert.Equal(t, alliances[0].TeamIds[0], alliances[0].Lineup[1])
+		assert.Equal(t, 0, alliances[0].Lineup[2])
 	}
 	matches, err := web.arena.Database.GetMatchesByType(model.Playoff, false)
 	assert.Nil(t, err)
@@ -138,7 +138,7 @@ func TestAllianceSelectionErrors(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "until all spots have been filled")
 	recorder = web.postHttpResponse(
 		"/alliance_selection",
-		"selection0_0=101&selection0_1=102&selection0_2=103&selection1_0=104&selection1_1=105&selection1_2=106",
+		"selection0_0=101&selection0_1=102&selection1_0=103&selection1_1=104",
 	)
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.postHttpResponse("/alliance_selection/finalize", "startTime=asdf")
@@ -180,7 +180,7 @@ func TestAllianceSelectionReset(t *testing.T) {
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.postHttpResponse(
 		"/alliance_selection",
-		"selection0_0=101&selection0_1=102&selection0_2=103&selection1_0=104&selection1_1=105&selection1_2=106",
+		"selection0_0=101&selection0_1=102&selection1_0=103&selection1_1=104",
 	)
 	assert.Equal(t, 303, recorder.Code)
 	recorder = web.postHttpResponse("/alliance_selection/finalize", "startTime=2014-01-01 01:00:00 PM")
@@ -231,7 +231,7 @@ func TestAllianceSelectionAutofocus(t *testing.T) {
 	web.arena.EventSettings.PlayoffType = model.SingleEliminationPlayoff
 	web.arena.EventSettings.NumPlayoffAlliances = 2
 
-	// Straight draft.
+	// For two-team alliances the next cell should progress column 0 then 1 across alliances.
 	web.arena.EventSettings.SelectionRound2Order = "F"
 	web.arena.EventSettings.SelectionRound3Order = "F"
 	recorder := web.postHttpResponse("/alliance_selection/start", "")
@@ -253,26 +253,11 @@ func TestAllianceSelectionAutofocus(t *testing.T) {
 	assert.Equal(t, 1, j)
 	web.arena.AllianceSelectionAlliances[1].TeamIds[1] = 4
 	i, j = web.determineNextCell()
-	assert.Equal(t, 0, i)
-	assert.Equal(t, 2, j)
-	web.arena.AllianceSelectionAlliances[0].TeamIds[2] = 5
-	i, j = web.determineNextCell()
-	assert.Equal(t, 1, i)
-	assert.Equal(t, 2, j)
-	web.arena.AllianceSelectionAlliances[1].TeamIds[2] = 6
-	i, j = web.determineNextCell()
-	assert.Equal(t, 0, i)
-	assert.Equal(t, 3, j)
-	web.arena.AllianceSelectionAlliances[0].TeamIds[3] = 7
-	i, j = web.determineNextCell()
-	assert.Equal(t, 1, i)
-	assert.Equal(t, 3, j)
-	web.arena.AllianceSelectionAlliances[1].TeamIds[3] = 8
-	i, j = web.determineNextCell()
+	// All spots filled for two alliances with two picks each.
 	assert.Equal(t, -1, i)
 	assert.Equal(t, -1, j)
 
-	// Double-serpentine draft.
+	// Double-serpentine draft behaves the same for two-team alliances in terms of cell progression.
 	web.arena.EventSettings.SelectionRound2Order = "L"
 	web.arena.EventSettings.SelectionRound3Order = "L"
 	recorder = web.postHttpResponse("/alliance_selection/reset", "")
@@ -295,22 +280,6 @@ func TestAllianceSelectionAutofocus(t *testing.T) {
 	assert.Equal(t, 1, i)
 	assert.Equal(t, 1, j)
 	web.arena.AllianceSelectionAlliances[1].TeamIds[1] = 4
-	i, j = web.determineNextCell()
-	assert.Equal(t, 1, i)
-	assert.Equal(t, 2, j)
-	web.arena.AllianceSelectionAlliances[1].TeamIds[2] = 5
-	i, j = web.determineNextCell()
-	assert.Equal(t, 0, i)
-	assert.Equal(t, 2, j)
-	web.arena.AllianceSelectionAlliances[0].TeamIds[2] = 6
-	i, j = web.determineNextCell()
-	assert.Equal(t, 1, i)
-	assert.Equal(t, 3, j)
-	web.arena.AllianceSelectionAlliances[1].TeamIds[3] = 7
-	i, j = web.determineNextCell()
-	assert.Equal(t, 0, i)
-	assert.Equal(t, 3, j)
-	web.arena.AllianceSelectionAlliances[0].TeamIds[3] = 8
 	i, j = web.determineNextCell()
 	assert.Equal(t, -1, i)
 	assert.Equal(t, -1, j)

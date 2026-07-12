@@ -8,13 +8,13 @@ package tournament
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
-	"math"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
 )
 
 const (
@@ -33,8 +33,7 @@ func BuildRandomSchedule(
 	numMatches := countMatches(scheduleBlocks)
 	matchesPerTeam := int(float32(numMatches*TeamsPerMatch) / float32(numTeams))
 
-	// Adjust the number of matches to remove any excess from non-perfect block scheduling.
-	numMatches = int(math.Ceil(float64(numTeams) * float64(matchesPerTeam) / TeamsPerMatch))
+	// Keep the number of matches equal to the total requested in the schedule blocks.
 
 	file, err := os.Open(
 		fmt.Sprintf("%s/%d_%d.csv", filepath.Join(model.BaseDir, schedulesDir), numTeams, matchesPerTeam),
@@ -80,18 +79,19 @@ func BuildRandomSchedule(
 		} else {
 			return nil, fmt.Errorf("invalid match type %q", matchType)
 		}
+		// Use only the first two team slots per alliance from the existing 6-team templates.
 		matches[i].Red1 = teams[teamShuffle[anonMatch[0]-1]].Id
 		matches[i].Red1IsSurrogate = anonMatch[1] == 1
 		matches[i].Red2 = teams[teamShuffle[anonMatch[2]-1]].Id
 		matches[i].Red2IsSurrogate = anonMatch[3] == 1
-		matches[i].Red3 = teams[teamShuffle[anonMatch[4]-1]].Id
-		matches[i].Red3IsSurrogate = anonMatch[5] == 1
+		matches[i].Red3 = 0
+		matches[i].Red3IsSurrogate = false
 		matches[i].Blue1 = teams[teamShuffle[anonMatch[6]-1]].Id
 		matches[i].Blue1IsSurrogate = anonMatch[7] == 1
 		matches[i].Blue2 = teams[teamShuffle[anonMatch[8]-1]].Id
 		matches[i].Blue2IsSurrogate = anonMatch[9] == 1
-		matches[i].Blue3 = teams[teamShuffle[anonMatch[10]-1]].Id
-		matches[i].Blue3IsSurrogate = anonMatch[11] == 1
+		matches[i].Blue3 = 0
+		matches[i].Blue3IsSurrogate = false
 		matches[i].TbaMatchKey.MatchNumber = i + 1
 	}
 

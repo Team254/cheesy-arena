@@ -4,8 +4,9 @@
 package model
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetNonexistentAlliance(t *testing.T) {
@@ -77,9 +78,9 @@ func TestGetAllAlliances(t *testing.T) {
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(alliances)) {
 		assert.Equal(t, 1, alliances[0].Id)
-		assert.Equal(t, []int{254, 469, 2848, 74, 3175}, alliances[0].TeamIds)
+		assert.Equal(t, []int{254, 469}, alliances[0].TeamIds)
 		assert.Equal(t, 2, alliances[1].Id)
-		assert.Equal(t, []int{1718, 2451, 1619}, alliances[1].TeamIds)
+		assert.Equal(t, []int{1718, 2451}, alliances[1].TeamIds)
 	}
 }
 
@@ -93,17 +94,16 @@ func TestGetOffFieldTeamIds(t *testing.T) {
 		PlayoffBlueAlliance: 2,
 		Red1:                469,
 		Red2:                254,
-		Red3:                2848,
-		Blue1:               1619,
-		Blue2:               1718,
-		Blue3:               2451,
+		Blue1:               1718,
+		Blue2:               2451,
 	}
 
 	redOffFieldTeams, blueOffFieldTeams, err := db.GetOffFieldTeamIds(match)
 	assert.Nil(t, err)
-	assert.Equal(t, []int{74, 3175}, redOffFieldTeams)
+	assert.Equal(t, []int{}, redOffFieldTeams)
 	assert.Equal(t, []int{}, blueOffFieldTeams)
 
+	// If none of the alliance teams are playing, they should all be off-field.
 	match.Red1 = 74
 	match.Red2 = 3175
 	redOffFieldTeams, blueOffFieldTeams, err = db.GetOffFieldTeamIds(match)
@@ -123,13 +123,11 @@ func TestGetOffFieldTeamIds(t *testing.T) {
 		PlayoffBlueAlliance: 1,
 		Red1:                1718,
 		Red2:                2451,
-		Red3:                1619,
-		Blue1:               3175,
-		Blue2:               74,
-		Blue3:               2848,
+		Blue1:               254,
+		Blue2:               469,
 	}
 	redOffFieldTeams, blueOffFieldTeams, err = db.GetOffFieldTeamIds(match)
 	assert.Nil(t, err)
 	assert.Equal(t, []int{}, redOffFieldTeams)
-	assert.Equal(t, []int{254, 469}, blueOffFieldTeams)
+	assert.Equal(t, []int{}, blueOffFieldTeams)
 }

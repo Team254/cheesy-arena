@@ -7,13 +7,6 @@ package field
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/led"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
-	"github.com/Team254/cheesy-arena/partner"
-	"github.com/Team254/cheesy-arena/playoff"
-	"github.com/Team254/cheesy-arena/plc"
 	"log"
 	"math"
 	"math/rand"
@@ -22,6 +15,14 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
+	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/playoff"
+	"github.com/Team254/cheesy-arena/plc"
 )
 
 const (
@@ -105,6 +106,7 @@ type Arena struct {
 	NextFoulId                        int
 	DriverStationUdpSocket            *net.UDPConn
 	redWonAuto                        bool
+	HubColors                         map[string]HubColor
 }
 
 type AllianceStation struct {
@@ -133,6 +135,8 @@ func NewArena(dbPath string) (*Arena, error) {
 	arena.AllianceStations["B1"] = new(AllianceStation)
 	arena.AllianceStations["B2"] = new(AllianceStation)
 	arena.AllianceStations["B3"] = new(AllianceStation)
+
+	arena.HubColors = make(map[string]HubColor)
 
 	arena.Displays = make(map[string]*Display)
 
@@ -704,6 +708,8 @@ func (arena *Arena) Update() {
 		arena.Plc.ResetMatch()
 		arena.FieldVolunteers = false
 		arena.FieldReset = false
+		arena.SetHubColor("red", HubOff)
+		arena.SetHubColor("blue", HubOff)
 	case AutoPeriod:
 		auto = true
 		enabled = true
@@ -1251,6 +1257,8 @@ func (arena *Arena) handlePlcInputOutput() {
 			arena.FieldVolunteers = false
 			arena.FieldReset = false
 			arena.Plc.SetFieldResetLight(false)
+			arena.SetHubColor("red", HubOff)
+			arena.SetHubColor("blue", HubOff)
 			if arena.CurrentMatch.FieldReadyAt.IsZero() {
 				arena.CurrentMatch.FieldReadyAt = time.Now()
 			}
@@ -1283,6 +1291,21 @@ func (arena *Arena) handlePlcInputOutput() {
 
 	redHubLight, blueHubLight := arena.getHubLightStates(currentTime)
 	arena.Plc.SetHubLights(redHubLight, blueHubLight)
+
+	// Drive the tablet hub displays the same way as the physical LEDs, but only during actual match play; outside
+	// of a match, leave the color under the control of SignalVolunteers()/SignalReset().
+	if arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod {
+		if redHubLight {
+			arena.SetHubColor("red", HubRed)
+		} else {
+			arena.SetHubColor("red", HubOff)
+		}
+		if blueHubLight {
+			arena.SetHubColor("blue", HubBlue)
+		} else {
+			arena.SetHubColor("blue", HubOff)
+		}
+	}
 }
 
 func (arena *Arena) getHubLightStates(currentTime time.Time) (bool, bool) {
@@ -1362,6 +1385,8 @@ func (arena *Arena) SignalVolunteers() {
 	arena.AllianceStationDisplayMode = "signalCount"
 	arena.AllianceStationDisplayModeNotifier.Notify()
 	arena.Leds.SetMode(led.PurpleMode, led.PurpleMode)
+	arena.SetHubColor("red", HubPurple)
+	arena.SetHubColor("blue", HubPurple)
 }
 
 // Set the field lights and team signs to green, if not in a match.
@@ -1379,6 +1404,8 @@ func (arena *Arena) SignalReset() {
 	arena.AllianceStationDisplayMode = "fieldReset"
 	arena.AllianceStationDisplayModeNotifier.Notify()
 	arena.Leds.SetMode(led.GreenMode, led.GreenMode)
+	arena.SetHubColor("red", HubGreen)
+	arena.SetHubColor("blue", HubGreen)
 }
 
 func (arena *Arena) handleSounds(matchTimeSec float64) {

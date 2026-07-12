@@ -75,13 +75,13 @@ UI for manually editing the result for a match.
   matchResult = jQuery.parseJSON('{{.MatchResultJson}}');
   allianceResults["red"] = {
     alliance: "red",
-    teams: [{{.Match.Red1}}, {{.Match.Red2}}, {{.Match.Red3}}],
+    teams: [{{.Match.Red1}}, {{.Match.Red2}}],
     score: matchResult.RedScore,
     cards: matchResult.RedCards,
   };
   allianceResults["blue"] = {
     alliance: "blue",
-    teams: [{{.Match.Blue1}}, {{.Match.Blue2}}, {{.Match.Blue3}}],
+    teams: [{{.Match.Blue1}}, {{.Match.Blue2}}],
     score: matchResult.BlueScore,
     cards: matchResult.BlueCards,
   };

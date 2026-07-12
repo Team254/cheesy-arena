@@ -7,14 +7,15 @@ package web
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/mitchellh/mapstructure"
-	"io"
-	"log"
-	"net/http"
 )
 
 type ScoringPosition struct {
@@ -127,10 +128,10 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			}
 			web.arena.ScoringPanelRegistry.SetScoreCommitted(position, ws)
 			web.arena.ScoringStatusNotifier.Notify()
-		} else if command == "autoTower" {
+		} else if command == "autoTower" || command == "autoPark" {
 			args := struct {
-				TeamPosition    int
-				AutoTowerStatus int
+				TeamPosition   int
+				AutoParkStatus int
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -138,16 +139,16 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				continue
 			}
 
-			if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.AutoTowerStatus >= 0 &&
-				args.AutoTowerStatus <= 3 {
-				autoTowerStatus := game.TowerStatus(args.AutoTowerStatus)
-				score.AutoTowerStatuses[args.TeamPosition-1] = autoTowerStatus
+			if args.TeamPosition >= 1 && args.TeamPosition <= 2 && args.AutoParkStatus >= 0 &&
+				args.AutoParkStatus <= 3 {
+				autoParkStatus := game.TowerStatus(args.AutoParkStatus)
+				score.AutoTowerStatuses[args.TeamPosition-1] = autoParkStatus
 				scoreChanged = true
 			}
-		} else if command == "endgame" {
+		} else if command == "endgame" || command == "endgamePark" {
 			args := struct {
-				TeamPosition       int
-				EndgameTowerStatus int
+				TeamPosition      int
+				EndgameParkStatus int
 			}{}
 			err = mapstructure.Decode(data, &args)
 			if err != nil {
@@ -155,9 +156,9 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				continue
 			}
 
-			if args.TeamPosition >= 1 && args.TeamPosition <= 3 && args.EndgameTowerStatus >= 0 &&
-				args.EndgameTowerStatus <= 3 {
-				endgameStatus := game.TowerStatus(args.EndgameTowerStatus)
+			if args.TeamPosition >= 1 && args.TeamPosition <= 2 && args.EndgameParkStatus >= 0 &&
+				args.EndgameParkStatus <= 3 {
+				endgameStatus := game.TowerStatus(args.EndgameParkStatus)
 				score.EndgameTowerStatuses[args.TeamPosition-1] = endgameStatus
 				scoreChanged = true
 			}
@@ -183,6 +184,32 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 					append(web.arena.BlueRealtimeScore.CurrentScore.Fouls, foul)
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
+		} else if command == "manualFuel" {
+			// Manual fuel: support either a simple total delta {Count: int} or a shift-specific
+			// manual entry {Count: int, Shift: int}.
+			args := struct {
+				Count int
+				Shift *int
+			}{}
+			err = mapstructure.Decode(data, &args)
+			if err != nil {
+				writeWebsocketError(ws, err.Error())
+				continue
+			}
+			if args.Count != 0 {
+				if args.Shift != nil {
+					shift := *args.Shift
+					// Validate shift range
+					if shift >= 0 && shift < int(game.ShiftCount) {
+						score.Hub.AddManualShiftDelta(game.Shift(shift), args.Count)
+						score.Hub.AddManualTotal(args.Count)
+						scoreChanged = true
+					}
+				} else {
+					score.Hub.AddManualTotal(args.Count)
+					scoreChanged = true
+				}
+			}
 		}
 
 		if scoreChanged {

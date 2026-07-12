@@ -10,12 +10,12 @@ const lowBatteryThreshold = 8;
 
 // Sends a websocket message to load the specified match.
 const loadMatch = function (matchId) {
-  websocket.send("loadMatch", {matchId: matchId});
+  websocket.send("loadMatch", { matchId: matchId });
 }
 
 // Sends a websocket message to load the results for the specified match into the display buffer.
 const showResult = function (matchId) {
-  websocket.send("showResult", {matchId: matchId});
+  websocket.send("showResult", { matchId: matchId });
 }
 
 // Sends a websocket message to load all teams into their respective alliance stations.
@@ -23,10 +23,8 @@ const substituteTeams = function (team, position) {
   const teams = {
     Red1: getTeamNumber("R1"),
     Red2: getTeamNumber("R2"),
-    Red3: getTeamNumber("R3"),
     Blue1: getTeamNumber("B1"),
     Blue2: getTeamNumber("B2"),
-    Blue3: getTeamNumber("B3"),
   };
 
   websocket.send("substituteTeams", teams);
@@ -40,7 +38,7 @@ const toggleBypass = function (station) {
 // Sends a websocket message to start the match.
 const startMatch = function () {
   websocket.send("startMatch",
-    {muteMatchSounds: $("#muteMatchSounds").prop("checked")});
+    { muteMatchSounds: $("#muteMatchSounds").prop("checked") });
 };
 
 // Sends a websocket message to abort the match.
@@ -125,8 +123,16 @@ const setTestMatchName = function () {
 
 // Returns the integer team number entered into the team number input box for the given station, or 0 if it is empty.
 const getTeamNumber = function (station) {
-  const teamId = $(`#status${station} .team-number`).val().trim();
-  return teamId ? parseInt(teamId) : 0;
+  const $el = $(`#status${station} .team-number`);
+  if (!$el || $el.length === 0) {
+    return 0;
+  }
+  const val = $el.val();
+  if (!val) {
+    return 0;
+  }
+  const trimmed = ('' + val).trim();
+  return trimmed ? parseInt(trimmed) : 0;
 }
 
 // Handles a websocket message to update the team connection status.

@@ -6,12 +6,13 @@
 package field
 
 import (
+	"log"
+	"strconv"
+
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/playoff"
 	"github.com/Team254/cheesy-arena/websocket"
-	"log"
-	"strconv"
 )
 
 type ArenaNotifiers struct {
@@ -21,6 +22,7 @@ type ArenaNotifiers struct {
 	AudienceDisplayModeNotifier        *websocket.Notifier
 	DisplayConfigurationNotifier       *websocket.Notifier
 	EventStatusNotifier                *websocket.Notifier
+	HubColorNotifier                   *websocket.Notifier
 	LowerThirdNotifier                 *websocket.Notifier
 	MatchLoadNotifier                  *websocket.Notifier
 	MatchTimeNotifier                  *websocket.Notifier
@@ -58,6 +60,7 @@ func (arena *Arena) configureNotifiers() {
 		"displayConfiguration", arena.generateDisplayConfigurationMessage,
 	)
 	arena.EventStatusNotifier = websocket.NewNotifier("eventStatus", arena.generateEventStatusMessage)
+	arena.HubColorNotifier = websocket.NewNotifier("hubColor", arena.generateHubColorMessage)
 	arena.LowerThirdNotifier = websocket.NewNotifier("lowerThird", arena.generateLowerThirdMessage)
 	arena.MatchLoadNotifier = websocket.NewNotifier("matchLoad", arena.GenerateMatchLoadMessage)
 	arena.MatchTimeNotifier = websocket.NewNotifier("matchTime", arena.generateMatchTimeMessage)
@@ -128,6 +131,10 @@ func (arena *Arena) generateDisplayConfigurationMessage() any {
 		displaysCopy[displayId] = *display
 	}
 	return displaysCopy
+}
+
+func (arena *Arena) generateHubColorMessage() any {
+	return arena.HubColors
 }
 
 func (arena *Arena) generateEventStatusMessage() any {

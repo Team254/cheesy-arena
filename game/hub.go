@@ -12,6 +12,12 @@ import (
 type Hub struct {
 	WonAuto     bool
 	ShiftCounts [ShiftCount]int
+	// ManualShiftCounts stores fuel counts entered manually via scoring UI and is kept separate
+	// from the automatic hardware-driven `ShiftCounts`.
+	ManualShiftCounts [ShiftCount]int
+	// ManualTotal is a simplified per-alliance manual fuel total (used when per-shift tracking
+	// is not required). Use AddManualTotal to update.
+	ManualTotal int
 }
 
 // Shift represents a distinct period during the match when Fuel is scored (and tracked separately).
@@ -69,6 +75,48 @@ func (hub *Hub) GetShiftCount(shift Shift, activeOnly bool) int {
 		return hub.ShiftCounts[shift]
 	}
 	return 0
+}
+
+// AddManualFuel records manual fuel scored during a given shift. Manual fuel is tracked separately
+// so it can be displayed independently of automatic hardware counts.
+func (hub *Hub) AddManualFuel(shift Shift, count int) {
+	if shift < 0 || shift >= ShiftCount || count <= 0 {
+		return
+	}
+	hub.ManualShiftCounts[shift] += count
+}
+
+// AddManualShiftDelta increments or decrements the manual count for a specific shift.
+func (hub *Hub) AddManualShiftDelta(shift Shift, delta int) {
+	if shift < 0 || shift >= ShiftCount {
+		return
+	}
+	newVal := hub.ManualShiftCounts[shift] + delta
+	if newVal < 0 {
+		newVal = 0
+	}
+	hub.ManualShiftCounts[shift] = newVal
+}
+
+// GetManualShiftCount returns the manually-entered fuel count for a given shift.
+func (hub *Hub) GetManualShiftCount(shift Shift) int {
+	if shift < 0 || shift >= ShiftCount {
+		return 0
+	}
+	return hub.ManualShiftCounts[shift]
+}
+
+// AddManualTotal increments (or decrements if negative) the alliance's manual fuel total.
+func (hub *Hub) AddManualTotal(delta int) {
+	hub.ManualTotal += delta
+	if hub.ManualTotal < 0 {
+		hub.ManualTotal = 0
+	}
+}
+
+// GetManualTotal returns the alliance's manual fuel total.
+func (hub *Hub) GetManualTotal() int {
+	return hub.ManualTotal
 }
 
 // GetCurrentShiftTiming returns the current Hub shift, the amount of time remaining in it, and its duration. If the

@@ -78,7 +78,7 @@ var handleArenaStatus = function (data) {
   stationStatus = data.AllianceStations[station];
   var blink = false;
   if (stationStatus && stationStatus.Bypass) {
-    $("#match").attr("data-status", "bypass");
+    $("#match").attr("data-status", "");
   } else if (stationStatus) {
     if (!stationStatus.DsConn || !stationStatus.DsConn.DsLinked) {
       $("#match").attr("data-status", station[0]);

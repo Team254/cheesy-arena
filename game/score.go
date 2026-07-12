@@ -23,9 +23,17 @@ type TowerStatus int
 
 const (
 	TowerNone TowerStatus = iota
-	TowerLevel1
-	TowerLevel2
-	TowerLevel3
+	// Park indicates the robot is parked (partial scoring).
+	TowerPark
+	// Complete indicates the robot completed the action (higher scoring in auto).
+	TowerComplete
+)
+
+// Backwards-compatible aliases for older code/tests that referenced level names.
+const (
+	TowerLevel1 = TowerPark
+	TowerLevel2 = TowerComplete
+	TowerLevel3 = TowerComplete
 )
 
 // Summarize calculates and returns the summary fields used for ranking and display.
@@ -41,14 +49,19 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	// Calculate autonomous period points.
 	summary.AutoFuelPoints = score.Hub.GetShiftCount(ShiftAuto, true)
 	summary.NumFuel += summary.AutoFuelPoints
-	numAutoTowerRobots := 0
+	numAutoRobots := 0
 	for _, status := range score.AutoTowerStatuses {
-		if status == TowerLevel1 || status == TowerLevel2 || status == TowerLevel3 {
-			summary.AutoTowerPoints += 15
-			numAutoTowerRobots++
-			if numAutoTowerRobots == 2 {
-				break
-			}
+		if status == TowerComplete {
+			// Complete during auto: +12 points (cap two robots).
+			summary.AutoTowerPoints += 12
+			numAutoRobots++
+		} else if status == TowerPark {
+			// Park during auto: +5 points.
+			summary.AutoTowerPoints += 5
+			numAutoRobots++
+		}
+		if numAutoRobots == 2 {
+			break
 		}
 	}
 
@@ -56,14 +69,11 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	summary.TeleopFuelPoints = score.Hub.GetTeleopActiveFuelCount()
 	summary.NumFuelPostMatch = score.Hub.GetShiftCount(ShiftPostMatch, true)
 	summary.NumFuel += summary.TeleopFuelPoints
+	// Endgame (post-match) parking/complete scoring. Both Park and Complete count as +5.
 	for _, status := range score.EndgameTowerStatuses {
 		switch status {
-		case TowerLevel1:
-			summary.TeleopTowerPoints += 10
-		case TowerLevel2:
-			summary.TeleopTowerPoints += 20
-		case TowerLevel3:
-			summary.TeleopTowerPoints += 30
+		case TowerPark, TowerComplete:
+			summary.TeleopTowerPoints += 5
 		default:
 		}
 	}

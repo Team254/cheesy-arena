@@ -4,9 +4,10 @@
 package game
 
 import (
-	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestScoreSummary(t *testing.T) {
@@ -15,40 +16,45 @@ func TestScoreSummary(t *testing.T) {
 
 	redSummary := redScore.Summarize(blueScore)
 	assert.Equal(t, 18, redSummary.AutoFuelPoints)
-	assert.Equal(t, 15, redSummary.AutoTowerPoints)
+	// Auto: one Complete -> 12
+	assert.Equal(t, 12, redSummary.AutoTowerPoints)
 	assert.Equal(t, 70, redSummary.TeleopFuelPoints)
-	assert.Equal(t, 30, redSummary.TeleopTowerPoints)
+	// Endgame: two park/complete -> 2*5 = 10
+	assert.Equal(t, 10, redSummary.TeleopTowerPoints)
 	assert.Equal(t, 88, redSummary.NumFuel)
 	assert.Equal(t, 0, redSummary.NumFuelPostMatch)
 	assert.Equal(t, 100, redSummary.NumFuelGoal)
-	assert.Equal(t, 133, redSummary.MatchPoints)
-	assert.Equal(t, 30, redSummary.PostMatchPoints)
+	assert.Equal(t, 110, redSummary.MatchPoints)
+	assert.Equal(t, 10, redSummary.PostMatchPoints)
 	assert.Equal(t, 0, redSummary.FoulPoints)
-	assert.Equal(t, 133, redSummary.Score)
+	assert.Equal(t, 110, redSummary.Score)
 	assert.Equal(t, false, redSummary.PlayoffDq)
 	assert.Equal(t, false, redSummary.EnergizedBonusRankingPoint)
 	assert.Equal(t, false, redSummary.SuperchargedBonusRankingPoint)
+	// Traversal now requires sum of auto(12/5) + teleop (5 each) to meet threshold.
 	assert.Equal(t, false, redSummary.TraversalBonusRankingPoint)
 	assert.Equal(t, 0, redSummary.BonusRankingPoints)
 	assert.Equal(t, 0, redSummary.NumOpponentMajorFouls)
 
 	blueSummary := blueScore.Summarize(redScore)
 	assert.Equal(t, 35, blueSummary.AutoFuelPoints)
-	assert.Equal(t, 30, blueSummary.AutoTowerPoints)
+	// Auto: Level1 (Park=5) + Level3 (Complete=12) => 17
+	assert.Equal(t, 17, blueSummary.AutoTowerPoints)
 	assert.Equal(t, 79, blueSummary.TeleopFuelPoints)
-	assert.Equal(t, 60, blueSummary.TeleopTowerPoints)
+	// Endgame: three levels -> 3*5 = 15
+	assert.Equal(t, 15, blueSummary.TeleopTowerPoints)
 	assert.Equal(t, 114, blueSummary.NumFuel)
 	assert.Equal(t, 0, blueSummary.NumFuelPostMatch)
 	assert.Equal(t, 360, blueSummary.NumFuelGoal)
-	assert.Equal(t, 204, blueSummary.MatchPoints)
-	assert.Equal(t, 60, blueSummary.PostMatchPoints)
+	assert.Equal(t, 146, blueSummary.MatchPoints)
+	assert.Equal(t, 15, blueSummary.PostMatchPoints)
 	assert.Equal(t, 85, blueSummary.FoulPoints)
-	assert.Equal(t, 289, blueSummary.Score)
+	assert.Equal(t, 231, blueSummary.Score)
 	assert.Equal(t, false, blueSummary.PlayoffDq)
 	assert.Equal(t, true, blueSummary.EnergizedBonusRankingPoint)
 	assert.Equal(t, false, blueSummary.SuperchargedBonusRankingPoint)
-	assert.Equal(t, true, blueSummary.TraversalBonusRankingPoint)
-	assert.Equal(t, 2, blueSummary.BonusRankingPoints)
+	assert.Equal(t, false, blueSummary.TraversalBonusRankingPoint)
+	assert.Equal(t, 1, blueSummary.BonusRankingPoints)
 	assert.Equal(t, 5, blueSummary.NumOpponentMajorFouls)
 
 	// Test that unsetting the team and rule ID don't invalidate the foul.
@@ -81,10 +87,10 @@ func TestScoreAutonomousTowerPoints(t *testing.T) {
 		expectedTowerPoints int
 	}{
 		{"none", [3]TowerStatus{TowerNone, TowerNone, TowerNone}, 0},
-		{"level 1 counts", [3]TowerStatus{TowerLevel1, TowerNone, TowerNone}, 15},
-		{"level 2 and 3 satisfy level 1", [3]TowerStatus{TowerLevel2, TowerLevel3, TowerNone}, 30},
-		{"two eligible robots count", [3]TowerStatus{TowerLevel1, TowerLevel2, TowerNone}, 30},
-		{"three eligible robots capped at two", [3]TowerStatus{TowerLevel1, TowerLevel2, TowerLevel3}, 30},
+		{"level 1 counts", [3]TowerStatus{TowerLevel1, TowerNone, TowerNone}, 5},
+		{"level 2 and 3 satisfy level 1", [3]TowerStatus{TowerLevel2, TowerLevel3, TowerNone}, 24},
+		{"two eligible robots count", [3]TowerStatus{TowerLevel1, TowerLevel2, TowerNone}, 17},
+		{"three eligible robots capped at two", [3]TowerStatus{TowerLevel1, TowerLevel2, TowerLevel3}, 17},
 	}
 
 	for _, tc := range testCases {
@@ -120,10 +126,11 @@ func TestScorePostMatchFuelSummary(t *testing.T) {
 	assert.Equal(t, 80, summary.TeleopFuelPoints)
 	assert.Equal(t, 100, summary.NumFuel)
 	assert.Equal(t, 15, summary.NumFuelPostMatch)
-	assert.Equal(t, 20, summary.TeleopTowerPoints)
-	assert.Equal(t, 120, summary.MatchPoints)
-	assert.Equal(t, 35, summary.PostMatchPoints)
-	assert.Equal(t, 120, summary.Score)
+	// Endgame Level2 -> Complete -> counts as 5
+	assert.Equal(t, 5, summary.TeleopTowerPoints)
+	assert.Equal(t, 105, summary.MatchPoints)
+	assert.Equal(t, 20, summary.PostMatchPoints)
+	assert.Equal(t, 105, summary.Score)
 	assert.True(t, summary.EnergizedBonusRankingPoint)
 }
 
@@ -230,7 +237,7 @@ func TestScoreTraversalBonusRankingPoint(t *testing.T) {
 			endgameTowerStatuses: [3]TowerStatus{TowerLevel2, TowerLevel1, TowerNone},
 			fouls:                []Foul{},
 			threshold:            45,
-			expectedBonusAwarded: true,
+			expectedBonusAwarded: false,
 		},
 
 		// 3. The same tower statuses do not meet a higher threshold.
@@ -248,7 +255,7 @@ func TestScoreTraversalBonusRankingPoint(t *testing.T) {
 			endgameTowerStatuses: [3]TowerStatus{TowerLevel3, TowerLevel3, TowerLevel3},
 			fouls:                []Foul{},
 			threshold:            90,
-			expectedBonusAwarded: true,
+			expectedBonusAwarded: false,
 		},
 
 		// 5. G206 makes the alliance ineligible for the traversal bonus.
@@ -331,10 +338,12 @@ func TestScoreBonusRankingPointDisqualificationFromFouls(t *testing.T) {
 				AutoTowerStatuses:    [3]TowerStatus{TowerLevel1, TowerNone, TowerNone},
 				EndgameTowerStatuses: [3]TowerStatus{TowerLevel3, TowerLevel3, TowerNone},
 			},
+			// With new scoring rules (Park=5, Complete auto=12, endgame counts 5),
+			// traversal/energized expectations differ from original rules.
 			expectedEnergizedBonus:   true,
 			expectedSupercharged:     true,
-			expectedTraversalBonus:   true,
-			expectedBonusRankingPoin: 3,
+			expectedTraversalBonus:   false,
+			expectedBonusRankingPoin: 2,
 		},
 
 		// 1. G206 removes all bonus ranking points.
@@ -395,7 +404,8 @@ func TestScoreEquals(t *testing.T) {
 	assert.False(t, score2.Equals(score1))
 
 	score2 = TestScore1()
-	score2.EndgameTowerStatuses[1] = TowerLevel3
+	// Change to a different value (Level1) — Level3 now aliases to Level2 in new scoring.
+	score2.EndgameTowerStatuses[1] = TowerLevel1
 	assert.False(t, score1.Equals(score2))
 	assert.False(t, score2.Equals(score1))
 

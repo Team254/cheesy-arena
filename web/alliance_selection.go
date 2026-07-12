@@ -7,14 +7,15 @@ package web
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/tournament"
-	"github.com/Team254/cheesy-arena/websocket"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/tournament"
+	"github.com/Team254/cheesy-arena/websocket"
 )
 
 // Global var to hold configurable time limit for selections. A value of zero disables the timer.
@@ -116,10 +117,7 @@ func (web *Web) allianceSelectionStartHandler(w http.ResponseWriter, r *http.Req
 
 	// Create a blank alliance set matching the event configuration.
 	web.arena.AllianceSelectionAlliances = make([]model.Alliance, web.arena.EventSettings.NumPlayoffAlliances)
-	teamsPerAlliance := 3
-	if web.arena.EventSettings.SelectionRound3Order != "" {
-		teamsPerAlliance = 4
-	}
+	teamsPerAlliance := 2
 	for i := 0; i < web.arena.EventSettings.NumPlayoffAlliances; i++ {
 		web.arena.AllianceSelectionAlliances[i].Id = i + 1
 		web.arena.AllianceSelectionAlliances[i].TeamIds = make([]int, teamsPerAlliance)
@@ -208,7 +206,11 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 		// the left, second pick on the right).
 		alliance.Lineup[0] = alliance.TeamIds[1]
 		alliance.Lineup[1] = alliance.TeamIds[0]
-		alliance.Lineup[2] = alliance.TeamIds[2]
+		if len(alliance.TeamIds) > 2 {
+			alliance.Lineup[2] = alliance.TeamIds[2]
+		} else {
+			alliance.Lineup[2] = 0 // 第三個站位永久空位,每場都要 bypass(反正你們本來就都 bypass)
+		}
 
 		err := web.arena.Database.CreateAlliance(&alliance)
 		if err != nil {
@@ -384,7 +386,10 @@ func (web *Web) renderAllianceSelection(w http.ResponseWriter, r *http.Request, 
 		handleWebErr(w, err)
 		return
 	}
-	nextRow, nextCol := web.determineNextCell()
+	nextRow, nextCol := -1, -1
+	if len(web.arena.AllianceSelectionAlliances) > 0 {
+		nextRow, nextCol = web.determineNextCell()
+	}
 	data := struct {
 		*model.EventSettings
 		Alliances    []model.Alliance
@@ -445,31 +450,35 @@ func (web *Web) determineNextCell() (int, int) {
 	}
 
 	// Check the third column.
-	if web.arena.EventSettings.SelectionRound2Order == "F" {
-		for i, alliance := range web.arena.AllianceSelectionAlliances {
-			if alliance.TeamIds[2] == 0 {
-				return i, 2
+	if len(web.arena.AllianceSelectionAlliances[0].TeamIds) > 2 {
+		if web.arena.EventSettings.SelectionRound2Order == "F" {
+			for i, alliance := range web.arena.AllianceSelectionAlliances {
+				if alliance.TeamIds[2] == 0 {
+					return i, 2
+				}
 			}
-		}
-	} else {
-		for i := len(web.arena.AllianceSelectionAlliances) - 1; i >= 0; i-- {
-			if web.arena.AllianceSelectionAlliances[i].TeamIds[2] == 0 {
-				return i, 2
+		} else {
+			for i := len(web.arena.AllianceSelectionAlliances) - 1; i >= 0; i-- {
+				if web.arena.AllianceSelectionAlliances[i].TeamIds[2] == 0 {
+					return i, 2
+				}
 			}
 		}
 	}
 
 	// Check the fourth column.
-	if web.arena.EventSettings.SelectionRound3Order == "F" {
-		for i, alliance := range web.arena.AllianceSelectionAlliances {
-			if alliance.TeamIds[3] == 0 {
-				return i, 3
+	if len(web.arena.AllianceSelectionAlliances[0].TeamIds) > 3 {
+		if web.arena.EventSettings.SelectionRound3Order == "F" {
+			for i, alliance := range web.arena.AllianceSelectionAlliances {
+				if alliance.TeamIds[3] == 0 {
+					return i, 3
+				}
 			}
-		}
-	} else if web.arena.EventSettings.SelectionRound3Order == "L" {
-		for i := len(web.arena.AllianceSelectionAlliances) - 1; i >= 0; i-- {
-			if web.arena.AllianceSelectionAlliances[i].TeamIds[3] == 0 {
-				return i, 3
+		} else if web.arena.EventSettings.SelectionRound3Order == "L" {
+			for i := len(web.arena.AllianceSelectionAlliances) - 1; i >= 0; i-- {
+				if web.arena.AllianceSelectionAlliances[i].TeamIds[3] == 0 {
+					return i, 3
+				}
 			}
 		}
 	}

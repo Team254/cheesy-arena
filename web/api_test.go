@@ -5,14 +5,15 @@ package web
 
 import (
 	"encoding/json"
+	"testing"
+	"time"
+
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestMatchesApi(t *testing.T) {
@@ -147,17 +148,13 @@ func TestAlliancesApi(t *testing.T) {
 	err := json.Unmarshal([]byte(recorder.Body.String()), &alliances)
 	assert.Nil(t, err)
 	if assert.Equal(t, 2, len(alliances)) {
-		if assert.Equal(t, 5, len(alliances[0].TeamIds)) {
+		if assert.Equal(t, 2, len(alliances[0].TeamIds)) {
 			assert.Equal(t, 254, alliances[0].TeamIds[0])
 			assert.Equal(t, 469, alliances[0].TeamIds[1])
-			assert.Equal(t, 2848, alliances[0].TeamIds[2])
-			assert.Equal(t, 74, alliances[0].TeamIds[3])
-			assert.Equal(t, 3175, alliances[0].TeamIds[4])
 		}
-		if assert.Equal(t, 3, len(alliances[1].TeamIds)) {
+		if assert.Equal(t, 2, len(alliances[1].TeamIds)) {
 			assert.Equal(t, 1718, alliances[1].TeamIds[0])
 			assert.Equal(t, 2451, alliances[1].TeamIds[1])
-			assert.Equal(t, 1619, alliances[1].TeamIds[2])
 		}
 	}
 }

@@ -6,15 +6,16 @@ package partner
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPublishTeams(t *testing.T) {
@@ -129,7 +130,7 @@ func TestPublishAlliances(t *testing.T) {
 				if strings.Contains(r.URL.String(), "alliance_selections") {
 					assert.Equal(
 						t,
-						"[[\"frc254\",\"frc469\",\"frc2848\",\"frc74\",\"frc3175\"],[\"frc1718\",\"frc2451\",\"frc1619\"]]",
+						"[[\"frc254\",\"frc469\"],[\"frc1718\",\"frc2451\"]]",
 						reader.String(),
 					)
 				} else {

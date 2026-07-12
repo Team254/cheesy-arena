@@ -1,0 +1,25 @@
+{{/*
+Copyright 2026 Team 254. All Rights Reserved.
+
+Full-screen color display for the shared hub, showing whichever alliance currently has scoring access.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hub Display - {{.EventSettings.Name}} - Cheesy Arena</title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/lib/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/css/cheesy-arena.css"/>
+    <link rel="stylesheet" href="/static/css/hub_display.css"/>
+  </head>
+  <body>
+    <div id="hub" data-color="off">
+      <div id="hubLabel"></div>
+    </div>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/hub_display.js"></script>
+  </body>
+</html>

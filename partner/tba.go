@@ -11,14 +11,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/mitchellh/mapstructure"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/mitchellh/mapstructure"
 )
 
 const (
@@ -156,10 +157,9 @@ type TbaPublishedAward struct {
 
 var leaveMapping = map[bool]string{false: "No", true: "Yes"}
 var towerStatusMapping = map[game.TowerStatus]string{
-	game.TowerNone:   "None",
-	game.TowerLevel1: "Level1",
-	game.TowerLevel2: "Level2",
-	game.TowerLevel3: "Level3",
+	game.TowerNone:     "None",
+	game.TowerPark:     "Level1",
+	game.TowerComplete: "Level2",
 }
 
 func NewTbaClient(eventCode, secretId, secret string) *TbaClient {
