@@ -68,11 +68,11 @@ func (hub *Hub) GetTeleopActiveFuelCount() int {
 	return count
 }
 
-// GetShiftActiveCount returns the number of Fuel scored during the given shift if the Hub was active, or zero if the
-// Hub was not active.
+// GetShiftActiveCount returns the number of Fuel scored (automatically via hardware, plus any manually-entered
+// amount for the same shift) during the given shift if the Hub was active, or zero if the Hub was not active.
 func (hub *Hub) GetShiftCount(shift Shift, activeOnly bool) int {
 	if hub.isShiftActive(shift) || !activeOnly {
-		return hub.ShiftCounts[shift]
+		return hub.ShiftCounts[shift] + hub.ManualShiftCounts[shift]
 	}
 	return 0
 }

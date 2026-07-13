@@ -143,25 +143,17 @@ const handleRealtimeScore = function (data) {
   const redFouls = data.Red.Score.Fouls || [];
   const blueFouls = data.Blue.Score.Fouls || [];
   renderGlobalFoulCounts(redFouls, blueFouls);
-  // Render Auto and Manual totals for this alliance.
-  let autoTotal = 0;
-  if (score.Hub && score.Hub.ShiftCounts) {
-    const shiftCounts = score.Hub.ShiftCounts;
-    for (let i = 0; i < shiftCounts.length; i++) {
-      autoTotal += shiftCounts[i] || 0;
-    }
-  }
-  let manualTotal = 0;
-  if (score.Hub && typeof score.Hub.ManualTotal === 'number') {
-    manualTotal = score.Hub.ManualTotal;
-  } else if (score.Hub && score.Hub.ManualShiftCounts) {
-    const manualCounts = score.Hub.ManualShiftCounts;
-    for (let i = 0; i < manualCounts.length; i++) {
-      manualTotal += manualCounts[i] || 0;
-    }
-  }
-  $(".auto-fuel-total").text(`Auto: ${autoTotal}`);
-  $(".manual-fuel-total").text(`Manual: ${manualTotal}`);
+  // Render the Auto (hardware) and Manual fuel totals for each shift-specific block (Auto Park, Endgame Park),
+  // scoped to that block's own data-shift index so the two sections don't overwrite each other.
+  const shiftCounts = (score.Hub && score.Hub.ShiftCounts) || [];
+  const manualShiftCounts = (score.Hub && score.Hub.ManualShiftCounts) || [];
+  $(".fuel-totals").each(function () {
+    const shift = parseInt($(this).attr("data-shift"), 10);
+    const autoCount = shiftCounts[shift] || 0;
+    const manualCount = manualShiftCounts[shift] || 0;
+    $(this).find(".auto-fuel-total").text(`Auto: ${autoCount}`);
+    $(this).find(".manual-fuel-total").text(`Manual: ${manualCount}`);
+  });
 };
 
 // Websocket message senders for various buttons
