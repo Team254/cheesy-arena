@@ -1224,13 +1224,13 @@ func (arena *Arena) updateHubDisplayColors(currentTime time.Time) {
 			arena.SetHubColor("blue", HubOff)
 		}
 	case AutoPeriod, PausePeriod, TeleopPeriod:
-		redHubLight, blueHubLight := arena.getHubLightStates(currentTime)
-		if redHubLight {
+		redHubActive, blueHubActive := arena.getHubActiveStates(currentTime)
+		if redHubActive {
 			arena.SetHubColor("red", HubRed)
 		} else {
 			arena.SetHubColor("red", HubOff)
 		}
-		if blueHubLight {
+		if blueHubActive {
 			arena.SetHubColor("blue", HubBlue)
 		} else {
 			arena.SetHubColor("blue", HubOff)
@@ -1322,6 +1322,35 @@ func (arena *Arena) handlePlcInputOutput() {
 
 	redHubLight, blueHubLight := arena.getHubLightStates(currentTime)
 	arena.Plc.SetHubLights(redHubLight, blueHubLight)
+}
+
+// getHubActiveStates returns whether the hub is currently active for each alliance, ignoring the blink modulation
+// that getHubLightStates() applies for the physical field LEDs (used to warn nearby teams that exclusive access is
+// about to change). Tablet color displays should render a steady color rather than flickering, so this is what
+// updateHubDisplayColors() uses instead of getHubLightStates().
+func (arena *Arena) getHubActiveStates(currentTime time.Time) (bool, bool) {
+	switch arena.MatchState {
+	case AutoPeriod, PausePeriod:
+		return true, true
+	case TeleopPeriod:
+		redHub := &arena.RedRealtimeScore.CurrentScore.Hub
+		blueHub := &arena.BlueRealtimeScore.CurrentScore.Hub
+		shift, _, _, ok := redHub.GetCurrentShiftTiming(arena.MatchStartTime, currentTime)
+		if !ok {
+			return false, false
+		}
+
+		if shift == game.ShiftTransition {
+			// Both alliances are active during the transition shift, same as Auto/Endgame.
+			return true, true
+		}
+
+		redActiveRemaining, _ := redHub.GetActiveShiftTiming(arena.MatchStartTime, currentTime)
+		blueActiveRemaining, _ := blueHub.GetActiveShiftTiming(arena.MatchStartTime, currentTime)
+		return redActiveRemaining > 0, blueActiveRemaining > 0
+	default:
+		return false, false
+	}
 }
 
 func (arena *Arena) getHubLightStates(currentTime time.Time) (bool, bool) {
