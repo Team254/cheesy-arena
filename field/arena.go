@@ -98,6 +98,7 @@ type Arena struct {
 	ShowLowerThird                    bool
 	MuteMatchSounds                   bool
 	matchAborted                      bool
+	matchStopTime                     time.Time
 	soundsPlayed                      map[*game.MatchSound]struct{}
 	breakDescription                  string
 	breakNextMatchName                string
@@ -559,6 +560,7 @@ func (arena *Arena) AbortMatch() error {
 	arena.PlaySound("abort")
 	arena.MatchState = PostMatch
 	arena.matchAborted = true
+	arena.matchStopTime = time.Now()
 	arena.SetAudienceDisplayMode("blank")
 	go arena.BlackmagicClient.StopRecording()
 	go arena.CompanionClient.SendEvent(partner.EventMatchAbort)
@@ -801,10 +803,12 @@ func (arena *Arena) Update() {
 	arena.BlueRealtimeScore.ActiveRemainingSec = int(math.Ceil(blueActiveRemaining.Seconds()))
 	arena.BlueRealtimeScore.ActiveDurationSec = int(math.Ceil(blueActiveDuration.Seconds()))
 
-	arena.updateHubLeds(currentTime)
-
 	// Handle field sensors/lights/actuators.
 	arena.handlePlcInputOutput()
+
+	// Update the hub LEDs after PLC input so that a field e-stop abort is reflected in the same cycle, before
+	// lastMatchState is updated (otherwise the end-of-match lighting transition would be missed).
+	arena.updateHubLeds(currentTime)
 
 	// Log after PLC input so each sample includes the latest physical DS Ethernet state.
 	arena.logTeamSnapshots()
@@ -1273,12 +1277,19 @@ func (arena *Arena) handlePlcInputOutput() {
 	arena.RedRealtimeScore.CurrentScore.Hub.UpdateState(redHubCount, matchStartTime, currentTime)
 	arena.BlueRealtimeScore.CurrentScore.Hub.UpdateState(blueHubCount, matchStartTime, currentTime)
 
-	// Run the hub motors for extra time after counting stops to help exhaust balls.
-	motorCutoff := matchStartTime.Add(
-		game.GetDurationToTeleopEnd() + (game.ScoringGracePeriodSec+game.MotorsOnExtraPeriodSec)*time.Second,
-	)
-	motorsOn := arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod ||
-		arena.MatchState == PostMatch && currentTime.Before(motorCutoff)
+	// Run the hub motors for extra time after the match ends or is aborted to help exhaust balls, but stop them
+	// immediately while the field e-stop is pressed.
+	motorGracePeriod := (game.ScoringGracePeriodSec + game.MotorsOnExtraPeriodSec) * time.Second
+	var motorCutoff time.Time
+	if arena.matchAborted {
+		motorCutoff = arena.matchStopTime.Add(motorGracePeriod)
+	} else {
+		motorCutoff = matchStartTime.Add(game.GetDurationToTeleopEnd() + motorGracePeriod)
+	}
+	motorsOn := (arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod ||
+		arena.MatchState == TeleopPeriod ||
+		arena.MatchState == PostMatch && currentTime.Before(motorCutoff)) &&
+		!arena.Plc.GetFieldEStop()
 	arena.Plc.SetHubMotors(motorsOn, motorsOn)
 
 	redHubLight, blueHubLight := arena.getHubLightStates(currentTime)
