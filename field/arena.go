@@ -401,7 +401,15 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.Plc.ResetMatch()
 	arena.NextFoulId = 1
 	arena.redWonAuto = false
-	arena.Leds.SetMode(led.OffMode, led.OffMode)
+	// Preserve an active field-reset/volunteers signal across the match load (e.g. after committing scores)
+	// rather than blanking the field LEDs out from under the head referee.
+	if arena.FieldReset {
+		arena.Leds.SetMode(led.GreenMode, led.GreenMode)
+	} else if arena.FieldVolunteers {
+		arena.Leds.SetMode(led.PurpleMode, led.PurpleMode)
+	} else {
+		arena.Leds.SetMode(led.OffMode, led.OffMode)
+	}
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()

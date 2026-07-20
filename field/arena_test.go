@@ -1309,3 +1309,32 @@ func TestSignalReset(t *testing.T) {
 	assert.Equal(t, "fieldReset", arena.AllianceStationDisplayMode)
 	assertHubLedModes(led.GreenMode, led.GreenMode)
 }
+
+// Loading the next match (as happens when committing and posting match results) should not clobber an
+// active field-reset or volunteers signal that the head referee gave before the score was committed.
+func TestLoadMatchPreservesFieldSignalLeds(t *testing.T) {
+	arena := setupTestArena(t)
+	assertHubLedModes := func(red, blue led.Mode) {
+		redMode, blueMode := arena.Leds.GetModes()
+		assert.Equal(t, red, redMode)
+		assert.Equal(t, blue, blueMode)
+	}
+
+	// No active signal -- LEDs should be off after loading a match.
+	arena.FieldReset = false
+	arena.FieldVolunteers = false
+	arena.Leds.SetMode(led.RedMode, led.BlueMode)
+	assert.Nil(t, arena.LoadMatch(new(model.Match)))
+	assertHubLedModes(led.OffMode, led.OffMode)
+
+	// An active field-reset signal should carry over.
+	arena.FieldReset = true
+	assert.Nil(t, arena.LoadMatch(new(model.Match)))
+	assertHubLedModes(led.GreenMode, led.GreenMode)
+
+	// An active volunteers signal should carry over.
+	arena.FieldReset = false
+	arena.FieldVolunteers = true
+	assert.Nil(t, arena.LoadMatch(new(model.Match)))
+	assertHubLedModes(led.PurpleMode, led.PurpleMode)
+}
