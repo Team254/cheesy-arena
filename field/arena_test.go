@@ -1320,21 +1320,27 @@ func TestLoadMatchPreservesFieldSignalLeds(t *testing.T) {
 		assert.Equal(t, blue, blueMode)
 	}
 
-	// No active signal -- LEDs should be off after loading a match.
+	// No active signal -- LEDs and alliance station display should reset to "match" after loading a match.
 	arena.FieldReset = false
 	arena.FieldVolunteers = false
 	arena.Leds.SetMode(led.RedMode, led.BlueMode)
+	arena.AllianceStationDisplayMode = "logo"
 	assert.Nil(t, arena.LoadMatch(new(model.Match)))
 	assertHubLedModes(led.OffMode, led.OffMode)
+	assert.Equal(t, "match", arena.AllianceStationDisplayMode)
 
-	// An active field-reset signal should carry over.
+	// An active field-reset signal should carry over to both the LEDs and the alliance station display.
 	arena.FieldReset = true
+	arena.AllianceStationDisplayMode = "match"
 	assert.Nil(t, arena.LoadMatch(new(model.Match)))
 	assertHubLedModes(led.GreenMode, led.GreenMode)
+	assert.Equal(t, "fieldReset", arena.AllianceStationDisplayMode)
 
-	// An active volunteers signal should carry over.
+	// An active volunteers signal should carry over to both the LEDs and the alliance station display.
 	arena.FieldReset = false
 	arena.FieldVolunteers = true
+	arena.AllianceStationDisplayMode = "match"
 	assert.Nil(t, arena.LoadMatch(new(model.Match)))
 	assertHubLedModes(led.PurpleMode, led.PurpleMode)
+	assert.Equal(t, "signalCount", arena.AllianceStationDisplayMode)
 }
