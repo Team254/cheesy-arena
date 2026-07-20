@@ -4,6 +4,12 @@
 package field
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
@@ -12,11 +18,6 @@ import (
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestAssignTeam(t *testing.T) {
@@ -1310,8 +1311,7 @@ func TestSignalReset(t *testing.T) {
 	assertHubLedModes(led.GreenMode, led.GreenMode)
 }
 
-// Loading the next match (as happens when committing and posting match results) should not clobber an
-// active field-reset or volunteers signal that the head referee gave before the score was committed.
+// Test loading match preserves field signal state (green safe/purple count)
 func TestLoadMatchPreservesFieldSignalLeds(t *testing.T) {
 	arena := setupTestArena(t)
 	assertHubLedModes := func(red, blue led.Mode) {
