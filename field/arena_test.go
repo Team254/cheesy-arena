@@ -1313,34 +1313,57 @@ func TestSignalReset(t *testing.T) {
 
 // Test loading match preserves field signal state (green safe/purple count)
 func TestLoadMatchPreservesFieldSignalLeds(t *testing.T) {
-	arena := setupTestArena(t)
-	assertHubLedModes := func(red, blue led.Mode) {
-		redMode, blueMode := arena.Leds.GetModes()
-		assert.Equal(t, red, redMode)
-		assert.Equal(t, blue, blueMode)
+	tests := []struct {
+		name                string
+		fieldReset          bool
+		fieldVolunteers     bool
+		initialDisplayMode  string
+		expectedLedMode     led.Mode
+		expectedDisplayMode string
+	}{
+		{
+			// No active signal -- LEDs and alliance station display should reset to "match" after loading a match.
+			name:                "No active signal resets to match",
+			fieldReset:          false,
+			fieldVolunteers:     false,
+			initialDisplayMode:  "logo",
+			expectedLedMode:     led.OffMode,
+			expectedDisplayMode: "match",
+		},
+		{
+			// An active field-reset signal should carry over to both the LEDs and the alliance station display.
+			name:                "Active field-reset signal carries over",
+			fieldReset:          true,
+			fieldVolunteers:     false,
+			initialDisplayMode:  "match",
+			expectedLedMode:     led.GreenMode,
+			expectedDisplayMode: "fieldReset",
+		},
+		{
+			// An active volunteers signal should carry over to both the LEDs and the alliance station display.
+			name:                "Active volunteers signal carries over",
+			fieldReset:          false,
+			fieldVolunteers:     true,
+			initialDisplayMode:  "match",
+			expectedLedMode:     led.PurpleMode,
+			expectedDisplayMode: "signalCount",
+		},
 	}
 
-	// No active signal -- LEDs and alliance station display should reset to "match" after loading a match.
-	arena.FieldReset = false
-	arena.FieldVolunteers = false
-	arena.Leds.SetMode(led.RedMode, led.BlueMode)
-	arena.AllianceStationDisplayMode = "logo"
-	assert.Nil(t, arena.LoadMatch(new(model.Match)))
-	assertHubLedModes(led.OffMode, led.OffMode)
-	assert.Equal(t, "match", arena.AllianceStationDisplayMode)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			arena := setupTestArena(t)
+			arena.FieldReset = tt.fieldReset
+			arena.FieldVolunteers = tt.fieldVolunteers
+			arena.Leds.SetMode(led.RedMode, led.BlueMode)
+			arena.AllianceStationDisplayMode = tt.initialDisplayMode
 
-	// An active field-reset signal should carry over to both the LEDs and the alliance station display.
-	arena.FieldReset = true
-	arena.AllianceStationDisplayMode = "match"
-	assert.Nil(t, arena.LoadMatch(new(model.Match)))
-	assertHubLedModes(led.GreenMode, led.GreenMode)
-	assert.Equal(t, "fieldReset", arena.AllianceStationDisplayMode)
+			assert.Nil(t, arena.LoadMatch(new(model.Match)))
 
-	// An active volunteers signal should carry over to both the LEDs and the alliance station display.
-	arena.FieldReset = false
-	arena.FieldVolunteers = true
-	arena.AllianceStationDisplayMode = "match"
-	assert.Nil(t, arena.LoadMatch(new(model.Match)))
-	assertHubLedModes(led.PurpleMode, led.PurpleMode)
-	assert.Equal(t, "signalCount", arena.AllianceStationDisplayMode)
+			redMode, blueMode := arena.Leds.GetModes()
+			assert.Equal(t, tt.expectedLedMode, redMode)
+			assert.Equal(t, tt.expectedLedMode, blueMode)
+			assert.Equal(t, tt.expectedDisplayMode, arena.AllianceStationDisplayMode)
+		})
+	}
 }
