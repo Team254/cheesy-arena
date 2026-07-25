@@ -1056,7 +1056,8 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 		assert.Equal(t, blue, blueMode)
 	}
 
-	// Hub counts should be ignored before a match has started, and motors should stay off.
+	// Hub counts should be ignored before a match has started, motors should stay off, and the LEDs should signal
+	// field reset.
 	assert.Equal(t, PreMatch, arena.MatchState)
 	plc.redHubCount = 5
 	plc.blueHubCount = 8
@@ -1066,7 +1067,7 @@ func TestPlcMatchCycleGameSpecific(t *testing.T) {
 	assert.False(t, plc.redHubMotor)
 	assert.False(t, plc.blueHubMotor)
 	assertHubLights(false, false)
-	assertHubLedModes(led.OffMode, led.OffMode)
+	assertHubLedModes(led.GreenMode, led.GreenMode)
 	plc.redHubCount = 0
 	plc.blueHubCount = 0
 
