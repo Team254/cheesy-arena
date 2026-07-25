@@ -129,6 +129,39 @@ const getTeamNumber = function (station) {
   return teamId ? parseInt(teamId) : 0;
 }
 
+const updateStartMatchTooltip = function (conditions) {
+  const tooltipElement = document.getElementById("startMatchTooltip");
+  const button = document.getElementById("startMatch");
+  const tooltip = bootstrap.Tooltip.getInstance(tooltipElement);
+
+  if (!conditions || conditions.length === 0) {
+    button.style.pointerEvents = "";
+    tooltipElement.removeAttribute("tabindex");
+    delete tooltipElement.dataset.tooltipText;
+    if (tooltip) {
+      tooltip.dispose();
+    }
+    return;
+  }
+
+  button.style.pointerEvents = "none";
+  tooltipElement.setAttribute("tabindex", "0");
+  const tooltipText = `Unsatisfied conditions:\n• ${conditions.join("\n• ")}`;
+  if (tooltipElement.dataset.tooltipText === tooltipText) {
+    return;
+  }
+  tooltipElement.dataset.tooltipText = tooltipText;
+
+  if (tooltip) {
+    tooltip.setContent({".tooltip-inner": tooltipText});
+  } else {
+    new bootstrap.Tooltip(tooltipElement, {
+      customClass: "start-match-tooltip",
+      title: tooltipText,
+    });
+  }
+}
+
 // Handles a websocket message to update the team connection status.
 const handleArenaStatus = function (data) {
   // Update the team status view.
@@ -261,6 +294,7 @@ const handleArenaStatus = function (data) {
       $("#startTimeout").prop("disabled", true);
       break;
   }
+  updateStartMatchTooltip(data.StartMatchConditions);
 
   $("#accessPointStatus").attr("data-status", data.AccessPointStatus);
   $("#switchStatus").attr("data-status", data.SwitchStatus);

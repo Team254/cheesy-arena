@@ -51,10 +51,12 @@ UI for controlling match play and viewing team connection and field status.
         onclick="showOverlay();" disabled>
         Show Overlay
       </button>
-      <button type="button" id="startMatch" class="btn btn-success btn-match-play ms-1"
-        onclick="startMatch();" disabled>
-        Start Match
-      </button>
+      <span id="startMatchTooltip" class="start-match-tooltip-wrapper d-inline-block ms-1" tabindex="0">
+        <button type="button" id="startMatch" class="btn btn-success btn-match-play"
+          onclick="startMatch();" style="pointer-events: none;" disabled>
+          Start Match
+        </button>
+      </span>
       <button type="button" id="commitResults" class="btn btn-primary btn-match-play ms-1"
         onclick="confirmCommit();" disabled>
         Commit &amp; Post

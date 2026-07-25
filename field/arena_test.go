@@ -66,7 +66,7 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	// Check robot state constraints.
 	err := arena.checkCanStartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match until all robots are connected or bypassed")
+		assert.Contains(t, err.Error(), "cannot start match: not all robots are connected or bypassed")
 	}
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].Bypass = true
@@ -75,7 +75,7 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	arena.AllianceStations["B2"].Bypass = true
 	err = arena.checkCanStartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match until all robots are connected or bypassed")
+		assert.Contains(t, err.Error(), "cannot start match: not all robots are connected or bypassed")
 	}
 	arena.AllianceStations["B3"].Bypass = true
 	assert.Nil(t, arena.checkCanStartMatch())
@@ -84,7 +84,7 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	arena.Plc.SetAddress("1.2.3.4")
 	err = arena.checkCanStartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match while PLC is not healthy")
+		assert.Contains(t, err.Error(), "cannot start match: PLC is not healthy")
 	}
 	arena.Plc.SetAddress("")
 	assert.Nil(t, arena.checkCanStartMatch())
@@ -94,7 +94,7 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	arena.Plc = &plc
 	err = arena.checkCanStartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match until FTA ready switch is active")
+		assert.Contains(t, err.Error(), "cannot start match: FTA ready switch is not active")
 	}
 	plc.ftaReady = true
 	assert.Nil(t, arena.checkCanStartMatch())
@@ -246,7 +246,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	}
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match while")
+		assert.Contains(t, err.Error(), "cannot start match: a match is still in progress")
 	}
 	err = arena.ResetMatch()
 	if assert.NotNil(t, err) {
@@ -259,7 +259,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	}
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match while")
+		assert.Contains(t, err.Error(), "cannot start match: a match is still in progress")
 	}
 	err = arena.ResetMatch()
 	if assert.NotNil(t, err) {
@@ -272,7 +272,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	}
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match while")
+		assert.Contains(t, err.Error(), "cannot start match: a match is still in progress")
 	}
 	err = arena.ResetMatch()
 	if assert.NotNil(t, err) {
@@ -285,7 +285,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	}
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match while")
+		assert.Contains(t, err.Error(), "cannot start match: a match is still in progress")
 	}
 	err = arena.ResetMatch()
 	if assert.NotNil(t, err) {
@@ -298,7 +298,7 @@ func TestArenaStateEnforcement(t *testing.T) {
 	}
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "cannot start match while")
+		assert.Contains(t, err.Error(), "cannot start match: a match is still in progress")
 	}
 	err = arena.AbortMatch()
 	if assert.NotNil(t, err) {
@@ -345,20 +345,20 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	arena.AllianceStations["R1"].EStop = true
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "while an emergency stop is active")
+		assert.Contains(t, err.Error(), "an emergency stop is active")
 	}
 	arena.AllianceStations["R1"].EStop = false
 	arena.AllianceStations["R1"].aStopReset = false
 	arena.AllianceStations["R1"].AStop = true
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "if an autonomous stop has not been reset since the previous match")
+		assert.Contains(t, err.Error(), "an autonomous stop has not been reset since the previous match")
 	}
 	arena.AllianceStations["R1"].aStopReset = true
 	arena.AllianceStations["R1"].DsConn.RobotLinked = false
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "until all robots are connected or bypassed")
+		assert.Contains(t, err.Error(), "not all robots are connected or bypassed")
 	}
 	arena.AllianceStations["R1"].Bypass = true
 	err = arena.StartMatch()
@@ -371,7 +371,7 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	assert.Nil(t, err)
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "until all robots are connected or bypassed")
+		assert.Contains(t, err.Error(), "not all robots are connected or bypassed")
 	}
 	arena.AllianceStations["R1"].Bypass = true
 	err = arena.StartMatch()
@@ -382,7 +382,7 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	arena.LoadMatch(new(model.Match))
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "until all robots are connected or bypassed")
+		assert.Contains(t, err.Error(), "not all robots are connected or bypassed")
 	}
 	arena.AllianceStations["R1"].Bypass = true
 	arena.AllianceStations["R2"].Bypass = true
@@ -393,7 +393,7 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 	arena.AllianceStations["B3"].EStop = true
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
-		assert.Contains(t, err.Error(), "while an emergency stop is active")
+		assert.Contains(t, err.Error(), "an emergency stop is active")
 	}
 	arena.AllianceStations["B3"].EStop = false
 	err = arena.StartMatch()

@@ -19,6 +19,7 @@ import (
 	"math/rand"
 	"net"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -1102,52 +1103,107 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 
 // Returns nil if the match can be started, and an error otherwise.
 func (arena *Arena) checkCanStartMatch() error {
-	if arena.MatchState != PreMatch {
-		return fmt.Errorf("cannot start match while there is a match still in progress or with results pending")
+	conditions := arena.getStartMatchConditions()
+	if len(conditions) > 0 {
+		return fmt.Errorf("cannot start match: %s", strings.Join(conditions, "; "))
 	}
-
-	err := arena.checkAllianceStationsReady("R1", "R2", "R3", "B1", "B2", "B3")
-	if err != nil {
-		return err
-	}
-
-	if arena.Plc.IsEnabled() {
-		if !arena.Plc.IsHealthy() {
-			return fmt.Errorf("cannot start match while PLC is not healthy")
-		}
-		if arena.Plc.GetFieldEStop() {
-			return fmt.Errorf("cannot start match while field emergency stop is active")
-		}
-		if !arena.Plc.IsFtaReady() {
-			return fmt.Errorf("cannot start match until FTA ready switch is active")
-		}
-		for name, status := range arena.Plc.GetArmorBlockStatuses() {
-			if !status {
-				return fmt.Errorf("cannot start match while PLC ArmorBlock %q is not connected", name)
-			}
-		}
-	}
-
 	return nil
 }
 
+// Returns descriptions of all conditions preventing the match from being started.
+func (arena *Arena) getStartMatchConditions() []string {
+	var conditions []string
+	if arena.MatchState != PreMatch {
+		conditions = append(
+			conditions,
+			"a match is still in progress or has results pending",
+		)
+	}
+
+	conditions = append(
+		conditions,
+		arena.getAllianceStationStartConditions("R1", "R2", "R3", "B1", "B2", "B3")...,
+	)
+
+	if arena.Plc.IsEnabled() {
+		if !arena.Plc.IsHealthy() {
+			conditions = append(conditions, "PLC is not healthy")
+		}
+		if arena.Plc.GetFieldEStop() {
+			conditions = append(conditions, "field emergency stop is active")
+		}
+		if !arena.Plc.IsFtaReady() {
+			conditions = append(conditions, "FTA ready switch is not active")
+		}
+		var disconnectedArmorBlocks []string
+		for name, status := range arena.Plc.GetArmorBlockStatuses() {
+			if !status {
+				disconnectedArmorBlocks = append(disconnectedArmorBlocks, name)
+			}
+		}
+		sort.Strings(disconnectedArmorBlocks)
+		for _, name := range disconnectedArmorBlocks {
+			conditions = append(
+				conditions,
+				fmt.Sprintf("PLC ArmorBlock %q is not connected", name),
+			)
+		}
+	}
+
+	return conditions
+}
+
 func (arena *Arena) checkAllianceStationsReady(stations ...string) error {
+	conditions := arena.getAllianceStationStartConditions(stations...)
+	if len(conditions) > 0 {
+		return fmt.Errorf("cannot start match: %s", strings.Join(conditions, "; "))
+	}
+	return nil
+}
+
+func (arena *Arena) getAllianceStationStartConditions(stations ...string) []string {
+	var eStoppedStations, aStopNotResetStations, disconnectedStations []string
 	for _, station := range stations {
 		allianceStation := arena.AllianceStations[station]
 		if allianceStation.EStop {
-			return fmt.Errorf("cannot start match while an emergency stop is active")
+			eStoppedStations = append(eStoppedStations, station)
 		}
 		if !allianceStation.aStopReset {
-			return fmt.Errorf("cannot start match if an autonomous stop has not been reset since the previous match")
+			aStopNotResetStations = append(aStopNotResetStations, station)
 		}
 		if !allianceStation.Bypass {
 			if allianceStation.DsConn == nil || !allianceStation.DsConn.RobotLinked {
-				return fmt.Errorf("cannot start match until all robots are connected or bypassed")
+				disconnectedStations = append(disconnectedStations, station)
 			}
 		}
 	}
 
-	return nil
+	var conditions []string
+	if len(eStoppedStations) > 0 {
+		conditions = append(
+			conditions,
+			fmt.Sprintf("an emergency stop is active (%s)", strings.Join(eStoppedStations, ", ")),
+		)
+	}
+	if len(aStopNotResetStations) > 0 {
+		conditions = append(
+			conditions,
+			fmt.Sprintf(
+				"an autonomous stop has not been reset since the previous match (%s)",
+				strings.Join(aStopNotResetStations, ", "),
+			),
+		)
+	}
+	if len(disconnectedStations) > 0 {
+		conditions = append(
+			conditions,
+			fmt.Sprintf(
+				"not all robots are connected or bypassed (%s)",
+				strings.Join(disconnectedStations, ", "),
+			),
+		)
+	}
+	return conditions
 }
 
 func (arena *Arena) sendDsPacket(auto bool, enabled bool) {
