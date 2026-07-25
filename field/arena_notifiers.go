@@ -99,6 +99,7 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		BlueSCCStatus         string
 		PlcIsHealthy          bool
 		FieldEStop            bool
+		IsFtaReady            bool
 		PlcArmorBlockStatuses map[string]bool
 	}{
 		arena.CurrentMatch.Id,
@@ -111,6 +112,7 @@ func (arena *Arena) generateArenaStatusMessage() any {
 		arena.blueSCC.Status,
 		arena.Plc.IsHealthy(),
 		arena.Plc.GetFieldEStop(),
+		arena.Plc.IsFtaReady(),
 		arena.Plc.GetArmorBlockStatuses(),
 	}
 }
