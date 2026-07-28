@@ -7,13 +7,6 @@ package field
 
 import (
 	"fmt"
-	"github.com/Team254/cheesy-arena/game"
-	"github.com/Team254/cheesy-arena/led"
-	"github.com/Team254/cheesy-arena/model"
-	"github.com/Team254/cheesy-arena/network"
-	"github.com/Team254/cheesy-arena/partner"
-	"github.com/Team254/cheesy-arena/playoff"
-	"github.com/Team254/cheesy-arena/plc"
 	"log"
 	"math"
 	"math/rand"
@@ -23,6 +16,14 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/Team254/cheesy-arena/game"
+	"github.com/Team254/cheesy-arena/led"
+	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/network"
+	"github.com/Team254/cheesy-arena/partner"
+	"github.com/Team254/cheesy-arena/playoff"
+	"github.com/Team254/cheesy-arena/plc"
 )
 
 const (
@@ -402,12 +403,21 @@ func (arena *Arena) LoadMatch(match *model.Match) error {
 	arena.Plc.ResetMatch()
 	arena.NextFoulId = 1
 	arena.redWonAuto = false
-	arena.Leds.SetMode(led.OffMode, led.OffMode)
+	// Preserve current field state across the match load and set the states (e.g. after committing scores)
+	if arena.FieldReset {
+		arena.Leds.SetMode(led.GreenMode, led.GreenMode)
+		arena.AllianceStationDisplayMode = "fieldReset"
+	} else if arena.FieldVolunteers {
+		arena.Leds.SetMode(led.PurpleMode, led.PurpleMode)
+		arena.AllianceStationDisplayMode = "signalCount"
+	} else {
+		arena.Leds.SetMode(led.OffMode, led.OffMode)
+		arena.AllianceStationDisplayMode = "match"
+	}
 
 	// Notify any listeners about the new match.
 	arena.MatchLoadNotifier.Notify()
 	arena.RealtimeScoreNotifier.Notify()
-	arena.AllianceStationDisplayMode = "match"
 	arena.AllianceStationDisplayModeNotifier.Notify()
 	arena.ScoringStatusNotifier.Notify()
 
