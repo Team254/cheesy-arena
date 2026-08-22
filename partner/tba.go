@@ -99,17 +99,17 @@ type tbaHub struct {
 }
 
 type TbaRanking struct {
-	TeamKey  string `json:"team_key"`
-	Rank     int    `json:"rank"`
-	RP       float32
-	Match    float32
-	AutoFuel float32
-	Tower    float32
-	Wins     int `json:"wins"`
-	Losses   int `json:"losses"`
-	Ties     int `json:"ties"`
-	Dqs      int `json:"dqs"`
-	Played   int `json:"played"`
+	TeamKey  string  `json:"team_key"`
+	Rank     int     `json:"rank"`
+	RP       float32 `json:"RP"`
+	Match    float32 `json:"Match"`
+	AutoFuel float32 `json:"Auto Fuel"`
+	Tower    float32 `json:"Tower"`
+	Wins     int     `json:"wins"`
+	Losses   int     `json:"losses"`
+	Ties     int     `json:"ties"`
+	Dqs      int     `json:"dqs"`
+	Played   int     `json:"played"`
 }
 
 type TbaRankings struct {
