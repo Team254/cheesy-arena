@@ -309,10 +309,11 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assertSign(true, "  254", greenColor, "254       Connect PC")
 	assertSign(false, "  254", greenColor, "254       Connect PC")
 	arena.FieldReset = false
-	assertSign(true, "  254", greenColor, "254       Connect PC")
-	assertSign(false, "  254", greenColor, "254       Connect PC")
+	assertSign(true, "  254", redColor, "254       Connect PC")
+	assertSign(false, "  254", blueColor, "254       Connect PC")
 
 	// Check through pre-match sequence.
+	arena.FieldReset = true
 	allianceStation.Ethernet = true
 	assertSign(true, "  254", greenColor, "254         Start DS")
 	allianceStation.DsConn = &DriverStationConnection{}
@@ -327,12 +328,10 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	allianceStation.DsConn.RobotLinked = true
 	assertSign(true, "  254", redColor, "254            Ready")
 
-	arena.FieldReset = true
-	assertSign(true, "  254", redColor, "254            Ready")
 	arena.FieldReset = false
 	assertSign(true, "  254", redColor, "254            Ready")
 	allianceStation.DsConn.RobotLinked = false
-	assertSign(true, "  254", greenColor, "254          No Code")
+	assertSign(true, "  254", redColor, "254          No Code")
 	allianceStation.DsConn.RobotLinked = true
 	allianceStation.Bypass = true
 	assertSign(true, "  254", redColor, "254         Bypassed")

@@ -353,12 +353,8 @@ func (sign *TeamSign) generateTeamNumberTexts(
 			frontColor = orangeColor
 		} else if allianceStation.AStop && arena.MatchState == AutoPeriod {
 			frontColor = blinkColor(orangeColor)
-		} else if arena.MatchState == PreMatch {
-			if station != "" && arena.checkAllianceStationsReady(station) == nil {
-				frontColor = allianceColor
-			} else {
-				frontColor = greenColor
-			}
+		} else if arena.MatchState == PreMatch && station != "" && arena.checkAllianceStationsReady(station) == nil {
+			frontColor = allianceColor
 		} else if arena.FieldReset {
 			frontColor = greenColor
 		} else if arena.FieldVolunteers {
