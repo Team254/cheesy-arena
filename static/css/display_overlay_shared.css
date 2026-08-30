@@ -217,13 +217,13 @@ html {
 
 #logo {
   position: relative;
-  top: 55px;
-  height: 40px;
+  top: 43px;
+  height: 60px;
 }
 
 #matchTime {
   position: relative;
-  top: 40px;
+  top: 25px;
   height: 60px;
   color: #222;
   font-family: "FuturaLTBold";

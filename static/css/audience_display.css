@@ -72,8 +72,8 @@
 }
 #blindsLogo {
   position: relative;
-  top: 55px;
-  height: 220px;
+  top: 85px;
+  height: 140px;
 }
 #finalScoreCentering {
   position: fixed;
@@ -420,7 +420,11 @@
   border: 2px solid #222;
   text-align: center;
   font-family: "FuturaLT";
-  font-size: 2.6em;
+  font-size: 3.5em;
+}
+#allianceSelectionTable img {
+  width: 10em;
+  margin: 0.4em;
 }
 #allianceSelectionTable tr:nth-child(even) {
   background-color: #ccc;
@@ -447,8 +451,8 @@
   height: 87px;
 }
 #lowerThirdLogo {
-  margin: 12px 20px;
-  height: 60px;
+  margin: 20px;
+  height: 45px;
   float: left;
 }
 #lowerThirdTop {
