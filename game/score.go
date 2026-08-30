@@ -91,8 +91,9 @@ func (score *Score) Summarize(opponentScore *Score) *ScoreSummary {
 	}
 	summary.SuperchargedBonusRankingPoint = summary.NumFuel >= SuperchargedBonusThreshold
 
-	// Tower bonus ranking point.
-	summary.TraversalBonusRankingPoint = summary.AutoTowerPoints+summary.TeleopTowerPoints >= TraversalBonusThreshold
+	// Tower bonus ranking point. A threshold of zero disables the bonus.
+	summary.TraversalBonusRankingPoint = TraversalBonusThreshold != 0 &&
+		summary.AutoTowerPoints+summary.TeleopTowerPoints >= TraversalBonusThreshold
 
 	// Check for G206 violation.
 	for _, foul := range score.Fouls {

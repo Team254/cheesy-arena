@@ -11,6 +11,12 @@ import (
 )
 
 func TestAddScoreSummary(t *testing.T) {
+	originalTraversalBonusThreshold := TraversalBonusThreshold
+	TraversalBonusThreshold = 50
+	defer func() {
+		TraversalBonusThreshold = originalTraversalBonusThreshold
+	}()
+
 	randomizer := rand.New(rand.NewSource(0))
 	RankingRandomFloat64 = randomizer.Float64
 	redSummary := &ScoreSummary{
@@ -52,6 +58,23 @@ func TestAddScoreSummary(t *testing.T) {
 	// Add a disqualification.
 	rankingFields.AddScoreSummary(blueSummary, redSummary, true)
 	assert.Equal(t, RankingFields{9, 195, 76, 52, 0.05434383959970039, 1, 1, 1, 1, 4}, rankingFields)
+}
+
+func TestAddScoreSummaryWithTraversalBonusDisabled(t *testing.T) {
+	originalTraversalBonusThreshold := TraversalBonusThreshold
+	TraversalBonusThreshold = 0
+	defer func() {
+		TraversalBonusThreshold = originalTraversalBonusThreshold
+	}()
+
+	winningSummary := &ScoreSummary{Score: 10}
+	losingSummary := &ScoreSummary{Score: 5}
+	rankingFields := RankingFields{}
+
+	rankingFields.AddScoreSummary(winningSummary, losingSummary, false)
+
+	assert.Equal(t, 2, rankingFields.RankingPoints)
+	assert.Equal(t, 1, rankingFields.Wins)
 }
 
 func TestSortRankings(t *testing.T) {

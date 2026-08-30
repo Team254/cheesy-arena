@@ -259,6 +259,15 @@ func TestScoreTraversalBonusRankingPoint(t *testing.T) {
 			threshold:            52,
 			expectedBonusAwarded: false,
 		},
+
+		// 6. A threshold of zero disables the traversal bonus.
+		{
+			autoTowerStatuses:    [3]TowerStatus{TowerLevel3, TowerLevel3, TowerLevel3},
+			endgameTowerStatuses: [3]TowerStatus{TowerLevel3, TowerLevel3, TowerLevel3},
+			fouls:                []Foul{},
+			threshold:            0,
+			expectedBonusAwarded: false,
+		},
 	}
 
 	for i, tc := range testCases {

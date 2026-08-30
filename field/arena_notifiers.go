@@ -267,9 +267,9 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 	blueRankingPoints := blueScoreSummary.BonusRankingPoints
 	switch arena.SavedMatch.Status {
 	case game.RedWonMatch:
-		redRankingPoints += 3
+		redRankingPoints += game.GetWinRankingPoints()
 	case game.BlueWonMatch:
-		blueRankingPoints += 3
+		blueRankingPoints += game.GetWinRankingPoints()
 	case game.TieMatch:
 		redRankingPoints++
 		blueRankingPoints++

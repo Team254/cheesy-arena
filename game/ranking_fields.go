@@ -31,6 +31,13 @@ type Rankings []Ranking
 
 var RankingRandomFloat64 = rand.Float64
 
+func GetWinRankingPoints() int {
+	if TraversalBonusThreshold == 0 {
+		return 2
+	}
+	return 3
+}
+
 func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentScore *ScoreSummary, disqualified bool) {
 	fields.Played += 1
 
@@ -45,7 +52,7 @@ func (fields *RankingFields) AddScoreSummary(ownScore *ScoreSummary, opponentSco
 
 	// Assign ranking points and wins/losses/ties.
 	if ownScore.Score > opponentScore.Score {
-		fields.RankingPoints += 3
+		fields.RankingPoints += GetWinRankingPoints()
 		fields.Wins += 1
 	} else if ownScore.Score == opponentScore.Score {
 		fields.RankingPoints += 1
