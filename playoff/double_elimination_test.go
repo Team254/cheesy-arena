@@ -11,8 +11,17 @@ import (
 )
 
 func TestDoubleEliminationInitial(t *testing.T) {
-	finalMatchup, _, err := newDoubleEliminationBracket(8)
+	finalMatchup, breakSpecs, err := newDoubleEliminationBracket(8)
 	assert.Nil(t, err)
+
+	assert.Equal(t, []breakSpec{
+		{9, 300, "Field Break"},
+		{11, 600, "Field Break"},
+		{13, 900, "Awards Break"},
+		{14, 900, "Awards Break"},
+		{15, 900, "Awards Break"},
+		{16, 900, "Awards Break *"},
+	}, breakSpecs)
 
 	matchSpecs, err := collectMatchSpecs(finalMatchup)
 	assert.Nil(t, err)
