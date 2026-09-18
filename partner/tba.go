@@ -36,14 +36,16 @@ type TbaClient struct {
 }
 
 type TbaMatch struct {
-	CompLevel      string                    `json:"comp_level"`
-	SetNumber      int                       `json:"set_number"`
-	MatchNumber    int                       `json:"match_number"`
-	Alliances      map[string]*TbaAlliance   `json:"alliances"`
-	ScoreBreakdown map[string]map[string]any `json:"score_breakdown"`
-	TimeString     string                    `json:"time_string"`
-	TimeUtc        string                    `json:"time_utc"`
-	DisplayName    string                    `json:"display_name"`
+	CompLevel          string                    `json:"comp_level"`
+	SetNumber          int                       `json:"set_number"`
+	MatchNumber        int                       `json:"match_number"`
+	Alliances          map[string]*TbaAlliance   `json:"alliances"`
+	ScoreBreakdown     map[string]map[string]any `json:"score_breakdown"`
+	TimeString         string                    `json:"time_string"`
+	TimeUtc            string                    `json:"time_utc"`
+	ActualStartTimeUtc string                    `json:"actual_start_time_utc,omitempty"`
+	PostResultsTimeUtc string                    `json:"post_results_time_utc,omitempty"`
+	DisplayName        string                    `json:"display_name"`
 }
 
 type TbaAlliance struct {
@@ -376,14 +378,25 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 			blueCards,
 		)
 
+		var actualStartTimeUtc string
+		if !match.StartedAt.IsZero() {
+			actualStartTimeUtc = match.StartedAt.UTC().Format("2006-01-02T15:04:05")
+		}
+		var postResultsTimeUtc string
+		if !match.ScoreCommittedAt.IsZero() {
+			postResultsTimeUtc = match.ScoreCommittedAt.UTC().Format("2006-01-02T15:04:05")
+		}
+
 		tbaMatches[i] = TbaMatch{
-			CompLevel:      match.TbaMatchKey.CompLevel,
-			SetNumber:      match.TbaMatchKey.SetNumber,
-			MatchNumber:    match.TbaMatchKey.MatchNumber,
-			Alliances:      alliances,
-			ScoreBreakdown: scoreBreakdown,
-			TimeString:     match.Time.Local().Format("3:04 PM"),
-			TimeUtc:        match.Time.UTC().Format("2006-01-02T15:04:05"),
+			CompLevel:          match.TbaMatchKey.CompLevel,
+			SetNumber:          match.TbaMatchKey.SetNumber,
+			MatchNumber:        match.TbaMatchKey.MatchNumber,
+			Alliances:          alliances,
+			ScoreBreakdown:     scoreBreakdown,
+			TimeString:         match.Time.Local().Format("3:04 PM"),
+			TimeUtc:            match.Time.UTC().Format("2006-01-02T15:04:05"),
+			ActualStartTimeUtc: actualStartTimeUtc,
+			PostResultsTimeUtc: postResultsTimeUtc,
 		}
 	}
 	jsonBody, err := json.Marshal(tbaMatches)
