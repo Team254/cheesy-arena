@@ -119,6 +119,8 @@ const setFinalResultIndicator = function (side, label, result) {
 
 // Handles a websocket message to populate the final score data.
 const handleScorePosted = function (data) {
+  $(".traversal-bonus-field").toggle(data.TraversalBonusEnabled);
+
   if (data.RedWon) {
     setFinalResultIndicator(redSide, "WINNER", "winner");
     setFinalResultIndicator(blueSide, "", "");

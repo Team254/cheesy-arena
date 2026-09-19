@@ -9,6 +9,7 @@ import (
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -51,6 +52,36 @@ func TestAnnouncerDisplayScorePosted(t *testing.T) {
 		assert.Contains(t, recorder.Body.String(), "Qual 17")
 		assert.Contains(t, recorder.Body.String(), "Winner: "+test.winner)
 		assert.Contains(t, recorder.Body.String(), test.class)
+	}
+}
+
+func TestAnnouncerDisplayTraversalBonus(t *testing.T) {
+	web := setupTestWeb(t)
+	for _, test := range []struct {
+		name      string
+		matchType model.MatchType
+		threshold int
+		wantRows  int
+	}{
+		{"qualification enabled", model.Qualification, 50, 2},
+		{"qualification disabled", model.Qualification, 0, 0},
+		{"practice enabled", model.Practice, 42, 2},
+		{"practice disabled", model.Practice, 0, 0},
+		{"playoff enabled", model.Playoff, 50, 0},
+		{"playoff disabled", model.Playoff, 0, 0},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			web.arena.EventSettings.TraversalBonusThreshold = test.threshold
+			web.arena.SavedMatch = &model.Match{Type: test.matchType}
+
+			recorder := web.getHttpResponse("/displays/announcer/score_posted")
+			assert.Equal(t, 200, recorder.Code)
+			assert.Equal(t, test.wantRows, strings.Count(recorder.Body.String(), "Traversal Bonus RP"))
+			if test.matchType != model.Playoff {
+				assert.Contains(t, recorder.Body.String(), "Energized Bonus RP")
+				assert.Contains(t, recorder.Body.String(), "Supercharged Bonus RP")
+			}
+		})
 	}
 }
 
