@@ -26,7 +26,7 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
           <div class="form-group">
             <span class="d-inline-block w-100 led-mode-wrapper" tabindex="0">
               <select class="form-select led-mode" name="blueLedMode" id="blueLedModeSelect" onchange="setLedMode();">
-                {{range $mode, $name := .LedModeNames}}
+                {{range $mode, $name := .BlueLedModeNames}}
                 <option value="{{$mode}}" {{if eq $mode $.BlueLedMode}}selected{{end}}>{{$name}}</option>
                 {{end}}
               </select>
@@ -42,7 +42,7 @@ UI for testing the game sounds and the LEDs and PLC connected to the field.
           <div class="form-group">
             <span class="d-inline-block w-100 led-mode-wrapper" tabindex="0">
               <select class="form-select led-mode" name="redLedMode" id="redLedModeSelect" onchange="setLedMode();">
-                {{range $mode, $name := .LedModeNames}}
+                {{range $mode, $name := .RedLedModeNames}}
                 <option value="{{$mode}}" {{if eq $mode $.RedLedMode}}selected{{end}}>{{$name}}</option>
                 {{end}}
               </select>

@@ -39,17 +39,19 @@ func (web *Web) fieldTestingGetHandler(w http.ResponseWriter, r *http.Request) {
 	redLedMode, blueLedMode := web.arena.Leds.GetModes()
 	data := struct {
 		*model.EventSettings
-		MatchSounds   []*game.MatchSound
-		LedModeNames  map[led.Mode]string
-		RedLedMode    led.Mode
-		BlueLedMode   led.Mode
-		InputNames    []string
-		RegisterNames []string
-		CoilNames     []string
+		MatchSounds      []*game.MatchSound
+		RedLedModeNames  map[led.Mode]string
+		BlueLedModeNames map[led.Mode]string
+		RedLedMode       led.Mode
+		BlueLedMode      led.Mode
+		InputNames       []string
+		RegisterNames    []string
+		CoilNames        []string
 	}{
 		web.arena.EventSettings,
 		game.UniqueMatchSounds(),
-		led.ModeNames,
+		led.RedModeNames,
+		led.BlueModeNames,
 		redLedMode,
 		blueLedMode,
 		plc.GetInputNames(),
@@ -165,11 +167,11 @@ func (web *Web) fieldTestingWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				ws.WriteError(fieldTestingLedModeDisabledMessage)
 				continue
 			}
-			if _, ok := led.ModeNames[args.RedMode]; !ok {
+			if !led.IsValidMode(args.RedMode) {
 				ws.WriteError(fmt.Sprintf("Invalid LED mode '%d'.", args.RedMode))
 				continue
 			}
-			if _, ok := led.ModeNames[args.BlueMode]; !ok {
+			if !led.IsValidMode(args.BlueMode) {
 				ws.WriteError(fmt.Sprintf("Invalid LED mode '%d'.", args.BlueMode))
 				continue
 			}
