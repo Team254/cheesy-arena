@@ -312,29 +312,31 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 	}
 
 	return &struct {
-		Match               *model.Match
-		RedScoreSummary     *game.ScoreSummary
-		BlueScoreSummary    *game.ScoreSummary
-		RedRankingPoints    int
-		BlueRankingPoints   int
-		RedFouls            []game.Foul
-		BlueFouls           []game.Foul
-		RulesViolated       map[int]*game.Rule
-		RedCards            map[string]string
-		BlueCards           map[string]string
-		RedRankings         map[int]*game.Ranking
-		BlueRankings        map[int]*game.Ranking
-		RedOffFieldTeamIds  []int
-		BlueOffFieldTeamIds []int
-		RedWon              bool
-		BlueWon             bool
-		TiebreakReason      string
-		RedWins             int
-		BlueWins            int
-		RedDestination      string
-		BlueDestination     string
+		Match                 *model.Match
+		TraversalBonusEnabled bool
+		RedScoreSummary       *game.ScoreSummary
+		BlueScoreSummary      *game.ScoreSummary
+		RedRankingPoints      int
+		BlueRankingPoints     int
+		RedFouls              []game.Foul
+		BlueFouls             []game.Foul
+		RulesViolated         map[int]*game.Rule
+		RedCards              map[string]string
+		BlueCards             map[string]string
+		RedRankings           map[int]*game.Ranking
+		BlueRankings          map[int]*game.Ranking
+		RedOffFieldTeamIds    []int
+		BlueOffFieldTeamIds   []int
+		RedWon                bool
+		BlueWon               bool
+		TiebreakReason        string
+		RedWins               int
+		BlueWins              int
+		RedDestination        string
+		BlueDestination       string
 	}{
 		arena.SavedMatch,
+		arena.EventSettings.TraversalBonusThreshold != 0,
 		redScoreSummary,
 		blueScoreSummary,
 		redRankingPoints,
