@@ -132,7 +132,7 @@ const handleArenaStatus = function (data) {
       if (wifiStatus.TeamId !== expectedTeamId && wifiStatus.TeamId !== 0) {
         teamRadioElement.attr("data-status-ok", false);
         teamRadioText.text(getDisconnectText("radio", station, inMatch, "x RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-reception-0");
+        teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
       } else if (radioAssociated && radioPingable) {
         disconnectTracker.radio[station] = null;
         teamRadioElement.attr("data-status-ok", true);
@@ -146,10 +146,10 @@ const handleArenaStatus = function (data) {
       } else if (radioAssociated && !radioPingable) {
         teamRadioElement.attr("data-status-warning", true);
         teamRadioText.text(getDisconnectText("radio", station, inMatch, "⚠ RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-laptop");
+        teamRadioIconElement.attr("class", "bi bi-laptop slashed-icon");
       } else {
         teamRadioText.text(getDisconnectText("radio", station, inMatch, "x RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-reception-0");
+        teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
       }
 
       // RIO Box
@@ -254,14 +254,14 @@ const handleArenaStatus = function (data) {
       if (wifiStatus.TeamId !== expectedTeamId && wifiStatus.TeamId !== 0) {
         teamRadioElement.attr("data-status-ok", false);
         teamRadioText.text(getDisconnectText("radio", station, inMatch, "x RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-reception-0");
+        teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
       } else if (wifiStatus.TeamId === expectedTeamId && wifiStatus.RadioLinked) {
         teamRadioElement.attr("data-status-warning", true);
         teamRadioText.text(getDisconnectText("radio", station, inMatch, "⚠ RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-laptop");
+        teamRadioIconElement.attr("class", "bi bi-laptop slashed-icon");
       } else {
         teamRadioText.text(getDisconnectText("radio", station, inMatch, "x RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-reception-0");
+        teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
       }
 
       teamRioElement.removeAttr("data-status-ok");
