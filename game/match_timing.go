@@ -9,7 +9,7 @@ import "time"
 
 const (
 	ScoringGracePeriodSec  = 3
-	MotorsOnExtraPeriodSec = 2
+	MotorsOnExtraPeriodSec = 7
 )
 
 var MatchTiming = struct {
