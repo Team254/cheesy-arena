@@ -281,11 +281,13 @@ body {
   color: #000;
 }
 
-.fms-status-block .bi-laptop {
+.fms-status-block .bi-laptop,
+.fms-status-block .bi-reception-0 {
   position: relative;
   display: inline-block;
 }
-.fms-status-block .bi-laptop::after {
+.fms-status-block .bi-laptop::after,
+.fms-status-block .bi-reception-0::after {
   content: "";
   position: absolute;
   top: 0;
@@ -365,6 +367,11 @@ textarea {
   background-color: #fff;
   color: #000;
   border: 1px solid #ccc;
+}
+
+/* Faded State */
+.fms-team[data-faded="true"] {
+  opacity: 0.5;
 }
 
 /* Bypassed State Overrides */
