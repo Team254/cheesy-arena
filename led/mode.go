@@ -27,7 +27,7 @@ const (
 	Side4TestMode
 )
 
-var ModeNames = map[Mode]string{
+var commonModeNames = map[Mode]string{
 	OffMode:           "Off",
 	RedMode:           "Red",
 	BlueMode:          "Blue",
@@ -42,9 +42,30 @@ var ModeNames = map[Mode]string{
 	BlueAdvantageMode: "Blue Advantage",
 	RainbowMode:       "Rainbow",
 	Side1TestMode:     "Test: Facing Driver Station",
-	Side2TestMode:     "Test: Facing Audience",
 	Side3TestMode:     "Test: Facing Center",
-	Side4TestMode:     "Test: Facing Scoring Table",
+}
+
+var RedModeNames = getModeNames("red")
+var BlueModeNames = getModeNames("blue")
+
+func getModeNames(alliance string) map[Mode]string {
+	names := make(map[Mode]string, len(commonModeNames)+2)
+	for k, v := range commonModeNames {
+		names[k] = v
+	}
+	if alliance == "red" {
+		names[Side2TestMode] = "Test: Facing Scoring Table"
+		names[Side4TestMode] = "Test: Facing Audience"
+	} else {
+		names[Side2TestMode] = "Test: Facing Audience"
+		names[Side4TestMode] = "Test: Facing Scoring Table"
+	}
+	return names
+}
+
+// IsValidMode returns whether a given mode is within the valid range of modes.
+func IsValidMode(mode Mode) bool {
+	return mode >= OffMode && mode <= Side4TestMode
 }
 
 // Returns the solid color associated with the given mode.
