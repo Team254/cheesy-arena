@@ -281,18 +281,18 @@ body {
   color: #000;
 }
 
-.fms-status-block .bi-laptop {
+.fms-status-block .slashed-icon {
   position: relative;
   display: inline-block;
 }
-.fms-status-block .bi-laptop::after {
+.fms-status-block .slashed-icon::after {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom right, transparent 46%, currentColor 46%, currentColor 54%, transparent 54%);
+  background: linear-gradient(to bottom left, transparent 46%, currentColor 46%, currentColor 54%, transparent 54%);
 }
 
 /* Stats Footer */
@@ -365,6 +365,11 @@ textarea {
   background-color: #fff;
   color: #000;
   border: 1px solid #ccc;
+}
+
+/* Faded State */
+.fms-team[data-faded="true"] {
+  opacity: 0.5;
 }
 
 /* Bypassed State Overrides */
