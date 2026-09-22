@@ -628,13 +628,13 @@ func (dsConn *DriverStationConnection) copyDsReportedStatus(previousDsConn *Driv
 
 // parseDsLogPacket updates DS-reported mode and enable state from a driver station TCP log packet.
 func (dsConn *DriverStationConnection) parseDsLogPacket(packet []byte) {
-	if len(packet) < 8 {
+	if len(packet) < 9 {
 		log.Printf("Received DS log packet with insufficient length from Team %d: %d", dsConn.TeamId, len(packet))
 		return
 	}
 
-	// Packet type 22 carries the DS-side robot status byte at offset 7.
-	statusByte := packet[7]
+	// Packet type 22 carries the DS-side robot status byte at offset 8.
+	statusByte := packet[8]
 	dsConn.DsReportedStatusValid = true
 	dsConn.DsReportedTeleop = statusByte&0x20 != 0
 	dsConn.DsReportedAuto = statusByte&0x10 != 0

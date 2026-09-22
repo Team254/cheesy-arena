@@ -167,14 +167,14 @@ func TestSendControlPacket(t *testing.T) {
 func TestParseDsLogPacketUpdatesDsReportedStatus(t *testing.T) {
 	dsConn := &DriverStationConnection{TeamId: 254}
 
-	dsConn.parseDsLogPacket([]byte{0, 6, 22, 0, 0, 12, 128, 0x30})
+	dsConn.parseDsLogPacket([]byte{0, 7, 22, 0, 0, 12, 128, 50, 0x30})
 	assert.True(t, dsConn.DsReportedStatusValid)
 	assert.True(t, dsConn.DsReportedAuto)
 	assert.True(t, dsConn.DsReportedTeleop)
 	assert.False(t, dsConn.DsReportedDisabled)
 	assert.True(t, dsConn.DsReportedEnabled)
 
-	dsConn.parseDsLogPacket([]byte{0, 6, 22, 0, 0, 12, 128, 0x08})
+	dsConn.parseDsLogPacket([]byte{0, 7, 22, 0, 0, 12, 128, 50, 0x08})
 	assert.True(t, dsConn.DsReportedStatusValid)
 	assert.False(t, dsConn.DsReportedAuto)
 	assert.False(t, dsConn.DsReportedTeleop)
