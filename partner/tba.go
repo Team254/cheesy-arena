@@ -1,4 +1,4 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2026 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
 // Methods for publishing data to and retrieving data from The Blue Alliance.
@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -151,9 +152,14 @@ type TbaMediaItem struct {
 }
 
 type TbaPublishedAward struct {
-	Name    string `json:"name_str"`
-	TeamKey string `json:"team_key"`
-	Awardee string `json:"awardee"`
+	Name    string  `json:"name_str"`
+	TeamKey *string `json:"team_key"`
+	Awardee *string `json:"awardee"`
+}
+
+// Helper to get a pointer to a string.
+func stringPtr(s string) *string {
+	return &s
 }
 
 var leaveMapping = map[bool]string{false: "No", true: "Yes"}
@@ -502,8 +508,12 @@ func (client *TbaClient) PublishAwards(database *model.Database) error {
 	tbaAwards := make([]TbaPublishedAward, len(awards))
 	for i, award := range awards {
 		tbaAwards[i].Name = award.AwardName
-		tbaAwards[i].TeamKey = getTbaTeam(award.TeamId)
-		tbaAwards[i].Awardee = award.PersonName
+		if award.TeamId > 0 {
+			tbaAwards[i].TeamKey = stringPtr(getTbaTeam(award.TeamId))
+		}
+		if trimmed := strings.TrimSpace(award.PersonName); trimmed != "" {
+			tbaAwards[i].Awardee = stringPtr(trimmed)
+		}
 	}
 	jsonBody, err := json.Marshal(tbaAwards)
 	if err != nil {
