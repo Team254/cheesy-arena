@@ -1,4 +1,4 @@
-// Copyright 2014 Team 254. All Rights Reserved.
+// Copyright 2026 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 
 package partner
@@ -200,12 +200,15 @@ func TestPublishAwards(t *testing.T) {
 				assert.Contains(t, r.URL.String(), "event/my_event_code")
 				var reader bytes.Buffer
 				reader.ReadFrom(r.Body)
-				assert.Equal(
-					t,
-					"[{\"name_str\":\"Saftey Award\",\"team_key\":\"frc254\",\"awardee\":\"\"},"+
-						"{\"name_str\":\"Spirt Award\",\"team_key\":\"frc0\",\"awardee\":\"Bob Dorough\"}]",
-					reader.String(),
-				)
+				var actual []TbaPublishedAward
+				err := json.Unmarshal(reader.Bytes(), &actual)
+				assert.Nil(t, err)
+
+				expected := []TbaPublishedAward{
+					{Name: "Saftey Award", TeamKey: stringPtr("frc254"), Awardee: nil},
+					{Name: "Spirt Award", TeamKey: nil, Awardee: stringPtr("Bob Dorough")},
+				}
+				assert.Equal(t, expected, actual)
 			},
 		),
 	)
