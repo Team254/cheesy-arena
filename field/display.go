@@ -32,13 +32,14 @@ const (
 	AudienceDisplay
 	BracketDisplay
 	FieldMonitorDisplay
+	FmsFieldMonitorDisplay
 	LogoDisplay
 	QueueingDisplay
 	RankingsDisplay
-	TwitchStreamDisplay
 	WallDisplay
+	TwitchStreamDisplay
+	YouTubeStreamDisplay
 	WebpageDisplay
-	FmsFieldMonitorDisplay
 	UnpickedDisplay
 )
 
@@ -49,13 +50,14 @@ var DisplayTypeNames = map[DisplayType]string{
 	AudienceDisplay:        "Audience",
 	BracketDisplay:         "Bracket",
 	FieldMonitorDisplay:    "Field Monitor",
+	FmsFieldMonitorDisplay: "FMS Field Monitor",
 	LogoDisplay:            "Logo",
 	QueueingDisplay:        "Queueing",
 	RankingsDisplay:        "Rankings",
-	TwitchStreamDisplay:    "Twitch Stream",
 	WallDisplay:            "Wall",
+	TwitchStreamDisplay:    "Twitch Stream",
+	YouTubeStreamDisplay:   "YouTube Stream",
 	WebpageDisplay:         "Web Page",
-	FmsFieldMonitorDisplay: "FMS Field Monitor",
 	UnpickedDisplay:        "Unpicked Teams",
 }
 
@@ -66,13 +68,14 @@ var displayTypePaths = map[DisplayType]string{
 	AudienceDisplay:        "/displays/audience",
 	BracketDisplay:         "/displays/bracket",
 	FieldMonitorDisplay:    "/displays/field_monitor",
+	FmsFieldMonitorDisplay: "/displays/fms_field_monitor",
 	LogoDisplay:            "/displays/logo",
 	QueueingDisplay:        "/displays/queueing",
 	RankingsDisplay:        "/displays/rankings",
-	TwitchStreamDisplay:    "/displays/twitch",
 	WallDisplay:            "/displays/wall",
+	TwitchStreamDisplay:    "/displays/twitch",
+	YouTubeStreamDisplay:   "/displays/youtube",
 	WebpageDisplay:         "/displays/webpage",
-	FmsFieldMonitorDisplay: "/displays/fms_field_monitor",
 	UnpickedDisplay:        "/displays/unpicked",
 }
 

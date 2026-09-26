@@ -64,6 +64,8 @@ func TestDisplayFromUrl(t *testing.T) {
 	assert.Equal(t, FieldMonitorDisplay, display.Type)
 	display, _ = DisplayFromUrl("/displays/rankings/websocket", query)
 	assert.Equal(t, RankingsDisplay, display.Type)
+	display, _ = DisplayFromUrl("/displays/youtube/websocket", query)
+	assert.Equal(t, YouTubeStreamDisplay, display.Type)
 
 	// Test the nickname and arbitrary parameters.
 	query["nickname"] = []string{"Test Nickname"}

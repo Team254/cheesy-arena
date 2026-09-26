@@ -13,9 +13,13 @@ import (
 func TestTwitchDisplay(t *testing.T) {
 	web := setupTestWeb(t)
 
-	recorder := web.getHttpResponse("/displays/twitch?displayId=1&channel=team254")
-	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Twitch Stream Display - Untitled Event - Cheesy Arena")
+	for _, captions := range []string{"true", "false"} {
+		t.Run(captions, func(t *testing.T) {
+			recorder := web.getHttpResponse("/displays/twitch?displayId=1&channel=team254&captions=" + captions)
+			assert.Equal(t, 200, recorder.Code)
+			assert.Contains(t, recorder.Body.String(), "Twitch Stream Display - Untitled Event - Cheesy Arena")
+		})
+	}
 }
 
 func TestTwitchDisplayWebsocket(t *testing.T) {

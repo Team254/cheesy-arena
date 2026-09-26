@@ -1,7 +1,7 @@
-// Copyright 2018 Team 254. All Rights Reserved.
+// Copyright 2026 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Web routes for a display to show a configurable Twitch live video stream.
+// Web routes for a display to show a configurable YouTube live video stream.
 
 package web
 
@@ -11,13 +11,13 @@ import (
 	"net/http"
 )
 
-// Renders the Twitch stream view.
-func (web *Web) twitchDisplayHandler(w http.ResponseWriter, r *http.Request) {
-	if !web.enforceDisplayConfiguration(w, r, map[string]string{"channel": "team254", "captions": "false"}) {
+// Renders the YouTube stream view.
+func (web *Web) youtubeDisplayHandler(w http.ResponseWriter, r *http.Request) {
+	if !web.enforceDisplayConfiguration(w, r, map[string]string{"videoId": "", "captions": "false"}) {
 		return
 	}
 
-	template, err := web.parseFiles("templates/twitch_display.html")
+	template, err := web.parseFiles("templates/youtube_display.html")
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -25,7 +25,7 @@ func (web *Web) twitchDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	data := struct {
 		*model.EventSettings
 	}{web.arena.EventSettings}
-	err = template.ExecuteTemplate(w, "twitch_display.html", data)
+	err = template.ExecuteTemplate(w, "youtube_display.html", data)
 	if err != nil {
 		handleWebErr(w, err)
 		return
@@ -33,7 +33,7 @@ func (web *Web) twitchDisplayHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // The websocket endpoint for sending configuration commands to the display.
-func (web *Web) twitchDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
+func (web *Web) youtubeDisplayWebsocketHandler(w http.ResponseWriter, r *http.Request) {
 	display, err := web.registerDisplay(r)
 	if err != nil {
 		handleWebErr(w, err)

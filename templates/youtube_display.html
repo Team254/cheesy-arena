@@ -1,0 +1,23 @@
+{{/*
+Copyright 2026 Team 254. All Rights Reserved.
+Author: pat@patfairbank.com (Patrick Fairbank)
+
+Display to show a configurable YouTube live video stream.
+*/}}
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>YouTube Stream Display - {{.EventSettings.Name}} - Cheesy Arena </title>
+    <link rel="shortcut icon" href="/static/img/favicon.ico">
+    <link rel="stylesheet" href="/static/css/youtube_display.css"/>
+  </head>
+  <body>
+    <div id="youtubeEmbed"></div>
+    <script src="/static/js/lib/jquery.min.js"></script>
+    <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
+    <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
+    <script src="/static/js/cheesy-websocket.js"></script>
+    <script src="/static/js/youtube_display.js"></script>
+    <script src="https://www.youtube.com/iframe_api" async></script>
+  </body>
+</html>

@@ -18,6 +18,7 @@ func TestSetupDisplays(t *testing.T) {
 	recorder := web.getHttpResponse("/setup/displays")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Display Configuration - Untitled Event - Cheesy Arena")
+	assert.Contains(t, recorder.Body.String(), "YouTube Stream</option>")
 }
 
 func TestSetupDisplaysWebsocket(t *testing.T) {

@@ -10,11 +10,19 @@ $(function () {
   var urlParams = new URLSearchParams(window.location.search);
 
   // Embed the video stream.
-  new Twitch.Embed("twitchEmbed", {
+  var embed = new Twitch.Embed("twitchEmbed", {
     channel: urlParams.get("channel"),
     width: window.innerWidth,
     height: window.innerHeight,
     layout: "video"
+  });
+
+  embed.addEventListener(Twitch.Embed.VIDEO_READY, function () {
+    if (urlParams.get("captions") === "true") {
+      embed.getPlayer().enableCaptions();
+    } else {
+      embed.getPlayer().disableCaptions();
+    }
   });
 
   // Set up the websocket back to the server.
