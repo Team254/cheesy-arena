@@ -80,6 +80,7 @@ var displayRegistryMutex sync.Mutex
 
 type Display struct {
 	DisplayConfiguration DisplayConfiguration
+	Revision             uint64 // Orders configuration snapshots relative to save acknowledgements.
 	IpAddress            string
 	ConnectionCount      int
 	Notifier             *websocket.Notifier
@@ -201,6 +202,10 @@ func (arena *Arena) RegisterDisplay(displayConfig *DisplayConfiguration, ipAddre
 			)
 			arena.Displays[displayConfig.Id] = display
 		}
+		if !reflect.DeepEqual(display.DisplayConfiguration, *displayConfig) {
+			arena.displayRevision++
+			display.Revision = arena.displayRevision
+		}
 		display.DisplayConfiguration = *displayConfig
 		display.IpAddress = ipAddress
 		display.ConnectionCount += 1
@@ -212,21 +217,23 @@ func (arena *Arena) RegisterDisplay(displayConfig *DisplayConfiguration, ipAddre
 	return display
 }
 
-// Updates the given display in the arena registry. Triggers a notification if the display configuration changed.
-func (arena *Arena) UpdateDisplay(displayConfig DisplayConfiguration) error {
+// Updates the given display and returns its revision. Triggers a notification if the configuration changed.
+func (arena *Arena) UpdateDisplay(displayConfig DisplayConfiguration) (uint64, error) {
 	displayRegistryMutex.Lock()
 	defer displayRegistryMutex.Unlock()
 
 	display, ok := arena.Displays[displayConfig.Id]
 	if !ok {
-		return fmt.Errorf("Display %s doesn't exist.", displayConfig.Id)
+		return 0, fmt.Errorf("Display %s doesn't exist.", displayConfig.Id)
 	}
 	if !reflect.DeepEqual(displayConfig, display.DisplayConfiguration) {
+		arena.displayRevision++
+		display.Revision = arena.displayRevision
 		display.DisplayConfiguration = displayConfig
 		display.Notifier.Notify()
 		arena.DisplayConfigurationNotifier.Notify()
 	}
-	return nil
+	return display.Revision, nil
 }
 
 // Marks the given display as having disconnected in the arena registry and triggers a notification.

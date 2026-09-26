@@ -3,7 +3,7 @@
 //
 // Shared code for initiating websocket connections back to the server for full-duplex communication.
 
-var CheesyWebsocket = function (path, events) {
+var CheesyWebsocket = function (path, events, connectionEvents) {
   var that = this;
   var protocol = "ws://";
   if (window.location.protocol === "https:") {
@@ -53,9 +53,15 @@ var CheesyWebsocket = function (path, events) {
     this.websocket = $.websocket(url, {
       open: function () {
         console.log("Websocket connected to the server at " + url + ".")
+        if (connectionEvents && connectionEvents.open) {
+          connectionEvents.open();
+        }
       },
       close: function () {
         console.log("Websocket lost connection to the server. Reconnecting in 3 seconds...");
+        if (connectionEvents && connectionEvents.close) {
+          connectionEvents.close();
+        }
         setTimeout(that.connect, 3000);
       },
       events: events

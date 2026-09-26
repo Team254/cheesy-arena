@@ -9,6 +9,34 @@ import (
 	"time"
 )
 
+func TestDisplayConfigurationRevision(t *testing.T) {
+	arena := SetupTestArena(t)
+	configuration := DisplayConfiguration{
+		Id: "100", Type: PlaceholderDisplay, Configuration: map[string]string{},
+	}
+	display := arena.RegisterDisplay(&configuration, "127.0.0.1")
+	initialRevision := display.Revision
+	assert.Positive(t, initialRevision)
+
+	// Connection-only changes and unchanged saves must retain the configuration revision.
+	arena.RegisterDisplay(&configuration, "127.0.0.2")
+	assert.Equal(t, initialRevision, display.Revision)
+	revision, err := arena.UpdateDisplay(configuration)
+	assert.NoError(t, err)
+	assert.Equal(t, initialRevision, revision)
+
+	configuration.Nickname = "Audience"
+	revision, err = arena.UpdateDisplay(configuration)
+	assert.NoError(t, err)
+	assert.Greater(t, revision, initialRevision)
+	assert.Equal(t, revision, display.Revision)
+
+	// A configuration supplied by a display must also supersede older snapshots.
+	configuration.Type = AudienceDisplay
+	arena.RegisterDisplay(&configuration, "127.0.0.1")
+	assert.Greater(t, display.Revision, revision)
+}
+
 func TestDisplayFromUrl(t *testing.T) {
 	query := map[string][]string{}
 	display, err := DisplayFromUrl("/display", query)
@@ -143,7 +171,7 @@ func TestDisplayUpdateError(t *testing.T) {
 	arena := setupTestArena(t)
 
 	displayConfig := DisplayConfiguration{Id: "254", Configuration: map[string]string{}}
-	err := arena.UpdateDisplay(displayConfig)
+	_, err := arena.UpdateDisplay(displayConfig)
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "doesn't exist")
 	}

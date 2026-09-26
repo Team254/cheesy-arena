@@ -243,6 +243,17 @@ input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer
 input[data-changed="true"], select[data-changed="true"] {
   border: 2px solid #f00;
 }
+.display-configuration-input {
+  width: 100%;
+  min-width: 8rem;
+}
+.display-actions {
+  min-width: 9rem;
+}
+.display-save-status {
+  width: 8rem;
+  min-height: 2.5em;
+}
 .match-list {
   height: 610px;
   overflow-y: auto;

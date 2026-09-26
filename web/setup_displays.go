@@ -68,15 +68,30 @@ func (web *Web) displaysWebsocketHandler(w http.ResponseWriter, r *http.Request)
 
 		switch messageType {
 		case "configureDisplay":
-			var displayConfig field.DisplayConfiguration
-			err = mapstructure.Decode(data, &displayConfig)
-			if err != nil {
-				writeWebsocketError(ws, err.Error())
-				continue
+			var request struct {
+				field.DisplayConfiguration `mapstructure:",squash"`
+				RequestId                  string
 			}
-			if err = web.arena.UpdateDisplay(displayConfig); err != nil {
+			err = mapstructure.Decode(data, &request)
+			var revision uint64
+			if err == nil {
+				revision, err = web.arena.UpdateDisplay(request.DisplayConfiguration)
+			}
+			if request.RequestId != "" {
+				result := struct {
+					Id        string
+					RequestId string
+					Revision  uint64
+					Error     string
+				}{Id: request.Id, RequestId: request.RequestId, Revision: revision}
+				if err != nil {
+					result.Error = err.Error()
+				}
+				if err = ws.Write("displayConfigurationSaved", result); err != nil {
+					return
+				}
+			} else if err != nil {
 				writeWebsocketError(ws, err.Error())
-				continue
 			}
 		case "reloadDisplay":
 			displayId, ok := data.(string)
