@@ -26,11 +26,8 @@ const sponsorImageTemplate = Handlebars.compile($("#sponsorImageTemplate").html(
 const sponsorTextTemplate = Handlebars.compile($("#sponsorTextTemplate").html());
 
 // Constants for overlay positioning. The CSS is the source of truth for the values that represent initial state.
-const overlayCenteringTopUp = "-130px";
-const overlayCenteringBottomHideParams = {queue: false, bottom: $("#overlayCentering").css("bottom")};
-const overlayCenteringBottomShowParams = {queue: false, bottom: "0px"};
-const overlayCenteringTopHideParams = {queue: false, top: overlayCenteringTopUp};
-const overlayCenteringTopShowParams = {queue: false, top: "50px"};
+const overlayCenteringTopUp = -130;
+const overlayCenteringBottomDown = parseFloat($("#overlayCentering").css("bottom"));
 const eventMatchInfoDown = "30px";
 const eventMatchInfoUp = $("#eventMatchInfo").css("height");
 const logoUp = "35px";
@@ -739,13 +736,20 @@ $(function () {
   const sides = DisplayShared.applyDisplaySides(urlParams);
   redSide = sides.redSide;
   blueSide = sides.blueSide;
+
+  // Scale only the overlay, including its offsets so it slides fully offscreen at any zoom.
+  const configuredZoomFactor = Number(urlParams.get("zoomFactor"));
+  const zoomFactor = Number.isFinite(configuredZoomFactor) && configuredZoomFactor > 0 ? configuredZoomFactor : 1;
+  const overlayCentering = $("#overlayCentering");
+  overlayCentering.css("transform", `scale(${zoomFactor})`);
   if (urlParams.get("overlayLocation") === "top") {
-    overlayCenteringHideParams = overlayCenteringTopHideParams;
-    overlayCenteringShowParams = overlayCenteringTopShowParams;
-    $("#overlayCentering").css("top", overlayCenteringTopUp);
+    overlayCenteringHideParams = {queue: false, top: overlayCenteringTopUp * zoomFactor + "px"};
+    overlayCenteringShowParams = {queue: false, top: 50 * zoomFactor + "px"};
+    overlayCentering.css({transformOrigin: "center top", bottom: "auto", top: overlayCenteringHideParams.top});
   } else {
-    overlayCenteringHideParams = overlayCenteringBottomHideParams;
-    overlayCenteringShowParams = overlayCenteringBottomShowParams;
+    overlayCenteringHideParams = {queue: false, bottom: overlayCenteringBottomDown * zoomFactor + "px"};
+    overlayCenteringShowParams = {queue: false, bottom: "0px"};
+    overlayCentering.css({transformOrigin: "center bottom", bottom: overlayCenteringHideParams.bottom});
   }
 
   // Set up the websocket back to the server.

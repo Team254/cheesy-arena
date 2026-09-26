@@ -18,8 +18,10 @@ func (web *Web) audienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 		w,
 		r,
 		map[string]string{
-			"background": "#0f0", "reversed": "false",
+			"background":      "#0f0",
 			"overlayLocation": "bottom",
+			"reversed":        "false",
+			"zoomFactor":      "1",
 		},
 	) {
 		return

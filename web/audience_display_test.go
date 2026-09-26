@@ -21,9 +21,17 @@ func TestAudienceDisplay(t *testing.T) {
 	assert.Contains(t, recorder.Header().Get("Location"), "background=%230f0")
 	assert.Contains(t, recorder.Header().Get("Location"), "reversed=false")
 	assert.Contains(t, recorder.Header().Get("Location"), "overlayLocation=bottom")
+	assert.Contains(t, recorder.Header().Get("Location"), "zoomFactor=1")
 
 	recorder = web.getHttpResponse(
 		"/displays/audience?displayId=1&background=%23000&reversed=false&overlayLocation=top",
+	)
+	assert.Equal(t, 302, recorder.Code)
+	assert.Contains(t, recorder.Header().Get("Location"), "overlayLocation=top")
+	assert.Contains(t, recorder.Header().Get("Location"), "zoomFactor=1")
+
+	recorder = web.getHttpResponse(
+		"/displays/audience?displayId=1&background=%23000&reversed=false&overlayLocation=top&zoomFactor=1.5",
 	)
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Audience Display - Untitled Event - Cheesy Arena")
