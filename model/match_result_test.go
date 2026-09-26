@@ -23,6 +23,8 @@ func TestMatchResultCrud(t *testing.T) {
 	defer db.Close()
 
 	matchResult := BuildTestMatchResult(254, 5)
+	matchResult.PlayoffRedAllianceCard = "yellow"
+	matchResult.PlayoffBlueAllianceCard = "red"
 	assert.Nil(t, db.CreateMatchResult(matchResult))
 	matchResult2, err := db.GetMatchResultForMatch(254)
 	assert.Nil(t, err)
@@ -74,15 +76,15 @@ func TestCorrectPlayoffScoreResetsDqState(t *testing.T) {
 	matchResult := NewMatchResult()
 	matchResult.RedScore.PlayoffDq = true
 	matchResult.BlueScore.PlayoffDq = true
-	matchResult.RedCards = map[string]string{"1": "red"}
+	matchResult.PlayoffRedAllianceCard = "red"
 	matchResult.BlueCards = map[string]string{}
 
 	matchResult.CorrectPlayoffScore()
 	assert.Equal(t, true, matchResult.RedScore.PlayoffDq)
 	assert.Equal(t, false, matchResult.BlueScore.PlayoffDq)
 
-	matchResult.RedCards = map[string]string{}
-	matchResult.BlueCards = map[string]string{"4": "dq"}
+	matchResult.PlayoffRedAllianceCard = ""
+	matchResult.PlayoffBlueAllianceCard = "dq"
 
 	matchResult.CorrectPlayoffScore()
 	assert.Equal(t, false, matchResult.RedScore.PlayoffDq)

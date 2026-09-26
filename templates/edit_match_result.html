@@ -72,18 +72,21 @@ UI for manually editing the result for a match.
 <script>
   <!-- @formatter:off -->
   var matchId = {{.Match.Id}};
+  const isPlayoff = {{eq .Match.Type playoffMatch}};
   matchResult = jQuery.parseJSON('{{.MatchResultJson}}');
   allianceResults["red"] = {
     alliance: "red",
     teams: [{{.Match.Red1}}, {{.Match.Red2}}, {{.Match.Red3}}],
     score: matchResult.RedScore,
-    cards: matchResult.RedCards,
+    cards: isPlayoff ? {} : matchResult.RedCards,
+    playoffAllianceCard: matchResult.PlayoffRedAllianceCard,
   };
   allianceResults["blue"] = {
     alliance: "blue",
     teams: [{{.Match.Blue1}}, {{.Match.Blue2}}, {{.Match.Blue3}}],
     score: matchResult.BlueScore,
-    cards: matchResult.BlueCards,
+    cards: isPlayoff ? {} : matchResult.BlueCards,
+    playoffAllianceCard: matchResult.PlayoffBlueAllianceCard,
   };
   renderResults("red");
   renderResults("blue");
@@ -137,18 +140,30 @@ UI for manually editing the result for a match.
     </fieldset>
     <fieldset>
       <legend>Cards</legend>
+      {{if .IsPlayoff}}
+      <div class="row mb-3">
+        <label class="col-lg-2 control-label">Alliance</label>
+        <div class="col-lg-8"><div class="row">
+          {{template "cardRadio" dict "alliance" .Alliance "field" "PlayoffAllianceCard" "value" "" "label" "None" "checked" true}}
+          {{template "cardRadio" dict "alliance" .Alliance "field" "PlayoffAllianceCard" "value" "yellow" "label" "Yellow"}}
+          {{template "cardRadio" dict "alliance" .Alliance "field" "PlayoffAllianceCard" "value" "red" "label" "Red"}}
+          {{template "cardRadio" dict "alliance" .Alliance "field" "PlayoffAllianceCard" "value" "dq" "label" "DQ"}}
+        </div></div>
+      </div>
+      {{else}}
       {{range $team := .Teams}}
       <div class="row mb-3">
         <label class="col-lg-2 control-label">Team {{$team}}</label>
         <div class="col-lg-8">
           <div class="row">
-            {{template "cardRadio" dict "alliance" $.Alliance "team" $team "value" "" "label" "None" "checked" true}}
-            {{template "cardRadio" dict "alliance" $.Alliance "team" $team "value" "yellow" "label" "Yellow"}}
-            {{template "cardRadio" dict "alliance" $.Alliance "team" $team "value" "red" "label" "Red"}}
-            {{template "cardRadio" dict "alliance" $.Alliance "team" $team "value" "dq" "label" "DQ"}}
+            {{template "cardRadio" dict "alliance" $.Alliance "field" (printf "Team%dCard" $team) "value" "" "label" "None" "checked" true}}
+            {{template "cardRadio" dict "alliance" $.Alliance "field" (printf "Team%dCard" $team) "value" "yellow" "label" "Yellow"}}
+            {{template "cardRadio" dict "alliance" $.Alliance "field" (printf "Team%dCard" $team) "value" "red" "label" "Red"}}
+            {{template "cardRadio" dict "alliance" $.Alliance "field" (printf "Team%dCard" $team) "value" "dq" "label" "DQ"}}
           </div>
         </div>
       </div>
+      {{end}}
       {{end}}
     </fieldset>
   </div>
@@ -181,7 +196,7 @@ UI for manually editing the result for a match.
 {{define "cardRadio"}}
 <div class="col-lg-2">
   <label>
-    <input type="radio" name="{{.alliance}}Team{{.team}}Card" value="{{.value}}"{{if .checked}} checked{{end}}>
+    <input type="radio" name="{{.alliance}}{{.field}}" value="{{.value}}"{{if .checked}} checked{{end}}>
     {{.label}}
   </label>
 </div>

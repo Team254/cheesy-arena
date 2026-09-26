@@ -223,8 +223,8 @@ func (web *Web) allianceSelectionFinalizeHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	// Reset yellow cards.
-	err = tournament.CalculateTeamCards(web.arena.Database, model.Playoff)
+	// Initialize playoff alliance yellow cards independently of qualification cards.
+	err = tournament.CalculateAllianceCards(web.arena.Database)
 	if err != nil {
 		handleWebErr(w, err)
 		return

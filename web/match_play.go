@@ -402,10 +402,7 @@ func (web *Web) commitPostAndLoadNextMatch() error {
 func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchResult, isMatchReviewEdit bool) error {
 	var updatedRankings game.Rankings
 
-	if match.Type == model.Playoff {
-		// Adjust the score if necessary for a playoff DQ.
-		matchResult.CorrectPlayoffScore()
-	}
+	normalizeMatchResult(match, matchResult)
 
 	// Update the match record.
 	match.ScoreCommittedAt = time.Now()
@@ -445,8 +442,12 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 
 		if match.ShouldUpdateCards() {
-			// Regenerate the residual yellow cards that teams may carry.
-			if err = tournament.CalculateTeamCards(web.arena.Database, match.Type); err != nil {
+			if match.Type == model.Playoff {
+				err = tournament.CalculateAllianceCards(web.arena.Database)
+			} else {
+				err = tournament.CalculateTeamCards(web.arena.Database)
+			}
+			if err != nil {
 				return err
 			}
 		}
@@ -519,6 +520,11 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 		}
 	}
 
+	if isMatchReviewEdit && match.Type == model.Playoff && web.arena.CurrentMatch.Type == model.Playoff {
+		web.arena.MatchLoadNotifier.Notify()
+		web.arena.RealtimeScoreNotifier.Notify()
+	}
+
 	if !isMatchReviewEdit {
 		// Store the result in the buffer to be shown in the audience display.
 		web.arena.SavedMatch = match
@@ -532,12 +538,14 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 func (web *Web) getCurrentMatchResult() *model.MatchResult {
 	return &model.MatchResult{
-		MatchId:   web.arena.CurrentMatch.Id,
-		MatchType: web.arena.CurrentMatch.Type,
-		RedScore:  &web.arena.RedRealtimeScore.CurrentScore,
-		BlueScore: &web.arena.BlueRealtimeScore.CurrentScore,
-		RedCards:  web.arena.RedRealtimeScore.Cards,
-		BlueCards: web.arena.BlueRealtimeScore.Cards,
+		MatchId:                 web.arena.CurrentMatch.Id,
+		MatchType:               web.arena.CurrentMatch.Type,
+		RedScore:                &web.arena.RedRealtimeScore.CurrentScore,
+		BlueScore:               &web.arena.BlueRealtimeScore.CurrentScore,
+		RedCards:                web.arena.RedRealtimeScore.Cards,
+		BlueCards:               web.arena.BlueRealtimeScore.Cards,
+		PlayoffRedAllianceCard:  web.arena.RedRealtimeScore.PlayoffAllianceCard,
+		PlayoffBlueAllianceCard: web.arena.BlueRealtimeScore.PlayoffAllianceCard,
 	}
 }
 

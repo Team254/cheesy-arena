@@ -33,6 +33,7 @@ type MatchReviewEditAlliance struct {
 	Teams             []int
 	Summary           *game.ScoreSummary
 	ShowRankingPoints bool
+	IsPlayoff         bool
 }
 
 type MatchReviewSummaryResponse struct {
@@ -112,12 +113,14 @@ func (web *Web) matchReviewEditGetHandler(w http.ResponseWriter, r *http.Request
 			Teams:             []int{match.Red1, match.Red2, match.Red3},
 			Summary:           matchResult.RedScoreSummary(),
 			ShowRankingPoints: match.Type != model.Playoff,
+			IsPlayoff:         match.Type == model.Playoff,
 		},
 		{
 			Alliance:          "blue",
 			Teams:             []int{match.Blue1, match.Blue2, match.Blue3},
 			Summary:           matchResult.BlueScoreSummary(),
 			ShowRankingPoints: match.Type != model.Playoff,
+			IsPlayoff:         match.Type == model.Playoff,
 		},
 	}
 	data := struct {
@@ -156,7 +159,7 @@ func (web *Web) matchReviewSummaryPostHandler(w http.ResponseWriter, r *http.Req
 		handleWebErr(w, fmt.Errorf("Error: match ID %d from result does not match expected", matchResult.MatchId))
 		return
 	}
-	normalizeMatchResult(&matchResult)
+	normalizeMatchResult(match, &matchResult)
 
 	response := MatchReviewSummaryResponse{
 		RedSummary:  matchResult.RedScoreSummary(),
@@ -197,7 +200,7 @@ func (web *Web) matchReviewEditPostHandler(w http.ResponseWriter, r *http.Reques
 		handleWebErr(w, fmt.Errorf("Error: match ID %d from result does not match expected", matchResult.MatchId))
 		return
 	}
-	normalizeMatchResult(&matchResult)
+	normalizeMatchResult(match, &matchResult)
 
 	if isCurrent {
 		// If editing the current match, just save it back to memory.
@@ -205,6 +208,8 @@ func (web *Web) matchReviewEditPostHandler(w http.ResponseWriter, r *http.Reques
 		web.arena.BlueRealtimeScore.CurrentScore = *matchResult.BlueScore
 		web.arena.RedRealtimeScore.Cards = matchResult.RedCards
 		web.arena.BlueRealtimeScore.Cards = matchResult.BlueCards
+		web.arena.RedRealtimeScore.PlayoffAllianceCard = matchResult.PlayoffRedAllianceCard
+		web.arena.BlueRealtimeScore.PlayoffAllianceCard = matchResult.PlayoffBlueAllianceCard
 
 		web.arena.RealtimeScoreNotifier.Notify()
 
@@ -252,12 +257,21 @@ func (web *Web) getMatchResultFromRequest(r *http.Request) (*model.Match, *model
 	return match, matchResult, false, nil
 }
 
-func normalizeMatchResult(matchResult *model.MatchResult) {
+func normalizeMatchResult(match *model.Match, matchResult *model.MatchResult) {
+	matchResult.MatchType = match.Type
 	if matchResult.RedScore == nil {
 		matchResult.RedScore = new(game.Score)
 	}
 	if matchResult.BlueScore == nil {
 		matchResult.BlueScore = new(game.Score)
+	}
+	if match.Type == model.Playoff {
+		matchResult.RedCards = make(map[string]string)
+		matchResult.BlueCards = make(map[string]string)
+		matchResult.CorrectPlayoffScore()
+	} else {
+		matchResult.PlayoffRedAllianceCard = ""
+		matchResult.PlayoffBlueAllianceCard = ""
 	}
 	if matchResult.RedCards == nil {
 		matchResult.RedCards = make(map[string]string)

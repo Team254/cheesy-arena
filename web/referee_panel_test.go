@@ -152,16 +152,17 @@ func TestRefereePanelWebsocket(t *testing.T) {
 	ws.Write("card", cardData)
 	readWebsocketType(t, ws, "realtimeScore")
 	time.Sleep(time.Millisecond * 10) // Allow some time for the command to be processed.
-	if assert.Equal(t, 3, len(web.arena.RedRealtimeScore.Cards)) {
-		assert.Equal(t, "red", web.arena.RedRealtimeScore.Cards["256"])
-		assert.Equal(t, "red", web.arena.RedRealtimeScore.Cards["257"])
-		assert.Equal(t, "red", web.arena.RedRealtimeScore.Cards["258"])
-	}
-	if assert.Equal(t, 3, len(web.arena.BlueRealtimeScore.Cards)) {
-		assert.Equal(t, "yellow", web.arena.BlueRealtimeScore.Cards["1679"])
-		assert.Equal(t, "yellow", web.arena.BlueRealtimeScore.Cards["1680"])
-		assert.Equal(t, "yellow", web.arena.BlueRealtimeScore.Cards["1681"])
-	}
+	assert.Empty(t, web.arena.RedRealtimeScore.Cards)
+	assert.Empty(t, web.arena.BlueRealtimeScore.Cards)
+	assert.Equal(t, "red", web.arena.RedRealtimeScore.PlayoffAllianceCard)
+	assert.True(t, web.arena.RedRealtimeScore.CurrentScore.PlayoffDq)
+	assert.Equal(t, "yellow", web.arena.BlueRealtimeScore.PlayoffAllianceCard)
+	cardData.Card = ""
+	ws.Write("card", cardData)
+	message := readWebsocketType(t, ws, "realtimeScore").(map[string]any)
+	assert.Equal(t, "", message["PlayoffRedAllianceCard"])
+	assert.False(t, web.arena.RedRealtimeScore.CurrentScore.PlayoffDq)
+	assert.Equal(t, "yellow", message["PlayoffBlueAllianceCard"])
 
 	// Test field reset and match committing.
 	web.arena.CurrentMatch.Type = model.Test

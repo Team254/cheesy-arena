@@ -163,10 +163,13 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 	}
 	isReplay := matchResult != nil
 
+	var playoffRedAllianceYellowCard, playoffBlueAllianceYellowCard bool
 	var matchup *playoff.Matchup
 	redOffFieldTeams := []*model.Team{}
 	blueOffFieldTeams := []*model.Team{}
 	if arena.CurrentMatch.Type == model.Playoff {
+		playoffRedAllianceYellowCard = arena.getAllianceYellowCard(arena.CurrentMatch.PlayoffRedAlliance)
+		playoffBlueAllianceYellowCard = arena.getAllianceYellowCard(arena.CurrentMatch.PlayoffBlueAlliance)
 		matchGroup := arena.PlayoffTournament.MatchGroups()[arena.CurrentMatch.PlayoffMatchGroupId]
 		matchup, _ = matchGroup.(*playoff.Matchup)
 		redOffFieldTeamIds, blueOffFieldTeamIds, err := arena.Database.GetOffFieldTeamIds(arena.CurrentMatch)
@@ -208,17 +211,21 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 		!(arena.EventSettings.NexusEnabled && arena.CurrentMatch.ShouldAllowNexusSubstitution())
 
 	return &struct {
-		Match              *model.Match
-		AllowSubstitution  bool
-		IsReplay           bool
-		Teams              map[string]*model.Team
-		Rankings           map[string]int
-		Matchup            *playoff.Matchup
-		RedOffFieldTeams   []*model.Team
-		BlueOffFieldTeams  []*model.Team
-		BreakDescription   string
-		BreakNextMatchName string
+		PlayoffRedAllianceYellowCard  bool
+		PlayoffBlueAllianceYellowCard bool
+		Match                         *model.Match
+		AllowSubstitution             bool
+		IsReplay                      bool
+		Teams                         map[string]*model.Team
+		Rankings                      map[string]int
+		Matchup                       *playoff.Matchup
+		RedOffFieldTeams              []*model.Team
+		BlueOffFieldTeams             []*model.Team
+		BreakDescription              string
+		BreakNextMatchName            string
 	}{
+		playoffRedAllianceYellowCard,
+		playoffBlueAllianceYellowCard,
 		arena.CurrentMatch,
 		allowManualSubstitution,
 		isReplay,
@@ -232,6 +239,16 @@ func (arena *Arena) GenerateMatchLoadMessage() any {
 	}
 }
 
+// Read fresh alliance state so result corrections and substitutions are reflected immediately.
+func (arena *Arena) getAllianceYellowCard(allianceId int) bool {
+	alliance, err := arena.Database.GetAllianceById(allianceId)
+	if err != nil {
+		log.Printf("Failed to get yellow card for alliance %d: %v", allianceId, err)
+		return false
+	}
+	return alliance != nil && alliance.YellowCard
+}
+
 func (arena *Arena) generateMatchTimeMessage() any {
 	return MatchTimeMessage{arena.MatchState, int(arena.MatchTimeSec())}
 }
@@ -242,16 +259,20 @@ func (arena *Arena) generateMatchTimingMessage() any {
 
 func (arena *Arena) generateRealtimeScoreMessage() any {
 	fields := struct {
-		Red       *audienceAllianceScoreFields
-		Blue      *audienceAllianceScoreFields
-		RedCards  map[string]string
-		BlueCards map[string]string
+		Red                     *audienceAllianceScoreFields
+		Blue                    *audienceAllianceScoreFields
+		RedCards                map[string]string
+		BlueCards               map[string]string
+		PlayoffRedAllianceCard  string
+		PlayoffBlueAllianceCard string
 		MatchState
 	}{
 		getAudienceAllianceScoreFields(arena.RedRealtimeScore, arena.RedScoreSummary()),
 		getAudienceAllianceScoreFields(arena.BlueRealtimeScore, arena.BlueScoreSummary()),
 		arena.RedRealtimeScore.Cards,
 		arena.BlueRealtimeScore.Cards,
+		arena.RedRealtimeScore.PlayoffAllianceCard,
+		arena.BlueRealtimeScore.PlayoffAllianceCard,
 		arena.MatchState,
 	}
 	return &fields
@@ -312,28 +333,30 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 	}
 
 	return &struct {
-		Match                 *model.Match
-		TraversalBonusEnabled bool
-		RedScoreSummary       *game.ScoreSummary
-		BlueScoreSummary      *game.ScoreSummary
-		RedRankingPoints      int
-		BlueRankingPoints     int
-		RedFouls              []game.Foul
-		BlueFouls             []game.Foul
-		RulesViolated         map[int]*game.Rule
-		RedCards              map[string]string
-		BlueCards             map[string]string
-		RedRankings           map[int]*game.Ranking
-		BlueRankings          map[int]*game.Ranking
-		RedOffFieldTeamIds    []int
-		BlueOffFieldTeamIds   []int
-		RedWon                bool
-		BlueWon               bool
-		TiebreakReason        string
-		RedWins               int
-		BlueWins              int
-		RedDestination        string
-		BlueDestination       string
+		Match                   *model.Match
+		TraversalBonusEnabled   bool
+		RedScoreSummary         *game.ScoreSummary
+		BlueScoreSummary        *game.ScoreSummary
+		RedRankingPoints        int
+		BlueRankingPoints       int
+		RedFouls                []game.Foul
+		BlueFouls               []game.Foul
+		RulesViolated           map[int]*game.Rule
+		RedCards                map[string]string
+		BlueCards               map[string]string
+		PlayoffRedAllianceCard  string
+		PlayoffBlueAllianceCard string
+		RedRankings             map[int]*game.Ranking
+		BlueRankings            map[int]*game.Ranking
+		RedOffFieldTeamIds      []int
+		BlueOffFieldTeamIds     []int
+		RedWon                  bool
+		BlueWon                 bool
+		TiebreakReason          string
+		RedWins                 int
+		BlueWins                int
+		RedDestination          string
+		BlueDestination         string
 	}{
 		arena.SavedMatch,
 		arena.EventSettings.TraversalBonusThreshold != 0,
@@ -346,6 +369,8 @@ func (arena *Arena) GenerateScorePostedMessage() any {
 		getRulesViolated(arena.SavedMatchResult.RedScore.Fouls, arena.SavedMatchResult.BlueScore.Fouls),
 		arena.SavedMatchResult.RedCards,
 		arena.SavedMatchResult.BlueCards,
+		arena.SavedMatchResult.PlayoffRedAllianceCard,
+		arena.SavedMatchResult.PlayoffBlueAllianceCard,
 		redRankings,
 		blueRankings,
 		redOffFieldTeamIds,

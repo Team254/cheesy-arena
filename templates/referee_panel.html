@@ -11,11 +11,15 @@ UI for entering and tracking fouls and red/yellow cards.
   <div id="cards" class="headRef-dependent">
     <h3 id="teamTitle">Red/Yellow Cards</h3>
     <div class="alliance-cards" id="redCards">
+      <button type="button" class="team-card playoff-alliance-card" id="redAllianceCard" data-alliance="red"
+        style="display: none;" onclick="cycleCard(this);"></button>
       {{range $i := seq 3}}
       {{template "teamCard" dict "alliance" "red" "position" $i}}
       {{end}}
     </div>
     <div class="alliance-cards" id="blueCards">
+      <button type="button" class="team-card playoff-alliance-card" id="blueAllianceCard" data-alliance="blue"
+        style="display: none;" onclick="cycleCard(this);"></button>
       {{range $i := seq 3}}
       {{template "teamCard" dict "alliance" "blue" "position" $i}}
       {{end}}
@@ -96,7 +100,7 @@ UI for entering and tracking fouls and red/yellow cards.
 <script src="/static/js/referee_panel.js"></script>
 {{end}}
 {{define "teamCard"}}
-<div class="team-card" id="{{.alliance}}{{.position}}Card" data-alliance="{{.alliance}}" data-station="{{slice .alliance 0 1}}{{.position}}" onclick="cycleCard(this);">
+<div class="team-card station-card" id="{{.alliance}}{{.position}}Card" data-alliance="{{.alliance}}" data-station="{{slice .alliance 0 1}}{{.position}}" onclick="cycleCard(this);">
 </div>
 {{end}}
 {{define "scoreSummary"}}

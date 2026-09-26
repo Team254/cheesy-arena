@@ -100,7 +100,10 @@ func TestAllianceSelection(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 16, len(matches))
 	team, _ := web.arena.Database.GetTeamById(254)
-	assert.False(t, team.YellowCard)
+	assert.True(t, team.YellowCard) // Qualification cards are untouched by alliance selection.
+	for _, alliance := range alliances {
+		assert.False(t, alliance.YellowCard)
+	}
 }
 
 func TestAllianceSelectionErrors(t *testing.T) {

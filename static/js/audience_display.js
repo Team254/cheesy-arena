@@ -137,13 +137,13 @@ const handleScorePosted = function (data) {
 
   $(`#${redSide}FinalScore`).text(data.RedScoreSummary.Score);
   $(`#${redSide}FinalAlliance`).text("Alliance " + data.Match.PlayoffRedAlliance);
-  setTeamInfo(redSide, 1, data.Match.Red1, data.RedCards, data.RedRankings);
-  setTeamInfo(redSide, 2, data.Match.Red2, data.RedCards, data.RedRankings);
-  setTeamInfo(redSide, 3, data.Match.Red3, data.RedCards, data.RedRankings);
+  setTeamInfo(redSide, 1, data.Match.Red1, getPostedCard(data, "Red", data.Match.Red1), data.RedRankings);
+  setTeamInfo(redSide, 2, data.Match.Red2, getPostedCard(data, "Red", data.Match.Red2), data.RedRankings);
+  setTeamInfo(redSide, 3, data.Match.Red3, getPostedCard(data, "Red", data.Match.Red3), data.RedRankings);
   if (data.RedOffFieldTeamIds.length > 0) {
-    setTeamInfo(redSide, 4, data.RedOffFieldTeamIds[0], data.RedCards, data.RedRankings);
+    setTeamInfo(redSide, 4, data.RedOffFieldTeamIds[0], getPostedCard(data, "Red", data.RedOffFieldTeamIds[0]), data.RedRankings);
   } else {
-    setTeamInfo(redSide, 4, 0, data.RedCards, data.RedRankings);
+    setTeamInfo(redSide, 4, 0, getPostedCard(data, "Red", 0), data.RedRankings);
   }
   $(`#${redSide}FinalAutoFuelPoints`).text(data.RedScoreSummary.AutoFuelPoints);
   $(`#${redSide}FinalAutoTowerPoints`).text(data.RedScoreSummary.AutoTowerPoints);
@@ -177,13 +177,13 @@ const handleScorePosted = function (data) {
 
   $(`#${blueSide}FinalScore`).text(data.BlueScoreSummary.Score);
   $(`#${blueSide}FinalAlliance`).text("Alliance " + data.Match.PlayoffBlueAlliance);
-  setTeamInfo(blueSide, 1, data.Match.Blue1, data.BlueCards, data.BlueRankings);
-  setTeamInfo(blueSide, 2, data.Match.Blue2, data.BlueCards, data.BlueRankings);
-  setTeamInfo(blueSide, 3, data.Match.Blue3, data.BlueCards, data.BlueRankings);
+  setTeamInfo(blueSide, 1, data.Match.Blue1, getPostedCard(data, "Blue", data.Match.Blue1), data.BlueRankings);
+  setTeamInfo(blueSide, 2, data.Match.Blue2, getPostedCard(data, "Blue", data.Match.Blue2), data.BlueRankings);
+  setTeamInfo(blueSide, 3, data.Match.Blue3, getPostedCard(data, "Blue", data.Match.Blue3), data.BlueRankings);
   if (data.BlueOffFieldTeamIds.length > 0) {
-    setTeamInfo(blueSide, 4, data.BlueOffFieldTeamIds[0], data.BlueCards, data.BlueRankings);
+    setTeamInfo(blueSide, 4, data.BlueOffFieldTeamIds[0], getPostedCard(data, "Blue", data.BlueOffFieldTeamIds[0]), data.BlueRankings);
   } else {
-    setTeamInfo(blueSide, 4, 0, data.BlueCards, data.BlueRankings);
+    setTeamInfo(blueSide, 4, 0, getPostedCard(data, "Blue", 0), data.BlueRankings);
   }
   $(`#${blueSide}FinalAutoFuelPoints`).text(data.BlueScoreSummary.AutoFuelPoints);
   $(`#${blueSide}FinalAutoTowerPoints`).text(data.BlueScoreSummary.AutoTowerPoints);
@@ -692,7 +692,15 @@ const getAvatarUrl = function (teamId) {
   return DisplayShared.getAvatarUrl(teamId);
 };
 
-const setTeamInfo = function (side, position, teamId, cards, rankings) {
+// Resolve the card without consulting individual team entries during playoffs.
+const getPostedCard = function (data, alliance, teamId) {
+  if (!teamId) return "";
+  return data.Match.Type === matchTypePlayoff
+    ? data[`Playoff${alliance}AllianceCard`]
+    : data[`${alliance}Cards`][teamId.toString()];
+};
+
+const setTeamInfo = function (side, position, teamId, card, rankings) {
   const teamNumberElement = $(`#${side}FinalTeam${position}`);
   teamNumberElement.html(teamId);
   teamNumberElement.toggle(teamId > 0);
@@ -701,7 +709,7 @@ const setTeamInfo = function (side, position, teamId, cards, rankings) {
   avatarElement.toggle(teamId > 0);
 
   const cardElement = $(`#${side}FinalTeam${position}Card`);
-  cardElement.attr("data-card", cards[teamId.toString()] || "");
+  cardElement.attr("data-card", card || "");
 
   const ranking = rankings[teamId];
   let rankIndicator = "";

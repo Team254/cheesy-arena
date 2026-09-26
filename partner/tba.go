@@ -347,6 +347,7 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 		var scoreBreakdown map[string]map[string]any
 		var redScore, blueScore *int
 		var redCards, blueCards map[string]string
+		var playoffRedAllianceCard, playoffBlueAllianceCard string
 		if match.IsComplete() {
 			matchResult, err := database.GetMatchResultForMatch(match.Id)
 			if err != nil {
@@ -366,8 +367,13 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 				blueScoreValue := scoreBreakdown["blue"]["totalPoints"].(int)
 				redScore = &redScoreValue
 				blueScore = &blueScoreValue
-				redCards = matchResult.RedCards
-				blueCards = matchResult.BlueCards
+				if match.Type == model.Playoff {
+					playoffRedAllianceCard = matchResult.PlayoffRedAllianceCard
+					playoffBlueAllianceCard = matchResult.PlayoffBlueAllianceCard
+				} else {
+					redCards = matchResult.RedCards
+					blueCards = matchResult.BlueCards
+				}
 			}
 		}
 		alliances := make(map[string]*TbaAlliance)
@@ -383,6 +389,13 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 			blueScore,
 			blueCards,
 		)
+
+		if playoffRedAllianceCard == "red" {
+			alliances["red"].Dqs = append(alliances["red"].Dqs, alliances["red"].Teams...)
+		}
+		if playoffBlueAllianceCard == "red" {
+			alliances["blue"].Dqs = append(alliances["blue"].Dqs, alliances["blue"].Teams...)
+		}
 
 		var actualStartTimeUtc string
 		if !match.StartedAt.IsZero() {

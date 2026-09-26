@@ -71,6 +71,12 @@ h3 {
   align-items: center;
   border-radius: 0.2vw;
 }
+.playoff-alliance-card {
+  font-size: 1.6vw;
+  white-space: nowrap;
+  color: inherit;
+  border: 0;
+}
 .team-card[data-card="yellow"] {
   background-color: #c90;
 }

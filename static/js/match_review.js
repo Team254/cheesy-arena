@@ -93,9 +93,13 @@ const updateResults = function (alliance) {
   }
 
   result.cards = {};
-  $.each(result.teams, function (i, team) {
-    result.cards[team] = formData[`${alliance}Team${team}Card`];
-  });
+  if (isPlayoff) {
+    result.playoffAllianceCard = formData[`${alliance}PlayoffAllianceCard`] || "";
+  } else {
+    $.each(result.teams, function (i, team) {
+      result.cards[team] = formData[`${alliance}Team${team}Card`];
+    });
+  }
 };
 
 const updateAllResults = function () {
@@ -106,6 +110,8 @@ const updateAllResults = function () {
   matchResult.BlueScore = allianceResults["blue"].score;
   matchResult.RedCards = allianceResults["red"].cards;
   matchResult.BlueCards = allianceResults["blue"].cards;
+  matchResult.PlayoffRedAllianceCard = isPlayoff ? allianceResults.red.playoffAllianceCard : "";
+  matchResult.PlayoffBlueAllianceCard = isPlayoff ? allianceResults.blue.playoffAllianceCard : "";
 };
 
 // Appends a blank foul to the end of the list.
@@ -161,6 +167,10 @@ const buildFoulElement = function (alliance, index, foul) {
 
 const renderCards = function (alliance) {
   const result = allianceResults[alliance];
+  if (isPlayoff) {
+    getInputElement(alliance, "PlayoffAllianceCard", result.playoffAllianceCard || "").prop("checked", true);
+    return;
+  }
   $.each(result.cards, function (team, card) {
     getInputElement(alliance, `Team${team}Card`, card).prop("checked", true);
   });

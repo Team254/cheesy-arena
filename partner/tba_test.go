@@ -232,3 +232,28 @@ func (body *closeTrackingBody) Close() error {
 	body.closed = true
 	return nil
 }
+
+func TestPublishPlayoffAllianceCards(t *testing.T) {
+	database := setupTestDb(t)
+	match := &model.Match{Type: model.Playoff, Status: game.BlueWonMatch, Red1: 1, Red2: 2, Red3: 3, Blue1: 4, Blue2: 5, Blue3: 6}
+	assert.NoError(t, database.CreateMatch(match))
+	result := model.NewMatchResult()
+	result.MatchId, result.PlayNumber = match.Id, 1
+	result.PlayoffRedAllianceCard = "red"
+	result.PlayoffBlueAllianceCard = "dq"
+	result.BlueCards = map[string]string{"4": "red"} // Ignored during playoffs.
+	result.CorrectPlayoffScore()
+	assert.NoError(t, database.CreateMatchResult(result))
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var matches []TbaMatch
+		assert.NoError(t, json.NewDecoder(r.Body).Decode(&matches))
+		if assert.Len(t, matches, 1) {
+			assert.Equal(t, []string{"frc1", "frc2", "frc3"}, matches[0].Alliances["red"].Dqs)
+			assert.Empty(t, matches[0].Alliances["blue"].Dqs)
+		}
+	}))
+	defer server.Close()
+	client := NewTbaClient("test", "", "")
+	client.BaseUrl = server.URL
+	assert.NoError(t, client.PublishMatches(database))
+}

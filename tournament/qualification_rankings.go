@@ -77,8 +77,8 @@ func CalculateRankings(database *model.Database, preservePreviousRank bool) (gam
 	return sortedRankings, nil
 }
 
-// Checks all the match results for yellow and red cards, and updates the team model accordingly.
-func CalculateTeamCards(database *model.Database, matchType model.MatchType) error {
+// Rebuilds carried team yellow cards from qualification results.
+func CalculateTeamCards(database *model.Database) error {
 	teams, err := database.GetAllTeams()
 	if err != nil {
 		return err
@@ -89,7 +89,7 @@ func CalculateTeamCards(database *model.Database, matchType model.MatchType) err
 		teamsMap[strconv.Itoa(team.Id)] = team
 	}
 
-	matches, err := database.GetMatchesByType(matchType, false)
+	matches, err := database.GetMatchesByType(model.Qualification, false)
 	if err != nil {
 		return err
 	}

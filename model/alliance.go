@@ -8,9 +8,10 @@ package model
 import "sort"
 
 type Alliance struct {
-	Id      int `db:"id,manual"`
-	TeamIds []int
-	Lineup  [3]int
+	Id         int `db:"id,manual"`
+	TeamIds    []int
+	Lineup     [3]int
+	YellowCard bool
 }
 
 type AllianceSelectionRankedTeam struct {

@@ -175,26 +175,17 @@ func (web *Web) refereePanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				continue
 			}
 
-			// Set the card in the correct alliance's score.
-			var cards map[string]string
+			// Playoff cards belong to an alliance; other match types use individual teams.
+			score := web.arena.BlueRealtimeScore
 			if args.Alliance == "red" {
-				cards = web.arena.RedRealtimeScore.Cards
-			} else {
-				cards = web.arena.BlueRealtimeScore.Cards
+				score = web.arena.RedRealtimeScore
 			}
 			if web.arena.CurrentMatch.Type == model.Playoff {
-				// Cards apply to the whole alliance in playoffs.
-				if args.Alliance == "red" {
-					cards[strconv.Itoa(web.arena.CurrentMatch.Red1)] = args.Card
-					cards[strconv.Itoa(web.arena.CurrentMatch.Red2)] = args.Card
-					cards[strconv.Itoa(web.arena.CurrentMatch.Red3)] = args.Card
-				} else {
-					cards[strconv.Itoa(web.arena.CurrentMatch.Blue1)] = args.Card
-					cards[strconv.Itoa(web.arena.CurrentMatch.Blue2)] = args.Card
-					cards[strconv.Itoa(web.arena.CurrentMatch.Blue3)] = args.Card
-				}
+				score.PlayoffAllianceCard = args.Card
+				score.Cards = make(map[string]string)
+				web.getCurrentMatchResult().CorrectPlayoffScore()
 			} else {
-				cards[strconv.Itoa(args.TeamId)] = args.Card
+				score.Cards[strconv.Itoa(args.TeamId)] = args.Card
 			}
 			web.arena.RealtimeScoreNotifier.Notify()
 		case "toggleBypass":

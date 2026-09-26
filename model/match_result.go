@@ -10,14 +10,16 @@ import (
 )
 
 type MatchResult struct {
-	Id         int `db:"id"`
-	MatchId    int
-	PlayNumber int
-	MatchType  MatchType
-	RedScore   *game.Score
-	BlueScore  *game.Score
-	RedCards   map[string]string
-	BlueCards  map[string]string
+	Id                      int `db:"id"`
+	MatchId                 int
+	PlayNumber              int
+	MatchType               MatchType
+	RedScore                *game.Score
+	BlueScore               *game.Score
+	RedCards                map[string]string
+	BlueCards               map[string]string
+	PlayoffRedAllianceCard  string
+	PlayoffBlueAllianceCard string
 }
 
 // Returns a new match result object with empty slices instead of nil.
@@ -72,18 +74,8 @@ func (matchResult *MatchResult) BlueScoreSummary() *game.ScoreSummary {
 	return matchResult.BlueScore.Summarize(matchResult.RedScore)
 }
 
-// Checks the score for disqualifications or a tie and adjusts it appropriately.
+// Sets playoff disqualifications from the cards issued to the alliances in this match.
 func (matchResult *MatchResult) CorrectPlayoffScore() {
-	matchResult.RedScore.PlayoffDq = false
-	matchResult.BlueScore.PlayoffDq = false
-	for _, card := range matchResult.RedCards {
-		if card == "red" || card == "dq" {
-			matchResult.RedScore.PlayoffDq = true
-		}
-	}
-	for _, card := range matchResult.BlueCards {
-		if card == "red" || card == "dq" {
-			matchResult.BlueScore.PlayoffDq = true
-		}
-	}
+	matchResult.RedScore.PlayoffDq = matchResult.PlayoffRedAllianceCard == "red" || matchResult.PlayoffRedAllianceCard == "dq"
+	matchResult.BlueScore.PlayoffDq = matchResult.PlayoffBlueAllianceCard == "red" || matchResult.PlayoffBlueAllianceCard == "dq"
 }

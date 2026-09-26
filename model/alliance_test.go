@@ -28,6 +28,7 @@ func TestAllianceCrud(t *testing.T) {
 	assert.Equal(t, alliance, *alliance2)
 
 	alliance.TeamIds = append(alliance.TeamIds, 296)
+	alliance.YellowCard = true
 	assert.Nil(t, db.UpdateAlliance(&alliance))
 	alliance2, err = db.GetAllianceById(3)
 	assert.Nil(t, err)

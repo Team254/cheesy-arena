@@ -265,14 +265,14 @@ func TestCommitCards(t *testing.T) {
 	web.arena.Database.UpdateMatch(match)
 	matchResult = model.BuildTestMatchResult(match.Id, 0)
 	matchResult.MatchType = match.Type
-	matchResult.RedCards = map[string]string{"1": "red"}
+	matchResult.PlayoffRedAllianceCard = "red"
 	assert.Nil(t, web.commitMatchScore(match, matchResult, true))
 	assert.Equal(t, 0, matchResult.RedScoreSummary().Score)
 	assert.NotEqual(t, 0, matchResult.BlueScoreSummary().Score)
 
 	// Check that a DQ in playoffs zeroes out the score.
-	matchResult.RedCards = map[string]string{}
-	matchResult.BlueCards = map[string]string{"5": "dq"}
+	matchResult.PlayoffRedAllianceCard = ""
+	matchResult.PlayoffBlueAllianceCard = "dq"
 	assert.Nil(t, web.commitMatchScore(match, matchResult, true))
 	assert.NotEqual(t, 0, matchResult.RedScoreSummary().Score)
 	assert.Equal(t, 0, matchResult.BlueScoreSummary().Score)
@@ -281,7 +281,7 @@ func TestCommitCards(t *testing.T) {
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.MatchType = match.Type
-	matchResult.RedCards = map[string]string{"1": "red"}
+	matchResult.PlayoffRedAllianceCard = "red"
 	assert.Nil(t, web.commitMatchScore(match, matchResult, true))
 	match, _ = web.arena.Database.GetMatchById(match.Id)
 	assert.Equal(t, game.BlueWonMatch, match.Status)
@@ -290,7 +290,7 @@ func TestCommitCards(t *testing.T) {
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
 	matchResult.MatchType = match.Type
-	matchResult.BlueCards = map[string]string{"4": "dq"}
+	matchResult.PlayoffBlueAllianceCard = "dq"
 	assert.Nil(t, web.commitMatchScore(match, matchResult, true))
 	match, _ = web.arena.Database.GetMatchById(match.Id)
 	assert.Equal(t, game.RedWonMatch, match.Status)
