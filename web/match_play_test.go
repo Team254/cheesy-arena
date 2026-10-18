@@ -117,6 +117,18 @@ func TestCommitMatch(t *testing.T) {
 	time.Sleep(time.Millisecond * 100) // Allow some time for the asynchronous publishing to happen.
 	assert.Contains(t, writer.String(), "Failed to publish matches")
 	assert.Contains(t, writer.String(), "Failed to publish rankings")
+
+	// Committing a practice match should publish matches to TBA, but not rankings.
+	writer.Reset()
+	practiceMatch := &model.Match{Type: model.Practice, ShortName: "P1"}
+	assert.Nil(t, web.arena.Database.CreateMatch(practiceMatch))
+	practiceResult := model.NewMatchResult()
+	practiceResult.MatchId = practiceMatch.Id
+	err = web.commitMatchScore(practiceMatch, practiceResult, true)
+	assert.Nil(t, err)
+	time.Sleep(time.Millisecond * 100)
+	assert.Contains(t, writer.String(), "Failed to publish matches")
+	assert.NotContains(t, writer.String(), "Failed to publish rankings")
 }
 
 func TestCommitTiebreak(t *testing.T) {
