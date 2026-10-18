@@ -59,7 +59,7 @@ func TestPublishMatches(t *testing.T) {
 		Blue2:            5,
 		Blue3:            6,
 		Status:           game.RedWonMatch,
-		TbaMatchKey:      model.TbaMatchKey{"p", 0, 1},
+		TbaMatchKey:      model.TbaMatchKey{CompLevel: "p", SetNumber: 0, MatchNumber: 1},
 	}
 	match1 := model.Match{
 		Type:             model.Qualification,
@@ -74,9 +74,13 @@ func TestPublishMatches(t *testing.T) {
 		Blue2:            11,
 		Blue3:            12,
 		Status:           game.RedWonMatch,
-		TbaMatchKey:      model.TbaMatchKey{"qm", 0, 2},
+		TbaMatchKey:      model.TbaMatchKey{CompLevel: "qm", SetNumber: 0, MatchNumber: 2},
 	}
-	match2 := model.Match{Type: model.Playoff, ShortName: "SF2-2", TbaMatchKey: model.TbaMatchKey{"omg", 5, 29}}
+	match2 := model.Match{
+		Type:        model.Playoff,
+		ShortName:   "SF2-2",
+		TbaMatchKey: model.TbaMatchKey{CompLevel: "omg", SetNumber: 5, MatchNumber: 29},
+	}
 	database.CreateMatch(&practiceMatch)
 	database.CreateMatch(&match1)
 	database.CreateMatch(&match2)
@@ -225,8 +229,21 @@ func TestCheckTbaPostResponseClosesBody(t *testing.T) {
 func TestPublishAwards(t *testing.T) {
 	database := setupTestDb(t)
 
-	database.CreateAward(&model.Award{0, model.JudgedAward, "Saftey Award", 254, ""})
-	database.CreateAward(&model.Award{0, model.JudgedAward, "Spirt Award", 0, "Bob Dorough"})
+	chairmansType := 0
+	spiritType := 30
+	database.CreateAward(&model.Award{Type: model.JudgedAward, AwardName: "Saftey Award", TeamId: 254})
+	database.CreateAward(&model.Award{
+		Type:        model.JudgedAward,
+		AwardName:   "Spirt Award",
+		PersonName:  "Bob Dorough",
+		TbaTypeEnum: &spiritType,
+	})
+	database.CreateAward(&model.Award{
+		Type:        model.JudgedAward,
+		AwardName:   "Impact Award",
+		TeamId:      1114,
+		TbaTypeEnum: &chairmansType,
+	})
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(
@@ -235,13 +252,17 @@ func TestPublishAwards(t *testing.T) {
 				assert.Contains(t, r.URL.String(), "event/my_event_code")
 				var reader bytes.Buffer
 				reader.ReadFrom(r.Body)
+				assert.NotContains(t, reader.String(), `"name_str":"Saftey Award","team_key":"frc254","awardee":null,"type_enum"`)
+				assert.Contains(t, reader.String(), `{"name_str":"Saftey Award","team_key":"frc254","awardee":null}`)
+
 				var actual []TbaPublishedAward
 				err := json.Unmarshal(reader.Bytes(), &actual)
 				assert.Nil(t, err)
 
 				expected := []TbaPublishedAward{
-					{Name: "Saftey Award", TeamKey: stringPtr("frc254"), Awardee: nil},
-					{Name: "Spirt Award", TeamKey: nil, Awardee: stringPtr("Bob Dorough")},
+					{TypeEnum: nil, Name: "Saftey Award", TeamKey: stringPtr("frc254"), Awardee: nil},
+					{TypeEnum: &spiritType, Name: "Spirt Award", TeamKey: nil, Awardee: stringPtr("Bob Dorough")},
+					{TypeEnum: &chairmansType, Name: "Impact Award", TeamKey: stringPtr("frc1114"), Awardee: nil},
 				}
 				assert.Equal(t, expected, actual)
 			},

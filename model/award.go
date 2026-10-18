@@ -5,14 +5,25 @@
 
 package model
 
-import "sort"
+import (
+	"sort"
+	"strconv"
+)
 
 type Award struct {
-	Id         int `db:"id"`
-	Type       AwardType
-	AwardName  string
-	TeamId     int
-	PersonName string
+	Id          int `db:"id"`
+	Type        AwardType
+	AwardName   string
+	TeamId      int
+	PersonName  string
+	TbaTypeEnum *int
+}
+
+func (award Award) TbaTypeEnumString() string {
+	if award.TbaTypeEnum == nil {
+		return ""
+	}
+	return strconv.Itoa(*award.TbaTypeEnum)
 }
 
 type AwardType int

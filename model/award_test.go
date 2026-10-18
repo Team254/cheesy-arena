@@ -21,14 +21,18 @@ func TestAwardCrud(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	award := Award{0, JudgedAward, "Saftey Award", 254, ""}
+	award := Award{0, JudgedAward, "Saftey Award", 254, "", nil}
+	assert.Equal(t, "", award.TbaTypeEnumString())
 	assert.Nil(t, db.CreateAward(&award))
 	award2, err := db.GetAwardById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, award, *award2)
 
+	tbaType := 18
 	award2.Id = 0
 	award2.AwardName = "Spirit Award"
+	award2.TbaTypeEnum = &tbaType
+	assert.Equal(t, "18", award2.TbaTypeEnumString())
 	assert.Nil(t, db.CreateAward(award2))
 	awards, err := db.GetAllAwards()
 	assert.Nil(t, err)
@@ -39,11 +43,15 @@ func TestAwardCrud(t *testing.T) {
 
 	award.TeamId = 0
 	award.PersonName = "Travus Cubington"
+	zeroType := 0
+	award.TbaTypeEnum = &zeroType
+	assert.Equal(t, "0", award.TbaTypeEnumString())
 	assert.Nil(t, db.UpdateAward(&award))
 	award2, err = db.GetAwardById(1)
 	assert.Nil(t, err)
 	assert.Equal(t, award.TeamId, award2.TeamId)
 	assert.Equal(t, award.PersonName, award2.PersonName)
+	assert.Equal(t, award.TbaTypeEnum, award2.TbaTypeEnum)
 
 	assert.Nil(t, db.DeleteAward(award.Id))
 	award2, err = db.GetAwardById(1)
@@ -55,7 +63,7 @@ func TestTruncateAwards(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	award := Award{0, JudgedAward, "Saftey Award", 254, ""}
+	award := Award{0, JudgedAward, "Saftey Award", 254, "", nil}
 	db.CreateAward(&award)
 	db.TruncateAwards()
 	award2, err := db.GetAwardById(1)
@@ -67,13 +75,13 @@ func TestGetAwardsByType(t *testing.T) {
 	db := setupTestDb(t)
 	defer db.Close()
 
-	award1 := Award{0, WinnerAward, "Event Winner", 1114, ""}
+	award1 := Award{0, WinnerAward, "Event Winner", 1114, "", nil}
 	db.CreateAward(&award1)
-	award2 := Award{0, FinalistAward, "Event Finalist", 2056, ""}
+	award2 := Award{0, FinalistAward, "Event Finalist", 2056, "", nil}
 	db.CreateAward(&award2)
-	award3 := Award{0, JudgedAward, "Saftey Award", 254, ""}
+	award3 := Award{0, JudgedAward, "Saftey Award", 254, "", nil}
 	db.CreateAward(&award3)
-	award4 := Award{0, WinnerAward, "Event Winner", 254, ""}
+	award4 := Award{0, WinnerAward, "Event Winner", 254, "", nil}
 	db.CreateAward(&award4)
 
 	awards, err := db.GetAwardsByType(JudgedAward)

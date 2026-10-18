@@ -152,9 +152,10 @@ type TbaMediaItem struct {
 }
 
 type TbaPublishedAward struct {
-	Name    string  `json:"name_str"`
-	TeamKey *string `json:"team_key"`
-	Awardee *string `json:"awardee"`
+	TypeEnum *int    `json:"type_enum,omitempty"`
+	Name     string  `json:"name_str"`
+	TeamKey  *string `json:"team_key"`
+	Awardee  *string `json:"awardee"`
 }
 
 // Helper to get a pointer to a string.
@@ -530,6 +531,7 @@ func (client *TbaClient) PublishAwards(database *model.Database) error {
 	// Build a JSON array of TBA-format award models.
 	tbaAwards := make([]TbaPublishedAward, len(awards))
 	for i, award := range awards {
+		tbaAwards[i].TypeEnum = award.TbaTypeEnum
 		tbaAwards[i].Name = award.AwardName
 		if award.TeamId > 0 {
 			tbaAwards[i].TeamKey = stringPtr(getTbaTeam(award.TeamId))
