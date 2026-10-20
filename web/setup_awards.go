@@ -10,6 +10,7 @@ import (
 	"github.com/Team254/cheesy-arena/tournament"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // Shows the awards configuration page.
@@ -63,12 +64,33 @@ func (web *Web) awardsPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		teamId, _ := strconv.Atoi(r.PostFormValue("teamId"))
+		var tbaTypeEnum *int
+		if _, hasTbaTypeEnum := r.PostForm["tbaTypeEnum"]; hasTbaTypeEnum {
+			if tbaTypeEnumStr := strings.TrimSpace(r.PostFormValue("tbaTypeEnum")); tbaTypeEnumStr != "" {
+				parsed, err := strconv.Atoi(tbaTypeEnumStr)
+				if err != nil {
+					handleWebErr(w, err)
+					return
+				}
+				tbaTypeEnum = &parsed
+			}
+		} else if awardId > 0 {
+			existingAward, err := web.arena.Database.GetAwardById(awardId)
+			if err != nil {
+				handleWebErr(w, err)
+				return
+			}
+			if existingAward != nil {
+				tbaTypeEnum = existingAward.TbaTypeEnum
+			}
+		}
 		award := model.Award{
-			Id:         awardId,
-			Type:       model.JudgedAward,
-			AwardName:  r.PostFormValue("awardName"),
-			TeamId:     teamId,
-			PersonName: r.PostFormValue("personName"),
+			Id:          awardId,
+			Type:        model.JudgedAward,
+			AwardName:   r.PostFormValue("awardName"),
+			TeamId:      teamId,
+			PersonName:  r.PostFormValue("personName"),
+			TbaTypeEnum: tbaTypeEnum,
 		}
 		if err := tournament.CreateOrUpdateAward(web.arena.Database, &award, true); err != nil {
 			handleWebErr(w, err)

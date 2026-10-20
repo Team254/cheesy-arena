@@ -46,6 +46,21 @@ func TestPublishTeams(t *testing.T) {
 func TestPublishMatches(t *testing.T) {
 	database := setupTestDb(t)
 
+	practiceMatch := model.Match{
+		Type:             model.Practice,
+		ShortName:        "P1",
+		Time:             time.Unix(300, 0),
+		StartedAt:        time.Unix(310, 0),
+		ScoreCommittedAt: time.Unix(450, 0),
+		Red1:             1,
+		Red2:             2,
+		Red3:             3,
+		Blue1:            4,
+		Blue2:            5,
+		Blue3:            6,
+		Status:           game.RedWonMatch,
+		TbaMatchKey:      model.TbaMatchKey{CompLevel: "p", SetNumber: 0, MatchNumber: 1},
+	}
 	match1 := model.Match{
 		Type:             model.Qualification,
 		ShortName:        "Q2",
@@ -59,11 +74,19 @@ func TestPublishMatches(t *testing.T) {
 		Blue2:            11,
 		Blue3:            12,
 		Status:           game.RedWonMatch,
-		TbaMatchKey:      model.TbaMatchKey{"qm", 0, 2},
+		TbaMatchKey:      model.TbaMatchKey{CompLevel: "qm", SetNumber: 0, MatchNumber: 2},
 	}
-	match2 := model.Match{Type: model.Playoff, ShortName: "SF2-2", TbaMatchKey: model.TbaMatchKey{"omg", 5, 29}}
+	match2 := model.Match{
+		Type:        model.Playoff,
+		ShortName:   "SF2-2",
+		TbaMatchKey: model.TbaMatchKey{CompLevel: "omg", SetNumber: 5, MatchNumber: 29},
+	}
+	database.CreateMatch(&practiceMatch)
 	database.CreateMatch(&match1)
 	database.CreateMatch(&match2)
+	practiceMatchResult := model.BuildTestMatchResult(practiceMatch.Id, 1)
+	practiceMatchResult.RedCards = map[string]string{"1": "red"}
+	database.CreateMatchResult(practiceMatchResult)
 	matchResult1 := model.BuildTestMatchResult(match1.Id, 1)
 	database.CreateMatchResult(matchResult1)
 
@@ -74,17 +97,33 @@ func TestPublishMatches(t *testing.T) {
 				body, _ := io.ReadAll(r.Body)
 				var matches []*TbaMatch
 				json.Unmarshal(body, &matches)
-				assert.Equal(t, 2, len(matches))
-				assert.Equal(t, "qm", matches[0].CompLevel)
+				assert.Equal(t, 3, len(matches))
+				assert.Equal(t, "pm", matches[0].CompLevel)
 				assert.Equal(t, 0, matches[0].SetNumber)
-				assert.Equal(t, 2, matches[0].MatchNumber)
-				assert.Equal(t, time.Unix(620, 0).UTC().Format("2006-01-02T15:04:05"), matches[0].ActualStartTimeUtc)
-				assert.Equal(t, time.Unix(780, 0).UTC().Format("2006-01-02T15:04:05"), matches[0].PostResultsTimeUtc)
-				assert.Equal(t, "omg", matches[1].CompLevel)
-				assert.Equal(t, 5, matches[1].SetNumber)
-				assert.Equal(t, 29, matches[1].MatchNumber)
-				assert.Equal(t, "", matches[1].ActualStartTimeUtc)
-				assert.Equal(t, "", matches[1].PostResultsTimeUtc)
+				assert.Equal(t, 1, matches[0].MatchNumber)
+				assert.Equal(t, []string{"frc1", "frc2", "frc3"}, matches[0].Alliances["red"].Teams)
+				assert.Equal(t, []string{"frc4", "frc5", "frc6"}, matches[0].Alliances["blue"].Teams)
+				assert.Empty(t, matches[0].Alliances["red"].Dqs)
+				assert.Empty(t, matches[0].Alliances["blue"].Dqs)
+				assert.Nil(t, matches[0].Alliances["red"].Score)
+				assert.Nil(t, matches[0].Alliances["blue"].Score)
+				assert.Nil(t, matches[0].ScoreBreakdown)
+				assert.Equal(t, time.Unix(300, 0).UTC().Format("2006-01-02T15:04:05"), matches[0].TimeUtc)
+				assert.Equal(t, time.Unix(310, 0).UTC().Format("2006-01-02T15:04:05"), matches[0].ActualStartTimeUtc)
+				assert.Equal(t, time.Unix(450, 0).UTC().Format("2006-01-02T15:04:05"), matches[0].PostResultsTimeUtc)
+				assert.Equal(t, "qm", matches[1].CompLevel)
+				assert.Equal(t, 0, matches[1].SetNumber)
+				assert.Equal(t, 2, matches[1].MatchNumber)
+				assert.NotNil(t, matches[1].Alliances["red"].Score)
+				assert.NotNil(t, matches[1].Alliances["blue"].Score)
+				assert.NotNil(t, matches[1].ScoreBreakdown)
+				assert.Equal(t, time.Unix(620, 0).UTC().Format("2006-01-02T15:04:05"), matches[1].ActualStartTimeUtc)
+				assert.Equal(t, time.Unix(780, 0).UTC().Format("2006-01-02T15:04:05"), matches[1].PostResultsTimeUtc)
+				assert.Equal(t, "omg", matches[2].CompLevel)
+				assert.Equal(t, 5, matches[2].SetNumber)
+				assert.Equal(t, 29, matches[2].MatchNumber)
+				assert.Equal(t, "", matches[2].ActualStartTimeUtc)
+				assert.Equal(t, "", matches[2].PostResultsTimeUtc)
 			},
 		),
 	)
@@ -190,8 +229,21 @@ func TestCheckTbaPostResponseClosesBody(t *testing.T) {
 func TestPublishAwards(t *testing.T) {
 	database := setupTestDb(t)
 
-	database.CreateAward(&model.Award{0, model.JudgedAward, "Saftey Award", 254, ""})
-	database.CreateAward(&model.Award{0, model.JudgedAward, "Spirt Award", 0, "Bob Dorough"})
+	chairmansType := 0
+	spiritType := 30
+	database.CreateAward(&model.Award{Type: model.JudgedAward, AwardName: "Saftey Award", TeamId: 254})
+	database.CreateAward(&model.Award{
+		Type:        model.JudgedAward,
+		AwardName:   "Spirt Award",
+		PersonName:  "Bob Dorough",
+		TbaTypeEnum: &spiritType,
+	})
+	database.CreateAward(&model.Award{
+		Type:        model.JudgedAward,
+		AwardName:   "Impact Award",
+		TeamId:      1114,
+		TbaTypeEnum: &chairmansType,
+	})
 
 	// Mock the TBA server.
 	tbaServer := httptest.NewServer(
@@ -200,13 +252,17 @@ func TestPublishAwards(t *testing.T) {
 				assert.Contains(t, r.URL.String(), "event/my_event_code")
 				var reader bytes.Buffer
 				reader.ReadFrom(r.Body)
+				assert.NotContains(t, reader.String(), `"name_str":"Saftey Award","team_key":"frc254","awardee":null,"type_enum"`)
+				assert.Contains(t, reader.String(), `{"name_str":"Saftey Award","team_key":"frc254","awardee":null}`)
+
 				var actual []TbaPublishedAward
 				err := json.Unmarshal(reader.Bytes(), &actual)
 				assert.Nil(t, err)
 
 				expected := []TbaPublishedAward{
-					{Name: "Saftey Award", TeamKey: stringPtr("frc254"), Awardee: nil},
-					{Name: "Spirt Award", TeamKey: nil, Awardee: stringPtr("Bob Dorough")},
+					{TypeEnum: nil, Name: "Saftey Award", TeamKey: stringPtr("frc254"), Awardee: nil},
+					{TypeEnum: &spiritType, Name: "Spirt Award", TeamKey: nil, Awardee: stringPtr("Bob Dorough")},
+					{TypeEnum: &chairmansType, Name: "Impact Award", TeamKey: stringPtr("frc1114"), Awardee: nil},
 				}
 				assert.Equal(t, expected, actual)
 			},

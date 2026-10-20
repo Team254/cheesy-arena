@@ -16,6 +16,9 @@ func CreateOrUpdateAward(database *model.Database, award *model.Award, createInt
 	if award.AwardName == "" {
 		return fmt.Errorf("Award name cannot be blank.")
 	}
+	if award.TbaTypeEnum != nil && *award.TbaTypeEnum < 0 {
+		return fmt.Errorf("TBA award type cannot be negative.")
+	}
 	var team *model.Team
 	if award.TeamId > 0 {
 		var err error

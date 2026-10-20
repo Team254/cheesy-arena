@@ -14,9 +14,55 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 	"log"
+	"os"
+	"sync"
 	"testing"
 	"time"
 )
+
+type synchronizedLogWriter struct {
+	mu     sync.Mutex
+	buf    bytes.Buffer
+	writes chan struct{}
+}
+
+func newSynchronizedLogWriter() *synchronizedLogWriter {
+	return &synchronizedLogWriter{writes: make(chan struct{}, 16)}
+}
+
+func (w *synchronizedLogWriter) Write(p []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	n, err := w.buf.Write(p)
+	w.writes <- struct{}{}
+	return n, err
+}
+
+func (w *synchronizedLogWriter) String() string {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.buf.String()
+}
+
+func (w *synchronizedLogWriter) Reset() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	w.buf.Reset()
+	for len(w.writes) > 0 {
+		<-w.writes
+	}
+}
+
+func (w *synchronizedLogWriter) waitForWrites(t *testing.T, count int) {
+	t.Helper()
+	for i := 0; i < count; i++ {
+		select {
+		case <-w.writes:
+		case <-time.After(time.Second):
+			t.Fatalf("Timed out waiting for log write %d of %d", i+1, count)
+		}
+	}
+}
 
 func TestMatchPlay(t *testing.T) {
 	web := setupTestWeb(t)
@@ -110,13 +156,26 @@ func TestCommitMatch(t *testing.T) {
 	// Verify TBA publishing by checking the log for the expected failure messages.
 	web.arena.TbaClient.BaseUrl = "fakeUrl"
 	web.arena.EventSettings.TbaPublishingEnabled = true
-	var writer bytes.Buffer
-	log.SetOutput(&writer)
+	writer := newSynchronizedLogWriter()
+	log.SetOutput(writer)
+	defer log.SetOutput(os.Stderr)
 	err = web.commitMatchScore(match, matchResult, true)
 	assert.Nil(t, err)
-	time.Sleep(time.Millisecond * 100) // Allow some time for the asynchronous publishing to happen.
+	writer.waitForWrites(t, 2)
 	assert.Contains(t, writer.String(), "Failed to publish matches")
 	assert.Contains(t, writer.String(), "Failed to publish rankings")
+
+	// Committing a practice match should publish matches to TBA, but not rankings.
+	writer.Reset()
+	practiceMatch := &model.Match{Type: model.Practice, ShortName: "P1"}
+	assert.Nil(t, web.arena.Database.CreateMatch(practiceMatch))
+	practiceResult := model.NewMatchResult()
+	practiceResult.MatchId = practiceMatch.Id
+	err = web.commitMatchScore(practiceMatch, practiceResult, true)
+	assert.Nil(t, err)
+	writer.waitForWrites(t, 1)
+	assert.Contains(t, writer.String(), "Failed to publish matches")
+	assert.NotContains(t, writer.String(), "Failed to publish rankings")
 }
 
 func TestCommitTiebreak(t *testing.T) {

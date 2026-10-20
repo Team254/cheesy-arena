@@ -152,9 +152,10 @@ type TbaMediaItem struct {
 }
 
 type TbaPublishedAward struct {
-	Name    string  `json:"name_str"`
-	TeamKey *string `json:"team_key"`
-	Awardee *string `json:"awardee"`
+	TypeEnum *int    `json:"type_enum,omitempty"`
+	Name     string  `json:"name_str"`
+	TeamKey  *string `json:"team_key"`
+	Awardee  *string `json:"awardee"`
 }
 
 // Helper to get a pointer to a string.
@@ -324,8 +325,12 @@ func (client *TbaClient) PublishTeams(database *model.Database) error {
 	return checkTbaPostResponse(resp)
 }
 
-// Uploads the qualification and playoff match schedule and results to The Blue Alliance.
+// Uploads the practice, qualification, and playoff match schedule and results to The Blue Alliance.
 func (client *TbaClient) PublishMatches(database *model.Database) error {
+	practiceMatches, err := database.GetMatchesByType(model.Practice, false)
+	if err != nil {
+		return err
+	}
 	qualMatches, err := database.GetMatchesByType(model.Qualification, false)
 	if err != nil {
 		return err
@@ -338,17 +343,18 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 	if err != nil {
 		return err
 	}
-	matches := append(qualMatches, playoffMatches...)
+	matches := append(practiceMatches, qualMatches...)
+	matches = append(matches, playoffMatches...)
 	tbaMatches := make([]TbaMatch, len(matches))
 
 	// Build a JSON array of TBA-format matches.
 	for i, match := range matches {
-		// Fill in scores if the match has been played.
+		// Fill in scores if the match has been played (excluding practice matches, which only publish timing and lineups).
 		var scoreBreakdown map[string]map[string]any
 		var redScore, blueScore *int
 		var redCards, blueCards map[string]string
 		var playoffRedAllianceCard, playoffBlueAllianceCard string
-		if match.IsComplete() {
+		if match.IsComplete() && match.Type != model.Practice {
 			matchResult, err := database.GetMatchResultForMatch(match.Id)
 			if err != nil {
 				return err
@@ -406,8 +412,13 @@ func (client *TbaClient) PublishMatches(database *model.Database) error {
 			postResultsTimeUtc = match.ScoreCommittedAt.UTC().Format("2006-01-02T15:04:05")
 		}
 
+		compLevel := match.TbaMatchKey.CompLevel
+		if match.Type == model.Practice || compLevel == "p" {
+			compLevel = "pm"
+		}
+
 		tbaMatches[i] = TbaMatch{
-			CompLevel:          match.TbaMatchKey.CompLevel,
+			CompLevel:          compLevel,
 			SetNumber:          match.TbaMatchKey.SetNumber,
 			MatchNumber:        match.TbaMatchKey.MatchNumber,
 			Alliances:          alliances,
@@ -520,6 +531,7 @@ func (client *TbaClient) PublishAwards(database *model.Database) error {
 	// Build a JSON array of TBA-format award models.
 	tbaAwards := make([]TbaPublishedAward, len(awards))
 	for i, award := range awards {
+		tbaAwards[i].TypeEnum = award.TbaTypeEnum
 		tbaAwards[i].Name = award.AwardName
 		if award.TeamId > 0 {
 			tbaAwards[i].TeamKey = stringPtr(getTbaTeam(award.TeamId))

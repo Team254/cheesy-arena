@@ -41,6 +41,15 @@ UI for configuring the awards.
                 <input type="text" class="form-control" name="personName" value="{{$award.PersonName}}">
               </div>
             </div>
+            {{if $.EventSettings.TbaPublishingEnabled}}
+            <div class="row mb-2">
+              <label class="col-sm-5 control-label">TBA Award Type</label>
+              <div class="col-sm-7">
+                <input type="number" class="form-control" name="tbaTypeEnum" value="{{$award.TbaTypeEnumString}}"
+                  min="0">
+              </div>
+            </div>
+            {{end}}
           </div>
           <div class="col-lg-4">
             <button type="submit" class="btn btn-primary btn-lower-third" name="action" value="save">Save</button>
@@ -57,6 +66,10 @@ UI for configuring the awards.
       {{if .EventSettings.TbaPublishingEnabled}}
       <br/><br/>
       <p>Awards are not automatically published to The Blue Alliance. Manually publish them from the Settings tab.</p>
+      <small>
+        <a href="https://github.com/the-blue-alliance/the-blue-alliance/blob/main/src/backend/common/consts/award_type.py"
+          target="_blank" rel="noopener noreferrer">TBA Award Type Reference</a>
+      </small>
       {{end}}
     </div>
   </div>
