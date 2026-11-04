@@ -8,7 +8,7 @@ let currentMatchId;
 let redSide;
 let blueSide;
 const lowBatteryThreshold = 8;
-const highBtuThreshold = 7.0;
+const highBtuThreshold = 7.1;
 
 
 const handleArenaStatus = function (data) {

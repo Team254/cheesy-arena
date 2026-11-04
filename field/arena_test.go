@@ -92,6 +92,9 @@ func TestArenaCheckCanStartMatch(t *testing.T) {
 	var plc FakePlc
 	plc.isEnabled = true
 	arena.Plc = &plc
+	assert.Nil(t, arena.checkCanStartMatch())
+
+	arena.EventSettings.FtaReadySwitchRequired = true
 	err = arena.checkCanStartMatch()
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "cannot start match: FTA ready switch is not active")
@@ -220,6 +223,17 @@ func TestArenaMatchFlow(t *testing.T) {
 	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
 	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R1"].Bypass)
+	err := arena.EStop("R1")
+	if assert.NotNil(t, err) {
+		assert.Contains(t, err.Error(), "cannot E-stop robot when")
+	}
+	arena.MatchState = TeleopPeriod
+	assert.Nil(t, arena.EStop("R1"))
+	assert.Equal(t, true, arena.AllianceStations["R1"].EStop)
+	assert.NotNil(t, arena.EStop("R4"))
+	arena.MatchState = PostMatch
+	arena.ResetMatch()
+	assert.Equal(t, false, arena.AllianceStations["R1"].EStop)
 }
 
 func TestArenaStateEnforcement(t *testing.T) {

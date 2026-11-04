@@ -153,6 +153,9 @@
 .badge-scoring {
   background-color: #e66;
 }
+.badge-scoring[data-connected=true] {
+  background-color: #08f;
+}
 .badge-scoring[data-ready=true] {
   background-color: #0c6;
 }
@@ -162,14 +165,26 @@
 .badge-status {
   background-color: #e66;
 }
+.badge-status::before {
+  content: "⚠ ";
+}
 .badge-status[data-status=BOOTING] {
   background-color: #f92;
+}
+.badge-status[data-status=BOOTING]::before {
+  content: "";
 }
 .badge-status[data-status=CONFIGURING], .badge-status[data-status=DISABLED] {
   background-color: #08f;
 }
+.badge-status[data-status=CONFIGURING]::before, .badge-status[data-status=DISABLED]::before {
+  content: "⚙ ";
+}
 .badge-status[data-status=ACTIVE] {
   background-color: #0c6;
+}
+.badge-status[data-status=ACTIVE]::before {
+  content: "";
 }
 .badge-saved-match {
   background-color: #666;

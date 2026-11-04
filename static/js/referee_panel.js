@@ -7,6 +7,7 @@ var websocket;
 let redFoulsHashCode = 0;
 let blueFoulsHashCode = 0;
 let scoreIsReady = false;
+let isPreMatch = true;
 let isPostMatch = false;
 let isPlayoff = false;
 
@@ -37,7 +38,7 @@ var deleteFoul = function (alliance, index) {
 
 // Cycles through the card options for the selected team.
 var cycleCard = function (cardButton) {
-  if(isPostMatch) {
+  if (isPostMatch) {
     // Cycle card.
     const currentCard = $(cardButton).attr("data-card");
     const hasOldYellowCard = $(cardButton).attr("data-old-yellow-card") === "true";
@@ -57,23 +58,36 @@ var cycleCard = function (cardButton) {
     return;
   }
 
-  // Toggle bypass.
-  const isDisabled = $(cardButton).hasClass("bypassed-status");
   const team = $(cardButton).attr("data-team");
-  $("#confirmBypassTitle").text(`${isDisabled ? "Enable" : "Disable"} ${team}?`);
-  $("#confirmBypassAction").text(isDisabled ? "Enable" : "Disable")
   $("#confirmBypass").attr("data-station", $(cardButton).attr("data-station")?.toUpperCase());
 
-  if(team === "0") {
+  if (isPreMatch) {
+    // Toggle bypass.
+    const isDisabled = $(cardButton).hasClass("bypassed-status");
+    $("#confirmBypassTitle").text(`${isDisabled ? "Enable" : "Disable"} ${team}?`);
+    $("#confirmBypassAction").text(isDisabled ? "Enable" : "Disable");
+  } else {
+    // E-stop robot.
+    if ($(cardButton).hasClass("estopped-status")) {
+      return;
+    }
+    $("#confirmBypassTitle").text(`E-Stop ${team}?`);
+    $("#confirmBypassAction").text("E-Stop");
+  }
+
+  if (team === "0") {
     toggleBypass();
   } else {
     $("#confirmBypass").modal("show");
   }
 };
 
-const toggleBypass = function() {
+const toggleBypass = function () {
+  if (isPostMatch) {
+    return;
+  }
   const station = $("#confirmBypass").attr("data-station");
-  websocket.send("toggleBypass", station);
+  websocket.send(isPreMatch ? "toggleBypass" : "eStop", station);
 }
 
 // Sends a websocket message to signal to the volunteers that they may enter the field.
@@ -130,16 +144,25 @@ var handleMatchLoad = function (data) {
 
 // Handles a websocket message to update the match status.
 const handleMatchTime = function (data) {
-  isPostMatch = matchStates[data.MatchState] === "POST_MATCH";
+  const newIsPreMatch = ["PRE_MATCH", "TIMEOUT_ACTIVE", "POST_TIMEOUT"].includes(matchStates[data.MatchState]);
+  const newIsPostMatch = matchStates[data.MatchState] === "POST_MATCH";
+  if (newIsPreMatch !== isPreMatch || newIsPostMatch !== isPostMatch) {
+    $("#confirmBypass").modal("hide");
+  }
+  isPreMatch = newIsPreMatch;
+  isPostMatch = newIsPostMatch;
+  if (isPostMatch) {
+    $(".team-card").removeClass("bypassed-status estopped-status");
+  }
   updateCardControls();
   $(".control-button").attr("data-enabled", isPostMatch);
 
   let title = "Red/Yellow Cards";
-  if(!isPostMatch) {
-    title = matchStates[data.MatchState] === "PRE_MATCH" ? "Bypass" : "Disable";
+  if (!isPostMatch) {
+    title = isPreMatch ? "Bypass" : "E-Stop";
   }
 
-  $("#teamTitle").text(title)
+  $("#teamTitle").text(title);
 };
 
 const updateCardControls = function () {
@@ -219,17 +242,18 @@ const handleScoringStatus = function (data) {
 }
 
 const handleArenaStatus = function (data) {
-  setTeamBypassedStatus("red1", data.AllianceStations["R1"]?.Bypass);
-  setTeamBypassedStatus("red2", data.AllianceStations["R2"]?.Bypass);
-  setTeamBypassedStatus("red3", data.AllianceStations["R3"]?.Bypass);
-  setTeamBypassedStatus("blue1", data.AllianceStations["B1"]?.Bypass);
-  setTeamBypassedStatus("blue2", data.AllianceStations["B2"]?.Bypass);
-  setTeamBypassedStatus("blue3", data.AllianceStations["B3"]?.Bypass);
+  setTeamStatus("red1", data.AllianceStations["R1"]);
+  setTeamStatus("red2", data.AllianceStations["R2"]);
+  setTeamStatus("red3", data.AllianceStations["R3"]);
+  setTeamStatus("blue1", data.AllianceStations["B1"]);
+  setTeamStatus("blue2", data.AllianceStations["B2"]);
+  setTeamStatus("blue3", data.AllianceStations["B3"]);
 };
 
-const setTeamBypassedStatus = function (station, bypassed) {
+const setTeamStatus = function (station, stationStatus) {
   const cardButton = $(`#${station}Card`);
-  cardButton.toggleClass("bypassed-status", bypassed && !isPostMatch);
+  cardButton.toggleClass("bypassed-status", Boolean(stationStatus?.Bypass) && !isPostMatch);
+  cardButton.toggleClass("estopped-status", Boolean(stationStatus?.EStop) && !isPostMatch);
 }
 
 // Helper function to update a badge that shows scoring panel commit status.

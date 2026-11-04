@@ -7,7 +7,7 @@ let currentMatchId;
 let redSide;
 let blueSide;
 const lowBatteryThreshold = 8;
-const highBtuThreshold = 7.0;
+const highBtuThreshold = 7.1;
 const minBatteryTracker = {};
 const disconnectTracker = { radio: {}, rio: {} };
 let previousMatchStateText = null;
@@ -17,8 +17,8 @@ function formatDisconnectTimer(ms) {
   return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`;
 }
 
-function getDisconnectText(type, station, inMatch, baseText) {
-  if (inMatch) {
+function getDisconnectText(type, station, shouldTrack, baseText) {
+  if (shouldTrack) {
     if (!disconnectTracker[type][station]) disconnectTracker[type][station] = Date.now();
     return baseText + " (" + formatDisconnectTimer(Date.now() - disconnectTracker[type][station]) + ")";
   } else {
@@ -37,18 +37,19 @@ const handleArenaStatus = function (data) {
   const matchStateText = $("#matchState").text();
   const inMatch = (matchStateText === "AUTONOMOUS" || matchStateText === "TELEOPERATED" || matchStateText === "PAUSE");
 
-  $.each(data.AllianceStations, function (station, stationStatus) {
-    let teamElementPrefix;
-    if (station[0] === "R") {
-      teamElementPrefix = "#" + redSide + "Team" + station[1];
-    } else {
-      teamElementPrefix = "#" + blueSide + "Team" + station[1];
-    }
+  $("#accessPointStatus").attr("data-status", data.AccessPointStatus);
+  $("#switchStatus").attr("data-status", data.SwitchStatus);
 
+  $.each(data.AllianceStations, function (station, stationStatus) {
+    const trackDisconnect = inMatch && !stationStatus.EStop && !stationStatus.Bypass;
+    const side = station[0] === "R" ? redSide : blueSide;
+    const teamElementPrefix = "#" + side + "Team" + station[1];
+
+    const teamElement = $(teamElementPrefix);
     const teamIdElement = $(teamElementPrefix + "Id");
-    const teamNotesElement = $(teamElementPrefix + "Notes");
     const teamNotesTextElement = $(teamElementPrefix + "Notes div");
-    
+    const teamNewKeyElement = teamElement.find(".fms-new-key-badge");
+
     const teamDsElement = $(teamElementPrefix + "Ds");
     const teamDsText = teamDsElement.find(".fms-status-text");
     const teamRadioElement = $(teamElementPrefix + "Radio");
@@ -71,211 +72,141 @@ const handleArenaStatus = function (data) {
 
     teamNotesTextElement.attr("data-station", station);
 
-    const teamNewKeyElement = $(teamElementPrefix).find(".fms-new-key-badge");
-
     if (stationStatus.Team) {
       teamIdElement.text(stationStatus.Team.Id);
       teamNotesTextElement.text(stationStatus.Team.FtaNotes);
-      if (stationStatus.Team.HasConnected) {
-        teamNewKeyElement.hide();
-      } else {
-        teamNewKeyElement.show();
-      }
+      teamNewKeyElement.toggle(!stationStatus.Team.HasConnected);
     } else {
       teamIdElement.text("");
       teamNotesTextElement.text("");
       teamNewKeyElement.hide();
     }
 
-    $("#accessPointStatus").attr("data-status", data.AccessPointStatus);
-    $("#switchStatus").attr("data-status", data.SwitchStatus);
-
     const wifiStatus = stationStatus.WifiStatus;
-    teamRadioIconElement.attr("class", `bi bi-reception-${wifiStatus.ConnectionQuality}`);
+    const dsConn = stationStatus.DsConn;
+    const localDsConn = (dsConn && !dsConn.WrongStation) ? dsConn : null;
+    const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
+    const teamAlertTextElement = $(teamElementPrefix + "Alert .fms-station-alert-text");
+    const canShowStationAlert = !stationStatus.Bypass && !stationStatus.EStop && !stationStatus.AStop;
 
-    if (stationStatus.DsConn) {
-      const dsConn = stationStatus.DsConn;
-      
-      // DS Box
-      teamDsElement.removeAttr("data-status-ok");
-      teamDsElement.removeAttr("data-status-warning");
-      if (dsConn.DsLinked) {
-        teamDsElement.attr("data-status-ok", true);
-        teamDsText.text("DS");
-      } else if (dsConn && dsConn.WrongStation) {
-        teamDsElement.attr("data-status-warning", true);
-        let moveText = "x WRONG DS";
-        if (dsConn.WrongStation.length >= 2) {
-          const color = dsConn.WrongStation[0] === 'R' ? "RED " : "BLUE ";
-          moveText = "MOVE TO " + color + dsConn.WrongStation[1];
-        }
-        teamDsText.text(moveText);
-      } else if (stationStatus.Ethernet) {
-        teamDsElement.attr("data-status-warning", true);
-        teamDsText.text("⚠ DS");
-      } else {
-        teamDsText.text("x DS");
-      }
-
-      // Radio Box
-      const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
-      const isRadioAssociated = (wifiStatus.TeamId === expectedTeamId && wifiStatus.RadioLinked);
-      const isRadioPingable = dsConn && dsConn.RadioLinked;
-      const isRobotLinked = dsConn && dsConn.RobotLinked;
-
-      const radioAssociated = isRadioAssociated || isRobotLinked;
-      const radioPingable = isRadioPingable || isRobotLinked;
-
-      teamRadioElement.removeAttr("data-status-ok");
-      teamRadioElement.removeAttr("data-status-warning");
-
-      if (wifiStatus.TeamId !== expectedTeamId && wifiStatus.TeamId !== 0) {
-        teamRadioElement.attr("data-status-ok", false);
-        teamRadioText.text(getDisconnectText("radio", station, inMatch, "x RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
-      } else if (radioAssociated && radioPingable) {
-        disconnectTracker.radio[station] = null;
-        teamRadioElement.attr("data-status-ok", true);
-        teamRadioText.text("RADIO");
-        
-        let radioIcon = "bi-reception-4";
-        if (wifiStatus.RadioLinked) {
-          radioIcon = "bi-reception-" + (wifiStatus.ConnectionQuality > 0 ? wifiStatus.ConnectionQuality : 1);
-        }
-        teamRadioIconElement.attr("class", "bi " + radioIcon);
-      } else if (radioAssociated && !radioPingable) {
-        teamRadioElement.attr("data-status-warning", true);
-        teamRadioText.text(getDisconnectText("radio", station, inMatch, "⚠ RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-laptop slashed-icon");
-      } else {
-        teamRadioText.text(getDisconnectText("radio", station, inMatch, "x RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
-      }
-
-      // RIO Box
-      teamRioElement.removeAttr("data-status-ok");
-      teamRioElement.removeAttr("data-status-warning");
-
-      if (dsConn.RobotLinked) {
-        disconnectTracker.rio[station] = null;
-        teamRioElement.attr("data-status-ok", true);
-        teamRioText.text("RIO");
-        teamRioIconElement.attr("class", "bi bi-cpu");
-      } else if (dsConn.RioLinked) {
-        teamRioElement.attr("data-status-warning", true);
-        teamRioText.text(getDisconnectText("rio", station, inMatch, "⚠ RIO"));
-        teamRioIconElement.attr("class", "bi bi-cpu-fill");
-      } else {
-        teamRioElement.attr("data-status-ok", false);
-        teamRioText.text(getDisconnectText("rio", station, inMatch, "x RIO"));
-        teamRioIconElement.attr("class", "bi bi-cpu");
-      }
-
-      // Stats
-      teamStatsElement.removeAttr("data-status-ok");
-      
-      const matchStateText = $("#matchState").text();
-      let minBat = minBatteryTracker[station] || 99.9;
-      
-      if (dsConn.RobotLinked && dsConn.BatteryVoltage > 0) {
-        if (dsConn.BatteryVoltage < minBat) {
-          minBat = dsConn.BatteryVoltage;
-          minBatteryTracker[station] = minBat;
-        }
-      } else if (!dsConn.RobotLinked && matchStateText === "PRE-MATCH") {
-        minBatteryTracker[station] = null;
-        minBat = 0.0;
-      }
-      
-      let minBatText = (minBat === 99.9 || minBat === 0.0) ? "0.0" : minBat.toFixed(1);
-
-      teamBatteryElement.html(dsConn.BatteryVoltage.toFixed(1) + 'V <span class="fms-stat-sub">Min ' + minBatText + '</span>');
-      if (dsConn.RobotLinked && dsConn.BatteryVoltage < lowBatteryThreshold) {
-        teamBatteryParent.attr("data-status-ok", false);
-      } else {
-        teamBatteryParent.removeAttr("data-status-ok");
-      }
-
-      if (wifiStatus.MBits >= 0.01) {
-        teamBandwidthElement.text(wifiStatus.MBits.toFixed(3) + " Mbps");
-        if (dsConn.RobotLinked && wifiStatus.MBits >= highBtuThreshold) {
-          teamBandwidthParent.attr("data-status-ok", false);
-        } else {
-          teamBandwidthParent.removeAttr("data-status-ok");
-        }
-        teamTripTimeElement.text(dsConn.DsRobotTripTimeMs + " ms");
-        teamMissedPacketsElement.text(dsConn.MissedPacketCount);
-      } else {
-        teamBandwidthElement.text("0.000 Mbps");
-        teamBandwidthParent.removeAttr("data-status-ok");
-        teamTripTimeElement.text("0 ms");
-        teamMissedPacketsElement.text("0");
-      }
-      
-      teamTripTimeParent.removeAttr("data-status-ok");
-      teamMissedPacketsParent.removeAttr("data-status-ok");
+    if (canShowStationAlert && stationStatus.TeamMismatch) {
+      teamElement.attr("data-station-alert", "true");
+      teamAlertTextElement.text("TEAM MISMATCH");
+    } else if (canShowStationAlert && stationStatus.MoveToStation && stationStatus.MoveToStation.length >= 2) {
+      teamElement.attr("data-station-alert", "true");
+      const color = stationStatus.MoveToStation[0] === "R" ? "RED " : "BLUE ";
+      teamAlertTextElement.text("MOVE TO " + color + stationStatus.MoveToStation[1]);
     } else {
-      teamDsElement.removeAttr("data-status-ok");
-      teamDsElement.removeAttr("data-status-warning");
-      if (stationStatus.Ethernet) {
-        teamDsElement.attr("data-status-warning", true);
-        teamDsText.text("⚠ DS");
-      } else {
-        teamDsText.text("x DS");
-      }
+      teamElement.attr("data-station-alert", "false");
+      teamAlertTextElement.text("");
+    }
 
-      teamRioElement.attr("data-status-ok", "");
-      teamRioText.text("x RIO");
-      
-      teamStatsElement.removeAttr("data-status-ok");
-      
-      const matchStateText = $("#matchState").text();
-      if (matchStateText === "PRE-MATCH") {
-        minBatteryTracker[station] = null;
-      }
-      let minBat = minBatteryTracker[station];
-      let minBatText = minBat ? minBat.toFixed(1) : "0.0";
-      
-      teamBatteryElement.html('0.0V <span class="fms-stat-sub">Min ' + minBatText + '</span>');
-      teamBatteryParent.removeAttr("data-status-ok");
-      
-      teamBandwidthElement.text("0.000 Mbps");
-      teamBandwidthParent.removeAttr("data-status-ok");
-      
-      teamTripTimeElement.text("0 ms");
-      teamTripTimeParent.removeAttr("data-status-ok");
-      
-      teamMissedPacketsElement.text("0");
-      teamMissedPacketsParent.removeAttr("data-status-ok");
+    // DS Box
+    teamDsElement.removeAttr("data-status-ok data-status-warning");
+    if (localDsConn && localDsConn.DsLinked) {
+      teamDsElement.attr("data-status-ok", true);
+      teamDsText.text("DS");
+    } else if (stationStatus.Ethernet) {
+      teamDsElement.attr("data-status-warning", true);
+      teamDsText.text("⚠ DS");
+    } else {
+      teamDsText.text("x DS");
+    }
 
-      teamRadioElement.removeAttr("data-status-ok");
-      teamRadioElement.removeAttr("data-status-warning");
-      const expectedTeamId = stationStatus.Team ? stationStatus.Team.Id : 0;
-      if (wifiStatus.TeamId !== expectedTeamId && wifiStatus.TeamId !== 0) {
-        teamRadioElement.attr("data-status-ok", false);
-        teamRadioText.text(getDisconnectText("radio", station, inMatch, "x RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
-      } else if (wifiStatus.TeamId === expectedTeamId && wifiStatus.RadioLinked) {
-        teamRadioElement.attr("data-status-warning", true);
-        teamRadioText.text(getDisconnectText("radio", station, inMatch, "⚠ RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-laptop slashed-icon");
-      } else {
-        teamRadioText.text(getDisconnectText("radio", station, inMatch, "x RADIO"));
-        teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
-      }
+    // Radio Box
+    const isRadioAssociated = (wifiStatus.TeamId === expectedTeamId && wifiStatus.RadioLinked);
+    const isRadioPingable = Boolean(localDsConn && localDsConn.RadioLinked);
+    const isRobotLinked = Boolean(localDsConn && localDsConn.RobotLinked);
+    const radioAssociated = isRadioAssociated || isRobotLinked;
+    const radioPingable = isRadioPingable || isRobotLinked;
 
-      teamRioElement.removeAttr("data-status-ok");
-      teamRioElement.removeAttr("data-status-warning");
+    teamRadioElement.removeAttr("data-status-ok data-status-warning");
+    if (wifiStatus.TeamId !== expectedTeamId && wifiStatus.TeamId !== 0) {
+      teamRadioElement.attr("data-status-ok", false);
+      teamRadioText.text(getDisconnectText("radio", station, trackDisconnect, "x RADIO"));
+      teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
+    } else if (radioAssociated && radioPingable) {
+      disconnectTracker.radio[station] = null;
+      teamRadioElement.attr("data-status-ok", true);
+      teamRadioText.text("RADIO");
+
+      let radioIcon = "bi-reception-4";
+      if (wifiStatus.RadioLinked) {
+        radioIcon = "bi-reception-" + (wifiStatus.ConnectionQuality > 0 ? wifiStatus.ConnectionQuality : 1);
+      }
+      teamRadioIconElement.attr("class", "bi " + radioIcon);
+    } else if (radioAssociated && !radioPingable) {
+      teamRadioElement.attr("data-status-warning", true);
+      teamRadioText.text(getDisconnectText("radio", station, trackDisconnect, "⚠ RADIO"));
+      teamRadioIconElement.attr("class", "bi bi-laptop slashed-icon");
+    } else {
+      teamRadioText.text(getDisconnectText("radio", station, trackDisconnect, "x RADIO"));
+      teamRadioIconElement.attr("class", "bi bi-reception-4 slashed-icon");
+    }
+
+    // RIO Box
+    teamRioElement.removeAttr("data-status-ok data-status-warning");
+    if (isRobotLinked) {
+      disconnectTracker.rio[station] = null;
+      teamRioElement.attr("data-status-ok", true);
+      teamRioText.text("RIO");
+      teamRioIconElement.attr("class", "bi bi-cpu");
+    } else if (localDsConn && localDsConn.RioLinked) {
+      teamRioElement.attr("data-status-warning", true);
+      teamRioText.text(getDisconnectText("rio", station, trackDisconnect, "⚠ RIO"));
+      teamRioIconElement.attr("class", "bi bi-cpu-fill");
+    } else {
       teamRioElement.attr("data-status-ok", false);
-      teamRioText.text(getDisconnectText("rio", station, inMatch, "x RIO"));
+      teamRioText.text(getDisconnectText("rio", station, trackDisconnect, "x RIO"));
       teamRioIconElement.attr("class", "bi bi-cpu");
     }
 
+    // Stats
+    teamStatsElement.removeAttr("data-status-ok");
+    let minBat = minBatteryTracker[station] || 99.9;
+    const batteryVoltage = localDsConn ? localDsConn.BatteryVoltage : 0.0;
+
+    if (isRobotLinked && batteryVoltage > 0) {
+      if (batteryVoltage < minBat) {
+        minBat = batteryVoltage;
+        minBatteryTracker[station] = minBat;
+      }
+    } else if (!isRobotLinked && matchStateText === "PRE-MATCH") {
+      minBatteryTracker[station] = null;
+      minBat = 0.0;
+    }
+
+    const minBatText = (minBat === 99.9 || minBat === 0.0) ? "0.0" : minBat.toFixed(1);
+    teamBatteryElement.html(batteryVoltage.toFixed(1) + 'V <span class="fms-stat-sub">Min ' + minBatText + '</span>');
+
+    if (isRobotLinked && batteryVoltage < lowBatteryThreshold) {
+      teamBatteryParent.attr("data-status-ok", false);
+    } else {
+      teamBatteryParent.removeAttr("data-status-ok");
+    }
+
+    if (localDsConn && wifiStatus.MBits >= 0.01) {
+      teamBandwidthElement.text(wifiStatus.MBits.toFixed(3) + " Mbps");
+      if (isRobotLinked && wifiStatus.MBits >= highBtuThreshold) {
+        teamBandwidthParent.attr("data-status-ok", false);
+      } else {
+        teamBandwidthParent.removeAttr("data-status-ok");
+      }
+      teamTripTimeElement.text(localDsConn.DsRobotTripTimeMs + " ms");
+      teamMissedPacketsElement.text(localDsConn.MissedPacketCount);
+    } else {
+      teamBandwidthElement.text("0.000 Mbps");
+      teamBandwidthParent.removeAttr("data-status-ok");
+      teamTripTimeElement.text("0 ms");
+      teamMissedPacketsElement.text("0");
+    }
+
+    teamTripTimeParent.removeAttr("data-status-ok");
+    teamMissedPacketsParent.removeAttr("data-status-ok");
+
     // Robot state (E-Stop, Bypass, etc.)
-    const teamElement = $(teamElementPrefix);
-    
     teamRobotElement.removeAttr("data-status-ok");
-    
+
     if (stationStatus.EStop) {
       teamElement.attr("data-bypassed", "false");
       teamRobotElement.attr("data-robot-state", "estop");
@@ -294,18 +225,8 @@ const handleArenaStatus = function (data) {
       teamRobotElement.text("NO TEAM");
     } else if (inMatch) {
       teamElement.attr("data-bypassed", "false");
-      const ds = stationStatus.DsConn;
-      
-      let isAuto = false;
-      let isEnabled = false;
-
-      if (ds) {
-        isAuto = ds.Auto;
-        isEnabled = ds.Enabled;
-      } else {
-        isAuto = (matchStateText === "AUTONOMOUS");
-        isEnabled = false;
-      }
+      const isAuto = localDsConn ? localDsConn.Auto : (matchStateText === "AUTONOMOUS");
+      const isEnabled = Boolean(localDsConn && localDsConn.Enabled);
 
       if (isAuto && isEnabled) {
         teamRobotElement.attr("data-robot-state", "auto");
@@ -320,7 +241,7 @@ const handleArenaStatus = function (data) {
         teamRobotElement.attr("data-robot-state", "teleop-disabled");
         teamRobotElement.text("TELEOP DISABLED");
       }
-    } else if (!stationStatus.DsConn || !stationStatus.DsConn.RobotLinked) {
+    } else if (!isRobotLinked) {
       teamElement.attr("data-bypassed", "false");
       teamRobotElement.attr("data-robot-state", "not-ready");
       teamRobotElement.text("NOT READY");
@@ -343,7 +264,7 @@ const handleMatchTime = function (data) {
       }
     }
     previousMatchStateText = matchStateText;
-    
+
     $("#matchState").text(matchStateText);
     $("#matchTime").text(countdownSec);
     if (matchStateText === "PRE-MATCH" || matchStateText === "POST-MATCH") {
@@ -357,7 +278,7 @@ const handleMatchTime = function (data) {
 const handleRealtimeScore = function (data, reversed) {
   const leftScore = reversed ? data.Blue.ScoreSummary.Score : data.Red.ScoreSummary.Score;
   const rightScore = reversed ? data.Red.ScoreSummary.Score : data.Blue.ScoreSummary.Score;
-  
+
   $("#leftScore").text(leftScore);
   $("#rightScore").text(rightScore);
 };

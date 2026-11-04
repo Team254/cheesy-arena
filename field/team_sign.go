@@ -378,6 +378,10 @@ func (sign *TeamSign) generateTeamNumberTexts(
 			message = "Bypassed"
 		} else if !allianceStation.Ethernet {
 			message = "Connect PC"
+		} else if allianceStation.TeamMismatch {
+			message = "Waiting"
+		} else if allianceStation.MoveToStation != "" {
+			message = formatMoveToStationMessage(allianceStation.MoveToStation)
 		} else if allianceStation.DsConn == nil {
 			message = "Start DS"
 		} else if allianceStation.DsConn.WrongStation != "" {
@@ -409,6 +413,19 @@ func (sign *TeamSign) generateTeamNumberTexts(
 	}
 
 	return frontText, frontColor, rearText
+}
+
+// Returns the rear sign message instructing a team to move to their assigned alliance station.
+func formatMoveToStationMessage(station string) string {
+	if len(station) == 2 && station[1] >= '1' && station[1] <= '3' {
+		switch station[0] {
+		case 'R':
+			return "Move to Red " + station[1:]
+		case 'B':
+			return "Move to Blue " + station[1:]
+		}
+	}
+	return "Move Station"
 }
 
 // Sends a UDP packet to the sign if its state has changed.
