@@ -492,11 +492,19 @@ func (web *Web) commitMatchScore(match *model.Match, matchResult *model.MatchRes
 
 		if web.arena.EventSettings.TbaPublishingEnabled {
 			// Publish asynchronously to The Blue Alliance.
+			isPracticeMatch := match.Type == model.Practice
+			shouldUpdateRankings := match.ShouldUpdateRankings()
 			go func() {
-				if err := web.arena.TbaClient.PublishMatches(web.arena.Database); err != nil {
+				var err error
+				if isPracticeMatch {
+					err = web.arena.TbaClient.PublishPracticeMatches(web.arena.Database)
+				} else {
+					err = web.arena.TbaClient.PublishMatches(web.arena.Database)
+				}
+				if err != nil {
 					log.Printf("Failed to publish matches: %s", err.Error())
 				}
-				if match.ShouldUpdateRankings() {
+				if shouldUpdateRankings {
 					if err := web.arena.TbaClient.PublishRankings(web.arena.Database); err != nil {
 						log.Printf("Failed to publish rankings: %s", err.Error())
 					}
