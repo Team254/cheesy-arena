@@ -251,13 +251,12 @@ UI for configuring event settings.
           </div>
           <div class="tab-pane" id="field" role="tabpanel">
             <fieldset class="mb-4">
-              <legend>Networking</legend>
-              <p>Enable this setting if you have a Vivid-Hosting VH-113 access point and Cisco Catalyst 3500-series
-                switch
-                available, for isolating each team to its own SSID and VLAN.</p>
+              <legend>Access Point</legend>
+              <p>Enable this setting if you have a Vivid-Hosting VH-113 access point available, for isolating each
+                team to its own SSID.</p>
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
-                  for="networkSecurityEnabled">Enable advanced network security</label>
+                  for="networkSecurityEnabled">Enable access point configuration</label>
                 <div class="col-lg-1 checkbox">
                   <input type="checkbox" id="networkSecurityEnabled"
                     name="networkSecurityEnabled" {{if .NetworkSecurityEnabled}} checked{{end}}>
@@ -288,10 +287,29 @@ UI for configuring event settings.
                   </select>
                 </div>
               </div>
+            </fieldset>
+            <fieldset class="mb-4">
+              <legend>Network Switch</legend>
+              <p>Enable this setting if you have a Layer 3 Cisco Catalyst IOS switch available, for isolating each
+                team to its own VLAN.</p>
+              <div class="row mb-3">
+                <label class="col-lg-8 control-label"
+                  for="switchManagementEnabled">Enable switch management</label>
+                <div class="col-lg-1 checkbox">
+                  <input type="checkbox" id="switchManagementEnabled"
+                    name="switchManagementEnabled" {{if .SwitchManagementEnabled}} checked{{end}}>
+                </div>
+              </div>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">Switch Address</label>
                 <div class="col-lg-6">
                   <input type="text" class="form-control" name="switchAddress" value="{{.SwitchAddress}}" placeholder="10.0.100.3">
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">Switch Username</label>
+                <div class="col-lg-6">
+                  <input type="text" class="form-control" name="switchUsername" value="{{.SwitchUsername}}" placeholder="admin">
                 </div>
               </div>
               <div class="row mb-3">
@@ -304,8 +322,7 @@ UI for configuring event settings.
             <fieldset class="mb-4">
               <legend>SCC Switch</legend>
               <p>Enable this setting if you have an SSH-capable managed switch in your SCCs and want to run commands
-                to disable team ethernet ports while network reconfiguration is in progress. This setting only works
-                if advanced network security is enabled above.</p>
+                to disable team ethernet ports while network reconfiguration is in progress.</p>
               <div class="row mb-3">
                 <label class="col-lg-8 control-label"
                   for="sccManagementEnabled">Enable SCC switch management</label>

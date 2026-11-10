@@ -95,13 +95,16 @@ UI for controlling match play and viewing team connection and field status.
           <p><span class="badge badge-scoring" id="refereeScoreStatus">Referee</span><br/>
             <span class="badge badge-scoring" id="redScoreStatus"></span><br/>
             <span class="badge badge-scoring" id="blueScoreStatus"></span></p>
-          {{if .EventSettings.NetworkSecurityEnabled}}
+          {{if or .EventSettings.NetworkSecurityEnabled .EventSettings.SwitchManagementEnabled .EventSettings.SCCManagementEnabled}}
           <h6>Network Status</h6>
           <p>
-            <span class="badge badge-status" id="accessPointStatus">Access Point</span><br/>
-            <span class="badge badge-status" id="switchStatus">Switch</span>
+            {{if .EventSettings.NetworkSecurityEnabled}}
+            <span class="badge badge-status" id="accessPointStatus">Access Point</span>{{if or .EventSettings.SwitchManagementEnabled .EventSettings.SCCManagementEnabled}}<br/>{{end}}
+            {{end}}
+            {{if .EventSettings.SwitchManagementEnabled}}
+            <span class="badge badge-status" id="switchStatus">Switch</span>{{if .EventSettings.SCCManagementEnabled}}<br/>{{end}}
+            {{end}}
             {{if .EventSettings.SCCManagementEnabled}}
-            <br/>
             <span class="badge badge-status" id="redSCCStatus">Red SCC</span><br/>
             <span class="badge badge-status" id="blueSCCStatus">Blue SCC</span>
             {{end}}

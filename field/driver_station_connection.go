@@ -500,7 +500,7 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 		// Read the team number from the IP address to check for a station mismatch.
 		stationStatus := byte(0)
 		wrongAssignedStation := ""
-		if arena.EventSettings.NetworkSecurityEnabled {
+		if arena.EventSettings.NetworkSecurityEnabled || arena.EventSettings.SwitchManagementEnabled {
 			stationTeamId, ipAddress, ok := driverStationTeamIdFromRemoteAddr(tcpConn.RemoteAddr())
 			if ok && stationTeamId != teamId {
 				wrongAssignedStation = arena.getAssignedAllianceStation(stationTeamId)

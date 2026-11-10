@@ -1,25 +1,29 @@
 // Copyright 2014 Team 254. All Rights Reserved.
 // Author: pat@patfairbank.com (Patrick Fairbank)
 //
-// Methods for configuring a Cisco Switch 3500-series switch for team VLANs.
+// Methods for configuring a Layer 3 Cisco Catalyst IOS switch for team VLANs.
 
 package network
 
 import (
-	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
+	"golang.org/x/crypto/ssh"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 )
 
 const (
+	switchConnectTimeoutSec        = 5
+	switchConfigTimeoutSec         = 5
 	switchConfigBackoffDurationSec = 5
 	switchConfigPauseDurationSec   = 2
 	switchTeamGatewayAddress       = 4
-	switchTelnetPort               = 23
+	switchSSHPort                  = 22
 )
 
 const (
@@ -32,13 +36,16 @@ const (
 )
 
 type Switch struct {
-	address               string
-	port                  int
-	password              string
-	mutex                 sync.Mutex
-	configBackoffDuration time.Duration
-	configPauseDuration   time.Duration
-	Status                string
+	address                string
+	port                   int
+	username               string
+	password               string
+	mutex                  sync.Mutex
+	connectTimeoutDuration time.Duration
+	configTimeoutDuration  time.Duration
+	configBackoffDuration  time.Duration
+	configPauseDuration    time.Duration
+	Status                 string
 }
 
 const ServerIpAddress = "10.0.100.5" // The DS will try to connect to this address only.
@@ -46,14 +53,17 @@ const ServerIpAddress = "10.0.100.5" // The DS will try to connect to this addre
 // DevMode allows driver station listeners to bind to all local IP addresses.
 var DevMode = false
 
-func NewSwitch(address, password string) *Switch {
+func NewSwitch(address, username, password string) *Switch {
 	return &Switch{
-		address:               address,
-		port:                  switchTelnetPort,
-		password:              password,
-		configBackoffDuration: switchConfigBackoffDurationSec * time.Second,
-		configPauseDuration:   switchConfigPauseDurationSec * time.Second,
-		Status:                "UNKNOWN",
+		address:                address,
+		port:                   switchSSHPort,
+		username:               username,
+		password:               password,
+		connectTimeoutDuration: switchConnectTimeoutSec * time.Second,
+		configTimeoutDuration:  switchConfigTimeoutSec * time.Second,
+		configBackoffDuration:  switchConfigBackoffDurationSec * time.Second,
+		configPauseDuration:    switchConfigPauseDurationSec * time.Second,
+		Status:                 "UNKNOWN",
 	}
 }
 
@@ -127,42 +137,107 @@ func (sw *Switch) ConfigureTeamEthernet(teams [6]*model.Team) error {
 	return nil
 }
 
-// Logs into the switch via Telnet and runs the given command in user exec mode. Reads the output and
-// returns it as a string.
-func (sw *Switch) runCommand(command string) (string, error) {
-	// Open a Telnet connection to the switch.
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", sw.address, sw.port))
-	if err != nil {
-		return "", err
-	}
-	defer conn.Close()
-
-	// Login to the AP, send the command, and log out all at once.
-	writer := bufio.NewWriter(conn)
-	_, err = writer.WriteString(
-		fmt.Sprintf(
-			"%s\nenable\n%s\nterminal length 0\n%sexit\n", sw.password, sw.password,
-			command,
-		),
-	)
-	if err != nil {
-		return "", err
-	}
-	err = writer.Flush()
-	if err != nil {
-		return "", err
-	}
-
-	// Read the response.
-	var reader bytes.Buffer
-	_, err = reader.ReadFrom(conn)
-	if err != nil {
-		return "", err
-	}
-	return reader.String(), nil
+type synchronizedBuffer struct {
+	buffer bytes.Buffer
+	mutex  sync.Mutex
 }
 
-// Logs into the switch via Telnet and runs the given command in global configuration mode. Reads the output
+func (b *synchronizedBuffer) Write(p []byte) (int, error) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+	return b.buffer.Write(p)
+}
+
+func (b *synchronizedBuffer) String() string {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+	return b.buffer.String()
+}
+
+// Logs into the switch via SSH and runs the given command in privileged exec mode. Reads the output and
+// returns it as a string.
+func (sw *Switch) runCommand(command string) (string, error) {
+	// Open an SSH connection to the switch with deadlines covering handshake and command execution.
+	addr := net.JoinHostPort(sw.address, strconv.Itoa(sw.port))
+	rawConn, err := net.DialTimeout("tcp", addr, sw.connectTimeoutDuration)
+	if err != nil {
+		return "", fmt.Errorf("failed to connect to SSH: %w", err)
+	}
+	defer rawConn.Close()
+
+	sshConfig := &ssh.ClientConfig{
+		User: sw.username,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(sw.password),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Allow any host key for simplicity
+		Timeout:         sw.connectTimeoutDuration,
+	}
+	clientConn, chans, reqs, err := ssh.NewClientConn(rawConn, addr, sshConfig)
+	if err != nil {
+		return "", fmt.Errorf("failed to connect to SSH: %w", err)
+	}
+	client := ssh.NewClient(clientConn, chans, reqs)
+	defer client.Close()
+
+	if err := rawConn.SetDeadline(time.Now().Add(sw.configTimeoutDuration)); err != nil {
+		return "", fmt.Errorf("failed to set connection deadline: %w", err)
+	}
+
+	// Create an interactive session to run commands.
+	session, err := client.NewSession()
+	if err != nil {
+		return "", fmt.Errorf("failed to create SSH session: %w", err)
+	}
+	defer session.Close()
+
+	// Capture the session output.
+	var outputBuffer synchronizedBuffer
+	session.Stdout = &outputBuffer
+	session.Stderr = &outputBuffer
+
+	inputPipe, err := session.StdinPipe()
+	if err != nil {
+		return "", fmt.Errorf("failed to create input pipe: %w", err)
+	}
+
+	modes := ssh.TerminalModes{ssh.ECHO: 0}
+	if err := session.RequestPty("vt100", 80, 40, modes); err != nil {
+		return "", fmt.Errorf("failed to configure shell: %w", err)
+	}
+
+	// Launch the switch's interactive shell.
+	err = session.Shell()
+	if err != nil {
+		return "", fmt.Errorf("failed to start shell: %w", err)
+	}
+
+	// Send the command and log out all at once.
+	_, err = fmt.Fprintf(inputPipe, "terminal length 0\n%sexit\n", command)
+	if err != nil {
+		return "", fmt.Errorf("failed to write command to switch: %w", err)
+	}
+
+	// Wait for the remote to process the commands and exit the shell.
+	done := make(chan error, 1)
+	go func() {
+		done <- session.Wait()
+	}()
+	select {
+	case err := <-done:
+		var exitMissingErr *ssh.ExitMissingError
+		if err != nil && !errors.As(err, &exitMissingErr) {
+			return "", fmt.Errorf("failed to run command: %w", err)
+		}
+	case <-time.After(sw.configTimeoutDuration):
+		_ = rawConn.Close()
+		return "", fmt.Errorf("timed out waiting for command to complete")
+	}
+
+	return outputBuffer.String(), nil
+}
+
+// Logs into the switch via SSH and runs the given command in global configuration mode. Reads the output
 // and returns it as a string.
 func (sw *Switch) runConfigCommand(command string) (string, error) {
 	return sw.runCommand(fmt.Sprintf("config terminal\n%send\n", command))

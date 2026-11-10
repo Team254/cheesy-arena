@@ -204,7 +204,7 @@ func (arena *Arena) LoadSettings() error {
 		settings.NetworkSecurityEnabled,
 		accessPointWifiStatuses,
 	)
-	arena.networkSwitch = network.NewSwitch(settings.SwitchAddress, settings.SwitchPassword)
+	arena.networkSwitch = network.NewSwitch(settings.SwitchAddress, settings.SwitchUsername, settings.SwitchPassword)
 	sccUpCommands := strings.Split(settings.SCCUpCommands, "\n")
 	sccDownCommands := strings.Split(settings.SCCDownCommands, "\n")
 	arena.redSCC = network.NewSCCSwitch(
@@ -1112,10 +1112,14 @@ func (arena *Arena) setupNetwork(teams [6]*model.Team, isPreload bool) {
 		if err := arena.accessPoint.ConfigureTeamWifi(teams); err != nil {
 			log.Printf("Failed to configure team WiFi: %s", err.Error())
 		}
+	}
+	if arena.EventSettings.SwitchManagementEnabled || arena.EventSettings.SCCManagementEnabled {
 		go func() {
 			arena.setSCCEthernetEnabled(false)
-			if err := arena.networkSwitch.ConfigureTeamEthernet(teams); err != nil {
-				log.Printf("Failed to configure team Ethernet: %s", err.Error())
+			if arena.EventSettings.SwitchManagementEnabled {
+				if err := arena.networkSwitch.ConfigureTeamEthernet(teams); err != nil {
+					log.Printf("Failed to configure team Ethernet: %s", err.Error())
+				}
 			}
 			arena.setSCCEthernetEnabled(true)
 		}()
