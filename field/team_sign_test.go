@@ -316,23 +316,23 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	arena.FieldReset = true
 	allianceStation.Ethernet = true
 	assertSign(true, "  254", greenColor, "254         Start DS")
-	allianceStation.DsConn = &DriverStationConnection{}
+	allianceStation.setDsConn(&DriverStationConnection{})
 	assertSign(true, "  254", greenColor, "254         No Radio")
-	allianceStation.DsConn.WrongStation = "R1"
+	allianceStation.DsConn().WrongStation = "R1"
 	assertSign(true, "  254", greenColor, "254     Move Station")
-	allianceStation.DsConn.WrongStation = ""
-	allianceStation.DsConn.RadioLinked = true
+	allianceStation.DsConn().WrongStation = ""
+	allianceStation.DsConn().RadioLinked = true
 	assertSign(true, "  254", greenColor, "254           No Rio")
-	allianceStation.DsConn.RioLinked = true
+	allianceStation.DsConn().RioLinked = true
 	assertSign(true, "  254", greenColor, "254          No Code")
-	allianceStation.DsConn.RobotLinked = true
+	allianceStation.DsConn().RobotLinked = true
 	assertSign(true, "  254", redColor, "254            Ready")
 
 	arena.FieldReset = false
 	assertSign(true, "  254", redColor, "254            Ready")
-	allianceStation.DsConn.RobotLinked = false
+	allianceStation.DsConn().RobotLinked = false
 	assertSign(true, "  254", redColor, "254          No Code")
-	allianceStation.DsConn.RobotLinked = true
+	allianceStation.DsConn().RobotLinked = true
 	allianceStation.Bypass = true
 	assertSign(true, "  254", redColor, "254         Bypassed")
 
