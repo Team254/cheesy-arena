@@ -23,7 +23,11 @@ func TestTeamMatchLogWritesStationSnapshotWithDsReportedStatus(t *testing.T) {
 	teamMatchLog, err := NewTeamMatchLog(254, match, nil)
 	assert.Nil(t, err)
 	station := &AllianceStation{
-		DsConn: &DriverStationConnection{
+		Ethernet: true,
+		Team:     &model.Team{Id: 254},
+	}
+	station.setDsConn(
+		&DriverStationConnection{
 			TeamId:                254,
 			AllianceStation:       "R1",
 			DsLinked:              true,
@@ -41,9 +45,7 @@ func TestTeamMatchLogWritesStationSnapshotWithDsReportedStatus(t *testing.T) {
 			DsReportedDisabled:    false,
 			DsReportedEnabled:     true,
 		},
-		Ethernet: true,
-		Team:     &model.Team{Id: 254},
-	}
+	)
 	teamMatchLog.LogStationSnapshot(1.25, station, "R1")
 	teamMatchLog.Close()
 
@@ -110,13 +112,15 @@ func TestArenaContinuouslyLogsAfterDsDisconnect(t *testing.T) {
 		allianceStation.aStopReset = true
 	}
 	arena.AllianceStations["B3"].Bypass = false
-	arena.AllianceStations["B3"].DsConn = &DriverStationConnection{
-		TeamId:          254,
-		AllianceStation: "B3",
-		DsLinked:        true,
-		RobotLinked:     true,
-		lastPacketTime:  time.Now(),
-	}
+	arena.AllianceStations["B3"].setDsConn(
+		&DriverStationConnection{
+			TeamId:          254,
+			AllianceStation: "B3",
+			DsLinked:        true,
+			RobotLinked:     true,
+			lastPacketTime:  time.Now(),
+		},
+	)
 
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
@@ -125,7 +129,7 @@ func TestArenaContinuouslyLogsAfterDsDisconnect(t *testing.T) {
 	arena.Update()
 	logFilename := arena.AllianceStations["B3"].TeamMatchLog.logFile.Name()
 
-	arena.AllianceStations["B3"].DsConn = nil
+	arena.AllianceStations["B3"].setDsConn(nil)
 	plc.blueEthernetConnected[2] = false
 	arena.lastTeamLogTime = time.Unix(0, 0)
 	arena.Update()
