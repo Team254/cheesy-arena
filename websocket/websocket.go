@@ -116,7 +116,7 @@ func (ws *Websocket) HandleNotifiers(notifiers ...*Notifier) {
 	listeners := make([]reflect.SelectCase, len(notifiers))
 	for i, notifier := range notifiers {
 		listener := notifier.listen()
-		defer close(listener)
+		defer notifier.unlisten(listener)
 		listeners[i] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(listener)}
 
 		// Send each notifier's respective data immediately upon connection to bootstrap the client state.

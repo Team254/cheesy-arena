@@ -68,7 +68,7 @@ func (notifier *Notifier) notifyListener(listener chan messageEnvelope, message 
 }
 
 // Registers and returns a channel that can be read from to receive notification messages. The caller is
-// responsible for closing the channel, which will cause it to be reaped from the list of listeners.
+// responsible for releasing the channel with unlisten once it no longer reads from it.
 func (notifier *Notifier) listen() chan messageEnvelope {
 	notifier.mutex.Lock()
 	defer notifier.mutex.Unlock()
@@ -76,6 +76,24 @@ func (notifier *Notifier) listen() chan messageEnvelope {
 	listener := make(chan messageEnvelope, notifyBufferSize)
 	notifier.listeners[listener] = struct{}{}
 	return listener
+}
+
+// Deregisters and closes a channel returned by listen. Both happen under the mutex, so a concurrent
+// NotifyWithMessage can never send on the channel while or after it is closed.
+func (notifier *Notifier) unlisten(listener chan messageEnvelope) {
+	notifier.mutex.Lock()
+	defer notifier.mutex.Unlock()
+
+	delete(notifier.listeners, listener)
+	close(listener)
+}
+
+// Returns the number of registered listeners.
+func (notifier *Notifier) listenerCount() int {
+	notifier.mutex.Lock()
+	defer notifier.mutex.Unlock()
+
+	return len(notifier.listeners)
 }
 
 // Invokes the message producer to get the message, or returns nil if no producer is defined.
