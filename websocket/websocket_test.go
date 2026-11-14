@@ -104,7 +104,7 @@ func TestWebsocket(t *testing.T) {
 	notifier1.Notify()
 	time.Sleep(time.Millisecond)
 	notifier1.Notify()
-	assert.Equal(t, 0, len(notifier1.listeners))
+	assert.Equal(t, 0, notifier1.listenerCount())
 }
 
 func assertMessage(t *testing.T, ws *Websocket, expectedMessageType string, expectedMessageBody any) {
