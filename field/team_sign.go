@@ -328,6 +328,7 @@ func (sign *TeamSign) generateTeamNumberTexts(
 	arena *Arena, station string, isRed bool, countdown, inMatchRearText string,
 ) (string, color.RGBA, string) {
 	allianceStation := arena.AllianceStations[station]
+	dsConn := allianceStation.DsConn()
 	allianceColor := redColor
 	if !isRed {
 		allianceColor = blueColor
@@ -359,7 +360,7 @@ func (sign *TeamSign) generateTeamNumberTexts(
 			frontColor = greenColor
 		} else if arena.FieldVolunteers {
 			frontColor = purpleColor
-		} else if allianceStation.DsConn != nil && !allianceStation.DsConn.RobotLinked &&
+		} else if dsConn != nil && !dsConn.RobotLinked &&
 			(arena.MatchState == AutoPeriod || arena.MatchState == PausePeriod || arena.MatchState == TeleopPeriod) {
 			// Blink the display to indicate that the robot is not linked while the match is in progress.
 			frontColor = blinkColor(allianceColor)
@@ -378,15 +379,15 @@ func (sign *TeamSign) generateTeamNumberTexts(
 			message = "Bypassed"
 		} else if !allianceStation.Ethernet {
 			message = "Connect PC"
-		} else if allianceStation.DsConn == nil {
+		} else if dsConn == nil {
 			message = "Start DS"
-		} else if allianceStation.DsConn.WrongStation != "" {
+		} else if dsConn.WrongStation != "" {
 			message = "Move Station"
-		} else if !allianceStation.DsConn.RadioLinked {
+		} else if !dsConn.RadioLinked {
 			message = "No Radio"
-		} else if !allianceStation.DsConn.RioLinked {
+		} else if !dsConn.RioLinked {
 			message = "No Rio"
-		} else if !allianceStation.DsConn.RobotLinked {
+		} else if !dsConn.RobotLinked {
 			message = "No Code"
 		} else {
 			message = "Ready"

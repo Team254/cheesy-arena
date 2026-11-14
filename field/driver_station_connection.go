@@ -160,7 +160,7 @@ func (arena *Arena) listenForDsUdpPackets() {
 		var dsConn *DriverStationConnection
 		for _, allianceStation := range arena.AllianceStations {
 			if allianceStation.Team != nil && allianceStation.Team.Id == teamId {
-				dsConn = allianceStation.DsConn
+				dsConn = allianceStation.DsConn()
 				break
 			}
 		}
@@ -548,15 +548,16 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 			closeTcpConn(tcpConn, "driver station registration error")
 			continue
 		}
-		allianceStation := arena.AllianceStations[assignedStation]
-		if previousDsConn := allianceStation.DsConn; previousDsConn != nil {
-			dsConn.copyDsReportedStatus(previousDsConn)
-			previousDsConn.close()
-		}
-		allianceStation.DsConn = dsConn
-
+		// Finish setting up the connection before publishing it, since other goroutines read it from then on.
 		if wrongAssignedStation != "" {
 			dsConn.WrongStation = wrongAssignedStation
+		}
+		allianceStation := arena.AllianceStations[assignedStation]
+		if previousDsConn := allianceStation.DsConn(); previousDsConn != nil {
+			dsConn.copyDsReportedStatus(previousDsConn)
+		}
+		if previousDsConn := allianceStation.dsConn.Swap(dsConn); previousDsConn != nil {
+			previousDsConn.close()
 		}
 
 		// Spin up a goroutine to handle further TCP communication with this driver station.
@@ -598,9 +599,8 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 		if err != nil {
 			log.Printf("Error reading from connection for Team %d: %v", dsConn.TeamId, err)
 			dsConn.close()
-			if arena.AllianceStations[dsConn.AllianceStation].DsConn == dsConn {
-				arena.AllianceStations[dsConn.AllianceStation].DsConn = nil
-			}
+			// Clear the station only if it still holds this connection, not a newer one that replaced it.
+			arena.AllianceStations[dsConn.AllianceStation].dsConn.CompareAndSwap(dsConn, nil)
 			break
 		}
 

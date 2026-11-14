@@ -368,7 +368,7 @@ func waitForDriverStationConnection(t *testing.T, arena *Arena, station string) 
 	if !assert.Eventually(
 		t,
 		func() bool {
-			dsConn = arena.AllianceStations[station].DsConn
+			dsConn = arena.AllianceStations[station].DsConn()
 			return dsConn != nil
 		},
 		time.Second,

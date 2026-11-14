@@ -59,7 +59,7 @@ func NewTeamMatchLog(teamId int, match *model.Match, wifiStatus *network.TeamWif
 
 // Adds a line to the log for the current station status.
 func (log *TeamMatchLog) LogStationSnapshot(matchTimeSec float64, station *AllianceStation, allianceStationId string) {
-	dsConn := station.DsConn
+	dsConn := station.DsConn()
 	teamId := 0
 	dsLinked := false
 	radioLinked := false

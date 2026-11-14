@@ -4,6 +4,7 @@
 package field
 
 import (
+	"encoding/json"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/led"
 	"github.com/Team254/cheesy-arena/model"
@@ -32,26 +33,26 @@ func TestAssignTeam(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, team, *arena.AllianceStations["B1"].Team)
 	dummyDs := &DriverStationConnection{TeamId: 254}
-	arena.AllianceStations["B1"].DsConn = dummyDs
+	arena.AllianceStations["B1"].setDsConn(dummyDs)
 
 	// Nothing should happen if the same team is assigned to the same station.
 	err = arena.assignTeam(254, "B1")
 	assert.Nil(t, err)
 	assert.Equal(t, team, *arena.AllianceStations["B1"].Team)
 	assert.NotNil(t, arena.AllianceStations["B1"])
-	assert.Equal(t, dummyDs, arena.AllianceStations["B1"].DsConn) // Pointer equality
+	assert.Equal(t, dummyDs, arena.AllianceStations["B1"].DsConn()) // Pointer equality
 
 	// Test reassignment to another team.
 	err = arena.assignTeam(1114, "B1")
 	assert.Nil(t, err)
 	assert.NotEqual(t, team, *arena.AllianceStations["B1"].Team)
-	assert.Nil(t, arena.AllianceStations["B1"].DsConn)
+	assert.Nil(t, arena.AllianceStations["B1"].DsConn())
 
 	// Check assigning zero as the team number.
 	err = arena.assignTeam(0, "R2")
 	assert.Nil(t, err)
 	assert.Nil(t, arena.AllianceStations["R2"].Team)
-	assert.Nil(t, arena.AllianceStations["R2"].DsConn)
+	assert.Nil(t, arena.AllianceStations["R2"].DsConn())
 
 	// Check assigning to a non-existent station.
 	err = arena.assignTeam(254, "R4")
@@ -106,57 +107,57 @@ func TestArenaMatchFlow(t *testing.T) {
 	arena.Database.CreateTeam(&model.Team{Id: 254})
 	assert.Nil(t, arena.assignTeam(254, "B3"))
 	dummyDs := &DriverStationConnection{TeamId: 254}
-	arena.AllianceStations["B3"].DsConn = dummyDs
+	arena.AllianceStations["B3"].setDsConn(dummyDs)
 	arena.Database.CreateTeam(&model.Team{Id: 1678})
 	assert.Nil(t, arena.assignTeam(254, "R2"))
 	dummyDs = &DriverStationConnection{TeamId: 1678}
-	arena.AllianceStations["R2"].DsConn = dummyDs
+	arena.AllianceStations["R2"].setDsConn(dummyDs)
 
 	// Check pre-match state and packet timing.
 	assert.Equal(t, PreMatch, arena.MatchState)
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-300 * time.Millisecond)
 	arena.Update()
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
-	lastPacketCount := arena.AllianceStations["B3"].DsConn.packetCount
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Enabled)
+	lastPacketCount := arena.AllianceStations["B3"].DsConn().packetCount
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-10 * time.Millisecond)
 	arena.Update()
-	assert.Equal(t, lastPacketCount, arena.AllianceStations["B3"].DsConn.packetCount)
+	assert.Equal(t, lastPacketCount, arena.AllianceStations["B3"].DsConn().packetCount)
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
-	assert.Equal(t, lastPacketCount+1, arena.AllianceStations["B3"].DsConn.packetCount)
+	assert.Equal(t, lastPacketCount+1, arena.AllianceStations["B3"].DsConn().packetCount)
 
 	// Check match start, autonomous and transition to teleop.
 	arena.AllianceStations["R1"].Bypass = true
-	arena.AllianceStations["R2"].DsConn.RobotLinked = true
+	arena.AllianceStations["R2"].DsConn().RobotLinked = true
 	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
-	arena.AllianceStations["B3"].DsConn.RobotLinked = true
+	arena.AllianceStations["B3"].DsConn().RobotLinked = true
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(game.MatchTiming.AutoDurationSec) * time.Second,
 	)
 	arena.Update()
 	assert.Equal(t, PausePeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.Update()
 	assert.Equal(t, PausePeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.MatchStartTime = time.Now().Add(
 		-time.Duration(
 			game.MatchTiming.AutoDurationSec+game.MatchTiming.PauseDurationSec,
@@ -164,38 +165,38 @@ func TestArenaMatchFlow(t *testing.T) {
 	)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Enabled)
 
 	// Check E-stop and bypass.
 	arena.AllianceStations["B3"].EStop = true
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.AllianceStations["B3"].Bypass = true
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.AllianceStations["B3"].EStop = false
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.AllianceStations["B3"].Bypass = false
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Enabled)
 
 	// Check match end.
 	arena.MatchStartTime = time.Now().Add(
@@ -205,20 +206,20 @@ func TestArenaMatchFlow(t *testing.T) {
 	)
 	arena.Update()
 	assert.Equal(t, PostMatch, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Enabled)
 	arena.Update()
 	assert.Equal(t, PostMatch, arena.MatchState)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Enabled)
 
 	arena.AllianceStations["R1"].Bypass = true
 	arena.ResetMatch()
 	arena.lastDsPacketTime = arena.lastDsPacketTime.Add(-550 * time.Millisecond)
 	arena.Update()
 	assert.Equal(t, PreMatch, arena.MatchState)
-	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn.Auto)
-	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["B3"].DsConn().Auto)
+	assert.Equal(t, false, arena.AllianceStations["B3"].DsConn().Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R1"].Bypass)
 }
 
@@ -328,14 +329,14 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 
 	err := arena.LoadMatch(&match)
 	assert.Nil(t, err)
-	arena.AllianceStations["R1"].DsConn = &DriverStationConnection{TeamId: 101}
-	arena.AllianceStations["R2"].DsConn = &DriverStationConnection{TeamId: 102}
-	arena.AllianceStations["R3"].DsConn = &DriverStationConnection{TeamId: 103}
-	arena.AllianceStations["B1"].DsConn = &DriverStationConnection{TeamId: 104}
-	arena.AllianceStations["B2"].DsConn = &DriverStationConnection{TeamId: 105}
-	arena.AllianceStations["B3"].DsConn = &DriverStationConnection{TeamId: 106}
+	arena.AllianceStations["R1"].setDsConn(&DriverStationConnection{TeamId: 101})
+	arena.AllianceStations["R2"].setDsConn(&DriverStationConnection{TeamId: 102})
+	arena.AllianceStations["R3"].setDsConn(&DriverStationConnection{TeamId: 103})
+	arena.AllianceStations["B1"].setDsConn(&DriverStationConnection{TeamId: 104})
+	arena.AllianceStations["B2"].setDsConn(&DriverStationConnection{TeamId: 105})
+	arena.AllianceStations["B3"].setDsConn(&DriverStationConnection{TeamId: 106})
 	for _, station := range arena.AllianceStations {
-		station.DsConn.RobotLinked = true
+		station.DsConn().RobotLinked = true
 	}
 	err = arena.StartMatch()
 	assert.Nil(t, err)
@@ -355,7 +356,7 @@ func TestMatchStartRobotLinkEnforcement(t *testing.T) {
 		assert.Contains(t, err.Error(), "an autonomous stop has not been reset since the previous match")
 	}
 	arena.AllianceStations["R1"].aStopReset = true
-	arena.AllianceStations["R1"].DsConn.RobotLinked = false
+	arena.AllianceStations["R1"].DsConn().RobotLinked = false
 	err = arena.StartMatch()
 	if assert.NotNil(t, err) {
 		assert.Contains(t, err.Error(), "not all robots are connected or bypassed")
@@ -674,15 +675,15 @@ func TestSaveTeamHasConnected(t *testing.T) {
 	match := model.Match{Red1: 101, Red2: 102, Red3: 103, Blue1: 104, Blue2: 105, Blue3: 106}
 	arena.Database.CreateMatch(&match)
 	arena.LoadMatch(&match)
-	arena.AllianceStations["R1"].DsConn = &DriverStationConnection{TeamId: 101}
+	arena.AllianceStations["R1"].setDsConn(&DriverStationConnection{TeamId: 101})
 	arena.AllianceStations["R1"].Bypass = true
-	arena.AllianceStations["R2"].DsConn = &DriverStationConnection{TeamId: 102, RobotLinked: true}
-	arena.AllianceStations["R3"].DsConn = &DriverStationConnection{TeamId: 103}
+	arena.AllianceStations["R2"].setDsConn(&DriverStationConnection{TeamId: 102, RobotLinked: true})
+	arena.AllianceStations["R3"].setDsConn(&DriverStationConnection{TeamId: 103})
 	arena.AllianceStations["R3"].Bypass = true
-	arena.AllianceStations["B1"].DsConn = &DriverStationConnection{TeamId: 104}
+	arena.AllianceStations["B1"].setDsConn(&DriverStationConnection{TeamId: 104})
 	arena.AllianceStations["B1"].Bypass = true
-	arena.AllianceStations["B2"].DsConn = &DriverStationConnection{TeamId: 105, RobotLinked: true}
-	arena.AllianceStations["B3"].DsConn = &DriverStationConnection{TeamId: 106, RobotLinked: true}
+	arena.AllianceStations["B2"].setDsConn(&DriverStationConnection{TeamId: 105, RobotLinked: true})
+	arena.AllianceStations["B3"].setDsConn(&DriverStationConnection{TeamId: 106, RobotLinked: true})
 	arena.AllianceStations["B3"].Team.City = "Sand Hosay" // Change some other field to verify that it isn't saved.
 	assert.Nil(t, arena.StartMatch())
 
@@ -710,16 +711,16 @@ func TestPlcEStopAStop(t *testing.T) {
 	err := arena.assignTeam(254, "R1")
 	assert.Nil(t, err)
 	dummyDs := &DriverStationConnection{TeamId: 254}
-	arena.AllianceStations["R1"].DsConn = dummyDs
+	arena.AllianceStations["R1"].setDsConn(dummyDs)
 	arena.Database.CreateTeam(&model.Team{Id: 148})
 	err = arena.assignTeam(148, "R2")
 	assert.Nil(t, err)
 	dummyDs = &DriverStationConnection{TeamId: 148}
-	arena.AllianceStations["R2"].DsConn = dummyDs
+	arena.AllianceStations["R2"].setDsConn(dummyDs)
 
-	arena.AllianceStations["R1"].DsConn.RobotLinked = true
+	arena.AllianceStations["R1"].DsConn().RobotLinked = true
 	arena.AllianceStations["R1"].aStopReset = true
-	arena.AllianceStations["R2"].DsConn.RobotLinked = true
+	arena.AllianceStations["R2"].DsConn().RobotLinked = true
 	arena.AllianceStations["R2"].aStopReset = true
 	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["R3"].aStopReset = true
@@ -733,7 +734,7 @@ func TestPlcEStopAStop(t *testing.T) {
 	assert.Nil(t, err)
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
-	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn().Enabled)
 
 	// Press the R1 A-stop.
 	plc.redAStops[0] = true
@@ -747,10 +748,10 @@ func TestPlcEStopAStop(t *testing.T) {
 	assert.Equal(t, false, arena.AllianceStations["R2"].EStop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
-	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
-	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.EStop)
-	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.AStop)
-	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn().Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn().EStop)
+	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn().AStop)
+	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn().Enabled)
 
 	// Unpress the R1 A-stop and press the R2 E-stop.
 	plc.redAStops[0] = false
@@ -764,12 +765,12 @@ func TestPlcEStopAStop(t *testing.T) {
 	assert.Equal(t, true, arena.AllianceStations["R2"].EStop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
-	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
-	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.EStop)
-	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.AStop)
-	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
-	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn.EStop)
-	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.AStop)
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn().Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn().EStop)
+	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn().AStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn().Enabled)
+	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn().EStop)
+	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn().AStop)
 
 	// Unpress the R2 E-stop.
 	plc.redAStops[0] = false
@@ -783,8 +784,8 @@ func TestPlcEStopAStop(t *testing.T) {
 	assert.Equal(t, true, arena.AllianceStations["R2"].EStop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
-	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
-	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn().Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn().Enabled)
 
 	// Transition into the teleop period without any stops.
 	arena.MatchStartTime = time.Now().Add(
@@ -805,8 +806,8 @@ func TestPlcEStopAStop(t *testing.T) {
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
 	assert.Equal(t, TeleopPeriod, arena.MatchState)
-	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
-	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn().Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn().Enabled)
 
 	// Press the R1 E-stop and the R2 A-stop.
 	plc.redAStops[0] = false
@@ -820,8 +821,8 @@ func TestPlcEStopAStop(t *testing.T) {
 	assert.Equal(t, true, arena.AllianceStations["R2"].EStop)
 	arena.lastDsPacketTime = time.Unix(0, 0) // Force a DS packet.
 	arena.Update()
-	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn.Enabled)
-	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn.Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R1"].DsConn().Enabled)
+	assert.Equal(t, false, arena.AllianceStations["R2"].DsConn().Enabled)
 
 	// Ensure the other stations A-stops are working as well.
 	plc.redAStops[2] = true
@@ -887,11 +888,11 @@ func TestPlcEStopAStopWithPlcDisabled(t *testing.T) {
 	arena.Database.CreateTeam(&model.Team{Id: 254})
 	err := arena.assignTeam(254, "R1")
 	assert.Nil(t, err)
-	arena.AllianceStations["R1"].DsConn = &DriverStationConnection{TeamId: 254}
-	arena.AllianceStations["R2"].DsConn = &DriverStationConnection{TeamId: 1323}
+	arena.AllianceStations["R1"].setDsConn(&DriverStationConnection{TeamId: 254})
+	arena.AllianceStations["R2"].setDsConn(&DriverStationConnection{TeamId: 1323})
 
-	arena.AllianceStations["R1"].DsConn.RobotLinked = true
-	arena.AllianceStations["R2"].DsConn.RobotLinked = true
+	arena.AllianceStations["R1"].DsConn().RobotLinked = true
+	arena.AllianceStations["R2"].DsConn().RobotLinked = true
 	arena.AllianceStations["R3"].Bypass = true
 	arena.AllianceStations["B1"].Bypass = true
 	arena.AllianceStations["B2"].Bypass = true
@@ -899,17 +900,17 @@ func TestPlcEStopAStopWithPlcDisabled(t *testing.T) {
 	assert.Nil(t, arena.StartMatch())
 	arena.Update()
 	assert.Equal(t, AutoPeriod, arena.MatchState)
-	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn().Enabled)
 
 	plc.redEStops[0] = true
 	plc.redAStops[1] = true
 	arena.Update()
 	assert.Equal(t, false, arena.AllianceStations["R1"].AStop)
 	assert.Equal(t, false, arena.AllianceStations["R1"].EStop)
-	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["R1"].DsConn().Enabled)
 	assert.Equal(t, false, arena.AllianceStations["R2"].AStop)
 	assert.Equal(t, false, arena.AllianceStations["R2"].EStop)
-	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn.Enabled)
+	assert.Equal(t, true, arena.AllianceStations["R2"].DsConn().Enabled)
 }
 
 func TestPlcFieldEStop(t *testing.T) {
@@ -1310,4 +1311,26 @@ func TestSignalReset(t *testing.T) {
 	assert.True(t, arena.FieldReset)
 	assert.Equal(t, "fieldReset", arena.AllianceStationDisplayMode)
 	assertHubLedModes(led.GreenMode, led.GreenMode)
+}
+
+func TestAllianceStationJsonIncludesDsConn(t *testing.T) {
+	allianceStation := &AllianceStation{Bypass: true}
+	allianceStation.setDsConn(&DriverStationConnection{TeamId: 254, RobotLinked: true})
+
+	var decoded map[string]any
+	data, err := json.Marshal(allianceStation)
+	assert.Nil(t, err)
+	assert.Nil(t, json.Unmarshal(data, &decoded))
+	assert.Equal(t, true, decoded["Bypass"])
+	if dsConn, ok := decoded["DsConn"].(map[string]any); assert.True(t, ok, "DsConn missing: %s", data) {
+		assert.Equal(t, 254.0, dsConn["TeamId"])
+		assert.Equal(t, true, dsConn["RobotLinked"])
+	}
+	_, hasPrivateField := decoded["dsConn"]
+	assert.False(t, hasPrivateField)
+
+	allianceStation.setDsConn(nil)
+	data, err = json.Marshal(allianceStation)
+	assert.Nil(t, err)
+	assert.Contains(t, string(data), `"DsConn":null`)
 }
