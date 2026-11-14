@@ -359,6 +359,15 @@ UI for configuring event settings.
                   <input type="text" class="form-control" name="plcAddress" value="{{.PlcAddress}}" placeholder="10.0.100.40">
                 </div>
               </div>
+              <div class="row mb-3">
+                <label class="col-lg-6 control-label">FTA Ready Switch</label>
+                <div class="col-lg-6">
+                  <select class="form-select" name="ftaReadySwitchRequired">
+                    <option value="false" {{if not .FtaReadySwitchRequired}}selected{{end}}>Not Required</option>
+                    <option value="true" {{if .FtaReadySwitchRequired}}selected{{end}}>Required</option>
+                  </select>
+                </div>
+              </div>
             </fieldset>
             <fieldset class="mb-4">
               <legend>Team Signs</legend>
@@ -425,7 +434,7 @@ UI for configuring event settings.
               </div>
             </fieldset>
             <fieldset class="mb-4">
-              <legend>LED Lighting</legend>
+              <legend>DMX LED Lighting</legend>
               <div class="row mb-3">
                 <label class="col-lg-6 control-label">LED Controller Address</label>
                 <div class="col-lg-6">

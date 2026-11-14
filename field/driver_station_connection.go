@@ -233,6 +233,37 @@ func (dsConn *DriverStationConnection) close() {
 	}
 }
 
+// clearWrongStationMoveTo clears the MoveToStation alert on the physical station where this DS was plugged in.
+func (dsConn *DriverStationConnection) clearWrongStationMoveTo(arena *Arena) {
+	if dsConn.WrongStation == "" {
+		return
+	}
+	if wrongStation := arena.AllianceStations[dsConn.WrongStation]; wrongStation != nil &&
+		wrongStation.MoveToStation == dsConn.AllianceStation {
+		wrongStation.MoveToStation = ""
+	}
+}
+
+// resolveMismatchStation determines which physical alliance station an unscheduled DS is connected to.
+func (arena *Arena) resolveMismatchStation(remoteAddr net.Addr) string {
+	if stationTeamId, _, ok := driverStationTeamIdFromRemoteAddr(remoteAddr); ok {
+		if station := arena.getAssignedAllianceStation(stationTeamId); station != "" {
+			return station
+		}
+	}
+	candidateStation := ""
+	for station, allianceStation := range arena.AllianceStations {
+		hasActiveLocalDs := allianceStation.DsConn != nil && allianceStation.DsConn.WrongStation == ""
+		if allianceStation.Ethernet && !hasActiveLocalDs && allianceStation.MoveToStation == "" {
+			if candidateStation != "" {
+				return ""
+			}
+			candidateStation = station
+		}
+	}
+	return candidateStation
+}
+
 // Serializes the control information into a packet.
 func (dsConn *DriverStationConnection) encodeControlPacket(arena *Arena, gameData string) []byte {
 	packet := dsConn.udpSendPacket
@@ -444,11 +475,11 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 			teamId, err = strconv.Atoi(teamIdStr)
 			if err != nil {
 				log.Printf("Error parsing team number from new DS connection: %v", err)
-				go handleInvalidTcpConnection(tcpConn, 3, 0, isNewDs)
+				go arena.handleInvalidTcpConnection(tcpConn, 3, 0, isNewDs, "")
 				continue
 			} else if teamId < 0 || teamId > 65535 {
 				log.Printf("Team number from new DS connection out of range: %d", teamId)
-				go handleInvalidTcpConnection(tcpConn, 3, 0, isNewDs)
+				go arena.handleInvalidTcpConnection(tcpConn, 3, 0, isNewDs, "")
 				continue
 			}
 		} else {
@@ -460,8 +491,9 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 		// Check to see if the team is supposed to be on the field, and notify the DS accordingly.
 		assignedStation := arena.getAssignedAllianceStation(teamId)
 		if assignedStation == "" {
+			mismatchStation := arena.resolveMismatchStation(tcpConn.RemoteAddr())
 			log.Printf("Rejecting connection from Team %d, who is not in the current match, soon.", teamId)
-			go handleInvalidTcpConnection(tcpConn, 2, 0, isNewDs)
+			go arena.handleInvalidTcpConnection(tcpConn, 2, 0, isNewDs, mismatchStation)
 			continue
 		}
 
@@ -550,6 +582,7 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 		}
 		allianceStation := arena.AllianceStations[assignedStation]
 		if previousDsConn := allianceStation.DsConn; previousDsConn != nil {
+			previousDsConn.clearWrongStationMoveTo(arena)
 			dsConn.copyDsReportedStatus(previousDsConn)
 			previousDsConn.close()
 		}
@@ -557,6 +590,13 @@ func (arena *Arena) serveDriverStations(listener net.Listener) {
 
 		if wrongAssignedStation != "" {
 			dsConn.WrongStation = wrongAssignedStation
+			if wrongStation := arena.AllianceStations[wrongAssignedStation]; wrongStation != nil {
+				wrongStation.TeamMismatch = false
+				wrongStation.MoveToStation = assignedStation
+			}
+		} else {
+			allianceStation.TeamMismatch = false
+			allianceStation.MoveToStation = ""
 		}
 
 		// Spin up a goroutine to handle further TCP communication with this driver station.
@@ -601,6 +641,7 @@ func (dsConn *DriverStationConnection) handleTcpConnection(arena *Arena) {
 			if arena.AllianceStations[dsConn.AllianceStation].DsConn == dsConn {
 				arena.AllianceStations[dsConn.AllianceStation].DsConn = nil
 			}
+			dsConn.clearWrongStationMoveTo(arena)
 			break
 		}
 
@@ -642,7 +683,34 @@ func (dsConn *DriverStationConnection) parseDsLogPacket(packet []byte) {
 	dsConn.DsReportedEnabled = !dsConn.DsReportedDisabled
 }
 
-func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int, isNewDs bool) {
+func (arena *Arena) handleInvalidTcpConnection(
+	tcpConn net.Conn,
+	status int,
+	station int,
+	isNewDs bool,
+	mismatchStation string,
+) {
+	var trackedStation *AllianceStation
+	if mismatchStation != "" {
+		if allianceStation := arena.AllianceStations[mismatchStation]; allianceStation != nil &&
+			(allianceStation.DsConn == nil || allianceStation.DsConn.WrongStation != "") {
+			trackedStation = allianceStation
+			trackedStation.TeamMismatch = true
+			trackedStation.MoveToStation = ""
+			trackedStation.lastTeamMismatchTime = time.Now()
+		}
+	}
+	defer func() {
+		if trackedStation != nil && trackedStation.TeamMismatch {
+			mismatchTime := trackedStation.lastTeamMismatchTime
+			time.AfterFunc(2*time.Second, func() {
+				if trackedStation.TeamMismatch && trackedStation.lastTeamMismatchTime.Equal(mismatchTime) {
+					trackedStation.TeamMismatch = false
+				}
+			})
+		}
+	}()
+
 	log.Printf("Handling invalid TCP connection from %v with status %d and station %d", tcpConn.RemoteAddr(), status, station)
 	var assignmentPacket [8]byte
 	sendLength := 8
@@ -673,6 +741,9 @@ func handleInvalidTcpConnection(tcpConn net.Conn, status int, station int, isNew
 		if err != nil {
 			log.Printf("Error reading from connection for invalid driver station: %v", err)
 			break
+		}
+		if trackedStation != nil && trackedStation.TeamMismatch {
+			trackedStation.lastTeamMismatchTime = time.Now()
 		}
 	}
 

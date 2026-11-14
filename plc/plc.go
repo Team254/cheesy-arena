@@ -26,6 +26,7 @@ type Plc interface {
 	GetTeamAStops() ([3]bool, [3]bool)
 	GetEthernetConnected() ([3]bool, [3]bool)
 	IsFtaReady() bool
+	IsFtaReadyConnected() bool
 	ResetMatch()
 	SetStackLights(red, blue, orange, green bool)
 	SetStackBuzzer(state bool)
@@ -159,6 +160,8 @@ const (
 	armorBlockCount
 )
 
+const ftaReadyConnectedBit = 4
+
 func (plc *ModbusPlc) SetAddress(address string) {
 	plc.address = address
 	plc.resetConnection()
@@ -263,6 +266,11 @@ func (plc *ModbusPlc) GetEthernetConnected() ([3]bool, [3]bool) {
 // Returns true if the FTA ready dead-man switch is active.
 func (plc *ModbusPlc) IsFtaReady() bool {
 	return plc.inputs[ftaReady]
+}
+
+// Returns true if the FTA ready dead-man switch is connected.
+func (plc *ModbusPlc) IsFtaReadyConnected() bool {
+	return plc.registers[fieldIoConnection]&(1<<ftaReadyConnectedBit) > 0
 }
 
 // Resets the internal state of the PLC to start a new match.

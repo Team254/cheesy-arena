@@ -71,6 +71,17 @@ func TestMatchPlay(t *testing.T) {
 	recorder := web.getHttpResponse("/match_play")
 	assert.Equal(t, 200, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "Are you sure you want to discard the results for this match?")
+	assert.NotContains(t, recorder.Body.String(), "id=\"ftaReady\"")
+
+	web.arena.Plc.SetAddress("10.0.100.40")
+	recorder = web.getHttpResponse("/match_play")
+	assert.Equal(t, 200, recorder.Code)
+	assert.NotContains(t, recorder.Body.String(), "id=\"ftaReady\"")
+
+	web.arena.EventSettings.FtaReadySwitchRequired = true
+	recorder = web.getHttpResponse("/match_play")
+	assert.Equal(t, 200, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "id=\"ftaReady\"")
 }
 
 func TestMatchPlayMatchList(t *testing.T) {

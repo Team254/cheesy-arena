@@ -7,7 +7,7 @@ var websocket;
 var plcOverrideAllowed = false;
 var allowedOverrideMatchStates = [0, 5, 6, 7];
 var disabledOverrideTooltipText = "Cannot override coil while match is in progress.";
-var disabledLedTooltipText = "Cannot override LED Lighting while match is in progress.";
+var disabledLedTooltipText = "Cannot override DMX LED Lighting while match is in progress.";
 
 // Sends a websocket message to play a given game sound on the audience display.
 var playSound = function (sound) {

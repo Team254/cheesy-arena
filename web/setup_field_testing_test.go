@@ -26,7 +26,7 @@ func TestSetupFieldTesting(t *testing.T) {
 
 	recorder := web.getHttpResponse("/setup/field_testing")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "LED Lighting")
+	assert.Contains(t, recorder.Body.String(), "DMX LED Lighting")
 	assert.Contains(t, recorder.Body.String(), "Red Hub")
 	assert.Contains(t, recorder.Body.String(), "Blue Hub")
 }

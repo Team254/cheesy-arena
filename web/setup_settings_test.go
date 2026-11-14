@@ -30,13 +30,16 @@ func TestSetupSettings(t *testing.T) {
 	assert.Contains(t, recorder.Body.String(), "endgameDurationSec")
 	assert.Contains(t, recorder.Body.String(), "placeholder=\"10.0.100.60\"")
 	assert.NotContains(t, recorder.Body.String(), "tbaPublishingEnabled\"  checked")
+	assert.False(t, web.arena.EventSettings.FtaReadySwitchRequired)
+	assert.Contains(t, recorder.Body.String(), "<option value=\"false\" selected>Not Required</option>")
 
 	// Change the settings and check the response.
 	recorder = web.postHttpResponse(
 		"/setup/settings",
 		"name=Chezy Champs&code=CC&playoffType=single&numPlayoffAlliances=16&tbaPublishingEnabled=on&"+
 			"tbaEventCode=2014cc&tbaSecretId=secretId&tbaSecret=tbasec&transitionShiftDurationSec=12&"+
-			"shiftDurationSec=24&endgameDurationSec=32&ledControllerAddress=10.0.100.61&ledUniverseMode=two",
+			"shiftDurationSec=24&endgameDurationSec=32&ledControllerAddress=10.0.100.61&ledUniverseMode=two&"+
+			"ftaReadySwitchRequired=true",
 	)
 	assert.Equal(t, 303, recorder.Code)
 	assert.Equal(t, "/setup/settings#event", recorder.Header().Get("Location"))
@@ -52,6 +55,8 @@ func TestSetupSettings(t *testing.T) {
 	assert.Equal(t, 32, web.arena.EventSettings.EndgameDurationSec)
 	assert.Equal(t, "10.0.100.61", web.arena.EventSettings.LedControllerAddress)
 	assert.Equal(t, "two", web.arena.EventSettings.LedUniverseMode)
+	assert.True(t, web.arena.EventSettings.FtaReadySwitchRequired)
+	assert.Contains(t, recorder.Body.String(), "<option value=\"true\" selected>Required</option>")
 	assert.Equal(t, 140, game.GetTeleopDurationSec())
 
 	recorder = web.postHttpResponse("/setup/settings", "name=Field Tab Event&activeSettingsTab=field")

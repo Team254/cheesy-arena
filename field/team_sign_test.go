@@ -4,13 +4,12 @@
 package field
 
 import (
-	"image/color"
-	"testing"
-	"time"
-
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
+	"image/color"
+	"testing"
+	"time"
 )
 
 func TestTeamSign_GenerateInMatchRearText(t *testing.T) {
@@ -316,6 +315,16 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	arena.FieldReset = true
 	allianceStation.Ethernet = true
 	assertSign(true, "  254", greenColor, "254         Start DS")
+	allianceStation.TeamMismatch = true
+	assertSign(true, "  254", greenColor, "254          Waiting")
+	allianceStation.TeamMismatch = false
+	allianceStation.MoveToStation = "R2"
+	assertSign(true, "  254", greenColor, "254    Move to Red 2")
+	allianceStation.MoveToStation = "B3"
+	assertSign(true, "  254", greenColor, "254   Move to Blue 3")
+	allianceStation.MoveToStation = "X9"
+	assertSign(true, "  254", greenColor, "254     Move Station")
+	allianceStation.MoveToStation = ""
 	allianceStation.DsConn = &DriverStationConnection{}
 	assertSign(true, "  254", greenColor, "254         No Radio")
 	allianceStation.DsConn.WrongStation = "R1"
@@ -327,6 +336,12 @@ func TestTeamSign_TeamNumber(t *testing.T) {
 	assertSign(true, "  254", greenColor, "254          No Code")
 	allianceStation.DsConn.RobotLinked = true
 	assertSign(true, "  254", redColor, "254            Ready")
+	allianceStation.TeamMismatch = true
+	assertSign(true, "  254", greenColor, "254          Waiting")
+	allianceStation.TeamMismatch = false
+	allianceStation.MoveToStation = "B1"
+	assertSign(true, "  254", greenColor, "254   Move to Blue 1")
+	allianceStation.MoveToStation = ""
 
 	arena.FieldReset = false
 	assertSign(true, "  254", redColor, "254            Ready")

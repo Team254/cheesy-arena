@@ -312,6 +312,7 @@ const handleArenaStatus = function (data) {
   $.each(data.PlcArmorBlockStatuses, function (name, status) {
     $("#plc" + name + "Status").attr("data-ready", status);
   });
+  $("#ftaReady").attr("data-connected", data.IsFtaReadyConnected);
   $("#ftaReady").attr("data-ready", data.IsFtaReady);
 };
 

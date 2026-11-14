@@ -379,3 +379,94 @@ func waitForDriverStationConnection(t *testing.T, arena *Arena, station string) 
 
 	return dsConn
 }
+
+type fakeListener struct {
+	connChan chan net.Conn
+	closed   chan struct{}
+}
+
+func (l *fakeListener) Accept() (net.Conn, error) {
+	select {
+	case conn := <-l.connChan:
+		return conn, nil
+	case <-l.closed:
+		return nil, net.ErrClosed
+	}
+}
+
+func (l *fakeListener) Close() error {
+	close(l.closed)
+	return nil
+}
+
+func (l *fakeListener) Addr() net.Addr {
+	return &net.TCPAddr{IP: net.ParseIP("10.0.100.5"), Port: 1750}
+}
+
+func TestListenForDriverStations_TeamMismatchAndMoveToStation(t *testing.T) {
+	arena := setupTestArena(t)
+	arena.EventSettings.NetworkSecurityEnabled = true
+	arena.assignTeam(2073, "R1")
+	arena.assignTeam(1503, "B2")
+
+	listener := &fakeListener{
+		connChan: make(chan net.Conn, 2),
+		closed:   make(chan struct{}),
+	}
+	t.Cleanup(func() {
+		listener.Close()
+	})
+	go arena.serveDriverStations(listener)
+
+	// 1. Connect from R1's IP (10.20.73.5) with a team not in the match (team 254).
+	clientConn1, serverConn1 := net.Pipe()
+	defer clientConn1.Close()
+	listener.connChan <- fakeRemoteAddrConn{
+		Conn:       serverConn1,
+		remoteAddr: &net.TCPAddr{IP: net.ParseIP("10.20.73.5"), Port: 50000},
+	}
+
+	dataSend := [5]byte{0, 3, 24, 0, 254}
+	_, err := clientConn1.Write(dataSend[:])
+	assert.Nil(t, err)
+
+	var dataReceived [5]byte
+	_, err = readTaggedTcpPacket(clientConn1, dataReceived[:])
+	assert.Nil(t, err)
+	assert.Equal(t, [5]byte{0, 3, 25, 0, 2}, dataReceived)
+	assert.True(t, arena.AllianceStations["R1"].TeamMismatch)
+
+	// 2. Connect from R1's IP (10.20.73.5) with team 1503 (assigned to B2).
+	clientConn2, serverConn2 := net.Pipe()
+	defer clientConn2.Close()
+	listener.connChan <- fakeRemoteAddrConn{
+		Conn:       serverConn2,
+		remoteAddr: &net.TCPAddr{IP: net.ParseIP("10.20.73.5"), Port: 50001},
+	}
+
+	dataSend = [5]byte{0, 3, 24, 5, 223}
+	_, err = clientConn2.Write(dataSend[:])
+	assert.Nil(t, err)
+
+	_, err = readTaggedTcpPacket(clientConn2, dataReceived[:])
+	assert.Nil(t, err)
+	assert.Equal(t, [5]byte{0, 3, 25, 4, 1}, dataReceived)
+
+	dsConn := waitForDriverStationConnection(t, arena, "B2")
+	if assert.NotNil(t, dsConn) {
+		assert.Equal(t, "R1", dsConn.WrongStation)
+		assert.Equal(t, "B2", arena.AllianceStations["R1"].MoveToStation)
+		assert.False(t, arena.AllianceStations["R1"].TeamMismatch)
+	}
+
+	// 3. Reassigning B2 clears MoveToStation on R1 immediately.
+	assert.Nil(t, arena.assignTeam(0, "B2"))
+	assert.Equal(t, "", arena.AllianceStations["R1"].MoveToStation)
+
+	// 4. Non-field IP fallback resolves only when a single station has Ethernet without a local DS.
+	nonFieldAddr := &net.TCPAddr{IP: net.ParseIP("127.0.0.1"), Port: 50002}
+	arena.AllianceStations["R1"].Ethernet = true
+	assert.Equal(t, "R1", arena.resolveMismatchStation(nonFieldAddr))
+	arena.AllianceStations["B2"].Ethernet = true
+	assert.Equal(t, "", arena.resolveMismatchStation(nonFieldAddr))
+}

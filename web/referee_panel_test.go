@@ -114,6 +114,29 @@ func TestRefereePanelWebsocket(t *testing.T) {
 	readWebsocketType(t, ws, "realtimeScore")
 	assert.Equal(t, 1, len(web.arena.RedRealtimeScore.CurrentScore.Fouls))
 
+	// Test bypass toggling and E-stop.
+	ws.Write("toggleBypass", nil)
+	assert.Contains(t, readWebsocketError(t, ws), "Failed to parse")
+	ws.Write("toggleBypass", "R4")
+	assert.Contains(t, readWebsocketError(t, ws), "Invalid alliance station")
+	ws.Write("toggleBypass", "R3")
+	readWebsocketType(t, ws, "arenaStatus")
+	assert.Equal(t, true, web.arena.AllianceStations["R3"].Bypass)
+	ws.Write("toggleBypass", "R3")
+	readWebsocketType(t, ws, "arenaStatus")
+	assert.Equal(t, false, web.arena.AllianceStations["R3"].Bypass)
+
+	ws.Write("eStop", "R3")
+	assert.Contains(t, readWebsocketError(t, ws), "cannot E-stop robot when a match is not in progress")
+	web.arena.MatchState = field.AutoPeriod
+	ws.Write("eStop", nil)
+	assert.Contains(t, readWebsocketError(t, ws), "Failed to parse")
+	ws.Write("eStop", "R4")
+	assert.Contains(t, readWebsocketError(t, ws), "Invalid alliance station")
+	ws.Write("eStop", "R3")
+	readWebsocketType(t, ws, "arenaStatus")
+	assert.Equal(t, true, web.arena.AllianceStations["R3"].EStop)
+
 	// Test card setting.
 	cardData := struct {
 		Alliance string
@@ -180,4 +203,5 @@ func TestRefereePanelWebsocket(t *testing.T) {
 	assert.NotNil(t, messages["scoringStatus"])
 	assert.NotNil(t, messages["matchLoad"])
 	assert.Equal(t, "score", web.arena.AudienceDisplayMode)
+	assert.Equal(t, false, web.arena.AllianceStations["R3"].EStop)
 }

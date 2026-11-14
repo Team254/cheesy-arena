@@ -3,79 +3,105 @@
   Author: pat@patfairbank.com (Patrick Fairbank)
 */
 html {
+  height: 100%;
   -webkit-user-select: none;
   -moz-user-select: none;
   overscroll-behavior: none;
 }
 body {
+  height: 100%;
   background-color: #222;
   overscroll-behavior: none;
 }
 h3 {
   color: #ccc;
-  font-size: 1.5vw;
+  font-size: clamp(1.1rem, 1.5vw, 1.75rem);
+  margin-bottom: 0.6vh;
 }
 .container {
-  padding-top: 1vw;
+  padding: 1vh 1.5vw;
   width: 100%;
   max-width: none;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  gap: 0.8vh;
   color: #fff;
 }
+.container > p {
+  margin: 0;
+  font-size: clamp(0.9rem, 1.2vw, 1.25rem);
+}
 #matchName {
-  font-size: 2vw;
+  font-size: clamp(1.35rem, 2vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.2;
 }
 #refereePanel {
-  width: 98%;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: row;
+  align-items: stretch;
+  gap: 2vw;
 }
 #cards {
+  width: clamp(165px, 17vw, 250px);
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+}
+#cards #teamTitle {
+  text-align: center;
+  white-space: nowrap;
 }
 #cards[data-hr="false"] {
   display: none;
 }
 .alliance-cards {
-  padding: 0.5vw 1vw;
+  flex: 1;
+  padding: 1vh 1vw;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-evenly;
+  align-items: stretch;
+  gap: 0.8vh;
   border: 1px solid #666;
-  border-radius: 1vw;
+  border-radius: 0.8vw;
 }
 #redCards {
-  margin-bottom: 1vw;
+  margin-bottom: 1.2vh;
   background-color: #322;
 }
 #blueCards {
   background-color: #223;
 }
-.team-card.bypassed-status {
+.team-card.bypassed-status,
+.team-card.estopped-status {
   background-color: #dc3545;
 }
 .team-card {
-  margin: 0.5vw 0;
-  width: 10vw;
-  height: 3.5vw;
-  font-size: 2.5vw;
+  width: 100%;
+  flex: 1;
+  min-height: 3.5vw;
+  max-height: 10vh;
+  font-size: clamp(1.5rem, 2.5vw, 2.5rem);
   background-color: #444;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 0.2vw;
+  border: 0.3vw solid transparent;
+  border-radius: 0.4vw;
+  cursor: pointer;
 }
 .playoff-alliance-card {
-  font-size: 1.6vw;
+  font-size: clamp(1.1rem, 1.6vw, 1.8rem);
   white-space: nowrap;
   color: inherit;
-  border: 0;
 }
 .team-card[data-card="yellow"] {
   background-color: #c90;
@@ -87,15 +113,20 @@ h3 {
   border: 0.3vw solid #ff0;
 }
 #scoringStatuses {
-  margin-top: 0.5vw;
+  width: 100%;
+  margin-top: 1vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
 }
 .scoring-status {
-  margin-top: 0.5vw;
-  width: 8vw;
-  padding: 0.2vw 0.5vw;
+  width: 100%;
+  padding: 0.5vh 0.5vw;
   border-radius: 0.5vw;
   background-color: #e66;
-  font-size: 0.8vw;
+  font-size: clamp(0.95rem, 1.1vw, 1.25rem);
+  font-weight: 600;
+  text-align: center;
   color: #000;
 }
 .scoring-status[data-ready=true] {
@@ -108,22 +139,28 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-grow: 1;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
 }
 #foulButtons {
-  display: flex;
-  flex-direction: row;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2vw;
 }
 .foul-button {
-  width: 16vw;
-  height: 6vw;
-  font-size: 3vw;
+  width: 100%;
+  height: clamp(64px, 9vh, 100px);
+  font-size: clamp(1.5rem, 2.6vw, 3rem);
   font-weight: bold;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 1vw;
-  border-radius: 1vw;
+  text-align: center;
+  line-height: 1.1;
+  border-radius: 0.8vw;
+  cursor: pointer;
 }
 .red-foul {
   background-color: #933;
@@ -132,85 +169,110 @@ h3 {
   background-color: #26c;
 }
 #foulList {
-  margin: 1vw 0;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 1.2vh 0;
+  padding-right: 0.3vw;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
 }
 .foul {
-  margin-top: 1vw;
-  height: 4vw;
+  width: 100%;
+  min-height: clamp(48px, 6.5vh, 72px);
+  flex-shrink: 0;
+  padding: 0.6vh 1vw;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  font-size: 1.8vw;
+  gap: 0.8vw;
+  font-size: clamp(1.1rem, 1.7vw, 1.8rem);
   border-radius: 0.5vw;
 }
-.foul > * {
-  margin: 0 1vw;
+.foul > :first-child {
+  min-width: 1.5em;
+  text-align: center;
 }
 .type-button {
-  width: 9vw;
-  height: 3vw;
+  width: clamp(105px, 10.5vw, 150px);
+  height: clamp(36px, 4.8vh, 54px);
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 0.2vw;
+  border-radius: 0.3vw;
+  cursor: pointer;
 }
 .team-buttons {
   display: flex;
   flex-direction: row;
+  gap: 0.4vw;
+  flex-shrink: 0;
 }
 .team-button {
-  width: 6vw;
-  height: 3vw;
+  width: clamp(56px, 6vw, 90px);
+  height: clamp(36px, 4.8vh, 54px);
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 0.2vw;
+  border: solid 0.2vw transparent;
+  border-radius: 0.3vw;
+  cursor: pointer;
 }
 .team-button[data-selected="true"] {
-  border: solid 0.2vw #fff;
+  border-color: #fff;
 }
 .rule-select {
-  width: 25vw;
-  height: 3vw;
-  background-color: rgba(0, 0, 0, 0.1);
+  flex: 1;
+  min-width: 0;
+  height: clamp(36px, 4.8vh, 54px);
+  padding: 0 0.5vw;
+  background-color: rgba(0, 0, 0, 0.15);
+  color: #fff;
   border: 0;
-  border-radius: 0.2vw;
+  border-radius: 0.3vw;
+  text-overflow: ellipsis;
 }
 .rule-select option {
   background-color: #222;
   color: #fff;
 }
 .delete-button {
-  width: 6vw;
-  height: 3vw;
+  width: clamp(64px, 6.5vw, 100px);
+  height: clamp(36px, 4.8vh, 54px);
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #444;
-  border-radius: 0.2vw;
+  border-radius: 0.3vw;
+  cursor: pointer;
 }
 #controlButtons {
   width: 100%;
-  margin: 1vw 0;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
+  margin: 0.5vh 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5vw;
 }
 #controlButtons[data-hr="false"] {
   display: none;
 }
 .control-button {
-  width: 20vw;
-  height: 4vw;
-  font-size: 2.2vw;
+  width: 100%;
+  height: clamp(52px, 7.5vh, 80px);
+  font-size: clamp(1.4rem, 2.2vw, 2.4rem);
+  font-weight: 600;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 1vw;
-  border-radius: 0.2vw;
+  border-radius: 0.4vw;
   opacity: 0.3;
+  cursor: pointer;
 }
 .control-button[data-enabled=true] {
   opacity: 1;
@@ -231,9 +293,9 @@ h3 {
 #scoreSummary {
   width: 100%;
   display: flex;
-  gap: 1vw;
-  padding: 0.8vw 1vw;
-  justify-content: center;
+  gap: 1.5vw;
+  padding: 0.4vh 0 1.2vh 0;
+  justify-content: space-between;
   text-align: center;
 }
 #scoreSummary[data-hr="false"] {
@@ -241,11 +303,27 @@ h3 {
 }
 
 #scoreSummary > div {
+  flex: 1;
   display: grid;
-  grid-template-columns: 7.5vw repeat(3, 5.2vw);
-  column-gap: 0.35vw;
-  row-gap: 0.25vw;
+  grid-template-columns: max-content repeat(3, 1fr);
+  column-gap: 0.6vw;
+  row-gap: 0.5vh;
   align-items: center;
+  padding: 0.6vh 0.8vw;
+  border: 1px solid #666;
+  border-radius: 0.6vw;
+  font-size: clamp(0.95rem, 1.25vw, 1.4rem);
+}
+#blueScoreSummary {
+  background-color: #223;
+}
+#redScoreSummary {
+  background-color: #322;
+}
+#scoreSummary .team-1,
+#scoreSummary .team-2,
+#scoreSummary .team-3 {
+  font-weight: 600;
 }
 
 #scoreSummary .placeholder {
@@ -258,13 +336,13 @@ h3 {
 
 #scoreSummary .label {
   text-align: right;
-  padding-right: 0.35vw;
+  padding-right: 0.4vw;
+  white-space: nowrap;
 }
 
 #scoreSummary .tower-status {
-  min-width: 4.8vw;
-  padding: 0.05vw 0.2vw;
-  border-radius: 0.25vw;
+  padding: 0.3vh 0.4vw;
+  border-radius: 0.3vw;
   color: #fff;
   font-weight: bold;
   white-space: nowrap;

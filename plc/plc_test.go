@@ -357,6 +357,16 @@ func TestPlcRegisters(t *testing.T) {
 			map[string]bool{"RedDs": bits[0], "BlueDs": bits[1], "RedIoLink": bits[2], "BlueIoLink": bits[3]},
 			plc.GetArmorBlockStatuses(),
 		)
+		assert.False(t, plc.IsFtaReadyConnected())
+
+		client.registers[0] = value | (1 << 4)
+		plc.update()
+		assert.Equal(
+			t,
+			map[string]bool{"RedDs": bits[0], "BlueDs": bits[1], "RedIoLink": bits[2], "BlueIoLink": bits[3]},
+			plc.GetArmorBlockStatuses(),
+		)
+		assert.True(t, plc.IsFtaReadyConnected())
 	}
 }
 
