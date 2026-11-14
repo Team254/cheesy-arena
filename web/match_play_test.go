@@ -5,16 +5,22 @@ package web
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/Team254/cheesy-arena/field"
 	"github.com/Team254/cheesy-arena/game"
 	"github.com/Team254/cheesy-arena/model"
+	"github.com/Team254/cheesy-arena/partner"
 	"github.com/Team254/cheesy-arena/tournament"
 	"github.com/Team254/cheesy-arena/websocket"
 	gorillawebsocket "github.com/gorilla/websocket"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
+	"io"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -67,11 +73,17 @@ func (w *synchronizedLogWriter) waitForWrites(t *testing.T, count int) {
 func TestMatchPlay(t *testing.T) {
 	web := setupTestWeb(t)
 
-	// Check that some text near the bottom of the page is present.
+	// Check that some text near the bottom of the page is present and blue score precedes red score.
 	recorder := web.getHttpResponse("/match_play")
 	assert.Equal(t, 200, recorder.Code)
-	assert.Contains(t, recorder.Body.String(), "Are you sure you want to discard the results for this match?")
-	assert.NotContains(t, recorder.Body.String(), "id=\"ftaReady\"")
+	body := recorder.Body.String()
+	assert.Contains(t, body, "Are you sure you want to discard the results for this match?")
+	assert.NotContains(t, body, "id=\"ftaReady\"")
+	blueScoreIndex := strings.Index(body, `id="blueScore"`)
+	redScoreIndex := strings.Index(body, `id="redScore"`)
+	assert.NotEqual(t, -1, blueScoreIndex)
+	assert.NotEqual(t, -1, redScoreIndex)
+	assert.Less(t, blueScoreIndex, redScoreIndex)
 
 	web.arena.Plc.SetAddress("10.0.100.40")
 	recorder = web.getHttpResponse("/match_play")
@@ -125,6 +137,7 @@ func TestCommitMatch(t *testing.T) {
 
 	// Committing the same match more than once should create a second match result record.
 	match.Type = model.Qualification
+	match.TbaMatchKey = model.TbaMatchKey{CompLevel: "qm", SetNumber: 0, MatchNumber: 1}
 	assert.Nil(t, web.arena.Database.CreateMatch(match))
 	matchResult = model.NewMatchResult()
 	matchResult.MatchId = match.Id
@@ -176,9 +189,19 @@ func TestCommitMatch(t *testing.T) {
 	assert.Contains(t, writer.String(), "Failed to publish matches")
 	assert.Contains(t, writer.String(), "Failed to publish rankings")
 
-	// Committing a practice match should publish matches to TBA, but not rankings.
+	// Committing a practice match should publish practice matches to TBA (excluding qual and playoff), and not rankings.
 	writer.Reset()
-	practiceMatch := &model.Match{Type: model.Practice, ShortName: "P1"}
+	playoffMatch := &model.Match{
+		Type:        model.Playoff,
+		ShortName:   "SF1-1",
+		TbaMatchKey: model.TbaMatchKey{CompLevel: "sf", SetNumber: 1, MatchNumber: 1},
+	}
+	assert.Nil(t, web.arena.Database.CreateMatch(playoffMatch))
+	practiceMatch := &model.Match{
+		Type:        model.Practice,
+		ShortName:   "P1",
+		TbaMatchKey: model.TbaMatchKey{CompLevel: "p", SetNumber: 0, MatchNumber: 1},
+	}
 	assert.Nil(t, web.arena.Database.CreateMatch(practiceMatch))
 	practiceResult := model.NewMatchResult()
 	practiceResult.MatchId = practiceMatch.Id
@@ -187,6 +210,52 @@ func TestCommitMatch(t *testing.T) {
 	writer.waitForWrites(t, 1)
 	assert.Contains(t, writer.String(), "Failed to publish matches")
 	assert.NotContains(t, writer.String(), "Failed to publish rankings")
+
+	publishedMatches := make(chan []*partner.TbaMatch, 2)
+	rankingsPublished := make(chan struct{}, 1)
+	tbaServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, readErr := io.ReadAll(r.Body)
+		assert.NoError(t, readErr)
+		if strings.HasSuffix(r.URL.Path, "/matches/update") {
+			var matches []*partner.TbaMatch
+			assert.NoError(t, json.Unmarshal(body, &matches))
+			publishedMatches <- matches
+		} else if strings.HasSuffix(r.URL.Path, "/rankings/update") {
+			rankingsPublished <- struct{}{}
+		}
+	}))
+	defer tbaServer.Close()
+	web.arena.TbaClient.BaseUrl = tbaServer.URL
+	err = web.commitMatchScore(practiceMatch, practiceResult, true)
+	assert.Nil(t, err)
+	select {
+	case matches := <-publishedMatches:
+		if assert.Len(t, matches, 1) {
+			assert.Equal(t, "pm", matches[0].CompLevel)
+			assert.Equal(t, 1, matches[0].MatchNumber)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("Timed out waiting for practice match publish")
+	}
+
+	// Committing a qualification match should publish practice, qualification, and playoff matches, plus rankings.
+	err = web.commitMatchScore(match, matchResult, true)
+	assert.Nil(t, err)
+	select {
+	case matches := <-publishedMatches:
+		if assert.Len(t, matches, 3) {
+			assert.Equal(t, "pm", matches[0].CompLevel)
+			assert.Equal(t, "qm", matches[1].CompLevel)
+			assert.Equal(t, "sf", matches[2].CompLevel)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("Timed out waiting for qualification match publish")
+	}
+	select {
+	case <-rankingsPublished:
+	case <-time.After(time.Second):
+		t.Fatal("Timed out waiting for rankings publish")
+	}
 }
 
 func TestCommitTiebreak(t *testing.T) {

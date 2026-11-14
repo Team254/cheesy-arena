@@ -134,6 +134,71 @@ func TestPublishMatches(t *testing.T) {
 	assert.Nil(t, client.PublishMatches(database))
 }
 
+func TestPublishPracticeMatches(t *testing.T) {
+	database := setupTestDb(t)
+
+	practiceMatch := model.Match{
+		Type:             model.Practice,
+		ShortName:        "P1",
+		Time:             time.Unix(300, 0),
+		StartedAt:        time.Unix(310, 0),
+		ScoreCommittedAt: time.Unix(450, 0),
+		Red1:             1,
+		Red2:             2,
+		Red3:             3,
+		Blue1:            4,
+		Blue2:            5,
+		Blue3:            6,
+		Status:           game.RedWonMatch,
+		TbaMatchKey:      model.TbaMatchKey{CompLevel: "p", SetNumber: 0, MatchNumber: 1},
+	}
+	qualMatch := model.Match{
+		Type:        model.Qualification,
+		ShortName:   "Q1",
+		TbaMatchKey: model.TbaMatchKey{CompLevel: "qm", SetNumber: 0, MatchNumber: 1},
+	}
+	playoffMatch := model.Match{
+		Type:        model.Playoff,
+		ShortName:   "SF1-1",
+		TbaMatchKey: model.TbaMatchKey{CompLevel: "sf", SetNumber: 1, MatchNumber: 1},
+	}
+	assert.NoError(t, database.CreateMatch(&practiceMatch))
+	assert.NoError(t, database.CreateMatch(&qualMatch))
+	assert.NoError(t, database.CreateMatch(&playoffMatch))
+	practiceMatchResult := model.BuildTestMatchResult(practiceMatch.Id, 1)
+	practiceMatchResult.RedCards = map[string]string{"1": "red"}
+	assert.NoError(t, database.CreateMatchResult(practiceMatchResult))
+
+	tbaServer := httptest.NewServer(
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, "/api/trusted/v1/event/my_event_code/matches/update", r.URL.Path)
+				body, err := io.ReadAll(r.Body)
+				assert.NoError(t, err)
+				var matches []*TbaMatch
+				assert.NoError(t, json.Unmarshal(body, &matches))
+				if assert.Len(t, matches, 1) {
+					assert.Equal(t, "pm", matches[0].CompLevel)
+					assert.Equal(t, 0, matches[0].SetNumber)
+					assert.Equal(t, 1, matches[0].MatchNumber)
+					assert.Equal(t, []string{"frc1", "frc2", "frc3"}, matches[0].Alliances["red"].Teams)
+					assert.Equal(t, []string{"frc4", "frc5", "frc6"}, matches[0].Alliances["blue"].Teams)
+					assert.Empty(t, matches[0].Alliances["red"].Dqs)
+					assert.Empty(t, matches[0].Alliances["blue"].Dqs)
+					assert.Nil(t, matches[0].Alliances["red"].Score)
+					assert.Nil(t, matches[0].Alliances["blue"].Score)
+					assert.Nil(t, matches[0].ScoreBreakdown)
+				}
+			},
+		),
+	)
+	defer tbaServer.Close()
+	client := NewTbaClient("my_event_code", "my_secret_id", "my_secret")
+	client.BaseUrl = tbaServer.URL
+
+	assert.NoError(t, client.PublishPracticeMatches(database))
+}
+
 func TestPublishRankings(t *testing.T) {
 	database := setupTestDb(t)
 
@@ -209,6 +274,7 @@ func TestPublishingErrors(t *testing.T) {
 
 	assert.NotNil(t, client.PublishTeams(database))
 	assert.NotNil(t, client.PublishMatches(database))
+	assert.NotNil(t, client.PublishPracticeMatches(database))
 	assert.NotNil(t, client.PublishRankings(database))
 	assert.NotNil(t, client.PublishAlliances(database))
 }

@@ -327,24 +327,27 @@ func (client *TbaClient) PublishTeams(database *model.Database) error {
 
 // Uploads the practice, qualification, and playoff match schedule and results to The Blue Alliance.
 func (client *TbaClient) PublishMatches(database *model.Database) error {
-	practiceMatches, err := database.GetMatchesByType(model.Practice, false)
-	if err != nil {
-		return err
-	}
-	qualMatches, err := database.GetMatchesByType(model.Qualification, false)
-	if err != nil {
-		return err
-	}
-	playoffMatches, err := database.GetMatchesByType(model.Playoff, false)
-	if err != nil {
-		return err
+	return client.publishMatches(database, model.Practice, model.Qualification, model.Playoff)
+}
+
+// Uploads the practice match schedule and timing/lineup data to The Blue Alliance.
+func (client *TbaClient) PublishPracticeMatches(database *model.Database) error {
+	return client.publishMatches(database, model.Practice)
+}
+
+func (client *TbaClient) publishMatches(database *model.Database, matchTypes ...model.MatchType) error {
+	var matches []model.Match
+	for _, matchType := range matchTypes {
+		matchesByType, err := database.GetMatchesByType(matchType, false)
+		if err != nil {
+			return err
+		}
+		matches = append(matches, matchesByType...)
 	}
 	eventSettings, err := database.GetEventSettings()
 	if err != nil {
 		return err
 	}
-	matches := append(practiceMatches, qualMatches...)
-	matches = append(matches, playoffMatches...)
 	tbaMatches := make([]TbaMatch, len(matches))
 
 	// Build a JSON array of TBA-format matches.
