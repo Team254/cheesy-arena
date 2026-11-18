@@ -21,15 +21,18 @@ Display showing robot connection status.
 
   <body>
     <div id="matchStatusRow" class="ds-dependent">
-      {{if .EventSettings.NetworkSecurityEnabled}}
+      {{if or .EventSettings.NetworkSecurityEnabled .EventSettings.SwitchManagementEnabled}}
       <div id="matchName" class="text-start" style="width: 20%; padding-left: 1%;"></div>
       <div id="fieldConnection" style="width: 25%; padding-left: 1%;">
+        {{if .EventSettings.NetworkSecurityEnabled}}
         <span class="badge badge-status" id="accessPointStatus"><i class="bi bi-wifi"></i> Access Point
         </span>
+        {{end}}
+        {{if .EventSettings.SwitchManagementEnabled}}
         <span class="badge badge-status" id="switchStatus"> <i class="bi bi-hdd-network"></i> Switch</span>
+        {{end}}
       </div>
-      {{end}}
-      {{if not .EventSettings.NetworkSecurityEnabled}}
+      {{else}}
       <div id="matchName" class="text-start" style="width: 45%; padding-left: 1%;"></div>
       {{end}}
       <div id="matchTime" class="text-center" style="width: 10%;"></div>

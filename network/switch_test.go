@@ -5,22 +5,31 @@ package network
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/Team254/cheesy-arena/model"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/ed25519"
+	"golang.org/x/crypto/ssh"
+	"io"
 	"net"
+	"strings"
 	"testing"
 	"time"
 )
 
 func TestConfigureSwitch(t *testing.T) {
-	sw := NewSwitch("127.0.0.1", "password")
+	username := "username"
+	password := "password"
+	sw := NewSwitch("127.0.0.1", username, password)
 	assert.Equal(t, "UNKNOWN", sw.Status)
 	sw.port = 9050
+	sw.connectTimeoutDuration = 50 * time.Millisecond
+	sw.configTimeoutDuration = 50 * time.Millisecond
 	sw.configBackoffDuration = time.Millisecond
 	sw.configPauseDuration = time.Millisecond
 	var command1, command2 string
-	expectedResetCommand := "password\nenable\npassword\nterminal length 0\nconfig terminal\n" +
+	expectedResetCommand := "terminal length 0\nconfig terminal\n" +
 		"interface Vlan10\nno ip address\nno ip dhcp pool dhcp10\n" +
 		"interface Vlan20\nno ip address\nno ip dhcp pool dhcp20\n" +
 		"interface Vlan30\nno ip address\nno ip dhcp pool dhcp30\n" +
@@ -30,7 +39,7 @@ func TestConfigureSwitch(t *testing.T) {
 		"end\nexit\n"
 
 	// Should remove all previous VLANs and do nothing else if current configuration is blank.
-	mockTelnet(t, sw.port, &command1, &command2)
+	mockSSH(t, sw.port, username, password, &command1, &command2)
 	assert.Nil(t, sw.ConfigureTeamEthernet([6]*model.Team{nil, nil, nil, nil, nil, nil}))
 	assert.Equal(t, expectedResetCommand, command1)
 	assert.Equal(t, "", command2)
@@ -38,12 +47,12 @@ func TestConfigureSwitch(t *testing.T) {
 
 	// Should configure one team if only one is present.
 	sw.port += 1
-	mockTelnet(t, sw.port, &command1, &command2)
+	mockSSH(t, sw.port, username, password, &command1, &command2)
 	assert.Nil(t, sw.ConfigureTeamEthernet([6]*model.Team{nil, nil, nil, nil, {Id: 254}, nil}))
 	assert.Equal(t, expectedResetCommand, command1)
 	assert.Equal(
 		t,
-		"password\nenable\npassword\nterminal length 0\nconfig terminal\n"+
+		"terminal length 0\nconfig terminal\n"+
 			"ip dhcp excluded-address 10.2.54.1 10.2.54.19\nip dhcp excluded-address 10.2.54.200 10.2.54.254\nip dhcp pool dhcp50\n"+
 			"network 10.2.54.0 255.255.255.0\ndefault-router 10.2.54.4\nlease 7\n"+
 			"interface Vlan50\nip address 10.2.54.4 255.255.255.0\n"+
@@ -53,7 +62,7 @@ func TestConfigureSwitch(t *testing.T) {
 
 	// Should configure all teams if all are present.
 	sw.port += 1
-	mockTelnet(t, sw.port, &command1, &command2)
+	mockSSH(t, sw.port, username, password, &command1, &command2)
 	assert.Nil(
 		t,
 		sw.ConfigureTeamEthernet([6]*model.Team{{Id: 1114}, {Id: 254}, {Id: 296}, {Id: 1503}, {Id: 1678}, {Id: 1538}}),
@@ -61,7 +70,7 @@ func TestConfigureSwitch(t *testing.T) {
 	assert.Equal(t, expectedResetCommand, command1)
 	assert.Equal(
 		t,
-		"password\nenable\npassword\nterminal length 0\nconfig terminal\n"+
+		"terminal length 0\nconfig terminal\n"+
 			"ip dhcp excluded-address 10.11.14.1 10.11.14.19\nip dhcp excluded-address 10.11.14.200 10.11.14.254\nip dhcp pool dhcp10\n"+
 			"network 10.11.14.0 255.255.255.0\ndefault-router 10.11.14.4\nlease 7\n"+
 			"interface Vlan10\nip address 10.11.14.4 255.255.255.0\n"+
@@ -83,33 +92,98 @@ func TestConfigureSwitch(t *testing.T) {
 			"end\nexit\n",
 		command2,
 	)
+
+	// Should set status to ERROR if connection fails.
+	sw.port += 1
+	assert.NotNil(t, sw.ConfigureTeamEthernet([6]*model.Team{nil, nil, nil, nil, nil, nil}))
+	assert.Equal(t, "ERROR", sw.Status)
 }
 
-func mockTelnet(t *testing.T, port int, command1 *string, command2 *string) {
+func mockSSH(t *testing.T, port int, username, password string, command1 *string, command2 *string) {
 	go func() {
-		ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+		_, privateKey, err := ed25519.GenerateKey(nil)
 		assert.Nil(t, err)
-		defer ln.Close()
+		signer, err := ssh.NewSignerFromKey(privateKey)
+		assert.Nil(t, err)
+		config := &ssh.ServerConfig{
+			PasswordCallback: func(conn ssh.ConnMetadata, pass []byte) (*ssh.Permissions, error) {
+				assert.Equal(t, username, conn.User())
+				assert.Equal(t, password, string(pass))
+				return nil, nil
+			},
+		}
+		config.AddHostKey(signer)
+		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+		assert.Nil(t, err)
+		t.Cleanup(func() {
+			listener.Close()
+		})
+		defer listener.Close()
 		*command1 = ""
 		*command2 = ""
 
-		// Fake the first connection.
-		conn1, err := ln.Accept()
-		assert.Nil(t, err)
-		conn1.SetReadDeadline(time.Now().Add(10 * time.Millisecond))
-		var reader bytes.Buffer
-		reader.ReadFrom(conn1)
-		*command1 = reader.String()
-		conn1.Close()
-
-		// Fake the second connection.
-		conn2, err := ln.Accept()
-		assert.Nil(t, err)
-		conn2.SetReadDeadline(time.Now().Add(10 * time.Millisecond))
-		reader.Reset()
-		reader.ReadFrom(conn2)
-		*command2 = reader.String()
-		conn2.Close()
+		acceptSSHConnection(t, listener, config, command1)
+		acceptSSHConnection(t, listener, config, command2)
 	}()
 	time.Sleep(100 * time.Millisecond) // Give it some time to open the socket.
+}
+
+func acceptSSHConnection(t *testing.T, listener net.Listener, config *ssh.ServerConfig, command *string) {
+	nConn, err := listener.Accept()
+	if errors.Is(err, net.ErrClosed) {
+		return
+	}
+	assert.Nil(t, err)
+	defer nConn.Close()
+	conn, chans, reqs, err := ssh.NewServerConn(nConn, config)
+	assert.Nil(t, err)
+	defer conn.Close()
+
+	go ssh.DiscardRequests(reqs)
+
+	rawChannel := <-chans
+	assert.Equal(t, "session", rawChannel.ChannelType())
+	channel, requests, err := rawChannel.Accept()
+	assert.Nil(t, err)
+	defer channel.Close()
+
+	req := <-requests
+	assert.Equal(t, "pty-req", req.Type)
+	req.Reply(true, nil)
+
+	req = <-requests
+	assert.Equal(t, "shell", req.Type)
+	req.Reply(true, nil)
+
+	var receivedData bytes.Buffer
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		buffer := make([]byte, 1024)
+		for {
+			n, err := channel.Read(buffer)
+			if n > 0 {
+				receivedData.Write(buffer[:n])
+				if strings.HasSuffix(receivedData.String(), "exit\n") {
+					break
+				}
+			}
+			if err != nil {
+				assert.Equal(t, io.EOF, err)
+				break
+			}
+		}
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(50 * time.Millisecond):
+		channel.Close()
+		<-done
+		assert.Fail(t, "timed out waiting for SSH command")
+		return
+	}
+
+	*command = receivedData.String()
+	channel.SendRequest("exit-status", false, []byte{0, 0, 0, 0})
 }

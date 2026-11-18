@@ -1,5 +1,5 @@
 ! Baseline configuration for the Catalyst 3500-series switch. Load this into the switch prior to configuring
-! Cheesy Arena to connect to it. Default password is 1234Five.
+! Cheesy Arena to connect to it. Default username is admin and password is 1234Five.
 !
 !
 ! Last configuration change at 13:18:54 UTC Sat Sep 28 2019
@@ -19,12 +19,14 @@ boot-end-marker
 !
 enable secret 5 $1$kKSW$fCMwnMdYvXui1TulfyYHN/
 !
+username admin privilege 15 password 0 1234Five
 no aaa new-model
 system mtu routing 1500
 ip routing
+ip domain-name team254.com
 !
-ip dhcp excluded-address 10.0.100.1 10.0.100.125
-ip dhcp excluded-address 10.0.100.200 10.0.100.225
+!
+ip dhcp excluded-address 10.0.100.1 10.0.100.169
 !
 ip dhcp pool dhcppool
  network 10.0.100.0 255.255.255.0
@@ -303,7 +305,9 @@ interface Vlan100
 !
 ip classless
 ip http server
+ip http authentication local
 ip http secure-server
+ip ssh version 2
 !
 !
 !
@@ -322,10 +326,15 @@ vstack
 line con 0
  exec-timeout 0 0
 line vty 0 4
- password 1234Five
- login
+ login local
+ transport input ssh
 line vty 5 15
- password 1234Five
- login
+ login local
+ transport input ssh
+!
+ntp source Vlan100
+ntp server 132.163.96.1 prefer
+!
+!
 !
 end
